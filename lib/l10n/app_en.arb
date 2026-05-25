@@ -1,0 +1,105 @@
+{
+  "@@locale": "en",
+  "appTitle": "Promsell POS",
+
+  "navSale": "Sale",
+  "navProducts": "Products",
+  "navHistory": "History",
+  "navReport": "Report",
+  "navSettings": "Settings",
+
+  "salePageTitle": "Sale",
+  "clearCart": "Clear",
+  "noProducts": "No products",
+  "saleSavedSuccess": "Sale saved successfully",
+  "tapProductToAdd": "Tap a product to add to cart",
+  "cartTotal": "Total",
+  "checkout": "Checkout ({count})",
+  "@checkout": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "paymentTitle": "Payment",
+  "totalAmount": "Total",
+  "cash": "Cash",
+  "transfer": "Transfer",
+  "card": "Card",
+  "receivedAmount": "Amount received (฿)",
+  "change": "Change",
+  "confirmPayment": "Confirm Payment",
+  "notePlaceholder": "Note (optional)",
+  "saleError": "Failed to save sale",
+
+  "productsTitle": "Products",
+  "searchProducts": "Search products...",
+  "noProductsYet": "No products yet",
+  "errorOccurred": "An error occurred",
+  "noCategory": "No category",
+  "stockLabel": "Stock: {count}",
+  "@stockLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "edit": "Edit",
+  "delete": "Delete",
+  "deleteProduct": "Delete Product",
+  "confirmDeleteProduct": "Confirm delete \"{name}\"?",
+  "@confirmDeleteProduct": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "cancel": "Cancel",
+
+  "addProduct": "Add Product",
+  "editProductTitle": "Edit Product",
+  "productNameLabel": "Product name *",
+  "productNameRequired": "Please enter product name",
+  "priceLabel": "Price (฿) *",
+  "priceRequired": "Please enter price",
+  "invalidPrice": "Invalid price",
+  "quantityLabel": "Quantity",
+  "quantityRequired": "Please enter quantity",
+  "invalidQuantity": "Invalid quantity",
+  "categoryLabel": "Category",
+  "showProduct": "Show product",
+  "save": "Save",
+
+  "historyTitle": "Sale History",
+  "noSalesYet": "No sales yet",
+  "noteLabel": "Note: {note}",
+  "@noteLabel": {
+    "placeholders": { "note": { "type": "String" } }
+  },
+
+  "reportTitle": "Report",
+  "totalRevenue": "Total Revenue",
+  "salesCount": "{count} sales",
+  "@salesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "byPaymentMethod": "By Payment Method",
+  "topProducts": "Top Selling (Top 5)",
+  "units": "{count} units",
+  "@units": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "settingsTitle": "Settings",
+  "settingsGeneral": "General",
+  "settingsLanguage": "Language",
+  "settingsTheme": "Theme",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsThemeSystem": "System",
+  "settingsShopInfo": "Shop Info",
+  "settingsShopName": "Shop Name",
+  "settingsAddress": "Address",
+  "settingsPhone": "Phone",
+  "settingsSales": "Sales",
+  "settingsCurrency": "Currency",
+  "settingsDateFormat": "Date Format",
+  "settingsReceipt": "Receipt",
+  "settingsReceiptNote": "Receipt Footer Note",
+  "settingsShowShopInfo": "Show shop info on receipt",
+  "settingsSaved": "Settings saved",
+  "langThai": "ภาษาไทย",
+  "langEnglish": "English"
+}

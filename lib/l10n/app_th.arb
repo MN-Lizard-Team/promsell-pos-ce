@@ -1,0 +1,105 @@
+{
+  "@@locale": "th",
+  "appTitle": "Promsell POS",
+
+  "navSale": "ขาย",
+  "navProducts": "สินค้า",
+  "navHistory": "ประวัติ",
+  "navReport": "รายงาน",
+  "navSettings": "ตั้งค่า",
+
+  "salePageTitle": "ขายสินค้า",
+  "clearCart": "ล้าง",
+  "noProducts": "ไม่มีสินค้า",
+  "saleSavedSuccess": "บันทึกการขายเรียบร้อย",
+  "tapProductToAdd": "แตะสินค้าเพื่อเพิ่มลงตะกร้า",
+  "cartTotal": "รวม",
+  "checkout": "ชำระเงิน ({count})",
+  "@checkout": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "paymentTitle": "ชำระเงิน",
+  "totalAmount": "ยอดรวม",
+  "cash": "เงินสด",
+  "transfer": "โอน",
+  "card": "บัตร",
+  "receivedAmount": "รับเงินมา (฿)",
+  "change": "เงินทอน",
+  "confirmPayment": "ยืนยันการชำระ",
+  "notePlaceholder": "หมายเหตุ (ไม่บังคับ)",
+  "saleError": "บันทึกการขายไม่สำเร็จ",
+
+  "productsTitle": "สินค้า",
+  "searchProducts": "ค้นหาสินค้า...",
+  "noProductsYet": "ยังไม่มีสินค้า",
+  "errorOccurred": "เกิดข้อผิดพลาด",
+  "noCategory": "ไม่มีหมวดหมู่",
+  "stockLabel": "คงเหลือ: {count}",
+  "@stockLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "edit": "แก้ไข",
+  "delete": "ลบ",
+  "deleteProduct": "ลบสินค้า",
+  "confirmDeleteProduct": "ยืนยันการลบ \"{name}\"?",
+  "@confirmDeleteProduct": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "cancel": "ยกเลิก",
+
+  "addProduct": "เพิ่มสินค้า",
+  "editProductTitle": "แก้ไขสินค้า",
+  "productNameLabel": "ชื่อสินค้า *",
+  "productNameRequired": "กรุณาใส่ชื่อสินค้า",
+  "priceLabel": "ราคา (฿) *",
+  "priceRequired": "กรุณาใส่ราคา",
+  "invalidPrice": "ราคาไม่ถูกต้อง",
+  "quantityLabel": "จำนวน",
+  "quantityRequired": "กรุณาใส่จำนวน",
+  "invalidQuantity": "จำนวนไม่ถูกต้อง",
+  "categoryLabel": "หมวดหมู่",
+  "showProduct": "แสดงสินค้า",
+  "save": "บันทึก",
+
+  "historyTitle": "ประวัติการขาย",
+  "noSalesYet": "ยังไม่มีรายการขาย",
+  "noteLabel": "หมายเหตุ: {note}",
+  "@noteLabel": {
+    "placeholders": { "note": { "type": "String" } }
+  },
+
+  "reportTitle": "รายงาน",
+  "totalRevenue": "ยอดขายรวม",
+  "salesCount": "{count} รายการ",
+  "@salesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "byPaymentMethod": "แยกตามวิธีชำระ",
+  "topProducts": "สินค้าขายดี (Top 5)",
+  "units": "{count} ชิ้น",
+  "@units": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "settingsTitle": "ตั้งค่า",
+  "settingsGeneral": "ทั่วไป",
+  "settingsLanguage": "ภาษา",
+  "settingsTheme": "ธีม",
+  "settingsThemeLight": "สว่าง",
+  "settingsThemeDark": "มืด",
+  "settingsThemeSystem": "ตามระบบ",
+  "settingsShopInfo": "ข้อมูลร้าน",
+  "settingsShopName": "ชื่อร้าน",
+  "settingsAddress": "ที่อยู่",
+  "settingsPhone": "เบอร์โทรศัพท์",
+  "settingsSales": "การขาย",
+  "settingsCurrency": "สกุลเงิน",
+  "settingsDateFormat": "รูปแบบวันที่",
+  "settingsReceipt": "ใบเสร็จ",
+  "settingsReceiptNote": "หมายเหตุท้ายใบเสร็จ",
+  "settingsShowShopInfo": "แสดงข้อมูลร้านในใบเสร็จ",
+  "settingsSaved": "บันทึกการตั้งค่าแล้ว",
+  "langThai": "ภาษาไทย",
+  "langEnglish": "English"
+}
