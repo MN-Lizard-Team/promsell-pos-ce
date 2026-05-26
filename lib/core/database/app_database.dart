@@ -18,10 +18,18 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
-      throw UnimplementedError(
-        'Database schema upgraded from v$from to v$to without a migration. '
-        'Implement onUpgrade in app_database.dart before bumping schemaVersion.',
-      );
+      for (var step = from; step < to; step++) { // ignore: dead_code
+        switch (step) {
+          // Add a case per schema version bump, e.g.:
+          // case 1:
+          //   await m.addColumn(sales, sales.newColumn);
+          default:
+            throw UnimplementedError(
+              'No migration defined for schema v$step → v${step + 1}. '
+              'Add a case $step: block in app_database.dart before releasing.',
+            );
+        }
+      }
     },
   );
 

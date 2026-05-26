@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/section_card.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -103,17 +104,10 @@ class _SettingsViewState extends State<_SettingsView> {
       listener: (ctx, state) {
         if (state.status == SettingsStatus.saved && _manualSave) {
           _manualSave = false;
-          ScaffoldMessenger.of(
-            ctx,
-          ).showSnackBar(SnackBar(content: Text(ctx.l10n.settingsSaved)));
+          AppSnackBar.success(ctx, ctx.l10n.settingsSaved);
         } else if (state.status == SettingsStatus.failure) {
           _manualSave = false;
-          ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(
-              content: Text(ctx.l10n.errorOccurred),
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-          );
+          AppSnackBar.error(ctx, ctx.l10n.errorOccurred);
         }
       },
       child: Scaffold(

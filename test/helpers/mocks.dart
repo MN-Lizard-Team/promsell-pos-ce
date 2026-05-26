@@ -24,6 +24,8 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state.dart';
+import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
+import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 // ── Repositories ──
@@ -71,3 +73,5 @@ class MockHistoryBloc extends MockBloc<HistoryEvent, HistoryState>
 
 class MockSettingsCubit extends MockCubit<SettingsState>
     implements SettingsCubit {}
+
+class MockReportCubit extends MockCubit<ReportState> implements ReportCubit {}

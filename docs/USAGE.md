@@ -154,18 +154,21 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 ### Products tab
 
-- Tap **Add Product** in the app bar to open the product form
-- Required fields: name, price, and quantity
-- Product rows show category, stock status, and price for quick scanning
-- Tap a product card to edit it, or use the 3-dot menu for **Edit** / **Delete**
-- Search filters products by name and category in real time
-- The product form uses a single-column layout on compact screens and a two-column price/quantity layout on wider screens
+- Toggle between **List** and **Grid** view with the icon pair in the app bar
+- Use category **filter chips** to narrow the catalog; combined with the search bar
+- Each product shows an image avatar (`Image.network` with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
+- Tap **Add Product** (➕ icon, app bar) to open the product form
+- Product form: paste an image URL in the header for a live rounded preview; fill name, price, quantity, category; **BASIC INFO** and **DETAILS** section labels guide the layout
+- Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
+- Search filters by name and category in real time
 
 ### History tab
 
 - Lists all sales as receipt-like cards, newest first
 - Tap any card to expand the per-item breakdown
 - Each sale shows total, timestamp, payment method, line items, subtotal, and optional note
+- Expanded card shows **Print Receipt** and **Share Receipt** buttons — generates an 80 mm thermal receipt PDF via the device's print/share sheet
+- Use the date-range picker (calendar icon) to filter history by period
 
 ### Report tab
 
@@ -357,7 +360,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **126+ automated tests** covering domain logic, state management, data access, widgets, integration, and localization parity.
+Promsell has **135 automated tests** covering domain logic, state management, data access, widgets, integration, and localization parity.
 
 ### Running tests
 

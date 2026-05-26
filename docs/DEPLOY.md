@@ -97,7 +97,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.1.0+1
+version: 0.3.0+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -119,7 +119,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 126+ tests pass
+- [ ] `flutter test` — all 135+ tests pass
 - [ ] Integration test (checkout flow) passes
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -142,7 +142,7 @@ Before distributing a build with UI changes:
 2. Search and filter products in the Sale tab.
 3. Add items to cart and adjust quantity.
 4. Complete one cash sale using quick cash chips.
-5. Open History and expand the saved sale.
+5. Open History, expand the saved sale, and tap **Print Receipt** or **Share Receipt**.
 6. Open Report and verify revenue/payment/top product cards.
 7. Open Settings, switch theme/locale, and save shop info.
 

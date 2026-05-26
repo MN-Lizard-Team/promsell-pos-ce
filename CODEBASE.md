@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.2.3
+# CODEBASE.md — Promsell POS CE v0.3.0
 
 ## System overview
 
@@ -31,6 +31,7 @@ For version history and feature details, see [CHANGELOG.md](CHANGELOG.md).
 │   database/   — Drift schema, tables, DAOs       │
 │   di/         — get_it service locator           │
 │   extensions/ — context.l10n helper             │
+│   services/   — ReceiptPdfService (PDF/print)   │
 │   utils/      — payment_method_helper            │
 │   widgets/    — shared UI primitives             │
 └────────────────────┬─────────────────────────────┘
@@ -71,9 +72,12 @@ features/<name>/
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema version, migrations |
-| `injection_container.dart` | `lib/core/di/` | get_it registrations for all repositories, BLoCs, cubits |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema version, step-loop migration framework |
+| `injection_container.dart` | `lib/core/di/` | get_it registrations for all repositories, BLoCs, cubits, services |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
+| `ReceiptPdfService` | `lib/core/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt` |
+| `AppSnackBar` | `lib/core/widgets/` | Static helpers `success` / `error` / `info` — consistent snackbar styling across all features |
+| `OverlayToast` | `lib/core/widgets/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `AdaptiveBreakpoints` | `lib/core/widgets/` | Compact / medium / expanded layout helpers |
 | `AppEmptyState` | `lib/core/widgets/` | Consistent empty/error states with compact-height support |
@@ -88,8 +92,8 @@ features/<name>/
 |---------|-------------|-----------|
 | Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart` |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` |
-| History | `HistoryBloc` | `history_page.dart` |
-| Report | stateful widget | `report_page.dart` |
+| History | `HistoryBloc` | `history_page.dart` (+ print/share receipt via `ReceiptPdfService`) |
+| Report | `ReportCubit` | `report_page.dart`, `report_cubit.dart`, `report_state.dart` |
 | Settings | `SettingsCubit` | `settings_page.dart`, `settings_cubit.dart`, `settings_state.dart` |
 
 ---
@@ -113,7 +117,7 @@ Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM.
 
 | Table | Fields |
 |-------|--------|
-| `Products` | id, name, price, stock, category, isActive, createdAt, updatedAt |
+| `Products` | id, name, price, stock, category, imageUrl, isActive, createdAt, updatedAt |
 | `Sales` | id, totalAmount, paymentMethod, cashReceived, note, createdAt |
 | `SaleItems` | id, saleId, productId, productName, price, quantity, subtotal |
 
@@ -132,7 +136,7 @@ dart run build_runner build --delete-conflicting-outputs
 | Pattern | When used |
 |---------|-----------|
 | **BLoC** (event → state) | Complex flows with multiple event types — sale, product, history |
-| **Cubit** (method → state) | Simpler state without event classes — settings |
+| **Cubit** (method → state) | Simpler state without event classes — settings, report |
 
 All state classes extend `Equatable` for efficient rebuilds.
 
@@ -212,7 +216,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-130 automated tests across 7 layers. Run with `flutter test`.
+135 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 
@@ -228,6 +232,7 @@ test/
 │   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
 │   ├── history/                # Use case, BLoC, repo tests
+│   ├── report/                 # ReportCubit tests
 │   └── settings/               # Cubit, repo, widget tests
 ├── integration/
 │   └── checkout_flow_test.dart  # End-to-end data layer checkout

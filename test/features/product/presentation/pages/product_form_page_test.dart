@@ -54,7 +54,7 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(TextFormField), findsNWidgets(4));
+      expect(find.byType(TextFormField), findsNWidgets(5));
       expect(find.byType(FilledButton), findsOneWidget);
     });
 
@@ -68,7 +68,7 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
-      expect(find.byType(TextFormField), findsNWidgets(4));
+      expect(find.byType(TextFormField), findsNWidgets(5));
     });
 
     testWidgets('dispatches ProductAdded on valid submit', (tester) async {
@@ -80,13 +80,13 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      final nameField = find.byType(TextFormField).first;
+      final nameField = find.byType(TextFormField).at(1);
       await tester.enterText(nameField, 'Water');
 
-      final priceField = find.byType(TextFormField).at(1);
+      final priceField = find.byType(TextFormField).at(2);
       await tester.enterText(priceField, '10.00');
 
-      final stockField = find.byType(TextFormField).at(2);
+      final stockField = find.byType(TextFormField).at(3);
       await tester.enterText(stockField, '100');
 
       await tester.tap(find.byType(FilledButton));
@@ -152,7 +152,7 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      final stockField = find.byType(TextFormField).at(2);
+      final stockField = find.byType(TextFormField).at(3);
       await tester.enterText(stockField, '0');
       await tester.pumpAndSettle();
 
@@ -166,7 +166,7 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      final stockField = find.byType(TextFormField).at(2);
+      final stockField = find.byType(TextFormField).at(3);
       await tester.enterText(stockField, '10');
       await tester.pumpAndSettle();
 

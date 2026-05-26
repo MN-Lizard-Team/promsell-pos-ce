@@ -1,48 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
 class AppTheme {
   AppTheme._();
 
-  static TextTheme get _textTheme =>
-      GoogleFonts.notoSansThaiTextTheme().copyWith(
-        displayLarge: GoogleFonts.notoSansThai(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-        ),
-        displayMedium: GoogleFonts.notoSansThai(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-        ),
-        headlineLarge: GoogleFonts.notoSansThai(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-        headlineMedium: GoogleFonts.notoSansThai(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineSmall: GoogleFonts.notoSansThai(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-        titleLarge: GoogleFonts.notoSansThai(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        titleMedium: GoogleFonts.notoSansThai(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        bodyLarge: GoogleFonts.notoSansThai(fontSize: 16),
-        bodyMedium: GoogleFonts.notoSansThai(fontSize: 14),
-        bodySmall: GoogleFonts.notoSansThai(fontSize: 12),
-        labelLarge: GoogleFonts.notoSansThai(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
-      );
+  static const String _fontFamily = 'NotoSansThai';
+
+  static const TextTheme _textTheme = TextTheme(
+    displayLarge: TextStyle(fontFamily: _fontFamily, fontSize: 32, fontWeight: FontWeight.bold),
+    displayMedium: TextStyle(fontFamily: _fontFamily, fontSize: 28, fontWeight: FontWeight.bold),
+    headlineLarge: TextStyle(fontFamily: _fontFamily, fontSize: 24, fontWeight: FontWeight.bold),
+    headlineMedium: TextStyle(fontFamily: _fontFamily, fontSize: 20, fontWeight: FontWeight.w600),
+    headlineSmall: TextStyle(fontFamily: _fontFamily, fontSize: 18, fontWeight: FontWeight.w600),
+    titleLarge: TextStyle(fontFamily: _fontFamily, fontSize: 16, fontWeight: FontWeight.w600),
+    titleMedium: TextStyle(fontFamily: _fontFamily, fontSize: 14, fontWeight: FontWeight.w500),
+    bodyLarge: TextStyle(fontFamily: _fontFamily, fontSize: 16),
+    bodyMedium: TextStyle(fontFamily: _fontFamily, fontSize: 14),
+    bodySmall: TextStyle(fontFamily: _fontFamily, fontSize: 12),
+    labelLarge: TextStyle(fontFamily: _fontFamily, fontSize: 14, fontWeight: FontWeight.w600),
+  );
 
   static ThemeData get light => ThemeData(
     useMaterial3: true,
@@ -57,12 +33,13 @@ class AppTheme {
     ),
     scaffoldBackgroundColor: AppColors.background,
     textTheme: _textTheme,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.background,
       foregroundColor: AppColors.textPrimary,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: GoogleFonts.notoSansThai(
+      titleTextStyle: TextStyle(
+        fontFamily: _fontFamily,
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
@@ -75,11 +52,11 @@ class AppTheme {
       surfaceTintColor: AppColors.elevatedSurface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
-    navigationBarTheme: NavigationBarThemeData(
+    navigationBarTheme: const NavigationBarThemeData(
       backgroundColor: AppColors.surface,
       indicatorColor: AppColors.primaryContainer,
       labelTextStyle: WidgetStatePropertyAll(
-        GoogleFonts.notoSansThai(fontSize: 12, fontWeight: FontWeight.w600),
+        TextStyle(fontFamily: _fontFamily, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -88,10 +65,7 @@ class AppTheme {
         foregroundColor: AppColors.textOnPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        textStyle: GoogleFonts.notoSansThai(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: const TextStyle(fontFamily: _fontFamily, fontSize: 14, fontWeight: FontWeight.w600),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -99,10 +73,7 @@ class AppTheme {
         minimumSize: const Size(48, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        textStyle: GoogleFonts.notoSansThai(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        textStyle: const TextStyle(fontFamily: _fontFamily, fontSize: 14, fontWeight: FontWeight.w700),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -150,11 +121,12 @@ class AppTheme {
     ),
     scaffoldBackgroundColor: AppColors.darkBackground,
     textTheme: _textTheme,
-    appBarTheme: AppBarTheme(
+    appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.darkBackground,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: GoogleFonts.notoSansThai(
+      titleTextStyle: TextStyle(
+        fontFamily: _fontFamily,
         fontSize: 18,
         fontWeight: FontWeight.w600,
       ),
@@ -164,20 +136,17 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
-    navigationBarTheme: NavigationBarThemeData(
+    navigationBarTheme: const NavigationBarThemeData(
       indicatorColor: AppColors.primaryDark,
       labelTextStyle: WidgetStatePropertyAll(
-        GoogleFonts.notoSansThai(fontSize: 12, fontWeight: FontWeight.w600),
+        TextStyle(fontFamily: _fontFamily, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        textStyle: GoogleFonts.notoSansThai(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: const TextStyle(fontFamily: _fontFamily, fontSize: 14, fontWeight: FontWeight.w600),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -185,10 +154,7 @@ class AppTheme {
         minimumSize: const Size(48, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        textStyle: GoogleFonts.notoSansThai(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
+        textStyle: const TextStyle(fontFamily: _fontFamily, fontSize: 14, fontWeight: FontWeight.w700),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(

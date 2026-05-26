@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -77,12 +78,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
           if (ctx.mounted) Navigator.pop(ctx);
         } else if (state.status == SaleStatus.failure) {
           _submitted = false;
-          ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? ctx.l10n.saleError),
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-          );
+          AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
         }
       },
       child: SafeArea(

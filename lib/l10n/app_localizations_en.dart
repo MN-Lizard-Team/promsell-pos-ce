@@ -293,4 +293,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get langEnglish => 'English';
+
+  @override
+  String get printReceipt => 'Print Receipt';
+
+  @override
+  String get shareReceipt => 'Share Receipt';
 }

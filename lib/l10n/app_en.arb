@@ -123,5 +123,7 @@
   "settingsShowShopInfo": "Show shop info on receipt",
   "settingsSaved": "Settings saved",
   "langThai": "ภาษาไทย",
-  "langEnglish": "English"
+  "langEnglish": "English",
+  "printReceipt": "Print Receipt",
+  "shareReceipt": "Share Receipt"
 }

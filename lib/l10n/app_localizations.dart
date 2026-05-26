@@ -631,6 +631,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'English'**
   String get langEnglish;
+
+  /// No description provided for @printReceipt.
+  ///
+  /// In th, this message translates to:
+  /// **'พิมพ์ใบเสร็จ'**
+  String get printReceipt;
+
+  /// No description provided for @shareReceipt.
+  ///
+  /// In th, this message translates to:
+  /// **'แชร์ใบเสร็จ'**
+  String get shareReceipt;
 }
 
 class _AppLocalizationsDelegate

@@ -292,4 +292,10 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get langEnglish => 'English';
+
+  @override
+  String get printReceipt => 'พิมพ์ใบเสร็จ';
+
+  @override
+  String get shareReceipt => 'แชร์ใบเสร็จ';
 }

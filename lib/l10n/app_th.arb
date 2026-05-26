@@ -123,5 +123,7 @@
   "settingsShowShopInfo": "แสดงข้อมูลร้านในใบเสร็จ",
   "settingsSaved": "บันทึกการตั้งค่าแล้ว",
   "langThai": "ภาษาไทย",
-  "langEnglish": "English"
+  "langEnglish": "English",
+  "printReceipt": "พิมพ์ใบเสร็จ",
+  "shareReceipt": "แชร์ใบเสร็จ"
 }

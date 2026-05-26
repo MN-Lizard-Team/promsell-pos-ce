@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -28,6 +29,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
   late final _categoryCtrl = TextEditingController(
     text: widget.product?.category ?? '',
   );
+  late final _imageUrlCtrl = TextEditingController(
+    text: widget.product?.imageUrl ?? '',
+  );
   late bool _isActive;
 
   bool get _isEditing => widget.product != null;
@@ -44,6 +48,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _priceCtrl.dispose();
     _stockCtrl.dispose();
     _categoryCtrl.dispose();
+    _imageUrlCtrl.dispose();
     super.dispose();
   }
 
@@ -77,6 +82,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
           category: _categoryCtrl.text.trim().isEmpty
               ? null
               : _categoryCtrl.text.trim(),
+          imageUrl: _imageUrlCtrl.text.trim().isEmpty
+              ? null
+              : _imageUrlCtrl.text.trim(),
         ),
       );
     }
@@ -95,12 +103,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
           Navigator.pop(ctx, true);
         } else if (state.saveStatus == ProductSaveStatus.error) {
           _submitted = false;
-          ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? ctx.l10n.errorOccurred),
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-          );
+          AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.errorOccurred);
         }
       },
       child: SafeArea(
@@ -160,6 +163,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   },
                 );
 
+                final imageUrl = _imageUrlCtrl.text.trim();
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -174,16 +178,40 @@ class _ProductFormPageState extends State<ProductFormPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    Text(
-                      _isEditing
-                          ? context.l10n.editProductTitle
-                          : context.l10n.addProduct,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _FormAvatar(imageUrl: imageUrl),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _isEditing
+                                    ? context.l10n.editProductTitle
+                                    : context.l10n.addProduct,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              _ProductTextField(
+                                controller: _imageUrlCtrl,
+                                labelText: 'Image URL (optional)',
+                                icon: Icons.image_outlined,
+                                keyboardType: TextInputType.url,
+                                textInputAction: TextInputAction.next,
+                                onChanged: (_) => setState(() {}),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
+                    const _SectionLabel(label: 'Basic info'),
+                    const SizedBox(height: 8),
                     _ProductTextField(
                       controller: _nameCtrl,
                       labelText: context.l10n.productNameLabel,
@@ -194,7 +222,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                           : null,
                       textInputAction: TextInputAction.next,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     if (useTwoColumns)
                       Row(
                         children: [
@@ -205,10 +233,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       )
                     else ...[
                       priceField,
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       stockField,
                     ],
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 20),
+                    const _SectionLabel(label: 'Details'),
+                    const SizedBox(height: 8),
                     _ProductTextField(
                       controller: _categoryCtrl,
                       labelText: context.l10n.categoryLabel,
@@ -217,7 +247,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       onFieldSubmitted: (_) => _submit(),
                     ),
                     if (_isEditing) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       SwitchListTile(
                         value: _isActive,
                         onChanged: (value) => setState(() => _isActive = value),
@@ -303,6 +333,68 @@ class _ProductTextField extends StatelessWidget {
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
+    );
+  }
+}
+
+class _FormAvatar extends StatelessWidget {
+  const _FormAvatar({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const size = 80.0;
+    const radius = 20.0;
+
+    if (imageUrl.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: Image.network(
+          imageUrl,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, err, st) => _placeholder(theme),
+        ),
+      );
+    }
+    return _placeholder(theme);
+  }
+
+  Widget _placeholder(ThemeData theme) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Icon(
+        Icons.image_outlined,
+        size: 36,
+        color: theme.colorScheme.primary,
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Text(
+      label.toUpperCase(),
+      style: theme.textTheme.labelSmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+        letterSpacing: 1.1,
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 }

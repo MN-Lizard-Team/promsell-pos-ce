@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/adaptive_breakpoints.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/overlay_toast.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -255,21 +257,16 @@ class _ProductCard extends StatelessWidget {
           HapticFeedback.selectionClick();
           context.read<SaleBloc>().add(SaleProductAdded(product));
           if (cartQty == 0) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(context.l10n.productAddedToCart(product.name)),
-                  duration: const Duration(milliseconds: 1200),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+            OverlayToast.show(
+              context,
+              context.l10n.productAddedToCart(product.name),
+            );
           }
         },
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -353,9 +350,7 @@ class _CartPanel extends StatelessWidget {
     return BlocListener<SaleBloc, SaleState>(
       listenWhen: (prev, curr) => curr.status == SaleStatus.success,
       listener: (ctx, state) {
-        ScaffoldMessenger.of(
-          ctx,
-        ).showSnackBar(SnackBar(content: Text(ctx.l10n.saleSavedSuccess)));
+        AppSnackBar.success(ctx, ctx.l10n.saleSavedSuccess);
       },
       child: BlocBuilder<SaleBloc, SaleState>(
         builder: (ctx, state) {

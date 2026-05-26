@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -144,6 +146,51 @@ class _HistoryView extends StatelessWidget {
                             style: theme.textTheme.bodySmall,
                           ),
                         ),
+                      OverflowBar(
+                        alignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton.icon(
+                            icon: const Icon(Icons.print_outlined),
+                            label: Text(ctx.l10n.printReceipt),
+                            onPressed: () async {
+                              try {
+                                await sl<ReceiptPdfService>().printReceipt(
+                                  sale: sale,
+                                  currency: settings.currency,
+                                  storeName: settings.shopName,
+                                );
+                              } catch (_) {
+                                if (ctx.mounted) {
+                                  AppSnackBar.error(
+                                    ctx,
+                                    ctx.l10n.errorOccurred,
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                          TextButton.icon(
+                            icon: const Icon(Icons.share_outlined),
+                            label: Text(ctx.l10n.shareReceipt),
+                            onPressed: () async {
+                              try {
+                                await sl<ReceiptPdfService>().shareReceipt(
+                                  sale: sale,
+                                  currency: settings.currency,
+                                  storeName: settings.shopName,
+                                );
+                              } catch (_) {
+                                if (ctx.mounted) {
+                                  AppSnackBar.error(
+                                    ctx,
+                                    ctx.l10n.errorOccurred,
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 );

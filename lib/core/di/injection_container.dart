@@ -18,6 +18,8 @@ import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dar
 import 'package:promsell_pos_ce/features/sale/data/repositories/sale_repository_impl.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
+import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 
@@ -58,6 +60,12 @@ Future<void> initDependencies() async {
 
   // Use Cases — Report
   sl.registerLazySingleton(() => WatchReport(sl()));
+
+  // Services
+  sl.registerLazySingleton<ReceiptPdfService>(() => const ReceiptPdfService());
+
+  // Cubits — Report (factory: each tab navigation creates a fresh cubit)
+  sl.registerFactory<ReportCubit>(() => ReportCubit(watchReport: sl()));
 
   // BLoCs — ProductBloc is a singleton intentionally: shared across Sale and
   // Product pages via IndexedStack so all tabs see the same product list.
