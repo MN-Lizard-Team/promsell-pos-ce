@@ -16,20 +16,21 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   final AppDatabase _db;
 
   Product _fromData(ProductData d) => Product(
-        id: d.id,
-        name: d.name,
-        price: d.price,
-        stock: d.stock,
-        category: d.category,
-        imageUrl: d.imageUrl,
-        isActive: d.isActive,
-        createdAt: d.createdAt,
-        updatedAt: d.updatedAt,
-      );
+    id: d.id,
+    name: d.name,
+    price: d.price,
+    stock: d.stock,
+    category: d.category,
+    imageUrl: d.imageUrl,
+    isActive: d.isActive,
+    createdAt: d.createdAt,
+    updatedAt: d.updatedAt,
+  );
 
   @override
   Stream<List<Product>> watchAllProducts() =>
-      (_db.select(_db.products)..orderBy([(p) => OrderingTerm.desc(p.createdAt)]))
+      (_db.select(_db.products)
+            ..orderBy([(p) => OrderingTerm.desc(p.createdAt)]))
           .watch()
           .map((rows) => rows.map(_fromData).toList());
 
@@ -43,9 +44,9 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
 
   @override
   Future<Product?> getProductById(int id) async {
-    final row = await (_db.select(_db.products)
-          ..where((p) => p.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.products,
+    )..where((p) => p.id.equals(id))).getSingleOrNull();
     return row == null ? null : _fromData(row);
   }
 
@@ -54,10 +55,9 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
       _db.into(_db.products).insert(companion);
 
   @override
-  Future<void> updateProduct(ProductsCompanion companion) =>
-      (_db.update(_db.products)
-            ..where((p) => p.id.equals(companion.id.value)))
-          .write(companion);
+  Future<void> updateProduct(ProductsCompanion companion) => (_db.update(
+    _db.products,
+  )..where((p) => p.id.equals(companion.id.value))).write(companion);
 
   @override
   Future<void> deleteProduct(int id) =>

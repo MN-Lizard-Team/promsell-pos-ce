@@ -28,9 +28,7 @@ class SalePage extends StatelessWidget {
             deleteProduct: sl(),
           )..add(const ProductsSubscribed()),
         ),
-        BlocProvider(
-          create: (_) => SaleBloc(createSale: sl()),
-        ),
+        BlocProvider(create: (_) => SaleBloc(createSale: sl())),
       ],
       child: const _SaleView(),
     );
@@ -53,23 +51,19 @@ class _SaleView extends StatelessWidget {
                     onPressed: () =>
                         ctx.read<SaleBloc>().add(const SaleCartCleared()),
                     icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    label: Text(ctx.l10n.clearCart,
-                        style: const TextStyle(color: Colors.red)),
+                    label: Text(
+                      ctx.l10n.clearCart,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   ),
           ),
         ],
       ),
       body: Column(
         children: [
-          Expanded(
-            flex: 3,
-            child: _ProductGrid(),
-          ),
+          Expanded(flex: 3, child: _ProductGrid()),
           const Divider(height: 1),
-          Expanded(
-            flex: 2,
-            child: _CartPanel(),
-          ),
+          Expanded(flex: 2, child: _CartPanel()),
         ],
       ),
     );
@@ -85,8 +79,9 @@ class _ProductGrid extends StatelessWidget {
             state.status == ProductStatus.initial) {
           return const Center(child: CircularProgressIndicator());
         }
-        final products =
-            state.products.where((p) => p.isActive && p.isInStock).toList();
+        final products = state.products
+            .where((p) => p.isActive && p.isInStock)
+            .toList();
         if (products.isEmpty) {
           return Center(child: Text(ctx.l10n.noProducts));
         }
@@ -117,8 +112,7 @@ class _ProductCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () =>
-            context.read<SaleBloc>().add(SaleProductAdded(product)),
+        onTap: () => context.read<SaleBloc>().add(SaleProductAdded(product)),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
@@ -129,8 +123,9 @@ class _ProductCard extends StatelessWidget {
                 product.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               Text(
                 '$currency${product.price.toStringAsFixed(2)}',
@@ -155,9 +150,9 @@ class _CartPanel extends StatelessWidget {
     return BlocListener<SaleBloc, SaleState>(
       listenWhen: (prev, curr) => curr.status == SaleStatus.success,
       listener: (ctx, state) {
-        ScaffoldMessenger.of(ctx).showSnackBar(
-          SnackBar(content: Text(ctx.l10n.saleSavedSuccess)),
-        );
+        ScaffoldMessenger.of(
+          ctx,
+        ).showSnackBar(SnackBar(content: Text(ctx.l10n.saleSavedSuccess)));
       },
       child: BlocBuilder<SaleBloc, SaleState>(
         builder: (ctx, state) {
@@ -165,8 +160,9 @@ class _CartPanel extends StatelessWidget {
             return Center(
               child: Text(
                 ctx.l10n.tapProductToAdd,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: theme.colorScheme.outline),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
               ),
             );
           }
@@ -174,7 +170,10 @@ class _CartPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   itemCount: state.items.length,
                   itemBuilder: (_, i) => _CartItemRow(item: state.items[i]),
                 ),
@@ -192,7 +191,10 @@ class _CartPanel extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(ctx.l10n.cartTotal, style: theme.textTheme.bodySmall),
+                        Text(
+                          ctx.l10n.cartTotal,
+                          style: theme.textTheme.bodySmall,
+                        ),
                         Text(
                           '$currency${state.total.toStringAsFixed(2)}',
                           style: theme.textTheme.titleLarge?.copyWith(
@@ -244,10 +246,12 @@ class _CartItemRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(item.product.name,
-                style: theme.textTheme.bodySmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
+            child: Text(
+              item.product.name,
+              style: theme.textTheme.bodySmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -257,9 +261,11 @@ class _CartItemRow extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.remove_circle_outline),
                 onPressed: () => context.read<SaleBloc>().add(
-                      SaleItemQtyChanged(
-                          productId: item.product.id, qty: item.qty - 1),
-                    ),
+                  SaleItemQtyChanged(
+                    productId: item.product.id,
+                    qty: item.qty - 1,
+                  ),
+                ),
               ),
               Text('${item.qty}', style: theme.textTheme.bodyMedium),
               IconButton(
@@ -267,9 +273,11 @@ class _CartItemRow extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.add_circle_outline),
                 onPressed: () => context.read<SaleBloc>().add(
-                      SaleItemQtyChanged(
-                          productId: item.product.id, qty: item.qty + 1),
-                    ),
+                  SaleItemQtyChanged(
+                    productId: item.product.id,
+                    qty: item.qty + 1,
+                  ),
+                ),
               ),
             ],
           ),
@@ -277,8 +285,9 @@ class _CartItemRow extends StatelessWidget {
             width: 72,
             child: Text(
               '$currency${item.subtotal.toStringAsFixed(2)}',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
               textAlign: TextAlign.right,
             ),
           ),

@@ -22,9 +22,11 @@ class ProductState extends Equatable {
     if (searchQuery.isEmpty) return products;
     final q = searchQuery.toLowerCase();
     return products
-        .where((p) =>
-            p.name.toLowerCase().contains(q) ||
-            (p.category?.toLowerCase().contains(q) ?? false))
+        .where(
+          (p) =>
+              p.name.toLowerCase().contains(q) ||
+              (p.category?.toLowerCase().contains(q) ?? false),
+        )
         .toList();
   }
 

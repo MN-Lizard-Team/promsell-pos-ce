@@ -10,6 +10,10 @@
 
   "salePageTitle": "ขายสินค้า",
   "clearCart": "ล้าง",
+  "cartTitle": "ตะกร้า",
+  "allCategories": "ทั้งหมด",
+  "saleSearchProducts": "ค้นหาสินค้าที่ขาย...",
+  "quickCashExact": "รับพอดี",
   "noProducts": "ไม่มีสินค้า",
   "saleSavedSuccess": "บันทึกการขายเรียบร้อย",
   "tapProductToAdd": "แตะสินค้าเพื่อเพิ่มลงตะกร้า",

@@ -51,14 +51,14 @@ class AppSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-        locale,
-        themeMode,
-        shopName,
-        address,
-        phone,
-        currency,
-        dateFormat,
-        receiptNote,
-        showShopInfoOnReceipt,
-      ];
+    locale,
+    themeMode,
+    shopName,
+    address,
+    phone,
+    currency,
+    dateFormat,
+    receiptNote,
+    showShopInfoOnReceipt,
+  ];
 }

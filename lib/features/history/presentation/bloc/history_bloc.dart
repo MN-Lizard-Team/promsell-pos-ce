@@ -22,8 +22,8 @@ class _HistoryError extends HistoryEvent {
 
 class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   HistoryBloc({required WatchSaleHistory watchSaleHistory})
-      : _watchSaleHistory = watchSaleHistory,
-        super(const HistoryState()) {
+    : _watchSaleHistory = watchSaleHistory,
+      super(const HistoryState()) {
     on<HistorySubscribed>(_onSubscribed);
     on<HistoryDateRangeChanged>(_onDateRangeChanged);
     on<_HistorySalesUpdated>(_onSalesUpdated);
@@ -47,26 +47,37 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   }
 
   void _onDateRangeChanged(
-      HistoryDateRangeChanged event, Emitter<HistoryState> emit) {
-    emit(state.copyWith(
+    HistoryDateRangeChanged event,
+    Emitter<HistoryState> emit,
+  ) {
+    emit(
+      state.copyWith(
         status: HistoryStatus.loading,
         from: event.from,
         to: event.to,
-        errorMessage: null));
+        errorMessage: null,
+      ),
+    );
     _startListening(event.from, event.to);
   }
 
-  void _onSalesUpdated(
-      _HistorySalesUpdated event, Emitter<HistoryState> emit) {
-    emit(state.copyWith(
+  void _onSalesUpdated(_HistorySalesUpdated event, Emitter<HistoryState> emit) {
+    emit(
+      state.copyWith(
         status: HistoryStatus.success,
         sales: event.sales,
-        errorMessage: null));
+        errorMessage: null,
+      ),
+    );
   }
 
   void _onError(_HistoryError event, Emitter<HistoryState> emit) {
-    emit(state.copyWith(
-        status: HistoryStatus.failure, errorMessage: event.message));
+    emit(
+      state.copyWith(
+        status: HistoryStatus.failure,
+        errorMessage: event.message,
+      ),
+    );
   }
 
   @override

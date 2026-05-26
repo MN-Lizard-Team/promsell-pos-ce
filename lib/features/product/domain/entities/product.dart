@@ -43,8 +43,12 @@ class Product extends Equatable {
       name: name ?? this.name,
       price: price ?? this.price,
       stock: stock ?? this.stock,
-      category: identical(category, _unset) ? this.category : category as String?,
-      imageUrl: identical(imageUrl, _unset) ? this.imageUrl : imageUrl as String?,
+      category: identical(category, _unset)
+          ? this.category
+          : category as String?,
+      imageUrl: identical(imageUrl, _unset)
+          ? this.imageUrl
+          : imageUrl as String?,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -53,14 +57,14 @@ class Product extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        price,
-        stock,
-        category,
-        imageUrl,
-        isActive,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    name,
+    price,
+    stock,
+    category,
+    imageUrl,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
 }

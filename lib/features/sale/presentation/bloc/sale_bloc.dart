@@ -6,8 +6,8 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart'
 
 class SaleBloc extends Bloc<SaleEvent, SaleState> {
   SaleBloc({required CreateSale createSale})
-      : _createSale = createSale,
-        super(const SaleState()) {
+    : _createSale = createSale,
+      super(const SaleState()) {
     on<SaleProductAdded>(_onProductAdded);
     on<SaleProductRemoved>(_onProductRemoved);
     on<SaleItemQtyChanged>(_onQtyChanged);
@@ -19,8 +19,9 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   final CreateSale _createSale;
 
   void _onProductAdded(SaleProductAdded event, Emitter<SaleState> emit) {
-    final existing = state.items
-        .indexWhere((i) => i.product.id == event.product.id);
+    final existing = state.items.indexWhere(
+      (i) => i.product.id == event.product.id,
+    );
     final updated = List<CartItem>.from(state.items);
     if (existing >= 0) {
       final currentQty = updated[existing].qty;
@@ -77,10 +78,9 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       );
       emit(SaleState(status: SaleStatus.success, lastSale: sale));
     } catch (e) {
-      emit(state.copyWith(
-        status: SaleStatus.failure,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(status: SaleStatus.failure, errorMessage: e.toString()),
+      );
     }
   }
 }

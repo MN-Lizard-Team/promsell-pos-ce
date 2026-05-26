@@ -20,8 +20,15 @@ class SaleItem extends Equatable {
   final double subtotal;
 
   @override
-  List<Object?> get props =>
-      [id, saleId, productId, productName, price, qty, subtotal];
+  List<Object?> get props => [
+    id,
+    saleId,
+    productId,
+    productName,
+    price,
+    qty,
+    subtotal,
+  ];
 }
 
 class Sale extends Equatable {
@@ -47,13 +54,13 @@ class Sale extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        totalAmount,
-        paymentMethod,
-        amountReceived,
-        changeAmount,
-        note,
-        createdAt,
-        items,
-      ];
+    id,
+    totalAmount,
+    paymentMethod,
+    amountReceived,
+    changeAmount,
+    note,
+    createdAt,
+    items,
+  ];
 }

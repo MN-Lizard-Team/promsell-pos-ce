@@ -34,7 +34,9 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported at [GitHub Issues](https://github.com/teeprakorn1/promsell-pos-ce/issues). All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported through the project issue tracker or by contacting the maintainers listed in the repository. All complaints will be reviewed and investigated promptly and fairly.
+
+Security vulnerabilities should be reported through the process in [SECURITY.md](SECURITY.md), not through a public issue.
 
 ## Enforcement Guidelines
 

@@ -77,6 +77,8 @@ Before submitting, verify:
 - [ ] Commit messages follow Conventional Commits format
 - [ ] PR description explains the change and motivation
 - [ ] New strings added to both `app_th.arb` and `app_en.arb`
+- [ ] UI changes checked on compact and expanded layouts
+- [ ] Shared UI widgets or theme tokens reused before adding new one-off styling
 - [ ] One concern per PR — no unrelated changes
 
 ---
@@ -111,6 +113,17 @@ When adding any user-facing string:
 4. Use via `context.l10n.yourKey`
 
 Never hardcode Thai or English strings in widget code.
+
+### UI / UX changes
+
+When working on presentation code:
+
+- Prefer shared primitives from `lib/core/widgets/` before creating feature-local duplicates
+- Prefer theme tokens from `lib/core/theme/` over ad-hoc colors, radius, or padding
+- Keep primary actions touch-friendly and reachable on compact mobile screens
+- Test constrained layouts such as bottom sheets, cart panels, and forms with the keyboard open
+- Verify light, dark, and system theme modes if colors or surfaces changed
+- Add widget tests for reusable UI behavior, especially compact/overflow cases
 
 ---
 
@@ -154,6 +167,7 @@ test/
 │   ├── product/
 │   └── settings/
 └── core/
+    └── widgets/
 ```
 
 Follow **AAA pattern**:
@@ -182,6 +196,7 @@ Read `CODEBASE.md` for full details.
 - `lib/core/di/injection_container.dart` — service locator registrations
 - `lib/core/extensions/l10n_extension.dart` — `context.l10n` helper
 - `lib/core/utils/payment_method_helper.dart` — payment method normalization
+- `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints)
 - `lib/core/database/app_database.dart` — Drift schema and DAOs
 - `lib/main.dart` — app entry, `SettingsCubit` provider, 5-tab shell
 
@@ -191,7 +206,7 @@ Read `CODEBASE.md` for full details.
 
 - **Bugs:** [Open a bug report](https://github.com/teeprakorn1/promsell-pos-ce/issues/new) with steps to reproduce, device info, and Flutter version
 - **Features:** [Open a feature request](https://github.com/teeprakorn1/promsell-pos-ce/issues/new) with use case description
-- **Security:** See [SECURITY.md](SECURITY.md) — do **NOT** file public issues for security vulnerabilities
+- **Security:** See [SECURITY.md](SECURITY.md) — do **not** file public issues for security vulnerabilities
 
 ---
 

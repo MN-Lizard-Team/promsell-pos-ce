@@ -14,7 +14,7 @@ For version history and feature details, see [CHANGELOG.md](CHANGELOG.md).
 ┌──────────────────────────────────────────────────┐
 │   main.dart — App entry point                    │
 │   MaterialApp wrapped in BlocBuilder<SettingsCubit>│
-│   5-tab NavigationBar shell                      │
+│   5-tab NavigationBar shell with IndexedStack     │
 └────────────────────┬─────────────────────────────┘
                      ▼
 ┌──────────────────────────────────────────────────┐
@@ -32,6 +32,7 @@ For version history and feature details, see [CHANGELOG.md](CHANGELOG.md).
 │   di/         — get_it service locator           │
 │   extensions/ — context.l10n helper             │
 │   utils/      — payment_method_helper            │
+│   widgets/    — shared UI primitives             │
 └────────────────────┬─────────────────────────────┘
                      ▼
 ┌──────────────────────────────────────────────────┐
@@ -74,6 +75,10 @@ features/<name>/
 | `injection_container.dart` | `lib/core/di/` | get_it registrations for all repositories, BLoCs, cubits |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
+| `AdaptiveBreakpoints` | `lib/core/widgets/` | Compact / medium / expanded layout helpers |
+| `AppEmptyState` | `lib/core/widgets/` | Consistent empty/error states with compact-height support |
+| `MoneyText` | `lib/core/widgets/` | Currency text with fixed decimal formatting |
+| `SectionCard` | `lib/core/widgets/` | Shared grouped card surface for settings and dashboards |
 
 ---
 
@@ -81,11 +86,24 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page.dart`, `payment_sheet.dart` |
+| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart` |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` |
 | History | `HistoryBloc` | `history_page.dart` |
 | Report | stateful widget | `report_page.dart` |
 | Settings | `SettingsCubit` | `settings_page.dart`, `settings_cubit.dart`, `settings_state.dart` |
+
+---
+
+## UI and design system notes
+
+- The current UI refresh follows a **Merchant Command Deck** direction: cashier-first, fast scanning, strong money hierarchy, and large touch targets.
+- Shared visual behavior should live in `lib/core/theme/` and `lib/core/widgets/` before being duplicated in feature pages.
+- Sale layouts are adaptive:
+  - Compact screens use a product catalog with a bottom cart command panel.
+  - Expanded screens keep the cart pane visible beside the product grid.
+- User-facing strings must remain localized through ARB files and accessed with `context.l10n`.
+- Empty/error states should prefer `AppEmptyState`; money values should prefer `MoneyText`.
+- Compact constrained areas should avoid fixed-height `Column` content that can trigger `RenderFlex` overflow.
 
 ---
 
@@ -184,3 +202,6 @@ Two generators must be run after changes:
 | `AppSettings` entity | `SettingsRepositoryImpl`, `SettingsCubit`, `SettingsPage` |
 | `injection_container.dart` | Ensure load order is correct |
 | Payment method values in DB | `payment_method_helper.dart` normalization map |
+| Shared UI behavior | `lib/core/widgets/` tests under `test/core/widgets/` |
+| Feature UI strings | Both ARB files + generated localization files |
+| Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |

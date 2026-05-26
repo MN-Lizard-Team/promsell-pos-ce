@@ -23,25 +23,27 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
   final AppDatabase _db;
 
   Sale _buildSale(SaleData s, List<SaleItemData> items) => Sale(
-        id: s.id,
-        totalAmount: s.totalAmount,
-        paymentMethod: s.paymentMethod,
-        amountReceived: s.amountReceived,
-        changeAmount: s.changeAmount,
-        note: s.note,
-        createdAt: s.createdAt,
-        items: items
-            .map((i) => SaleItem(
-                  id: i.id,
-                  saleId: i.saleId,
-                  productId: i.productId,
-                  productName: i.productName,
-                  price: i.price,
-                  qty: i.qty,
-                  subtotal: i.subtotal,
-                ))
-            .toList(),
-      );
+    id: s.id,
+    totalAmount: s.totalAmount,
+    paymentMethod: s.paymentMethod,
+    amountReceived: s.amountReceived,
+    changeAmount: s.changeAmount,
+    note: s.note,
+    createdAt: s.createdAt,
+    items: items
+        .map(
+          (i) => SaleItem(
+            id: i.id,
+            saleId: i.saleId,
+            productId: i.productId,
+            productName: i.productName,
+            price: i.price,
+            qty: i.qty,
+            subtotal: i.subtotal,
+          ),
+        )
+        .toList(),
+  );
 
   Future<List<SaleItemData>> _itemsForSale(int saleId) =>
       (_db.select(_db.saleItems)..where((t) => t.saleId.equals(saleId))).get();
@@ -57,7 +59,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     final total = items.fold(0.0, (sum, i) => sum + i.subtotal);
     late SaleData saleData;
     await _db.transaction(() async {
-      final saleId = await _db.into(_db.sales).insert(
+      final saleId = await _db
+          .into(_db.sales)
+          .insert(
             SalesCompanion.insert(
               totalAmount: total,
               paymentMethod: paymentMethod,
@@ -66,11 +70,13 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
               note: Value(note),
             ),
           );
-      saleData = await (_db.select(_db.sales)
-            ..where((s) => s.id.equals(saleId)))
-          .getSingle();
+      saleData = await (_db.select(
+        _db.sales,
+      )..where((s) => s.id.equals(saleId))).getSingle();
       for (final item in items) {
-        await _db.into(_db.saleItems).insert(
+        await _db
+            .into(_db.saleItems)
+            .insert(
               SaleItemsCompanion.insert(
                 saleId: saleId,
                 productId: item.product.id,
@@ -80,10 +86,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
                 subtotal: item.subtotal,
               ),
             );
-        final product = await (
-          _db.select(_db.products)
-            ..where((p) => p.id.equals(item.product.id))
-        ).getSingleOrNull();
+        final product = await (_db.select(
+          _db.products,
+        )..where((p) => p.id.equals(item.product.id))).getSingleOrNull();
         if (product != null) {
           final newStock = (product.stock - item.qty).clamp(0, 999999);
           await (_db.update(_db.products)
@@ -109,9 +114,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     final salesData = await query.get();
     if (salesData.isEmpty) return [];
     final saleIds = salesData.map((s) => s.id).toList();
-    final allItems = await (_db.select(_db.saleItems)
-          ..where((t) => t.saleId.isIn(saleIds)))
-        .get();
+    final allItems = await (_db.select(
+      _db.saleItems,
+    )..where((t) => t.saleId.isIn(saleIds))).get();
     final itemsBySaleId = <int, List<SaleItemData>>{};
     for (final item in allItems) {
       (itemsBySaleId[item.saleId] ??= []).add(item);
@@ -123,8 +128,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
 
   @override
   Future<Sale?> querySaleById(int id) async {
-    final s = await (_db.select(_db.sales)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final s = await (_db.select(
+      _db.sales,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     if (s == null) return null;
     final items = await _itemsForSale(id);
     return _buildSale(s, items);
@@ -138,9 +144,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     return query.watch().asyncMap((salesData) async {
       if (salesData.isEmpty) return [];
       final saleIds = salesData.map((s) => s.id).toList();
-      final allItems = await (_db.select(_db.saleItems)
-            ..where((t) => t.saleId.isIn(saleIds)))
-          .get();
+      final allItems = await (_db.select(
+        _db.saleItems,
+      )..where((t) => t.saleId.isIn(saleIds))).get();
       final itemsBySaleId = <int, List<SaleItemData>>{};
       for (final item in allItems) {
         (itemsBySaleId[item.saleId] ??= []).add(item);
@@ -164,9 +170,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     return query.watch().asyncMap((salesData) async {
       if (salesData.isEmpty) return [];
       final saleIds = salesData.map((s) => s.id).toList();
-      final allItems = await (_db.select(_db.saleItems)
-            ..where((t) => t.saleId.isIn(saleIds)))
-          .get();
+      final allItems = await (_db.select(
+        _db.saleItems,
+      )..where((t) => t.saleId.isIn(saleIds))).get();
       final itemsBySaleId = <int, List<SaleItemData>>{};
       for (final item in allItems) {
         (itemsBySaleId[item.saleId] ??= []).add(item);

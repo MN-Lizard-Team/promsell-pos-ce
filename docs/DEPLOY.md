@@ -126,7 +126,24 @@ Update `CHANGELOG.md` with a new entry for every public release.
 - [ ] `CHANGELOG.md` updated with release notes
 - [ ] Signed with release keystore (Android)
 - [ ] Tested on physical device
+- [ ] Sale flow smoke-tested on compact phone layout
+- [ ] Sale flow smoke-tested on tablet or expanded-width layout
+- [ ] Product form and payment sheet checked for keyboard/overflow behavior
+- [ ] Light, dark, and system theme modes checked
+- [ ] Thai and English locale checked after `flutter gen-l10n`
 - [ ] Screenshots updated (if UI changed)
+
+### UI release smoke test
+
+Before distributing a build with UI changes:
+
+1. Add a product.
+2. Search and filter products in the Sale tab.
+3. Add items to cart and adjust quantity.
+4. Complete one cash sale using quick cash chips.
+5. Open History and expand the saved sale.
+6. Open Report and verify revenue/payment/top product cards.
+7. Open Settings, switch theme/locale, and save shop info.
 
 ---
 

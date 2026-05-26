@@ -11,10 +11,7 @@ class SettingsState extends Equatable {
   final SettingsStatus status;
   final AppSettings settings;
 
-  SettingsState copyWith({
-    SettingsStatus? status,
-    AppSettings? settings,
-  }) {
+  SettingsState copyWith({SettingsStatus? status, AppSettings? settings}) {
     return SettingsState(
       status: status ?? this.status,
       settings: settings ?? this.settings,

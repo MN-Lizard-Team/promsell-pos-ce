@@ -8,6 +8,5 @@ class Sales extends Table {
   RealColumn get amountReceived => real().nullable()();
   RealColumn get changeAmount => real().nullable()();
   TextColumn get note => text().nullable()();
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

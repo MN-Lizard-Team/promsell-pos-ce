@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
+import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
@@ -16,8 +18,9 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => HistoryBloc(watchSaleHistory: sl<WatchSaleHistory>())
-        ..add(const HistorySubscribed()),
+      create: (_) =>
+          HistoryBloc(watchSaleHistory: sl<WatchSaleHistory>())
+            ..add(const HistorySubscribed()),
       child: const _HistoryView(),
     );
   }
@@ -29,7 +32,10 @@ class _HistoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsCubit>().state.settings;
-    final fmt = DateFormat('${settings.dateFormat} HH:mm', settings.locale.languageCode);
+    final fmt = DateFormat(
+      '${settings.dateFormat} HH:mm',
+      settings.locale.languageCode,
+    );
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -48,10 +54,16 @@ class _HistoryView extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (state.status == HistoryStatus.failure) {
-            return Center(child: Text(state.errorMessage ?? ctx.l10n.errorOccurred));
+            return AppEmptyState(
+              icon: Icons.error_outline,
+              title: state.errorMessage ?? ctx.l10n.errorOccurred,
+            );
           }
           if (state.sales.isEmpty) {
-            return Center(child: Text(ctx.l10n.noSalesYet));
+            return AppEmptyState(
+              icon: Icons.receipt_long_outlined,
+              title: ctx.l10n.noSalesYet,
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(12),
@@ -60,34 +72,51 @@ class _HistoryView extends StatelessWidget {
             itemBuilder: (_, i) {
               final sale = state.sales[i];
               return Card(
+                clipBehavior: Clip.antiAlias,
                 child: ExpansionTile(
-                  title: Text(
-                    '${settings.currency}${sale.totalAmount.toStringAsFixed(2)}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  leading: CircleAvatar(
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Icon(
+                      Icons.receipt_long_outlined,
                       color: theme.colorScheme.primary,
                     ),
+                  ),
+                  title: MoneyText(
+                    value: sale.totalAmount,
+                    currency: settings.currency,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    color: theme.colorScheme.primary,
                   ),
                   subtitle: Text(
                     '${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
                     style: theme.textTheme.bodySmall,
                   ),
                   children: [
-                    ...sale.items.map((item) => ListTile(
-                          dense: true,
-                          title: Text(item.productName),
-                          subtitle: Text(
-                              '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}'),
-                          trailing: Text(
-                            '${settings.currency}${item.subtotal.toStringAsFixed(2)}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                    ...sale.items.map(
+                      (item) => ListTile(
+                        dense: true,
+                        title: Text(item.productName),
+                        subtitle: Text(
+                          '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}',
+                        ),
+                        trailing: MoneyText(
+                          value: item.subtotal,
+                          currency: settings.currency,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
-                        )),
+                        ),
+                      ),
+                    ),
                     if (sale.note != null && sale.note!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                        child: Text(ctx.l10n.noteLabel(sale.note!),
-                            style: theme.textTheme.bodySmall),
+                        child: Text(
+                          ctx.l10n.noteLabel(sale.note!),
+                          style: theme.textTheme.bodySmall,
+                        ),
                       ),
                   ],
                 ),
@@ -111,11 +140,17 @@ class _HistoryView extends StatelessWidget {
       ),
     );
     if (range != null && context.mounted) {
-      context.read<HistoryBloc>().add(HistoryDateRangeChanged(
-            from: range.start,
-            to: range.end.copyWith(
-                hour: 23, minute: 59, second: 59, millisecond: 999),
-          ));
+      context.read<HistoryBloc>().add(
+        HistoryDateRangeChanged(
+          from: range.start,
+          to: range.end.copyWith(
+            hour: 23,
+            minute: 59,
+            second: 59,
+            millisecond: 999,
+          ),
+        ),
+      );
     }
   }
 }

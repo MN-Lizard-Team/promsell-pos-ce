@@ -12,12 +12,11 @@ class CreateSale {
     double? amountReceived,
     double? changeAmount,
     String? note,
-  }) =>
-      _repository.createSale(
-        items: items,
-        paymentMethod: paymentMethod,
-        amountReceived: amountReceived,
-        changeAmount: changeAmount,
-        note: note,
-      );
+  }) => _repository.createSale(
+    items: items,
+    paymentMethod: paymentMethod,
+    amountReceived: amountReceived,
+    changeAmount: changeAmount,
+    note: note,
+  );
 }

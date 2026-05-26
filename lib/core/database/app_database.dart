@@ -15,9 +15,9 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
-        onUpgrade: (m, from, to) async {},
-      );
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {},
+  );
 
   static QueryExecutor _openDatabase() {
     return driftDatabase(name: 'promsell_pos.db');

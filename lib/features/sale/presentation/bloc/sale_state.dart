@@ -22,7 +22,8 @@ class SaleState extends Equatable {
   final String? errorMessage;
 
   double get total => double.parse(
-      items.fold(0.0, (sum, i) => sum + i.subtotal).toStringAsFixed(2));
+    items.fold(0.0, (sum, i) => sum + i.subtotal).toStringAsFixed(2),
+  );
   bool get isEmpty => items.isEmpty;
   int get itemCount => items.fold(0, (sum, i) => sum + i.qty);
 
@@ -32,18 +33,16 @@ class SaleState extends Equatable {
     String? note,
     Object? lastSale = _unset,
     Object? errorMessage = _unset,
-  }) =>
-      SaleState(
-        status: status ?? this.status,
-        items: items ?? this.items,
-        note: note ?? this.note,
-        lastSale: identical(lastSale, _unset) ? this.lastSale : lastSale as Sale?,
-        errorMessage: identical(errorMessage, _unset)
-            ? this.errorMessage
-            : errorMessage as String?,
-      );
+  }) => SaleState(
+    status: status ?? this.status,
+    items: items ?? this.items,
+    note: note ?? this.note,
+    lastSale: identical(lastSale, _unset) ? this.lastSale : lastSale as Sale?,
+    errorMessage: identical(errorMessage, _unset)
+        ? this.errorMessage
+        : errorMessage as String?,
+  );
 
   @override
-  List<Object?> get props =>
-      [status, items, note, lastSale, errorMessage];
+  List<Object?> get props => [status, items, note, lastSale, errorMessage];
 }

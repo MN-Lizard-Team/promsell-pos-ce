@@ -7,13 +7,10 @@ class CartItem extends Equatable {
   final Product product;
   final int qty;
 
-  double get subtotal =>
-      double.parse((product.price * qty).toStringAsFixed(2));
+  double get subtotal => double.parse((product.price * qty).toStringAsFixed(2));
 
-  CartItem copyWith({Product? product, int? qty}) => CartItem(
-        product: product ?? this.product,
-        qty: qty ?? this.qty,
-      );
+  CartItem copyWith({Product? product, int? qty}) =>
+      CartItem(product: product ?? this.product, qty: qty ?? this.qty);
 
   @override
   List<Object?> get props => [product, qty];

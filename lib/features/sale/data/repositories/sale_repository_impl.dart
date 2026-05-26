@@ -14,14 +14,13 @@ class SaleRepositoryImpl implements SaleRepository {
     double? amountReceived,
     double? changeAmount,
     String? note,
-  }) =>
-      _datasource.insertSaleWithItems(
-        items: items,
-        paymentMethod: paymentMethod,
-        amountReceived: amountReceived,
-        changeAmount: changeAmount,
-        note: note,
-      );
+  }) => _datasource.insertSaleWithItems(
+    items: items,
+    paymentMethod: paymentMethod,
+    amountReceived: amountReceived,
+    changeAmount: changeAmount,
+    note: note,
+  );
 
   @override
   Future<List<Sale>> getSales({DateTime? from, DateTime? to}) =>

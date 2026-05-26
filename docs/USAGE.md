@@ -140,41 +140,47 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 
 ### Sale tab
 
-1. Tap any product card to add to cart
-2. Adjust quantity with `+` / `-` buttons or tap the number
-3. Tap **Checkout** → payment sheet opens
-4. Select **Cash / Transfer / Card**
-5. For cash, enter amount received — change is calculated automatically
-6. Optionally add a sale note
-7. Tap **Confirm** — sale is saved to history
+1. Use the search bar or category chips to narrow the product catalog
+2. Tap any product card to add it to the cart
+3. Adjust quantity with large `+` / `-` controls in the cart panel
+4. Tap **Checkout** → payment sheet opens
+5. Select **Cash / Transfer / Card**
+6. For cash, use quick cash chips or enter the amount received — change is calculated automatically
+7. Optionally add a sale note
+8. Tap **Confirm Payment** — sale is saved to history
+
+On compact phones, the cart appears as a bottom command panel. On tablet or expanded width layouts, the cart remains visible beside the product grid.
 
 ### Products tab
 
-- Tap **+** in app bar → opens product form
-- Required fields: name, price (quantity defaults to 0)
-- Tap any product row → opens 3-dot menu → **Edit** / **Delete**
-- Search field filters by name in real time
+- Tap **Add Product** in the app bar to open the product form
+- Required fields: name, price, and quantity
+- Product rows show category, stock status, and price for quick scanning
+- Tap a product card to edit it, or use the 3-dot menu for **Edit** / **Delete**
+- Search filters products by name and category in real time
+- The product form uses a single-column layout on compact screens and a two-column price/quantity layout on wider screens
 
 ### History tab
 
-- Lists all sales, newest first
-- Tap any row → expands per-item breakdown
-- Long press → (future) delete or refund
+- Lists all sales as receipt-like cards, newest first
+- Tap any card to expand the per-item breakdown
+- Each sale shows total, timestamp, payment method, line items, subtotal, and optional note
 
 ### Report tab
 
 - Tap **Date range** in app bar to pick custom range (default: last 30 days)
-- Shows three cards: revenue, payment method breakdown, top 5 products
+- Shows a dashboard with total revenue, sales count, payment method breakdown, and top 5 products
+- Empty states are shown when there are no sales in the selected date range
 
 ### Settings tab
 
-See [Settings](#settings) below.
+Settings are grouped into cards: general, shop info, sales, and receipt. See [Settings](#settings) below.
 
 ---
 
 ## Settings
 
-All settings persist via `SharedPreferences` and apply **immediately** (no app restart needed).
+All settings persist via `SharedPreferences`. Locale, theme, currency, and date format apply immediately; shop and receipt text fields are saved with the **Save** action.
 
 | Setting | Description |
 |---------|-------------|
@@ -188,7 +194,7 @@ All settings persist via `SharedPreferences` and apply **immediately** (no app r
 | **Receipt note** | Optional footer text on receipts |
 | **Show shop info on receipt** | Toggle on/off |
 
-To save changes, tap the **Save** button at the bottom of the page.
+To save text-field changes, tap the **Save** button in the app bar or at the bottom of the page.
 
 ---
 
@@ -373,6 +379,17 @@ adb shell pm clear com.mnlizard.promsell
 ### Hot reload not picking up changes
 
 Some changes (new providers, generated code, native plugins) require a **full restart** (`R`), not hot reload (`r`).
+
+### UI overflows on compact screens
+
+Run the app on a small emulator or device and check the Sale, Product form, and payment sheet flows. Compact panels should use scrollable sheets or compact empty states instead of fixed-height content.
+
+```bash
+flutter analyze lib test
+flutter test
+```
+
+If the overflow appears after adding text, verify that the string is localized and fits in Thai and English at larger font scale.
 
 ### `flutter analyze` reports unrelated errors
 

@@ -39,9 +39,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<ProductRepository>(
     () => ProductRepositoryImpl(sl()),
   );
-  sl.registerLazySingleton<SaleRepository>(
-    () => SaleRepositoryImpl(sl()),
-  );
+  sl.registerLazySingleton<SaleRepository>(() => SaleRepositoryImpl(sl()));
   sl.registerLazySingleton<HistoryRepository>(
     () => HistoryRepositoryImpl(sl()),
   );
@@ -64,8 +62,6 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => WatchReport(sl()));
 
   // Settings
-  sl.registerLazySingleton<SettingsRepository>(
-    () => SettingsRepositoryImpl(),
-  );
+  sl.registerLazySingleton<SettingsRepository>(() => SettingsRepositoryImpl());
   sl.registerLazySingleton<SettingsCubit>(() => SettingsCubit(sl()));
 }

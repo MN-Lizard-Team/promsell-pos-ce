@@ -33,6 +33,18 @@ class AppLocalizationsTh extends AppLocalizations {
   String get clearCart => 'ล้าง';
 
   @override
+  String get cartTitle => 'ตะกร้า';
+
+  @override
+  String get allCategories => 'ทั้งหมด';
+
+  @override
+  String get saleSearchProducts => 'ค้นหาสินค้าที่ขาย...';
+
+  @override
+  String get quickCashExact => 'รับพอดี';
+
+  @override
   String get noProducts => 'ไม่มีสินค้า';
 
   @override

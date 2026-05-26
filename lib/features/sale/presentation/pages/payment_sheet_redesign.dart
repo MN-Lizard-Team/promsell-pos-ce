@@ -1,0 +1,313 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/money_text.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+
+class PaymentSheet extends StatefulWidget {
+  const PaymentSheet({super.key, required this.total});
+
+  final double total;
+
+  @override
+  State<PaymentSheet> createState() => _PaymentSheetState();
+}
+
+class _PaymentSheetState extends State<PaymentSheet> {
+  String _method = 'cash';
+  final _receivedCtrl = TextEditingController();
+  final _noteCtrl = TextEditingController();
+
+  double get _received => double.tryParse(_receivedCtrl.text) ?? 0;
+  double get _change => _received - widget.total;
+
+  @override
+  void dispose() {
+    _receivedCtrl.dispose();
+    _noteCtrl.dispose();
+    super.dispose();
+  }
+
+  void _setReceived(double value) {
+    _receivedCtrl.text = value.toStringAsFixed(2);
+    HapticFeedback.selectionClick();
+    setState(() {});
+  }
+
+  void _confirm() {
+    HapticFeedback.mediumImpact();
+    final saleBloc = context.read<SaleBloc>();
+    final note = saleBloc.state.note;
+    saleBloc.add(
+      SaleConfirmed(
+        paymentMethod: _method,
+        amountReceived: _method == 'cash' ? _received : null,
+        changeAmount: _method == 'cash' && _change >= 0 ? _change : null,
+        note: note.isEmpty ? null : note,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final currency = context.watch<SettingsCubit>().state.settings.currency;
+
+    return BlocListener<SaleBloc, SaleState>(
+      listenWhen: (_, curr) =>
+          curr.status == SaleStatus.success ||
+          curr.status == SaleStatus.failure,
+      listener: (ctx, state) {
+        if (state.status == SaleStatus.success) {
+          Navigator.pop(ctx);
+        } else if (state.status == SaleStatus.failure) {
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? ctx.l10n.saleError),
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+          );
+        }
+      },
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 12,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                context.l10n.paymentTitle,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 14),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.55,
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          context.l10n.totalAmount,
+                          style: theme.textTheme.bodyLarge,
+                        ),
+                      ),
+                      MoneyText(
+                        value: widget.total,
+                        currency: currency,
+                        style: theme.textTheme.headlineSmall,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(
+                    value: 'cash',
+                    icon: const Icon(Icons.payments_outlined),
+                    label: Text(context.l10n.cash),
+                  ),
+                  ButtonSegment(
+                    value: 'transfer',
+                    icon: const Icon(Icons.qr_code_2_outlined),
+                    label: Text(context.l10n.transfer),
+                  ),
+                  ButtonSegment(
+                    value: 'card',
+                    icon: const Icon(Icons.credit_card),
+                    label: Text(context.l10n.card),
+                  ),
+                ],
+                selected: {_method},
+                onSelectionChanged: (selection) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _method = selection.first);
+                },
+              ),
+              if (_method == 'cash') ...[
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _quickAmounts()
+                      .asMap()
+                      .entries
+                      .map(
+                        (entry) => ActionChip(
+                          avatar: const Icon(
+                            Icons.add_circle_outline,
+                            size: 18,
+                          ),
+                          label: Text(
+                            entry.key == 0
+                                ? context.l10n.quickCashExact
+                                : '$currency${entry.value.toStringAsFixed(2)}',
+                          ),
+                          onPressed: () => _setReceived(entry.value),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _receivedCtrl,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.receivedAmount.replaceAll(
+                      '฿',
+                      currency,
+                    ),
+                    prefixIcon: const Icon(Icons.payments_outlined),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
+                    ),
+                  ],
+                  autofocus: true,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 10),
+                _ChangePreview(
+                  change: _change,
+                  currency: currency,
+                  visible: _received > 0,
+                ),
+              ],
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _noteCtrl,
+                decoration: InputDecoration(
+                  labelText: context.l10n.notePlaceholder,
+                  prefixIcon: const Icon(Icons.notes_outlined),
+                ),
+                textInputAction: TextInputAction.done,
+                maxLines: 1,
+                onChanged: (value) =>
+                    context.read<SaleBloc>().add(SaleNoteChanged(value)),
+              ),
+              const SizedBox(height: 20),
+              BlocBuilder<SaleBloc, SaleState>(
+                builder: (_, state) {
+                  final isProcessing = state.status == SaleStatus.processing;
+                  final canConfirm =
+                      _method != 'cash' || _received >= widget.total;
+
+                  return FilledButton.icon(
+                    onPressed: isProcessing || !canConfirm ? null : _confirm,
+                    icon: isProcessing
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.check_circle_outline),
+                    label: Text(context.l10n.confirmPayment),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<double> _quickAmounts() {
+    final roundedTen = (widget.total / 10).ceil() * 10.0;
+    final roundedHundred = (widget.total / 100).ceil() * 100.0;
+
+    return [
+      widget.total,
+      roundedTen,
+      roundedHundred,
+    ].where((value) => value > 0).toSet().toList()..sort();
+  }
+}
+
+class _ChangePreview extends StatelessWidget {
+  const _ChangePreview({
+    required this.change,
+    required this.currency,
+    required this.visible,
+  });
+
+  final double change;
+  final String currency;
+  final bool visible;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final isEnough = change >= 0;
+    final color = isEnough
+        ? theme.colorScheme.primary
+        : theme.colorScheme.error;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              isEnough ? Icons.price_check : Icons.warning_amber_rounded,
+              color: color,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                context.l10n.change,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+            MoneyText(
+              value: isEnough ? change : 0,
+              currency: currency,
+              style: theme.textTheme.titleMedium,
+              color: color,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

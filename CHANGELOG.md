@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-05-26
+
+### Added — UX/UI redesign foundation
+
+- **Merchant Command Deck UI refresh** for the main app experience, focused on cashier speed, readability, and safer touch targets.
+- **Shared UI primitives** under `lib/core/widgets/`:
+  - `AdaptiveBreakpoints` for compact/medium/expanded layout decisions
+  - `AppEmptyState` for consistent empty/error states with compact-height handling
+  - `MoneyText` for consistent currency display
+  - `SectionCard` for grouped settings and dashboard surfaces
+- **Sale tab redesign** via `sale_page_redesign.dart`:
+  - Search-first product catalog
+  - Category chips
+  - Responsive product grid
+  - Compact mobile cart panel and expanded tablet cart pane
+  - Touch-friendly quantity controls and checkout action
+- **Payment sheet redesign** via `payment_sheet_redesign.dart`:
+  - Clear total summary
+  - Payment method segmented buttons
+  - Quick cash amount chips
+  - Change preview for cash payments
+- **Products UX refresh**:
+  - Stronger product cards with price, stock status, category, and tap-to-edit behavior
+  - Responsive product form with compact single-column and wider two-column layouts
+- **History, Report, and Settings refresh**:
+  - Receipt-like expandable history cards
+  - Report dashboard with empty/error states
+  - Settings grouped into section cards with a clearer save action
+- **Widget tests** for shared UI components.
+
+### Fixed
+
+- Prevented compact empty-state layouts from causing `RenderFlex` bottom overflow in constrained panels.
+
+### Changed
+
+- Updated localization strings for sale search, cart title, category filter, and quick cash actions.
+- Updated theme tokens and Material 3 component defaults for the refreshed visual system.
+
+---
+
 ## [0.1.0] - 2026-05-25
 
 ### Added — Project setup and initial public release
@@ -86,4 +127,5 @@ First public release of Promsell POS Community Edition. Complete offline-first m
 
 ---
 
+[0.2.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.0
 [0.1.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.1.0

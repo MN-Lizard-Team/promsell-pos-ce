@@ -33,12 +33,14 @@ class _PaymentSheetState extends State<PaymentSheet> {
   void _confirm() {
     final saleBloc = context.read<SaleBloc>();
     final note = saleBloc.state.note;
-    saleBloc.add(SaleConfirmed(
-      paymentMethod: _method,
-      amountReceived: _method == 'cash' ? _received : null,
-      changeAmount: _method == 'cash' && _change >= 0 ? _change : null,
-      note: note.isEmpty ? null : note,
-    ));
+    saleBloc.add(
+      SaleConfirmed(
+        paymentMethod: _method,
+        amountReceived: _method == 'cash' ? _received : null,
+        changeAmount: _method == 'cash' && _change >= 0 ? _change : null,
+        note: note.isEmpty ? null : note,
+      ),
+    );
   }
 
   @override
@@ -72,14 +74,20 @@ class _PaymentSheetState extends State<PaymentSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(context.l10n.paymentTitle,
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              context.l10n.paymentTitle,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.l10n.totalAmount, style: theme.textTheme.bodyLarge),
+                Text(
+                  context.l10n.totalAmount,
+                  style: theme.textTheme.bodyLarge,
+                ),
                 Text(
                   '$currency${widget.total.toStringAsFixed(2)}',
                   style: theme.textTheme.headlineSmall?.copyWith(
@@ -93,7 +101,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
             SegmentedButton<String>(
               segments: [
                 ButtonSegment(value: 'cash', label: Text(context.l10n.cash)),
-                ButtonSegment(value: 'transfer', label: Text(context.l10n.transfer)),
+                ButtonSegment(
+                  value: 'transfer',
+                  label: Text(context.l10n.transfer),
+                ),
                 ButtonSegment(value: 'card', label: Text(context.l10n.card)),
               ],
               selected: {_method},
@@ -104,11 +115,15 @@ class _PaymentSheetState extends State<PaymentSheet> {
               TextFormField(
                 controller: _receivedCtrl,
                 decoration: InputDecoration(
-                  labelText: context.l10n.receivedAmount.replaceAll('฿', currency),
+                  labelText: context.l10n.receivedAmount.replaceAll(
+                    '฿',
+                    currency,
+                  ),
                   border: const OutlineInputBorder(),
                 ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                 ],
@@ -120,7 +135,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(context.l10n.change, style: theme.textTheme.bodyMedium),
+                    Text(
+                      context.l10n.change,
+                      style: theme.textTheme.bodyMedium,
+                    ),
                     Text(
                       '$currency${_change >= 0 ? _change.toStringAsFixed(2) : '0.00'}',
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -141,7 +159,8 @@ class _PaymentSheetState extends State<PaymentSheet> {
               ),
               textInputAction: TextInputAction.done,
               maxLines: 1,
-              onChanged: (v) => context.read<SaleBloc>().add(SaleNoteChanged(v)),
+              onChanged: (v) =>
+                  context.read<SaleBloc>().add(SaleNoteChanged(v)),
             ),
             const SizedBox(height: 20),
             BlocBuilder<SaleBloc, SaleState>(
@@ -151,14 +170,16 @@ class _PaymentSheetState extends State<PaymentSheet> {
                   onPressed: isProcessing
                       ? null
                       : (_method != 'cash' || (_received >= widget.total)
-                          ? _confirm
-                          : null),
+                            ? _confirm
+                            : null),
                   child: isProcessing
                       ? const SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : Text(context.l10n.confirmPayment),
                 );

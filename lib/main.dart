@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/history/presentation/pages/history_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page_redesign.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
+import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
@@ -71,8 +73,7 @@ class _ReportViewState extends State<_ReportView> {
     super.dispose();
   }
 
-  double get _totalRevenue =>
-      _sales.fold(0.0, (sum, s) => sum + s.totalAmount);
+  double get _totalRevenue => _sales.fold(0.0, (sum, s) => sum + s.totalAmount);
 
   Map<String, double> get _byMethod {
     final map = <String, double>{};
@@ -101,7 +102,6 @@ class _ReportViewState extends State<_ReportView> {
     final settings = context.watch<SettingsCubit>().state.settings;
     final appLocale = settings.locale.languageCode;
     final fmt = DateFormat(settings.dateFormat, appLocale);
-    final moneyFmt = NumberFormat('#,##0.00', appLocale);
 
     return Scaffold(
       appBar: AppBar(
@@ -117,15 +117,19 @@ class _ReportViewState extends State<_ReportView> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _hasError
-              ? Center(child: Text(context.l10n.errorOccurred))
-              : SingleChildScrollView(
+          ? AppEmptyState(
+              icon: Icons.error_outline,
+              title: context.l10n.errorOccurred,
+            )
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _SummaryCard(
                     title: context.l10n.totalRevenue,
-                    value: '${settings.currency}${moneyFmt.format(_totalRevenue)}',
+                    value: _totalRevenue,
+                    currency: settings.currency,
                     subtitle: context.l10n.salesCount(_sales.length),
                     icon: Icons.attach_money,
                     color: theme.colorScheme.primary,
@@ -137,23 +141,39 @@ class _ReportViewState extends State<_ReportView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(context.l10n.byPaymentMethod,
-                              style: theme.textTheme.titleSmall),
+                          Text(
+                            context.l10n.byPaymentMethod,
+                            style: theme.textTheme.titleSmall,
+                          ),
                           const SizedBox(height: 12),
-                          ..._byMethod.entries.map((e) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 4),
+                          if (_byMethod.isEmpty)
+                            AppEmptyState(
+                              icon: Icons.payments_outlined,
+                              title: context.l10n.noSalesYet,
+                            )
+                          else
+                            ..._byMethod.entries.map(
+                              (e) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(localizePaymentMethod(context, e.key)),
-                                    Text('${settings.currency}${moneyFmt.format(e.value)}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold)),
+                                    MoneyText(
+                                      value: e.value,
+                                      currency: settings.currency,
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
                                   ],
                                 ),
-                              )),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -165,34 +185,57 @@ class _ReportViewState extends State<_ReportView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(context.l10n.topProducts,
-                              style: theme.textTheme.titleSmall),
+                          Text(
+                            context.l10n.topProducts,
+                            style: theme.textTheme.titleSmall,
+                          ),
                           const SizedBox(height: 12),
-                          ..._topProducts.entries
-                              .toList()
-                              .asMap()
-                              .entries
-                              .map((entry) {
-                            final rank = entry.key + 1;
-                            final e = entry.value;
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 24,
-                                    child: Text('$rank.',
-                                        style: theme.textTheme.bodySmall),
-                                  ),
-                                  Expanded(child: Text(e.key)),
-                                  Text(context.l10n.units(e.value),
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            );
-                          }),
+                          if (_topProducts.isEmpty)
+                            AppEmptyState(
+                              icon: Icons.leaderboard_outlined,
+                              title: context.l10n.noSalesYet,
+                            )
+                          else
+                            ..._topProducts.entries
+                                .toList()
+                                .asMap()
+                                .entries
+                                .map((entry) {
+                                  final rank = entry.key + 1;
+                                  final e = entry.value;
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 4,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 14,
+                                          backgroundColor: theme
+                                              .colorScheme
+                                              .primaryContainer,
+                                          child: Text(
+                                            '$rank',
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(child: Text(e.key)),
+                                        Text(
+                                          context.l10n.units(e.value),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
                         ],
                       ),
                     ),
@@ -214,7 +257,11 @@ class _ReportViewState extends State<_ReportView> {
     if (range != null) {
       _from = range.start;
       _to = range.end.copyWith(
-          hour: 23, minute: 59, second: 59, millisecond: 999);
+        hour: 23,
+        minute: 59,
+        second: 59,
+        millisecond: 999,
+      );
       _startListening();
     }
   }
@@ -224,13 +271,15 @@ class _SummaryCard extends StatelessWidget {
   const _SummaryCard({
     required this.title,
     required this.value,
+    required this.currency,
     required this.subtitle,
     required this.icon,
     required this.color,
   });
 
   final String title;
-  final String value;
+  final double value;
+  final String currency;
   final String subtitle;
   final IconData icon;
   final Color color;
@@ -252,9 +301,14 @@ class _SummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: theme.textTheme.bodySmall),
-                Text(value,
-                    style: theme.textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold, color: color)),
+                MoneyText(
+                  value: value,
+                  currency: currency,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  color: color,
+                ),
                 Text(subtitle, style: theme.textTheme.bodySmall),
               ],
             ),

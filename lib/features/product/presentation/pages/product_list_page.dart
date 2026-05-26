@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
@@ -44,7 +46,6 @@ class _ProductListViewState extends State<_ProductListView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return BlocListener<ProductBloc, ProductState>(
       listenWhen: (prev, curr) =>
           curr.status == ProductStatus.failure &&
@@ -58,57 +59,64 @@ class _ProductListViewState extends State<_ProductListView> {
         );
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.productsTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showProductForm(context, null),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: SearchBar(
-              controller: _searchController,
-              hintText: context.l10n.searchProducts,
-              leading: const Icon(Icons.search),
-              onChanged: (q) =>
-                  context.read<ProductBloc>().add(ProductSearchChanged(q)),
+        appBar: AppBar(
+          title: Text(context.l10n.productsTitle),
+          actions: [
+            FilledButton.icon(
+              icon: const Icon(Icons.add),
+              label: Text(context.l10n.addProduct),
+              onPressed: () => _showProductForm(context, null),
             ),
+            const SizedBox(width: 12),
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                child: SearchBar(
+                  controller: _searchController,
+                  hintText: context.l10n.searchProducts,
+                  leading: const Icon(Icons.search),
+                  onChanged: (q) =>
+                      context.read<ProductBloc>().add(ProductSearchChanged(q)),
+                ),
+              ),
+              Expanded(
+                child: BlocBuilder<ProductBloc, ProductState>(
+                  builder: (context, state) {
+                    if (state.status == ProductStatus.loading ||
+                        state.status == ProductStatus.initial) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state.status == ProductStatus.failure) {
+                      return AppEmptyState(
+                        icon: Icons.error_outline,
+                        title: state.errorMessage ?? context.l10n.errorOccurred,
+                      );
+                    }
+                    final products = state.filtered;
+                    if (products.isEmpty) {
+                      return AppEmptyState(
+                        icon: Icons.inventory_2_outlined,
+                        title: context.l10n.noProductsYet,
+                        message: context.l10n.searchProducts,
+                      );
+                    }
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                      itemCount: products.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (context, i) =>
+                          _ProductTile(product: products[i]),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: BlocBuilder<ProductBloc, ProductState>(
-              builder: (context, state) {
-                if (state.status == ProductStatus.loading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (state.status == ProductStatus.failure) {
-                  return Center(
-                    child: Text(
-                      state.errorMessage ?? context.l10n.errorOccurred,
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                  );
-                }
-                final products = state.filtered;
-                if (products.isEmpty) {
-                  return Center(child: Text(context.l10n.noProductsYet));
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
-                  itemCount: products.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) =>
-                      _ProductTile(product: products[i]),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -133,57 +141,113 @@ class _ProductTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final currency = context.watch<SettingsCubit>().state.settings.currency;
+    final statusColor = product.isInStock
+        ? theme.colorScheme.primary
+        : theme.colorScheme.error;
+
     return Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(product.name,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w600)),
-        subtitle: Text(
-          product.category ?? context.l10n.noCategory,
-          style: theme.textTheme.bodySmall,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${context.watch<SettingsCubit>().state.settings.currency}${product.price.toStringAsFixed(2)}',
-                  style: theme.textTheme.titleMedium?.copyWith(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _showEdit(context),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.7,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.inventory_2_outlined,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      product.category ?? context.l10n.noCategory,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          context.l10n.stockLabel(product.stock),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  MoneyText(
+                    value: product.price,
+                    currency: currency,
+                    style: theme.textTheme.titleMedium,
                     color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                Text(
-                  context.l10n.stockLabel(product.stock),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: product.isInStock ? null : Colors.red,
+                  const SizedBox(height: 6),
+                  PopupMenuButton<String>(
+                    onSelected: (action) {
+                      switch (action) {
+                        case 'edit':
+                          _showEdit(context);
+                        case 'delete':
+                          _confirmDelete(context);
+                      }
+                    },
+                    itemBuilder: (ctx) => [
+                      PopupMenuItem(value: 'edit', child: Text(ctx.l10n.edit)),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(
+                          ctx.l10n.delete,
+                          style: TextStyle(color: theme.colorScheme.error),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 8),
-            PopupMenuButton<String>(
-              onSelected: (action) {
-                switch (action) {
-                  case 'edit':
-                    _showEdit(context);
-                  case 'delete':
-                    _confirmDelete(context);
-                }
-              },
-              itemBuilder: (ctx) => [
-                PopupMenuItem(value: 'edit', child: Text(ctx.l10n.edit)),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(ctx.l10n.delete, style: const TextStyle(color: Colors.red)),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -217,7 +281,10 @@ class _ProductTile extends StatelessWidget {
               context.read<ProductBloc>().add(ProductDeleted(product.id));
               Navigator.pop(context);
             },
-            child: Text(context.l10n.delete, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              context.l10n.delete,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

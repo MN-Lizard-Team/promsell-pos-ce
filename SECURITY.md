@@ -4,7 +4,8 @@
 
 | Version | Supported |
 |---------|-----------|
-| 0.1.x   | Active |
+| 0.2.x   | Active |
+| 0.1.x   | Security fixes only |
 
 ## Reporting a vulnerability
 
@@ -46,7 +47,7 @@
 
 ## Security architecture
 
-Promsell is an **offline-first local app** with no network access by default:
+Promsell is an **offline-first local app** with no network access by default. The v0.2.0 UX/UI refresh does not change the local-only security model:
 
 1. **Local-only storage** — all data stays on device via SQLite
 2. **No server communication** — no API keys, no remote calls in core flow

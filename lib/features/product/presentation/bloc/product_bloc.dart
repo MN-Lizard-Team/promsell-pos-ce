@@ -12,11 +12,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     required AddProduct addProduct,
     required UpdateProduct updateProduct,
     required DeleteProduct deleteProduct,
-  })  : _getProducts = getProducts,
-        _addProduct = addProduct,
-        _updateProduct = updateProduct,
-        _deleteProduct = deleteProduct,
-        super(const ProductState()) {
+  }) : _getProducts = getProducts,
+       _addProduct = addProduct,
+       _updateProduct = updateProduct,
+       _deleteProduct = deleteProduct,
+       super(const ProductState()) {
     on<ProductsSubscribed>(_onSubscribed);
     on<ProductAdded>(_onAdded);
     on<ProductUpdated>(_onUpdated);
@@ -47,10 +47,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     );
   }
 
-  Future<void> _onAdded(
-    ProductAdded event,
-    Emitter<ProductState> emit,
-  ) async {
+  Future<void> _onAdded(ProductAdded event, Emitter<ProductState> emit) async {
     try {
       await _addProduct(
         name: event.name,
@@ -60,10 +57,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         imageUrl: event.imageUrl,
       );
     } catch (e) {
-      emit(state.copyWith(
-        status: ProductStatus.failure,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          status: ProductStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -74,10 +73,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     try {
       await _updateProduct(event.product);
     } catch (e) {
-      emit(state.copyWith(
-        status: ProductStatus.failure,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          status: ProductStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -88,10 +89,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     try {
       await _deleteProduct(event.id);
     } catch (e) {
-      emit(state.copyWith(
-        status: ProductStatus.failure,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          status: ProductStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -101,7 +104,4 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ) {
     emit(state.copyWith(searchQuery: event.query));
   }
-
-  @override
-  Future<void> close() => super.close();
 }

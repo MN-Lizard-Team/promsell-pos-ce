@@ -10,6 +10,10 @@
 
   "salePageTitle": "Sale",
   "clearCart": "Clear",
+  "cartTitle": "Cart",
+  "allCategories": "All",
+  "saleSearchProducts": "Search sale products...",
+  "quickCashExact": "Exact cash",
   "noProducts": "No products",
   "saleSavedSuccess": "Sale saved successfully",
   "tapProductToAdd": "Tap a product to add to cart",

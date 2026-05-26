@@ -10,12 +10,11 @@ class AddProduct {
     required int stock,
     String? category,
     String? imageUrl,
-  }) =>
-      _repository.addProduct(
-        name: name,
-        price: price,
-        stock: stock,
-        category: category,
-        imageUrl: imageUrl,
-      );
+  }) => _repository.addProduct(
+    name: name,
+    price: price,
+    stock: stock,
+    category: category,
+    imageUrl: imageUrl,
+  );
 }

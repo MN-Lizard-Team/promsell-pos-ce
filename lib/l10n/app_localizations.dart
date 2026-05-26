@@ -146,6 +146,30 @@ abstract class AppLocalizations {
   /// **'ล้าง'**
   String get clearCart;
 
+  /// No description provided for @cartTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ตะกร้า'**
+  String get cartTitle;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In th, this message translates to:
+  /// **'ทั้งหมด'**
+  String get allCategories;
+
+  /// No description provided for @saleSearchProducts.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาสินค้าที่ขาย...'**
+  String get saleSearchProducts;
+
+  /// No description provided for @quickCashExact.
+  ///
+  /// In th, this message translates to:
+  /// **'รับพอดี'**
+  String get quickCashExact;
+
   /// No description provided for @noProducts.
   ///
   /// In th, this message translates to:

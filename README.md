@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.1.0** — **Project Setup**. Initial public release with full Sale, Products, History, Report, and Settings features. Live theme + locale switching. Offline-first SQLite storage.
+> **Latest Release: v0.2.0** — **UX/UI Redesign Foundation**. Merchant Command Deck refresh with adaptive Sale layout, redesigned checkout, improved Products/History/Report/Settings screens, shared UI primitives, and compact layout overflow fixes.
  
 ---
  
@@ -63,13 +63,13 @@
  
 | Feature | Description |
 |---------|-------------|
-| **Sale** | Tap-to-add product grid, live cart total, multi-method checkout (cash / transfer / card) with change calculation |
-| **Products** | Searchable list, add/edit/delete with category, price, stock, active/inactive toggle |
-| **History** | Date-ranged sale history with per-sale item breakdown and notes |
-| **Report** | Total revenue, sales count, breakdown by payment method, top 5 best-selling products |
-| **Settings** | Language (TH/EN) and theme (Light/Dark/System) with live reload, shop info, currency, date format, receipt customization |
+| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, multi-method checkout, quick cash chips, and change calculation |
+| **Products** | Searchable card list, add/edit/delete with category, price, stock, active/inactive toggle, and responsive product form |
+| **History** | Date-ranged receipt-like sale history with expandable item breakdown and notes |
+| **Report** | Dashboard cards for revenue, sales count, payment method breakdown, top 5 products, and empty states |
+| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, and receipt customization |
 | **Offline-first** | All data stored locally in SQLite via Drift — no internet required |
-| **Material 3** | Modern Material You design with dynamic color schemes |
+| **Material 3** | Merchant Command Deck refresh with shared theme tokens and responsive UI primitives |
 | **i18n** | Full localization via Flutter ARB files, easy to add more languages |
  
 ---
@@ -87,7 +87,7 @@
 | **Localization** | flutter_localizations + Flutter ARB intl |
 | **PDF / Print** | pdf + printing |
 | **QR / Image** | qr_flutter, image_picker, cached_network_image |
-| **Design** | Material 3, google_fonts |
+| **Design** | Material 3, google_fonts, shared UI primitives |
  
 ---
  
@@ -138,7 +138,8 @@ promsell-pos-ce/
 │   │   ├── database/          # Drift schema and DAO
 │   │   ├── di/                # get_it service locator
 │   │   ├── extensions/        # context.l10n helper
-│   │   └── utils/             # shared helpers (payment_method, etc.)
+│   │   ├── utils/             # shared helpers (payment_method, etc.)
+│   │   └── widgets/           # shared UI primitives
 │   ├── features/
 │   │   ├── sale/              # Cart + checkout
 │   │   ├── product/           # CRUD inventory
@@ -240,6 +241,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.1.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.2.0 · AGPL-3.0</sub>
 
 </div>

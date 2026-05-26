@@ -18,4 +18,3 @@ class HistoryDateRangeChanged extends HistoryEvent {
   @override
   List<Object?> get props => [from, to];
 }
-

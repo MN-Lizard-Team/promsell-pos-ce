@@ -45,8 +45,12 @@ class SaleConfirmed extends SaleEvent {
   final double? changeAmount;
   final String? note;
   @override
-  List<Object?> get props =>
-      [paymentMethod, amountReceived, changeAmount, note];
+  List<Object?> get props => [
+    paymentMethod,
+    amountReceived,
+    changeAmount,
+    note,
+  ];
 }
 
 class SaleNoteChanged extends SaleEvent {

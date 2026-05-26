@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/section_card.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -15,9 +16,9 @@ class SettingsPage extends StatelessWidget {
           curr.status == SettingsStatus.failure,
       listener: (ctx, state) {
         if (state.status == SettingsStatus.saved) {
-          ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(content: Text(ctx.l10n.settingsSaved)),
-          );
+          ScaffoldMessenger.of(
+            ctx,
+          ).showSnackBar(SnackBar(content: Text(ctx.l10n.settingsSaved)));
         } else if (state.status == SettingsStatus.failure) {
           ScaffoldMessenger.of(ctx).showSnackBar(
             SnackBar(
@@ -108,105 +109,131 @@ class _SettingsViewState extends State<_SettingsView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.settingsTitle),
-        actions: [
-          TextButton(
-            onPressed: _save,
-            child: Text(l10n.save),
-          ),
-        ],
+        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: [
-          _SectionHeader(l10n.settingsGeneral),
-          _LanguageTile(
-            current: _draft.locale,
-            onChanged: (locale) {
-              setState(() => _draft = _draft.copyWith(locale: locale));
-              context
-                  .read<SettingsCubit>()
-                  .update(_draft.copyWith(locale: locale));
-            },
-          ),
-          _ThemeTile(
-            current: _draft.themeMode,
-            onChanged: (mode) {
-              setState(() => _draft = _draft.copyWith(themeMode: mode));
-              context
-                  .read<SettingsCubit>()
-                  .update(_draft.copyWith(themeMode: mode));
-            },
-          ),
-          const Divider(),
-          _SectionHeader(l10n.settingsShopInfo),
-          _TextField(
-            controller: _shopNameCtrl,
-            label: l10n.settingsShopName,
-            icon: Icons.store_outlined,
-          ),
-          _TextField(
-            controller: _addressCtrl,
-            label: l10n.settingsAddress,
-            icon: Icons.location_on_outlined,
-            maxLines: 2,
-          ),
-          _TextField(
-            controller: _phoneCtrl,
-            label: l10n.settingsPhone,
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-          ),
-          const Divider(),
-          _SectionHeader(l10n.settingsSales),
-          _CurrencyTile(
-            current: _draft.currency,
-            onChanged: (c) {
-              final updated = _draft.copyWith(currency: c);
-              setState(() => _draft = updated);
-              context.read<SettingsCubit>().update(updated);
-            },
-          ),
-          _DateFormatTile(
-            current: _draft.dateFormat,
-            onChanged: (f) {
-              final updated = _draft.copyWith(dateFormat: f);
-              setState(() => _draft = updated);
-              context.read<SettingsCubit>().update(updated);
-            },
-          ),
-          const Divider(),
-          _SectionHeader(l10n.settingsReceipt),
-          _TextField(
-            controller: _receiptNoteCtrl,
-            label: l10n.settingsReceiptNote,
-            icon: Icons.receipt_long_outlined,
-            maxLines: 3,
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.info_outline),
-            title: Text(l10n.settingsShowShopInfo),
-            value: _draft.showShopInfoOnReceipt,
-            onChanged: (v) =>
-                setState(() => _draft = _draft.copyWith(showShopInfoOnReceipt: v)),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: FilledButton(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+          children: [
+            SectionCard(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: [
+                  _SectionHeader(l10n.settingsGeneral),
+                  _LanguageTile(
+                    current: _draft.locale,
+                    onChanged: (locale) {
+                      setState(() => _draft = _draft.copyWith(locale: locale));
+                      context.read<SettingsCubit>().update(
+                        _draft.copyWith(locale: locale),
+                      );
+                    },
+                  ),
+                  _ThemeTile(
+                    current: _draft.themeMode,
+                    onChanged: (mode) {
+                      setState(() => _draft = _draft.copyWith(themeMode: mode));
+                      context.read<SettingsCubit>().update(
+                        _draft.copyWith(themeMode: mode),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SectionCard(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: [
+                  _SectionHeader(l10n.settingsShopInfo),
+                  _TextField(
+                    controller: _shopNameCtrl,
+                    label: l10n.settingsShopName,
+                    icon: Icons.store_outlined,
+                  ),
+                  _TextField(
+                    controller: _addressCtrl,
+                    label: l10n.settingsAddress,
+                    icon: Icons.location_on_outlined,
+                    maxLines: 2,
+                  ),
+                  _TextField(
+                    controller: _phoneCtrl,
+                    label: l10n.settingsPhone,
+                    icon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SectionCard(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: [
+                  _SectionHeader(l10n.settingsSales),
+                  _CurrencyTile(
+                    current: _draft.currency,
+                    onChanged: (currency) {
+                      final updated = _draft.copyWith(currency: currency);
+                      setState(() => _draft = updated);
+                      context.read<SettingsCubit>().update(updated);
+                    },
+                  ),
+                  _DateFormatTile(
+                    current: _draft.dateFormat,
+                    onChanged: (format) {
+                      final updated = _draft.copyWith(dateFormat: format);
+                      setState(() => _draft = updated);
+                      context.read<SettingsCubit>().update(updated);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SectionCard(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                children: [
+                  _SectionHeader(l10n.settingsReceipt),
+                  _TextField(
+                    controller: _receiptNoteCtrl,
+                    label: l10n.settingsReceiptNote,
+                    icon: Icons.receipt_long_outlined,
+                    maxLines: 3,
+                  ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.info_outline),
+                    title: Text(l10n.settingsShowShopInfo),
+                    value: _draft.showShopInfoOnReceipt,
+                    onChanged: (value) => setState(
+                      () => _draft = _draft.copyWith(
+                        showShopInfoOnReceipt: value,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
               onPressed: _save,
-              child: Text(l10n.save),
+              icon: const Icon(Icons.save_outlined),
+              label: Text(l10n.save),
             ),
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: Text(
-              'Promsell POS CE',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.outline),
+            const SizedBox(height: 24),
+            Center(
+              child: Text(
+                'Promsell POS CE',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -223,9 +250,9 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -306,11 +333,17 @@ class _ThemeTile extends StatelessWidget {
         underline: const SizedBox.shrink(),
         items: [
           DropdownMenuItem(
-              value: ThemeMode.light, child: Text(l10n.settingsThemeLight)),
+            value: ThemeMode.light,
+            child: Text(l10n.settingsThemeLight),
+          ),
           DropdownMenuItem(
-              value: ThemeMode.dark, child: Text(l10n.settingsThemeDark)),
+            value: ThemeMode.dark,
+            child: Text(l10n.settingsThemeDark),
+          ),
           DropdownMenuItem(
-              value: ThemeMode.system, child: Text(l10n.settingsThemeSystem)),
+            value: ThemeMode.system,
+            child: Text(l10n.settingsThemeSystem),
+          ),
         ],
         onChanged: (m) {
           if (m != null) onChanged(m);

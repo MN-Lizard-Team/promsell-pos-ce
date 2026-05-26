@@ -26,16 +26,15 @@ class HistoryState extends Equatable {
     Object? from = _unset,
     Object? to = _unset,
     Object? errorMessage = _unset,
-  }) =>
-      HistoryState(
-        status: status ?? this.status,
-        sales: sales ?? this.sales,
-        from: identical(from, _unset) ? this.from : from as DateTime?,
-        to: identical(to, _unset) ? this.to : to as DateTime?,
-        errorMessage: identical(errorMessage, _unset)
-            ? this.errorMessage
-            : errorMessage as String?,
-      );
+  }) => HistoryState(
+    status: status ?? this.status,
+    sales: sales ?? this.sales,
+    from: identical(from, _unset) ? this.from : from as DateTime?,
+    to: identical(to, _unset) ? this.to : to as DateTime?,
+    errorMessage: identical(errorMessage, _unset)
+        ? this.errorMessage
+        : errorMessage as String?,
+  );
 
   @override
   List<Object?> get props => [status, sales, from, to, errorMessage];

@@ -33,6 +33,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearCart => 'Clear';
 
   @override
+  String get cartTitle => 'Cart';
+
+  @override
+  String get allCategories => 'All';
+
+  @override
+  String get saleSearchProducts => 'Search sale products...';
+
+  @override
+  String get quickCashExact => 'Exact cash';
+
+  @override
   String get noProducts => 'No products';
 
   @override
