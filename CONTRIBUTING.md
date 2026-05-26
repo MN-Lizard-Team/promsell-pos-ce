@@ -141,12 +141,17 @@ When working on presentation code:
 
 ### Running tests
 
+The project has **126+ automated tests**. All must pass before submitting a PR.
+
 ```bash
 # Run all tests
 flutter test
 
 # Run with coverage
 flutter test --coverage
+
+# Run a single test file
+flutter test test/integration/checkout_flow_test.dart
 
 # Analyze only our code (ignore other workspace projects)
 flutter analyze lib test
@@ -155,19 +160,43 @@ flutter analyze lib test
 dart format --output=none --set-exit-if-changed lib test
 ```
 
+### Test layers
+
+| Layer | Technique | Location |
+|-------|-----------|----------|
+| **Domain** | Unit test (pure Dart) | `test/features/*/domain/` |
+| **BLoC / Cubit** | `bloc_test` + mocked use cases | `test/features/*/presentation/bloc/` |
+| **Repository** | `mocktail` mocked datasources | `test/features/*/data/repositories/` |
+| **Datasource** | In-memory Drift DB (`sqlite3_flutter_libs`) | `test/features/*/data/datasources/` |
+| **Widget** | `pumpApp` helper + `MockBloc` | `test/features/*/presentation/pages/` |
+| **Integration** | End-to-end data layer | `test/integration/` |
+| **L10n parity** | Direct class instantiation | `test/l10n/` |
+
 ### Writing tests
 
 Tests live in `test/` mirroring the `lib/` structure:
 
 ```
 test/
+├── helpers/
+│   ├── mocks.dart              # Shared mocks (repos, datasources, BLoCs, Cubits)
+│   ├── pump_app.dart           # pumpApp extension for widget tests
+│   └── fake_database.dart      # In-memory Drift DB factory
 ├── features/
 │   ├── sale/
-│   │   └── domain/usecases/
+│   │   ├── domain/usecases/
+│   │   ├── data/repositories/
+│   │   ├── data/datasources/
+│   │   └── presentation/
 │   ├── product/
+│   ├── history/
 │   └── settings/
+├── integration/
+│   └── checkout_flow_test.dart
+├── l10n/
+│   └── l10n_parity_test.dart
 └── core/
-    └── widgets/
+    └── utils/
 ```
 
 Follow **AAA pattern**:

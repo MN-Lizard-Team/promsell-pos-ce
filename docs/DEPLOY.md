@@ -119,7 +119,8 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all tests pass
+- [ ] `flutter test` — all 126+ tests pass
+- [ ] Integration test (checkout flow) passes
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
 - [ ] Version bumped in `pubspec.yaml`
@@ -163,4 +164,4 @@ firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.ap
 
 ---
 
-<sub>Promsell POS CE · v0.1.0 · MN Lizard Team</sub>
+<sub>Promsell POS CE · MN Lizard Team</sub>

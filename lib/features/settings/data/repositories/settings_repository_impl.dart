@@ -19,10 +19,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final prefs = await SharedPreferences.getInstance();
     final localeCode = prefs.getString(_keyLocale) ?? 'th';
     final themeIndex = prefs.getInt(_keyTheme) ?? ThemeMode.system.index;
+    final safeThemeIndex = (themeIndex >= 0 && themeIndex < ThemeMode.values.length)
+        ? themeIndex
+        : ThemeMode.system.index;
 
     return AppSettings(
       locale: Locale(localeCode),
-      themeMode: ThemeMode.values[themeIndex],
+      themeMode: ThemeMode.values[safeThemeIndex],
       shopName: prefs.getString(_keyShopName) ?? '',
       address: prefs.getString(_keyAddress) ?? '',
       phone: prefs.getString(_keyPhone) ?? '',

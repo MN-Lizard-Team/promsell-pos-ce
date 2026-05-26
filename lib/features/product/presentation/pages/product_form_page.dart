@@ -75,7 +75,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
         ),
       );
     }
-    Navigator.pop(context);
+    Navigator.pop(context, true);
   }
 
   @override
@@ -98,7 +98,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
               final useTwoColumns = constraints.maxWidth >= 420;
               final priceField = _ProductTextField(
                 controller: _priceCtrl,
-                labelText: context.l10n.priceLabel.replaceAll('฿', currency),
+                labelText: context.l10n.priceLabel(currency),
                 icon: Icons.sell_outlined,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
@@ -123,6 +123,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 icon: Icons.inventory_outlined,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                helperText: (int.tryParse(_stockCtrl.text) ?? -1) == 0
+                    ? context.l10n.stockZeroWarning
+                    : null,
+                onChanged: (_) => setState(() {}),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return context.l10n.quantityRequired;
@@ -227,6 +231,8 @@ class _ProductTextField extends StatelessWidget {
     this.validator,
     this.textInputAction,
     this.onFieldSubmitted,
+    this.helperText,
+    this.onChanged,
   });
 
   final TextEditingController controller;
@@ -237,17 +243,25 @@ class _ProductTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onFieldSubmitted;
+  final String? helperText;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(labelText: labelText, prefixIcon: Icon(icon)),
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon),
+        helperText: helperText,
+        helperMaxLines: 2,
+      ),
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       validator: validator,
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
+      onChanged: onChanged,
     );
   }
 }

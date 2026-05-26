@@ -33,6 +33,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearCart => 'Clear';
 
   @override
+  String get confirmClearCart => 'Clear the entire cart?';
+
+  @override
   String get cartTitle => 'Cart';
 
   @override
@@ -49,6 +52,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saleSavedSuccess => 'Sale saved successfully';
+
+  @override
+  String productAddedToCart(String name) {
+    return '$name added';
+  }
 
   @override
   String get tapProductToAdd => 'Tap a product to add to cart';
@@ -77,7 +85,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get card => 'Card';
 
   @override
-  String get receivedAmount => 'Amount received (฿)';
+  String receivedAmount(String currency) {
+    return 'Amount received ($currency)';
+  }
 
   @override
   String get change => 'Change';
@@ -90,6 +100,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saleError => 'Failed to save sale';
+
+  @override
+  String get insufficientCash => 'Insufficient cash received';
 
   @override
   String get productsTitle => 'Products';
@@ -141,7 +154,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productNameRequired => 'Please enter product name';
 
   @override
-  String get priceLabel => 'Price (฿) *';
+  String priceLabel(String currency) {
+    return 'Price ($currency) *';
+  }
 
   @override
   String get priceRequired => 'Please enter price';
@@ -166,6 +181,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get save => 'Save';
+
+  @override
+  String get productSaved => 'Product saved';
+
+  @override
+  String get stockZeroWarning =>
+      'Product won\'t appear in sale when stock is 0';
 
   @override
   String get historyTitle => 'Sale History';

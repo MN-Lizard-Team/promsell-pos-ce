@@ -16,13 +16,8 @@ class ProductListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ProductBloc(
-        getProducts: sl(),
-        addProduct: sl(),
-        updateProduct: sl(),
-        deleteProduct: sl(),
-      )..add(const ProductsSubscribed()),
+    return BlocProvider.value(
+      value: sl<ProductBloc>(),
       child: const _ProductListView(),
     );
   }
@@ -58,71 +53,92 @@ class _ProductListViewState extends State<_ProductListView> {
           ),
         );
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.productsTitle),
-          actions: [
-            FilledButton.icon(
-              icon: const Icon(Icons.add),
-              label: Text(context.l10n.addProduct),
-              onPressed: () => _showProductForm(context, null),
-            ),
-            const SizedBox(width: 12),
-          ],
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                child: SearchBar(
-                  controller: _searchController,
-                  hintText: context.l10n.searchProducts,
-                  leading: const Icon(Icons.search),
-                  onChanged: (q) =>
-                      context.read<ProductBloc>().add(ProductSearchChanged(q)),
-                ),
+      child: BlocListener<ProductBloc, ProductState>(
+        listenWhen: (prev, curr) => prev.searchQuery != curr.searchQuery,
+        listener: (_, state) {
+          if (_searchController.text != state.searchQuery) {
+            _searchController.text = state.searchQuery;
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(context.l10n.productsTitle),
+            actions: [
+              FilledButton.icon(
+                icon: const Icon(Icons.add),
+                label: Text(context.l10n.addProduct),
+                onPressed: () => _showProductForm(context, null),
               ),
-              Expanded(
-                child: BlocBuilder<ProductBloc, ProductState>(
-                  builder: (context, state) {
-                    if (state.status == ProductStatus.loading ||
-                        state.status == ProductStatus.initial) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (state.status == ProductStatus.failure) {
-                      return AppEmptyState(
-                        icon: Icons.error_outline,
-                        title: state.errorMessage ?? context.l10n.errorOccurred,
-                      );
-                    }
-                    final products = state.filtered;
-                    if (products.isEmpty) {
-                      return AppEmptyState(
-                        icon: Icons.inventory_2_outlined,
-                        title: context.l10n.noProductsYet,
-                        message: context.l10n.searchProducts,
-                      );
-                    }
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
-                      itemCount: products.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
-                      itemBuilder: (context, i) =>
-                          _ProductTile(product: products[i]),
-                    );
-                  },
-                ),
-              ),
+              const SizedBox(width: 12),
             ],
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                  child: SearchBar(
+                    controller: _searchController,
+                    hintText: context.l10n.searchProducts,
+                    leading: const Icon(Icons.search),
+                    onChanged: (q) => context.read<ProductBloc>().add(
+                      ProductSearchChanged(q),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: BlocBuilder<ProductBloc, ProductState>(
+                    builder: (context, state) {
+                      if (state.status == ProductStatus.loading ||
+                          state.status == ProductStatus.initial) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (state.status == ProductStatus.failure) {
+                        return AppEmptyState(
+                          icon: Icons.error_outline,
+                          title:
+                              state.errorMessage ?? context.l10n.errorOccurred,
+                        );
+                      }
+                      final products = state.filtered;
+                      if (products.isEmpty) {
+                        return AppEmptyState(
+                          icon: Icons.inventory_2_outlined,
+                          title: context.l10n.noProductsYet,
+                          message: context.l10n.searchProducts,
+                        );
+                      }
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          context
+                              .read<ProductBloc>()
+                              .add(const ProductsSubscribed());
+                          await Future.delayed(
+                            const Duration(milliseconds: 500),
+                          );
+                        },
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                          itemCount: products.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, i) =>
+                              _ProductTile(product: products[i]),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _showProductForm(BuildContext context, Product? product) {
-    showModalBottomSheet(
+  void _showProductForm(BuildContext context, Product? product) async {
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -131,6 +147,11 @@ class _ProductListViewState extends State<_ProductListView> {
         child: ProductFormPage(product: product),
       ),
     );
+    if (result == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.productSaved)),
+      );
+    }
   }
 }
 

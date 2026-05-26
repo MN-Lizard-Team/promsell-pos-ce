@@ -10,12 +10,17 @@
 
   "salePageTitle": "Sale",
   "clearCart": "Clear",
+  "confirmClearCart": "Clear the entire cart?",
   "cartTitle": "Cart",
   "allCategories": "All",
   "saleSearchProducts": "Search sale products...",
   "quickCashExact": "Exact cash",
   "noProducts": "No products",
   "saleSavedSuccess": "Sale saved successfully",
+  "productAddedToCart": "{name} added",
+  "@productAddedToCart": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "tapProductToAdd": "Tap a product to add to cart",
   "cartTotal": "Total",
   "checkout": "Checkout ({count})",
@@ -28,11 +33,15 @@
   "cash": "Cash",
   "transfer": "Transfer",
   "card": "Card",
-  "receivedAmount": "Amount received (฿)",
+  "receivedAmount": "Amount received ({currency})",
+  "@receivedAmount": {
+    "placeholders": { "currency": { "type": "String" } }
+  },
   "change": "Change",
   "confirmPayment": "Confirm Payment",
   "notePlaceholder": "Note (optional)",
   "saleError": "Failed to save sale",
+  "insufficientCash": "Insufficient cash received",
 
   "productsTitle": "Products",
   "searchProducts": "Search products...",
@@ -56,7 +65,10 @@
   "editProductTitle": "Edit Product",
   "productNameLabel": "Product name *",
   "productNameRequired": "Please enter product name",
-  "priceLabel": "Price (฿) *",
+  "priceLabel": "Price ({currency}) *",
+  "@priceLabel": {
+    "placeholders": { "currency": { "type": "String" } }
+  },
   "priceRequired": "Please enter price",
   "invalidPrice": "Invalid price",
   "quantityLabel": "Quantity",
@@ -65,6 +77,8 @@
   "categoryLabel": "Category",
   "showProduct": "Show product",
   "save": "Save",
+  "productSaved": "Product saved",
+  "stockZeroWarning": "Product won't appear in sale when stock is 0",
 
   "historyTitle": "Sale History",
   "noSalesYet": "No sales yet",

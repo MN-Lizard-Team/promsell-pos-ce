@@ -33,8 +33,12 @@ class _ReportViewState extends State<_ReportView> {
   List<Sale> _sales = [];
   bool _loading = true;
   bool _hasError = false;
-  DateTime _from = DateTime.now().subtract(const Duration(days: 30));
-  DateTime _to = DateTime.now();
+  DateTime _from = DateTime.now().subtract(const Duration(days: 30)).copyWith(
+    hour: 0, minute: 0, second: 0, millisecond: 0,
+  );
+  DateTime _to = DateTime.now().copyWith(
+    hour: 23, minute: 59, second: 59, millisecond: 999,
+  );
   StreamSubscription<List<Sale>>? _sub;
 
   @override
@@ -109,7 +113,13 @@ class _ReportViewState extends State<_ReportView> {
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.date_range),
-            label: Text('${fmt.format(_from)} – ${fmt.format(_to)}'),
+            label: Flexible(
+              child: Text(
+                '${fmt.format(_from)} – ${fmt.format(_to)}',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
             onPressed: _pickRange,
           ),
         ],
@@ -297,20 +307,22 @@ class _SummaryCard extends StatelessWidget {
               child: Icon(icon, color: color),
             ),
             const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: theme.textTheme.bodySmall),
-                MoneyText(
-                  value: value,
-                  currency: currency,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: theme.textTheme.bodySmall),
+                  MoneyText(
+                    value: value,
+                    currency: currency,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    color: color,
                   ),
-                  color: color,
-                ),
-                Text(subtitle, style: theme.textTheme.bodySmall),
-              ],
+                  Text(subtitle, style: theme.textTheme.bodySmall),
+                ],
+              ),
             ),
           ],
         ),

@@ -7,6 +7,8 @@ import 'package:promsell_pos_ce/features/history/presentation/pages/history_page
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page_redesign.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
@@ -77,7 +79,12 @@ class _MainShellState extends State<_MainShell> {
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        onDestinationSelected: (i) {
+          if (i != _index) {
+            sl<ProductBloc>().add(const ProductSearchChanged(''));
+          }
+          setState(() => _index = i);
+        },
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.point_of_sale_outlined),

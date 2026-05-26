@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.1.0
+# CODEBASE.md — Promsell POS CE v0.2.1
 
 ## System overview
 
@@ -205,3 +205,44 @@ Two generators must be run after changes:
 | Shared UI behavior | `lib/core/widgets/` tests under `test/core/widgets/` |
 | Feature UI strings | Both ARB files + generated localization files |
 | Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |
+| BLoC / Cubit class | Update mock in `test/helpers/mocks.dart` |
+| Domain entity | Update test fixtures in corresponding `_test.dart` files |
+
+---
+
+## Test infrastructure
+
+126 automated tests across 7 layers. Run with `flutter test`.
+
+### Test directory structure
+
+```
+test/
+├── helpers/
+│   ├── mocks.dart              # All mock classes (repos, datasources, use cases, BLoCs/Cubits)
+│   ├── pump_app.dart           # pumpApp extension for widget tests
+│   └── fake_database.dart      # In-memory Drift DB factory
+├── core/
+│   └── utils/                  # Core utility tests
+├── features/
+│   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
+│   ├── product/                # Use case, BLoC, repo, datasource, widget tests
+│   ├── history/                # Use case, BLoC, repo tests
+│   └── settings/               # Cubit, repo, widget tests
+├── integration/
+│   └── checkout_flow_test.dart  # End-to-end data layer checkout
+└── l10n/
+    └── l10n_parity_test.dart   # EN/TH key parity and non-empty validation
+```
+
+### Test layers
+
+| Layer | Technique | Dependencies |
+|-------|-----------|-------------|
+| Domain | Unit test | None (pure Dart) |
+| BLoC / Cubit | `bloc_test` | Mocked use cases |
+| Repository | Unit test with `mocktail` | Mocked datasources |
+| Datasource | In-memory Drift DB | `sqlite3_flutter_libs` (FFI) |
+| Widget | `pumpApp` + `MockBloc` | Mocked BLoC states |
+| Integration | In-memory DB end-to-end | Real repos + datasources |
+| L10n | Direct class instantiation | None |

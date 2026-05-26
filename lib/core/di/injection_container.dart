@@ -19,6 +19,8 @@ import 'package:promsell_pos_ce/features/report/domain/usecases/get_report.dart'
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/sale/data/repositories/sale_repository_impl.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 
 final sl = GetIt.instance;
@@ -60,6 +62,16 @@ Future<void> initDependencies() async {
   // Use Cases — Report
   sl.registerLazySingleton(() => GetReport(sl()));
   sl.registerLazySingleton(() => WatchReport(sl()));
+
+  // BLoCs
+  sl.registerLazySingleton<ProductBloc>(
+    () => ProductBloc(
+      getProducts: sl(),
+      addProduct: sl(),
+      updateProduct: sl(),
+      deleteProduct: sl(),
+    )..add(const ProductsSubscribed()),
+  );
 
   // Settings
   sl.registerLazySingleton<SettingsRepository>(() => SettingsRepositoryImpl());

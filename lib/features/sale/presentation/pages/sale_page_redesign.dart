@@ -24,14 +24,7 @@ class SalePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => ProductBloc(
-            getProducts: sl(),
-            addProduct: sl(),
-            updateProduct: sl(),
-            deleteProduct: sl(),
-          )..add(const ProductsSubscribed()),
-        ),
+        BlocProvider.value(value: sl<ProductBloc>()),
         BlocProvider(create: (_) => SaleBloc(createSale: sl())),
       ],
       child: const _SaleView(),
@@ -95,18 +88,25 @@ class _SaleCatalogState extends State<_SaleCatalog> {
     final theme = Theme.of(context);
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SearchBar(
-          controller: _searchController,
-          hintText: context.l10n.saleSearchProducts,
-          leading: const Icon(Icons.search),
-          onChanged: (query) =>
-              context.read<ProductBloc>().add(ProductSearchChanged(query)),
-        ),
-        const SizedBox(height: 10),
-        Expanded(
+    return BlocListener<ProductBloc, ProductState>(
+      listenWhen: (prev, curr) => prev.searchQuery != curr.searchQuery,
+      listener: (_, state) {
+        if (_searchController.text != state.searchQuery) {
+          _searchController.text = state.searchQuery;
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SearchBar(
+            controller: _searchController,
+            hintText: context.l10n.saleSearchProducts,
+            leading: const Icon(Icons.search),
+            onChanged: (query) =>
+                context.read<ProductBloc>().add(ProductSearchChanged(query)),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
           child: BlocBuilder<ProductBloc, ProductState>(
             builder: (ctx, state) {
               if (state.status == ProductStatus.loading ||
@@ -206,14 +206,20 @@ class _SaleCatalogState extends State<_SaleCatalog> {
             },
           ),
         ),
-        Text(
-          context.l10n.tapProductToAdd,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+        BlocBuilder<SaleBloc, SaleState>(
+          builder: (_, saleState) {
+            if (!saleState.isEmpty) return const SizedBox.shrink();
+            return Text(
+              context.l10n.tapProductToAdd,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            );
+          },
         ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -247,6 +253,15 @@ class _ProductCard extends StatelessWidget {
         onTap: () {
           HapticFeedback.selectionClick();
           context.read<SaleBloc>().add(SaleProductAdded(product));
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(context.l10n.productAddedToCart(product.name)),
+                duration: const Duration(milliseconds: 1200),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
         },
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -409,8 +424,7 @@ class _CartHeader extends StatelessWidget {
           ),
           if (!state.isEmpty)
             TextButton.icon(
-              onPressed: () =>
-                  context.read<SaleBloc>().add(const SaleCartCleared()),
+              onPressed: () => _confirmClearCart(context),
               icon: const Icon(Icons.delete_outline),
               label: Text(context.l10n.clearCart),
               style: TextButton.styleFrom(
@@ -418,6 +432,32 @@ class _CartHeader extends StatelessWidget {
                 minimumSize: const Size(48, 48),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmClearCart(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(context.l10n.clearCart),
+        content: Text(context.l10n.confirmClearCart),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(context.l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<SaleBloc>().add(const SaleCartCleared());
+              Navigator.pop(context);
+            },
+            child: Text(
+              context.l10n.clearCart,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
         ],
       ),
     );
@@ -478,8 +518,8 @@ class _CartItemRow extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: 28,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 32),
                   child: Text(
                     '${item.qty}',
                     textAlign: TextAlign.center,
@@ -497,8 +537,8 @@ class _CartItemRow extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(
-              width: 82,
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 82),
               child: MoneyText(
                 value: item.subtotal,
                 currency: currency,

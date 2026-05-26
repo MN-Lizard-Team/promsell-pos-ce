@@ -146,6 +146,12 @@ abstract class AppLocalizations {
   /// **'ล้าง'**
   String get clearCart;
 
+  /// No description provided for @confirmClearCart.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันล้างตะกร้าทั้งหมด?'**
+  String get confirmClearCart;
+
   /// No description provided for @cartTitle.
   ///
   /// In th, this message translates to:
@@ -181,6 +187,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'บันทึกการขายเรียบร้อย'**
   String get saleSavedSuccess;
+
+  /// No description provided for @productAddedToCart.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่ม {name} แล้ว'**
+  String productAddedToCart(String name);
 
   /// No description provided for @tapProductToAdd.
   ///
@@ -233,8 +245,8 @@ abstract class AppLocalizations {
   /// No description provided for @receivedAmount.
   ///
   /// In th, this message translates to:
-  /// **'รับเงินมา (฿)'**
-  String get receivedAmount;
+  /// **'รับเงินมา ({currency})'**
+  String receivedAmount(String currency);
 
   /// No description provided for @change.
   ///
@@ -259,6 +271,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'บันทึกการขายไม่สำเร็จ'**
   String get saleError;
+
+  /// No description provided for @insufficientCash.
+  ///
+  /// In th, this message translates to:
+  /// **'เงินที่รับมายังไม่ครบยอด'**
+  String get insufficientCash;
 
   /// No description provided for @productsTitle.
   ///
@@ -353,8 +371,8 @@ abstract class AppLocalizations {
   /// No description provided for @priceLabel.
   ///
   /// In th, this message translates to:
-  /// **'ราคา (฿) *'**
-  String get priceLabel;
+  /// **'ราคา ({currency}) *'**
+  String priceLabel(String currency);
 
   /// No description provided for @priceRequired.
   ///
@@ -403,6 +421,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'บันทึก'**
   String get save;
+
+  /// No description provided for @productSaved.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกสินค้าแล้ว'**
+  String get productSaved;
+
+  /// No description provided for @stockZeroWarning.
+  ///
+  /// In th, this message translates to:
+  /// **'สินค้าจะไม่แสดงในหน้าขายเมื่อสต็อก = 0'**
+  String get stockZeroWarning;
 
   /// No description provided for @historyTitle.
   ///

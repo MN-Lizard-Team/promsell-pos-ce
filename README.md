@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.2.0** — **UX/UI Redesign Foundation**. Merchant Command Deck refresh with adaptive Sale layout, redesigned checkout, improved Products/History/Report/Settings screens, shared UI primitives, and compact layout overflow fixes.
+> **Latest Release: v0.2.1** — **Comprehensive test suite & UI/UX improvements**. 130 automated tests across 7 layers + 11 UI/UX polish fixes (search reset, overflow fixes, SnackBar feedback, pull-to-refresh, and more).
  
 ---
  
@@ -54,6 +54,7 @@
 - [Project structure](#project-structure)
 - [Screenshots](#screenshots)
 - [Roadmap](#roadmap)
+- [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
  
@@ -206,6 +207,43 @@ features/<name>/
 
 ---
 
+## Testing
+
+**126 tests** covering every application layer:
+
+| Layer | What's tested | Count |
+|-------|--------------|-------|
+| **Domain** | Entity equality, use case delegation | ~20 |
+| **BLoC / Cubit** | Event→state transitions, error handling | ~15 |
+| **Repository** | Impl with mocked datasources | ~15 |
+| **Datasource** | Real in-memory SQLite (Drift) | ~11 |
+| **Widget** | ProductList, ProductForm, PaymentSheet, Settings | ~15 |
+| **Integration** | End-to-end checkout flow with stock deduction | 3 |
+| **L10n parity** | EN/TH key coverage, non-empty values, params | 8 |
+
+### Running tests
+
+```bash
+# All tests
+flutter test
+
+# With coverage
+flutter test --coverage
+
+# Single file
+flutter test test/integration/checkout_flow_test.dart
+```
+
+### Test helpers
+
+| File | Purpose |
+|------|---------|
+| `test/helpers/mocks.dart` | All mock classes (repos, datasources, use cases, BLoCs) |
+| `test/helpers/pump_app.dart` | `pumpApp` extension with BlocProviders + l10n |
+| `test/helpers/fake_database.dart` | In-memory Drift DB factory |
+
+---
+
 ## Contributing
 
 Contributions are welcome — bug reports, feature suggestions, or pull requests.
@@ -241,6 +279,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.2.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.2.1 · AGPL-3.0</sub>
 
 </div>

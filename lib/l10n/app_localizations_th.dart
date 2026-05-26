@@ -33,6 +33,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get clearCart => 'ล้าง';
 
   @override
+  String get confirmClearCart => 'ยืนยันล้างตะกร้าทั้งหมด?';
+
+  @override
   String get cartTitle => 'ตะกร้า';
 
   @override
@@ -49,6 +52,11 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get saleSavedSuccess => 'บันทึกการขายเรียบร้อย';
+
+  @override
+  String productAddedToCart(String name) {
+    return 'เพิ่ม $name แล้ว';
+  }
 
   @override
   String get tapProductToAdd => 'แตะสินค้าเพื่อเพิ่มลงตะกร้า';
@@ -77,7 +85,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get card => 'บัตร';
 
   @override
-  String get receivedAmount => 'รับเงินมา (฿)';
+  String receivedAmount(String currency) {
+    return 'รับเงินมา ($currency)';
+  }
 
   @override
   String get change => 'เงินทอน';
@@ -90,6 +100,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get saleError => 'บันทึกการขายไม่สำเร็จ';
+
+  @override
+  String get insufficientCash => 'เงินที่รับมายังไม่ครบยอด';
 
   @override
   String get productsTitle => 'สินค้า';
@@ -141,7 +154,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get productNameRequired => 'กรุณาใส่ชื่อสินค้า';
 
   @override
-  String get priceLabel => 'ราคา (฿) *';
+  String priceLabel(String currency) {
+    return 'ราคา ($currency) *';
+  }
 
   @override
   String get priceRequired => 'กรุณาใส่ราคา';
@@ -166,6 +181,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get save => 'บันทึก';
+
+  @override
+  String get productSaved => 'บันทึกสินค้าแล้ว';
+
+  @override
+  String get stockZeroWarning => 'สินค้าจะไม่แสดงในหน้าขายเมื่อสต็อก = 0';
 
   @override
   String get historyTitle => 'ประวัติการขาย';

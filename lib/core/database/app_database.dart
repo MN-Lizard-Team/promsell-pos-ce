@@ -9,6 +9,7 @@ part 'app_database.g.dart';
 @DriftDatabase(tables: [Products, Sales, SaleItems])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openDatabase());
+  AppDatabase.forTesting(super.e);
 
   @override
   int get schemaVersion => 1;

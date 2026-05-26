@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.1] - 2026-05-26
+
+### Added — Comprehensive test suite & UI/UX improvements
+
+- **130 automated tests** covering 7 layers of the application:
+  - **Domain** — entity equality, use case delegation for all features
+  - **BLoC / Cubit** — event-to-state transitions for `SaleBloc`, `ProductBloc`, `HistoryBloc`, `SettingsCubit`
+  - **Repository** — `SaleRepositoryImpl`, `ProductRepositoryImpl`, `HistoryRepositoryImpl`, `SettingsRepositoryImpl`
+  - **Datasource** — `ProductLocalDatasourceImpl`, `SaleLocalDatasourceImpl` with in-memory SQLite
+  - **Widget** — `ProductListPage`, `ProductFormPage`, `PaymentSheet`, `SettingsPage` with mocked BLoC states
+  - **Integration** — end-to-end checkout flow (add → sale → stock deduction → history)
+  - **L10n parity** — EN/TH key completeness, parameterized messages, locale-specific values
+- **Test helpers** (`test/helpers/`):
+  - `mocks.dart` — shared mock classes using `mocktail` + `bloc_test`
+  - `pump_app.dart` — `pumpApp` extension with `MultiBlocProvider` and full localization
+  - `fake_database.dart` — in-memory Drift database factory
+- **4 new localization keys** for both EN and TH:
+  - `productAddedToCart` — cart feedback message
+  - `productSaved` — form success message
+  - `insufficientCash` — payment validation hint
+  - `stockZeroWarning` — product form warning
+- **4 regression tests** for critical UI bug fixes (UI-BUG-1, UI-BUG-8, UI-BUG-11)
+
+### Fixed
+
+- **Search state bleed across tabs** — `ProductBloc.searchQuery` resets on navigation; `BlocListener` syncs text controllers automatically
+- **Cart quantity overflow** — replaced fixed `SizedBox(width: 28)` with `ConstrainedBox(minWidth: 32)` to support 3+ digit quantities
+- **Cart subtotal clipping** — replaced fixed `SizedBox(width: 82)` with `ConstrainedBox(minWidth: 82)` for large amounts
+- **No feedback on add-to-cart** — floating `SnackBar` now confirms product addition
+- **No feedback on product save** — success `SnackBar` shown after form submission
+- **Report AppBar overflow** — date range text wrapped in `Flexible` with `TextOverflow.ellipsis`
+- **Redundant tap hint** — "Tap product to add" hidden when cart already has items
+- **Unclear disabled button** — payment confirm shows "Insufficient cash" explanation when amount is below total
+- **Missing transaction reference** — sale ID (`#N`) now displayed in History list subtitle
+- **No refresh mechanism** — pull-to-refresh added to History and Product list pages
+- **Silent stock=0 state** — product form shows warning when stock is zero ("won't appear in sale")
+
+### Changed
+
+- Added `sqlite3_flutter_libs: ^0.5.28` to `dev_dependencies` for FFI-based in-memory database testing.
+
+---
+
 ## [0.2.0] - 2026-05-26
 
 ### Added — UX/UI redesign foundation
@@ -127,5 +170,6 @@ First public release of Promsell POS Community Edition. Complete offline-first m
 
 ---
 
+[0.2.1]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.1
 [0.2.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.0
 [0.1.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.1.0

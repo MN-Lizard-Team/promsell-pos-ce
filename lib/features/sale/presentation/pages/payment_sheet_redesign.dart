@@ -40,9 +40,8 @@ class _PaymentSheetState extends State<PaymentSheet> {
 
   void _confirm() {
     HapticFeedback.mediumImpact();
-    final saleBloc = context.read<SaleBloc>();
-    final note = saleBloc.state.note;
-    saleBloc.add(
+    final note = _noteCtrl.text.trim();
+    context.read<SaleBloc>().add(
       SaleConfirmed(
         paymentMethod: _method,
         amountReceived: _method == 'cash' ? _received : null,
@@ -183,10 +182,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 TextFormField(
                   controller: _receivedCtrl,
                   decoration: InputDecoration(
-                    labelText: context.l10n.receivedAmount.replaceAll(
-                      '฿',
-                      currency,
-                    ),
+                    labelText: context.l10n.receivedAmount(currency),
                     prefixIcon: const Icon(Icons.payments_outlined),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
@@ -226,16 +222,34 @@ class _PaymentSheetState extends State<PaymentSheet> {
                   final canConfirm =
                       _method != 'cash' || _received >= widget.total;
 
-                  return FilledButton.icon(
-                    onPressed: isProcessing || !canConfirm ? null : _confirm,
-                    icon: isProcessing
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.check_circle_outline),
-                    label: Text(context.l10n.confirmPayment),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (_method == 'cash' && !canConfirm && _received > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            context.l10n.insufficientCash,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.error,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      FilledButton.icon(
+                        onPressed:
+                            isProcessing || !canConfirm ? null : _confirm,
+                        icon: isProcessing
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.check_circle_outline),
+                        label: Text(context.l10n.confirmPayment),
+                      ),
+                    ],
                   );
                 },
               ),

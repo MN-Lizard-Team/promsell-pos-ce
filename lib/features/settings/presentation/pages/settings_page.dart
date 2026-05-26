@@ -208,11 +208,13 @@ class _SettingsViewState extends State<_SettingsView> {
                     secondary: const Icon(Icons.info_outline),
                     title: Text(l10n.settingsShowShopInfo),
                     value: _draft.showShopInfoOnReceipt,
-                    onChanged: (value) => setState(
-                      () => _draft = _draft.copyWith(
+                    onChanged: (value) {
+                      final updated = _draft.copyWith(
                         showShopInfoOnReceipt: value,
-                      ),
-                    ),
+                      );
+                      setState(() => _draft = updated);
+                      context.read<SettingsCubit>().update(updated);
+                    },
                   ),
                 ],
               ),

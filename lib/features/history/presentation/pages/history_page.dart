@@ -65,11 +65,16 @@ class _HistoryView extends StatelessWidget {
               title: ctx.l10n.noSalesYet,
             );
           }
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
-            itemCount: state.sales.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 8),
-            itemBuilder: (_, i) {
+          return RefreshIndicator(
+            onRefresh: () async {
+              ctx.read<HistoryBloc>().add(const HistorySubscribed());
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemCount: state.sales.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              itemBuilder: (_, i) {
               final sale = state.sales[i];
               return Card(
                 clipBehavior: Clip.antiAlias,
@@ -90,7 +95,7 @@ class _HistoryView extends StatelessWidget {
                     color: theme.colorScheme.primary,
                   ),
                   subtitle: Text(
-                    '${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
+                    '#${sale.id}  •  ${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
                     style: theme.textTheme.bodySmall,
                   ),
                   children: [
@@ -121,7 +126,8 @@ class _HistoryView extends StatelessWidget {
                   ],
                 ),
               );
-            },
+              },
+            ),
           );
         },
       ),

@@ -10,12 +10,17 @@
 
   "salePageTitle": "ขายสินค้า",
   "clearCart": "ล้าง",
+  "confirmClearCart": "ยืนยันล้างตะกร้าทั้งหมด?",
   "cartTitle": "ตะกร้า",
   "allCategories": "ทั้งหมด",
   "saleSearchProducts": "ค้นหาสินค้าที่ขาย...",
   "quickCashExact": "รับพอดี",
   "noProducts": "ไม่มีสินค้า",
   "saleSavedSuccess": "บันทึกการขายเรียบร้อย",
+  "productAddedToCart": "เพิ่ม {name} แล้ว",
+  "@productAddedToCart": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "tapProductToAdd": "แตะสินค้าเพื่อเพิ่มลงตะกร้า",
   "cartTotal": "รวม",
   "checkout": "ชำระเงิน ({count})",
@@ -28,11 +33,15 @@
   "cash": "เงินสด",
   "transfer": "โอน",
   "card": "บัตร",
-  "receivedAmount": "รับเงินมา (฿)",
+  "receivedAmount": "รับเงินมา ({currency})",
+  "@receivedAmount": {
+    "placeholders": { "currency": { "type": "String" } }
+  },
   "change": "เงินทอน",
   "confirmPayment": "ยืนยันการชำระ",
   "notePlaceholder": "หมายเหตุ (ไม่บังคับ)",
   "saleError": "บันทึกการขายไม่สำเร็จ",
+  "insufficientCash": "เงินที่รับมายังไม่ครบยอด",
 
   "productsTitle": "สินค้า",
   "searchProducts": "ค้นหาสินค้า...",
@@ -56,7 +65,10 @@
   "editProductTitle": "แก้ไขสินค้า",
   "productNameLabel": "ชื่อสินค้า *",
   "productNameRequired": "กรุณาใส่ชื่อสินค้า",
-  "priceLabel": "ราคา (฿) *",
+  "priceLabel": "ราคา ({currency}) *",
+  "@priceLabel": {
+    "placeholders": { "currency": { "type": "String" } }
+  },
   "priceRequired": "กรุณาใส่ราคา",
   "invalidPrice": "ราคาไม่ถูกต้อง",
   "quantityLabel": "จำนวน",
@@ -65,6 +77,8 @@
   "categoryLabel": "หมวดหมู่",
   "showProduct": "แสดงสินค้า",
   "save": "บันทึก",
+  "productSaved": "บันทึกสินค้าแล้ว",
+  "stockZeroWarning": "สินค้าจะไม่แสดงในหน้าขายเมื่อสต็อก = 0",
 
   "historyTitle": "ประวัติการขาย",
   "noSalesYet": "ยังไม่มีรายการขาย",

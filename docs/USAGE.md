@@ -15,6 +15,7 @@
 - [Localization (i18n)](#localization-i18n)
 - [Database (Drift)](#database-drift)
 - [Architecture overview](#architecture-overview)
+- [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -353,6 +354,48 @@ Both are reactive and easy to test.
 
 ---
 
+## Testing
+
+Promsell has **126+ automated tests** covering domain logic, state management, data access, widgets, integration, and localization parity.
+
+### Running tests
+
+```bash
+# Run all tests
+flutter test
+
+# Run with coverage report
+flutter test --coverage
+
+# Run a specific test file
+flutter test test/integration/checkout_flow_test.dart
+```
+
+### Test structure
+
+Tests mirror `lib/` structure under `test/`:
+
+- `test/helpers/` — shared mocks (`mocks.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`)
+- `test/features/` — per-feature tests: domain, data, presentation
+- `test/integration/` — end-to-end checkout flow with real in-memory SQLite
+- `test/l10n/` — EN/TH translation parity test
+
+### In-memory database testing
+
+Datasource and integration tests use a real SQLite database in memory via `sqlite3_flutter_libs` (FFI). This provides true SQL execution without disk I/O:
+
+```dart
+import 'package:drift/native.dart';
+
+AppDatabase createInMemoryDatabase() {
+  return AppDatabase.forTesting(NativeDatabase.memory());
+}
+```
+
+Add `sqlite3_flutter_libs` to `dev_dependencies` in `pubspec.yaml` for this to work on desktop test runners.
+
+---
+
 ## Troubleshooting
 
 ### `flutter pub get` fails with version conflict
@@ -408,4 +451,4 @@ flutter analyze lib test
 
 ---
 
-<sub>Promsell POS Community Edition · v0.1.0 · © 2026 MN Lizard Team · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · © 2026 MN Lizard Team · AGPL-3.0</sub>

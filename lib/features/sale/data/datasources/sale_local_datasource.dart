@@ -93,7 +93,10 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
           final newStock = (product.stock - item.qty).clamp(0, 999999);
           await (_db.update(_db.products)
                 ..where((p) => p.id.equals(item.product.id)))
-              .write(ProductsCompanion(stock: Value(newStock)));
+              .write(ProductsCompanion(
+                stock: Value(newStock),
+                updatedAt: Value(DateTime.now()),
+              ));
         }
       }
     });

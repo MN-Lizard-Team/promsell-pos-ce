@@ -1,7 +1,7 @@
 name: promsell_pos_ce
 description: "PromSell POS Community Edition — Offline-first mobile POS for small businesses"
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.2.1+1
 
 environment:
   sdk: ^3.11.1
@@ -54,6 +54,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+  # Testing
+  mocktail: ^1.0.4
+  bloc_test: ^10.0.0
+  sqlite3_flutter_libs: ^0.5.28
 
   # Drift codegen
   drift_dev: ^2.26.1
