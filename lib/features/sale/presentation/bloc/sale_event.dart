@@ -59,3 +59,10 @@ class SaleNoteChanged extends SaleEvent {
   @override
   List<Object?> get props => [note];
 }
+
+class SaleCartProductsRefreshed extends SaleEvent {
+  const SaleCartProductsRefreshed(this.products);
+  final List<Product> products;
+  @override
+  List<Object?> get props => [products];
+}

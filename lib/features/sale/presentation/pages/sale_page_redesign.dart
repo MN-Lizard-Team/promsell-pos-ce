@@ -39,27 +39,35 @@ class _SaleView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isExpanded = AdaptiveBreakpoints.isExpanded(context);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.salePageTitle)),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
-          child: isExpanded
-              ? const Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(child: _SaleCatalog()),
-                    SizedBox(width: 12),
-                    SizedBox(width: 390, child: _CartPanel(expanded: true)),
-                  ],
-                )
-              : const Column(
-                  children: [
-                    Expanded(child: _SaleCatalog()),
-                    SizedBox(height: 8),
-                    _CartPanel(expanded: false),
-                  ],
-                ),
+    return BlocListener<ProductBloc, ProductState>(
+      listenWhen: (prev, curr) =>
+          curr.status == ProductStatus.success &&
+          prev.products != curr.products,
+      listener: (context, state) {
+        context.read<SaleBloc>().add(SaleCartProductsRefreshed(state.products));
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text(context.l10n.salePageTitle)),
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
+            child: isExpanded
+                ? const Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: _SaleCatalog()),
+                      SizedBox(width: 12),
+                      SizedBox(width: 390, child: _CartPanel(expanded: true)),
+                    ],
+                  )
+                : const Column(
+                    children: [
+                      Expanded(child: _SaleCatalog()),
+                      SizedBox(height: 8),
+                      _CartPanel(expanded: false),
+                    ],
+                  ),
+          ),
         ),
       ),
     );
@@ -85,7 +93,6 @@ class _SaleCatalogState extends State<_SaleCatalog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
     return BlocListener<ProductBloc, ProductState>(
@@ -188,7 +195,7 @@ class _SaleCatalogState extends State<_SaleCatalog> {
                               gridDelegate:
                                   SliverGridDelegateWithMaxCrossAxisExtent(
                                     maxCrossAxisExtent: isWide ? 210 : 176,
-                                    mainAxisExtent: isWide ? 132 : 122,
+                                    mainAxisExtent: isWide ? 148 : 136,
                                     crossAxisSpacing: 10,
                                     mainAxisSpacing: 10,
                                   ),
@@ -205,18 +212,6 @@ class _SaleCatalogState extends State<_SaleCatalog> {
                 );
               },
             ),
-          ),
-          BlocBuilder<SaleBloc, SaleState>(
-            builder: (_, saleState) {
-              if (!saleState.isEmpty) return const SizedBox.shrink();
-              return Text(
-                context.l10n.tapProductToAdd,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              );
-            },
           ),
         ],
       ),
@@ -253,6 +248,7 @@ class _ProductCard extends StatelessWidget {
     );
 
     return Card(
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
@@ -298,16 +294,15 @@ class _ProductCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Expanded(
-                    child: Text(
-                      product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  const Spacer(),
                   Row(
                     children: [
                       Expanded(

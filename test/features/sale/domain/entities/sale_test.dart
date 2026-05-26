@@ -7,7 +7,7 @@ void main() {
   group('SaleItem', () {
     test('supports value equality', () {
       final a = tSaleItem;
-      final b = SaleItem(
+      const b = SaleItem(
         id: 1,
         saleId: 1,
         productId: 1,
@@ -35,7 +35,7 @@ void main() {
         changeAmount: 300.0,
         note: null,
         createdAt: tNow,
-        items: [tSaleItem],
+        items: const [tSaleItem],
       );
       expect(a, equals(b));
     });

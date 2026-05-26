@@ -18,9 +18,9 @@ void main() {
   setUp(() {
     mockProductBloc = MockProductBloc();
     mockSettingsCubit = MockSettingsCubit();
-    when(() => mockProductBloc.state).thenReturn(
-      const ProductState(status: ProductStatus.success),
-    );
+    when(
+      () => mockProductBloc.state,
+    ).thenReturn(const ProductState(status: ProductStatus.success));
     when(() => mockSettingsCubit.state).thenReturn(
       const SettingsState(
         status: SettingsStatus.loaded,
@@ -30,9 +30,7 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(
-      ProductAdded(name: '', price: 0, stock: 0),
-    );
+    registerFallbackValue(const ProductAdded(name: '', price: 0, stock: 0));
     registerFallbackValue(
       ProductUpdated(
         Product(
@@ -94,7 +92,9 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
-      verify(() => mockProductBloc.add(any(that: isA<ProductAdded>()))).called(1);
+      verify(
+        () => mockProductBloc.add(any(that: isA<ProductAdded>())),
+      ).called(1);
     });
   });
 
@@ -136,13 +136,16 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
-      verify(() => mockProductBloc.add(any(that: isA<ProductUpdated>()))).called(1);
+      verify(
+        () => mockProductBloc.add(any(that: isA<ProductUpdated>())),
+      ).called(1);
     });
   });
 
   group('UI-BUG-11 regression: stock=0 warning', () {
-    testWidgets('shows stock zero warning when stock field is 0',
-        (tester) async {
+    testWidgets('shows stock zero warning when stock field is 0', (
+      tester,
+    ) async {
       await tester.pumpApp(
         const ProductFormPage(),
         productBloc: mockProductBloc,
@@ -153,10 +156,7 @@ void main() {
       await tester.enterText(stockField, '0');
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining("won't appear"),
-        findsOneWidget,
-      );
+      expect(find.textContaining("won't appear"), findsOneWidget);
     });
 
     testWidgets('no warning when stock > 0', (tester) async {
@@ -170,10 +170,7 @@ void main() {
       await tester.enterText(stockField, '10');
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining("won't appear"),
-        findsNothing,
-      );
+      expect(find.textContaining("won't appear"), findsNothing);
     });
   });
 }

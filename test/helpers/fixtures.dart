@@ -51,7 +51,7 @@ final tCartItem2 = CartItem(
   qty: 1,
 );
 
-final tSaleItem = SaleItem(
+const tSaleItem = SaleItem(
   id: 1,
   saleId: 1,
   productId: 1,
@@ -69,7 +69,7 @@ final tSale = Sale(
   changeAmount: 300.0,
   note: null,
   createdAt: tNow,
-  items: [tSaleItem],
+  items: const [tSaleItem],
 );
 
 const tAppSettings = AppSettings();

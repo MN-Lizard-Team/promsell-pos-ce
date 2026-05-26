@@ -16,22 +16,21 @@ void main() {
 
   tearDown(() => db.close());
 
-  ProductsCompanion _companion({
+  ProductsCompanion companion({
     String name = 'Test',
     double price = 100.0,
     int stock = 10,
     String? category,
-  }) =>
-      ProductsCompanion.insert(
-        name: name,
-        price: price,
-        stock: Value(stock),
-        category: Value(category),
-      );
+  }) => ProductsCompanion.insert(
+    name: name,
+    price: price,
+    stock: Value(stock),
+    category: Value(category),
+  );
 
   group('ProductLocalDatasourceImpl', () {
     test('insertProduct returns id and getProductById retrieves it', () async {
-      final id = await datasource.insertProduct(_companion(name: 'Water'));
+      final id = await datasource.insertProduct(companion(name: 'Water'));
       expect(id, isPositive);
 
       final product = await datasource.getProductById(id);
@@ -44,23 +43,23 @@ void main() {
     test('watchAllProducts emits updates', () async {
       final stream = datasource.watchAllProducts();
 
-      await datasource.insertProduct(_companion(name: 'A'));
+      await datasource.insertProduct(companion(name: 'A'));
 
       await expectLater(
         stream,
-        emitsThrough(predicate<List>((list) =>
-            list.isNotEmpty && list.first.name == 'A')),
+        emitsThrough(
+          predicate<List>((list) => list.isNotEmpty && list.first.name == 'A'),
+        ),
       );
     });
 
     test('getActiveProducts filters inactive products', () async {
-      await datasource.insertProduct(_companion(name: 'Active'));
-      final id2 = await datasource.insertProduct(_companion(name: 'Inactive'));
+      await datasource.insertProduct(companion(name: 'Active'));
+      final id2 = await datasource.insertProduct(companion(name: 'Inactive'));
 
-      await datasource.updateProduct(ProductsCompanion(
-        id: Value(id2),
-        isActive: const Value(false),
-      ));
+      await datasource.updateProduct(
+        ProductsCompanion(id: Value(id2), isActive: const Value(false)),
+      );
 
       final activeProducts = await datasource.getActiveProducts();
       expect(activeProducts.length, 1);
@@ -68,13 +67,15 @@ void main() {
     });
 
     test('updateProduct changes fields', () async {
-      final id = await datasource.insertProduct(_companion(name: 'Old'));
+      final id = await datasource.insertProduct(companion(name: 'Old'));
 
-      await datasource.updateProduct(ProductsCompanion(
-        id: Value(id),
-        name: const Value('New'),
-        price: const Value(200.0),
-      ));
+      await datasource.updateProduct(
+        ProductsCompanion(
+          id: Value(id),
+          name: const Value('New'),
+          price: const Value(200.0),
+        ),
+      );
 
       final product = await datasource.getProductById(id);
       expect(product!.name, 'New');
@@ -82,7 +83,7 @@ void main() {
     });
 
     test('deleteProduct removes product', () async {
-      final id = await datasource.insertProduct(_companion());
+      final id = await datasource.insertProduct(companion());
 
       await datasource.deleteProduct(id);
 

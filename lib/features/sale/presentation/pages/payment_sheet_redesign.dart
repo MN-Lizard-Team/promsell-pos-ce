@@ -238,8 +238,6 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 ),
                 textInputAction: TextInputAction.done,
                 maxLines: 1,
-                onChanged: (value) =>
-                    context.read<SaleBloc>().add(SaleNoteChanged(value)),
               ),
               const SizedBox(height: 20),
               BlocBuilder<SaleBloc, SaleState>(
@@ -291,12 +289,12 @@ class _PaymentSheetState extends State<PaymentSheet> {
   List<double> _quickAmounts() {
     final roundedTen = (widget.total / 10).ceil() * 10.0;
     final roundedHundred = (widget.total / 100).ceil() * 100.0;
-
-    return [
-      widget.total,
-      roundedTen,
-      roundedHundred,
-    ].where((value) => value > 0).toSet().toList()..sort();
+    final nextTen = roundedTen > widget.total ? roundedTen : roundedTen + 10;
+    final nextHundred = roundedHundred > widget.total
+        ? roundedHundred
+        : roundedHundred + 100;
+    return {widget.total, nextTen, nextHundred}.where((v) => v > 0).toList()
+      ..sort();
   }
 }
 

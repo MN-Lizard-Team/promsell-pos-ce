@@ -1,0 +1,272 @@
+# Round 4 — Merchant Tools 🟢
+
+> Goal: ร้านใช้งานเต็มรูปแบบได้ — พิมพ์/แชร์ใบเสร็จ PDF, รับเงินผ่าน PromptPay QR, สำรอง/กู้คืนข้อมูลด้วยตัวเอง.
+
+**Version target:** `v0.6.0`
+**Effort:** ~2 dev-days
+**Risk:** 🟢 Low (existing pkg `pdf` + `printing` already in deps)
+**Depends on:** R1, R2, R3 complete
+
+---
+
+## Why R4
+
+R3 จบ business logic. R4 = **interface กับโลกภายนอก**:
+- ส่งใบเสร็จให้ลูกค้า (PDF/print)
+- รับเงินยุคใหม่ (PromptPay)
+- ปกป้องข้อมูล (backup/restore)
+
+---
+
+## Pre-flight
+
+- [ ] R3 merged + `v0.5.0` released
+- [ ] Branch `feat/phase1-r4-merchant-tools`
+- [ ] Test PromptPay ID พร้อมใช้ (สำหรับ manual scan test ด้วย banking app จริง)
+- [ ] Add deps:
+  ```yaml
+  share_plus: ^10.0.2
+  file_picker: ^8.1.2
+  csv: ^6.0.0
+  ```
+  (re-add `qr_flutter` ที่เคยถูกถอดออก)
+
+---
+
+## Tasks
+
+### 1. Receipt PDF Generator
+
+#### File
+`lib/features/receipt/data/services/receipt_pdf_service.dart`
+
+#### Layout (80mm thermal — primary)
+
+```
+        [Shop Logo / Name]
+        [Address line 1]
+        [Address line 2]
+        [Phone]
+─────────────────────────
+Receipt: 260526-A1-0001
+Date: 26/05/2026 14:30
+Cashier: -
+
+Item              Qty   Total
+Water 600ml        3   30.00
+Coke 325ml         2   50.00
+  Discount -10%        -8.00
+─────────────────────────
+Subtotal             80.00
+Cart discount       -10.00
+                     70.00
+VAT 7% (excl)        +4.90
+═════════════════════════
+TOTAL                74.90
+
+Payment: Cash       100.00
+Change               25.10
+
+[Receipt note from settings]
+       Thank you!
+```
+
+#### Layout (A4 — fallback)
+- 2-column with shop info top, items table, totals right-aligned
+- Same data, different size
+
+#### Implementation
+- `pdf` package — `Document` with `MultiPage`
+- Thai font: bundle `NotoSansThai-Regular.ttf` + `Bold.ttf` in `assets/fonts/`
+- Width detection: setting `receiptSize` (`80mm` | `A4`)
+
+#### Integration points
+- After successful sale → action sheet: `Print` / `Share PDF` / `Done`
+- History detail → `Print receipt` button
+- Use `printing` package: `Printing.layoutPdf()` for print, `Printing.sharePdf()` for share
+
+### 2. PromptPay QR
+
+#### Settings
+- New field: `promptpayId` (text input, supports phone `0812345678` or citizen ID `1234567890123`)
+- Optional toggle: "Show PromptPay in payment sheet"
+
+#### EMVCo QR Generation
+
+`lib/features/payment/data/services/promptpay_qr_service.dart`:
+
+```dart
+class PromptpayQrService {
+  /// Returns EMVCo-compliant QR string for static (no amount) or dynamic (with amount).
+  String generatePayload({
+    required String promptpayId,  // 0812345678 or 1234567890123
+    double? amount,
+  });
+}
+```
+
+#### EMVCo Format (TLV — Tag-Length-Value)
+
+```
+00 02 01                                    // Payload format
+01 02 12 (or 11 for static)                 // Point of init
+29 37                                        // Merchant account
+   00 16 A000000677010111                    // PromptPay AID
+   01 13 0066812345678 (formatted phone)
+       OR
+   02 13 1234567890123 (citizen ID)
+53 03 764                                    // Currency THB
+54 XX 0.00 (if dynamic)                      // Amount
+58 02 TH                                     // Country
+63 04 XXXX                                   // CRC16
+```
+
+> Validate by scanning with real banking app (K-Plus, Bualuang, SCB Easy) before merge.
+
+#### UI Flow
+
+##### Payment sheet
+- Add 4th button: `PromptPay`
+- When selected → show:
+  - QR code (large, centered)
+  - Total amount text
+  - Reference (sale ID short hash)
+  - "I received the money" confirm button (cashier presses after seeing payment in their banking app)
+
+##### Confirm flow
+- Press confirm → same as cash flow but `paymentMethod='promptpay'`, `amountReceived=null`, `changeAmount=null`
+- Optional reference field (pre-filled with last 8 chars of receipt number)
+
+#### Edge cases
+- `promptpayId` empty → hide PromptPay button + show settings hint
+- Generate offline (no network needed for QR)
+- Receipt shows "Paid via PromptPay" + reference
+
+### 3. Backup System
+
+#### Export SQLite file
+`lib/features/backup/data/services/backup_service.dart`:
+
+```dart
+Future<File> exportDatabase() async {
+  // 1. Force Drift to flush WAL: customStatement('PRAGMA wal_checkpoint(TRUNCATE)')
+  // 2. Locate db file via path_provider
+  // 3. Copy to temp dir with name: promsell_pos_backup_{YYYYMMDD_HHMMSS}.db
+  // 4. Return File for sharing
+}
+
+Future<void> importDatabase(File backup) async {
+  // 1. Validate file (open as Drift, check schemaVersion)
+  // 2. Confirm dialog (irreversible)
+  // 3. Close current db connection
+  // 4. Replace file
+  // 5. Reopen + verify
+}
+```
+
+#### Export CSV
+- Sales CSV: receipt#, date, items, subtotal, discount, vat, total, payment, status, void reason
+- Products CSV: id, name, sku, barcode, price, cost, stock, category, active
+- Date range picker for sales CSV
+- Use `csv` package + `share_plus`
+
+#### UI
+Settings page → new section "Data":
+- Button: "Export database (full backup)" → share sheet
+- Button: "Export sales (CSV, last 30 days)" → date picker → share
+- Button: "Export products (CSV)" → share
+- Button: "Restore from backup..." → file picker → confirm → restart app
+
+#### Backup reminder
+- Setting: `backupReminderDays` (default 7, 0 = off)
+- Setting: `lastBackupAt`
+- Banner on Settings page if `lastBackupAt` > N days ago: "Backup recommended"
+
+### 4. Receipt Settings UI Expansion
+
+Settings → Receipt section:
+- Receipt size: 80mm / A4 toggle
+- Shop logo upload (optional, R5 polish if time tight)
+- Receipt note (existing)
+- Show shop info toggle (existing)
+
+### 5. Tests
+
+#### Unit
+- `PromptpayQrService.generatePayload`:
+  - Phone format conversion
+  - Citizen ID format
+  - Static vs dynamic
+  - CRC16 calculation correct
+  - Test against known good payloads from spec
+- `BackupService`:
+  - Export creates valid SQLite
+  - Roundtrip: export → wipe → import → data matches (use temp dir)
+  - Reject invalid file
+- CSV export format matches expected
+
+#### Widget
+- Payment sheet shows QR when promptpay selected
+- Receipt PDF preview renders without overflow
+
+#### Integration
+- Full sale → print PDF (use `Printing.layoutPdf` capture buffer)
+- Backup roundtrip with real DB
+
+#### Manual
+- **MUST**: Scan generated QR with K-Plus or another bank app, verify amount + recipient correct
+- Print PDF on actual thermal printer (or Windows print preview)
+
+---
+
+## Success Gate
+
+- ✅ Receipt PDF renders TH + EN, both 80mm + A4
+- ✅ PromptPay QR scannable by ≥2 banking apps with correct amount + recipient
+- ✅ Backup roundtrip preserves all data (verified by test + manual)
+- ✅ CSV exports open cleanly in Excel + Google Sheets
+- ✅ Backup reminder banner appears as configured
+- ✅ Test count grows ~190 → ~210+
+- ✅ CHANGELOG + v0.6.0
+
+---
+
+## Risks & Mitigations
+
+| Risk | Mitigation |
+|---|---|
+| PromptPay QR format wrong | Test with real banking app before merge; include known-good payload tests |
+| PDF Thai font rendering broken | Bundle proper Noto Sans Thai TTF; test with mixed TH/EN content |
+| Backup file corruption | WAL checkpoint before copy; checksum optional; document warning |
+| Restore destroys data | Confirm dialog x2; auto-create pre-restore backup |
+| Large CSV memory issues | Stream rows instead of loading all in memory |
+| Permission issues on Android 13+ | Use share_plus instead of writing to public dirs |
+
+---
+
+## Out of Scope for R4
+
+- ❌ Daily close (R5)
+- ❌ Onboarding wizard (R5)
+- ❌ Cloud backup (Phase 2)
+- ❌ Email receipt (Phase 2)
+
+---
+
+## Definition of Done
+
+```
+□ Receipt PDF generator (80mm + A4) with TH font
+□ Print + Share actions after sale + from history
+□ PromptPay payload generator + CRC16
+□ PromptPay QR display in payment sheet
+□ Manual scan verified with real banking app
+□ Backup export (SQLite full)
+□ Backup import with confirmation + version check
+□ CSV export (sales + products)
+□ Backup reminder banner
+□ Settings UI: receipt size, promptpay id, backup section
+□ All tests pass (~210 total)
+□ CHANGELOG + v0.6.0
+□ PR merged
+```

@@ -21,7 +21,7 @@ void main() {
 
   tearDown(() => db.close());
 
-  Future<Product> _seedProduct({
+  Future<Product> seedProduct({
     String name = 'Test Product',
     double price = 100.0,
     int stock = 50,
@@ -39,7 +39,7 @@ void main() {
   group('SaleLocalDatasourceImpl', () {
     test('insertSaleWithItems creates sale with items and deducts stock',
         () async {
-      final product = await _seedProduct(stock: 50);
+      final product = await seedProduct(stock: 50);
       final cartItem = CartItem(product: product, qty: 3);
 
       final sale = await saleDatasource.insertSaleWithItems(
@@ -63,7 +63,7 @@ void main() {
     });
 
     test('querySales returns sales within date range', () async {
-      final product = await _seedProduct();
+      final product = await seedProduct();
       await saleDatasource.insertSaleWithItems(
         items: [CartItem(product: product, qty: 1)],
         paymentMethod: 'cash',
@@ -79,7 +79,7 @@ void main() {
     });
 
     test('querySaleById returns correct sale', () async {
-      final product = await _seedProduct();
+      final product = await seedProduct();
       final sale = await saleDatasource.insertSaleWithItems(
         items: [CartItem(product: product, qty: 2)],
         paymentMethod: 'transfer',
@@ -98,7 +98,7 @@ void main() {
     });
 
     test('watchRecentSales emits updates', () async {
-      final product = await _seedProduct();
+      final product = await seedProduct();
       final stream = saleDatasource.watchRecentSales(limit: 5);
 
       await saleDatasource.insertSaleWithItems(
@@ -114,7 +114,7 @@ void main() {
     });
 
     test('watchSales emits updates', () async {
-      final product = await _seedProduct();
+      final product = await seedProduct();
       final stream = saleDatasource.watchSales();
 
       await saleDatasource.insertSaleWithItems(

@@ -53,4 +53,28 @@ void main() {
     expect(find.text('Tap a product to add to cart'), findsOneWidget);
     expect(find.text('This copy should be hidden when compact'), findsNothing);
   });
+
+  testWidgets('AppEmptyState fits in very compact height', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            height: 96,
+            child: AppEmptyState(
+              icon: Icons.shopping_cart_outlined,
+              title: 'Tap a product to add to cart',
+              message: 'This copy should be hidden when very compact',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Tap a product to add to cart'), findsOneWidget);
+    expect(
+      find.text('This copy should be hidden when very compact'),
+      findsNothing,
+    );
+  });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -14,6 +15,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     on<SaleCartCleared>(_onCartCleared);
     on<SaleConfirmed>(_onConfirmed);
     on<SaleNoteChanged>(_onNoteChanged);
+    on<SaleCartProductsRefreshed>(_onProductsRefreshed);
   }
 
   final CreateSale _createSale;
@@ -66,6 +68,19 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
 
   void _onNoteChanged(SaleNoteChanged event, Emitter<SaleState> emit) {
     emit(state.copyWith(note: event.note));
+  }
+
+  void _onProductsRefreshed(
+    SaleCartProductsRefreshed event,
+    Emitter<SaleState> emit,
+  ) {
+    if (state.isEmpty) return;
+    final productMap = {for (final Product p in event.products) p.id: p};
+    final updated = state.items
+        .where((i) => productMap.containsKey(i.product.id))
+        .map((i) => i.copyWith(product: productMap[i.product.id]!))
+        .toList();
+    emit(state.copyWith(items: updated));
   }
 
   Future<void> _onConfirmed(

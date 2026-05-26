@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.2.2** — **Stability, data integrity, and UX hardening.** Covers safer sale transactions, stock-limit UI, payment double-submit protection, clearer empty/error states, responsive settings, report refresh, and dependency cleanup.
+> **Latest Release: v0.2.3** — **RenderFlex overflow hotfix (multi-locale layout).** Fixes three distinct layout overflow sources in the sale page, with improved Thai-locale resilience for Noto Sans Thai font metrics.
  
 ---
  
@@ -278,6 +278,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.2.2 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.2.3 · AGPL-3.0</sub>
 
 </div>

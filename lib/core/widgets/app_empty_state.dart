@@ -24,9 +24,26 @@ class AppEmptyState extends StatelessWidget {
       builder: (context, constraints) {
         final compact =
             constraints.hasBoundedHeight && constraints.maxHeight < 160;
-        final padding = compact ? 12.0 : 24.0;
-        final iconSize = compact ? 32.0 : 44.0;
-        final gap = compact ? 8.0 : 12.0;
+        final veryCompact =
+            constraints.hasBoundedHeight && constraints.maxHeight < 120;
+        final padding = veryCompact
+            ? 8.0
+            : compact
+            ? 12.0
+            : 24.0;
+        final iconSize = veryCompact
+            ? 24.0
+            : compact
+            ? 32.0
+            : 44.0;
+        final gap = veryCompact
+            ? 6.0
+            : compact
+            ? 8.0
+            : 12.0;
+        final titleStyle = veryCompact
+            ? theme.textTheme.bodyMedium
+            : theme.textTheme.titleMedium;
 
         return Center(
           child: Padding(
@@ -39,9 +56,13 @@ class AppEmptyState extends StatelessWidget {
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  maxLines: compact ? 2 : null,
+                  maxLines: veryCompact
+                      ? 1
+                      : compact
+                      ? 2
+                      : null,
                   overflow: compact ? TextOverflow.ellipsis : null,
-                  style: theme.textTheme.titleMedium,
+                  style: titleStyle,
                 ),
                 if (message != null && !compact) ...[
                   const SizedBox(height: 6),

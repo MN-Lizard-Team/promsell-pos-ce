@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.3] - 2026-05-26
+
+### Fixed — RenderFlex overflow hotfix + system-wide bug fixes
+
+Layout hotfix for three `RenderFlex` overflows in the sale page, combined with a targeted sweep on data integrity, stale cart state, and cashier UX.
+
+### Highlights
+
+- **Layout correctness:** Removed a phantom `Text` after `Expanded` that received 0dp and caused a 3px overflow on every launch.
+- **Thai-locale resilience:** Increased card `mainAxisExtent` and zeroed implicit `Card` margin to fit Noto Sans Thai diacritic metrics.
+- **DB safety:** `onUpgrade` now throws `UnimplementedError` — schema bumps without a migration fail loudly instead of silently wiping data.
+- **Cart integrity:** Cart snapshots sync live from `ProductBloc`; hard-deleted products are removed automatically before checkout.
+- **Checkout integrity:** Deleted product at confirm time throws a clear `StateError`; DB reads per item halved (2N → N).
+
+### Fixed
+
+#### Sale page
+
+- Removed `BlocBuilder<SaleBloc>` returning `Text` after `Expanded` in `_SaleCatalog` — 0dp allocation caused a 3px bottom overflow.
+- Replaced `Expanded(Text(name))` with `Text(name)` + `Spacer()` in `_ProductCard` to prevent 3–9px overflow from font-metric rounding at high DPI.
+- Increased `mainAxisExtent` (`122→136` narrow, `132→148` wide) for Noto Sans Thai stacked-diacritic height.
+- Added `margin: EdgeInsets.zero` to `_ProductCard`'s `Card` — default `EdgeInsets.all(4)` silently consumed 8dp per grid slot.
+
+#### `AppEmptyState`
+
+- Added `veryCompact` tier (< 120dp): icon `32→24dp`, padding `12→8dp`, style `titleMedium→bodyMedium`, `maxLines: 1`.
+
+#### Database
+
+- `onUpgrade` now throws `UnimplementedError` instead of a silent no-op, preventing data loss on future schema version bumps.
+
+#### Cart state
+
+- Added `SaleCartProductsRefreshed` event: `BlocListener<ProductBloc>` in `_SaleView` syncs cart item snapshots on every product update and auto-removes hard-deleted items.
+
+#### Sale checkout
+
+- Null product now throws `StateError("… no longer exists")` instead of silently bypassing stock validation.
+- Products fetched once into a map and reused across validation and deduction loops — eliminates duplicate DB reads per item.
+
+#### Payment sheet
+
+- `_quickAmounts()` always generates three distinct chips; round totals (e.g. ฿100) no longer collapse to a single "Exact" chip.
+
+### Added
+
+- Regression test: `AppEmptyState fits in very compact height` (96dp bounded height, verifies no overflow).
+
+### Changed
+
+- Removed dead `onChanged: SaleNoteChanged(value)` from the payment sheet note field — note is read from the controller directly at confirm time.
+- Cleaned up 5 lint warnings in test files: `no_leading_underscores_for_local_identifiers`, `prefer_const_constructors`, `prefer_const_literals_to_create_immutables`.
+- Updated documentation (`README.md`, `CODEBASE.md`) and bumped version to `0.2.3+1`.
+
+### Verification
+
+- `flutter test` passed: **131/131 tests**.
+- `flutter analyze` completed with **0 issues**.
+
+---
+
 ## [0.2.2] - 2026-05-26
 
 ### Fixed — Stability, data integrity, and UX hardening
@@ -251,6 +312,7 @@ First public release of Promsell POS Community Edition. Complete offline-first m
 
 ---
 
+[0.2.3]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.3
 [0.2.2]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.2
 [0.2.1]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.1
 [0.2.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.0
