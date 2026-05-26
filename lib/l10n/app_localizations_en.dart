@@ -62,6 +62,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapProductToAdd => 'Tap a product to add to cart';
 
   @override
+  String get noMatchingProducts => 'No matching products';
+
+  @override
+  String get stockLimitReached => 'Stock limit reached';
+
+  @override
   String get cartTotal => 'Total';
 
   @override
@@ -99,6 +105,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notePlaceholder => 'Note (optional)';
 
   @override
+  String get paymentReferenceOptional => 'Payment reference (optional)';
+
+  @override
   String get saleError => 'Failed to save sale';
 
   @override
@@ -115,6 +124,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorOccurred => 'An error occurred';
+
+  @override
+  String get retry => 'Retry';
 
   @override
   String get noCategory => 'No category';

@@ -33,11 +33,14 @@ class _ReportViewState extends State<_ReportView> {
   List<Sale> _sales = [];
   bool _loading = true;
   bool _hasError = false;
-  DateTime _from = DateTime.now().subtract(const Duration(days: 30)).copyWith(
-    hour: 0, minute: 0, second: 0, millisecond: 0,
-  );
+  DateTime _from = DateTime.now()
+      .subtract(const Duration(days: 30))
+      .copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
   DateTime _to = DateTime.now().copyWith(
-    hour: 23, minute: 59, second: 59, millisecond: 999,
+    hour: 23,
+    minute: 59,
+    second: 59,
+    millisecond: 999,
   );
   StreamSubscription<List<Sale>>? _sub;
 
@@ -48,6 +51,10 @@ class _ReportViewState extends State<_ReportView> {
   }
 
   void _startListening() {
+    final now = DateTime.now();
+    if (_to.day != now.day || _to.month != now.month || _to.year != now.year) {
+      _to = now.copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
+    }
     setState(() {
       _loading = true;
       _hasError = false;
@@ -111,17 +118,7 @@ class _ReportViewState extends State<_ReportView> {
       appBar: AppBar(
         title: Text(context.l10n.reportTitle),
         actions: [
-          TextButton.icon(
-            icon: const Icon(Icons.date_range),
-            label: Flexible(
-              child: Text(
-                '${fmt.format(_from)} – ${fmt.format(_to)}',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-            onPressed: _pickRange,
-          ),
+          IconButton(icon: const Icon(Icons.date_range), onPressed: _pickRange),
         ],
       ),
       body: _loading
@@ -130,127 +127,147 @@ class _ReportViewState extends State<_ReportView> {
           ? AppEmptyState(
               icon: Icons.error_outline,
               title: context.l10n.errorOccurred,
+              actionLabel: context.l10n.retry,
+              onAction: _startListening,
             )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _SummaryCard(
-                    title: context.l10n.totalRevenue,
-                    value: _totalRevenue,
-                    currency: settings.currency,
-                    subtitle: context.l10n.salesCount(_sales.length),
-                    icon: Icons.attach_money,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.byPaymentMethod,
-                            style: theme.textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 12),
-                          if (_byMethod.isEmpty)
-                            AppEmptyState(
-                              icon: Icons.payments_outlined,
-                              title: context.l10n.noSalesYet,
-                            )
-                          else
-                            ..._byMethod.entries.map(
-                              (e) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(localizePaymentMethod(context, e.key)),
-                                    MoneyText(
-                                      value: e.value,
-                                      currency: settings.currency,
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ],
+          : RefreshIndicator(
+              onRefresh: () async => _startListening(),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ActionChip(
+                        avatar: const Icon(Icons.date_range),
+                        label: Text(
+                          '${fmt.format(_from)} – ${fmt.format(_to)}',
+                        ),
+                        onPressed: _pickRange,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SummaryCard(
+                      title: context.l10n.totalRevenue,
+                      value: _totalRevenue,
+                      currency: settings.currency,
+                      subtitle: context.l10n.salesCount(_sales.length),
+                      icon: Icons.attach_money,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              context.l10n.byPaymentMethod,
+                              style: theme.textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 12),
+                            if (_byMethod.isEmpty)
+                              AppEmptyState(
+                                icon: Icons.payments_outlined,
+                                title: context.l10n.noSalesYet,
+                              )
+                            else
+                              ..._byMethod.entries.map(
+                                (e) => Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        localizePaymentMethod(context, e.key),
+                                      ),
+                                      MoneyText(
+                                        value: e.value,
+                                        currency: settings.currency,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              context.l10n.topProducts,
+                              style: theme.textTheme.titleSmall,
                             ),
-                        ],
+                            const SizedBox(height: 12),
+                            if (_topProducts.isEmpty)
+                              AppEmptyState(
+                                icon: Icons.leaderboard_outlined,
+                                title: context.l10n.noSalesYet,
+                              )
+                            else
+                              ..._topProducts.entries
+                                  .toList()
+                                  .asMap()
+                                  .entries
+                                  .map((entry) {
+                                    final rank = entry.key + 1;
+                                    final e = entry.value;
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 14,
+                                            backgroundColor: theme
+                                                .colorScheme
+                                                .primaryContainer,
+                                            child: Text(
+                                              '$rank',
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(child: Text(e.key)),
+                                          Text(
+                                            context.l10n.units(e.value),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.topProducts,
-                            style: theme.textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 12),
-                          if (_topProducts.isEmpty)
-                            AppEmptyState(
-                              icon: Icons.leaderboard_outlined,
-                              title: context.l10n.noSalesYet,
-                            )
-                          else
-                            ..._topProducts.entries
-                                .toList()
-                                .asMap()
-                                .entries
-                                .map((entry) {
-                                  final rank = entry.key + 1;
-                                  final e = entry.value;
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 4,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 14,
-                                          backgroundColor: theme
-                                              .colorScheme
-                                              .primaryContainer,
-                                          child: Text(
-                                            '$rank',
-                                            style: theme.textTheme.bodySmall
-                                                ?.copyWith(
-                                                  color:
-                                                      theme.colorScheme.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(child: Text(e.key)),
-                                        Text(
-                                          context.l10n.units(e.value),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
     );

@@ -5,18 +5,22 @@ const Object _unset = Object();
 
 enum ProductStatus { initial, loading, success, failure }
 
+enum ProductSaveStatus { idle, saving, saved, error }
+
 class ProductState extends Equatable {
   const ProductState({
     this.status = ProductStatus.initial,
     this.products = const [],
     this.searchQuery = '',
     this.errorMessage,
+    this.saveStatus = ProductSaveStatus.idle,
   });
 
   final ProductStatus status;
   final List<Product> products;
   final String searchQuery;
   final String? errorMessage;
+  final ProductSaveStatus saveStatus;
 
   List<Product> get filtered {
     if (searchQuery.isEmpty) return products;
@@ -35,6 +39,7 @@ class ProductState extends Equatable {
     List<Product>? products,
     String? searchQuery,
     Object? errorMessage = _unset,
+    ProductSaveStatus? saveStatus,
   }) {
     return ProductState(
       status: status ?? this.status,
@@ -43,9 +48,16 @@ class ProductState extends Equatable {
       errorMessage: identical(errorMessage, _unset)
           ? this.errorMessage
           : errorMessage as String?,
+      saveStatus: saveStatus ?? this.saveStatus,
     );
   }
 
   @override
-  List<Object?> get props => [status, products, searchQuery, errorMessage];
+  List<Object?> get props => [
+    status,
+    products,
+    searchQuery,
+    errorMessage,
+    saveStatus,
+  ];
 }

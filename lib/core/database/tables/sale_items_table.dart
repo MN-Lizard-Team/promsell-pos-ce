@@ -6,6 +6,7 @@ class SaleItems extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get saleId =>
       integer().references(Sales, #id, onDelete: KeyAction.cascade)();
+  // Intentionally no FK to Products — sale history must survive product deletion.
   IntColumn get productId => integer()();
   TextColumn get productName => text()();
   RealColumn get price => real()();

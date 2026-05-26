@@ -7,6 +7,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.2] - 2026-05-26
+
+### Fixed — Stability, data integrity, and UX hardening
+
+A stability and UX hardening release for the offline POS workflow: safer sales writes, clearer cashier feedback, tighter BLoC behavior, leaner dependencies, and better compact-screen usability.
+
+### Highlights
+
+- **Data safety:** Stock is validated before sale-item insertion, while checkout still remains transaction-protected.
+- **Cashier UX:** Cart quantity limits, product quantity badges, cleaner add-to-cart feedback, payment references, and double-submit protection.
+- **State reliability:** Product, sale, history, and settings flows now recover and refresh more predictably.
+- **UI consistency:** Theme-aware danger colors, safer dialog contexts, clearer empty states, retry actions, and responsive settings controls.
+- **Maintenance:** Removed unused dependencies and dead DI registrations; documented intentional singleton usage.
+
+### Fixed
+
+#### Sale and checkout
+
+- Prevented partial sale-item work by validating all item stock before insert/deduct operations.
+- Added stock-limit protection to cart quantity controls and kept database validation as the final authority.
+- Prevented duplicate payment submissions from rapid double taps.
+- Added optional transfer/card payment reference support, stored through the sale note.
+- Made payment sheet dismissal safe when the sheet context is already unmounted.
+- Reset sale state correctly after a completed sale when starting a new cart.
+
+#### Products and inventory
+
+- Reworked `ProductBloc` stream handling to avoid blocking refresh flows.
+- Added reliable product save status handling so forms close only after confirmed saves.
+- Reset stale product save status on product stream updates.
+- Added product-card cart quantity badges in the sale catalog.
+- Reduced noisy add-to-cart SnackBars for repeated taps.
+- Made product delete dialogs use a captured BLoC and dialog-local navigation context.
+- Improved stock-zero warning and product form feedback.
+
+#### History and reports
+
+- Limited initial history loading to a default 30-day range.
+- Made history date picker reopen with the current selected range.
+- Replaced fake refresh delays with state-based refresh completion.
+- Fixed report date ranges that could go stale overnight.
+- Moved report date range display out of the AppBar into a compact filter chip.
+- Added pull-to-refresh support to the report dashboard.
+
+#### Settings and localization
+
+- Settings load failures now fall back to usable default settings instead of leaving the app in a failure state.
+- Removed duplicate settings save notifications for live locale/theme changes.
+- Added dirty-state awareness for manually saved text settings.
+- Improved responsive settings dropdown layout on compact screens.
+- Added EN/TH strings for retry actions, no-match states, stock limits, and payment references.
+
+#### UI, accessibility, and resilience
+
+- Replaced hardcoded destructive colors with `colorScheme.error`.
+- Added retry actions to shared empty/error states.
+- Improved dialog context safety for cart clearing and product deletion.
+- Clarified intentional `SaleItems.productId` behavior so sale history survives product deletion.
+- Documented the intentional singleton lifecycle for `ProductBloc`.
+
+### Removed
+
+- Removed unused direct dependencies: `go_router`, `uuid`, `permission_handler`, `image_picker`, `cached_network_image`, `qr_flutter`, and `path`.
+- Removed unused DI registrations for `GetReport` and `GetSaleHistory` while keeping their source/test coverage for future use.
+- Deleted the empty `date_formatter.dart` file.
+
+### Changed
+
+- Updated generated localization files after adding new EN/TH keys.
+- Updated SettingsCubit tests to match the load-failure fallback behavior.
+- Updated documentation and audit notes for the completed stability and UX hardening work.
+- Bumped version to `0.2.2+1`.
+
+### Verification
+
+- `flutter gen-l10n` completed successfully.
+- `flutter test` passed: **130/130 tests**.
+- `flutter analyze` completed with **0 errors** and only pre-existing info-level hints in tests.
+
+---
+
 ## [0.2.1] - 2026-05-26
 
 ### Added — Comprehensive test suite & UI/UX improvements
@@ -170,6 +251,7 @@ First public release of Promsell POS Community Edition. Complete offline-first m
 
 ---
 
+[0.2.2]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.2
 [0.2.1]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.1
 [0.2.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.0
 [0.1.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.1.0

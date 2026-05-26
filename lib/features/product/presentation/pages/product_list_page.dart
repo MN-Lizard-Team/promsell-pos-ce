@@ -110,18 +110,18 @@ class _ProductListViewState extends State<_ProductListView> {
                       }
                       return RefreshIndicator(
                         onRefresh: () async {
-                          context
-                              .read<ProductBloc>()
-                              .add(const ProductsSubscribed());
-                          await Future.delayed(
-                            const Duration(milliseconds: 500),
+                          final bloc = context.read<ProductBloc>();
+                          bloc.add(const ProductsSubscribed());
+                          await bloc.stream.firstWhere(
+                            (s) =>
+                                s.status == ProductStatus.success ||
+                                s.status == ProductStatus.failure,
                           );
                         },
                         child: ListView.separated(
                           padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
                           itemCount: products.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (context, i) =>
                               _ProductTile(product: products[i]),
                         ),
@@ -148,9 +148,9 @@ class _ProductListViewState extends State<_ProductListView> {
       ),
     );
     if (result == true && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.productSaved)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.productSaved)));
     }
   }
 }
@@ -274,8 +274,8 @@ class _ProductTile extends StatelessWidget {
     );
   }
 
-  void _showEdit(BuildContext context) {
-    showModalBottomSheet(
+  void _showEdit(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -284,6 +284,11 @@ class _ProductTile extends StatelessWidget {
         child: ProductFormPage(product: product),
       ),
     );
+    if (result == true && context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.productSaved)));
+    }
   }
 
   void _confirmDelete(BuildContext context) {
@@ -304,7 +309,7 @@ class _ProductTile extends StatelessWidget {
             },
             child: Text(
               context.l10n.delete,
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         ],

@@ -169,8 +169,9 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 ### Report tab
 
-- Tap **Date range** in app bar to pick custom range (default: last 30 days)
+- Tap the date icon or date filter chip to pick a custom range (default: last 30 days)
 - Shows a dashboard with total revenue, sales count, payment method breakdown, and top 5 products
+- Pull down to refresh the report dashboard
 - Empty states are shown when there are no sales in the selected date range
 
 ### Settings tab

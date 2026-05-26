@@ -5,7 +5,6 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/history/data/repositories/history_repository_impl.dart';
 import 'package:promsell_pos_ce/features/history/domain/repositories/history_repository.dart';
-import 'package:promsell_pos_ce/features/history/domain/usecases/get_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
@@ -15,7 +14,6 @@ import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dar
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
-import 'package:promsell_pos_ce/features/report/domain/usecases/get_report.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/sale/data/repositories/sale_repository_impl.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
@@ -56,14 +54,13 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => CreateSale(sl()));
 
   // Use Cases — History
-  sl.registerLazySingleton(() => GetSaleHistory(sl()));
   sl.registerLazySingleton(() => WatchSaleHistory(sl()));
 
   // Use Cases — Report
-  sl.registerLazySingleton(() => GetReport(sl()));
   sl.registerLazySingleton(() => WatchReport(sl()));
 
-  // BLoCs
+  // BLoCs — ProductBloc is a singleton intentionally: shared across Sale and
+  // Product pages via IndexedStack so all tabs see the same product list.
   sl.registerLazySingleton<ProductBloc>(
     () => ProductBloc(
       getProducts: sl(),

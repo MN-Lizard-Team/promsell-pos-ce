@@ -107,117 +107,117 @@ class _SaleCatalogState extends State<_SaleCatalog> {
           ),
           const SizedBox(height: 10),
           Expanded(
-          child: BlocBuilder<ProductBloc, ProductState>(
-            builder: (ctx, state) {
-              if (state.status == ProductStatus.loading ||
-                  state.status == ProductStatus.initial) {
-                return const Center(child: CircularProgressIndicator());
-              }
+            child: BlocBuilder<ProductBloc, ProductState>(
+              builder: (ctx, state) {
+                if (state.status == ProductStatus.loading ||
+                    state.status == ProductStatus.initial) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-              if (state.status == ProductStatus.failure) {
-                return AppEmptyState(
-                  icon: Icons.error_outline,
-                  title: state.errorMessage ?? ctx.l10n.errorOccurred,
-                );
-              }
+                if (state.status == ProductStatus.failure) {
+                  return AppEmptyState(
+                    icon: Icons.error_outline,
+                    title: state.errorMessage ?? ctx.l10n.errorOccurred,
+                  );
+                }
 
-              final activeProducts = state.filtered
-                  .where((product) => product.isActive && product.isInStock)
-                  .toList();
-              final categories = _categoriesOf(activeProducts);
-              final selectedCategory = categories.contains(_selectedCategory)
-                  ? _selectedCategory
-                  : null;
-              final products = selectedCategory == null
-                  ? activeProducts
-                  : activeProducts
-                        .where(
-                          (product) => product.category == selectedCategory,
-                        )
-                        .toList();
+                final activeProducts = state.filtered
+                    .where((product) => product.isActive && product.isInStock)
+                    .toList();
+                final categories = _categoriesOf(activeProducts);
+                final selectedCategory = categories.contains(_selectedCategory)
+                    ? _selectedCategory
+                    : null;
+                final products = selectedCategory == null
+                    ? activeProducts
+                    : activeProducts
+                          .where(
+                            (product) => product.category == selectedCategory,
+                          )
+                          .toList();
 
-              if (activeProducts.isEmpty) {
-                return AppEmptyState(
-                  icon: Icons.inventory_2_outlined,
-                  title: ctx.l10n.noProducts,
-                  message: ctx.l10n.tapProductToAdd,
-                );
-              }
+                if (activeProducts.isEmpty) {
+                  return AppEmptyState(
+                    icon: Icons.inventory_2_outlined,
+                    title: ctx.l10n.noProducts,
+                    message: ctx.l10n.tapProductToAdd,
+                  );
+                }
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    height: 44,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: categories.length + 1,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (_, index) {
-                        final isAll = index == 0;
-                        final category = isAll ? null : categories[index - 1];
-                        final selected = selectedCategory == category;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: 44,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categories.length + 1,
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
+                        itemBuilder: (_, index) {
+                          final isAll = index == 0;
+                          final category = isAll ? null : categories[index - 1];
+                          final selected = selectedCategory == category;
 
-                        return ChoiceChip(
-                          label: Text(
-                            isAll ? ctx.l10n.allCategories : category!,
-                          ),
-                          selected: selected,
-                          onSelected: (_) =>
-                              setState(() => _selectedCategory = category),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (products.isEmpty)
-                    Expanded(
-                      child: AppEmptyState(
-                        icon: Icons.search_off,
-                        title: ctx.l10n.noProducts,
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isWide = constraints.maxWidth >= 720;
-
-                          return GridView.builder(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            gridDelegate:
-                                SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: isWide ? 210 : 176,
-                                  mainAxisExtent: isWide ? 132 : 122,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                ),
-                            itemCount: products.length,
-                            itemBuilder: (_, index) => _ProductCard(
-                              product: products[index],
-                              currency: currency,
+                          return ChoiceChip(
+                            label: Text(
+                              isAll ? ctx.l10n.allCategories : category!,
                             ),
+                            selected: selected,
+                            onSelected: (_) =>
+                                setState(() => _selectedCategory = category),
                           );
                         },
                       ),
                     ),
-                ],
+                    const SizedBox(height: 10),
+                    if (products.isEmpty)
+                      Expanded(
+                        child: AppEmptyState(
+                          icon: Icons.search_off,
+                          title: ctx.l10n.noMatchingProducts,
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isWide = constraints.maxWidth >= 720;
+
+                            return GridView.builder(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              gridDelegate:
+                                  SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: isWide ? 210 : 176,
+                                    mainAxisExtent: isWide ? 132 : 122,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
+                                  ),
+                              itemCount: products.length,
+                              itemBuilder: (_, index) => _ProductCard(
+                                product: products[index],
+                                currency: currency,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+          BlocBuilder<SaleBloc, SaleState>(
+            builder: (_, saleState) {
+              if (!saleState.isEmpty) return const SizedBox.shrink();
+              return Text(
+                context.l10n.tapProductToAdd,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               );
             },
           ),
-        ),
-        BlocBuilder<SaleBloc, SaleState>(
-          builder: (_, saleState) {
-            if (!saleState.isEmpty) return const SizedBox.shrink();
-            return Text(
-              context.l10n.tapProductToAdd,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            );
-          },
-        ),
         ],
       ),
     );
@@ -246,6 +246,11 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cartQty = context.select<SaleBloc, int>(
+      (bloc) => bloc.state.items
+          .where((item) => item.product.id == product.id)
+          .fold(0, (sum, item) => sum + item.qty),
+    );
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -253,72 +258,87 @@ class _ProductCard extends StatelessWidget {
         onTap: () {
           HapticFeedback.selectionClick();
           context.read<SaleBloc>().add(SaleProductAdded(product));
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.productAddedToCart(product.name)),
-                duration: const Duration(milliseconds: 1200),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+          if (cartQty == 0) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Text(context.l10n.productAddedToCart(product.name)),
+                  duration: const Duration(milliseconds: 1200),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+          }
         },
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.inventory_2_outlined,
-                    size: 18,
-                    color: theme.colorScheme.primary,
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.inventory_2_outlined,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          product.category ?? context.l10n.noCategory,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(height: 8),
                   Expanded(
                     child: Text(
-                      product.category ?? context.l10n.noCategory,
-                      maxLines: 1,
+                      product.name,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: MoneyText(
+                          value: product.price,
+                          currency: currency,
+                          style: theme.textTheme.titleMedium,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        context.l10n.stockLabel(product.stock),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Text(
-                  product.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+            ),
+            if (cartQty > 0)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Badge(
+                  label: Text('×$cartQty'),
+                  backgroundColor: theme.colorScheme.primary,
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: MoneyText(
-                      value: product.price,
-                      currency: currency,
-                      style: theme.textTheme.titleMedium,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                  Text(
-                    context.l10n.stockLabel(product.stock),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -438,20 +458,21 @@ class _CartHeader extends StatelessWidget {
   }
 
   void _confirmClearCart(BuildContext context) {
+    final bloc = context.read<SaleBloc>();
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: Text(context.l10n.clearCart),
         content: Text(context.l10n.confirmClearCart),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogCtx),
             child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () {
-              context.read<SaleBloc>().add(const SaleCartCleared());
-              Navigator.pop(context);
+              bloc.add(const SaleCartCleared());
+              Navigator.pop(dialogCtx);
             },
             child: Text(
               context.l10n.clearCart,
@@ -473,6 +494,7 @@ class _CartItemRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final atStockLimit = item.qty >= item.product.stock;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -528,13 +550,25 @@ class _CartItemRow extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.add),
-                  onPressed: () => context.read<SaleBloc>().add(
-                    SaleItemQtyChanged(
-                      productId: item.product.id,
-                      qty: item.qty + 1,
+                  tooltip: atStockLimit ? context.l10n.stockLimitReached : null,
+                  onPressed: atStockLimit
+                      ? null
+                      : () => context.read<SaleBloc>().add(
+                          SaleItemQtyChanged(
+                            productId: item.product.id,
+                            qty: item.qty + 1,
+                          ),
+                        ),
+                ),
+                if (atStockLimit)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: theme.colorScheme.error,
                     ),
                   ),
-                ),
               ],
             ),
             ConstrainedBox(

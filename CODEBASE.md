@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.2.1
+# CODEBASE.md — Promsell POS CE v0.2.2
 
 ## System overview
 
@@ -212,7 +212,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-126 automated tests across 7 layers. Run with `flutter test`.
+130 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 

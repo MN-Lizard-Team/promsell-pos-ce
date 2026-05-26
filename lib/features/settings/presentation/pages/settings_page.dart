@@ -10,29 +10,10 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SettingsCubit, SettingsState>(
-      listenWhen: (_, curr) =>
-          curr.status == SettingsStatus.saved ||
-          curr.status == SettingsStatus.failure,
-      listener: (ctx, state) {
-        if (state.status == SettingsStatus.saved) {
-          ScaffoldMessenger.of(
-            ctx,
-          ).showSnackBar(SnackBar(content: Text(ctx.l10n.settingsSaved)));
-        } else if (state.status == SettingsStatus.failure) {
-          ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(
-              content: Text(ctx.l10n.errorOccurred),
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-          );
-        }
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (ctx, state) {
+        return _SettingsView(settings: state.settings);
       },
-      child: BlocBuilder<SettingsCubit, SettingsState>(
-        builder: (ctx, state) {
-          return _SettingsView(settings: state.settings);
-        },
-      ),
     );
   }
 }
@@ -51,6 +32,13 @@ class _SettingsViewState extends State<_SettingsView> {
   late final TextEditingController _addressCtrl;
   late final TextEditingController _phoneCtrl;
   late final TextEditingController _receiptNoteCtrl;
+  bool _manualSave = false;
+
+  bool get _hasTextChanges =>
+      _shopNameCtrl.text.trim() != _draft.shopName ||
+      _addressCtrl.text.trim() != _draft.address ||
+      _phoneCtrl.text.trim() != _draft.phone ||
+      _receiptNoteCtrl.text.trim() != _draft.receiptNote;
 
   @override
   void initState() {
@@ -92,6 +80,8 @@ class _SettingsViewState extends State<_SettingsView> {
   }
 
   void _save() {
+    if (!_hasTextChanges) return;
+    _manualSave = true;
     final updated = _draft.copyWith(
       shopName: _shopNameCtrl.text.trim(),
       address: _addressCtrl.text.trim(),
@@ -106,135 +96,181 @@ class _SettingsViewState extends State<_SettingsView> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settingsTitle),
-        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-          children: [
-            SectionCard(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                children: [
-                  _SectionHeader(l10n.settingsGeneral),
-                  _LanguageTile(
-                    current: _draft.locale,
-                    onChanged: (locale) {
-                      setState(() => _draft = _draft.copyWith(locale: locale));
-                      context.read<SettingsCubit>().update(
-                        _draft.copyWith(locale: locale),
-                      );
-                    },
-                  ),
-                  _ThemeTile(
-                    current: _draft.themeMode,
-                    onChanged: (mode) {
-                      setState(() => _draft = _draft.copyWith(themeMode: mode));
-                      context.read<SettingsCubit>().update(
-                        _draft.copyWith(themeMode: mode),
-                      );
-                    },
-                  ),
-                ],
-              ),
+    return BlocListener<SettingsCubit, SettingsState>(
+      listenWhen: (_, curr) =>
+          curr.status == SettingsStatus.saved ||
+          curr.status == SettingsStatus.failure,
+      listener: (ctx, state) {
+        if (state.status == SettingsStatus.saved && _manualSave) {
+          _manualSave = false;
+          ScaffoldMessenger.of(
+            ctx,
+          ).showSnackBar(SnackBar(content: Text(ctx.l10n.settingsSaved)));
+        } else if (state.status == SettingsStatus.failure) {
+          _manualSave = false;
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(
+              content: Text(ctx.l10n.errorOccurred),
+              backgroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            const SizedBox(height: 12),
-            SectionCard(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                children: [
-                  _SectionHeader(l10n.settingsShopInfo),
-                  _TextField(
-                    controller: _shopNameCtrl,
-                    label: l10n.settingsShopName,
-                    icon: Icons.store_outlined,
-                  ),
-                  _TextField(
-                    controller: _addressCtrl,
-                    label: l10n.settingsAddress,
-                    icon: Icons.location_on_outlined,
-                    maxLines: 2,
-                  ),
-                  _TextField(
-                    controller: _phoneCtrl,
-                    label: l10n.settingsPhone,
-                    icon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            SectionCard(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                children: [
-                  _SectionHeader(l10n.settingsSales),
-                  _CurrencyTile(
-                    current: _draft.currency,
-                    onChanged: (currency) {
-                      final updated = _draft.copyWith(currency: currency);
-                      setState(() => _draft = updated);
-                      context.read<SettingsCubit>().update(updated);
-                    },
-                  ),
-                  _DateFormatTile(
-                    current: _draft.dateFormat,
-                    onChanged: (format) {
-                      final updated = _draft.copyWith(dateFormat: format);
-                      setState(() => _draft = updated);
-                      context.read<SettingsCubit>().update(updated);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            SectionCard(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                children: [
-                  _SectionHeader(l10n.settingsReceipt),
-                  _TextField(
-                    controller: _receiptNoteCtrl,
-                    label: l10n.settingsReceiptNote,
-                    icon: Icons.receipt_long_outlined,
-                    maxLines: 3,
-                  ),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.info_outline),
-                    title: Text(l10n.settingsShowShopInfo),
-                    value: _draft.showShopInfoOnReceipt,
-                    onChanged: (value) {
-                      final updated = _draft.copyWith(
-                        showShopInfoOnReceipt: value,
-                      );
-                      setState(() => _draft = updated);
-                      context.read<SettingsCubit>().update(updated);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: _save,
-              icon: const Icon(Icons.save_outlined),
-              label: Text(l10n.save),
-            ),
-            const SizedBox(height: 24),
-            Center(
-              child: Text(
-                'Promsell POS CE',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.settingsTitle),
+          actions: [
+            ListenableBuilder(
+              listenable: Listenable.merge([
+                _shopNameCtrl,
+                _addressCtrl,
+                _phoneCtrl,
+                _receiptNoteCtrl,
+              ]),
+              builder: (_, _) => TextButton(
+                onPressed: _hasTextChanges ? _save : null,
+                child: Text(l10n.save),
               ),
             ),
           ],
+        ),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+            children: [
+              SectionCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    _SectionHeader(l10n.settingsGeneral),
+                    _LanguageTile(
+                      current: _draft.locale,
+                      onChanged: (locale) {
+                        setState(
+                          () => _draft = _draft.copyWith(locale: locale),
+                        );
+                        context.read<SettingsCubit>().update(
+                          _draft.copyWith(locale: locale),
+                        );
+                      },
+                    ),
+                    _ThemeTile(
+                      current: _draft.themeMode,
+                      onChanged: (mode) {
+                        setState(
+                          () => _draft = _draft.copyWith(themeMode: mode),
+                        );
+                        context.read<SettingsCubit>().update(
+                          _draft.copyWith(themeMode: mode),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SectionCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    _SectionHeader(l10n.settingsShopInfo),
+                    _TextField(
+                      controller: _shopNameCtrl,
+                      label: l10n.settingsShopName,
+                      icon: Icons.store_outlined,
+                    ),
+                    _TextField(
+                      controller: _addressCtrl,
+                      label: l10n.settingsAddress,
+                      icon: Icons.location_on_outlined,
+                      maxLines: 2,
+                    ),
+                    _TextField(
+                      controller: _phoneCtrl,
+                      label: l10n.settingsPhone,
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SectionCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    _SectionHeader(l10n.settingsSales),
+                    _CurrencyTile(
+                      current: _draft.currency,
+                      onChanged: (currency) {
+                        final updated = _draft.copyWith(currency: currency);
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                    _DateFormatTile(
+                      current: _draft.dateFormat,
+                      onChanged: (format) {
+                        final updated = _draft.copyWith(dateFormat: format);
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SectionCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    _SectionHeader(l10n.settingsReceipt),
+                    _TextField(
+                      controller: _receiptNoteCtrl,
+                      label: l10n.settingsReceiptNote,
+                      icon: Icons.receipt_long_outlined,
+                      maxLines: 3,
+                    ),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.info_outline),
+                      title: Text(l10n.settingsShowShopInfo),
+                      value: _draft.showShopInfoOnReceipt,
+                      onChanged: (value) {
+                        final updated = _draft.copyWith(
+                          showShopInfoOnReceipt: value,
+                        );
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListenableBuilder(
+                listenable: Listenable.merge([
+                  _shopNameCtrl,
+                  _addressCtrl,
+                  _phoneCtrl,
+                  _receiptNoteCtrl,
+                ]),
+                builder: (_, _) => FilledButton.icon(
+                  onPressed: _hasTextChanges ? _save : null,
+                  icon: const Icon(Icons.save_outlined),
+                  label: Text(l10n.save),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Text(
+                  'Promsell POS CE',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -301,12 +337,12 @@ class _LanguageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return ListTile(
-      leading: const Icon(Icons.language),
-      title: Text(l10n.settingsLanguage),
-      trailing: DropdownButton<String>(
+    return _ResponsiveSettingsPicker(
+      icon: Icons.language,
+      title: l10n.settingsLanguage,
+      child: DropdownButton<String>(
         value: current.languageCode,
-        underline: const SizedBox.shrink(),
+        isExpanded: true,
         items: [
           DropdownMenuItem(value: 'th', child: Text(l10n.langThai)),
           DropdownMenuItem(value: 'en', child: Text(l10n.langEnglish)),
@@ -327,12 +363,12 @@ class _ThemeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return ListTile(
-      leading: const Icon(Icons.brightness_6_outlined),
-      title: Text(l10n.settingsTheme),
-      trailing: DropdownButton<ThemeMode>(
+    return _ResponsiveSettingsPicker(
+      icon: Icons.brightness_6_outlined,
+      title: l10n.settingsTheme,
+      child: DropdownButton<ThemeMode>(
         value: current,
-        underline: const SizedBox.shrink(),
+        isExpanded: true,
         items: [
           DropdownMenuItem(
             value: ThemeMode.light,
@@ -362,12 +398,12 @@ class _CurrencyTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.attach_money),
-      title: Text(context.l10n.settingsCurrency),
-      trailing: DropdownButton<String>(
+    return _ResponsiveSettingsPicker(
+      icon: Icons.attach_money,
+      title: context.l10n.settingsCurrency,
+      child: DropdownButton<String>(
         value: current,
-        underline: const SizedBox.shrink(),
+        isExpanded: true,
         items: const [
           DropdownMenuItem(value: '฿', child: Text('฿ (THB)')),
           DropdownMenuItem(value: '\$', child: Text('\$ (USD)')),
@@ -388,12 +424,12 @@ class _DateFormatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.calendar_today_outlined),
-      title: Text(context.l10n.settingsDateFormat),
-      trailing: DropdownButton<String>(
+    return _ResponsiveSettingsPicker(
+      icon: Icons.calendar_today_outlined,
+      title: context.l10n.settingsDateFormat,
+      child: DropdownButton<String>(
         value: current,
-        underline: const SizedBox.shrink(),
+        isExpanded: true,
         items: const [
           DropdownMenuItem(value: 'dd/MM/yyyy', child: Text('dd/MM/yyyy')),
           DropdownMenuItem(value: 'MM/dd/yyyy', child: Text('MM/dd/yyyy')),
@@ -403,6 +439,51 @@ class _DateFormatTile extends StatelessWidget {
           if (v != null) onChanged(v);
         },
       ),
+    );
+  }
+}
+
+class _ResponsiveSettingsPicker extends StatelessWidget {
+  const _ResponsiveSettingsPicker({
+    required this.icon,
+    required this.title,
+    required this.child,
+  });
+
+  final IconData icon;
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 360) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon),
+                    const SizedBox(width: 16),
+                    Expanded(child: Text(title)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                child,
+              ],
+            ),
+          );
+        }
+
+        return ListTile(
+          leading: Icon(icon),
+          title: Text(title),
+          trailing: SizedBox(width: 180, child: child),
+        );
+      },
     );
   }
 }

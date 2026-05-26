@@ -30,7 +30,13 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     } else {
       updated.add(CartItem(product: event.product, qty: 1));
     }
-    emit(state.copyWith(items: updated));
+    emit(
+      state.copyWith(
+        items: updated,
+        status: SaleStatus.idle,
+        errorMessage: null,
+      ),
+    );
   }
 
   void _onProductRemoved(SaleProductRemoved event, Emitter<SaleState> emit) {

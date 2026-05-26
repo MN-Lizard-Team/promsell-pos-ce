@@ -200,6 +200,18 @@ abstract class AppLocalizations {
   /// **'แตะสินค้าเพื่อเพิ่มลงตะกร้า'**
   String get tapProductToAdd;
 
+  /// No description provided for @noMatchingProducts.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบสินค้าที่ตรงกัน'**
+  String get noMatchingProducts;
+
+  /// No description provided for @stockLimitReached.
+  ///
+  /// In th, this message translates to:
+  /// **'ถึงจำนวนคงเหลือแล้ว'**
+  String get stockLimitReached;
+
   /// No description provided for @cartTotal.
   ///
   /// In th, this message translates to:
@@ -266,6 +278,12 @@ abstract class AppLocalizations {
   /// **'หมายเหตุ (ไม่บังคับ)'**
   String get notePlaceholder;
 
+  /// No description provided for @paymentReferenceOptional.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขอ้างอิงการชำระเงิน (ไม่บังคับ)'**
+  String get paymentReferenceOptional;
+
   /// No description provided for @saleError.
   ///
   /// In th, this message translates to:
@@ -301,6 +319,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'เกิดข้อผิดพลาด'**
   String get errorOccurred;
+
+  /// No description provided for @retry.
+  ///
+  /// In th, this message translates to:
+  /// **'ลองอีกครั้ง'**
+  String get retry;
 
   /// No description provided for @noCategory.
   ///

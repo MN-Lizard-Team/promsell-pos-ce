@@ -17,6 +17,8 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
+    // TODO: Add migration steps before bumping schemaVersion.
+    // Leaving this empty will silently drop data on schema changes.
     onUpgrade: (m, from, to) async {},
   );
 

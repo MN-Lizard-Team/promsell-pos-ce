@@ -62,6 +62,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get tapProductToAdd => 'แตะสินค้าเพื่อเพิ่มลงตะกร้า';
 
   @override
+  String get noMatchingProducts => 'ไม่พบสินค้าที่ตรงกัน';
+
+  @override
+  String get stockLimitReached => 'ถึงจำนวนคงเหลือแล้ว';
+
+  @override
   String get cartTotal => 'รวม';
 
   @override
@@ -99,6 +105,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get notePlaceholder => 'หมายเหตุ (ไม่บังคับ)';
 
   @override
+  String get paymentReferenceOptional => 'เลขอ้างอิงการชำระเงิน (ไม่บังคับ)';
+
+  @override
   String get saleError => 'บันทึกการขายไม่สำเร็จ';
 
   @override
@@ -115,6 +124,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get errorOccurred => 'เกิดข้อผิดพลาด';
+
+  @override
+  String get retry => 'ลองอีกครั้ง';
 
   @override
   String get noCategory => 'ไม่มีหมวดหมู่';

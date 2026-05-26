@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "en",
   "appTitle": "Promsell POS",
 
@@ -22,6 +22,8 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "tapProductToAdd": "Tap a product to add to cart",
+  "noMatchingProducts": "No matching products",
+  "stockLimitReached": "Stock limit reached",
   "cartTotal": "Total",
   "checkout": "Checkout ({count})",
   "@checkout": {
@@ -40,6 +42,7 @@
   "change": "Change",
   "confirmPayment": "Confirm Payment",
   "notePlaceholder": "Note (optional)",
+  "paymentReferenceOptional": "Payment reference (optional)",
   "saleError": "Failed to save sale",
   "insufficientCash": "Insufficient cash received",
 
@@ -47,6 +50,7 @@
   "searchProducts": "Search products...",
   "noProductsYet": "No products yet",
   "errorOccurred": "An error occurred",
+  "retry": "Retry",
   "noCategory": "No category",
   "stockLabel": "Stock: {count}",
   "@stockLabel": {

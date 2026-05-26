@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 
@@ -46,8 +47,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
     super.dispose();
   }
 
+  bool _submitted = false;
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
+    if (_submitted) return;
+    _submitted = true;
     final bloc = context.read<ProductBloc>();
     if (_isEditing) {
       bloc.add(
@@ -75,7 +80,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
         ),
       );
     }
-    Navigator.pop(context, true);
   }
 
   @override
@@ -83,137 +87,174 @@ class _ProductFormPageState extends State<ProductFormPage> {
     final theme = Theme.of(context);
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 12,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: Form(
-          key: _formKey,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final useTwoColumns = constraints.maxWidth >= 420;
-              final priceField = _ProductTextField(
-                controller: _priceCtrl,
-                labelText: context.l10n.priceLabel(currency),
-                icon: Icons.sell_outlined,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return context.l10n.priceRequired;
-                  }
-                  final parsed = double.tryParse(value);
-                  if (parsed == null || parsed <= 0) {
-                    return context.l10n.invalidPrice;
-                  }
-                  return null;
-                },
-              );
-              final stockField = _ProductTextField(
-                controller: _stockCtrl,
-                labelText: context.l10n.quantityLabel,
-                icon: Icons.inventory_outlined,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                helperText: (int.tryParse(_stockCtrl.text) ?? -1) == 0
-                    ? context.l10n.stockZeroWarning
-                    : null,
-                onChanged: (_) => setState(() {}),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return context.l10n.quantityRequired;
-                  }
-                  if (int.tryParse(value) == null) {
-                    return context.l10n.invalidQuantity;
-                  }
-                  return null;
-                },
-              );
+    return BlocListener<ProductBloc, ProductState>(
+      listenWhen: (prev, curr) =>
+          _submitted && prev.saveStatus != curr.saveStatus,
+      listener: (ctx, state) {
+        if (state.saveStatus == ProductSaveStatus.saved) {
+          Navigator.pop(ctx, true);
+        } else if (state.saveStatus == ProductSaveStatus.error) {
+          _submitted = false;
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? ctx.l10n.errorOccurred),
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+          );
+        }
+      },
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 12,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Form(
+            key: _formKey,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final useTwoColumns = constraints.maxWidth >= 420;
+                final priceField = _ProductTextField(
+                  controller: _priceCtrl,
+                  labelText: context.l10n.priceLabel(currency),
+                  icon: Icons.sell_outlined,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
+                    ),
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.priceRequired;
+                    }
+                    final parsed = double.tryParse(value);
+                    if (parsed == null || parsed <= 0) {
+                      return context.l10n.invalidPrice;
+                    }
+                    return null;
+                  },
+                );
+                final stockField = _ProductTextField(
+                  controller: _stockCtrl,
+                  labelText: context.l10n.quantityLabel,
+                  icon: Icons.inventory_outlined,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  helperText: (int.tryParse(_stockCtrl.text) ?? -1) == 0
+                      ? context.l10n.stockZeroWarning
+                      : null,
+                  onChanged: (_) => setState(() {}),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.quantityRequired;
+                    }
+                    if (int.tryParse(value) == null) {
+                      return context.l10n.invalidQuantity;
+                    }
+                    return null;
+                  },
+                );
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 44,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(999),
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outlineVariant,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    _isEditing
-                        ? context.l10n.editProductTitle
-                        : context.l10n.addProduct,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(height: 18),
+                    Text(
+                      _isEditing
+                          ? context.l10n.editProductTitle
+                          : context.l10n.addProduct,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  _ProductTextField(
-                    controller: _nameCtrl,
-                    labelText: context.l10n.productNameLabel,
-                    icon: Icons.badge_outlined,
-                    validator: (value) =>
-                        (value == null || value.trim().isEmpty)
-                        ? context.l10n.productNameRequired
-                        : null,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: 12),
-                  if (useTwoColumns)
-                    Row(
-                      children: [
-                        Expanded(child: priceField),
-                        const SizedBox(width: 12),
-                        Expanded(child: stockField),
-                      ],
-                    )
-                  else ...[
-                    priceField,
+                    const SizedBox(height: 20),
+                    _ProductTextField(
+                      controller: _nameCtrl,
+                      labelText: context.l10n.productNameLabel,
+                      icon: Icons.badge_outlined,
+                      validator: (value) =>
+                          (value == null || value.trim().isEmpty)
+                          ? context.l10n.productNameRequired
+                          : null,
+                      textInputAction: TextInputAction.next,
+                    ),
                     const SizedBox(height: 12),
-                    stockField,
-                  ],
-                  const SizedBox(height: 12),
-                  _ProductTextField(
-                    controller: _categoryCtrl,
-                    labelText: context.l10n.categoryLabel,
-                    icon: Icons.category_outlined,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _submit(),
-                  ),
-                  if (_isEditing) ...[
-                    const SizedBox(height: 8),
-                    SwitchListTile(
-                      value: _isActive,
-                      onChanged: (value) => setState(() => _isActive = value),
-                      title: Text(context.l10n.showProduct),
-                      contentPadding: EdgeInsets.zero,
+                    if (useTwoColumns)
+                      Row(
+                        children: [
+                          Expanded(child: priceField),
+                          const SizedBox(width: 12),
+                          Expanded(child: stockField),
+                        ],
+                      )
+                    else ...[
+                      priceField,
+                      const SizedBox(height: 12),
+                      stockField,
+                    ],
+                    const SizedBox(height: 12),
+                    _ProductTextField(
+                      controller: _categoryCtrl,
+                      labelText: context.l10n.categoryLabel,
+                      icon: Icons.category_outlined,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _submit(),
+                    ),
+                    if (_isEditing) ...[
+                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        value: _isActive,
+                        onChanged: (value) => setState(() => _isActive = value),
+                        title: Text(context.l10n.showProduct),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    BlocBuilder<ProductBloc, ProductState>(
+                      builder: (_, state) {
+                        final isSaving =
+                            state.saveStatus == ProductSaveStatus.saving;
+                        return FilledButton.icon(
+                          onPressed: isSaving ? null : _submit,
+                          icon: isSaving
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(
+                                  _isEditing ? Icons.save_outlined : Icons.add,
+                                ),
+                          label: Text(
+                            _isEditing
+                                ? context.l10n.save
+                                : context.l10n.addProduct,
+                          ),
+                        );
+                      },
                     ),
                   ],
-                  const SizedBox(height: 20),
-                  FilledButton.icon(
-                    onPressed: _submit,
-                    icon: Icon(_isEditing ? Icons.save_outlined : Icons.add),
-                    label: Text(
-                      _isEditing ? context.l10n.save : context.l10n.addProduct,
-                    ),
-                  ),
-                ],
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

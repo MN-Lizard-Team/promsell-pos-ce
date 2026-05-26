@@ -1,10 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+
+class _ProductsUpdated extends ProductEvent {
+  const _ProductsUpdated(this.products);
+  final List<Product> products;
+  @override
+  List<Object?> get props => [products];
+}
+
+class _ProductsError extends ProductEvent {
+  const _ProductsError(this.message);
+  final String message;
+  @override
+  List<Object?> get props => [message];
+}
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc({
@@ -18,6 +35,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
        _deleteProduct = deleteProduct,
        super(const ProductState()) {
     on<ProductsSubscribed>(_onSubscribed);
+    on<_ProductsUpdated>(_onProductsUpdated);
+    on<_ProductsError>(_onProductsError);
     on<ProductAdded>(_onAdded);
     on<ProductUpdated>(_onUpdated);
     on<ProductDeleted>(_onDeleted);
@@ -28,26 +47,39 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final AddProduct _addProduct;
   final UpdateProduct _updateProduct;
   final DeleteProduct _deleteProduct;
-  Future<void> _onSubscribed(
-    ProductsSubscribed event,
-    Emitter<ProductState> emit,
-  ) async {
+  StreamSubscription<List<Product>>? _sub;
+
+  void _onSubscribed(ProductsSubscribed event, Emitter<ProductState> emit) {
     emit(state.copyWith(status: ProductStatus.loading));
-    await emit.forEach(
-      _getProducts(),
-      onData: (products) => state.copyWith(
+    _sub?.cancel();
+    _sub = _getProducts().listen(
+      (products) => add(_ProductsUpdated(products)),
+      onError: (Object e) => add(_ProductsError(e.toString())),
+    );
+  }
+
+  void _onProductsUpdated(_ProductsUpdated event, Emitter<ProductState> emit) {
+    emit(
+      state.copyWith(
         status: ProductStatus.success,
-        products: products,
+        products: event.products,
         errorMessage: null,
+        saveStatus: ProductSaveStatus.idle,
       ),
-      onError: (e, _) => state.copyWith(
+    );
+  }
+
+  void _onProductsError(_ProductsError event, Emitter<ProductState> emit) {
+    emit(
+      state.copyWith(
         status: ProductStatus.failure,
-        errorMessage: e.toString(),
+        errorMessage: event.message,
       ),
     );
   }
 
   Future<void> _onAdded(ProductAdded event, Emitter<ProductState> emit) async {
+    emit(state.copyWith(saveStatus: ProductSaveStatus.saving));
     try {
       await _addProduct(
         name: event.name,
@@ -56,10 +88,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         category: event.category,
         imageUrl: event.imageUrl,
       );
+      emit(state.copyWith(saveStatus: ProductSaveStatus.saved));
     } catch (e) {
       emit(
         state.copyWith(
-          status: ProductStatus.failure,
+          saveStatus: ProductSaveStatus.error,
           errorMessage: e.toString(),
         ),
       );
@@ -70,12 +103,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     ProductUpdated event,
     Emitter<ProductState> emit,
   ) async {
+    emit(state.copyWith(saveStatus: ProductSaveStatus.saving));
     try {
       await _updateProduct(event.product);
+      emit(state.copyWith(saveStatus: ProductSaveStatus.saved));
     } catch (e) {
       emit(
         state.copyWith(
-          status: ProductStatus.failure,
+          saveStatus: ProductSaveStatus.error,
           errorMessage: e.toString(),
         ),
       );
@@ -91,7 +126,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     } catch (e) {
       emit(
         state.copyWith(
-          status: ProductStatus.failure,
+          saveStatus: ProductSaveStatus.error,
           errorMessage: e.toString(),
         ),
       );
@@ -103,5 +138,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     Emitter<ProductState> emit,
   ) {
     emit(state.copyWith(searchQuery: event.query));
+  }
+
+  @override
+  Future<void> close() {
+    _sub?.cancel();
+    return super.close();
   }
 }

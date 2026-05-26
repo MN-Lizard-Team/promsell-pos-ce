@@ -73,6 +73,19 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
       saleData = await (_db.select(
         _db.sales,
       )..where((s) => s.id.equals(saleId))).getSingle();
+      // Validate stock for ALL items before any inserts
+      for (final item in items) {
+        final product = await (_db.select(
+          _db.products,
+        )..where((p) => p.id.equals(item.product.id))).getSingleOrNull();
+        if (product != null && product.stock < item.qty) {
+          throw StateError(
+            'Insufficient stock for "${item.product.name}": '
+            'available ${product.stock}, requested ${item.qty}',
+          );
+        }
+      }
+      // Insert sale items and deduct stock
       for (final item in items) {
         await _db
             .into(_db.saleItems)
@@ -90,13 +103,15 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
           _db.products,
         )..where((p) => p.id.equals(item.product.id))).getSingleOrNull();
         if (product != null) {
-          final newStock = (product.stock - item.qty).clamp(0, 999999);
-          await (_db.update(_db.products)
-                ..where((p) => p.id.equals(item.product.id)))
-              .write(ProductsCompanion(
-                stock: Value(newStock),
-                updatedAt: Value(DateTime.now()),
-              ));
+          final newStock = product.stock - item.qty;
+          await (_db.update(
+            _db.products,
+          )..where((p) => p.id.equals(item.product.id))).write(
+            ProductsCompanion(
+              stock: Value(newStock),
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
         }
       }
     });

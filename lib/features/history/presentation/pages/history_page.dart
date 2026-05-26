@@ -18,9 +18,22 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          HistoryBloc(watchSaleHistory: sl<WatchSaleHistory>())
-            ..add(const HistorySubscribed()),
+      create: (_) {
+        final now = DateTime.now();
+        final from = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 30));
+        final to = now.copyWith(
+          hour: 23,
+          minute: 59,
+          second: 59,
+          millisecond: 999,
+        );
+        return HistoryBloc(watchSaleHistory: sl<WatchSaleHistory>())
+          ..add(HistoryDateRangeChanged(from: from, to: to));
+      },
       child: const _HistoryView(),
     );
   }
@@ -57,6 +70,9 @@ class _HistoryView extends StatelessWidget {
             return AppEmptyState(
               icon: Icons.error_outline,
               title: state.errorMessage ?? ctx.l10n.errorOccurred,
+              actionLabel: ctx.l10n.retry,
+              onAction: () =>
+                  ctx.read<HistoryBloc>().add(const HistorySubscribed()),
             );
           }
           if (state.sales.isEmpty) {
@@ -67,65 +83,70 @@ class _HistoryView extends StatelessWidget {
           }
           return RefreshIndicator(
             onRefresh: () async {
-              ctx.read<HistoryBloc>().add(const HistorySubscribed());
-              await Future.delayed(const Duration(milliseconds: 500));
+              final bloc = ctx.read<HistoryBloc>();
+              bloc.add(const HistorySubscribed());
+              await bloc.stream.firstWhere(
+                (s) =>
+                    s.status == HistoryStatus.success ||
+                    s.status == HistoryStatus.failure,
+              );
             },
             child: ListView.separated(
               padding: const EdgeInsets.all(12),
               itemCount: state.sales.length,
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, i) {
-              final sale = state.sales[i];
-              return Card(
-                clipBehavior: Clip.antiAlias,
-                child: ExpansionTile(
-                  leading: CircleAvatar(
-                    backgroundColor: theme.colorScheme.primaryContainer,
-                    child: Icon(
-                      Icons.receipt_long_outlined,
+                final sale = state.sales[i];
+                return Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: ExpansionTile(
+                    leading: CircleAvatar(
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      child: Icon(
+                        Icons.receipt_long_outlined,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    title: MoneyText(
+                      value: sale.totalAmount,
+                      currency: settings.currency,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                       color: theme.colorScheme.primary,
                     ),
-                  ),
-                  title: MoneyText(
-                    value: sale.totalAmount,
-                    currency: settings.currency,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    subtitle: Text(
+                      '#${sale.id}  •  ${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
+                      style: theme.textTheme.bodySmall,
                     ),
-                    color: theme.colorScheme.primary,
-                  ),
-                  subtitle: Text(
-                    '#${sale.id}  •  ${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  children: [
-                    ...sale.items.map(
-                      (item) => ListTile(
-                        dense: true,
-                        title: Text(item.productName),
-                        subtitle: Text(
-                          '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}',
-                        ),
-                        trailing: MoneyText(
-                          value: item.subtotal,
-                          currency: settings.currency,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                    children: [
+                      ...sale.items.map(
+                        (item) => ListTile(
+                          dense: true,
+                          title: Text(item.productName),
+                          subtitle: Text(
+                            '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}',
+                          ),
+                          trailing: MoneyText(
+                            value: item.subtotal,
+                            currency: settings.currency,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    if (sale.note != null && sale.note!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                        child: Text(
-                          ctx.l10n.noteLabel(sale.note!),
-                          style: theme.textTheme.bodySmall,
+                      if (sale.note != null && sale.note!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          child: Text(
+                            ctx.l10n.noteLabel(sale.note!),
+                            style: theme.textTheme.bodySmall,
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-              );
+                    ],
+                  ),
+                );
               },
             ),
           );
@@ -136,13 +157,14 @@ class _HistoryView extends StatelessWidget {
 
   Future<void> _pickRange(BuildContext context) async {
     final now = DateTime.now();
+    final state = context.read<HistoryBloc>().state;
     final range = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2020),
       lastDate: now,
       initialDateRange: DateTimeRange(
-        start: now.subtract(const Duration(days: 30)),
-        end: now,
+        start: state.from ?? now.subtract(const Duration(days: 30)),
+        end: state.to ?? now,
       ),
     );
     if (range != null && context.mounted) {

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -15,8 +16,9 @@ class SettingsCubit extends Cubit<SettingsState> {
     try {
       final settings = await _repository.load();
       emit(state.copyWith(status: SettingsStatus.loaded, settings: settings));
-    } catch (_) {
-      emit(state.copyWith(status: SettingsStatus.failure));
+    } catch (e) {
+      debugPrint('SettingsCubit.load failed: $e');
+      emit(state.copyWith(status: SettingsStatus.loaded));
     }
   }
 

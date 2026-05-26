@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.2.1** — **Comprehensive test suite & UI/UX improvements**. 130 automated tests across 7 layers + 11 UI/UX polish fixes (search reset, overflow fixes, SnackBar feedback, pull-to-refresh, and more).
+> **Latest Release: v0.2.2** — **Stability, data integrity, and UX hardening.** Covers safer sale transactions, stock-limit UI, payment double-submit protection, clearer empty/error states, responsive settings, report refresh, and dependency cleanup.
  
 ---
  
@@ -64,11 +64,11 @@
  
 | Feature | Description |
 |---------|-------------|
-| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, multi-method checkout, quick cash chips, and change calculation |
+| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, and change calculation |
 | **Products** | Searchable card list, add/edit/delete with category, price, stock, active/inactive toggle, and responsive product form |
 | **History** | Date-ranged receipt-like sale history with expandable item breakdown and notes |
-| **Report** | Dashboard cards for revenue, sales count, payment method breakdown, top 5 products, and empty states |
-| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, and receipt customization |
+| **Report** | Dashboard cards for revenue, sales count, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
+| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, dirty-state save behavior, and compact responsive controls |
 | **Offline-first** | All data stored locally in SQLite via Drift — no internet required |
 | **Material 3** | Merchant Command Deck refresh with shared theme tokens and responsive UI primitives |
 | **i18n** | Full localization via Flutter ARB files, easy to add more languages |
@@ -83,11 +83,10 @@
 | **State management** | flutter_bloc (BLoC + Cubit pattern) |
 | **Database** | Drift (SQLite ORM) with code generation |
 | **DI** | get_it service locator |
-| **Routing** | go_router |
+| **Routing** | Navigator + IndexedStack |
 | **Persistence** | shared_preferences (settings) |
 | **Localization** | flutter_localizations + Flutter ARB intl |
 | **PDF / Print** | pdf + printing |
-| **QR / Image** | qr_flutter, image_picker, cached_network_image |
 | **Design** | Material 3, google_fonts, shared UI primitives |
  
 ---
@@ -209,7 +208,7 @@ features/<name>/
 
 ## Testing
 
-**126 tests** covering every application layer:
+**130 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -279,6 +278,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.2.1 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.2.2 · AGPL-3.0</sub>
 
 </div>

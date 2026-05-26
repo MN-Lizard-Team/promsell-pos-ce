@@ -21,6 +21,8 @@ class _PaymentSheetState extends State<PaymentSheet> {
   String _method = 'cash';
   final _receivedCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
+  final _referenceCtrl = TextEditingController();
+  bool _submitted = false;
 
   double get _received => double.tryParse(_receivedCtrl.text) ?? 0;
   double get _change => _received - widget.total;
@@ -29,6 +31,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
   void dispose() {
     _receivedCtrl.dispose();
     _noteCtrl.dispose();
+    _referenceCtrl.dispose();
     super.dispose();
   }
 
@@ -39,14 +42,23 @@ class _PaymentSheetState extends State<PaymentSheet> {
   }
 
   void _confirm() {
+    if (_submitted) return;
+    _submitted = true;
     HapticFeedback.mediumImpact();
     final note = _noteCtrl.text.trim();
+    final reference = _referenceCtrl.text.trim();
+    final effectiveNote = reference.isEmpty
+        ? note
+        : [
+            if (note.isNotEmpty) note,
+            '${context.l10n.paymentReferenceOptional}: $reference',
+          ].join('\n');
     context.read<SaleBloc>().add(
       SaleConfirmed(
         paymentMethod: _method,
         amountReceived: _method == 'cash' ? _received : null,
         changeAmount: _method == 'cash' && _change >= 0 ? _change : null,
-        note: note.isEmpty ? null : note,
+        note: effectiveNote.isEmpty ? null : effectiveNote,
       ),
     );
   }
@@ -62,8 +74,9 @@ class _PaymentSheetState extends State<PaymentSheet> {
           curr.status == SaleStatus.failure,
       listener: (ctx, state) {
         if (state.status == SaleStatus.success) {
-          Navigator.pop(ctx);
+          if (ctx.mounted) Navigator.pop(ctx);
         } else if (state.status == SaleStatus.failure) {
+          _submitted = false;
           ScaffoldMessenger.of(ctx).showSnackBar(
             SnackBar(
               content: Text(state.errorMessage ?? ctx.l10n.saleError),
@@ -151,7 +164,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 selected: {_method},
                 onSelectionChanged: (selection) {
                   HapticFeedback.selectionClick();
-                  setState(() => _method = selection.first);
+                  setState(() {
+                    _method = selection.first;
+                    if (_method == 'cash') _referenceCtrl.clear();
+                  });
                 },
               ),
               if (_method == 'cash') ...[
@@ -202,6 +218,16 @@ class _PaymentSheetState extends State<PaymentSheet> {
                   currency: currency,
                   visible: _received > 0,
                 ),
+              ] else ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _referenceCtrl,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.paymentReferenceOptional,
+                    prefixIcon: const Icon(Icons.tag_outlined),
+                  ),
+                  textInputAction: TextInputAction.next,
+                ),
               ],
               const SizedBox(height: 16),
               TextFormField(
@@ -237,14 +263,16 @@ class _PaymentSheetState extends State<PaymentSheet> {
                           ),
                         ),
                       FilledButton.icon(
-                        onPressed:
-                            isProcessing || !canConfirm ? null : _confirm,
+                        onPressed: isProcessing || !canConfirm
+                            ? null
+                            : _confirm,
                         icon: isProcessing
                             ? const SizedBox(
                                 height: 18,
                                 width: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.check_circle_outline),
                         label: Text(context.l10n.confirmPayment),

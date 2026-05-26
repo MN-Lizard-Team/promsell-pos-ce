@@ -27,9 +27,9 @@ void main() {
     blocTest<SettingsCubit, SettingsState>(
       'load emits loading then loaded',
       setUp: () {
-        when(() => mockRepo.load()).thenAnswer(
-          (_) async => const AppSettings(shopName: 'My Shop'),
-        );
+        when(
+          () => mockRepo.load(),
+        ).thenAnswer((_) async => const AppSettings(shopName: 'My Shop'));
       },
       build: buildCubit,
       act: (c) => c.load(),
@@ -43,7 +43,7 @@ void main() {
     );
 
     blocTest<SettingsCubit, SettingsState>(
-      'load emits failure on error',
+      'load falls back to loaded defaults on error',
       setUp: () {
         when(() => mockRepo.load()).thenThrow(Exception('fail'));
       },
@@ -51,7 +51,7 @@ void main() {
       act: (c) => c.load(),
       expect: () => [
         const SettingsState(status: SettingsStatus.loading),
-        const SettingsState(status: SettingsStatus.failure),
+        const SettingsState(status: SettingsStatus.loaded),
       ],
     );
 

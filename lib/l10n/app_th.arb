@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "th",
   "appTitle": "Promsell POS",
 
@@ -22,6 +22,8 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "tapProductToAdd": "แตะสินค้าเพื่อเพิ่มลงตะกร้า",
+  "noMatchingProducts": "ไม่พบสินค้าที่ตรงกัน",
+  "stockLimitReached": "ถึงจำนวนคงเหลือแล้ว",
   "cartTotal": "รวม",
   "checkout": "ชำระเงิน ({count})",
   "@checkout": {
@@ -40,6 +42,7 @@
   "change": "เงินทอน",
   "confirmPayment": "ยืนยันการชำระ",
   "notePlaceholder": "หมายเหตุ (ไม่บังคับ)",
+  "paymentReferenceOptional": "เลขอ้างอิงการชำระเงิน (ไม่บังคับ)",
   "saleError": "บันทึกการขายไม่สำเร็จ",
   "insufficientCash": "เงินที่รับมายังไม่ครบยอด",
 
@@ -47,6 +50,7 @@
   "searchProducts": "ค้นหาสินค้า...",
   "noProductsYet": "ยังไม่มีสินค้า",
   "errorOccurred": "เกิดข้อผิดพลาด",
+  "retry": "ลองอีกครั้ง",
   "noCategory": "ไม่มีหมวดหมู่",
   "stockLabel": "คงเหลือ: {count}",
   "@stockLabel": {

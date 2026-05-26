@@ -26,11 +26,11 @@ void main() {
   });
 
   ProductBloc buildBloc() => ProductBloc(
-        getProducts: mockGetProducts,
-        addProduct: mockAddProduct,
-        updateProduct: mockUpdateProduct,
-        deleteProduct: mockDeleteProduct,
-      );
+    getProducts: mockGetProducts,
+    addProduct: mockAddProduct,
+    updateProduct: mockUpdateProduct,
+    deleteProduct: mockDeleteProduct,
+  );
 
   group('ProductBloc', () {
     test('initial state is ProductState()', () {
@@ -41,8 +41,9 @@ void main() {
     blocTest<ProductBloc, ProductState>(
       'ProductsSubscribed emits loading then success',
       setUp: () {
-        when(() => mockGetProducts())
-            .thenAnswer((_) => Stream.value([tProduct, tProduct2]));
+        when(
+          () => mockGetProducts(),
+        ).thenAnswer((_) => Stream.value([tProduct, tProduct2]));
       },
       build: buildBloc,
       act: (b) => b.add(const ProductsSubscribed()),
@@ -58,26 +59,22 @@ void main() {
     blocTest<ProductBloc, ProductState>(
       'ProductAdded calls addProduct use case',
       setUp: () {
-        when(() => mockAddProduct(
-              name: any(named: 'name'),
-              price: any(named: 'price'),
-              stock: any(named: 'stock'),
-              category: any(named: 'category'),
-              imageUrl: any(named: 'imageUrl'),
-            )).thenAnswer((_) async => 1);
+        when(
+          () => mockAddProduct(
+            name: any(named: 'name'),
+            price: any(named: 'price'),
+            stock: any(named: 'stock'),
+            category: any(named: 'category'),
+            imageUrl: any(named: 'imageUrl'),
+          ),
+        ).thenAnswer((_) async => 1);
       },
       build: buildBloc,
-      act: (b) => b.add(const ProductAdded(
-        name: 'New',
-        price: 50,
-        stock: 10,
-      )),
+      act: (b) => b.add(const ProductAdded(name: 'New', price: 50, stock: 10)),
       verify: (_) {
-        verify(() => mockAddProduct(
-              name: 'New',
-              price: 50,
-              stock: 10,
-            )).called(1);
+        verify(
+          () => mockAddProduct(name: 'New', price: 50, stock: 10),
+        ).called(1);
       },
     );
 
@@ -109,9 +106,7 @@ void main() {
       'ProductSearchChanged updates searchQuery',
       build: buildBloc,
       act: (b) => b.add(const ProductSearchChanged('drink')),
-      expect: () => [
-        const ProductState(searchQuery: 'drink'),
-      ],
+      expect: () => [const ProductState(searchQuery: 'drink')],
     );
 
     test('ProductState.filtered filters by name and category', () {
