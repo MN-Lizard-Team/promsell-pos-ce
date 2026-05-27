@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
@@ -15,28 +16,31 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<Product>> getActiveProducts() => _datasource.getActiveProducts();
 
   @override
-  Future<Product?> getProductById(int id) => _datasource.getProductById(id);
+  Future<Product?> getProductById(String id) => _datasource.getProductById(id);
 
   @override
-  Future<int> addProduct({
+  Future<String> addProduct({
     required String name,
     required double price,
     required int stock,
     String? category,
     String? imageUrl,
-  }) {
+  }) async {
+    final id = IdGenerator.newId();
     final now = DateTime.now();
-    return _datasource.insertProduct(
+    await _datasource.insertProduct(
       ProductsCompanion.insert(
+        id: id,
         name: name,
         price: price,
         stock: Value(stock),
-        category: Value(category),
+        categoryId: Value(category),
         imageUrl: Value(imageUrl),
         createdAt: Value(now),
         updatedAt: Value(now),
       ),
     );
+    return id;
   }
 
   @override
@@ -48,7 +52,7 @@ class ProductRepositoryImpl implements ProductRepository {
         name: Value(product.name),
         price: Value(product.price),
         stock: Value(product.stock),
-        category: Value(product.category),
+        categoryId: Value(product.category),
         imageUrl: Value(product.imageUrl),
         isActive: Value(product.isActive),
         updatedAt: Value(now),
@@ -57,5 +61,5 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<void> deleteProduct(int id) => _datasource.deleteProduct(id);
+  Future<void> deleteProduct(String id) => _datasource.deleteProduct(id);
 }

@@ -1,6 +1,8 @@
 ﻿# Deployment guide — Promsell POS CE
 
 > How to build, sign, and distribute Promsell for Android and iOS.
+>
+> **Related docs:** [`ARCHITECTURE.md`](ARCHITECTURE.md) (system design) · [`DATABASE.md`](DATABASE.md) (schema) · [`USAGE.md`](USAGE.md) (setup & usage)
 
 ---
 
@@ -97,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.3.0+1
+version: 0.4.0+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -119,8 +121,8 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 135+ tests pass
-- [ ] Integration test (checkout flow) passes
+- [ ] `flutter test` — all 170+ tests pass
+- [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
 - [ ] Version bumped in `pubspec.yaml`
@@ -142,9 +144,12 @@ Before distributing a build with UI changes:
 2. Search and filter products in the Sale tab.
 3. Add items to cart and adjust quantity.
 4. Complete one cash sale using quick cash chips.
-5. Open History, expand the saved sale, and tap **Print Receipt** or **Share Receipt**.
-6. Open Report and verify revenue/payment/top product cards.
-7. Open Settings, switch theme/locale, and save shop info.
+5. Open History, expand the saved sale — verify receipt number is shown.
+6. Tap **Void Sale** on a sale, enter a reason, confirm — verify VOIDED badge appears and stock is restored.
+7. Open History again — voided sale shows strikethrough amount and red badge.
+8. Open Report and verify net revenue excludes voided sales; voided summary card appears.
+9. Tap **Print Receipt** or **Share Receipt** on any sale.
+10. Open Settings, switch theme/locale, and save shop info.
 
 ---
 

@@ -1,9 +1,12 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
+import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 import '../../../../helpers/fake_database.dart';
@@ -15,7 +18,11 @@ void main() {
 
   setUp(() {
     db = createInMemoryDatabase();
-    saleDatasource = SaleLocalDatasourceImpl(db);
+    saleDatasource = SaleLocalDatasourceImpl(
+      db,
+      receiptNumberService: ReceiptNumberService(db),
+      inventoryLogService: InventoryLogService(db),
+    );
     productDatasource = ProductLocalDatasourceImpl(db);
   });
 
@@ -26,8 +33,10 @@ void main() {
     double price = 100.0,
     int stock = 50,
   }) async {
-    final id = await productDatasource.insertProduct(
+    final id = IdGenerator.newId();
+    await productDatasource.insertProduct(
       ProductsCompanion.insert(
+        id: id,
         name: name,
         price: price,
         stock: Value(stock),
@@ -37,30 +46,34 @@ void main() {
   }
 
   group('SaleLocalDatasourceImpl', () {
-    test('insertSaleWithItems creates sale with items and deducts stock',
-        () async {
-      final product = await seedProduct(stock: 50);
-      final cartItem = CartItem(product: product, qty: 3);
+    test(
+      'insertSaleWithItems creates sale with items and deducts stock',
+      () async {
+        final product = await seedProduct(stock: 50);
+        final cartItem = CartItem(product: product, qty: 3);
 
-      final sale = await saleDatasource.insertSaleWithItems(
-        items: [cartItem],
-        paymentMethod: 'cash',
-        amountReceived: 500,
-        changeAmount: 200,
-        note: 'test',
-      );
+        final sale = await saleDatasource.insertSaleWithItems(
+          items: [cartItem],
+          paymentMethod: 'cash',
+          amountReceived: 500,
+          changeAmount: 200,
+          note: 'test',
+        );
 
-      expect(sale.id, isPositive);
-      expect(sale.totalAmount, 300.0);
-      expect(sale.paymentMethod, 'cash');
-      expect(sale.items.length, 1);
-      expect(sale.items.first.productName, 'Test Product');
-      expect(sale.items.first.qty, 3);
-      expect(sale.items.first.subtotal, 300.0);
+        expect(sale.id, isNotEmpty);
+        expect(sale.totalAmount, 300.0);
+        expect(sale.paymentMethod, 'cash');
+        expect(sale.items.length, 1);
+        expect(sale.items.first.productName, 'Test Product');
+        expect(sale.items.first.qty, 3);
+        expect(sale.items.first.subtotal, 300.0);
 
-      final updatedProduct = await productDatasource.getProductById(product.id);
-      expect(updatedProduct!.stock, 47);
-    });
+        final updatedProduct = await productDatasource.getProductById(
+          product.id,
+        );
+        expect(updatedProduct!.stock, 47);
+      },
+    );
 
     test('querySales returns sales within date range', () async {
       final product = await seedProduct();
@@ -93,7 +106,7 @@ void main() {
     });
 
     test('querySaleById returns null for non-existent id', () async {
-      final result = await saleDatasource.querySaleById(9999);
+      final result = await saleDatasource.querySaleById('non-existent-uuid');
       expect(result, isNull);
     });
 
@@ -108,8 +121,7 @@ void main() {
 
       await expectLater(
         stream,
-        emitsThrough(
-            predicate<List>((list) => list.isNotEmpty)),
+        emitsThrough(predicate<List>((list) => list.isNotEmpty)),
       );
     });
 
@@ -124,8 +136,7 @@ void main() {
 
       await expectLater(
         stream,
-        emitsThrough(
-            predicate<List>((list) => list.isNotEmpty)),
+        emitsThrough(predicate<List>((list) => list.isNotEmpty)),
       );
     });
   });

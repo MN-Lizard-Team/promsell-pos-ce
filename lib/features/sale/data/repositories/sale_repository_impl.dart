@@ -27,7 +27,7 @@ class SaleRepositoryImpl implements SaleRepository {
       _datasource.querySales(from: from, to: to);
 
   @override
-  Future<Sale?> getSaleById(int id) => _datasource.querySaleById(id);
+  Future<Sale?> getSaleById(String id) => _datasource.querySaleById(id);
 
   @override
   Stream<List<Sale>> watchRecentSales({int limit = 20}) =>
@@ -36,4 +36,8 @@ class SaleRepositoryImpl implements SaleRepository {
   @override
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to}) =>
       _datasource.watchSales(from: from, to: to);
+
+  @override
+  Future<void> voidSale(String saleId, {String? reason}) =>
+      _datasource.voidSale(saleId, reason: reason);
 }

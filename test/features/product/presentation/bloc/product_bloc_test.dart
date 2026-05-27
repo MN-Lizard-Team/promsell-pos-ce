@@ -67,7 +67,7 @@ void main() {
             category: any(named: 'category'),
             imageUrl: any(named: 'imageUrl'),
           ),
-        ).thenAnswer((_) async => 1);
+        ).thenAnswer((_) async => 'new-uuid');
       },
       build: buildBloc,
       act: (b) => b.add(const ProductAdded(name: 'New', price: 50, stock: 10)),
@@ -96,9 +96,12 @@ void main() {
         when(() => mockDeleteProduct(any())).thenAnswer((_) async {});
       },
       build: buildBloc,
-      act: (b) => b.add(const ProductDeleted(1)),
+      act: (b) =>
+          b.add(const ProductDeleted('prod-0001-0001-0001-000000000001')),
       verify: (_) {
-        verify(() => mockDeleteProduct(1)).called(1);
+        verify(
+          () => mockDeleteProduct('prod-0001-0001-0001-000000000001'),
+        ).called(1);
       },
     );
 

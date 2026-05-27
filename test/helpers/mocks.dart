@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
@@ -45,6 +46,8 @@ class MockProductLocalDatasource extends Mock
 
 // ── Use Cases ──
 class MockCreateSale extends Mock implements CreateSale {}
+
+class MockVoidSale extends Mock implements VoidSale {}
 
 class MockAddProduct extends Mock implements AddProduct {}
 

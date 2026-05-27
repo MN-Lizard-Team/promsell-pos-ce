@@ -5,7 +5,7 @@
 **Version target:** `v1.0.0-rc1` → after RC stabilization → `v1.0.0`
 **Effort:** ~2 dev-days
 **Risk:** 🟢 Low
-**Depends on:** R1, R2, R3, R4 complete
+**Depends on:** R1+R2 ✅ (v0.4.0), R3, R4 complete
 
 ---
 
@@ -13,10 +13,14 @@
 
 R1–R4 ทำให้ POS ใช้งานได้ครบ. R5 = **ปิด loop ปลายวัน + เปิดประสบการณ์ครั้งแรก** + verify ระบบพร้อม sync ในอนาคต.
 
+> **Note:** R1+R2 merged เข้า v0.4.0 เดียวกัน (Schema Foundation + Sale Integrity).
+
 ---
 
 ## Pre-flight
 
+- [x] R1+R2 merged → `v0.4.0` released (2026-05-27)
+- [ ] R3 merged + `v0.5.0` released
 - [ ] R4 merged + `v0.6.0` released
 - [ ] Branch `feat/phase1-r5-operations`
 

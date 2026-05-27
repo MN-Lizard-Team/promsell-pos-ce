@@ -4,5 +4,5 @@ class DeleteProduct {
   const DeleteProduct(this._repository);
   final ProductRepository _repository;
 
-  Future<void> call(int id) => _repository.deleteProduct(id);
+  Future<void> call(String id) => _repository.deleteProduct(id);
 }

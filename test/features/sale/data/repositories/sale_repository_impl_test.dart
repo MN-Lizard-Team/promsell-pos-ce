@@ -21,13 +21,15 @@ void main() {
 
   group('SaleRepositoryImpl', () {
     test('createSale delegates to datasource', () async {
-      when(() => mockDs.insertSaleWithItems(
-            items: any(named: 'items'),
-            paymentMethod: any(named: 'paymentMethod'),
-            amountReceived: any(named: 'amountReceived'),
-            changeAmount: any(named: 'changeAmount'),
-            note: any(named: 'note'),
-          )).thenAnswer((_) async => tSale);
+      when(
+        () => mockDs.insertSaleWithItems(
+          items: any(named: 'items'),
+          paymentMethod: any(named: 'paymentMethod'),
+          amountReceived: any(named: 'amountReceived'),
+          changeAmount: any(named: 'changeAmount'),
+          note: any(named: 'note'),
+        ),
+      ).thenAnswer((_) async => tSale);
 
       final result = await repo.createSale(
         items: [tCartItem],
@@ -37,19 +39,23 @@ void main() {
       );
 
       expect(result, tSale);
-      verify(() => mockDs.insertSaleWithItems(
-            items: [tCartItem],
-            paymentMethod: 'cash',
-            amountReceived: 500,
-            changeAmount: 300,
-          )).called(1);
+      verify(
+        () => mockDs.insertSaleWithItems(
+          items: [tCartItem],
+          paymentMethod: 'cash',
+          amountReceived: 500,
+          changeAmount: 300,
+        ),
+      ).called(1);
     });
 
     test('getSales delegates to datasource', () async {
-      when(() => mockDs.querySales(
-            from: any(named: 'from'),
-            to: any(named: 'to'),
-          )).thenAnswer((_) async => [tSale]);
+      when(
+        () => mockDs.querySales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) async => [tSale]);
 
       final result = await repo.getSales();
 
@@ -57,17 +63,17 @@ void main() {
     });
 
     test('getSaleById delegates to datasource', () async {
-      when(() => mockDs.querySaleById(any()))
-          .thenAnswer((_) async => tSale);
+      when(() => mockDs.querySaleById(any())).thenAnswer((_) async => tSale);
 
-      final result = await repo.getSaleById(1);
+      final result = await repo.getSaleById('sale-0001-0001-0001-000000000001');
 
       expect(result, tSale);
     });
 
     test('watchRecentSales delegates to datasource', () {
-      when(() => mockDs.watchRecentSales(limit: any(named: 'limit')))
-          .thenAnswer((_) => Stream.value([tSale]));
+      when(
+        () => mockDs.watchRecentSales(limit: any(named: 'limit')),
+      ).thenAnswer((_) => Stream.value([tSale]));
 
       final stream = repo.watchRecentSales();
 
@@ -75,10 +81,12 @@ void main() {
     });
 
     test('watchSales delegates to datasource', () {
-      when(() => mockDs.watchSales(
-            from: any(named: 'from'),
-            to: any(named: 'to'),
-          )).thenAnswer((_) => Stream.value([tSale]));
+      when(
+        () => mockDs.watchSales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value([tSale]));
 
       final stream = repo.watchSales();
 

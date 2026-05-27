@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2026-05-27
+
+### BREAKING — Schema + Sale Integrity Overhaul
+
+Complete database overhaul: integer auto-increment IDs → UUIDv4 text IDs across all entities, 6 new tables, atomic sale transactions with receipt numbers and inventory audit trail, void/refund flow, and manual stock adjustments. This is a **destructive migration** — existing app data will be dropped and recreated. Production migrations will use incremental `onUpgrade` steps.
+
+### Added
+
+- **6 new tables**: `categories`, `inventory_logs`, `app_settings`, `draft_carts`, `draft_cart_items`, `daily_closes`
+- **`IdGenerator` utility** — UUIDv4 generation via `uuid` package
+- **Sync-ready columns** on all tables: `version`, `deviceId`, `updatedAt`, `deletedAt`
+- **Extended product fields**: `sku`, `barcode`, `cost`, `trackStock`
+- **Extended sale fields**: `receiptNumber`, `status`, `subtotalAmount`, discount/VAT columns, `voidedAt`, `voidReason`
+- **9 database indexes** for query performance
+- **WAL journal mode** + `foreign_keys=ON` via `beforeOpen` hook
+- **Batch seed** for default app settings on first run
+- **`ReceiptNumberService`** — auto-generated receipt numbers (`YYMMDD-XX-NNNN`) with daily reset
+- **`InventoryLogService`** — audit trail for all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT)
+- **`SettingsLocalDatasource`** — Drift-backed typed key-value store (getString/Int/Bool/Double)
+- **Atomic sale insertion** — receipt number + sale items + stock deduction + inventory log in single DB transaction
+- **Void sale flow** — marks sale as VOIDED, restores stock, logs VOID_REVERSAL; confirmation dialog with reason
+- **Manual stock adjustment** — `AdjustStock` use case + dialog for manual add/remove with audit reason
+- **Inventory log viewer** — color-coded log entries, filterable by product
+- **History UI** — VOIDED badge, strikethrough amount, receipt number in subtitle, void action button
+- **Report UI** — net revenue (excludes voided), voided total summary card
+- **L10n** — 18 new keys (EN + TH) for void, adjust, inventory log
+- **`docs/ARCHITECTURE.md`** — deep technical architecture: C4 diagrams, data flows, transaction boundaries, DI graph, ADRs
+- **`docs/DATABASE.md`** — full database handbook: ERD, schema, indexes, migration, query patterns
+- **`docs/architecture/*.puml`** — PlantUML source files for C4 + sequence diagrams
+
+### Changed
+
+- **All entity IDs** (`Product.id`, `Sale.id`, `SaleItem.id/saleId/productId`) migrated from `int` → `String` (UUIDv4)
+- **All repository/use-case/datasource/BLoC signatures** updated for String IDs
+- **`ProductRepository.addProduct`** return type: `Future<int>` → `Future<String>`
+- **`ProductLocalDatasource.insertProduct`** return type: `Future<int>` → `Future<void>` (ID generated upstream)
+- **`ProductsCompanion`** field: `category` → `categoryId`
+- **Schema version**: 1 → 2 (with drop+recreate migration for pre-release)
+- **All 135 tests** migrated to use String UUID fixtures
+
+### Removed
+
+- Auto-increment integer ID generation (replaced by `IdGenerator.newId()`)
+- `setup()` override in `AppDatabase` (replaced by `beforeOpen` in `MigrationStrategy`)
+
+`flutter analyze` → **0 errors** · `flutter test` → **170/170 passing**
+
+---
+
 ## [0.3.0] - 2026-05-26
 
 ### Added — UI milestone: product redesign, offline fonts & receipt export
@@ -379,6 +428,7 @@ First public release of Promsell POS Community Edition. Complete offline-first m
 
 ---
 
+[0.4.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.3.1
 [0.3.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.3.0
 [0.2.3]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.3
 [0.2.2]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.2

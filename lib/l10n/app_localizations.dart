@@ -643,6 +643,102 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'แชร์ใบเสร็จ'**
   String get shareReceipt;
+
+  /// No description provided for @voided.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิกแล้ว'**
+  String get voided;
+
+  /// No description provided for @voidSale.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิกบิล'**
+  String get voidSale;
+
+  /// No description provided for @voidSaleConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิกบิลนี้? สต็อกจะถูกคืน'**
+  String get voidSaleConfirm;
+
+  /// No description provided for @voidReasonHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เหตุผลในการยกเลิก (ไม่บังคับ)'**
+  String get voidReasonHint;
+
+  /// No description provided for @voidSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิกบิลแล้ว'**
+  String get voidSuccess;
+
+  /// No description provided for @voidedSalesCount.
+  ///
+  /// In th, this message translates to:
+  /// **'{count} รายการยกเลิก'**
+  String voidedSalesCount(int count);
+
+  /// No description provided for @voidedTotal.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดที่ถูกยกเลิก'**
+  String get voidedTotal;
+
+  /// No description provided for @netRevenue.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขายสุทธิ'**
+  String get netRevenue;
+
+  /// No description provided for @adjustStock.
+  ///
+  /// In th, this message translates to:
+  /// **'ปรับสต็อก'**
+  String get adjustStock;
+
+  /// No description provided for @adjustStockTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ปรับสต็อก: {name}'**
+  String adjustStockTitle(String name);
+
+  /// No description provided for @adjustQtyLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนที่เปลี่ยน (+/-)'**
+  String get adjustQtyLabel;
+
+  /// No description provided for @adjustReasonLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'เหตุผล *'**
+  String get adjustReasonLabel;
+
+  /// No description provided for @adjustReasonRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณาระบุเหตุผล'**
+  String get adjustReasonRequired;
+
+  /// No description provided for @adjustSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'ปรับสต็อกแล้ว'**
+  String get adjustSuccess;
+
+  /// No description provided for @inventoryLog.
+  ///
+  /// In th, this message translates to:
+  /// **'ประวัติสต็อก'**
+  String get inventoryLog;
+
+  /// No description provided for @noInventoryLogs.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีประวัติสต็อก'**
+  String get noInventoryLogs;
 }
 
 class _AppLocalizationsDelegate

@@ -15,7 +15,7 @@ class Product extends Equatable {
     required this.updatedAt,
   });
 
-  final int id;
+  final String id;
   final String name;
   final double price;
   final int stock;
@@ -28,7 +28,7 @@ class Product extends Equatable {
   bool get isInStock => stock > 0;
 
   Product copyWith({
-    int? id,
+    String? id,
     String? name,
     double? price,
     int? stock,

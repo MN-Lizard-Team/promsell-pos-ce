@@ -17,7 +17,7 @@ void main() {
   late MockSettingsCubit mockSettingsCubit;
 
   final testProduct = Product(
-    id: 1,
+    id: 'prod-0001-0001-0001-000000000001',
     name: 'Water',
     price: 10.0,
     stock: 100,
@@ -39,17 +39,19 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      const SaleConfirmed(paymentMethod: 'cash', amountReceived: 0, changeAmount: 0),
+      const SaleConfirmed(
+        paymentMethod: 'cash',
+        amountReceived: 0,
+        changeAmount: 0,
+      ),
     );
   });
 
   group('PaymentSheet', () {
     testWidgets('renders with cart total', (tester) async {
-      when(() => mockSaleBloc.state).thenReturn(
-        SaleState(
-          items: [CartItem(product: testProduct, qty: 3)],
-        ),
-      );
+      when(
+        () => mockSaleBloc.state,
+      ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 3)]));
 
       await tester.pumpApp(
         const PaymentSheet(total: 30.0),
@@ -61,11 +63,9 @@ void main() {
     });
 
     testWidgets('shows payment method chips', (tester) async {
-      when(() => mockSaleBloc.state).thenReturn(
-        SaleState(
-          items: [CartItem(product: testProduct, qty: 1)],
-        ),
-      );
+      when(
+        () => mockSaleBloc.state,
+      ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 1)]));
 
       await tester.pumpApp(
         const PaymentSheet(total: 10.0),
@@ -77,26 +77,25 @@ void main() {
     });
 
     testWidgets(
-        'UI-BUG-8 regression: shows insufficient cash message when amount < total',
-        (tester) async {
-      when(() => mockSaleBloc.state).thenReturn(
-        SaleState(
-          items: [CartItem(product: testProduct, qty: 3)],
-        ),
-      );
+      'UI-BUG-8 regression: shows insufficient cash message when amount < total',
+      (tester) async {
+        when(() => mockSaleBloc.state).thenReturn(
+          SaleState(items: [CartItem(product: testProduct, qty: 3)]),
+        );
 
-      await tester.pumpApp(
-        const PaymentSheet(total: 30.0),
-        saleBloc: mockSaleBloc,
-        settingsCubit: mockSettingsCubit,
-      );
+        await tester.pumpApp(
+          const PaymentSheet(total: 30.0),
+          saleBloc: mockSaleBloc,
+          settingsCubit: mockSettingsCubit,
+        );
 
-      // Enter insufficient amount
-      final textField = find.byType(TextFormField).first;
-      await tester.enterText(textField, '10');
-      await tester.pumpAndSettle();
+        // Enter insufficient amount
+        final textField = find.byType(TextFormField).first;
+        await tester.enterText(textField, '10');
+        await tester.pumpAndSettle();
 
-      expect(find.textContaining('Insufficient'), findsOneWidget);
-    });
+        expect(find.textContaining('Insufficient'), findsOneWidget);
+      },
+    );
   });
 }

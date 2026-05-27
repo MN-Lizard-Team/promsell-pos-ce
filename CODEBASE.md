@@ -1,10 +1,11 @@
-# CODEBASE.md — Promsell POS CE v0.3.0
+# CODEBASE.md — Promsell POS CE v0.4.0
 
 ## System overview
 
 Offline-first mobile POS system — Flutter, Drift SQLite, BLoC, SharedPreferences, Material 3.
 
 For version history and feature details, see [CHANGELOG.md](CHANGELOG.md).
+For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
 
@@ -32,7 +33,7 @@ For version history and feature details, see [CHANGELOG.md](CHANGELOG.md).
 │   di/         — get_it service locator           │
 │   extensions/ — context.l10n helper             │
 │   services/   — ReceiptPdfService (PDF/print)   │
-│   utils/      — payment_method_helper            │
+│   utils/      — IdGenerator, payment_method      │
 │   widgets/    — shared UI primitives             │
 └────────────────────┬─────────────────────────────┘
                      ▼
@@ -72,13 +73,17 @@ features/<name>/
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema version, step-loop migration framework |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v2, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
 | `injection_container.dart` | `lib/core/di/` | get_it registrations for all repositories, BLoCs, cubits, services |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/core/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt` |
 | `AppSnackBar` | `lib/core/widgets/` | Static helpers `success` / `error` / `info` — consistent snackbar styling across all features |
 | `OverlayToast` | `lib/core/widgets/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow |
+| `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
+| `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
+| `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
+| `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
 | `AdaptiveBreakpoints` | `lib/core/widgets/` | Compact / medium / expanded layout helpers |
 | `AppEmptyState` | `lib/core/widgets/` | Consistent empty/error states with compact-height support |
 | `MoneyText` | `lib/core/widgets/` | Currency text with fixed decimal formatting |
@@ -92,9 +97,10 @@ features/<name>/
 |---------|-------------|-----------|
 | Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart` |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` |
-| History | `HistoryBloc` | `history_page.dart` (+ print/share receipt via `ReceiptPdfService`) |
-| Report | `ReportCubit` | `report_page.dart`, `report_cubit.dart`, `report_state.dart` |
+| History | `HistoryBloc` | `history_page.dart` (+ print/share receipt, void sale dialog) |
+| Report | `ReportCubit` | `report_page.dart` (net revenue, voided summary, exclude voided) |
 | Settings | `SettingsCubit` | `settings_page.dart`, `settings_cubit.dart`, `settings_state.dart` |
+| Inventory | — | `inventory_log_page.dart`, `adjust_stock_dialog.dart`, `InventoryLogService`, `AdjustStock` |
 
 ---
 
@@ -111,17 +117,29 @@ features/<name>/
 
 ---
 
-## Database schema
+## Database schema (v2)
 
-Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM.
+Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
-| Table | Fields |
+| Table | Key fields |
 |-------|--------|
-| `Products` | id, name, price, stock, category, imageUrl, isActive, createdAt, updatedAt |
-| `Sales` | id, totalAmount, paymentMethod, cashReceived, note, createdAt |
-| `SaleItems` | id, saleId, productId, productName, price, quantity, subtotal |
+| `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, trackStock, isActive, createdAt, updatedAt, deletedAt, version, deviceId |
+| `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, note, voidedAt, voidReason, createdAt, updatedAt, deletedAt, version, deviceId |
+| `SaleItems` | id, saleId, productId, productName, price, qty, subtotal, discountAmount, vatAmount |
+| `Categories` | id, name, sortOrder, createdAt, updatedAt, deletedAt, version, deviceId |
+| `InventoryLogs` | id, productId, type, qtyChange, balanceAfter, reason, refSaleId, createdAt, deviceId |
+| `AppSettings` | key (PK), value, updatedAt |
+| `DraftCarts` | id, name, note, createdAt, updatedAt, deviceId |
+| `DraftCartItems` | id, cartId, productId, productName, price, qty, discountType, discountValue |
+| `DailyCloses` | id, closeDate, openingCash, expectedCash, countedCash, overShortAmount, totalRevenue, totalVoid, salesCount, voidCount, note, closedAt, deviceId |
+
+**Indexes:** `idx_products_category_id`, `idx_products_is_active`, `idx_products_barcode`, `idx_sales_created_at`, `idx_sales_status`, `idx_sale_items_sale_id`, `idx_inventory_logs_product_id`, `idx_draft_cart_items_cart_id`, `idx_daily_closes_close_date`
+
+**Pragmas:** WAL journal mode + `foreign_keys=ON` via `beforeOpen`
 
 Generated code: `lib/core/database/app_database.g.dart` — **do not edit manually**.
+
+> 📄 Full database handbook: [`docs/DATABASE.md`](docs/DATABASE.md) — ERD, column details, enum values, query patterns, migration guide, backup/restore, performance notes.
 
 To regenerate after schema changes:
 
@@ -201,7 +219,7 @@ Two generators must be run after changes:
 
 | If you change… | Also update… |
 |----------------|-------------|
-| Drift table definition | Run `build_runner build` |
+| Drift table definition (`lib/core/database/tables/`) | Run `build_runner build` |
 | `app_th.arb` | `app_en.arb` (add matching key) + `flutter gen-l10n` |
 | `AppSettings` entity | `SettingsRepositoryImpl`, `SettingsCubit`, `SettingsPage` |
 | `injection_container.dart` | Ensure load order is correct |
@@ -210,13 +228,15 @@ Two generators must be run after changes:
 | Feature UI strings | Both ARB files + generated localization files |
 | Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |
 | BLoC / Cubit class | Update mock in `test/helpers/mocks.dart` |
-| Domain entity | Update test fixtures in corresponding `_test.dart` files |
+| Domain entity | Update `test/helpers/fixtures.dart` + corresponding `_test.dart` files |
+| `Sale` entity (new fields) | Update `sale_test.dart` props count, `_buildSale` in datasource |
+| `SaleLocalDatasource` | Update `ReceiptNumberService`/`InventoryLogService` injection in tests |
 
 ---
 
 ## Test infrastructure
 
-135 automated tests across 7 layers. Run with `flutter test`.
+170 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 
@@ -235,7 +255,8 @@ test/
 │   ├── report/                 # ReportCubit tests
 │   └── settings/               # Cubit, repo, widget tests
 ├── integration/
-│   └── checkout_flow_test.dart  # End-to-end data layer checkout
+│   ├── checkout_flow_test.dart  # End-to-end data layer checkout
+│   └── sale_integrity_test.dart # Void sale, adjust stock, full audit trail
 └── l10n/
     └── l10n_parity_test.dart   # EN/TH key parity and non-empty validation
 ```

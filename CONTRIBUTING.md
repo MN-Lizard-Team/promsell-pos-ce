@@ -141,7 +141,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **126+ automated tests**. All must pass before submitting a PR.
+The project has **170 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests
@@ -169,6 +169,7 @@ dart format --output=none --set-exit-if-changed lib test
 | **Repository** | `mocktail` mocked datasources | `test/features/*/data/repositories/` |
 | **Datasource** | In-memory Drift DB (`sqlite3_flutter_libs`) | `test/features/*/data/datasources/` |
 | **Widget** | `pumpApp` helper + `MockBloc` | `test/features/*/presentation/pages/` |
+| **Services** | Unit test (real DB) | `test/features/*/data/services/` |
 | **Integration** | End-to-end data layer | `test/integration/` |
 | **L10n parity** | Direct class instantiation | `test/l10n/` |
 
@@ -192,7 +193,8 @@ test/
 │   ├── history/
 │   └── settings/
 ├── integration/
-│   └── checkout_flow_test.dart
+│   ├── checkout_flow_test.dart
+│   └── sale_integrity_test.dart
 ├── l10n/
 │   └── l10n_parity_test.dart
 └── core/
@@ -219,7 +221,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for full details.
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — service locator registrations

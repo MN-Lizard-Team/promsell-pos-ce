@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.d
 final tNow = DateTime(2025, 1, 15, 10, 30);
 
 final tProduct = Product(
-  id: 1,
+  id: 'prod-0001-0001-0001-000000000001',
   name: 'Test Product',
   price: 100.0,
   stock: 50,
@@ -18,7 +18,7 @@ final tProduct = Product(
 );
 
 final tProduct2 = Product(
-  id: 2,
+  id: 'prod-0002-0002-0002-000000000002',
   name: 'Another Product',
   price: 250.5,
   stock: 10,
@@ -30,7 +30,7 @@ final tProduct2 = Product(
 );
 
 final tInactiveProduct = Product(
-  id: 3,
+  id: 'prod-0003-0003-0003-000000000003',
   name: 'Inactive Product',
   price: 50.0,
   stock: 0,
@@ -41,20 +41,14 @@ final tInactiveProduct = Product(
   updatedAt: tNow,
 );
 
-final tCartItem = CartItem(
-  product: tProduct,
-  qty: 2,
-);
+final tCartItem = CartItem(product: tProduct, qty: 2);
 
-final tCartItem2 = CartItem(
-  product: tProduct2,
-  qty: 1,
-);
+final tCartItem2 = CartItem(product: tProduct2, qty: 1);
 
 const tSaleItem = SaleItem(
-  id: 1,
-  saleId: 1,
-  productId: 1,
+  id: 'si-00000001-0001-0001-000000000001',
+  saleId: 'sale-0001-0001-0001-000000000001',
+  productId: 'prod-0001-0001-0001-000000000001',
   productName: 'Test Product',
   price: 100.0,
   qty: 2,
@@ -62,7 +56,7 @@ const tSaleItem = SaleItem(
 );
 
 final tSale = Sale(
-  id: 1,
+  id: 'sale-0001-0001-0001-000000000001',
   totalAmount: 200.0,
   paymentMethod: 'cash',
   amountReceived: 500.0,

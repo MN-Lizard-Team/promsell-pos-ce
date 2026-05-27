@@ -11,7 +11,8 @@ abstract class SaleRepository {
   });
 
   Future<List<Sale>> getSales({DateTime? from, DateTime? to});
-  Future<Sale?> getSaleById(int id);
+  Future<Sale?> getSaleById(String id);
   Stream<List<Sale>> watchRecentSales({int limit = 20});
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to});
+  Future<void> voidSale(String saleId, {String? reason});
 }

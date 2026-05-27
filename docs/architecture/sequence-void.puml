@@ -1,0 +1,41 @@
+@startuml Sequence_Void
+title Void Sale Flow — Atomic Transaction
+
+actor Merchant
+participant "HistoryPage" as UI
+participant "VoidSale" as UC
+participant "SaleRepositoryImpl" as Repo
+participant "SaleLocalDatasource" as DS
+participant "InventoryLogService" as ILS
+database "SQLite" as DB
+
+Merchant -> UI: Tap "Void Sale" button
+UI -> UI: Show confirm dialog\n(optional reason input)
+Merchant -> UI: Confirm void
+
+UI -> UC: call(saleId, reason)
+UC -> Repo: voidSale(saleId, reason)
+Repo -> DS: voidSale(saleId, reason)
+
+group Drift Transaction
+    DS -> DB: SELECT sale WHERE id = saleId
+    alt status == VOIDED
+        DS --> Repo: throw StateError("Already voided")
+    end
+
+    DS -> DB: UPDATE sales SET\nstatus=VOIDED,\nvoidedAt=now,\nvoidReason=reason
+
+    DS -> DB: SELECT sale_items WHERE saleId
+    loop For each sale item
+        DS -> DB: UPDATE products\nSET stock = stock + qty
+        DS -> ILS: logVoidReversal(productId, +qty, balanceAfter, saleId)
+        ILS -> DB: INSERT inventory_logs\n(type=VOID_REVERSAL)
+    end
+end
+
+DS --> Repo: void
+Repo --> UC: void
+UC --> UI: success
+UI --> Merchant: Show "Sale voided" snackbar\n+ refresh list with VOIDED badge
+
+@enduml

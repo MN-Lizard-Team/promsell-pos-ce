@@ -8,9 +8,9 @@ void main() {
     test('supports value equality', () {
       final a = tSaleItem;
       const b = SaleItem(
-        id: 1,
-        saleId: 1,
-        productId: 1,
+        id: 'si-00000001-0001-0001-000000000001',
+        saleId: 'sale-0001-0001-0001-000000000001',
+        productId: 'prod-0001-0001-0001-000000000001',
         productName: 'Test Product',
         price: 100.0,
         qty: 2,
@@ -28,7 +28,7 @@ void main() {
     test('supports value equality', () {
       final a = tSale;
       final b = Sale(
-        id: 1,
+        id: 'sale-0001-0001-0001-000000000001',
         totalAmount: 200.0,
         paymentMethod: 'cash',
         amountReceived: 500.0,
@@ -42,7 +42,7 @@ void main() {
 
     test('default items is empty list', () {
       final sale = Sale(
-        id: 2,
+        id: 'sale-0002-0002-0002-000000000002',
         totalAmount: 100.0,
         paymentMethod: 'promptpay',
         createdAt: tNow,
@@ -51,7 +51,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tSale.props.length, 8);
+      expect(tSale.props.length, 12);
     });
   });
 }

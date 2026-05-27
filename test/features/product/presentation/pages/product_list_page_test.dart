@@ -32,11 +32,12 @@ void main() {
   tearDown(() => sl.reset());
 
   group('ProductListPage', () {
-    testWidgets('shows loading indicator when status is loading',
-        (tester) async {
-      when(() => mockProductBloc.state).thenReturn(
-        const ProductState(status: ProductStatus.loading),
-      );
+    testWidgets('shows loading indicator when status is loading', (
+      tester,
+    ) async {
+      when(
+        () => mockProductBloc.state,
+      ).thenReturn(const ProductState(status: ProductStatus.loading));
 
       await tester.pumpApp(
         const ProductListPage(),
@@ -49,7 +50,7 @@ void main() {
     testWidgets('shows product list when loaded', (tester) async {
       final products = [
         Product(
-          id: 1,
+          id: 'prod-0001-0001-0001-000000000001',
           name: 'Water',
           price: 10.0,
           stock: 100,
@@ -58,7 +59,7 @@ void main() {
           updatedAt: DateTime.now(),
         ),
         Product(
-          id: 2,
+          id: 'prod-0002-0002-0002-000000000002',
           name: 'Coke',
           price: 25.0,
           stock: 50,

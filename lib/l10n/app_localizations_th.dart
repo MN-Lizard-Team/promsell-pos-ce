@@ -298,4 +298,56 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get shareReceipt => 'แชร์ใบเสร็จ';
+
+  @override
+  String get voided => 'ยกเลิกแล้ว';
+
+  @override
+  String get voidSale => 'ยกเลิกบิล';
+
+  @override
+  String get voidSaleConfirm => 'ยกเลิกบิลนี้? สต็อกจะถูกคืน';
+
+  @override
+  String get voidReasonHint => 'เหตุผลในการยกเลิก (ไม่บังคับ)';
+
+  @override
+  String get voidSuccess => 'ยกเลิกบิลแล้ว';
+
+  @override
+  String voidedSalesCount(int count) {
+    return '$count รายการยกเลิก';
+  }
+
+  @override
+  String get voidedTotal => 'ยอดที่ถูกยกเลิก';
+
+  @override
+  String get netRevenue => 'ยอดขายสุทธิ';
+
+  @override
+  String get adjustStock => 'ปรับสต็อก';
+
+  @override
+  String adjustStockTitle(String name) {
+    return 'ปรับสต็อก: $name';
+  }
+
+  @override
+  String get adjustQtyLabel => 'จำนวนที่เปลี่ยน (+/-)';
+
+  @override
+  String get adjustReasonLabel => 'เหตุผล *';
+
+  @override
+  String get adjustReasonRequired => 'กรุณาระบุเหตุผล';
+
+  @override
+  String get adjustSuccess => 'ปรับสต็อกแล้ว';
+
+  @override
+  String get inventoryLog => 'ประวัติสต็อก';
+
+  @override
+  String get noInventoryLogs => 'ยังไม่มีประวัติสต็อก';
 }

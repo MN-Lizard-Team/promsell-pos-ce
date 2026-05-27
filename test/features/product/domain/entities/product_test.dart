@@ -8,7 +8,7 @@ void main() {
     test('supports value equality', () {
       final a = tProduct;
       final b = Product(
-        id: 1,
+        id: 'prod-0001-0001-0001-000000000001',
         name: 'Test Product',
         price: 100.0,
         stock: 50,

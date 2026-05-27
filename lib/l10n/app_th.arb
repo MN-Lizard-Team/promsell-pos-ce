@@ -125,5 +125,30 @@
   "langThai": "ภาษาไทย",
   "langEnglish": "English",
   "printReceipt": "พิมพ์ใบเสร็จ",
-  "shareReceipt": "แชร์ใบเสร็จ"
+  "shareReceipt": "แชร์ใบเสร็จ",
+
+  "voided": "ยกเลิกแล้ว",
+  "voidSale": "ยกเลิกบิล",
+  "voidSaleConfirm": "ยกเลิกบิลนี้? สต็อกจะถูกคืน",
+  "voidReasonHint": "เหตุผลในการยกเลิก (ไม่บังคับ)",
+  "voidSuccess": "ยกเลิกบิลแล้ว",
+  "voidedSalesCount": "{count} รายการยกเลิก",
+  "@voidedSalesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "voidedTotal": "ยอดที่ถูกยกเลิก",
+  "netRevenue": "ยอดขายสุทธิ",
+
+  "adjustStock": "ปรับสต็อก",
+  "adjustStockTitle": "ปรับสต็อก: {name}",
+  "@adjustStockTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "adjustQtyLabel": "จำนวนที่เปลี่ยน (+/-)",
+  "adjustReasonLabel": "เหตุผล *",
+  "adjustReasonRequired": "กรุณาระบุเหตุผล",
+  "adjustSuccess": "ปรับสต็อกแล้ว",
+
+  "inventoryLog": "ประวัติสต็อก",
+  "noInventoryLogs": "ยังไม่มีประวัติสต็อก"
 }

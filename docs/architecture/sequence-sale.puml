@@ -1,0 +1,42 @@
+@startuml Sequence_Sale
+title Sale Flow — Atomic Transaction
+
+actor Merchant
+participant "SalePage" as UI
+participant "SaleBloc" as Bloc
+participant "CreateSale" as UC
+participant "SaleRepositoryImpl" as Repo
+participant "SaleLocalDatasource" as DS
+participant "ReceiptNumberService" as RNS
+participant "InventoryLogService" as ILS
+database "SQLite" as DB
+
+Merchant -> UI: Tap "Confirm Payment"
+UI -> Bloc: CheckoutRequested(items, method, ...)
+Bloc -> UC: call(items, method, ...)
+UC -> Repo: createSale(items, method, ...)
+Repo -> DS: insertSaleWithItems(...)
+
+group Drift Transaction
+    DS -> RNS: nextReceiptNumber()
+    RNS -> DB: read receipt_seq, receipt_date
+    RNS -> DB: write updated sequence
+    RNS --> DS: "260527-A1-0042"
+
+    DS -> DB: INSERT sale (id, receiptNumber, status=COMPLETED, ...)
+
+    loop For each cart item
+        DS -> DB: INSERT sale_item
+        DS -> DB: UPDATE products SET stock = stock - qty
+        DS -> ILS: logSale(productId, -qty, balanceAfter, saleId)
+        ILS -> DB: INSERT inventory_logs (type=SALE)
+    end
+end
+
+DS --> Repo: Sale entity
+Repo --> UC: Sale
+UC --> Bloc: Sale
+Bloc --> UI: emit SaleSuccess
+UI --> Merchant: Show success toast
+
+@enduml

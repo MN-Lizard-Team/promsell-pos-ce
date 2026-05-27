@@ -34,7 +34,7 @@ void main() {
     registerFallbackValue(
       ProductUpdated(
         Product(
-          id: 0,
+          id: 'fallback',
           name: '',
           price: 0,
           stock: 0,
@@ -100,7 +100,7 @@ void main() {
 
   group('ProductFormPage (edit mode)', () {
     final existingProduct = Product(
-      id: 1,
+      id: 'prod-0001-0001-0001-000000000001',
       name: 'Water',
       price: 10.0,
       stock: 100,

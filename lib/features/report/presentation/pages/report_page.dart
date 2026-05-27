@@ -37,7 +37,8 @@ class _ReportView extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<ReportCubit>();
         final sales = state.sales;
-        final from = state.from ?? DateTime.now().subtract(const Duration(days: 30));
+        final from =
+            state.from ?? DateTime.now().subtract(const Duration(days: 30));
         final to = state.to ?? DateTime.now();
 
         Widget body;
@@ -69,13 +70,28 @@ class _ReportView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _SummaryCard(
-                    title: context.l10n.totalRevenue,
-                    value: _totalRevenue(sales),
+                    title: context.l10n.netRevenue,
+                    value: _netRevenue(sales),
                     currency: settings.currency,
-                    subtitle: context.l10n.salesCount(sales.length),
+                    subtitle: context.l10n.salesCount(
+                      _completedSales(sales).length,
+                    ),
                     icon: Icons.attach_money,
                     color: theme.colorScheme.primary,
                   ),
+                  if (_voidedSales(sales).isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    _SummaryCard(
+                      title: context.l10n.voidedTotal,
+                      value: _voidedTotal(sales),
+                      currency: settings.currency,
+                      subtitle: context.l10n.voidedSalesCount(
+                        _voidedSales(sales).length,
+                      ),
+                      icon: Icons.block,
+                      color: theme.colorScheme.error,
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Card(
                     child: Padding(
@@ -96,17 +112,21 @@ class _ReportView extends StatelessWidget {
                           else
                             ..._byMethod(sales).entries.map(
                               (e) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(localizePaymentMethod(context, e.key)),
                                     MoneyText(
                                       value: e.value,
                                       currency: settings.currency,
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -134,16 +154,15 @@ class _ReportView extends StatelessWidget {
                               title: context.l10n.noSalesYet,
                             )
                           else
-                            ..._topProducts(sales)
-                                .entries
-                                .toList()
-                                .asMap()
-                                .entries
-                                .map((entry) {
+                            ..._topProducts(
+                              sales,
+                            ).entries.toList().asMap().entries.map((entry) {
                               final rank = entry.key + 1;
                               final e = entry.value;
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
                                 child: Row(
                                   children: [
                                     CircleAvatar(
@@ -152,17 +171,20 @@ class _ReportView extends StatelessWidget {
                                           theme.colorScheme.primaryContainer,
                                       child: Text(
                                         '$rank',
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: theme.colorScheme.primary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(width: 10),
                                     Expanded(child: Text(e.key)),
                                     Text(
                                       context.l10n.units(e.value),
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -194,12 +216,21 @@ class _ReportView extends StatelessWidget {
     );
   }
 
-  double _totalRevenue(List<Sale> sales) =>
-      sales.fold(0.0, (sum, s) => sum + s.totalAmount);
+  List<Sale> _completedSales(List<Sale> sales) =>
+      sales.where((s) => !s.isVoided).toList();
+
+  List<Sale> _voidedSales(List<Sale> sales) =>
+      sales.where((s) => s.isVoided).toList();
+
+  double _netRevenue(List<Sale> sales) =>
+      _completedSales(sales).fold(0.0, (sum, s) => sum + s.totalAmount);
+
+  double _voidedTotal(List<Sale> sales) =>
+      _voidedSales(sales).fold(0.0, (sum, s) => sum + s.totalAmount);
 
   Map<String, double> _byMethod(List<Sale> sales) {
     final map = <String, double>{};
-    for (final s in sales) {
+    for (final s in _completedSales(sales)) {
       final key = normalizePaymentMethod(s.paymentMethod);
       map[key] = (map[key] ?? 0) + s.totalAmount;
     }
@@ -208,12 +239,13 @@ class _ReportView extends StatelessWidget {
 
   Map<String, int> _topProducts(List<Sale> sales) {
     final map = <String, int>{};
-    for (final s in sales) {
+    for (final s in _completedSales(sales)) {
       for (final item in s.items) {
         map[item.productName] = (map[item.productName] ?? 0) + item.qty;
       }
     }
-    final sorted = map.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = map.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
     return Map.fromEntries(sorted.take(5));
   }
 

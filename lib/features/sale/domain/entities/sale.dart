@@ -11,9 +11,9 @@ class SaleItem extends Equatable {
     required this.subtotal,
   });
 
-  final int id;
-  final int saleId;
-  final int productId;
+  final String id;
+  final String saleId;
+  final String productId;
   final String productName;
   final double price;
   final int qty;
@@ -36,30 +36,44 @@ class Sale extends Equatable {
     required this.id,
     required this.totalAmount,
     required this.paymentMethod,
+    this.receiptNumber,
+    this.status = 'COMPLETED',
     this.amountReceived,
     this.changeAmount,
     this.note,
+    this.voidedAt,
+    this.voidReason,
     required this.createdAt,
     this.items = const [],
   });
 
-  final int id;
+  final String id;
+  final String? receiptNumber;
+  final String status;
   final double totalAmount;
   final String paymentMethod;
   final double? amountReceived;
   final double? changeAmount;
   final String? note;
+  final DateTime? voidedAt;
+  final String? voidReason;
   final DateTime createdAt;
   final List<SaleItem> items;
+
+  bool get isVoided => status == 'VOIDED';
 
   @override
   List<Object?> get props => [
     id,
+    receiptNumber,
+    status,
     totalAmount,
     paymentMethod,
     amountReceived,
     changeAmount,
     note,
+    voidedAt,
+    voidReason,
     createdAt,
     items,
   ];

@@ -125,5 +125,30 @@
   "langThai": "ภาษาไทย",
   "langEnglish": "English",
   "printReceipt": "Print Receipt",
-  "shareReceipt": "Share Receipt"
+  "shareReceipt": "Share Receipt",
+
+  "voided": "VOIDED",
+  "voidSale": "Void Sale",
+  "voidSaleConfirm": "Void this sale? Stock will be restored.",
+  "voidReasonHint": "Reason for void (optional)",
+  "voidSuccess": "Sale voided",
+  "voidedSalesCount": "{count} voided",
+  "@voidedSalesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "voidedTotal": "Voided Total",
+  "netRevenue": "Net Revenue",
+
+  "adjustStock": "Adjust Stock",
+  "adjustStockTitle": "Adjust Stock: {name}",
+  "@adjustStockTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "adjustQtyLabel": "Quantity change (+/-)",
+  "adjustReasonLabel": "Reason *",
+  "adjustReasonRequired": "Please enter a reason",
+  "adjustSuccess": "Stock adjusted",
+
+  "inventoryLog": "Inventory Log",
+  "noInventoryLogs": "No inventory logs"
 }

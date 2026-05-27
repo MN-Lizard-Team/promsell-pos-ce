@@ -5,7 +5,7 @@
 **Version target:** `v0.6.0`
 **Effort:** ~2 dev-days
 **Risk:** 🟢 Low (existing pkg `pdf` + `printing` already in deps)
-**Depends on:** R1, R2, R3 complete
+**Depends on:** R1+R2 ✅ (v0.4.0), R3 complete
 
 ---
 
@@ -20,6 +20,7 @@ R3 จบ business logic. R4 = **interface กับโลกภายนอก*
 
 ## Pre-flight
 
+- [x] R1+R2 merged → `v0.4.0` released (2026-05-27)
 - [ ] R3 merged + `v0.5.0` released
 - [ ] Branch `feat/phase1-r4-merchant-tools`
 - [ ] Test PromptPay ID พร้อมใช้ (สำหรับ manual scan test ด้วย banking app จริง)
@@ -226,7 +227,7 @@ Settings → Receipt section:
 - ✅ Backup roundtrip preserves all data (verified by test + manual)
 - ✅ CSV exports open cleanly in Excel + Google Sheets
 - ✅ Backup reminder banner appears as configured
-- ✅ Test count grows ~190 → ~210+
+- ✅ Test count grows ~210 → ~230+
 - ✅ CHANGELOG + v0.6.0
 
 ---
@@ -266,7 +267,7 @@ Settings → Receipt section:
 □ CSV export (sales + products)
 □ Backup reminder banner
 □ Settings UI: receipt size, promptpay id, backup section
-□ All tests pass (~210 total)
+□ All tests pass (~230 total)
 □ CHANGELOG + v0.6.0
 □ PR merged
 ```

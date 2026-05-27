@@ -24,26 +24,22 @@ void main() {
     setUp(() => useCase = AddProduct(mockRepo));
 
     test('delegates to repository.addProduct and returns id', () async {
-      when(() => mockRepo.addProduct(
-            name: any(named: 'name'),
-            price: any(named: 'price'),
-            stock: any(named: 'stock'),
-            category: any(named: 'category'),
-            imageUrl: any(named: 'imageUrl'),
-          )).thenAnswer((_) async => 1);
+      when(
+        () => mockRepo.addProduct(
+          name: any(named: 'name'),
+          price: any(named: 'price'),
+          stock: any(named: 'stock'),
+          category: any(named: 'category'),
+          imageUrl: any(named: 'imageUrl'),
+        ),
+      ).thenAnswer((_) async => 'new-uuid');
 
-      final result = await useCase(
-        name: 'Test',
-        price: 100.0,
-        stock: 10,
-      );
+      final result = await useCase(name: 'Test', price: 100.0, stock: 10);
 
-      expect(result, 1);
-      verify(() => mockRepo.addProduct(
-            name: 'Test',
-            price: 100.0,
-            stock: 10,
-          )).called(1);
+      expect(result, 'new-uuid');
+      verify(
+        () => mockRepo.addProduct(name: 'Test', price: 100.0, stock: 10),
+      ).called(1);
     });
   });
 
@@ -67,9 +63,11 @@ void main() {
     test('delegates to repository.deleteProduct', () async {
       when(() => mockRepo.deleteProduct(any())).thenAnswer((_) async {});
 
-      await useCase(1);
+      await useCase('prod-0001-0001-0001-000000000001');
 
-      verify(() => mockRepo.deleteProduct(1)).called(1);
+      verify(
+        () => mockRepo.deleteProduct('prod-0001-0001-0001-000000000001'),
+      ).called(1);
     });
   });
 
@@ -78,8 +76,9 @@ void main() {
     setUp(() => useCase = GetProducts(mockRepo));
 
     test('delegates to repository.watchAllProducts', () {
-      when(() => mockRepo.watchAllProducts())
-          .thenAnswer((_) => Stream.value([tProduct, tProduct2]));
+      when(
+        () => mockRepo.watchAllProducts(),
+      ).thenAnswer((_) => Stream.value([tProduct, tProduct2]));
 
       final stream = useCase();
 

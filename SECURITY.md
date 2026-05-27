@@ -4,9 +4,9 @@
 
 | Version | Supported |
 |---------|-----------|
-| 0.3.x   | Active |
-| 0.2.x   | Security fixes only |
-| 0.1.x   | No longer supported |
+| 0.4.x   | Active |
+| 0.3.x   | Security fixes only |
+| < 0.3   | No longer supported |
 
 ## Reporting a vulnerability
 
@@ -37,6 +37,8 @@
 - **SQL injection** via unsanitized Drift query inputs
 - **Path traversal** in file read/write operations (PDF, image)
 - **Insecure local storage** of sensitive shop or payment data
+- **Void/refund bypass** — circumventing atomic void flow to manipulate stock or revenue
+- **Inventory log tampering** — modifying audit trail records outside application flow
 - **Dependency vulnerabilities** in third-party packages
 
 ## What we do NOT consider security issues
@@ -48,13 +50,16 @@
 
 ## Security architecture
 
-Promsell is an **offline-first local app** with no network access by default. The v0.2.0 UX/UI refresh does not change the local-only security model:
+Promsell is an **offline-first local app** with no network access by default:
 
 1. **Local-only storage** — all data stays on device via SQLite
 2. **No server communication** — no API keys, no remote calls in core flow
 3. **SharedPreferences** — only stores non-sensitive settings (locale, theme, shop name)
-4. **PDF generation** — local only, no upload
-5. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
+4. **App settings table** — stores receipt sequence counter and device prefix (non-sensitive)
+5. **Atomic transactions** — sale creation, void, and stock adjustments run inside Drift DB transactions to prevent partial writes
+6. **Inventory audit trail** — all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) are logged immutably in `inventory_logs` table
+7. **PDF generation** — local only, no upload
+8. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
 
 ## Security changelog
 

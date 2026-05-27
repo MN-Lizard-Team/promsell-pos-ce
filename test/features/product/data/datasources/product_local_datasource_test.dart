@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 
@@ -17,21 +18,23 @@ void main() {
   tearDown(() => db.close());
 
   ProductsCompanion companion({
+    String? id,
     String name = 'Test',
     double price = 100.0,
     int stock = 10,
     String? category,
   }) => ProductsCompanion.insert(
+    id: id ?? IdGenerator.newId(),
     name: name,
     price: price,
     stock: Value(stock),
-    category: Value(category),
+    categoryId: Value(category),
   );
 
   group('ProductLocalDatasourceImpl', () {
-    test('insertProduct returns id and getProductById retrieves it', () async {
-      final id = await datasource.insertProduct(companion(name: 'Water'));
-      expect(id, isPositive);
+    test('insertProduct inserts and getProductById retrieves it', () async {
+      final id = IdGenerator.newId();
+      await datasource.insertProduct(companion(id: id, name: 'Water'));
 
       final product = await datasource.getProductById(id);
       expect(product, isNotNull);
@@ -55,7 +58,8 @@ void main() {
 
     test('getActiveProducts filters inactive products', () async {
       await datasource.insertProduct(companion(name: 'Active'));
-      final id2 = await datasource.insertProduct(companion(name: 'Inactive'));
+      final id2 = IdGenerator.newId();
+      await datasource.insertProduct(companion(id: id2, name: 'Inactive'));
 
       await datasource.updateProduct(
         ProductsCompanion(id: Value(id2), isActive: const Value(false)),
@@ -67,7 +71,8 @@ void main() {
     });
 
     test('updateProduct changes fields', () async {
-      final id = await datasource.insertProduct(companion(name: 'Old'));
+      final id = IdGenerator.newId();
+      await datasource.insertProduct(companion(id: id, name: 'Old'));
 
       await datasource.updateProduct(
         ProductsCompanion(
@@ -83,7 +88,8 @@ void main() {
     });
 
     test('deleteProduct removes product', () async {
-      final id = await datasource.insertProduct(companion());
+      final id = IdGenerator.newId();
+      await datasource.insertProduct(companion(id: id));
 
       await datasource.deleteProduct(id);
 

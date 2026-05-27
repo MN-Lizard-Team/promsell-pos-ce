@@ -22,6 +22,11 @@ import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart';
+import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
+import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
+import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart';
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 final sl = GetIt.instance;
 
@@ -33,8 +38,22 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<ProductLocalDatasource>(
     () => ProductLocalDatasourceImpl(sl()),
   );
+  sl.registerLazySingleton<ReceiptNumberService>(
+    () => ReceiptNumberService(sl()),
+  );
+  sl.registerLazySingleton<InventoryLogService>(
+    () => InventoryLogService(sl()),
+  );
   sl.registerLazySingleton<SaleLocalDatasource>(
-    () => SaleLocalDatasourceImpl(sl()),
+    () => SaleLocalDatasourceImpl(
+      sl(),
+      receiptNumberService: sl(),
+      inventoryLogService: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton<SettingsLocalDatasource>(
+    () => SettingsLocalDatasourceImpl(sl()),
   );
 
   // Repositories
@@ -54,6 +73,10 @@ Future<void> initDependencies() async {
 
   // Use Cases — Sale
   sl.registerLazySingleton(() => CreateSale(sl()));
+  sl.registerLazySingleton(() => VoidSale(sl()));
+
+  // Use Cases — Inventory
+  sl.registerLazySingleton(() => AdjustStock(sl(), sl()));
 
   // Use Cases — History
   sl.registerLazySingleton(() => WatchSaleHistory(sl()));

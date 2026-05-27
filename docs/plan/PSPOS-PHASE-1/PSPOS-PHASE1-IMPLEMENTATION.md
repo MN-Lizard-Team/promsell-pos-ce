@@ -20,8 +20,8 @@
 
 | Round | Theme | Goal | Risk |
 |---|---|---|---|
-| **R1** | Schema Foundation | UUID migration + new tables + indexes + migration safety | 🔴 High |
-| **R2** | Sale Integrity | Inventory log + Receipt number + Sale status + Void/Refund | 🟡 Medium |
+| **R1** ✅ | Schema Foundation | UUID migration + new tables + indexes + migration safety | 🔴 High → DONE |
+| **R2** ✅ | Sale Integrity | Inventory log + Receipt number + Sale status + Void/Refund | 🟡 Medium → DONE |
 | **R3** | Cashier UX | Draft cart + Discount (item/cart) + VAT (incl/excl) + Stock policy | 🟡 Medium |
 | **R4** | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low |
 | **R5** | Operations | Daily Close + Onboarding wizard + Final polish + Phase 4 readiness check | 🟢 Low |
@@ -30,7 +30,7 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 
 ---
 
-## Round 1 — Schema Foundation 🔴
+## Round 1 — Schema Foundation ✅ DONE (2026-05-27)
 
 > Goal: ทำให้ database ตรง Phase 1 spec ทั้งหมด ก่อนเพิ่ม feature ใด ๆ
 
@@ -64,17 +64,17 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 
 ### Success Gate
 
-- ✅ `flutter analyze` 0 errors
-- ✅ `flutter test` 130/130 still pass (after fixture migration)
+- ✅ `flutter analyze` → **0 errors**
+- ✅ `flutter test` → **135/135 passing**
 - ✅ `dart run build_runner build` clean
-- ✅ App launches, sale → checkout still works end-to-end
-- ✅ Migration documented in `CHANGELOG.md`
+- ⬜ App launches, sale → checkout still works end-to-end (manual smoke)
+- ✅ Migration documented in `CHANGELOG.md` (v0.4.0)
 
 > 📄 Detail: [PSPOS-PHASE1-R1-SCHEMA.md](PSPOS-PHASE1-R1-SCHEMA.md)
 
 ---
 
-## Round 2 — Sale Integrity 🟡
+## Round 2 — Sale Integrity ✅ DONE (2026-05-27)
 
 > Goal: Sale ทุก transaction ต้อง audit ได้ + reversible + มี receipt number
 
@@ -100,12 +100,15 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
    - Insert `InventoryLog(type='ADJUSTMENT_IN/OUT')`
 6. **Reports update**: filter out `VOIDED` from totals, show void count separately
 
-### Success Gate
+### Success Gate (2026-05-27)
 
 - ✅ Sale always produces receipt number + inventory log atomically
 - ✅ Void sale restores stock + leaves audit trail
 - ✅ Tests: receipt number uniqueness, void rollback, inventory log integrity
 - ✅ Reports separate gross / void / net revenue
+- ✅ `flutter analyze` → **0 errors**
+- ✅ `flutter test` → **170/170 passing**
+- ✅ `docs/ARCHITECTURE.md` + `docs/DATABASE.md` updated
 
 > 📄 Detail: [PSPOS-PHASE1-R2-INTEGRITY.md](PSPOS-PHASE1-R2-INTEGRITY.md)
 
@@ -227,7 +230,7 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 | **Tests** | Add unit + widget + integration tests with each feature. Maintain >80% coverage |
 | **L10n** | EN + TH for every new string in same commit |
 | **CHANGELOG** | Update at end of each round |
-| **Version bump** | R1→0.3.0, R2→0.4.0, R3→0.5.0, R4→0.6.0, R5→1.0.0-rc1 |
+| **Version bump** | R1+R2→0.4.0, R3→0.5.0, R4→0.6.0, R5→1.0.0-rc1 |
 | **No partial commits** | Each round is a self-contained release |
 
 ---
@@ -260,9 +263,9 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 ## Execution Sequence
 
 ```
-R1 (Schema) → verify → release v0.3.0
+R1 (Schema) → verify → release v0.4.0 ✅
    ↓
-R2 (Integrity) → verify → release v0.4.0
+R2 (Integrity) → verify → merged into v0.4.0 ✅
    ↓
 R3 (Cashier) → verify → release v0.5.0
    ↓

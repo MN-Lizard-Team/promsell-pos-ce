@@ -299,4 +299,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareReceipt => 'Share Receipt';
+
+  @override
+  String get voided => 'VOIDED';
+
+  @override
+  String get voidSale => 'Void Sale';
+
+  @override
+  String get voidSaleConfirm => 'Void this sale? Stock will be restored.';
+
+  @override
+  String get voidReasonHint => 'Reason for void (optional)';
+
+  @override
+  String get voidSuccess => 'Sale voided';
+
+  @override
+  String voidedSalesCount(int count) {
+    return '$count voided';
+  }
+
+  @override
+  String get voidedTotal => 'Voided Total';
+
+  @override
+  String get netRevenue => 'Net Revenue';
+
+  @override
+  String get adjustStock => 'Adjust Stock';
+
+  @override
+  String adjustStockTitle(String name) {
+    return 'Adjust Stock: $name';
+  }
+
+  @override
+  String get adjustQtyLabel => 'Quantity change (+/-)';
+
+  @override
+  String get adjustReasonLabel => 'Reason *';
+
+  @override
+  String get adjustReasonRequired => 'Please enter a reason';
+
+  @override
+  String get adjustSuccess => 'Stock adjusted';
+
+  @override
+  String get inventoryLog => 'Inventory Log';
+
+  @override
+  String get noInventoryLogs => 'No inventory logs';
 }

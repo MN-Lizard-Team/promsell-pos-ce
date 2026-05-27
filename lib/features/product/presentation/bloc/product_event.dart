@@ -39,7 +39,7 @@ class ProductUpdated extends ProductEvent {
 
 class ProductDeleted extends ProductEvent {
   const ProductDeleted(this.id);
-  final int id;
+  final String id;
 
   @override
   List<Object?> get props => [id];

@@ -5,10 +5,10 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 abstract class ProductLocalDatasource {
   Stream<List<Product>> watchAllProducts();
   Future<List<Product>> getActiveProducts();
-  Future<Product?> getProductById(int id);
-  Future<int> insertProduct(ProductsCompanion companion);
+  Future<Product?> getProductById(String id);
+  Future<void> insertProduct(ProductsCompanion companion);
   Future<void> updateProduct(ProductsCompanion companion);
-  Future<void> deleteProduct(int id);
+  Future<void> deleteProduct(String id);
 }
 
 class ProductLocalDatasourceImpl implements ProductLocalDatasource {
@@ -20,7 +20,7 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
     name: d.name,
     price: d.price,
     stock: d.stock,
-    category: d.category,
+    category: d.categoryId,
     imageUrl: d.imageUrl,
     isActive: d.isActive,
     createdAt: d.createdAt,
@@ -43,7 +43,7 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
           .then((rows) => rows.map(_fromData).toList());
 
   @override
-  Future<Product?> getProductById(int id) async {
+  Future<Product?> getProductById(String id) async {
     final row = await (_db.select(
       _db.products,
     )..where((p) => p.id.equals(id))).getSingleOrNull();
@@ -51,7 +51,7 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   }
 
   @override
-  Future<int> insertProduct(ProductsCompanion companion) =>
+  Future<void> insertProduct(ProductsCompanion companion) =>
       _db.into(_db.products).insert(companion);
 
   @override
@@ -60,6 +60,6 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   )..where((p) => p.id.equals(companion.id.value))).write(companion);
 
   @override
-  Future<void> deleteProduct(int id) =>
+  Future<void> deleteProduct(String id) =>
       (_db.delete(_db.products)..where((p) => p.id.equals(id))).go();
 }

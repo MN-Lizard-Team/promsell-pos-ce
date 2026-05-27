@@ -1,0 +1,35 @@
+@startuml Sequence_AdjustStock
+title Manual Stock Adjustment Flow
+
+actor Merchant
+participant "AdjustStockDialog" as UI
+participant "AdjustStock" as UC
+participant "ProductRepository" as PRepo
+participant "InventoryLogService" as ILS
+database "SQLite" as DB
+
+Merchant -> UI: Open adjust dialog\n(enter qty ± and reason)
+Merchant -> UI: Tap "Confirm"
+
+UI -> UC: call(productId, qtyChange, reason)
+
+group Drift Transaction
+    UC -> PRepo: getProductById(productId)
+    PRepo --> UC: Product(stock=currentStock)
+
+    UC -> UC: newStock = currentStock + qtyChange
+    alt newStock < 0
+        UC --> UI: throw (insufficient stock)
+    end
+
+    UC -> PRepo: updateProduct(stock: newStock)
+    PRepo -> DB: UPDATE products SET stock = newStock
+
+    UC -> ILS: logAdjustment(productId, qtyChange, newStock, reason)
+    ILS -> DB: INSERT inventory_logs\n(type=ADJUSTMENT_IN or ADJUSTMENT_OUT)
+end
+
+UC --> UI: success
+UI --> Merchant: Close dialog + refresh product
+
+@enduml

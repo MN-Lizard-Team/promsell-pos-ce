@@ -10,6 +10,8 @@ import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state.dart';
@@ -99,99 +101,150 @@ class _HistoryView extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, i) {
                 final sale = state.sales[i];
-                return Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: ExpansionTile(
-                    leading: CircleAvatar(
-                      backgroundColor: theme.colorScheme.primaryContainer,
-                      child: Icon(
-                        Icons.receipt_long_outlined,
-                        color: theme.colorScheme.primary,
+                final isVoided = sale.isVoided;
+                return Opacity(
+                  opacity: isVoided ? 0.6 : 1.0,
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: ExpansionTile(
+                      leading: CircleAvatar(
+                        backgroundColor: isVoided
+                            ? theme.colorScheme.errorContainer
+                            : theme.colorScheme.primaryContainer,
+                        child: Icon(
+                          isVoided ? Icons.block : Icons.receipt_long_outlined,
+                          color: isVoided
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.primary,
+                        ),
                       ),
-                    ),
-                    title: MoneyText(
-                      value: sale.totalAmount,
-                      currency: settings.currency,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      color: theme.colorScheme.primary,
-                    ),
-                    subtitle: Text(
-                      '#${sale.id}  •  ${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    children: [
-                      ...sale.items.map(
-                        (item) => ListTile(
-                          dense: true,
-                          title: Text(item.productName),
-                          subtitle: Text(
-                            '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}',
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: MoneyText(
+                              value: sale.totalAmount,
+                              currency: settings.currency,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                decoration: isVoided
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
+                              color: isVoided
+                                  ? theme.colorScheme.error
+                                  : theme.colorScheme.primary,
+                            ),
                           ),
-                          trailing: MoneyText(
-                            value: item.subtotal,
-                            currency: settings.currency,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                          if (isVoided)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.errorContainer,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                ctx.l10n.voided,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.error,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        '${sale.receiptNumber ?? '#${sale.id.substring(0, 8)}'}  •  ${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      children: [
+                        ...sale.items.map(
+                          (item) => ListTile(
+                            dense: true,
+                            title: Text(item.productName),
+                            subtitle: Text(
+                              '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}',
+                            ),
+                            trailing: MoneyText(
+                              value: item.subtotal,
+                              currency: settings.currency,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      if (sale.note != null && sale.note!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                          child: Text(
-                            ctx.l10n.noteLabel(sale.note!),
-                            style: theme.textTheme.bodySmall,
+                        if (sale.note != null && sale.note!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                            child: Text(
+                              ctx.l10n.noteLabel(sale.note!),
+                              style: theme.textTheme.bodySmall,
+                            ),
                           ),
+                        OverflowBar(
+                          alignment: MainAxisAlignment.end,
+                          children: [
+                            if (!isVoided)
+                              TextButton.icon(
+                                icon: Icon(
+                                  Icons.block,
+                                  color: theme.colorScheme.error,
+                                ),
+                                label: Text(
+                                  ctx.l10n.voidSale,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.error,
+                                  ),
+                                ),
+                                onPressed: () => _showVoidDialog(ctx, sale),
+                              ),
+                            TextButton.icon(
+                              icon: const Icon(Icons.print_outlined),
+                              label: Text(ctx.l10n.printReceipt),
+                              onPressed: () async {
+                                try {
+                                  await sl<ReceiptPdfService>().printReceipt(
+                                    sale: sale,
+                                    currency: settings.currency,
+                                    storeName: settings.shopName,
+                                  );
+                                } catch (_) {
+                                  if (ctx.mounted) {
+                                    AppSnackBar.error(
+                                      ctx,
+                                      ctx.l10n.errorOccurred,
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                            TextButton.icon(
+                              icon: const Icon(Icons.share_outlined),
+                              label: Text(ctx.l10n.shareReceipt),
+                              onPressed: () async {
+                                try {
+                                  await sl<ReceiptPdfService>().shareReceipt(
+                                    sale: sale,
+                                    currency: settings.currency,
+                                    storeName: settings.shopName,
+                                  );
+                                } catch (_) {
+                                  if (ctx.mounted) {
+                                    AppSnackBar.error(
+                                      ctx,
+                                      ctx.l10n.errorOccurred,
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                          ],
                         ),
-                      OverflowBar(
-                        alignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton.icon(
-                            icon: const Icon(Icons.print_outlined),
-                            label: Text(ctx.l10n.printReceipt),
-                            onPressed: () async {
-                              try {
-                                await sl<ReceiptPdfService>().printReceipt(
-                                  sale: sale,
-                                  currency: settings.currency,
-                                  storeName: settings.shopName,
-                                );
-                              } catch (_) {
-                                if (ctx.mounted) {
-                                  AppSnackBar.error(
-                                    ctx,
-                                    ctx.l10n.errorOccurred,
-                                  );
-                                }
-                              }
-                            },
-                          ),
-                          TextButton.icon(
-                            icon: const Icon(Icons.share_outlined),
-                            label: Text(ctx.l10n.shareReceipt),
-                            onPressed: () async {
-                              try {
-                                await sl<ReceiptPdfService>().shareReceipt(
-                                  sale: sale,
-                                  currency: settings.currency,
-                                  storeName: settings.shopName,
-                                );
-                              } catch (_) {
-                                if (ctx.mounted) {
-                                  AppSnackBar.error(
-                                    ctx,
-                                    ctx.l10n.errorOccurred,
-                                  );
-                                }
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -200,6 +253,60 @@ class _HistoryView extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _showVoidDialog(BuildContext context, Sale sale) async {
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(dialogCtx.l10n.voidSale),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(dialogCtx.l10n.voidSaleConfirm),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              decoration: InputDecoration(
+                hintText: dialogCtx.l10n.voidReasonHint,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: Text(dialogCtx.l10n.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogCtx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: Text(dialogCtx.l10n.voidSale),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final reason = reasonController.text.trim();
+        await sl<VoidSale>().call(
+          sale.id,
+          reason: reason.isEmpty ? null : reason,
+        );
+        if (context.mounted) {
+          AppSnackBar.success(context, context.l10n.voidSuccess);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          AppSnackBar.error(context, e.toString());
+        }
+      }
+    }
+    reasonController.dispose();
   }
 
   Future<void> _pickRange(BuildContext context) async {

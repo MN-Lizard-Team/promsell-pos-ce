@@ -5,7 +5,7 @@
 **Version target:** `v0.5.0`
 **Effort:** ~3 dev-days
 **Risk:** 🟡 Medium (math edge cases, UI complexity)
-**Depends on:** R1, R2 complete
+**Depends on:** R1+R2 complete ✅ (v0.4.0)
 
 ---
 
@@ -21,7 +21,7 @@ R2 ทำให้ระบบ trust ได้. R3 ทำให้ระบบ *
 
 ## Pre-flight
 
-- [ ] R2 merged + `v0.4.0` released
+- [x] R1+R2 merged → `v0.4.0` released (2026-05-27)
 - [ ] Branch `feat/phase1-r3-cashier-ux`
 
 ---
@@ -236,7 +236,7 @@ draft_carts + draft_cart_items in SQLite
 - ✅ Oversell toggle changes behavior end-to-end
 - ✅ Low stock indicator visible
 - ✅ Receipt math matches DB (subtotal + discount + VAT = total)
-- ✅ Test count grows ~155 → ~190+
+- ✅ Test count grows ~170 → ~210+
 - ✅ CHANGELOG + v0.5.0
 
 ---
@@ -277,7 +277,7 @@ draft_carts + draft_cart_items in SQLite
 □ Multi-draft list/switch/rename/delete
 □ Restore active draft on launch
 □ Cleanup draft on checkout
-□ All tests pass (~190 total)
+□ All tests pass (~210 total)
 □ Manual: realistic POS flow with discount + VAT + multi-customer
 □ CHANGELOG + v0.5.0
 □ PR merged

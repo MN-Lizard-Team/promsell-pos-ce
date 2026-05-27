@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.3.0** — Catalog redesign (list/grid toggle, filter chips, image preview), bundled NotoSansThai fonts, PDF receipt export, and centralised AppSnackBar + OverlayToast feedback.
+> **Latest Release: v0.4.0** — Schema + Sale Integrity Overhaul — UUID migration, 9 tables, atomic receipt numbers, void/refund flow, inventory audit trail, stock adjustments. Breaking: drops existing data.
  
 ---
  
@@ -66,9 +66,11 @@
 |---------|-------------|
 | **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, and change calculation |
 | **Products** | List/grid toggle, category filter chips, image URL avatar with live preview, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, active/inactive toggle |
-| **History** | Date-ranged receipt-like sale history with expandable item breakdown and notes |
-| **Report** | Dashboard cards for revenue, sales count, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
+| **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, void sale action with reason, and notes |
+| **Report** | Dashboard cards for net revenue (excludes voided), voided summary, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
+| **Inventory** | Inventory audit log (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT), manual stock adjustment dialog with reason, and per-product log viewer |
 | **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, dirty-state save behavior, and compact responsive controls |
+| **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation (`YYMMDD-XX-NNNN`) |
 | **Offline-first** | All data stored locally in SQLite via Drift — no internet required |
 | **Material 3** | Merchant Command Deck refresh with shared theme tokens and responsive UI primitives |
 | **i18n** | Full localization via Flutter ARB files, easy to add more languages |
@@ -81,10 +83,10 @@
 |-------|------------|
 | **Framework** | Flutter 3.x · Dart 3.11+ |
 | **State management** | flutter_bloc (BLoC + Cubit pattern) |
-| **Database** | Drift (SQLite ORM) with code generation |
+| **Database** | Drift (SQLite ORM) with code generation — 9 tables, UUID PKs |
 | **DI** | get_it service locator |
 | **Routing** | Navigator + IndexedStack |
-| **Persistence** | shared_preferences (settings) |
+| **Persistence** | shared_preferences (settings) + Drift app_settings table (receipt sequence, device prefix) |
 | **Localization** | flutter_localizations + Flutter ARB intl |
 | **PDF / Print** | pdf + printing |
 | **Design** | Material 3, NotoSansThai (bundled local fonts), shared UI primitives |
@@ -135,22 +137,26 @@ For more details, see [`docs/USAGE.md`](docs/USAGE.md).
 promsell-pos-ce/
 ├── lib/
 │   ├── core/
-│   │   ├── database/          # Drift schema and DAO
+│   │   ├── database/          # Drift schema, tables, and migrations
 │   │   ├── di/                # get_it service locator
 │   │   ├── extensions/        # context.l10n helper
-│   │   ├── utils/             # shared helpers (payment_method, etc.)
+│   │   ├── utils/             # IdGenerator, payment_method, etc.
 │   │   └── widgets/           # shared UI primitives
 │   ├── features/
 │   │   ├── sale/              # Cart + checkout
 │   │   ├── product/           # CRUD inventory
-│   │   ├── history/           # Sale history viewer
-│   │   ├── report/            # Analytics dashboard
+│   │   ├── history/           # Sale history viewer + void dialog
+│   │   ├── report/            # Analytics dashboard (net revenue)
+│   │   ├── inventory/         # Inventory log viewer + stock adjust
 │   │   └── settings/          # Theme, locale, shop info
 │   ├── l10n/                  # ARB files (app_th.arb, app_en.arb)
 │   └── main.dart              # App entry + 5-tab shell
 ├── docs/
+│   ├── ARCHITECTURE.md        # Deep technical architecture (C4, data flow, ADRs)
 │   ├── USAGE.md               # Detailed usage guide
-│   └── DEPLOY.md              # Build, signing, release checklist
+│   ├── DEPLOY.md              # Build, signing, release checklist
+│   ├── DATABASE.md            # Full database handbook (ERD, schema, migration)
+│   └── architecture/          # PlantUML source files (.puml)
 ├── android/                   # Android platform code
 ├── ios/                       # iOS platform code
 ├── test/                      # Unit + widget tests
@@ -197,6 +203,15 @@ features/<name>/
  
 ## Roadmap
 
+### Phase 1 (in progress)
+
+- [x] **Schema + Sale Integrity Overhaul** (v0.4.0): UUID migration, 9 tables, indexes, sync-ready columns, atomic receipt numbers, inventory logs, void/refund, stock adjustments
+- [ ] **R3 — Cashier UX**: Draft carts, discounts, VAT, stock policy
+- [ ] **R4 — Merchant Tools**: Receipt PDF thermal layout, PromptPay QR, backup/restore
+- [ ] **R5 — Operations**: Daily close, onboarding wizard, final polish
+
+### Future
+
 - [ ] Receipt printing via Bluetooth thermal printer
 - [x] PDF receipt export and share (v0.3.0)
 - [ ] Multi-shop support
@@ -210,7 +225,7 @@ features/<name>/
 
 ## Testing
 
-**135 tests** covering every application layer:
+**170 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -218,8 +233,9 @@ features/<name>/
 | **BLoC / Cubit** | Event→state transitions, error handling | ~15 |
 | **Repository** | Impl with mocked datasources | ~15 |
 | **Datasource** | Real in-memory SQLite (Drift) | ~11 |
+| **Services** | ReceiptNumberService, InventoryLogService | ~12 |
 | **Widget** | ProductList, ProductForm, PaymentSheet, Settings | ~15 |
-| **Integration** | End-to-end checkout flow with stock deduction | 3 |
+| **Integration** | Checkout flow, sale integrity (void + adjust) | 13 |
 | **L10n parity** | EN/TH key coverage, non-empty values, params | 8 |
 
 ### Running tests
@@ -253,6 +269,17 @@ Read **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide: branch naming, c
 
 For security vulnerabilities, see **[SECURITY.md](SECURITY.md)** — do not file public issues.
 
+### Documentation
+
+| Document | Contents |
+|----------|----------|
+| [`CODEBASE.md`](CODEBASE.md) | Architecture diagram, module reference, file dependency map |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Deep technical: C4 diagrams, data flows, transaction boundaries, DI graph, ADRs |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Full database handbook: ERD, schema, indexes, migration, query patterns |
+| [`docs/USAGE.md`](docs/USAGE.md) | Detailed usage guide: setup, build, settings, i18n, troubleshooting |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Build, signing, release checklist, smoke test |
+| [`CHANGELOG.md`](CHANGELOG.md) | Version history, breaking changes, migration notes |
+
 ---
 
 ## License
@@ -280,6 +307,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.3.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.4.0 · AGPL-3.0</sub>
 
 </div>

@@ -16,37 +16,41 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(ProductsCompanion.insert(
-      name: '',
-      price: 0,
-    ));
+    registerFallbackValue(
+      ProductsCompanion.insert(id: 'fallback', name: '', price: 0),
+    );
   });
 
   group('ProductRepositoryImpl', () {
     test('watchAllProducts delegates to datasource', () {
-      when(() => mockDs.watchAllProducts())
-          .thenAnswer((_) => Stream.value([tProduct]));
+      when(
+        () => mockDs.watchAllProducts(),
+      ).thenAnswer((_) => Stream.value([tProduct]));
 
       expect(repo.watchAllProducts(), emits([tProduct]));
     });
 
     test('getActiveProducts delegates to datasource', () async {
-      when(() => mockDs.getActiveProducts())
-          .thenAnswer((_) async => [tProduct]);
+      when(
+        () => mockDs.getActiveProducts(),
+      ).thenAnswer((_) async => [tProduct]);
 
       expect(await repo.getActiveProducts(), [tProduct]);
     });
 
     test('getProductById delegates to datasource', () async {
-      when(() => mockDs.getProductById(any()))
-          .thenAnswer((_) async => tProduct);
+      when(
+        () => mockDs.getProductById(any()),
+      ).thenAnswer((_) async => tProduct);
 
-      expect(await repo.getProductById(1), tProduct);
+      expect(
+        await repo.getProductById('prod-0001-0001-0001-000000000001'),
+        tProduct,
+      );
     });
 
     test('addProduct builds companion and delegates', () async {
-      when(() => mockDs.insertProduct(any()))
-          .thenAnswer((_) async => 1);
+      when(() => mockDs.insertProduct(any())).thenAnswer((_) async {});
 
       final result = await repo.addProduct(
         name: 'Test',
@@ -55,19 +59,18 @@ void main() {
         category: 'Drinks',
       );
 
-      expect(result, 1);
+      expect(result, isA<String>());
       final captured =
           verify(() => mockDs.insertProduct(captureAny())).captured.single
               as ProductsCompanion;
       expect(captured.name.value, 'Test');
       expect(captured.price.value, 100.0);
       expect(captured.stock.value, 10);
-      expect(captured.category.value, 'Drinks');
+      expect(captured.categoryId.value, 'Drinks');
     });
 
     test('updateProduct builds companion and delegates', () async {
-      when(() => mockDs.updateProduct(any()))
-          .thenAnswer((_) async {});
+      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
 
       await repo.updateProduct(tProduct);
 
@@ -80,12 +83,13 @@ void main() {
     });
 
     test('deleteProduct delegates to datasource', () async {
-      when(() => mockDs.deleteProduct(any()))
-          .thenAnswer((_) async {});
+      when(() => mockDs.deleteProduct(any())).thenAnswer((_) async {});
 
-      await repo.deleteProduct(1);
+      await repo.deleteProduct('prod-0001-0001-0001-000000000001');
 
-      verify(() => mockDs.deleteProduct(1)).called(1);
+      verify(
+        () => mockDs.deleteProduct('prod-0001-0001-0001-000000000001'),
+      ).called(1);
     });
   });
 }

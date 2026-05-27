@@ -16,14 +16,14 @@ class SaleProductAdded extends SaleEvent {
 
 class SaleProductRemoved extends SaleEvent {
   const SaleProductRemoved(this.productId);
-  final int productId;
+  final String productId;
   @override
   List<Object?> get props => [productId];
 }
 
 class SaleItemQtyChanged extends SaleEvent {
   const SaleItemQtyChanged({required this.productId, required this.qty});
-  final int productId;
+  final String productId;
   final int qty;
   @override
   List<Object?> get props => [productId, qty];

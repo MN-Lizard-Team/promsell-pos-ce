@@ -4,7 +4,7 @@ class AddProduct {
   const AddProduct(this._repository);
   final ProductRepository _repository;
 
-  Future<int> call({
+  Future<String> call({
     required String name,
     required double price,
     required int stock,

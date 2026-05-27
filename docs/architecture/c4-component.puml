@@ -1,0 +1,34 @@
+@startuml C4_Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Promsell POS CE — Component Diagram (Sale Feature)
+
+Container_Boundary(sale_feature, "Sale Feature") {
+    Component(sale_page, "SalePage", "Flutter Widget", "Product catalog + cart panel + checkout")
+    Component(payment_sheet, "PaymentSheet", "Flutter Widget", "Payment method, cash input, confirm")
+    Component(sale_bloc, "SaleBloc", "flutter_bloc", "Cart state management")
+    Component(create_sale_uc, "CreateSale", "Use Case", "Delegates to SaleRepository")
+    Component(void_sale_uc, "VoidSale", "Use Case", "Delegates to SaleRepository")
+    Component(sale_repo, "SaleRepository", "Interface", "Abstract contract")
+    Component(sale_repo_impl, "SaleRepositoryImpl", "Implementation", "Delegates to datasource")
+    Component(sale_ds, "SaleLocalDatasource", "Drift DAO", "Atomic insert + void transactions")
+    Component(receipt_svc, "ReceiptNumberService", "Service", "YYMMDD-XX-NNNN generation")
+    Component(inv_log_svc, "InventoryLogService", "Service", "Audit trail logging")
+}
+
+ContainerDb(db, "SQLite", "Drift", "sales + sale_items + inventory_logs + app_settings")
+
+Rel(sale_page, sale_bloc, "add events")
+Rel(payment_sheet, sale_bloc, "confirm payment")
+Rel(sale_bloc, create_sale_uc, "call")
+Rel(create_sale_uc, sale_repo, "call")
+Rel(sale_repo, sale_repo_impl, "implements")
+Rel(sale_repo_impl, sale_ds, "delegates")
+Rel(sale_ds, receipt_svc, "nextReceiptNumber()")
+Rel(sale_ds, inv_log_svc, "logSale()")
+Rel(sale_ds, db, "transaction")
+Rel(receipt_svc, db, "read/write app_settings")
+Rel(inv_log_svc, db, "insert inventory_logs")
+
+SHOW_LEGEND()
+@enduml
