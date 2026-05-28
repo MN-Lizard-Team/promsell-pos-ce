@@ -31,8 +31,10 @@ import 'package:promsell_pos_ce/features/settings/data/datasources/settings_loca
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
-  // Database
-  sl.registerSingleton<AppDatabase>(AppDatabase());
+  // Database — skip if already registered (e.g. in tests with in-memory DB).
+  if (!sl.isRegistered<AppDatabase>()) {
+    sl.registerSingleton<AppDatabase>(AppDatabase());
+  }
 
   // Datasource's
   sl.registerLazySingleton<ProductLocalDatasource>(
@@ -85,7 +87,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => WatchReport(sl()));
 
   // Services
-  sl.registerLazySingleton<ReceiptPdfService>(() => const ReceiptPdfService());
+  sl.registerLazySingleton<ReceiptPdfService>(() => ReceiptPdfService());
 
   // Cubits — Report (factory: each tab navigation creates a fresh cubit)
   sl.registerFactory<ReportCubit>(() => ReportCubit(watchReport: sl()));
@@ -102,6 +104,8 @@ Future<void> initDependencies() async {
   );
 
   // Settings
-  sl.registerLazySingleton<SettingsRepository>(() => SettingsRepositoryImpl());
+  sl.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(sl()),
+  );
   sl.registerLazySingleton<SettingsCubit>(() => SettingsCubit(sl()));
 }

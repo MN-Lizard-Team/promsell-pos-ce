@@ -190,19 +190,25 @@ Settings are grouped into cards: general, shop info, sales, and receipt. See [Se
 
 ## Settings
 
-All settings persist via `SharedPreferences`. Locale, theme, currency, and date format apply immediately; shop and receipt text fields are saved with the **Save** action.
+All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value store). Locale, theme, currency, and date format apply immediately; shop and receipt text fields are saved with the **Save** action.
 
 | Setting | Description |
 |---------|-------------|
 | **Language** | Thai (`th`) or English (`en`) — live reload |
 | **Theme** | Light, Dark, or System (follows OS) — live reload |
-| **Shop name** | Displayed on receipts |
-| **Shop address** | Displayed on receipts |
-| **Shop phone** | Displayed on receipts |
+| **Shop name** | Displayed on receipts and preview |
+| **Shop address** | Displayed on receipts and preview |
+| **Shop phone** | Displayed on receipts and preview |
 | **Currency symbol** | Default `฿` — used in money formatting |
 | **Date format** | Default `dd/MM/yyyy` — `intl` format pattern |
 | **Receipt note** | Optional footer text on receipts |
 | **Show shop info on receipt** | Toggle on/off |
+| **Auto print prompt** | Ask to print receipt after sale |
+| **VAT mode** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` |
+| **VAT rate** | Percentage (default `7.0`) |
+| **Receipt preview style** | `thermal` / `card` / `none` |
+| **Show pre-sale preview** | Show preview in PaymentSheet |
+| **Show post-sale preview** | Show preview in success dialog |
 
 To save text-field changes, tap the **Save** button in the app bar or at the bottom of the page.
 
@@ -320,9 +326,9 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **2** (v0.4.0). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **2** (v0.4.1). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
-> **Note:** v0.4.0 uses a destructive drop+recreate migration (pre-release). Production releases must use incremental migrations.
+> **Note:** v0.4.1 uses a destructive drop+recreate migration (pre-release). Production releases must use incremental migrations.
 
 ---
 
@@ -345,7 +351,7 @@ Promsell follows **Clean Architecture** with a **feature-first** folder layout.
 │  Data (Repository impl + DAO)                   │
 │     ↓ SQL                     ↑ rows            │
 ├─────────────────────────────────────────────────┤
-│  Drift / SharedPreferences                      │
+│  Drift / SettingsLocalDatasource                │
 └─────────────────────────────────────────────────┘
 ```
 

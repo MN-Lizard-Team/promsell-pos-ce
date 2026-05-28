@@ -66,3 +66,7 @@ class SaleCartProductsRefreshed extends SaleEvent {
   @override
   List<Object?> get props => [products];
 }
+
+class SaleReset extends SaleEvent {
+  const SaleReset();
+}

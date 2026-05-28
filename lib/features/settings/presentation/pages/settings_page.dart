@@ -237,6 +237,111 @@ class _SettingsViewState extends State<_SettingsView> {
                         context.read<SettingsCubit>().update(updated);
                       },
                     ),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.print_outlined),
+                      title: Text(l10n.settingsAutoPrintPrompt),
+                      value: _draft.autoPrintPrompt,
+                      onChanged: (value) {
+                        final updated = _draft.copyWith(autoPrintPrompt: value);
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.preview_outlined),
+                      title: Text(l10n.settingsShowPreSalePreview),
+                      value: _draft.showPreSalePreview,
+                      onChanged: (value) {
+                        final updated = _draft.copyWith(
+                          showPreSalePreview: value,
+                        );
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.receipt_outlined),
+                      title: Text(l10n.settingsShowPostSalePreview),
+                      value: _draft.showPostSalePreview,
+                      onChanged: (value) {
+                        final updated = _draft.copyWith(
+                          showPostSalePreview: value,
+                        );
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                    _ResponsiveSettingsPicker(
+                      icon: Icons.receipt_long_outlined,
+                      title: l10n.settingsReceiptPreviewStyle,
+                      child: DropdownButton<String>(
+                        value: _draft.receiptPreviewStyle,
+                        isExpanded: true,
+                        items: [
+                          DropdownMenuItem(
+                            value: 'thermal',
+                            child: Text(l10n.receiptPreviewStyleThermal),
+                          ),
+                          DropdownMenuItem(
+                            value: 'card',
+                            child: Text(l10n.receiptPreviewStyleCard),
+                          ),
+                          DropdownMenuItem(
+                            value: 'none',
+                            child: Text(l10n.receiptPreviewStyleNone),
+                          ),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            final updated = _draft.copyWith(
+                              receiptPreviewStyle: v,
+                            );
+                            setState(() => _draft = updated);
+                            context.read<SettingsCubit>().update(updated);
+                          }
+                        },
+                      ),
+                    ),
+                    _ResponsiveSettingsPicker(
+                      icon: Icons.percent_outlined,
+                      title: l10n.settingsVatMode,
+                      child: DropdownButton<String>(
+                        value: _draft.vatMode,
+                        isExpanded: true,
+                        items: [
+                          DropdownMenuItem(
+                            value: 'NONE',
+                            child: Text(l10n.vatModeNone),
+                          ),
+                          DropdownMenuItem(
+                            value: 'INCLUSIVE',
+                            child: Text(l10n.vatModeInclusive),
+                          ),
+                          DropdownMenuItem(
+                            value: 'EXCLUSIVE',
+                            child: Text(l10n.vatModeExclusive),
+                          ),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            final updated = _draft.copyWith(vatMode: v);
+                            setState(() => _draft = updated);
+                            context.read<SettingsCubit>().update(updated);
+                          }
+                        },
+                      ),
+                    ),
+                    if (_draft.vatMode != 'NONE')
+                      _TextField(
+                        controller: TextEditingController(
+                          text: _draft.vatRate.toString(),
+                        ),
+                        label: l10n.settingsVatRate,
+                        icon: Icons.percent,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                      ),
                   ],
                 ),
               ),

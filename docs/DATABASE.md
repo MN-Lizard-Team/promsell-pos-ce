@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.4.0
+# Database Handbook — Promsell POS CE v0.4.1
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -409,7 +409,7 @@ When a record is "deleted":
 2. All queries filter `WHERE deleted_at IS NULL` (or use `isActive` for products)
 3. Sync can detect deletions by comparing `deletedAt` timestamps
 
-> Currently (v0.4.0), products use `isActive` for soft deactivation. The `deletedAt` column enables true soft-delete + sync in Phase 4.
+> Currently (v0.4.1), products use `isActive` for soft deactivation. The `deletedAt` column enables true soft-delete + sync in Phase 4.
 
 ---
 
@@ -576,7 +576,7 @@ Stream<List<Sale>> watchRecentSales({int limit = 20}) {
 
 ## Migration Guide
 
-### Current strategy (v0.4.0, pre-release)
+### Current strategy (v0.4.1, pre-release)
 
 Schema version 2 uses **destructive drop+recreate** — all existing data is lost on upgrade from v1. This is acceptable during pre-release development.
 
@@ -779,4 +779,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.4.0 · Schema v2 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.4.1 · Schema v2 · 9 tables · UUIDv4</sub>

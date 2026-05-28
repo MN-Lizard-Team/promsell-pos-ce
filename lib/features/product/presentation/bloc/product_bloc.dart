@@ -121,8 +121,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     ProductDeleted event,
     Emitter<ProductState> emit,
   ) async {
+    emit(state.copyWith(saveStatus: ProductSaveStatus.saving));
     try {
       await _deleteProduct(event.id);
+      emit(state.copyWith(saveStatus: ProductSaveStatus.saved));
     } catch (e) {
       emit(
         state.copyWith(

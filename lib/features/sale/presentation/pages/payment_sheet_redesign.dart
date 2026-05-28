@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
+import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
@@ -70,16 +73,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
     return BlocListener<SaleBloc, SaleState>(
-      listenWhen: (_, curr) =>
-          curr.status == SaleStatus.success ||
-          curr.status == SaleStatus.failure,
+      listenWhen: (_, curr) => curr.status == SaleStatus.failure,
       listener: (ctx, state) {
-        if (state.status == SaleStatus.success) {
-          if (ctx.mounted) Navigator.pop(ctx);
-        } else if (state.status == SaleStatus.failure) {
-          _submitted = false;
-          AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
-        }
+        _submitted = false;
+        AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
       },
       child: SafeArea(
         child: SingleChildScrollView(
@@ -234,6 +231,86 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 ),
                 textInputAction: TextInputAction.done,
                 maxLines: 1,
+              ),
+              const SizedBox(height: 20),
+              BlocBuilder<SaleBloc, SaleState>(
+                builder: (_, cartState) {
+                  final settings = context
+                      .watch<SettingsCubit>()
+                      .state
+                      .settings;
+                  if (settings.showPreSalePreview &&
+                      settings.receiptPreviewStyle != 'none' &&
+                      !cartState.isEmpty) {
+                    final labels = ReceiptLabels(
+                      receipt: context.l10n.receiptLabelReceipt,
+                      payment: context.l10n.receiptLabelPayment,
+                      total: context.l10n.receiptLabelTotal,
+                      received: context.l10n.receiptLabelReceived,
+                      change: context.l10n.receiptLabelChange,
+                      note: context.l10n.receiptLabelNote,
+                      vat: context.l10n.receiptLabelVat,
+                      vatIncluded: context.l10n.receiptLabelVatIncluded(
+                        settings.vatRate,
+                      ),
+                      subtotal: context.l10n.receiptLabelSubtotal,
+                    );
+                    final vatInfo = sl<ReceiptPdfService>().calculateVat(
+                      total: cartState.total,
+                      rate: settings.vatRate,
+                      mode: settings.vatMode,
+                    );
+                    final style = switch (settings.receiptPreviewStyle) {
+                      'card' => ReceiptPreviewStyle.card,
+                      'none' => ReceiptPreviewStyle.none,
+                      _ => ReceiptPreviewStyle.thermal,
+                    };
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          context.l10n.receiptPreview,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: ReceiptPreview(
+                            settings: settings,
+                            labels: labels,
+                            style: style,
+                            items: cartState.items
+                                .map(
+                                  (i) => ReceiptPreviewItem(
+                                    name: i.product.name,
+                                    qty: i.qty,
+                                    price: i.product.price,
+                                    subtotal: i.subtotal,
+                                  ),
+                                )
+                                .toList(),
+                            total: cartState.total,
+                            vatInfo: vatInfo,
+                            paymentMethod: _method,
+                            amountReceived: _method == 'cash'
+                                ? _received
+                                : null,
+                            changeAmount: _method == 'cash' && _change >= 0
+                                ? _change
+                                : null,
+                            note: _noteCtrl.text.trim().isEmpty
+                                ? null
+                                : _noteCtrl.text.trim(),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
               const SizedBox(height: 20),
               BlocBuilder<SaleBloc, SaleState>(

@@ -1,0 +1,80 @@
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
+import 'package:promsell_pos_ce/features/history/domain/repositories/history_repository.dart';
+import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
+import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart';
+import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
+import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
+import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
+import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart';
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('DI Graph Smoke Test', () {
+    setUpAll(() async {
+      await GetIt.instance.reset();
+      // Register an in-memory database first so initDependencies() won't
+      // try to open a real file via path_provider (requires platform channel).
+      GetIt.instance.registerSingleton<AppDatabase>(
+        AppDatabase.forTesting(NativeDatabase.memory()),
+      );
+      await initDependencies();
+    });
+
+    tearDownAll(() async {
+      final db = GetIt.instance<AppDatabase>();
+      await db.close();
+      await GetIt.instance.reset();
+    });
+
+    test('all singletons resolve', () {
+      expect(() => GetIt.instance<AppDatabase>(), returnsNormally);
+      expect(() => GetIt.instance<ProductLocalDatasource>(), returnsNormally);
+      expect(() => GetIt.instance<SaleLocalDatasource>(), returnsNormally);
+      expect(
+        () => GetIt.instance<SettingsLocalDatasource>(),
+        returnsNormally,
+      );
+      expect(() => GetIt.instance<ProductRepository>(), returnsNormally);
+      expect(() => GetIt.instance<SaleRepository>(), returnsNormally);
+      expect(() => GetIt.instance<HistoryRepository>(), returnsNormally);
+      expect(() => GetIt.instance<SettingsRepository>(), returnsNormally);
+      expect(() => GetIt.instance<ReceiptPdfService>(), returnsNormally);
+    });
+
+    test('all use cases resolve', () {
+      expect(() => GetIt.instance<AddProduct>(), returnsNormally);
+      expect(() => GetIt.instance<DeleteProduct>(), returnsNormally);
+      expect(() => GetIt.instance<GetProducts>(), returnsNormally);
+      expect(() => GetIt.instance<UpdateProduct>(), returnsNormally);
+      expect(() => GetIt.instance<CreateSale>(), returnsNormally);
+      expect(() => GetIt.instance<VoidSale>(), returnsNormally);
+      expect(() => GetIt.instance<AdjustStock>(), returnsNormally);
+      expect(() => GetIt.instance<WatchSaleHistory>(), returnsNormally);
+      expect(() => GetIt.instance<WatchReport>(), returnsNormally);
+    });
+
+    test('all BLoCs / Cubits resolve', () {
+      expect(() => GetIt.instance<ProductBloc>(), returnsNormally);
+      expect(() => GetIt.instance<SettingsCubit>(), returnsNormally);
+      expect(() => GetIt.instance<ReportCubit>(), returnsNormally);
+    });
+  });
+}

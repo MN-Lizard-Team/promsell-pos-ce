@@ -15,6 +15,7 @@ import 'package:promsell_pos_ce/features/history/domain/usecases/get_sale_histor
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/get_report.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -43,6 +44,9 @@ class MockSaleLocalDatasource extends Mock implements SaleLocalDatasource {}
 
 class MockProductLocalDatasource extends Mock
     implements ProductLocalDatasource {}
+
+class MockSettingsLocalDatasource extends Mock
+    implements SettingsLocalDatasource {}
 
 // ── Use Cases ──
 class MockCreateSale extends Mock implements CreateSale {}

@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.4.0** — Schema + Sale Integrity Overhaul — UUID migration, 9 tables, atomic receipt numbers, void/refund flow, inventory audit trail, stock adjustments. Breaking: drops existing data.
+> **Latest Release: v0.4.1** — Receipt system with VAT-aware rendering, on-screen preview (thermal/card/none), Thai font embedding in PDFs, input validation, and automated CI checks.
  
 ---
  
@@ -69,8 +69,10 @@
 | **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, void sale action with reason, and notes |
 | **Report** | Dashboard cards for net revenue (excludes voided), voided summary, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
 | **Inventory** | Inventory audit log (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT), manual stock adjustment dialog with reason, and per-product log viewer |
-| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, dirty-state save behavior, and compact responsive controls |
-| **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation (`YYMMDD-XX-NNNN`) |
+| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, VAT mode/rate, preview style toggles, dirty-state save behavior, and compact responsive controls |
+| **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation |
+| **Receipt Preview** | On-screen preview in `thermal` (80mm paper) and `card` styles, with independent pre/post-sale toggles and `"none"` option |
+| **VAT** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` modes with correct subtotal/VAT/total breakdown on receipts and PDFs |
 | **Offline-first** | All data stored locally in SQLite via Drift — no internet required |
 | **Material 3** | Merchant Command Deck refresh with shared theme tokens and responsive UI primitives |
 | **i18n** | Full localization via Flutter ARB files, easy to add more languages |
@@ -86,7 +88,7 @@
 | **Database** | Drift (SQLite ORM) with code generation — 9 tables, UUID PKs |
 | **DI** | get_it service locator |
 | **Routing** | Navigator + IndexedStack |
-| **Persistence** | shared_preferences (settings) + Drift app_settings table (receipt sequence, device prefix) |
+| **Persistence** | SettingsLocalDatasource (Drift-backed typed key-value store); Drift tables for receipt sequences |
 | **Localization** | flutter_localizations + Flutter ARB intl |
 | **PDF / Print** | pdf + printing |
 | **Design** | Material 3, NotoSansThai (bundled local fonts), shared UI primitives |
@@ -206,8 +208,8 @@ features/<name>/
 ### Phase 1 (in progress)
 
 - [x] **Schema + Sale Integrity Overhaul** (v0.4.0): UUID migration, 9 tables, indexes, sync-ready columns, atomic receipt numbers, inventory logs, void/refund, stock adjustments
-- [ ] **R3 — Cashier UX**: Draft carts, discounts, VAT, stock policy
-- [ ] **R4 — Merchant Tools**: Receipt PDF thermal layout, PromptPay QR, backup/restore
+- [x] **R3 — Cashier UX**: Draft carts, discounts, VAT, stock policy (partial: VAT done)
+- [ ] **R4 — Merchant Tools**: PromptPay QR, backup/restore
 - [ ] **R5 — Operations**: Daily close, onboarding wizard, final polish
 
 ### Future
@@ -225,7 +227,7 @@ features/<name>/
 
 ## Testing
 
-**170 tests** covering every application layer:
+**187 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -233,8 +235,8 @@ features/<name>/
 | **BLoC / Cubit** | Event→state transitions, error handling | ~15 |
 | **Repository** | Impl with mocked datasources | ~15 |
 | **Datasource** | Real in-memory SQLite (Drift) | ~11 |
-| **Services** | ReceiptNumberService, InventoryLogService | ~12 |
-| **Widget** | ProductList, ProductForm, PaymentSheet, Settings | ~15 |
+| **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService | ~15 |
+| **Widget** | ProductList, ProductForm, PaymentSheet, Settings, ReceiptPreview | ~20 |
 | **Integration** | Checkout flow, sale integrity (void + adjust) | 13 |
 | **L10n parity** | EN/TH key coverage, non-empty values, params | 8 |
 

@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/core/widgets/adaptive_breakpoints.dart';
+import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/overlay_toast.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
@@ -13,10 +15,12 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SalePage extends StatelessWidget {
@@ -350,7 +354,17 @@ class _CartPanel extends StatelessWidget {
     return BlocListener<SaleBloc, SaleState>(
       listenWhen: (prev, curr) => curr.status == SaleStatus.success,
       listener: (ctx, state) {
-        AppSnackBar.success(ctx, ctx.l10n.saleSavedSuccess);
+        final settings = ctx.read<SettingsCubit>().state.settings;
+        // Close PaymentSheet if it's still open
+        if (Navigator.of(ctx).canPop()) {
+          Navigator.of(ctx).pop();
+        }
+        if (settings.autoPrintPrompt && state.lastSale != null) {
+          _showReceiptDialog(ctx, state.lastSale!, settings);
+        } else {
+          AppSnackBar.success(ctx, ctx.l10n.saleSavedSuccess);
+          ctx.read<SaleBloc>().add(const SaleReset());
+        }
       },
       child: BlocBuilder<SaleBloc, SaleState>(
         builder: (ctx, state) {
@@ -404,6 +418,111 @@ class _CartPanel extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showReceiptDialog(
+    BuildContext context,
+    Sale sale,
+    AppSettings settings,
+  ) {
+    final l = context.l10n;
+    final labels = ReceiptLabels(
+      receipt: l.receiptLabelReceipt,
+      payment: l.receiptLabelPayment,
+      total: l.receiptLabelTotal,
+      received: l.receiptLabelReceived,
+      change: l.receiptLabelChange,
+      note: l.receiptLabelNote,
+      vat: l.receiptLabelVat,
+      vatIncluded: l.receiptLabelVatIncluded(settings.vatRate),
+      subtotal: l.receiptLabelSubtotal,
+    );
+    final vatInfo = sl<ReceiptPdfService>().calculateVat(
+      total: sale.totalAmount,
+      rate: settings.vatRate,
+      mode: settings.vatMode,
+    );
+    final previewStyle = switch (settings.receiptPreviewStyle) {
+      'card' => ReceiptPreviewStyle.card,
+      'none' => ReceiptPreviewStyle.none,
+      _ => ReceiptPreviewStyle.thermal,
+    };
+    final showPreview =
+        settings.showPostSalePreview && settings.receiptPreviewStyle != 'none';
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(
+          '${l.receiptLabelReceipt} #${sale.receiptNumber ?? sale.id}',
+        ),
+        content: SingleChildScrollView(
+          child: showPreview
+              ? ReceiptPreview(
+                  settings: settings,
+                  labels: labels,
+                  style: previewStyle,
+                  items: sale.items
+                      .map(
+                        (i) => ReceiptPreviewItem(
+                          name: i.productName,
+                          qty: i.qty,
+                          price: i.price,
+                          subtotal: i.subtotal,
+                        ),
+                      )
+                      .toList(),
+                  total: sale.totalAmount,
+                  vatInfo: vatInfo,
+                  paymentMethod: sale.paymentMethod,
+                  amountReceived: sale.amountReceived,
+                  changeAmount: sale.changeAmount,
+                  note: sale.note,
+                  receiptNumber: sale.receiptNumber,
+                  createdAt: sale.createdAt,
+                )
+              : Text(l.saleSavedSuccess),
+        ),
+        actions: [
+          TextButton.icon(
+            icon: const Icon(Icons.print_outlined),
+            label: Text(l.printReceipt),
+            onPressed: () async {
+              Navigator.pop(dialogCtx);
+              await sl<ReceiptPdfService>().printReceipt(
+                sale: sale,
+                settings: settings,
+                labels: labels,
+              );
+              if (context.mounted) {
+                context.read<SaleBloc>().add(const SaleReset());
+              }
+            },
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.share_outlined),
+            label: Text(l.shareReceipt),
+            onPressed: () async {
+              Navigator.pop(dialogCtx);
+              await sl<ReceiptPdfService>().shareReceipt(
+                sale: sale,
+                settings: settings,
+                labels: labels,
+              );
+              if (context.mounted) {
+                context.read<SaleBloc>().add(const SaleReset());
+              }
+            },
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              context.read<SaleBloc>().add(const SaleReset());
+            },
+            child: Text(l.cancel),
+          ),
+        ],
       ),
     );
   }

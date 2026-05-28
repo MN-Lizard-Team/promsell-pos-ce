@@ -12,6 +12,12 @@ void main() {
       expect(settings.currency, '฿');
       expect(settings.dateFormat, 'dd/MM/yyyy');
       expect(settings.showShopInfoOnReceipt, isTrue);
+      expect(settings.autoPrintPrompt, isTrue);
+      expect(settings.vatRate, 7.0);
+      expect(settings.vatMode, 'NONE');
+      expect(settings.receiptPreviewStyle, 'thermal');
+      expect(settings.showPreSalePreview, isTrue);
+      expect(settings.showPostSalePreview, isTrue);
     });
 
     test('supports value equality', () {
@@ -35,7 +41,7 @@ void main() {
 
     test('props contains all fields', () {
       const settings = AppSettings();
-      expect(settings.props.length, 9);
+      expect(settings.props.length, 15);
     });
   });
 }

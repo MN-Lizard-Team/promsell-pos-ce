@@ -206,10 +206,23 @@ class _HistoryView extends StatelessWidget {
                               label: Text(ctx.l10n.printReceipt),
                               onPressed: () async {
                                 try {
+                                  final l = ctx.l10n;
                                   await sl<ReceiptPdfService>().printReceipt(
                                     sale: sale,
-                                    currency: settings.currency,
-                                    storeName: settings.shopName,
+                                    settings: settings,
+                                    labels: ReceiptLabels(
+                                      receipt: l.receiptLabelReceipt,
+                                      payment: l.receiptLabelPayment,
+                                      total: l.receiptLabelTotal,
+                                      received: l.receiptLabelReceived,
+                                      change: l.receiptLabelChange,
+                                      note: l.receiptLabelNote,
+                                      vat: l.receiptLabelVat,
+                                      vatIncluded: l.receiptLabelVatIncluded(
+                                        settings.vatRate,
+                                      ),
+                                      subtotal: l.receiptLabelSubtotal,
+                                    ),
                                   );
                                 } catch (_) {
                                   if (ctx.mounted) {
@@ -226,10 +239,23 @@ class _HistoryView extends StatelessWidget {
                               label: Text(ctx.l10n.shareReceipt),
                               onPressed: () async {
                                 try {
+                                  final l = ctx.l10n;
                                   await sl<ReceiptPdfService>().shareReceipt(
                                     sale: sale,
-                                    currency: settings.currency,
-                                    storeName: settings.shopName,
+                                    settings: settings,
+                                    labels: ReceiptLabels(
+                                      receipt: l.receiptLabelReceipt,
+                                      payment: l.receiptLabelPayment,
+                                      total: l.receiptLabelTotal,
+                                      received: l.receiptLabelReceived,
+                                      change: l.receiptLabelChange,
+                                      note: l.receiptLabelNote,
+                                      vat: l.receiptLabelVat,
+                                      vatIncluded: l.receiptLabelVatIncluded(
+                                        settings.vatRate,
+                                      ),
+                                      subtotal: l.receiptLabelSubtotal,
+                                    ),
                                   );
                                 } catch (_) {
                                   if (ctx.mounted) {

@@ -301,6 +301,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareReceipt => 'Share Receipt';
 
   @override
+  String get receiptLabelReceipt => 'Receipt';
+
+  @override
+  String get receiptLabelPayment => 'Payment';
+
+  @override
+  String get receiptLabelTotal => 'Total';
+
+  @override
+  String get receiptLabelReceived => 'Received';
+
+  @override
+  String get receiptLabelChange => 'Change';
+
+  @override
+  String get receiptLabelNote => 'Note';
+
+  @override
+  String get receiptLabelVat => 'VAT';
+
+  @override
+  String receiptLabelVatIncluded(Object rate) {
+    return 'VAT $rate% (included)';
+  }
+
+  @override
+  String get receiptLabelSubtotal => 'Subtotal';
+
+  @override
+  String get settingsAutoPrintPrompt => 'Ask to print receipt after sale';
+
+  @override
+  String get settingsVatRate => 'VAT Rate (%)';
+
+  @override
+  String get settingsVatMode => 'VAT Mode';
+
+  @override
+  String get settingsReceiptPreviewStyle => 'Receipt Preview Style';
+
+  @override
+  String get settingsShowPreSalePreview =>
+      'Show receipt preview before payment';
+
+  @override
+  String get settingsShowPostSalePreview => 'Show receipt preview after sale';
+
+  @override
+  String get receiptPreviewStyleThermal => 'Thermal Paper';
+
+  @override
+  String get receiptPreviewStyleCard => 'Card';
+
+  @override
+  String get receiptPreviewStyleNone => 'None';
+
+  @override
+  String get receiptPreview => 'Receipt Preview';
+
+  @override
+  String get vatModeNone => 'None';
+
+  @override
+  String get vatModeInclusive => 'Inclusive';
+
+  @override
+  String get vatModeExclusive => 'Exclusive';
+
+  @override
   String get voided => 'VOIDED';
 
   @override

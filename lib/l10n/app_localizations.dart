@@ -644,6 +644,138 @@ abstract class AppLocalizations {
   /// **'แชร์ใบเสร็จ'**
   String get shareReceipt;
 
+  /// No description provided for @receiptLabelReceipt.
+  ///
+  /// In th, this message translates to:
+  /// **'ใบเสร็จ'**
+  String get receiptLabelReceipt;
+
+  /// No description provided for @receiptLabelPayment.
+  ///
+  /// In th, this message translates to:
+  /// **'ชำระเงิน'**
+  String get receiptLabelPayment;
+
+  /// No description provided for @receiptLabelTotal.
+  ///
+  /// In th, this message translates to:
+  /// **'รวม'**
+  String get receiptLabelTotal;
+
+  /// No description provided for @receiptLabelReceived.
+  ///
+  /// In th, this message translates to:
+  /// **'รับเงิน'**
+  String get receiptLabelReceived;
+
+  /// No description provided for @receiptLabelChange.
+  ///
+  /// In th, this message translates to:
+  /// **'ทอน'**
+  String get receiptLabelChange;
+
+  /// No description provided for @receiptLabelNote.
+  ///
+  /// In th, this message translates to:
+  /// **'หมายเหตุ'**
+  String get receiptLabelNote;
+
+  /// No description provided for @receiptLabelVat.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษีมูลค่าเพิ่ม'**
+  String get receiptLabelVat;
+
+  /// No description provided for @receiptLabelVatIncluded.
+  ///
+  /// In th, this message translates to:
+  /// **'VAT {rate}% (รวมแล้ว)'**
+  String receiptLabelVatIncluded(Object rate);
+
+  /// No description provided for @receiptLabelSubtotal.
+  ///
+  /// In th, this message translates to:
+  /// **'ย่อยรวม'**
+  String get receiptLabelSubtotal;
+
+  /// No description provided for @settingsAutoPrintPrompt.
+  ///
+  /// In th, this message translates to:
+  /// **'ถามพิมพ์ใบเสร็จหลังขาย'**
+  String get settingsAutoPrintPrompt;
+
+  /// No description provided for @settingsVatRate.
+  ///
+  /// In th, this message translates to:
+  /// **'อัตรา VAT (%)'**
+  String get settingsVatRate;
+
+  /// No description provided for @settingsVatMode.
+  ///
+  /// In th, this message translates to:
+  /// **'โหมด VAT'**
+  String get settingsVatMode;
+
+  /// No description provided for @settingsReceiptPreviewStyle.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปแบบตัวอย่างใบเสร็จ'**
+  String get settingsReceiptPreviewStyle;
+
+  /// No description provided for @settingsShowPreSalePreview.
+  ///
+  /// In th, this message translates to:
+  /// **'แสดงตัวอย่างใบเสร็จก่อนชำระ'**
+  String get settingsShowPreSalePreview;
+
+  /// No description provided for @settingsShowPostSalePreview.
+  ///
+  /// In th, this message translates to:
+  /// **'แสดงตัวอย่างใบเสร็จหลังขาย'**
+  String get settingsShowPostSalePreview;
+
+  /// No description provided for @receiptPreviewStyleThermal.
+  ///
+  /// In th, this message translates to:
+  /// **'กระดาษความร้อน'**
+  String get receiptPreviewStyleThermal;
+
+  /// No description provided for @receiptPreviewStyleCard.
+  ///
+  /// In th, this message translates to:
+  /// **'การ์ด'**
+  String get receiptPreviewStyleCard;
+
+  /// No description provided for @receiptPreviewStyleNone.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่แสดง'**
+  String get receiptPreviewStyleNone;
+
+  /// No description provided for @receiptPreview.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอย่างใบเสร็จ'**
+  String get receiptPreview;
+
+  /// No description provided for @vatModeNone.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มี'**
+  String get vatModeNone;
+
+  /// No description provided for @vatModeInclusive.
+  ///
+  /// In th, this message translates to:
+  /// **'รวมแล้ว'**
+  String get vatModeInclusive;
+
+  /// No description provided for @vatModeExclusive.
+  ///
+  /// In th, this message translates to:
+  /// **'แยกนอก'**
+  String get vatModeExclusive;
+
   /// No description provided for @voided.
   ///
   /// In th, this message translates to:

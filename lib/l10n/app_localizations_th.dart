@@ -300,6 +300,74 @@ class AppLocalizationsTh extends AppLocalizations {
   String get shareReceipt => 'แชร์ใบเสร็จ';
 
   @override
+  String get receiptLabelReceipt => 'ใบเสร็จ';
+
+  @override
+  String get receiptLabelPayment => 'ชำระเงิน';
+
+  @override
+  String get receiptLabelTotal => 'รวม';
+
+  @override
+  String get receiptLabelReceived => 'รับเงิน';
+
+  @override
+  String get receiptLabelChange => 'ทอน';
+
+  @override
+  String get receiptLabelNote => 'หมายเหตุ';
+
+  @override
+  String get receiptLabelVat => 'ภาษีมูลค่าเพิ่ม';
+
+  @override
+  String receiptLabelVatIncluded(Object rate) {
+    return 'VAT $rate% (รวมแล้ว)';
+  }
+
+  @override
+  String get receiptLabelSubtotal => 'ย่อยรวม';
+
+  @override
+  String get settingsAutoPrintPrompt => 'ถามพิมพ์ใบเสร็จหลังขาย';
+
+  @override
+  String get settingsVatRate => 'อัตรา VAT (%)';
+
+  @override
+  String get settingsVatMode => 'โหมด VAT';
+
+  @override
+  String get settingsReceiptPreviewStyle => 'รูปแบบตัวอย่างใบเสร็จ';
+
+  @override
+  String get settingsShowPreSalePreview => 'แสดงตัวอย่างใบเสร็จก่อนชำระ';
+
+  @override
+  String get settingsShowPostSalePreview => 'แสดงตัวอย่างใบเสร็จหลังขาย';
+
+  @override
+  String get receiptPreviewStyleThermal => 'กระดาษความร้อน';
+
+  @override
+  String get receiptPreviewStyleCard => 'การ์ด';
+
+  @override
+  String get receiptPreviewStyleNone => 'ไม่แสดง';
+
+  @override
+  String get receiptPreview => 'ตัวอย่างใบเสร็จ';
+
+  @override
+  String get vatModeNone => 'ไม่มี';
+
+  @override
+  String get vatModeInclusive => 'รวมแล้ว';
+
+  @override
+  String get vatModeExclusive => 'แยกนอก';
+
+  @override
   String get voided => 'ยกเลิกแล้ว';
 
   @override

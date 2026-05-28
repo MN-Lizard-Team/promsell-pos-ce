@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@Deprecated('Scheduled for removal in v0.5.0 — schema v3 required')
 @DataClassName('DailyCloseData')
 class DailyCloses extends Table {
   TextColumn get id => text()();

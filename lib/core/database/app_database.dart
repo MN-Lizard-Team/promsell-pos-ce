@@ -40,17 +40,9 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultSettings();
     },
     onUpgrade: (m, from, to) async {
-      // Pre-release: drop all tables and recreate from scratch.
-      // Production apps must use incremental migrations.
-      if (from < 2) {
-        final tables = allTables.toList().reversed;
-        for (final table in tables) {
-          await m.deleteTable(table.actualTableName);
-        }
-        await m.createAll();
-        await _createIndexes();
-        await _seedDefaultSettings();
-      }
+      // v0.4.1: no destructive migrations in patch releases.
+      // Production schema changes (v3+) will use incremental steps:
+      // if (from < 3) { await m.addColumn(...); }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA journal_mode=WAL');

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -35,6 +37,9 @@ void main() {
         settings: AppSettings(),
       ),
     );
+    if (!GetIt.I.isRegistered<ReceiptPdfService>()) {
+      GetIt.I.registerSingleton<ReceiptPdfService>(ReceiptPdfService());
+    }
   });
 
   setUpAll(() {

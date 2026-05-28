@@ -7,50 +7,121 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.4.0] - 2026-05-27
-
-### BREAKING — Schema + Sale Integrity Overhaul
-
-Complete database overhaul: integer auto-increment IDs → UUIDv4 text IDs across all entities, 6 new tables, atomic sale transactions with receipt numbers and inventory audit trail, void/refund flow, and manual stock adjustments. This is a **destructive migration** — existing app data will be dropped and recreated. Production migrations will use incremental `onUpgrade` steps.
+## [Unreleased]
 
 ### Added
 
+### Changed
+
+### Fixed
+
+---
+
+## [0.4.1] - 2026-05-28
+
+Receipt system overhaul with VAT-aware rendering, configurable previews, Thai PDF font embedding, and CI hardening.
+
+### Highlights
+
+- **Configurable receipt rendering with VAT support** — `NONE` / `INCLUSIVE` / `EXCLUSIVE` modes with correct subtotal/VAT/total breakdown.
+- **On-screen receipt previews** — `thermal` and `card` styles shown before and after checkout.
+- **Thai PDF font embedding** — bundled `NotoSansThai` fonts for thermal printing.
+- **Automated CI validation** — `flutter analyze` + `flutter test` on every push/PR.
+
+### Fixed
+
+- **Safe migration guard** — `onUpgrade` uses no-op for patch releases; incremental template for v3+
+- **SettingsRepository** — migrated from `SharedPreferences` to `SettingsLocalDatasource` (Drift-backed)
+- **ProductBloc delete state** — consistent `saving` → `saved` emissions
+- **SaleBloc stale state** — `SaleReset` clears `lastSale` without dropping the cart
+- **Card overflow in dialogs** — fixed receipt preview overflow in narrow dialogs
+- **PDF receipt header overflow** — fixed text collision between receipt number and date on 80mm thermal paper
+
+### Added
+
+#### Receipt system overhaul (PDF)
+- `ReceiptPdfService` accepts `AppSettings` + localized `ReceiptLabels`; no more hardcoded strings
+- **Receipt number** — uses `sale.receiptNumber` instead of UUID on header and share filename
+- **Shop info** — conditional rendering via `showShopInfoOnReceipt`
+- **Date format** — respects user's `dateFormat` setting
+- **Footer** — uses `receiptNote` setting
+- **VAT modes** — `NONE` / `INCLUSIVE` / `EXCLUSIVE` with correct subtotal/VAT/total breakdown
+- **Thai font embedding** — loads bundled `NotoSansThai` fonts for Thai character support
+- **Post-sale print dialog** — Print / Share / Close buttons, configurable via `autoPrintPrompt`
+
+#### On-screen receipt preview (`ReceiptPreview`)
+- `thermal` style — 80mm paper look, monospace layout, dashed dividers, centered shop info
+- `card` style — modern `Card` UI with colored total row and structured layout
+- **Pre-sale** — inside `PaymentSheet`, controlled by `showPreSalePreview`
+- **Post-sale** — in success dialog, controlled by `showPostSalePreview`
+- **`"none"` style** — hides preview entirely; falls back to text-only
+- **VAT-aware** — shows subtotal/VAT/total breakdown when `vatMode != 'NONE'`
+
+#### Settings UI
+- `autoPrintPrompt` toggle — ask to print receipt after sale
+- `vatMode` dropdown — None / Inclusive / Exclusive
+- `vatRate` input
+- `receiptPreviewStyle` dropdown — thermal / card / none
+- `showPreSalePreview` toggle
+- `showPostSalePreview` toggle
+
+#### Localization
+- 22 new ARB keys (EN + TH) for receipt labels, settings, VAT modes, and preview styles
+
+#### Infrastructure
+- **Input validation** — `Validators` utility; `AddProduct`, `UpdateProduct`, `CreateSale` validate before DB
+- **CI/CD** — `.github/workflows/ci.yml` runs `flutter analyze` + `flutter test` on every push/PR
+- **DI graph smoke test** — `test/core/di/di_graph_test.dart` verifies all `GetIt` registrations
+
+### Deprecated
+
+- `DailyCloses` table marked `@Deprecated` — removal in v0.5.0 (schema v3)
+
+`flutter analyze` → **0 issues** · `flutter test` → **187/187 passing**
+
+---
+
+## [0.4.0] - 2026-05-27
+
+### Added
+
+> **BREAKING CHANGE:** This release contains a destructive database migration. Existing app data will be dropped and recreated.
+
+Complete database overhaul: integer auto-increment IDs → UUIDv4 text IDs across all entities, 6 new tables, atomic sale transactions with receipt numbers and inventory audit trail, void/refund flow, and manual stock adjustments.
+
 - **6 new tables**: `categories`, `inventory_logs`, `app_settings`, `draft_carts`, `draft_cart_items`, `daily_closes`
-- **`IdGenerator` utility** — UUIDv4 generation via `uuid` package
+- **`IdGenerator`** — UUIDv4 generation for all entity IDs
 - **Sync-ready columns** on all tables: `version`, `deviceId`, `updatedAt`, `deletedAt`
 - **Extended product fields**: `sku`, `barcode`, `cost`, `trackStock`
 - **Extended sale fields**: `receiptNumber`, `status`, `subtotalAmount`, discount/VAT columns, `voidedAt`, `voidReason`
-- **9 database indexes** for query performance
-- **WAL journal mode** + `foreign_keys=ON` via `beforeOpen` hook
+- **Database indexes** — 9 new indexes for query performance
+- **WAL journal mode** with foreign key enforcement
 - **Batch seed** for default app settings on first run
 - **`ReceiptNumberService`** — auto-generated receipt numbers (`YYMMDD-XX-NNNN`) with daily reset
-- **`InventoryLogService`** — audit trail for all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT)
-- **`SettingsLocalDatasource`** — Drift-backed typed key-value store (getString/Int/Bool/Double)
+- **`InventoryLogService`** — audit trail for all stock changes
+- **`SettingsLocalDatasource`** — Drift-backed typed key-value store
 - **Atomic sale insertion** — receipt number + sale items + stock deduction + inventory log in single DB transaction
-- **Void sale flow** — marks sale as VOIDED, restores stock, logs VOID_REVERSAL; confirmation dialog with reason
+- **Void sale flow** — marks sale as VOIDED, restores stock, logs reversal; confirmation dialog with reason
 - **Manual stock adjustment** — `AdjustStock` use case + dialog for manual add/remove with audit reason
 - **Inventory log viewer** — color-coded log entries, filterable by product
 - **History UI** — VOIDED badge, strikethrough amount, receipt number in subtitle, void action button
 - **Report UI** — net revenue (excludes voided), voided total summary card
-- **L10n** — 18 new keys (EN + TH) for void, adjust, inventory log
-- **`docs/ARCHITECTURE.md`** — deep technical architecture: C4 diagrams, data flows, transaction boundaries, DI graph, ADRs
-- **`docs/DATABASE.md`** — full database handbook: ERD, schema, indexes, migration, query patterns
-- **`docs/architecture/*.puml`** — PlantUML source files for C4 + sequence diagrams
+- **Localization** — 18 new keys (EN + TH) for void, adjust, inventory log
+- **Architecture documentation** — `ARCHITECTURE.md` (C4 diagrams, data flows, ADRs) + `DATABASE.md` (ERD, schema, migration)
 
 ### Changed
 
-- **All entity IDs** (`Product.id`, `Sale.id`, `SaleItem.id/saleId/productId`) migrated from `int` → `String` (UUIDv4)
-- **All repository/use-case/datasource/BLoC signatures** updated for String IDs
+- **All entity IDs** migrated from `int` → `String` (UUIDv4)
+- **Repository/use-case signatures** updated for String IDs
 - **`ProductRepository.addProduct`** return type: `Future<int>` → `Future<String>`
-- **`ProductLocalDatasource.insertProduct`** return type: `Future<int>` → `Future<void>` (ID generated upstream)
 - **`ProductsCompanion`** field: `category` → `categoryId`
-- **Schema version**: 1 → 2 (with drop+recreate migration for pre-release)
+- **Schema version**: 1 → 2
 - **All 135 tests** migrated to use String UUID fixtures
 
 ### Removed
 
-- Auto-increment integer ID generation (replaced by `IdGenerator.newId()`)
-- `setup()` override in `AppDatabase` (replaced by `beforeOpen` in `MigrationStrategy`)
+- Auto-increment integer ID generation
+- `setup()` override in `AppDatabase`
 
 `flutter analyze` → **0 errors** · `flutter test` → **170/170 passing**
 
@@ -58,9 +129,7 @@ Complete database overhaul: integer auto-increment IDs → UUIDv4 text IDs acros
 
 ## [0.3.0] - 2026-05-26
 
-### Added — UI milestone: product redesign, offline fonts & receipt export
-
-A feature milestone that overhauls the product management UI, ships fully offline font bundling, PDF receipt export, a centralised SnackBar/toast system, and hardens the database upgrade path.
+Product management UI overhaul with offline font bundling, PDF receipt export, centralised feedback system, and database upgrade hardening.
 
 ### Highlights
 
@@ -106,9 +175,9 @@ A feature milestone that overhauls the product management UI, ships fully offlin
 
 ### Fixed
 
-- `RenderFlex` overflow (1 px) in sale product card: `padding: all(14)` → `symmetric(horizontal: 14, vertical: 10)`.
-- `_StockBadge` dark-theme contrast: `shade300` tones + 22 % background alpha in dark mode (vs `shade700` + 12 % in light).
-- Add product button visibility in dark theme: `IconButton.filled` background darkened via `Color.lerp(primary, black, 0.30)`, foreground forced white.
+- **RenderFlex overflow** in sale product card padding
+- **`_StockBadge` dark-theme contrast** — improved visibility in dark mode
+- **Add product button visibility** in dark theme — improved contrast and foreground color
 
 ### Changed
 
@@ -116,87 +185,55 @@ A feature milestone that overhauls the product management UI, ships fully offlin
 - `README.md` screenshots section: replaced "Coming soon" placeholder with contributor call-to-action.
 - `pubspec.yaml` version bumped to `0.3.0+1`.
 
-### Verification
-
-- `flutter test` passed: **135/135 tests**.
-- `flutter analyze` completed with **0 issues**.
+`flutter analyze` → **0 issues** · `flutter test` → **135/135 passing**
 
 ---
 
 ## [0.2.3] - 2026-05-26
 
-### Fixed — RenderFlex overflow hotfix + system-wide bug fixes
-
-Layout hotfix for three `RenderFlex` overflows in the sale page, combined with a targeted sweep on data integrity, stale cart state, and cashier UX.
-
-### Highlights
-
-- **Layout correctness:** Removed a phantom `Text` after `Expanded` that received 0dp and caused a 3px overflow on every launch.
-- **Thai-locale resilience:** Increased card `mainAxisExtent` and zeroed implicit `Card` margin to fit Noto Sans Thai diacritic metrics.
-- **DB safety:** `onUpgrade` now throws `UnimplementedError` — schema bumps without a migration fail loudly instead of silently wiping data.
-- **Cart integrity:** Cart snapshots sync live from `ProductBloc`; hard-deleted products are removed automatically before checkout.
-- **Checkout integrity:** Deleted product at confirm time throws a clear `StateError`; DB reads per item halved (2N → N).
+Layout hotfix for RenderFlex overflows in the sale page, plus data integrity, cart state, and cashier UX improvements.
 
 ### Fixed
 
 #### Sale page
 
-- Removed `BlocBuilder<SaleBloc>` returning `Text` after `Expanded` in `_SaleCatalog` — 0dp allocation caused a 3px bottom overflow.
-- Replaced `Expanded(Text(name))` with `Text(name)` + `Spacer()` in `_ProductCard` to prevent 3–9px overflow from font-metric rounding at high DPI.
-- Increased `mainAxisExtent` (`122→136` narrow, `132→148` wide) for Noto Sans Thai stacked-diacritic height.
-- Added `margin: EdgeInsets.zero` to `_ProductCard`'s `Card` — default `EdgeInsets.all(4)` silently consumed 8dp per grid slot.
-
-#### `AppEmptyState`
-
-- Added `veryCompact` tier (< 120dp): icon `32→24dp`, padding `12→8dp`, style `titleMedium→bodyMedium`, `maxLines: 1`.
+- Fixed RenderFlex overflows in product catalog and product card layouts.
+- Improved product card sizing for Thai font rendering.
 
 #### Database
 
-- `onUpgrade` now throws `UnimplementedError` instead of a silent no-op, preventing data loss on future schema version bumps.
+- `onUpgrade` now throws `UnimplementedError` — schema bumps without a migration fail loudly instead of silently.
 
 #### Cart state
 
-- Added `SaleCartProductsRefreshed` event: `BlocListener<ProductBloc>` in `_SaleView` syncs cart item snapshots on every product update and auto-removes hard-deleted items.
+- Cart syncs live with product state; hard-deleted products are auto-removed before checkout.
 
 #### Sale checkout
 
-- Null product now throws `StateError("… no longer exists")` instead of silently bypassing stock validation.
-- Products fetched once into a map and reused across validation and deduction loops — eliminates duplicate DB reads per item.
+- Selling a deleted product now throws a clear error instead of silently bypassing validation.
+- Reduced duplicate database reads during checkout.
 
 #### Payment sheet
 
-- `_quickAmounts()` always generates three distinct chips; round totals (e.g. ฿100) no longer collapse to a single "Exact" chip.
+- Quick-amount chips always generate three distinct values; round totals no longer collapse to a single "Exact" chip.
 
 ### Added
 
-- Regression test: `AppEmptyState fits in very compact height` (96dp bounded height, verifies no overflow).
+- Regression test for `AppEmptyState` compact layout.
 
 ### Changed
 
-- Removed dead `onChanged: SaleNoteChanged(value)` from the payment sheet note field — note is read from the controller directly at confirm time.
-- Cleaned up 5 lint warnings in test files: `no_leading_underscores_for_local_identifiers`, `prefer_const_constructors`, `prefer_const_literals_to_create_immutables`.
-- Updated documentation (`README.md`, `CODEBASE.md`) and bumped version to `0.2.3+1`.
+- Removed dead `onChanged` handler from payment sheet note field.
+- Cleaned up 5 lint warnings in test files.
+- Updated documentation (`README.md`, `CODEBASE.md`).
 
-### Verification
-
-- `flutter test` passed: **131/131 tests**.
-- `flutter analyze` completed with **0 issues**.
+`flutter analyze` → **0 issues** · `flutter test` → **131/131 passing**
 
 ---
 
 ## [0.2.2] - 2026-05-26
 
-### Fixed — Stability, data integrity, and UX hardening
-
-A stability and UX hardening release for the offline POS workflow: safer sales writes, clearer cashier feedback, tighter BLoC behavior, leaner dependencies, and better compact-screen usability.
-
-### Highlights
-
-- **Data safety:** Stock is validated before sale-item insertion, while checkout still remains transaction-protected.
-- **Cashier UX:** Cart quantity limits, product quantity badges, cleaner add-to-cart feedback, payment references, and double-submit protection.
-- **State reliability:** Product, sale, history, and settings flows now recover and refresh more predictably.
-- **UI consistency:** Theme-aware danger colors, safer dialog contexts, clearer empty states, retry actions, and responsive settings controls.
-- **Maintenance:** Removed unused dependencies and dead DI registrations; documented intentional singleton usage.
+Stability and UX hardening for the offline POS workflow: safer sales writes, clearer cashier feedback, tighter BLoC behavior, leaner dependencies, and better compact-screen usability.
 
 ### Fixed
 
@@ -257,17 +294,13 @@ A stability and UX hardening release for the offline POS workflow: safer sales w
 - Updated documentation and audit notes for the completed stability and UX hardening work.
 - Bumped version to `0.2.2+1`.
 
-### Verification
-
-- `flutter gen-l10n` completed successfully.
-- `flutter test` passed: **130/130 tests**.
-- `flutter analyze` completed with **0 errors** and only pre-existing info-level hints in tests.
+`flutter analyze` → **0 issues** · `flutter test` → **130/130 passing**
 
 ---
 
 ## [0.2.1] - 2026-05-26
 
-### Added — Comprehensive test suite & UI/UX improvements
+### Added
 
 - **130 automated tests** covering 7 layers of the application:
   - **Domain** — entity equality, use case delegation for all features
@@ -310,7 +343,7 @@ A stability and UX hardening release for the offline POS workflow: safer sales w
 
 ## [0.2.0] - 2026-05-26
 
-### Added — UX/UI redesign foundation
+### Added
 
 - **Merchant Command Deck UI refresh** for the main app experience, focused on cashier speed, readability, and safer touch targets.
 - **Shared UI primitives** under `lib/core/widgets/`:
@@ -351,87 +384,48 @@ A stability and UX hardening release for the offline POS workflow: safer sales w
 
 ## [0.1.0] - 2026-05-25
 
-### Added — Project setup and initial public release
+First public release. Complete offline-first mobile POS with sale, inventory, history, reporting, and settings.
 
-First public release of Promsell POS Community Edition. Complete offline-first mobile POS with full sale, inventory, history, reporting, and settings features.
+### Added
 
 #### Core architecture
 
-- **Flutter 3.x scaffold** with Material 3 theming and `google_fonts`
-- **Clean Architecture** per feature: `data/` · `domain/` · `presentation/`
-- **State management** — `flutter_bloc` (BLoC + Cubit pattern)
-- **Dependency injection** — `get_it` service locator (`lib/core/di/injection_container.dart`)
-- **Routing** — `go_router` for declarative navigation
-- **Database** — Drift SQLite ORM with code generation (`build_runner`)
-- **Persistence** — `shared_preferences` for app settings
+- Flutter 3.x with Material 3 theming
+- Clean Architecture per feature (`data` / `domain` / `presentation`)
+- BLoC/Cubit state management with `flutter_bloc`
+- `get_it` dependency injection
+- `go_router` declarative navigation
+- Drift SQLite ORM with code generation
+- `shared_preferences` for app settings
 
 #### Features
 
-- **Sale** (`lib/features/sale/`)
-  - Product grid with category filter and search
-  - Live cart with quantity adjustment and per-item subtotal
-  - Multi-method payment sheet — cash, transfer, card
-  - Change calculation for cash payments
-  - Optional sale note
-- **Products** (`lib/features/product/`)
-  - Full CRUD with searchable list
-  - Fields — name, price, stock, category, active/inactive
-  - Inline validation on price and quantity
-  - Delete confirmation dialog
-- **History** (`lib/features/history/`)
-  - Date-ranged sale history
-  - Per-sale item breakdown and notes
-  - Payment method and total display
-- **Report** (`lib/features/report/`)
-  - Total revenue summary card
-  - Sales count for selected date range
-  - Breakdown by payment method
-  - Top 5 best-selling products
-- **Settings** (`lib/features/settings/`)
-  - Language picker (Thai / English) — **live reload**
-  - Theme picker (Light / Dark / System) — **live reload**
-  - Shop info — name, address, phone
-  - Sales settings — currency symbol, date format
-  - Receipt settings — receipt note, toggle show shop info
+- **Sale** — product grid with search and category filter, live cart, multi-method payment (cash/transfer/card), change calculation
+- **Products** — full CRUD with validation, searchable list, delete confirmation
+- **History** — date-ranged sale history with item breakdown and notes
+- **Report** — revenue summary, sales count, payment breakdown, top 5 products
+- **Settings** — language (Thai/English) and theme (Light/Dark/System) with live reload, shop info, currency, date format, receipt settings
 
-#### Internationalization (i18n)
+#### Localization
 
-- **Flutter ARB** localization (`lib/l10n/app_th.arb`, `lib/l10n/app_en.arb`)
-- **80+ localized strings** covering all UI surfaces
-- **`flutter gen-l10n`** integration with `l10n.yaml` config
-- **`context.l10n` extension** (`lib/core/extensions/l10n_extension.dart`) for ergonomic access
-- **Payment method normalization** (`lib/core/utils/payment_method_helper.dart`) — locale-neutral keys (`cash`, `transfer`, `card`) localized at display time
+- Flutter ARB localization (EN + TH)
+- 80+ localized strings
+- Payment method normalization with locale-neutral keys
 
 #### App shell
 
-- **5-tab `NavigationBar`** — Sale · Products · History · Report · Settings
-- **Reactive `MaterialApp`** wrapped in `BlocBuilder<SettingsCubit>` for live locale + theme switching
-- **Material 3 ColorScheme** seeded from primary color
-
-### Project metadata
-
-- **App name** — Promsell
-- **Team** — MN Lizard Team
-- **License** — AGPL-3.0
-- **Repository** — https://github.com/teeprakorn1/promsell-pos-ce
-
-### Documentation
-
-- `README.md` — overview, features, tech stack, quick start, project structure, roadmap, contributing, license
-- `CHANGELOG.md` — this file
-- `CODEBASE.md` — architecture diagram, layer structure, module reference, DB schema, DI, file dependency map
-- `CONTRIBUTING.md` — fork/branch/PR workflow, commit conventions, code style, testing guide
-- `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1
-- `SECURITY.md` — supported versions, vulnerability reporting, response timeline, security architecture
-- `docs/USAGE.md` — detailed usage guide (setup, build, settings, i18n, Drift, architecture, troubleshooting)
-- `docs/DEPLOY.md` — Android APK/AAB/iOS build, signing, version management, release checklist
+- 5-tab `NavigationBar` (Sale · Products · History · Report · Settings)
+- Reactive `MaterialApp` with live locale + theme switching
+- Material 3 `ColorScheme`
 
 ---
 
-[0.4.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.3.1
-[0.3.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.3.0
-[0.2.3]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.3
-[0.2.2]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.2
-[0.2.1]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.1
-[0.2.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.2.0
-[0.1.0]: https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.1.0
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.2.3...v0.3.0
+[0.2.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.2.2...v0.2.3
+[0.2.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/teeprakorn1/promsell-pos-ce/tree/v0.1.0

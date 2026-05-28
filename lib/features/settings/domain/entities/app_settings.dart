@@ -12,6 +12,12 @@ class AppSettings extends Equatable {
     this.dateFormat = 'dd/MM/yyyy',
     this.receiptNote = '',
     this.showShopInfoOnReceipt = true,
+    this.autoPrintPrompt = true,
+    this.vatRate = 7.0,
+    this.vatMode = 'NONE',
+    this.receiptPreviewStyle = 'thermal',
+    this.showPreSalePreview = true,
+    this.showPostSalePreview = true,
   });
 
   final Locale locale;
@@ -23,6 +29,12 @@ class AppSettings extends Equatable {
   final String dateFormat;
   final String receiptNote;
   final bool showShopInfoOnReceipt;
+  final bool autoPrintPrompt;
+  final double vatRate;
+  final String vatMode;
+  final String receiptPreviewStyle;
+  final bool showPreSalePreview;
+  final bool showPostSalePreview;
 
   AppSettings copyWith({
     Locale? locale,
@@ -34,6 +46,12 @@ class AppSettings extends Equatable {
     String? dateFormat,
     String? receiptNote,
     bool? showShopInfoOnReceipt,
+    bool? autoPrintPrompt,
+    double? vatRate,
+    String? vatMode,
+    String? receiptPreviewStyle,
+    bool? showPreSalePreview,
+    bool? showPostSalePreview,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -46,6 +64,12 @@ class AppSettings extends Equatable {
       receiptNote: receiptNote ?? this.receiptNote,
       showShopInfoOnReceipt:
           showShopInfoOnReceipt ?? this.showShopInfoOnReceipt,
+      autoPrintPrompt: autoPrintPrompt ?? this.autoPrintPrompt,
+      vatRate: vatRate ?? this.vatRate,
+      vatMode: vatMode ?? this.vatMode,
+      receiptPreviewStyle: receiptPreviewStyle ?? this.receiptPreviewStyle,
+      showPreSalePreview: showPreSalePreview ?? this.showPreSalePreview,
+      showPostSalePreview: showPostSalePreview ?? this.showPostSalePreview,
     );
   }
 
@@ -60,5 +84,11 @@ class AppSettings extends Equatable {
     dateFormat,
     receiptNote,
     showShopInfoOnReceipt,
+    autoPrintPrompt,
+    vatRate,
+    vatMode,
+    receiptPreviewStyle,
+    showPreSalePreview,
+    showPostSalePreview,
   ];
 }

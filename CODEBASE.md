@@ -1,8 +1,8 @@
-# CODEBASE.md — Promsell POS CE v0.4.0
+# CODEBASE.md — Promsell POS CE v0.4.1
 
 ## System overview
 
-Offline-first mobile POS system — Flutter, Drift SQLite, BLoC, SharedPreferences, Material 3.
+Offline-first mobile POS system — Flutter, Drift SQLite, BLoC, SettingsLocalDatasource, Material 3.
 
 For version history and feature details, see [CHANGELOG.md](CHANGELOG.md).
 For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
@@ -76,8 +76,8 @@ features/<name>/
 | `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v2, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
 | `injection_container.dart` | `lib/core/di/` | get_it registrations for all repositories, BLoCs, cubits, services |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
-| `ReceiptPdfService` | `lib/core/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt` |
-| `AppSnackBar` | `lib/core/widgets/` | Static helpers `success` / `error` / `info` — consistent snackbar styling across all features |
+| `ReceiptPdfService` | `lib/core/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
+| `ReceiptPreview` | `lib/core/widgets/` | On-screen receipt preview in `thermal` and `card` styles; VAT-aware |
 | `OverlayToast` | `lib/core/widgets/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow |
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
@@ -95,7 +95,7 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart` |
+| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`, `ReceiptPreview` (thermal/card/none) |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` |
 | History | `HistoryBloc` | `history_page.dart` (+ print/share receipt, void sale dialog) |
 | Report | `ReportCubit` | `report_page.dart` (net revenue, voided summary, exclude voided) |
@@ -162,7 +162,7 @@ All state classes extend `Equatable` for efficient rebuilds.
 
 ## Settings persistence
 
-`SettingsRepositoryImpl` reads and writes `AppSettings` via `SharedPreferences`.
+`SettingsRepositoryImpl` reads and writes `AppSettings` via `SettingsLocalDatasource` (Drift-backed typed key-value store).
 
 | Key | Type | Default |
 |-----|------|---------|
@@ -175,6 +175,12 @@ All state classes extend `Equatable` for efficient rebuilds.
 | `dateFormat` | String | `dd/MM/yyyy` |
 | `receiptNote` | String | `''` |
 | `showShopInfo` | bool | `true` |
+| `autoPrintPrompt` | bool | `true` |
+| `vatRate` | double | `7.0` |
+| `vatMode` | String | `NONE` |
+| `receiptPreviewStyle` | String | `thermal` |
+| `showPreSalePreview` | bool | `true` |
+| `showPostSalePreview` | bool | `true` |
 
 ---
 
