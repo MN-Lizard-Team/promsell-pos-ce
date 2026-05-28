@@ -82,21 +82,29 @@ void main() {
     blocTest<SaleBloc, SaleState>(
       'SaleConfirmed emits processing then success',
       setUp: () {
-        when(() => mockCreateSale(
-              items: any(named: 'items'),
-              paymentMethod: any(named: 'paymentMethod'),
-              amountReceived: any(named: 'amountReceived'),
-              changeAmount: any(named: 'changeAmount'),
-              note: any(named: 'note'),
-            )).thenAnswer((_) async => tSale);
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+          ),
+        ).thenAnswer((_) async => tSale);
       },
       build: buildBloc,
       seed: () => SaleState(items: [tCartItem]),
-      act: (b) => b.add(const SaleConfirmed(
-        paymentMethod: 'cash',
-        amountReceived: 500,
-        changeAmount: 300,
-      )),
+      act: (b) => b.add(
+        const SaleConfirmed(
+          paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
+          amountReceived: 500,
+          changeAmount: 300,
+        ),
+      ),
       expect: () => [
         SaleState(items: [tCartItem], status: SaleStatus.processing),
         SaleState(status: SaleStatus.success, lastSale: tSale),
@@ -106,17 +114,23 @@ void main() {
     blocTest<SaleBloc, SaleState>(
       'SaleConfirmed emits failure on error',
       setUp: () {
-        when(() => mockCreateSale(
-              items: any(named: 'items'),
-              paymentMethod: any(named: 'paymentMethod'),
-              amountReceived: any(named: 'amountReceived'),
-              changeAmount: any(named: 'changeAmount'),
-              note: any(named: 'note'),
-            )).thenThrow(Exception('db error'));
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+          ),
+        ).thenThrow(Exception('db error'));
       },
       build: buildBloc,
       seed: () => SaleState(items: [tCartItem]),
-      act: (b) => b.add(const SaleConfirmed(paymentMethod: 'cash')),
+      act: (b) => b.add(
+        const SaleConfirmed(paymentMethod: 'cash', vatMode: 'NONE', vatRate: 0),
+      ),
       expect: () => [
         SaleState(items: [tCartItem], status: SaleStatus.processing),
         isA<SaleState>()
@@ -128,7 +142,9 @@ void main() {
     blocTest<SaleBloc, SaleState>(
       'SaleConfirmed does nothing when cart is empty',
       build: buildBloc,
-      act: (b) => b.add(const SaleConfirmed(paymentMethod: 'cash')),
+      act: (b) => b.add(
+        const SaleConfirmed(paymentMethod: 'cash', vatMode: 'NONE', vatRate: 0),
+      ),
       expect: () => [],
     );
   });

@@ -58,6 +58,10 @@ const tSaleItem = SaleItem(
 final tSale = Sale(
   id: 'sale-0001-0001-0001-000000000001',
   totalAmount: 200.0,
+  subtotalAmount: 200.0,
+  vatMode: 'NONE',
+  vatRate: 0.0,
+  vatAmount: 0.0,
   paymentMethod: 'cash',
   amountReceived: 500.0,
   changeAmount: 300.0,

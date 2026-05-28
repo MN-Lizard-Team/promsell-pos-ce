@@ -5,6 +5,8 @@ abstract class SaleRepository {
   Future<Sale> createSale({
     required List<CartItem> items,
     required String paymentMethod,
+    required String vatMode,
+    required double vatRate,
     double? amountReceived,
     double? changeAmount,
     String? note,

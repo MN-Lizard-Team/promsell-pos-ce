@@ -28,7 +28,9 @@ Future<bool> showAdjustStockDialog(
               decoration: InputDecoration(labelText: ctx.l10n.adjustQtyLabel),
               validator: (v) {
                 if (v == null || v.isEmpty) return ctx.l10n.quantityRequired;
-                if (int.tryParse(v) == null) return ctx.l10n.invalidQuantity;
+                final n = int.tryParse(v);
+                if (n == null) return ctx.l10n.invalidQuantity;
+                if (n == 0) return ctx.l10n.invalidQuantity;
                 return null;
               },
             ),

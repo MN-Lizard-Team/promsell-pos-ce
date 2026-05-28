@@ -30,6 +30,10 @@ void main() {
       final b = Sale(
         id: 'sale-0001-0001-0001-000000000001',
         totalAmount: 200.0,
+        subtotalAmount: 200.0,
+        vatMode: 'NONE',
+        vatRate: 0.0,
+        vatAmount: 0.0,
         paymentMethod: 'cash',
         amountReceived: 500.0,
         changeAmount: 300.0,
@@ -51,7 +55,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tSale.props.length, 12);
+      expect(tSale.props.length, 16);
     });
   });
 }

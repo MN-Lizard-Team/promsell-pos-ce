@@ -11,12 +11,16 @@ class SaleRepositoryImpl implements SaleRepository {
   Future<Sale> createSale({
     required List<CartItem> items,
     required String paymentMethod,
+    required String vatMode,
+    required double vatRate,
     double? amountReceived,
     double? changeAmount,
     String? note,
   }) => _datasource.insertSaleWithItems(
     items: items,
     paymentMethod: paymentMethod,
+    vatMode: vatMode,
+    vatRate: vatRate,
     amountReceived: amountReceived,
     changeAmount: changeAmount,
     note: note,

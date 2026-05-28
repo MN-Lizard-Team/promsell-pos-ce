@@ -418,4 +418,25 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get noInventoryLogs => 'ยังไม่มีประวัติสต็อก';
+
+  @override
+  String get invLogTypeSale => 'ขาย';
+
+  @override
+  String get invLogTypeVoidReversal => 'ยกเลิกบิล';
+
+  @override
+  String get invLogTypeStockIn => 'รับสต็อก';
+
+  @override
+  String get invLogTypeStockOut => 'ตัดสต็อก';
+
+  @override
+  String get productFormSectionBasicInfo => 'ข้อมูลพื้นฐาน';
+
+  @override
+  String get productFormSectionDetails => 'รายละเอียด';
+
+  @override
+  String get productFormImageUrlLabel => 'URL รูปภาพ (ไม่บังคับ)';
 }

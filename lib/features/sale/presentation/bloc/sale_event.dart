@@ -36,17 +36,23 @@ class SaleCartCleared extends SaleEvent {
 class SaleConfirmed extends SaleEvent {
   const SaleConfirmed({
     required this.paymentMethod,
+    required this.vatMode,
+    required this.vatRate,
     this.amountReceived,
     this.changeAmount,
     this.note,
   });
   final String paymentMethod;
+  final String vatMode;
+  final double vatRate;
   final double? amountReceived;
   final double? changeAmount;
   final String? note;
   @override
   List<Object?> get props => [
     paymentMethod,
+    vatMode,
+    vatRate,
     amountReceived,
     changeAmount,
     note,

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
@@ -57,9 +58,12 @@ class _PaymentSheetState extends State<PaymentSheet> {
             if (note.isNotEmpty) note,
             '${context.l10n.paymentReferenceOptional}: $reference',
           ].join('\n');
+    final settings = context.read<SettingsCubit>().state.settings;
     context.read<SaleBloc>().add(
       SaleConfirmed(
         paymentMethod: _method,
+        vatMode: settings.vatMode,
+        vatRate: settings.vatRate,
         amountReceived: _method == 'cash' ? _received : null,
         changeAmount: _method == 'cash' && _change >= 0 ? _change : null,
         note: effectiveNote.isEmpty ? null : effectiveNote,
@@ -73,8 +77,15 @@ class _PaymentSheetState extends State<PaymentSheet> {
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
     return BlocListener<SaleBloc, SaleState>(
-      listenWhen: (_, curr) => curr.status == SaleStatus.failure,
+      listenWhen: (_, curr) =>
+          curr.status == SaleStatus.failure ||
+          curr.status == SaleStatus.success,
       listener: (ctx, state) {
+        if (state.status == SaleStatus.success) {
+          _submitted = false;
+          Navigator.of(ctx).pop();
+          return;
+        }
         _submitted = false;
         AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
       },
@@ -245,6 +256,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
                     final labels = ReceiptLabels(
                       receipt: context.l10n.receiptLabelReceipt,
                       payment: context.l10n.receiptLabelPayment,
+                      paymentMethodLabel: localizePaymentMethod(
+                        context,
+                        _method,
+                      ),
                       total: context.l10n.receiptLabelTotal,
                       received: context.l10n.receiptLabelReceived,
                       change: context.l10n.receiptLabelChange,

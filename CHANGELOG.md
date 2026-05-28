@@ -17,6 +17,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.2] - 2026-05-28
+
+Full-system bug fix pass: VAT data integrity, product edit, report stability, localization gaps, and UX polish.
+
+### Highlights
+
+- **VAT data integrity** — sale-time `vatMode`, `vatRate`, `vatAmount`, and `subtotalAmount` now round-trip through the `Sale` entity; reprints always show the VAT that was charged, not current settings.
+- **Report stability** — `ReportCubit` registered as `lazySingleton`; `ReportPage` initialises once via `StatefulWidget.initState()` — no more spurious reloads on locale/theme change.
+- **Localization gaps closed** — 7 new ARB keys (EN + TH) replace all hardcoded English strings in `InventoryLogPage` and `ProductFormPage`.
+- **Dead dependency removed** — `shared_preferences` + 6 platform plugins eliminated; settings fully Drift-backed since v0.4.1.
+
+### Added
+
+- **History VAT breakdown** — expanded sale tile now shows Subtotal + VAT rows (with rate %) when `vatMode != 'NONE'`
+- **CI coverage** — `flutter test --coverage`; `lcov.info` uploaded as GitHub Actions artifact on every push/PR
+
+### Fixed
+
+#### Sale & Payments
+
+- **Stale cart qty** — `_onProductsRefreshed` clamps item qty to refreshed stock and removes zero-stock items; prevents `StateError` on a second checkout attempt
+- **VAT not persisted** — `insertSaleWithItems` writes `subtotalAmount`, `vatMode`, `vatRate`, `vatAmount` at sale time; previously always stored table defaults
+- **`Sale` entity missing VAT fields** — `_buildSale` now maps all four VAT columns; receipt dialogs use `settings.copyWith(vatRate: sale.vatRate, vatMode: sale.vatMode)` for correct reprint values
+- **`totalAmount` rounding** — `items.fold` result rounded to 2 dp before DB write
+- **PDF receipt payment method** — `ReceiptLabels` gains `paymentMethodLabel`; PDF prints localized name instead of raw key (`"cash"` → `"เงินสด"`)
+- **Payment sheet close on success** — `PaymentSheet` closes via its own `BlocListener`; `_CartPanel` no longer calls broad `Navigator.canPop()`
+- **Search reset on every tab switch** — `ProductSearchChanged('')` fires only when switching to/from Sale tab (index 0)
+
+#### Products
+
+- **`imageUrl` lost on edit** — `ProductFormPage` passes `imageUrl` from `_imageUrlCtrl` into `copyWith`; previously any field edit silently cleared the URL
+- **Top-products splits on rename** — `_topProducts` groups by `productId` instead of `productName`
+- **`AdjustStockDialog` accepted qty = 0** — validator now rejects zero
+- **`ProductListPage` empty state on filter** — shows `noMatchingProducts` when filter returns empty but products exist; previously showed misleading `noProductsYet`
+
+#### Localization
+
+- **`InventoryLogPage` labels** — `SALE`, `VOID_REVERSAL`, `ADJUSTMENT_IN/OUT` types use `l10n` keys (EN + TH)
+- **`ProductFormPage` labels** — `'Image URL'`, `'Basic info'`, `'Details'` replaced with `l10n` keys
+
+### Changed
+
+- **`ReportCubit`** — registration changed from `registerFactory` → `registerLazySingleton`; `ReportPage` converted to `StatefulWidget` with `load()` in `initState()`; date range persists across tab navigation
+
+### Removed
+
+- **`shared_preferences`** — removed from `pubspec.yaml`; eliminates 7 packages (`shared_preferences` + 6 platform plugins)
+
+`flutter analyze` → **0 issues** · `flutter test` → **187/187 passing**
+
+---
+
 ## [0.4.1] - 2026-05-28
 
 Receipt system overhaul with VAT-aware rendering, configurable previews, Thai PDF font embedding, and CI hardening.
@@ -420,7 +472,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.2.3...v0.3.0

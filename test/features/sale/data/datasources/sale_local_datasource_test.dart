@@ -55,6 +55,8 @@ void main() {
         final sale = await saleDatasource.insertSaleWithItems(
           items: [cartItem],
           paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
           amountReceived: 500,
           changeAmount: 200,
           note: 'test',
@@ -80,6 +82,8 @@ void main() {
       await saleDatasource.insertSaleWithItems(
         items: [CartItem(product: product, qty: 1)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       final allSales = await saleDatasource.querySales();
@@ -96,6 +100,8 @@ void main() {
       final sale = await saleDatasource.insertSaleWithItems(
         items: [CartItem(product: product, qty: 2)],
         paymentMethod: 'transfer',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       final fetched = await saleDatasource.querySaleById(sale.id);
@@ -117,6 +123,8 @@ void main() {
       await saleDatasource.insertSaleWithItems(
         items: [CartItem(product: product, qty: 1)],
         paymentMethod: 'card',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       await expectLater(
@@ -132,6 +140,8 @@ void main() {
       await saleDatasource.insertSaleWithItems(
         items: [CartItem(product: product, qty: 1)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       await expectLater(

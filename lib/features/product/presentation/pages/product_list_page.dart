@@ -189,11 +189,15 @@ class _ProductListViewState extends State<_ProductListView> {
       );
     }
     if (products.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.inventory_2_outlined,
-        title: context.l10n.noProductsYet,
-        message: context.l10n.searchProducts,
-      );
+      return state.products.isEmpty
+          ? AppEmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: context.l10n.noProductsYet,
+            )
+          : AppEmptyState(
+              icon: Icons.search_off,
+              title: context.l10n.noMatchingProducts,
+            );
     }
     return RefreshIndicator(
       onRefresh: () async {

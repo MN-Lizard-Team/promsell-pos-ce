@@ -46,6 +46,8 @@ void main() {
     registerFallbackValue(
       const SaleConfirmed(
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
         amountReceived: 0,
         changeAmount: 0,
       ),

@@ -10,6 +10,8 @@ abstract class SaleLocalDatasource {
   Future<Sale> insertSaleWithItems({
     required List<CartItem> items,
     required String paymentMethod,
+    required String vatMode,
+    required double vatRate,
     double? amountReceived,
     double? changeAmount,
     String? note,
@@ -36,6 +38,10 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     id: s.id,
     receiptNumber: s.receiptNumber,
     status: s.status,
+    subtotalAmount: s.subtotalAmount,
+    vatMode: s.vatMode,
+    vatRate: s.vatRate,
+    vatAmount: s.vatAmount,
     totalAmount: s.totalAmount,
     paymentMethod: s.paymentMethod,
     amountReceived: s.amountReceived,
@@ -66,11 +72,32 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
   Future<Sale> insertSaleWithItems({
     required List<CartItem> items,
     required String paymentMethod,
+    required String vatMode,
+    required double vatRate,
     double? amountReceived,
     double? changeAmount,
     String? note,
   }) async {
-    final total = items.fold(0.0, (sum, i) => sum + i.subtotal);
+    final total = double.parse(
+      items.fold(0.0, (sum, i) => sum + i.subtotal).toStringAsFixed(2),
+    );
+    final r = vatRate / 100;
+    final double subtotal;
+    final double vatAmount;
+    final double finalTotal;
+    if (vatMode == 'INCLUSIVE' && r > 0) {
+      subtotal = double.parse((total / (1 + r)).toStringAsFixed(2));
+      vatAmount = double.parse((total - subtotal).toStringAsFixed(2));
+      finalTotal = total;
+    } else if (vatMode == 'EXCLUSIVE' && r > 0) {
+      subtotal = total;
+      vatAmount = double.parse((total * r).toStringAsFixed(2));
+      finalTotal = double.parse((total + vatAmount).toStringAsFixed(2));
+    } else {
+      subtotal = total;
+      vatAmount = 0.0;
+      finalTotal = total;
+    }
     final saleId = IdGenerator.newId();
     late SaleData saleData;
     await _db.transaction(() async {
@@ -84,8 +111,11 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             SalesCompanion.insert(
               id: saleId,
               receiptNumber: Value(receiptNumber),
-              totalAmount: total,
-              subtotalAmount: Value(total),
+              totalAmount: finalTotal,
+              subtotalAmount: Value(subtotal),
+              vatMode: Value(vatMode),
+              vatRate: Value(vatRate),
+              vatAmount: Value(vatAmount),
               paymentMethod: paymentMethod,
               amountReceived: Value(amountReceived),
               changeAmount: Value(changeAmount),

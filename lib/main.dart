@@ -80,7 +80,7 @@ class _MainShellState extends State<_MainShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) {
-          if (i != _index) {
+          if (i != _index && (i == 0 || _index == 0)) {
             sl<ProductBloc>().add(const ProductSearchChanged(''));
           }
           setState(() => _index = i);

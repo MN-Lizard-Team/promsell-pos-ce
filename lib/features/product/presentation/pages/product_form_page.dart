@@ -69,6 +69,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
             category: _categoryCtrl.text.trim().isEmpty
                 ? null
                 : _categoryCtrl.text.trim(),
+            imageUrl: _imageUrlCtrl.text.trim().isEmpty
+                ? null
+                : _imageUrlCtrl.text.trim(),
             isActive: _isActive,
           ),
         ),
@@ -198,7 +201,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
                               const SizedBox(height: 6),
                               _ProductTextField(
                                 controller: _imageUrlCtrl,
-                                labelText: 'Image URL (optional)',
+                                labelText:
+                                    context.l10n.productFormImageUrlLabel,
                                 icon: Icons.image_outlined,
                                 keyboardType: TextInputType.url,
                                 textInputAction: TextInputAction.next,
@@ -210,7 +214,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    const _SectionLabel(label: 'Basic info'),
+                    _SectionLabel(
+                      label: context.l10n.productFormSectionBasicInfo,
+                    ),
                     const SizedBox(height: 8),
                     _ProductTextField(
                       controller: _nameCtrl,
@@ -237,7 +243,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       stockField,
                     ],
                     const SizedBox(height: 20),
-                    const _SectionLabel(label: 'Details'),
+                    _SectionLabel(
+                      label: context.l10n.productFormSectionDetails,
+                    ),
                     const SizedBox(height: 8),
                     _ProductTextField(
                       controller: _categoryCtrl,

@@ -30,6 +30,7 @@ void main() {
     const labels = ReceiptLabels(
       receipt: 'Receipt',
       payment: 'Payment',
+      paymentMethodLabel: 'Cash',
       total: 'Total',
       received: 'Received',
       change: 'Change',

@@ -80,17 +80,14 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     final updated = state.items
         .where((i) => productMap.containsKey(i.product.id))
         .map((i) => i.copyWith(product: productMap[i.product.id]!))
+        .where((i) => i.product.stock > 0)
+        .map((i) => i.copyWith(qty: i.qty.clamp(1, i.product.stock)))
         .toList();
     emit(state.copyWith(items: updated));
   }
 
   void _onReset(SaleReset event, Emitter<SaleState> emit) {
-    emit(
-      const SaleState().copyWith(
-        items: state.items,
-        note: state.note,
-      ),
-    );
+    emit(const SaleState().copyWith(items: state.items, note: state.note));
   }
 
   Future<void> _onConfirmed(
@@ -103,6 +100,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       final sale = await _createSale(
         items: state.items,
         paymentMethod: event.paymentMethod,
+        vatMode: event.vatMode,
+        vatRate: event.vatRate,
         amountReceived: event.amountReceived,
         changeAmount: event.changeAmount,
         note: event.note,

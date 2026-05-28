@@ -76,6 +76,8 @@ void main() {
         final sale = await saleRepo.createSale(
           items: cart,
           paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
           amountReceived: 100,
           changeAmount: 20,
           note: 'Integration test',
@@ -118,6 +120,8 @@ void main() {
       await saleRepo.createSale(
         items: [CartItem(product: product, qty: 5)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       // Sale 2: buy 3 (use refreshed product)
@@ -127,6 +131,8 @@ void main() {
       await saleRepo.createSale(
         items: [CartItem(product: updated1, qty: 3)],
         paymentMethod: 'transfer',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       final updated2 = (await productDs.getProductById(id))!;
@@ -152,6 +158,8 @@ void main() {
       final sale = await saleRepo.createSale(
         items: [CartItem(product: product, qty: 1)],
         paymentMethod: 'card',
+        vatMode: 'NONE',
+        vatRate: 0,
         note: 'VIP customer',
       );
 

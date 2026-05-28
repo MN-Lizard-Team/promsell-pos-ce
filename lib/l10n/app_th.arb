@@ -172,5 +172,14 @@
   "adjustSuccess": "ปรับสต็อกแล้ว",
 
   "inventoryLog": "ประวัติสต็อก",
-  "noInventoryLogs": "ยังไม่มีประวัติสต็อก"
+  "noInventoryLogs": "ยังไม่มีประวัติสต็อก",
+
+  "invLogTypeSale": "ขาย",
+  "invLogTypeVoidReversal": "ยกเลิกบิล",
+  "invLogTypeStockIn": "รับสต็อก",
+  "invLogTypeStockOut": "ตัดสต็อก",
+
+  "productFormSectionBasicInfo": "ข้อมูลพื้นฐาน",
+  "productFormSectionDetails": "รายละเอียด",
+  "productFormImageUrlLabel": "URL รูปภาพ (ไม่บังคับ)"
 }

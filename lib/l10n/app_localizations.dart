@@ -871,6 +871,48 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ยังไม่มีประวัติสต็อก'**
   String get noInventoryLogs;
+
+  /// No description provided for @invLogTypeSale.
+  ///
+  /// In th, this message translates to:
+  /// **'ขาย'**
+  String get invLogTypeSale;
+
+  /// No description provided for @invLogTypeVoidReversal.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิกบิล'**
+  String get invLogTypeVoidReversal;
+
+  /// No description provided for @invLogTypeStockIn.
+  ///
+  /// In th, this message translates to:
+  /// **'รับสต็อก'**
+  String get invLogTypeStockIn;
+
+  /// No description provided for @invLogTypeStockOut.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัดสต็อก'**
+  String get invLogTypeStockOut;
+
+  /// No description provided for @productFormSectionBasicInfo.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลพื้นฐาน'**
+  String get productFormSectionBasicInfo;
+
+  /// No description provided for @productFormSectionDetails.
+  ///
+  /// In th, this message translates to:
+  /// **'รายละเอียด'**
+  String get productFormSectionDetails;
+
+  /// No description provided for @productFormImageUrlLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'URL รูปภาพ (ไม่บังคับ)'**
+  String get productFormImageUrlLabel;
 }
 
 class _AppLocalizationsDelegate

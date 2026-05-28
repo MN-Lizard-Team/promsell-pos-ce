@@ -89,8 +89,8 @@ Future<void> initDependencies() async {
   // Services
   sl.registerLazySingleton<ReceiptPdfService>(() => ReceiptPdfService());
 
-  // Cubits — Report (factory: each tab navigation creates a fresh cubit)
-  sl.registerFactory<ReportCubit>(() => ReportCubit(watchReport: sl()));
+  // Cubits — Report (lazySingleton: preserves date range across tab navigation)
+  sl.registerLazySingleton<ReportCubit>(() => ReportCubit(watchReport: sl()));
 
   // BLoCs — ProductBloc is a singleton intentionally: shared across Sale and
   // Product pages via IndexedStack so all tabs see the same product list.

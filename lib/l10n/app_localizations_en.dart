@@ -420,4 +420,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noInventoryLogs => 'No inventory logs';
+
+  @override
+  String get invLogTypeSale => 'Sale';
+
+  @override
+  String get invLogTypeVoidReversal => 'Void Reversal';
+
+  @override
+  String get invLogTypeStockIn => 'Stock In';
+
+  @override
+  String get invLogTypeStockOut => 'Stock Out';
+
+  @override
+  String get productFormSectionBasicInfo => 'Basic info';
+
+  @override
+  String get productFormSectionDetails => 'Details';
+
+  @override
+  String get productFormImageUrlLabel => 'Image URL (optional)';
 }

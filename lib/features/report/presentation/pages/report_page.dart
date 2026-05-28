@@ -11,15 +11,26 @@ import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
-class ReportPage extends StatelessWidget {
+class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
 
   @override
+  State<ReportPage> createState() => _ReportPageState();
+}
+
+class _ReportPageState extends State<ReportPage> {
+  late final ReportCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = sl<ReportCubit>();
+    _cubit.load();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ReportCubit>()..load(),
-      child: const _ReportView(),
-    );
+    return BlocProvider.value(value: _cubit, child: const _ReportView());
   }
 }
 
@@ -238,15 +249,19 @@ class _ReportView extends StatelessWidget {
   }
 
   Map<String, int> _topProducts(List<Sale> sales) {
-    final map = <String, int>{};
+    final qtyById = <String, int>{};
+    final nameById = <String, String>{};
     for (final s in _completedSales(sales)) {
       for (final item in s.items) {
-        map[item.productName] = (map[item.productName] ?? 0) + item.qty;
+        nameById[item.productId] = item.productName;
+        qtyById[item.productId] = (qtyById[item.productId] ?? 0) + item.qty;
       }
     }
-    final sorted = map.entries.toList()
+    final sorted = qtyById.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    return Map.fromEntries(sorted.take(5));
+    return Map.fromEntries(
+      sorted.take(5).map((e) => MapEntry(nameById[e.key] ?? e.key, e.value)),
+    );
   }
 
   Future<void> _pickRange(

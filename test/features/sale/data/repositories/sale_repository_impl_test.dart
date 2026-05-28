@@ -25,6 +25,8 @@ void main() {
         () => mockDs.insertSaleWithItems(
           items: any(named: 'items'),
           paymentMethod: any(named: 'paymentMethod'),
+          vatMode: any(named: 'vatMode'),
+          vatRate: any(named: 'vatRate'),
           amountReceived: any(named: 'amountReceived'),
           changeAmount: any(named: 'changeAmount'),
           note: any(named: 'note'),
@@ -34,6 +36,8 @@ void main() {
       final result = await repo.createSale(
         items: [tCartItem],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
         amountReceived: 500,
         changeAmount: 300,
       );
@@ -43,6 +47,8 @@ void main() {
         () => mockDs.insertSaleWithItems(
           items: [tCartItem],
           paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
           amountReceived: 500,
           changeAmount: 300,
         ),

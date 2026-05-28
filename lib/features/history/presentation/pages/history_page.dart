@@ -176,6 +176,47 @@ class _HistoryView extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (sale.vatMode != 'NONE') ...[
+                          const Divider(height: 1, indent: 16, endIndent: 16),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      ctx.l10n.receiptLabelSubtotal,
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                    MoneyText(
+                                      value: sale.subtotalAmount,
+                                      currency: settings.currency,
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '${ctx.l10n.receiptLabelVat} ${sale.vatRate.toStringAsFixed(0)}%',
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                    MoneyText(
+                                      value: sale.vatAmount,
+                                      currency: settings.currency,
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         if (sale.note != null && sale.note!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -207,19 +248,27 @@ class _HistoryView extends StatelessWidget {
                               onPressed: () async {
                                 try {
                                   final l = ctx.l10n;
+                                  final saleSettings = settings.copyWith(
+                                    vatRate: sale.vatRate,
+                                    vatMode: sale.vatMode,
+                                  );
                                   await sl<ReceiptPdfService>().printReceipt(
                                     sale: sale,
-                                    settings: settings,
+                                    settings: saleSettings,
                                     labels: ReceiptLabels(
                                       receipt: l.receiptLabelReceipt,
                                       payment: l.receiptLabelPayment,
+                                      paymentMethodLabel: localizePaymentMethod(
+                                        ctx,
+                                        sale.paymentMethod,
+                                      ),
                                       total: l.receiptLabelTotal,
                                       received: l.receiptLabelReceived,
                                       change: l.receiptLabelChange,
                                       note: l.receiptLabelNote,
                                       vat: l.receiptLabelVat,
                                       vatIncluded: l.receiptLabelVatIncluded(
-                                        settings.vatRate,
+                                        sale.vatRate,
                                       ),
                                       subtotal: l.receiptLabelSubtotal,
                                     ),
@@ -240,19 +289,27 @@ class _HistoryView extends StatelessWidget {
                               onPressed: () async {
                                 try {
                                   final l = ctx.l10n;
+                                  final saleSettings = settings.copyWith(
+                                    vatRate: sale.vatRate,
+                                    vatMode: sale.vatMode,
+                                  );
                                   await sl<ReceiptPdfService>().shareReceipt(
                                     sale: sale,
-                                    settings: settings,
+                                    settings: saleSettings,
                                     labels: ReceiptLabels(
                                       receipt: l.receiptLabelReceipt,
                                       payment: l.receiptLabelPayment,
+                                      paymentMethodLabel: localizePaymentMethod(
+                                        ctx,
+                                        sale.paymentMethod,
+                                      ),
                                       total: l.receiptLabelTotal,
                                       received: l.receiptLabelReceived,
                                       change: l.receiptLabelChange,
                                       note: l.receiptLabelNote,
                                       vat: l.receiptLabelVat,
                                       vatIncluded: l.receiptLabelVatIncluded(
-                                        settings.vatRate,
+                                        sale.vatRate,
                                       ),
                                       subtotal: l.receiptLabelSubtotal,
                                     ),

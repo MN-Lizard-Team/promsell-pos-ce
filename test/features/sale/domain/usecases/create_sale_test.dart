@@ -20,27 +20,37 @@ void main() {
   });
 
   test('delegates to repository.createSale', () async {
-    when(() => mockRepo.createSale(
-          items: any(named: 'items'),
-          paymentMethod: any(named: 'paymentMethod'),
-          amountReceived: any(named: 'amountReceived'),
-          changeAmount: any(named: 'changeAmount'),
-          note: any(named: 'note'),
-        )).thenAnswer((_) async => tSale);
+    when(
+      () => mockRepo.createSale(
+        items: any(named: 'items'),
+        paymentMethod: any(named: 'paymentMethod'),
+        vatMode: any(named: 'vatMode'),
+        vatRate: any(named: 'vatRate'),
+        amountReceived: any(named: 'amountReceived'),
+        changeAmount: any(named: 'changeAmount'),
+        note: any(named: 'note'),
+      ),
+    ).thenAnswer((_) async => tSale);
 
     final result = await useCase(
       items: [tCartItem],
       paymentMethod: 'cash',
+      vatMode: 'NONE',
+      vatRate: 0,
       amountReceived: 500.0,
       changeAmount: 300.0,
     );
 
     expect(result, tSale);
-    verify(() => mockRepo.createSale(
-          items: [tCartItem],
-          paymentMethod: 'cash',
-          amountReceived: 500.0,
-          changeAmount: 300.0,
-        )).called(1);
+    verify(
+      () => mockRepo.createSale(
+        items: [tCartItem],
+        paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
+        amountReceived: 500.0,
+        changeAmount: 300.0,
+      ),
+    ).called(1);
   });
 }

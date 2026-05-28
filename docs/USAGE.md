@@ -148,7 +148,7 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 5. Select **Cash / Transfer / Card**
 6. For cash, use quick cash chips or enter the amount received — change is calculated automatically
 7. Optionally add a sale note
-8. Tap **Confirm Payment** — sale is saved to history
+8. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart
 
 On compact phones, the cart appears as a bottom command panel. On tablet or expanded width layouts, the cart remains visible beside the product grid.
 
@@ -169,8 +169,9 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - Tap any card to expand the per-item breakdown
 - **Voided sales** display a red **VOIDED** badge, strikethrough amount, dimmed card, and a block icon
 - Expanded card shows:
+  - **VAT breakdown** — when `vatMode` is INCLUSIVE or EXCLUSIVE, Subtotal and VAT (with rate %) rows are shown above the total, using the VAT settings that were active at the time of sale
   - **Void Sale** button (red) — opens confirmation dialog with optional reason; atomically marks sale as voided, restores stock, and logs VOID_REVERSAL
-  - **Print Receipt** and **Share Receipt** buttons — generates an 80 mm thermal receipt PDF
+  - **Print Receipt** and **Share Receipt** buttons — generates an 80 mm thermal receipt PDF with sale-time VAT values
 - Use the date-range picker (calendar icon) to filter history by period
 
 ### Report tab
@@ -326,9 +327,9 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **2** (v0.4.1). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **2** (v0.4.2). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
-> **Note:** v0.4.1 uses a destructive drop+recreate migration (pre-release). Production releases must use incremental migrations.
+> **Note:** v0.4.2 uses a destructive drop+recreate migration (pre-release). Production releases must use incremental migrations.
 
 ---
 
@@ -383,7 +384,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **170 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **187 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
 
 ### Running tests
 

@@ -51,6 +51,8 @@ void main() {
       final sale = await saleDs.insertSaleWithItems(
         items: [CartItem(product: product, qty: 2)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
       expect(sale.receiptNumber, isNotNull);
       expect(sale.receiptNumber, matches(RegExp(r'^\d{6}-[A-Z0-9]{2}-0001$')));
@@ -63,6 +65,8 @@ void main() {
       await saleDs.insertSaleWithItems(
         items: [CartItem(product: product, qty: 3)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       final logs = await allLogs();
@@ -81,6 +85,8 @@ void main() {
       final sale = await saleDs.insertSaleWithItems(
         items: [CartItem(product: product, qty: 5)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
 
       // Stock after sale: 15
@@ -111,6 +117,8 @@ void main() {
       final sale = await saleDs.insertSaleWithItems(
         items: [CartItem(product: product, qty: 1)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
       await saleDs.voidSale(sale.id);
 
@@ -205,6 +213,8 @@ void main() {
       final sale = await saleDs.insertSaleWithItems(
         items: [CartItem(product: product, qty: 10)],
         paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
       );
       expect((await productDs.getProductById('p1'))!.stock, 40);
 

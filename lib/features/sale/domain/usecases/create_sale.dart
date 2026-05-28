@@ -10,6 +10,8 @@ class CreateSale {
   Future<Sale> call({
     required List<CartItem> items,
     required String paymentMethod,
+    required String vatMode,
+    required double vatRate,
     double? amountReceived,
     double? changeAmount,
     String? note,
@@ -22,6 +24,8 @@ class CreateSale {
     return _repository.createSale(
       items: items,
       paymentMethod: paymentMethod,
+      vatMode: vatMode,
+      vatRate: vatRate,
       amountReceived: amountReceived,
       changeAmount: changeAmount,
       note: note,

@@ -38,6 +38,10 @@ class Sale extends Equatable {
     required this.paymentMethod,
     this.receiptNumber,
     this.status = 'COMPLETED',
+    this.subtotalAmount = 0.0,
+    this.vatMode = 'NONE',
+    this.vatRate = 0.0,
+    this.vatAmount = 0.0,
     this.amountReceived,
     this.changeAmount,
     this.note,
@@ -50,6 +54,10 @@ class Sale extends Equatable {
   final String id;
   final String? receiptNumber;
   final String status;
+  final double subtotalAmount;
+  final String vatMode;
+  final double vatRate;
+  final double vatAmount;
   final double totalAmount;
   final String paymentMethod;
   final double? amountReceived;
@@ -67,6 +75,10 @@ class Sale extends Equatable {
     id,
     receiptNumber,
     status,
+    subtotalAmount,
+    vatMode,
+    vatRate,
+    vatAmount,
     totalAmount,
     paymentMethod,
     amountReceived,

@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.4.1** — Receipt system with VAT-aware rendering, on-screen preview (thermal/card/none), Thai font embedding in PDFs, input validation, and automated CI checks.
+> **Latest Release: v0.4.2** — Bug fixes: payment sheet no longer gets stuck after sale (Navigator race condition); VAT values are now persisted at sale time and shown in History; ReportPage no longer reloads on every rebuild; product image URL preserved on edit; inventory log labels and ProductForm sections localized; empty-state filtering fixed; qty=0 adjustment blocked.
  
 ---
  
@@ -66,13 +66,13 @@
 |---------|-------------|
 | **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, and change calculation |
 | **Products** | List/grid toggle, category filter chips, image URL avatar with live preview, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, active/inactive toggle |
-| **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, void sale action with reason, and notes |
+| **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, VAT breakdown rows (Subtotal + VAT rate %) when VAT is active, void sale action with reason, and notes |
 | **Report** | Dashboard cards for net revenue (excludes voided), voided summary, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
 | **Inventory** | Inventory audit log (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT), manual stock adjustment dialog with reason, and per-product log viewer |
 | **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, VAT mode/rate, preview style toggles, dirty-state save behavior, and compact responsive controls |
 | **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation |
 | **Receipt Preview** | On-screen preview in `thermal` (80mm paper) and `card` styles, with independent pre/post-sale toggles and `"none"` option |
-| **VAT** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` modes with correct subtotal/VAT/total breakdown on receipts and PDFs |
+| **VAT** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` modes with correct subtotal/VAT/total breakdown on receipts and PDFs; VAT mode and rate are snapshotted at sale time and used for accurate historical reprints |
 | **Offline-first** | All data stored locally in SQLite via Drift — no internet required |
 | **Material 3** | Merchant Command Deck refresh with shared theme tokens and responsive UI primitives |
 | **i18n** | Full localization via Flutter ARB files, easy to add more languages |
@@ -309,6 +309,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.4.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.4.2 · AGPL-3.0</sub>
 
 </div>

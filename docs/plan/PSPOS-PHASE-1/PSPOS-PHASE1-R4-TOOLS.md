@@ -245,6 +245,65 @@ Settings → Receipt section:
 
 ---
 
+## UX Enhancements (Backlog — implement before R4 ships or in R5)
+
+These were identified in the Round-2 bug analysis but are small UX improvements, not new merchant features. Implement alongside R4 tasks or in a dedicated patch.
+
+### E1 — Category Autocomplete in ProductFormPage
+
+**Problem:** Category is plain free-text. `"beverages"` and `"Beverages"` create two separate filter chips.
+
+**Implementation:**
+- Replace `_ProductTextField` for category with `Autocomplete<String>`
+- Options source: `context.read<ProductBloc>().state.products.map((p) => p.category).whereType<String>().toSet().toList()`
+- Allows free-text entry (user can still type a new category) — `Autocomplete` supports this via `fieldViewBuilder`
+
+**Files:** `product_form_page.dart`
+
+---
+
+### E2 — Cart Item Direct Qty Input
+
+**Problem:** `+` / `−` buttons only. Entering qty = 50 requires 49 taps.
+
+**Implementation:**
+- Wrap qty `Text` widget in `GestureDetector(onTap: ...)`
+- On tap → `showDialog` with a `TextField` (numeric, pre-filled with current qty)
+- On confirm → dispatch `SaleItemQtyChanged(productId: ..., qty: parsed)` (clamped to stock)
+
+**Files:** `sale_page_redesign.dart` (`_CartItemRow`)
+
+---
+
+### E3 — InventoryLogPage Clean Architecture Refactor
+
+**Problem:** `InventoryLogPage` queries `AppDatabase` directly — bypasses repository layer, untestable, no proper error state.
+
+**Implementation:**
+- Create `InventoryLogCubit` (domain: `WatchInventoryLogs` use case)
+- `InventoryLogRepository` + `InventoryLogRepositoryImpl` → `InventoryLogLocalDatasource`
+- Move Drift query out of widget into datasource
+- `InventoryLogPage` uses `BlocBuilder<InventoryLogCubit, InventoryLogState>` with proper loading/error states
+- Add unit tests: cubit, repository, datasource
+
+**Files:** new files + `inventory_log_page.dart`
+
+---
+
+### E4 — History Search / Filter Bar
+
+**Problem:** Only date-range filter available. Can't find a specific sale by receipt number, payment method, or amount.
+
+**Implementation:**
+- Add `SearchBar` above the list in `HistoryPage` (similar to `ProductListPage`)
+- Filter logic in `HistoryBloc`: `_applyFilter(List<Sale> sales, String query)` — matches receipt number substring, payment method, or amount prefix
+- `HistoryEvent`: `HistorySearchChanged(query)` → re-emit with filtered list
+- UI: show active filter chip when query is non-empty (tap chip to clear)
+
+**Files:** `history_page.dart`, `history_bloc.dart`, `history_event.dart`, `history_state.dart`
+
+---
+
 ## Out of Scope for R4
 
 - ❌ Daily close (R5)

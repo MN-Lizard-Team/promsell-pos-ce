@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.4.1
+# Database Handbook — Promsell POS CE v0.4.2
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -409,7 +409,7 @@ When a record is "deleted":
 2. All queries filter `WHERE deleted_at IS NULL` (or use `isActive` for products)
 3. Sync can detect deletions by comparing `deletedAt` timestamps
 
-> Currently (v0.4.1), products use `isActive` for soft deactivation. The `deletedAt` column enables true soft-delete + sync in Phase 4.
+> Currently (v0.4.2), products use `isActive` for soft deactivation. The `deletedAt` column enables true soft-delete + sync in Phase 4.
 
 ---
 
@@ -490,15 +490,31 @@ Future<Product?> getProductById(String id) async {
 ### Insert sale with items (atomic transaction)
 
 ```dart
-Future<Sale> insertSaleWithItems({...}) async {
+Future<Sale> insertSaleWithItems({
+  required List<CartItem> items,
+  required String paymentMethod,
+  required String vatMode,   // 'NONE' | 'INCLUSIVE' | 'EXCLUSIVE'
+  required double vatRate,   // e.g. 7.0
+  double? amountReceived,
+  double? changeAmount,
+  String? note,
+}) async {
+  // Calculate VAT breakdown from vatMode + vatRate
+  final subtotal = ...; final vatAmount = ...; final finalTotal = ...;
+
   await _db.transaction(() async {
     // 1. Generate receipt number via ReceiptNumberService
     final receipt = await _receiptService.next();
 
-    // 2. Insert sale row
+    // 2. Insert sale row with sale-time VAT snapshot
     final saleId = IdGenerator.newId();
     await _db.into(_db.sales).insert(
-      SalesCompanion.insert(id: saleId, receiptNumber: Value(receipt), ...),
+      SalesCompanion.insert(
+        id: saleId, receiptNumber: Value(receipt),
+        subtotalAmount: Value(subtotal),
+        vatMode: Value(vatMode), vatRate: Value(vatRate), vatAmount: Value(vatAmount),
+        totalAmount: finalTotal, ...
+      ),
     );
 
     for (final item in items) {
@@ -576,7 +592,7 @@ Stream<List<Sale>> watchRecentSales({int limit = 20}) {
 
 ## Migration Guide
 
-### Current strategy (v0.4.1, pre-release)
+### Current strategy (v0.4.2, pre-release)
 
 Schema version 2 uses **destructive drop+recreate** — all existing data is lost on upgrade from v1. This is acceptable during pre-release development.
 
@@ -779,4 +795,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.4.1 · Schema v2 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.4.2 · Schema v2 · 9 tables · UUIDv4</sub>

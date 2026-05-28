@@ -68,7 +68,7 @@ class InventoryLogPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _labelForType(log.type),
+                      _labelForType(context, log.type),
                       style: theme.textTheme.bodySmall,
                     ),
                     if (log.reason != null)
@@ -100,11 +100,11 @@ class InventoryLogPage extends StatelessWidget {
     _ => Icons.help_outline,
   };
 
-  String _labelForType(String type) => switch (type) {
-    'SALE' => 'Sale',
-    'VOID_REVERSAL' => 'Void Reversal',
-    'ADJUSTMENT_IN' => 'Stock In',
-    'ADJUSTMENT_OUT' => 'Stock Out',
+  String _labelForType(BuildContext context, String type) => switch (type) {
+    'SALE' => context.l10n.invLogTypeSale,
+    'VOID_REVERSAL' => context.l10n.invLogTypeVoidReversal,
+    'ADJUSTMENT_IN' => context.l10n.invLogTypeStockIn,
+    'ADJUSTMENT_OUT' => context.l10n.invLogTypeStockOut,
     _ => type,
   };
 }

@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.4.1
+# CODEBASE.md — Promsell POS CE v0.4.2
 
 ## System overview
 
@@ -98,7 +98,7 @@ features/<name>/
 | Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`, `ReceiptPreview` (thermal/card/none) |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` |
 | History | `HistoryBloc` | `history_page.dart` (+ print/share receipt, void sale dialog) |
-| Report | `ReportCubit` | `report_page.dart` (net revenue, voided summary, exclude voided) |
+| Report | `ReportCubit` (lazySingleton) | `report_page.dart` (net revenue, voided summary, exclude voided); `load()` called once in `initState()` |
 | Settings | `SettingsCubit` | `settings_page.dart`, `settings_cubit.dart`, `settings_state.dart` |
 | Inventory | — | `inventory_log_page.dart`, `adjust_stock_dialog.dart`, `InventoryLogService`, `AdjustStock` |
 
@@ -237,12 +237,13 @@ Two generators must be run after changes:
 | Domain entity | Update `test/helpers/fixtures.dart` + corresponding `_test.dart` files |
 | `Sale` entity (new fields) | Update `sale_test.dart` props count, `_buildSale` in datasource |
 | `SaleLocalDatasource` | Update `ReceiptNumberService`/`InventoryLogService` injection in tests |
+| Parent `BlocListener` that calls `showDialog` alongside a modal's `BlocListener` | Wrap `showDialog` in `WidgetsBinding.instance.addPostFrameCallback` — see ADR-009 in `docs/ARCHITECTURE.md` |
 
 ---
 
 ## Test infrastructure
 
-170 automated tests across 7 layers. Run with `flutter test`.
+187 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 

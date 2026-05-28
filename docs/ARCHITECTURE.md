@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.4.1
+# Architecture — Promsell POS CE v0.4.2
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -162,7 +162,8 @@ Merchant → SalePage → SaleBloc → CreateSale → SaleLocalDatasource
                 │       read/write app_settings (seq, date)
                 │       ──→ returns "260527-A1-0042"
                 │
-                ├──→ INSERT sale (id, receiptNumber, status=COMPLETED)
+                ├──→ INSERT sale (id, receiptNumber, status=COMPLETED,
+                │         subtotalAmount, vatMode, vatRate, vatAmount)
                 │
                 ├── FOR EACH cart item:
                 │   ├──→ INSERT sale_item
@@ -273,13 +274,17 @@ AdjustStockDialog ← success → close dialog + refresh product
 | **BLoC** (event-driven) | `SaleBloc`, `ProductBloc`, `HistoryBloc` | Multiple event types, complex async flows, stream subscriptions |
 | **Cubit** (method-driven) | `SettingsCubit`, `ReportCubit` | Simple state, no event classes needed, direct method calls |
 
+### BlocListener ordering caution
+
+Multiple `BlocListener`s subscribed to the same BLoC receive emissions in **subscription order**. When a modal (via `showModalBottomSheet`) and its parent page both listen to the same BLoC, the parent listener fires first because it was registered earlier. If the parent listener pushes a new route while the modal listener tries to pop, the pop removes the newly pushed route instead of the modal, leaving the modal open. The fix is to defer any push from the parent listener using `WidgetsBinding.instance.addPostFrameCallback`, giving the modal's pop time to execute in the current frame first.
+
 ### Singleton vs Factory BLoCs
 
 | Registration | Instance | Reason |
 |-------------|----------|--------|
 | `registerLazySingleton` | `ProductBloc` | Shared across Sale + Product tabs via IndexedStack — same product list everywhere |
 | `registerLazySingleton` | `SettingsCubit` | Global app state (locale, theme) — must persist across navigation |
-| `registerFactory` | `ReportCubit` | Fresh instance per navigation — date range resets, avoids stale state |
+| `registerLazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()` |
 
 ### State immutability
 
@@ -312,7 +317,7 @@ Registered in `lib/core/di/injection_container.dart` via `get_it`.
 │  ProductBloc ──→ GetProducts, AddProduct,                 │
 │                  UpdateProduct, DeleteProduct              │
 │  SettingsCubit ──→ SettingsRepository                     │
-│  ReportCubit (factory) ──→ WatchReport                    │
+│  ReportCubit (lazySingleton) ──→ WatchReport               │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
@@ -456,7 +461,7 @@ try {
 ### Memory considerations
 
 - `ProductBloc` singleton — shared product list, single subscription
-- `ReportCubit` factory — garbage collected when tab navigates away
+- `ReportCubit` lazySingleton — date range persists across tab navigation; `load()` guarded to `initState()` only
 - Drift query streams — auto-disposed when BLoC is closed
 
 ---
@@ -564,6 +569,20 @@ try {
 
 ---
 
+### ADR-009: Deferred route push after modal pop (addPostFrameCallback)
+
+**Context:** Both a modal bottom sheet (`PaymentSheet`) and its parent page (`_CartPanel`) listen to `SaleBloc`. On `SaleStatus.success`, the parent listener (subscribed first) pushes a receipt dialog before the modal listener can pop the sheet. `Navigator.pop()` then removes the dialog, not the modal — leaving it open and `_submitted = true` permanently.
+
+**Decision:** Wrap any `showDialog` call in the parent `BlocListener` with `WidgetsBinding.instance.addPostFrameCallback`. The dialog push is deferred to the next frame, after the modal's `Navigator.pop()` has already run.
+
+**Consequences:**
+- ✅ Modal always closes correctly before the receipt dialog appears
+- ✅ No change to the BLoC or event model
+- ✅ Single-line fix — zero architectural overhead
+- ⚠️ Slight one-frame delay before the dialog is visible (imperceptible at 60+ fps)
+
+---
+
 ### ADR-008: Feature-first folder structure
 
 **Context:** Need clear module boundaries as app grows through R1–R5 phases.
@@ -609,4 +628,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.4.1 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.4.2 · Architecture Document · Deep Technical Reference</sub>

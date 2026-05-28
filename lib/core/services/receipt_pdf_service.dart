@@ -11,6 +11,7 @@ class ReceiptLabels {
   const ReceiptLabels({
     required this.receipt,
     required this.payment,
+    required this.paymentMethodLabel,
     required this.total,
     required this.received,
     required this.change,
@@ -22,6 +23,7 @@ class ReceiptLabels {
 
   final String receipt;
   final String payment;
+  final String paymentMethodLabel;
   final String total;
   final String received;
   final String change;
@@ -152,7 +154,7 @@ class ReceiptPdfService {
               ],
             ),
             pw.Text(
-              '${labels.payment}: ${sale.paymentMethod}',
+              '${labels.payment}: ${labels.paymentMethodLabel}',
               style: const pw.TextStyle(fontSize: 10),
             ),
             pw.SizedBox(height: 6),

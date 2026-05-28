@@ -175,5 +175,14 @@
   "adjustSuccess": "Stock adjusted",
 
   "inventoryLog": "Inventory Log",
-  "noInventoryLogs": "No inventory logs"
+  "noInventoryLogs": "No inventory logs",
+
+  "invLogTypeSale": "Sale",
+  "invLogTypeVoidReversal": "Void Reversal",
+  "invLogTypeStockIn": "Stock In",
+  "invLogTypeStockOut": "Stock Out",
+
+  "productFormSectionBasicInfo": "Basic info",
+  "productFormSectionDetails": "Details",
+  "productFormImageUrlLabel": "Image URL (optional)"
 }
