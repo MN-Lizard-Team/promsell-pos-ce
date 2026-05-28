@@ -32,7 +32,7 @@ void main() {
     });
 
     test('props contains product and qty', () {
-      expect(tCartItem.props, [tProduct, 2]);
+      expect(tCartItem.props, [tProduct, 2, null, null]);
     });
   });
 }

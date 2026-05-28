@@ -12,6 +12,9 @@ abstract class SaleLocalDatasource {
     required String paymentMethod,
     required String vatMode,
     required double vatRate,
+    String? cartDiscountType,
+    double? cartDiscountValue,
+    double? cartDiscountAmount,
     double? amountReceived,
     double? changeAmount,
     String? note,
@@ -74,29 +77,36 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     required String paymentMethod,
     required String vatMode,
     required double vatRate,
+    String? cartDiscountType,
+    double? cartDiscountValue,
+    double? cartDiscountAmount,
     double? amountReceived,
     double? changeAmount,
     String? note,
   }) async {
-    final total = double.parse(
+    final itemsSubtotal = double.parse(
       items.fold(0.0, (sum, i) => sum + i.subtotal).toStringAsFixed(2),
+    );
+    final effectiveCartDiscount = cartDiscountAmount ?? 0.0;
+    final preTaxTotal = double.parse(
+      (itemsSubtotal - effectiveCartDiscount).toStringAsFixed(2),
     );
     final r = vatRate / 100;
     final double subtotal;
     final double vatAmount;
     final double finalTotal;
     if (vatMode == 'INCLUSIVE' && r > 0) {
-      subtotal = double.parse((total / (1 + r)).toStringAsFixed(2));
-      vatAmount = double.parse((total - subtotal).toStringAsFixed(2));
-      finalTotal = total;
+      subtotal = double.parse((preTaxTotal / (1 + r)).toStringAsFixed(2));
+      vatAmount = double.parse((preTaxTotal - subtotal).toStringAsFixed(2));
+      finalTotal = preTaxTotal;
     } else if (vatMode == 'EXCLUSIVE' && r > 0) {
-      subtotal = total;
-      vatAmount = double.parse((total * r).toStringAsFixed(2));
-      finalTotal = double.parse((total + vatAmount).toStringAsFixed(2));
+      subtotal = preTaxTotal;
+      vatAmount = double.parse((preTaxTotal * r).toStringAsFixed(2));
+      finalTotal = double.parse((preTaxTotal + vatAmount).toStringAsFixed(2));
     } else {
-      subtotal = total;
+      subtotal = preTaxTotal;
       vatAmount = 0.0;
-      finalTotal = total;
+      finalTotal = preTaxTotal;
     }
     final saleId = IdGenerator.newId();
     late SaleData saleData;
@@ -113,6 +123,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
               receiptNumber: Value(receiptNumber),
               totalAmount: finalTotal,
               subtotalAmount: Value(subtotal),
+              discountType: Value(cartDiscountType),
+              discountValue: Value(cartDiscountValue),
+              discountAmount: Value(effectiveCartDiscount),
               vatMode: Value(vatMode),
               vatRate: Value(vatRate),
               vatAmount: Value(vatAmount),
@@ -126,7 +139,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
         _db.sales,
       )..where((s) => s.id.equals(saleId))).getSingle();
 
-      // 3. Validate ALL stock before any writes
+      // 3. Validate ALL stock before any writes (skip non-tracked items)
       final productMap = <String, ProductData>{};
       for (final item in items) {
         if (productMap.containsKey(item.product.id)) continue;
@@ -141,16 +154,17 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
         productMap[item.product.id] = product;
       }
       for (final item in items) {
-        final stock = productMap[item.product.id]!.stock;
-        if (stock < item.qty) {
+        final product = productMap[item.product.id]!;
+        if (!product.trackStock) continue;
+        if (product.stock < item.qty) {
           throw StateError(
             'Insufficient stock for "${item.product.name}": '
-            'available $stock, requested ${item.qty}',
+            'available ${product.stock}, requested ${item.qty}',
           );
         }
       }
 
-      // 4. Insert sale items + deduct stock + log inventory
+      // 4. Insert sale items + deduct stock (trackStock only) + log inventory
       for (final item in items) {
         await _db
             .into(_db.saleItems)
@@ -163,8 +177,10 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
                 price: item.product.price,
                 qty: item.qty,
                 subtotal: item.subtotal,
+                discountAmount: Value(item.discountAmount),
               ),
             );
+        if (!productMap[item.product.id]!.trackStock) continue;
         final newStock = productMap[item.product.id]!.stock - item.qty;
         await (_db.update(
           _db.products,

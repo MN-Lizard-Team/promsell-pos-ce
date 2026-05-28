@@ -17,6 +17,7 @@ import 'package:promsell_pos_ce/features/report/domain/usecases/get_report.dart'
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
@@ -32,6 +33,8 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 
 // ── Repositories ──
 class MockSaleRepository extends Mock implements SaleRepository {}
+
+class MockDraftCartRepository extends Mock implements DraftCartRepository {}
 
 class MockProductRepository extends Mock implements ProductRepository {}
 

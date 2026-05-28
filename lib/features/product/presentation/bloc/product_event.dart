@@ -18,15 +18,24 @@ class ProductAdded extends ProductEvent {
     required this.stock,
     this.category,
     this.imageUrl,
+    this.trackStock = true,
   });
   final String name;
   final double price;
   final int stock;
   final String? category;
   final String? imageUrl;
+  final bool trackStock;
 
   @override
-  List<Object?> get props => [name, price, stock, category, imageUrl];
+  List<Object?> get props => [
+    name,
+    price,
+    stock,
+    category,
+    imageUrl,
+    trackStock,
+  ];
 }
 
 class ProductUpdated extends ProductEvent {

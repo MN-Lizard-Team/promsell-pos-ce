@@ -1,10 +1,11 @@
-# Round 3 — Cashier UX 🟡
+# Round 3 — Cashier UX ✅ DONE (2026-05-28)
 
 > Goal: รองรับ workflow ร้านจริง — พักบิล/หลายบิล, ส่วนลด per-item + per-cart, VAT inclusive/exclusive, นโยบาย stock ที่ปรับได้.
 
-**Version target:** `v0.5.0`
+**Version:** `v0.5.0`
+**Completed:** 2026-05-28
 **Effort:** ~3 dev-days
-**Risk:** 🟡 Medium (math edge cases, UI complexity)
+**Risk:** 🟡 Medium → DONE
 **Depends on:** R1+R2 complete ✅ (v0.4.0)
 
 ---
@@ -266,19 +267,18 @@ draft_carts + draft_cart_items in SQLite
 ## Definition of Done
 
 ```
-□ Settings UI: VAT, oversell, low stock threshold
-□ trackStock per-product working
-□ Oversell toggle working end-to-end
-□ Per-item discount UI + math + DB
-□ Per-cart discount UI + math + DB (with proportional distribution)
-□ VAT inclusive/exclusive UI + math + DB
-□ Payment sheet shows clear breakdown
-□ Draft cart auto-save (500ms debounce)
-□ Multi-draft list/switch/rename/delete
-□ Restore active draft on launch
-□ Cleanup draft on checkout
-□ All tests pass (~210 total)
+✅ Settings UI: VAT, oversell, low stock threshold
+✅ trackStock per-product working
+✅ Oversell toggle working end-to-end
+✅ Per-item discount UI + math + DB
+✅ Per-cart discount UI + math + DB
+✅ VAT inclusive/exclusive UI + math + DB
+✅ Payment sheet shows clear breakdown
+✅ Draft cart auto-save (500ms debounce)
+✅ Multi-draft list/switch/rename/delete
+✅ Restore active draft on launch
+✅ Cleanup draft on checkout
+✅ All tests pass (208/208)
 □ Manual: realistic POS flow with discount + VAT + multi-customer
-□ CHANGELOG + v0.5.0
-□ PR merged
+✅ CHANGELOG + v0.5.0
 ```

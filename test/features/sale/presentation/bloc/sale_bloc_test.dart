@@ -11,16 +11,27 @@ import '../../../../helpers/mocks.dart';
 
 void main() {
   late MockCreateSale mockCreateSale;
+  late MockDraftCartRepository mockDraftRepo;
 
   setUp(() {
     mockCreateSale = MockCreateSale();
+    mockDraftRepo = MockDraftCartRepository();
+    when(() => mockDraftRepo.createDraft(name: any(named: 'name')))
+        .thenAnswer((_) async => 'draft-id-1');
+    when(() => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')))
+        .thenAnswer((_) async {});
+    when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+    when(() => mockDraftRepo.deleteDraft(any())).thenAnswer((_) async {});
+    when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
   });
 
   setUpAll(() {
     registerFallbackValue(<CartItem>[]);
+    registerFallbackValue(const SaleState());
   });
 
-  SaleBloc buildBloc() => SaleBloc(createSale: mockCreateSale);
+  SaleBloc buildBloc() =>
+      SaleBloc(createSale: mockCreateSale, draftRepo: mockDraftRepo);
 
   group('SaleBloc', () {
     test('initial state is SaleState()', () {
@@ -107,7 +118,11 @@ void main() {
       ),
       expect: () => [
         SaleState(items: [tCartItem], status: SaleStatus.processing),
-        SaleState(status: SaleStatus.success, lastSale: tSale),
+        SaleState(
+          status: SaleStatus.success,
+          lastSale: tSale,
+          activeDraftId: 'draft-id-1',
+        ),
       ],
     );
 

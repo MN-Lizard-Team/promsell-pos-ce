@@ -13,6 +13,7 @@ final tProduct = Product(
   category: 'Drinks',
   imageUrl: null,
   isActive: true,
+  trackStock: true,
   createdAt: tNow,
   updatedAt: tNow,
 );
@@ -25,6 +26,7 @@ final tProduct2 = Product(
   category: 'Food',
   imageUrl: null,
   isActive: true,
+  trackStock: true,
   createdAt: tNow,
   updatedAt: tNow,
 );
@@ -37,6 +39,20 @@ final tInactiveProduct = Product(
   category: null,
   imageUrl: null,
   isActive: false,
+  trackStock: true,
+  createdAt: tNow,
+  updatedAt: tNow,
+);
+
+final tServiceProduct = Product(
+  id: 'prod-0004-0004-0004-000000000004',
+  name: 'Service Item',
+  price: 200.0,
+  stock: 0,
+  category: null,
+  imageUrl: null,
+  isActive: true,
+  trackStock: false,
   createdAt: tNow,
   updatedAt: tNow,
 );

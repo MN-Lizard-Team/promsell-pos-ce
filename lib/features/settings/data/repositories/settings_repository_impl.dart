@@ -23,6 +23,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyReceiptPreviewStyle = 'receiptPreviewStyle';
   static const _keyShowPreSalePreview = 'showPreSalePreview';
   static const _keyShowPostSalePreview = 'showPostSalePreview';
+  static const _keyAllowOversell = 'allowOversell';
+  static const _keyLowStockThreshold = 'lowStockThreshold';
 
   @override
   Future<AppSettings> load() async {
@@ -54,6 +56,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
           await _datasource.getBool(_keyShowPreSalePreview) ?? true,
       showPostSalePreview:
           await _datasource.getBool(_keyShowPostSalePreview) ?? true,
+      allowOversell: await _datasource.getBool(_keyAllowOversell) ?? false,
+      lowStockThreshold: await _datasource.getInt(_keyLowStockThreshold) ?? 5,
     );
   }
 
@@ -83,5 +87,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       _keyShowPostSalePreview,
       settings.showPostSalePreview,
     );
+    await _datasource.setBool(_keyAllowOversell, settings.allowOversell);
+    await _datasource.setInt(_keyLowStockThreshold, settings.lowStockThreshold);
   }
 }

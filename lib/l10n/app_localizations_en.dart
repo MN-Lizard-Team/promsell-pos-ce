@@ -441,4 +441,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productFormImageUrlLabel => 'Image URL (optional)';
+
+  @override
+  String get trackStock => 'Track stock';
+
+  @override
+  String get trackStockHint =>
+      'Turn off for service items (no stock deduction)';
+
+  @override
+  String get settingsStockPolicy => 'Stock Policy';
+
+  @override
+  String get allowOversell => 'Allow overselling';
+
+  @override
+  String get allowOversellHint => 'Allow adding items beyond available stock';
+
+  @override
+  String get lowStockThreshold => 'Low stock warning (qty)';
+
+  @override
+  String get lowStockWarning => 'Low stock';
+
+  @override
+  String get discountSectionLabel => 'Discount';
+
+  @override
+  String get discountDialogTitle => 'Apply Discount';
+
+  @override
+  String get discountTypePercent => 'Percent (%)';
+
+  @override
+  String get discountTypeAmount => 'Amount (฿)';
+
+  @override
+  String discountPreview(String amount) {
+    return 'After discount: $amount';
+  }
+
+  @override
+  String get discountApply => 'Apply';
+
+  @override
+  String get discountClear => 'Clear discount';
+
+  @override
+  String get cartDiscount => 'Cart discount';
+
+  @override
+  String get applyCartDiscount => 'Apply cart discount';
+
+  @override
+  String discountLabel(String amount) {
+    return '-$amount';
+  }
+
+  @override
+  String get discountValueRequired => 'Please enter a discount value';
+
+  @override
+  String get discountValueInvalid => 'Invalid discount value';
+
+  @override
+  String get preTaxTotal => 'Pre-tax total';
+
+  @override
+  String get draftsTitle => 'Saved Bills';
+
+  @override
+  String get newDraft => 'New bill';
+
+  @override
+  String get renameDraft => 'Rename';
+
+  @override
+  String get deleteDraft => 'Delete bill';
+
+  @override
+  String get deleteDraftConfirm => 'Delete this bill?';
+
+  @override
+  String get draftLimitReached =>
+      'Maximum 10 bills reached. Please delete an old one first.';
+
+  @override
+  String get activeDraftLabel => 'Active';
+
+  @override
+  String get draftNameHint => 'Bill name (optional)';
+
+  @override
+  String get switchDraft => 'Switch to this bill';
 }

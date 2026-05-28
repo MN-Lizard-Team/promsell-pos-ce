@@ -33,13 +33,15 @@ class _SettingsViewState extends State<_SettingsView> {
   late final TextEditingController _addressCtrl;
   late final TextEditingController _phoneCtrl;
   late final TextEditingController _receiptNoteCtrl;
+  late final TextEditingController _lowStockCtrl;
   bool _manualSave = false;
 
   bool get _hasTextChanges =>
       _shopNameCtrl.text.trim() != _draft.shopName ||
       _addressCtrl.text.trim() != _draft.address ||
       _phoneCtrl.text.trim() != _draft.phone ||
-      _receiptNoteCtrl.text.trim() != _draft.receiptNote;
+      _receiptNoteCtrl.text.trim() != _draft.receiptNote ||
+      (int.tryParse(_lowStockCtrl.text) ?? 5) != _draft.lowStockThreshold;
 
   @override
   void initState() {
@@ -49,6 +51,9 @@ class _SettingsViewState extends State<_SettingsView> {
     _addressCtrl = TextEditingController(text: _draft.address);
     _phoneCtrl = TextEditingController(text: _draft.phone);
     _receiptNoteCtrl = TextEditingController(text: _draft.receiptNote);
+    _lowStockCtrl = TextEditingController(
+      text: _draft.lowStockThreshold.toString(),
+    );
   }
 
   @override
@@ -77,6 +82,7 @@ class _SettingsViewState extends State<_SettingsView> {
     _addressCtrl.dispose();
     _phoneCtrl.dispose();
     _receiptNoteCtrl.dispose();
+    _lowStockCtrl.dispose();
     super.dispose();
   }
 
@@ -88,6 +94,8 @@ class _SettingsViewState extends State<_SettingsView> {
       address: _addressCtrl.text.trim(),
       phone: _phoneCtrl.text.trim(),
       receiptNote: _receiptNoteCtrl.text.trim(),
+      lowStockThreshold:
+          int.tryParse(_lowStockCtrl.text.trim()) ?? _draft.lowStockThreshold,
     );
     context.read<SettingsCubit>().update(updated);
   }
@@ -345,6 +353,33 @@ class _SettingsViewState extends State<_SettingsView> {
                   ],
                 ),
               ),
+              const SizedBox(height: 12),
+              SectionCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    _SectionHeader(l10n.settingsStockPolicy),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.shopping_cart_outlined),
+                      title: Text(l10n.allowOversell),
+                      subtitle: Text(l10n.allowOversellHint),
+                      value: _draft.allowOversell,
+                      onChanged: (value) {
+                        final updated = _draft.copyWith(allowOversell: value);
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                    _TextField(
+                      controller: _lowStockCtrl,
+                      label: l10n.lowStockThreshold,
+                      icon: Icons.warning_amber_outlined,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 20),
               ListenableBuilder(
                 listenable: Listenable.merge([
@@ -352,6 +387,7 @@ class _SettingsViewState extends State<_SettingsView> {
                   _addressCtrl,
                   _phoneCtrl,
                   _receiptNoteCtrl,
+                  _lowStockCtrl,
                 ]),
                 builder: (_, _) => FilledButton.icon(
                   onPressed: _hasTextChanges ? _save : null,
@@ -402,6 +438,7 @@ class _TextField extends StatelessWidget {
     required this.icon,
     this.maxLines = 1,
     this.keyboardType,
+    this.onChanged,
   });
 
   final TextEditingController controller;
@@ -409,6 +446,7 @@ class _TextField extends StatelessWidget {
   final IconData icon;
   final int maxLines;
   final TextInputType? keyboardType;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -423,6 +461,7 @@ class _TextField extends StatelessWidget {
         ),
         maxLines: maxLines,
         keyboardType: keyboardType,
+        onChanged: onChanged,
       ),
     );
   }

@@ -11,6 +11,7 @@ class Product extends Equatable {
     this.category,
     this.imageUrl,
     required this.isActive,
+    this.trackStock = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -22,10 +23,11 @@ class Product extends Equatable {
   final String? category;
   final String? imageUrl;
   final bool isActive;
+  final bool trackStock;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  bool get isInStock => stock > 0;
+  bool get isInStock => !trackStock || stock > 0;
 
   Product copyWith({
     String? id,
@@ -35,6 +37,7 @@ class Product extends Equatable {
     Object? category = _unset,
     Object? imageUrl = _unset,
     bool? isActive,
+    bool? trackStock,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -50,6 +53,7 @@ class Product extends Equatable {
           ? this.imageUrl
           : imageUrl as String?,
       isActive: isActive ?? this.isActive,
+      trackStock: trackStock ?? this.trackStock,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -64,6 +68,7 @@ class Product extends Equatable {
     category,
     imageUrl,
     isActive,
+    trackStock,
     createdAt,
     updatedAt,
   ];

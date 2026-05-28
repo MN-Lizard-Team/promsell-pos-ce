@@ -44,7 +44,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tProduct.props.length, 9);
+      expect(tProduct.props.length, 10);
     });
   });
 }

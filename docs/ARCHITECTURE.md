@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.4.2
+# Architecture — Promsell POS CE v0.5.0
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -597,6 +597,40 @@ try {
 
 ---
 
+### ADR-010: Draft cart auto-save via Timer debounce in BLoC
+
+**Context:** Cart state changes rapidly on every tap (add item, change qty, apply discount). Saving to SQLite synchronously on every event would cause write thrashing.
+
+**Decision:** Use a `Timer?` field in `SaleBloc`. Every cart-mutating handler cancels the previous timer and schedules a new 500 ms save. The save captures `state.activeDraftId` at schedule time and validates it's still the same draft at fire time.
+
+**Consequences:**
+- ✅ Batches rapid edits into a single write
+- ✅ No lost state — even a crash within the 500 ms window only loses the last 500 ms of changes
+- ✅ `Timer` is cancelled in `close()` to prevent post-dispose writes
+- ⚠️ `SaleBloc` must be registered as `factory` (not singleton) so each `SalePage` instance gets its own timer lifecycle
+
+---
+
+### ADR-011: Discount applied before VAT (preTaxTotal)
+
+**Context:** Merchants expect discounts to reduce the taxable amount, not the final total.
+
+**Decision:** VAT is calculated on `preTaxTotal = itemsSubtotal - cartDiscountAmount`, not on the raw sum of item prices.
+
+```
+preTaxTotal = sum(item.subtotal) - cartDiscountAmount
+INCLUSIVE: subtotal = preTaxTotal / (1 + vatRate)
+EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
+```
+
+**Consequences:**
+- ✅ Correct tax semantics (discount reduces taxable base)
+- ✅ Receipt math is consistent: subtotal + VAT = total
+- ✅ Per-item `discountAmount` stored at sale time for accurate historical reprints
+- ⚠️ Payment sheet must read `SaleState.total` (preTaxTotal) not the raw `itemsSubtotal`
+
+---
+
 ## PlantUML Source Files
 
 Detailed diagrams are available as `.puml` files for rendering with PlantUML tools:
@@ -628,4 +662,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.4.2 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.5.0 · Architecture Document · Deep Technical Reference</sub>

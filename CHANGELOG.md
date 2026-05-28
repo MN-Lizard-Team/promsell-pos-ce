@@ -17,6 +17,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2026-05-28
+
+R3 Cashier UX — draft carts, discount system, and stock policy for real-shop workflow.
+
+### Highlights
+
+- **Draft cart persistence** — Cart auto-saves every 500 ms. Up to 10 simultaneous drafts (switch customers/tables, rename, delete). Active draft restores on app launch; cleared on checkout.
+- **Discount system** — Per-item discount (% or ฿) and per-cart discount. Payment sheet shows full breakdown: Subtotal → discounts → Total. VAT applied after discounts.
+- **Stock policy** — Per-product `trackStock` toggle (service items show ∞, no stock deduction). `allowOversell` setting permits selling beyond available stock.
+- **Low stock indicator** — Product card stock label turns red when stock ≤ configurable threshold.
+
+### Added
+
+- **Draft cart** — bookmarks icon in Sale AppBar opens draft sheet; list, switch, rename, delete drafts; new-draft button; cap enforced at 10
+- **Per-item discount** — tag icon in cart row → dialog (% / ฿, live preview, apply / clear); discount badge shown on item
+- **Cart-level discount** — "Apply cart discount" button below subtotal; discount line in cart summary
+- **Payment sheet breakdown** — Subtotal / item discounts / cart discount / TOTAL when any discount is active
+- **`trackStock` per-product** — switch in product form; `∞` stock display and no DB deduction when off
+- **Stock Policy settings section** — Allow oversell toggle + Low stock threshold input
+- **30 new localization keys** (EN + TH) — stock policy, discount dialog, draft cart labels
+
+### Changed
+
+- VAT now calculated on pre-discount total (`preTaxTotal`) in sale datasource
+- `DailyCloses` `@Deprecated` removed — table stays in schema v2 for upcoming R5 Daily Close UI
+
+### Fixed
+
+- Products with `trackStock=false` (stock = 0) no longer removed from cart on product refresh
+- Qty clamp skipped for non-tracked products (no artificial stock ceiling)
+
+`flutter analyze` → **0 issues** · `flutter test` → **208/208 passing**
+
+---
+
 ## [0.4.2] - 2026-05-28
 
 Full-system bug fix pass: VAT data integrity, product edit, report stability, localization gaps, and UX polish.
@@ -472,7 +507,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.3.0...v0.4.0

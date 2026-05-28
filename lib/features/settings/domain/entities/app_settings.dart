@@ -18,6 +18,8 @@ class AppSettings extends Equatable {
     this.receiptPreviewStyle = 'thermal',
     this.showPreSalePreview = true,
     this.showPostSalePreview = true,
+    this.allowOversell = false,
+    this.lowStockThreshold = 5,
   });
 
   final Locale locale;
@@ -35,6 +37,8 @@ class AppSettings extends Equatable {
   final String receiptPreviewStyle;
   final bool showPreSalePreview;
   final bool showPostSalePreview;
+  final bool allowOversell;
+  final int lowStockThreshold;
 
   AppSettings copyWith({
     Locale? locale,
@@ -52,6 +56,8 @@ class AppSettings extends Equatable {
     String? receiptPreviewStyle,
     bool? showPreSalePreview,
     bool? showPostSalePreview,
+    bool? allowOversell,
+    int? lowStockThreshold,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -70,6 +76,8 @@ class AppSettings extends Equatable {
       receiptPreviewStyle: receiptPreviewStyle ?? this.receiptPreviewStyle,
       showPreSalePreview: showPreSalePreview ?? this.showPreSalePreview,
       showPostSalePreview: showPostSalePreview ?? this.showPostSalePreview,
+      allowOversell: allowOversell ?? this.allowOversell,
+      lowStockThreshold: lowStockThreshold ?? this.lowStockThreshold,
     );
   }
 
@@ -90,5 +98,7 @@ class AppSettings extends Equatable {
     receiptPreviewStyle,
     showPreSalePreview,
     showPostSalePreview,
+    allowOversell,
+    lowStockThreshold,
   ];
 }

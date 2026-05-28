@@ -18,6 +18,8 @@ void main() {
       expect(settings.receiptPreviewStyle, 'thermal');
       expect(settings.showPreSalePreview, isTrue);
       expect(settings.showPostSalePreview, isTrue);
+      expect(settings.allowOversell, isFalse);
+      expect(settings.lowStockThreshold, 5);
     });
 
     test('supports value equality', () {
@@ -41,7 +43,7 @@ void main() {
 
     test('props contains all fields', () {
       const settings = AppSettings();
-      expect(settings.props.length, 15);
+      expect(settings.props.length, 17);
     });
   });
 }

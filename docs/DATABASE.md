@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.4.2
+# Database Handbook — Promsell POS CE v0.5.0
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -201,7 +201,7 @@ Source: `lib/core/database/tables/products_table.dart`
 | `stock` | INTEGER | No | `0` | |
 | `categoryId` | TEXT | Yes | — | Logical ref → categories |
 | `imageUrl` | TEXT | Yes | — | |
-| `trackStock` | BOOLEAN | No | `true` | |
+| `trackStock` | BOOLEAN | No | `true` | `false` = service item: skip stock check, no deduction, show ∞ in UI |
 | `isActive` | BOOLEAN | No | `true` | |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | |
@@ -387,7 +387,16 @@ Keys added by **Sale Integrity** (written at runtime by `ReceiptNumberService` a
 | `receipt_date` | `"260527"` | Date of last receipt (YYMMDD); triggers reset when day changes |
 | `device_prefix` | `"A1"` | 2-char device prefix for receipt numbers |
 
-> Additional keys will be added in R3 (Cashier UX) and R5 (Operations): `allowOversell`, `lowStockThreshold`, `promptpayId`, `deviceId`, `onboardingCompleted`, `dailyCloseLock`.
+Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
+
+| Key | Default | Added in |
+|-----|---------|----------|
+| `allowOversell` | `false` | v0.5.0 |
+| `lowStockThreshold` | `5` | v0.5.0 |
+| `promptpayId` | `""` | R4 |
+| `deviceId` | generated UUID | R5 |
+| `onboardingCompleted` | `false` | R5 |
+| `dailyCloseLock` | `false` | R5 |
 
 ---
 
@@ -409,7 +418,7 @@ When a record is "deleted":
 2. All queries filter `WHERE deleted_at IS NULL` (or use `isActive` for products)
 3. Sync can detect deletions by comparing `deletedAt` timestamps
 
-> Currently (v0.4.2), products use `isActive` for soft deactivation. The `deletedAt` column enables true soft-delete + sync in Phase 4.
+> Currently (v0.5.0), products use `isActive` for soft deactivation. The `deletedAt` column enables true soft-delete + sync in Phase 4.
 
 ---
 
@@ -588,11 +597,40 @@ Stream<List<Sale>> watchRecentSales({int limit = 20}) {
 }
 ```
 
+### Upsert draft cart (debounced auto-save)
+
+```dart
+// DraftCartLocalDatasourceImpl
+Future<void> upsertDraft(String cartId, SaleState state) async {
+  await _db.transaction(() async {
+    // 1. Update cart header (name, note, updatedAt)
+    await (_db.update(_db.draftCarts)..where((t) => t.id.equals(cartId)))
+        .write(DraftCartsCompanion(updatedAt: Value(DateTime.now())));
+
+    // 2. Delete old items
+    await (_db.delete(_db.draftCartItems)..where((t) => t.cartId.equals(cartId))).go();
+
+    // 3. Re-insert current items (with per-item discounts)
+    for (final item in state.items) {
+      await _db.into(_db.draftCartItems).insert(
+        DraftCartItemsCompanion.insert(
+          id: IdGenerator.newId(), cartId: cartId,
+          productId: item.product.id, productName: item.product.name,
+          price: item.product.price, qty: item.qty,
+          discountType: Value(item.discountType),
+          discountValue: Value(item.discountValue),
+        ),
+      );
+    }
+  });
+}
+```
+
 ---
 
 ## Migration Guide
 
-### Current strategy (v0.4.2, pre-release)
+### Current strategy (v0.5.0, pre-release)
 
 Schema version 2 uses **destructive drop+recreate** — all existing data is lost on upgrade from v1. This is acceptable during pre-release development.
 
@@ -722,6 +760,8 @@ All hot-path queries are covered by indexes:
 
 Sale creation inserts 1 sale + N items + N stock updates + N inventory logs + 1 receipt sequence update in a **single transaction**. Void sale similarly updates 1 sale + restores N stocks + N inventory logs atomically. This ensures no partial state on crash or failure.
 
+> **Draft cart saves** are intentionally **outside** the sale transaction — they are debounced writes (500 ms) that run independently. Draft data is ephemeral; losing the last 500 ms of changes is acceptable.
+
 ### UUID generation cost
 
 `IdGenerator.newId()` uses `Uuid().v4()` — pure Dart, no I/O, ~1μs per call. Negligible even for batch operations.
@@ -795,4 +835,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.4.2 · Schema v2 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.5.0 · Schema v2 · 9 tables · UUIDv4</sub>

@@ -10,6 +10,7 @@ abstract class ProductRepository {
     required int stock,
     String? category,
     String? imageUrl,
+    bool trackStock = true,
   });
   Future<void> updateProduct(Product product);
   Future<void> deleteProduct(String id);

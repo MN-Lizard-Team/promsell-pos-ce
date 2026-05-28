@@ -913,6 +913,180 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'URL รูปภาพ (ไม่บังคับ)'**
   String get productFormImageUrlLabel;
+
+  /// No description provided for @trackStock.
+  ///
+  /// In th, this message translates to:
+  /// **'ติดตามสต็อค'**
+  String get trackStock;
+
+  /// No description provided for @trackStockHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)'**
+  String get trackStockHint;
+
+  /// No description provided for @settingsStockPolicy.
+  ///
+  /// In th, this message translates to:
+  /// **'นโยบายสต็อค'**
+  String get settingsStockPolicy;
+
+  /// No description provided for @allowOversell.
+  ///
+  /// In th, this message translates to:
+  /// **'อนุญาตขายเกินสต็อค'**
+  String get allowOversell;
+
+  /// No description provided for @allowOversellHint.
+  ///
+  /// In th, this message translates to:
+  /// **'อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้'**
+  String get allowOversellHint;
+
+  /// No description provided for @lowStockThreshold.
+  ///
+  /// In th, this message translates to:
+  /// **'เตือนสต็อคต่ำ (จำนวน)'**
+  String get lowStockThreshold;
+
+  /// No description provided for @lowStockWarning.
+  ///
+  /// In th, this message translates to:
+  /// **'สต็อคใกล้หมด'**
+  String get lowStockWarning;
+
+  /// No description provided for @discountSectionLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลด'**
+  String get discountSectionLabel;
+
+  /// No description provided for @discountDialogTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ใส่ส่วนลด'**
+  String get discountDialogTitle;
+
+  /// No description provided for @discountTypePercent.
+  ///
+  /// In th, this message translates to:
+  /// **'% ประเภทเปอร์เซ็นต์'**
+  String get discountTypePercent;
+
+  /// No description provided for @discountTypeAmount.
+  ///
+  /// In th, this message translates to:
+  /// **'บาท'**
+  String get discountTypeAmount;
+
+  /// No description provided for @discountPreview.
+  ///
+  /// In th, this message translates to:
+  /// **'หลังหัก: {amount}'**
+  String discountPreview(String amount);
+
+  /// No description provided for @discountApply.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้ส่วนลด'**
+  String get discountApply;
+
+  /// No description provided for @discountClear.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบส่วนลด'**
+  String get discountClear;
+
+  /// No description provided for @cartDiscount.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดทั้งบิล'**
+  String get cartDiscount;
+
+  /// No description provided for @applyCartDiscount.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มส่วนลดทั้งบิล'**
+  String get applyCartDiscount;
+
+  /// No description provided for @discountLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'-{amount}'**
+  String discountLabel(String amount);
+
+  /// No description provided for @discountValueRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณาใส่จำนวนส่วนลด'**
+  String get discountValueRequired;
+
+  /// No description provided for @discountValueInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดไม่ถูกต้อง'**
+  String get discountValueInvalid;
+
+  /// No description provided for @preTaxTotal.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดก่อภาษี'**
+  String get preTaxTotal;
+
+  /// No description provided for @draftsTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลที่บันทึก'**
+  String get draftsTitle;
+
+  /// No description provided for @newDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลใหม่'**
+  String get newDraft;
+
+  /// No description provided for @renameDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'เปลี่ยนชื่อ'**
+  String get renameDraft;
+
+  /// No description provided for @deleteDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบบิล'**
+  String get deleteDraft;
+
+  /// No description provided for @deleteDraftConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันลบบิลนี้?'**
+  String get deleteDraftConfirm;
+
+  /// No description provided for @draftLimitReached.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลเต็ม  10 บิลแล้ว กรุณาลบบิลเก่าก่อน'**
+  String get draftLimitReached;
+
+  /// No description provided for @activeDraftLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้งานอยู่'**
+  String get activeDraftLabel;
+
+  /// No description provided for @draftNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อบิล (ไม่บังคับ)'**
+  String get draftNameHint;
+
+  /// No description provided for @switchDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'สลับไปบิลนี้'**
+  String get switchDraft;
 }
 
 class _AppLocalizationsDelegate

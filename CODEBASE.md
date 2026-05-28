@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.4.2
+# CODEBASE.md — Promsell POS CE v0.5.0
 
 ## System overview
 
@@ -20,7 +20,7 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
                      ▼
 ┌──────────────────────────────────────────────────┐
 │   lib/features/ — Feature modules               │
-│   sale/       — Cart, checkout, PaymentSheet     │
+│   sale/       — Cart, checkout, draft, discount  │
 │   product/    — CRUD inventory, ProductBloc      │
 │   history/    — Sale history viewer              │
 │   report/     — Analytics dashboard             │
@@ -83,6 +83,7 @@ features/<name>/
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
+| `DraftCartLocalDatasource` | `lib/features/sale/data/datasources/` | Persist/load `DraftCarts` + `DraftCartItems`; used by `DraftCartRepository` |
 | `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
 | `AdaptiveBreakpoints` | `lib/core/widgets/` | Compact / medium / expanded layout helpers |
 | `AppEmptyState` | `lib/core/widgets/` | Consistent empty/error states with compact-height support |
@@ -95,12 +96,13 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`, `ReceiptPreview` (thermal/card/none) |
-| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` |
+| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`, `ReceiptPreview` (thermal/card/none); discount dialog, drafts sheet |
+| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` (+ `trackStock` switch) |
 | History | `HistoryBloc` | `history_page.dart` (+ print/share receipt, void sale dialog) |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart` (net revenue, voided summary, exclude voided); `load()` called once in `initState()` |
 | Settings | `SettingsCubit` | `settings_page.dart`, `settings_cubit.dart`, `settings_state.dart` |
 | Inventory | — | `inventory_log_page.dart`, `adjust_stock_dialog.dart`, `InventoryLogService`, `AdjustStock` |
+| Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
 
 ---
 
@@ -181,6 +183,8 @@ All state classes extend `Equatable` for efficient rebuilds.
 | `receiptPreviewStyle` | String | `thermal` |
 | `showPreSalePreview` | bool | `true` |
 | `showPostSalePreview` | bool | `true` |
+| `allowOversell` | bool | `false` |
+| `lowStockThreshold` | int | `5` |
 
 ---
 
@@ -237,13 +241,16 @@ Two generators must be run after changes:
 | Domain entity | Update `test/helpers/fixtures.dart` + corresponding `_test.dart` files |
 | `Sale` entity (new fields) | Update `sale_test.dart` props count, `_buildSale` in datasource |
 | `SaleLocalDatasource` | Update `ReceiptNumberService`/`InventoryLogService` injection in tests |
+| `CartItem` entity | Update `cart_item_test.dart` props count + discount test fixtures |
+| `SaleBloc` constructor | Update `sale_bloc_test.dart` to inject `MockDraftCartRepository` |
+| `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` |
 | Parent `BlocListener` that calls `showDialog` alongside a modal's `BlocListener` | Wrap `showDialog` in `WidgetsBinding.instance.addPostFrameCallback` — see ADR-009 in `docs/ARCHITECTURE.md` |
 
 ---
 
 ## Test infrastructure
 
-187 automated tests across 7 layers. Run with `flutter test`.
+208 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 

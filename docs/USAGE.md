@@ -143,12 +143,17 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 
 1. Use the search bar or category chips to narrow the product catalog
 2. Tap any product card to add it to the cart
-3. Adjust quantity with large `+` / `-` controls in the cart panel
-4. Tap **Checkout** → payment sheet opens
-5. Select **Cash / Transfer / Card**
-6. For cash, use quick cash chips or enter the amount received — change is calculated automatically
-7. Optionally add a sale note
-8. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart
+3. Adjust quantity with `+` / `-` controls in the cart panel
+4. **Apply discounts** (optional):
+   - Tap the 🏷️ tag icon on any cart item → choose **%** or **฿**, enter value, tap Apply
+   - Tap **Apply cart discount** below the subtotal for a bill-wide discount
+   - Payment sheet shows the full breakdown: Subtotal → discounts → Total
+5. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, switch between customers / tables, or delete; cart auto-saves every 500 ms
+6. Tap **Checkout** → payment sheet opens
+7. Select **Cash / Transfer / Card**
+8. For cash, use quick cash chips or enter the amount received — change is calculated automatically
+9. Optionally add a sale note
+10. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
 
 On compact phones, the cart appears as a bottom command panel. On tablet or expanded width layouts, the cart remains visible beside the product grid.
 
@@ -158,7 +163,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - Use category **filter chips** to narrow the catalog; combined with the search bar
 - Each product shows an image avatar (`Image.network` with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
 - Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form: paste an image URL in the header for a live rounded preview; fill name, price, quantity, category; **BASIC INFO** and **DETAILS** section labels guide the layout
+- Product form: paste an image URL in the header for a live rounded preview; fill name, price, quantity, category; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
 - Search filters by name and category in real time
 
@@ -210,6 +215,8 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Receipt preview style** | `thermal` / `card` / `none` |
 | **Show pre-sale preview** | Show preview in PaymentSheet |
 | **Show post-sale preview** | Show preview in success dialog |
+| **Allow oversell** | Permit selling beyond available stock (default off) |
+| **Low stock threshold** | Stock count at which the product card turns red (default `5`) |
 
 To save text-field changes, tap the **Save** button in the app bar or at the bottom of the page.
 
@@ -327,9 +334,9 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **2** (v0.4.2). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **2** (v0.5.0). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
-> **Note:** v0.4.2 uses a destructive drop+recreate migration (pre-release). Production releases must use incremental migrations.
+> **Note:** v0.5.0 uses a destructive drop+recreate migration (pre-release). Production releases must use incremental migrations.
 
 ---
 
@@ -384,7 +391,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **187 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **208 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
 
 ### Running tests
 

@@ -59,11 +59,17 @@ class _PaymentSheetState extends State<PaymentSheet> {
             '${context.l10n.paymentReferenceOptional}: $reference',
           ].join('\n');
     final settings = context.read<SettingsCubit>().state.settings;
+    final cartState = context.read<SaleBloc>().state;
     context.read<SaleBloc>().add(
       SaleConfirmed(
         paymentMethod: _method,
         vatMode: settings.vatMode,
         vatRate: settings.vatRate,
+        cartDiscountType: cartState.cartDiscountType,
+        cartDiscountValue: cartState.cartDiscountValue,
+        cartDiscountAmount: cartState.hasCartDiscount
+            ? cartState.cartDiscountAmount
+            : null,
         amountReceived: _method == 'cash' ? _received : null,
         changeAmount: _method == 'cash' && _change >= 0 ? _change : null,
         note: effectiveNote.isEmpty ? null : effectiveNote,
@@ -119,32 +125,71 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 ),
               ),
               const SizedBox(height: 14),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withValues(
-                    alpha: 0.55,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          context.l10n.totalAmount,
-                          style: theme.textTheme.bodyLarge,
-                        ),
+              BlocBuilder<SaleBloc, SaleState>(
+                builder: (_, cartState) {
+                  final hasItemDiscounts = cartState.items.any(
+                    (i) => i.discountAmount > 0,
+                  );
+                  return DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer.withValues(
+                        alpha: 0.55,
                       ),
-                      MoneyText(
-                        value: widget.total,
-                        currency: currency,
-                        style: theme.textTheme.headlineSmall,
-                        color: theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          if (hasItemDiscounts || cartState.hasCartDiscount)
+                            _TotalRow(
+                              label: context.l10n.receiptLabelSubtotal,
+                              value: cartState.itemsSubtotal,
+                              currency: currency,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          if (hasItemDiscounts)
+                            _TotalRow(
+                              label: context.l10n.discountSectionLabel,
+                              value: -cartState.items.fold(
+                                0.0,
+                                (s, i) => s + i.discountAmount,
+                              ),
+                              currency: currency,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          if (cartState.hasCartDiscount)
+                            _TotalRow(
+                              label: context.l10n.cartDiscount,
+                              value: -cartState.cartDiscountAmount,
+                              currency: currency,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  context.l10n.totalAmount,
+                                  style: theme.textTheme.bodyLarge,
+                                ),
+                              ),
+                              MoneyText(
+                                value: widget.total,
+                                currency: currency,
+                                style: theme.textTheme.headlineSmall,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               SegmentedButton<String>(
@@ -435,6 +480,36 @@ class _ChangePreview extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TotalRow extends StatelessWidget {
+  const _TotalRow({
+    required this.label,
+    required this.value,
+    required this.currency,
+    this.style,
+  });
+
+  final String label;
+  final double value;
+  final String currency;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: style)),
+          Text(
+            '${value < 0 ? '-' : ''}$currency${value.abs().toStringAsFixed(2)}',
+            style: style,
+          ),
+        ],
       ),
     );
   }

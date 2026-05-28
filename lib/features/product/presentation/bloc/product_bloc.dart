@@ -87,6 +87,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         stock: event.stock,
         category: event.category,
         imageUrl: event.imageUrl,
+        trackStock: event.trackStock,
       );
       emit(state.copyWith(saveStatus: ProductSaveStatus.saved));
     } catch (e) {

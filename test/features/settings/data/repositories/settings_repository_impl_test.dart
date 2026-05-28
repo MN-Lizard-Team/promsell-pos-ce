@@ -149,6 +149,9 @@ void main() {
     test('load handles invalid theme index gracefully', () async {
       when(() => mockDatasource.getString(any())).thenAnswer((_) async => null);
       when(() => mockDatasource.getInt('theme')).thenAnswer((_) async => 999);
+      when(
+        () => mockDatasource.getInt(any(that: isNot(equals('theme')))),
+      ).thenAnswer((_) async => null);
       when(() => mockDatasource.getBool(any())).thenAnswer((_) async => null);
       when(() => mockDatasource.getDouble(any())).thenAnswer((_) async => null);
 

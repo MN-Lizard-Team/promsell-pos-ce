@@ -13,6 +13,10 @@ class SaleState extends Equatable {
     this.note = '',
     this.lastSale,
     this.errorMessage,
+    this.cartDiscountType,
+    this.cartDiscountValue,
+    this.activeDraftId,
+    this.activeDraftName,
   });
 
   final SaleStatus status;
@@ -20,12 +24,38 @@ class SaleState extends Equatable {
   final String note;
   final Sale? lastSale;
   final String? errorMessage;
+  final String? cartDiscountType;
+  final double? cartDiscountValue;
+  final String? activeDraftId;
+  final String? activeDraftName;
 
-  double get total => double.parse(
+  double get itemsSubtotal => double.parse(
     items.fold(0.0, (sum, i) => sum + i.subtotal).toStringAsFixed(2),
   );
+
+  double get cartDiscountAmount {
+    if (cartDiscountType == null ||
+        cartDiscountValue == null ||
+        cartDiscountValue! <= 0) {
+      return 0.0;
+    }
+    if (cartDiscountType == 'PERCENT') {
+      return double.parse(
+        (itemsSubtotal * (cartDiscountValue! / 100)).toStringAsFixed(2),
+      );
+    }
+    return double.parse(
+      cartDiscountValue!.clamp(0.0, itemsSubtotal).toStringAsFixed(2),
+    );
+  }
+
+  double get total =>
+      double.parse((itemsSubtotal - cartDiscountAmount).toStringAsFixed(2));
+
   bool get isEmpty => items.isEmpty;
   int get itemCount => items.fold(0, (sum, i) => sum + i.qty);
+  bool get hasCartDiscount =>
+      cartDiscountType != null && (cartDiscountValue ?? 0) > 0;
 
   SaleState copyWith({
     SaleStatus? status,
@@ -33,6 +63,10 @@ class SaleState extends Equatable {
     String? note,
     Object? lastSale = _unset,
     Object? errorMessage = _unset,
+    Object? cartDiscountType = _unset,
+    Object? cartDiscountValue = _unset,
+    Object? activeDraftId = _unset,
+    Object? activeDraftName = _unset,
   }) => SaleState(
     status: status ?? this.status,
     items: items ?? this.items,
@@ -41,8 +75,30 @@ class SaleState extends Equatable {
     errorMessage: identical(errorMessage, _unset)
         ? this.errorMessage
         : errorMessage as String?,
+    cartDiscountType: identical(cartDiscountType, _unset)
+        ? this.cartDiscountType
+        : cartDiscountType as String?,
+    cartDiscountValue: identical(cartDiscountValue, _unset)
+        ? this.cartDiscountValue
+        : cartDiscountValue as double?,
+    activeDraftId: identical(activeDraftId, _unset)
+        ? this.activeDraftId
+        : activeDraftId as String?,
+    activeDraftName: identical(activeDraftName, _unset)
+        ? this.activeDraftName
+        : activeDraftName as String?,
   );
 
   @override
-  List<Object?> get props => [status, items, note, lastSale, errorMessage];
+  List<Object?> get props => [
+    status,
+    items,
+    note,
+    lastSale,
+    errorMessage,
+    cartDiscountType,
+    cartDiscountValue,
+    activeDraftId,
+    activeDraftName,
+  ];
 }

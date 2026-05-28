@@ -22,7 +22,7 @@
 |---|---|---|---|
 | **R1** ✅ | Schema Foundation | UUID migration + new tables + indexes + migration safety | 🔴 High → DONE |
 | **R2** ✅ | Sale Integrity | Inventory log + Receipt number + Sale status + Void/Refund | 🟡 Medium → DONE |
-| **R3** | Cashier UX | Draft cart + Discount (item/cart) + VAT (incl/excl) + Stock policy | 🟡 Medium |
+| **R3** ✅ | Cashier UX | Draft cart + Discount (item/cart) + VAT (incl/excl) + Stock policy | 🟡 Medium → DONE |
 | **R4** | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low |
 | **R5** | Operations | Daily Close + Onboarding wizard + Final polish + Phase 4 readiness check | 🟢 Low |
 
@@ -114,7 +114,7 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 
 ---
 
-## Round 3 — Cashier UX 🟡
+## Round 3 — Cashier UX ✅ DONE (2026-05-28)
 
 > Goal: รองรับ workflow ร้านจริง — พักบิล, ส่วนลด, VAT
 
@@ -267,7 +267,7 @@ R1 (Schema) → verify → release v0.4.0 ✅
    ↓
 R2 (Integrity) → verify → merged into v0.4.0 ✅
    ↓
-R3 (Cashier) → verify → release v0.5.0
+R3 (Cashier) → verify → release v0.5.0 ✅
    ↓
 R4 (Tools) → verify → release v0.6.0
    ↓

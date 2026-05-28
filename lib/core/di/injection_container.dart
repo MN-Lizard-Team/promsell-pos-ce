@@ -27,6 +27,10 @@ import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_servi
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:promsell_pos_ce/features/sale/data/datasources/draft_cart_local_datasource.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/data/repositories/draft_cart_repository_impl.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 
 final sl = GetIt.instance;
 
@@ -57,12 +61,18 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<SettingsLocalDatasource>(
     () => SettingsLocalDatasourceImpl(sl()),
   );
+  sl.registerLazySingleton<DraftCartLocalDatasource>(
+    () => DraftCartLocalDatasourceImpl(sl()),
+  );
 
   // Repositories
   sl.registerLazySingleton<ProductRepository>(
     () => ProductRepositoryImpl(sl()),
   );
   sl.registerLazySingleton<SaleRepository>(() => SaleRepositoryImpl(sl()));
+  sl.registerLazySingleton<DraftCartRepository>(
+    () => DraftCartRepositoryImpl(sl()),
+  );
   sl.registerLazySingleton<HistoryRepository>(
     () => HistoryRepositoryImpl(sl()),
   );
@@ -101,6 +111,9 @@ Future<void> initDependencies() async {
       updateProduct: sl(),
       deleteProduct: sl(),
     )..add(const ProductsSubscribed()),
+  );
+  sl.registerFactory(
+    () => SaleBloc(createSale: sl(), draftRepo: sl()),
   );
 
   // Settings

@@ -184,5 +184,43 @@
 
   "productFormSectionBasicInfo": "Basic info",
   "productFormSectionDetails": "Details",
-  "productFormImageUrlLabel": "Image URL (optional)"
+  "productFormImageUrlLabel": "Image URL (optional)",
+
+  "trackStock": "Track stock",
+  "trackStockHint": "Turn off for service items (no stock deduction)",
+  "settingsStockPolicy": "Stock Policy",
+  "allowOversell": "Allow overselling",
+  "allowOversellHint": "Allow adding items beyond available stock",
+  "lowStockThreshold": "Low stock warning (qty)",
+  "lowStockWarning": "Low stock",
+
+  "discountSectionLabel": "Discount",
+  "discountDialogTitle": "Apply Discount",
+  "discountTypePercent": "Percent (%)",
+  "discountTypeAmount": "Amount (฿)",
+  "discountPreview": "After discount: {amount}",
+  "@discountPreview": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "discountApply": "Apply",
+  "discountClear": "Clear discount",
+  "cartDiscount": "Cart discount",
+  "applyCartDiscount": "Apply cart discount",
+  "discountLabel": "-{amount}",
+  "@discountLabel": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "discountValueRequired": "Please enter a discount value",
+  "discountValueInvalid": "Invalid discount value",
+  "preTaxTotal": "Pre-tax total",
+
+  "draftsTitle": "Saved Bills",
+  "newDraft": "New bill",
+  "renameDraft": "Rename",
+  "deleteDraft": "Delete bill",
+  "deleteDraftConfirm": "Delete this bill?",
+  "draftLimitReached": "Maximum 10 bills reached. Please delete an old one first.",
+  "activeDraftLabel": "Active",
+  "draftNameHint": "Bill name (optional)",
+  "switchDraft": "Switch to this bill"
 }

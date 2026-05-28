@@ -1,9 +1,10 @@
 @startuml Sequence_Sale
-title Sale Flow — Atomic Transaction
+title Sale Flow — Atomic Transaction (v0.5.0)
 
 actor Merchant
 participant "SalePage" as UI
 participant "SaleBloc" as Bloc
+participant "DraftCartRepository" as DraftRepo
 participant "CreateSale" as UC
 participant "SaleRepositoryImpl" as Repo
 participant "SaleLocalDatasource" as DS
@@ -12,21 +13,26 @@ participant "InventoryLogService" as ILS
 database "SQLite" as DB
 
 Merchant -> UI: Tap "Confirm Payment"
-UI -> Bloc: CheckoutRequested(items, method, ...)
-Bloc -> UC: call(items, method, ...)
-UC -> Repo: createSale(items, method, ...)
+note right of UI: total = preTaxTotal\n(after discounts, before VAT)
+UI -> Bloc: SaleConfirmed(items, method, vatMode, vatRate,\n  cartDiscountType, cartDiscountValue, cartDiscountAmount)
+Bloc -> UC: call(items, ..., discount params)
+UC -> Repo: createSale(items, ..., discount params)
 Repo -> DS: insertSaleWithItems(...)
 
 group Drift Transaction
+    DS -> DS: preTaxTotal = sum(item.subtotal) - cartDiscountAmount
+    DS -> DS: calculate VAT on preTaxTotal
+
     DS -> RNS: nextReceiptNumber()
     RNS -> DB: read receipt_seq, receipt_date
     RNS -> DB: write updated sequence
-    RNS --> DS: "260527-A1-0042"
+    RNS --> DS: "260528-A1-0001"
 
-    DS -> DB: INSERT sale (id, receiptNumber, status=COMPLETED, ...)
+    DS -> DB: INSERT sale (id, receiptNumber, status=COMPLETED,\n  discountType/Value/Amount, vatMode/Rate/Amount, totalAmount)
 
     loop For each cart item
-        DS -> DB: INSERT sale_item
+        DS -> DB: INSERT sale_item (with discountAmount)
+        note right: trackStock=false → skip stock check & deduction
         DS -> DB: UPDATE products SET stock = stock - qty
         DS -> ILS: logSale(productId, -qty, balanceAfter, saleId)
         ILS -> DB: INSERT inventory_logs (type=SALE)
@@ -36,7 +42,16 @@ end
 DS --> Repo: Sale entity
 Repo --> UC: Sale
 UC --> Bloc: Sale
-Bloc --> UI: emit SaleSuccess
-UI --> Merchant: Show success toast
+
+group Post-sale draft lifecycle
+    Bloc -> DraftRepo: deleteDraft(activeDraftId)
+    DraftRepo -> DB: DELETE draft_carts WHERE id = activeDraftId
+    Bloc -> DraftRepo: createDraft()
+    DraftRepo -> DB: INSERT draft_carts (new empty draft)
+    DraftRepo --> Bloc: newDraftId
+end
+
+Bloc --> UI: emit SaleSuccess(lastSale, activeDraftId=newDraftId)
+UI --> Merchant: Show success + receipt preview
 
 @enduml

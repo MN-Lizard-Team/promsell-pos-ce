@@ -4,9 +4,9 @@
 
 | Version | Supported |
 |---------|-----------|
-| 0.4.x   | Active |
-| 0.3.x   | Security fixes only |
-| < 0.3   | No longer supported |
+| 0.5.x   | Active |
+| 0.4.x   | Security fixes only |
+| < 0.4   | No longer supported |
 
 ## Reporting a vulnerability
 
@@ -54,12 +54,11 @@ Promsell is an **offline-first local app** with no network access by default:
 
 1. **Local-only storage** — all data stays on device via SQLite
 2. **No server communication** — no API keys, no remote calls in core flow
-3. **SharedPreferences** — only stores non-sensitive settings (locale, theme, shop name)
-4. **App settings table** — stores receipt sequence counter and device prefix (non-sensitive)
-5. **Atomic transactions** — sale creation, void, and stock adjustments run inside Drift DB transactions to prevent partial writes
-6. **Inventory audit trail** — all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) are logged immutably in `inventory_logs` table
-7. **PDF generation** — local only, no upload
-8. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
+3. **App settings table** (Drift-backed) — stores non-sensitive settings (locale, theme, shop name, VAT mode, stock policy); also stores receipt sequence counter and device prefix
+4. **Atomic transactions** — sale creation, void, and stock adjustments run inside Drift DB transactions to prevent partial writes
+5. **Inventory audit trail** — all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) are logged immutably in `inventory_logs` table
+6. **PDF generation** — local only, no upload
+7. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
 
 ## Security changelog
 

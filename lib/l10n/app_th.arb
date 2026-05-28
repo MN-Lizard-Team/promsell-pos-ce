@@ -181,5 +181,43 @@
 
   "productFormSectionBasicInfo": "ข้อมูลพื้นฐาน",
   "productFormSectionDetails": "รายละเอียด",
-  "productFormImageUrlLabel": "URL รูปภาพ (ไม่บังคับ)"
+  "productFormImageUrlLabel": "URL รูปภาพ (ไม่บังคับ)",
+
+  "trackStock": "ติดตามสต็อค",
+  "trackStockHint": "ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)",
+  "settingsStockPolicy": "นโยบายสต็อค",
+  "allowOversell": "อนุญาตขายเกินสต็อค",
+  "allowOversellHint": "อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้",
+  "lowStockThreshold": "เตือนสต็อคต่ำ (จำนวน)",
+  "lowStockWarning": "สต็อคใกล้หมด",
+
+  "discountSectionLabel": "ส่วนลด",
+  "discountDialogTitle": "ใส่ส่วนลด",
+  "discountTypePercent": "% ประเภทเปอร์เซ็นต์",
+  "discountTypeAmount": "บาท",
+  "discountPreview": "หลังหัก: {amount}",
+  "@discountPreview": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "discountApply": "ใช้ส่วนลด",
+  "discountClear": "ลบส่วนลด",
+  "cartDiscount": "ส่วนลดทั้งบิล",
+  "applyCartDiscount": "เพิ่มส่วนลดทั้งบิล",
+  "discountLabel": "-{amount}",
+  "@discountLabel": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "discountValueRequired": "กรุณาใส่จำนวนส่วนลด",
+  "discountValueInvalid": "ส่วนลดไม่ถูกต้อง",
+  "preTaxTotal": "ยอดก่อภาษี",
+
+  "draftsTitle": "บิลที่บันทึก",
+  "newDraft": "บิลใหม่",
+  "renameDraft": "เปลี่ยนชื่อ",
+  "deleteDraft": "ลบบิล",
+  "deleteDraftConfirm": "ยืนยันลบบิลนี้?",
+  "draftLimitReached": "บิลเต็ม  10 บิลแล้ว กรุณาลบบิลเก่าก่อน",
+  "activeDraftLabel": "ใช้งานอยู่",
+  "draftNameHint": "ชื่อบิล (ไม่บังคับ)",
+  "switchDraft": "สลับไปบิลนี้"
 }

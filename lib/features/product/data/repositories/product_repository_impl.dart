@@ -25,6 +25,7 @@ class ProductRepositoryImpl implements ProductRepository {
     required int stock,
     String? category,
     String? imageUrl,
+    bool trackStock = true,
   }) async {
     final id = IdGenerator.newId();
     final now = DateTime.now();
@@ -36,6 +37,7 @@ class ProductRepositoryImpl implements ProductRepository {
         stock: Value(stock),
         categoryId: Value(category),
         imageUrl: Value(imageUrl),
+        trackStock: Value(trackStock),
         createdAt: Value(now),
         updatedAt: Value(now),
       ),
@@ -55,6 +57,7 @@ class ProductRepositoryImpl implements ProductRepository {
         categoryId: Value(product.category),
         imageUrl: Value(product.imageUrl),
         isActive: Value(product.isActive),
+        trackStock: Value(product.trackStock),
         updatedAt: Value(now),
       ),
     );

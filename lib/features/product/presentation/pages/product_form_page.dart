@@ -33,6 +33,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     text: widget.product?.imageUrl ?? '',
   );
   late bool _isActive;
+  late bool _trackStock;
 
   bool get _isEditing => widget.product != null;
 
@@ -40,6 +41,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   void initState() {
     super.initState();
     _isActive = widget.product?.isActive ?? true;
+    _trackStock = widget.product?.trackStock ?? true;
   }
 
   @override
@@ -73,6 +75,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 ? null
                 : _imageUrlCtrl.text.trim(),
             isActive: _isActive,
+            trackStock: _trackStock,
           ),
         ),
       );
@@ -88,6 +91,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
           imageUrl: _imageUrlCtrl.text.trim().isEmpty
               ? null
               : _imageUrlCtrl.text.trim(),
+          trackStock: _trackStock,
         ),
       );
     }
@@ -253,6 +257,14 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       icon: Icons.category_outlined,
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _submit(),
+                    ),
+                    const SizedBox(height: 4),
+                    SwitchListTile(
+                      value: _trackStock,
+                      onChanged: (value) => setState(() => _trackStock = value),
+                      title: Text(context.l10n.trackStock),
+                      subtitle: Text(context.l10n.trackStockHint),
+                      contentPadding: EdgeInsets.zero,
                     ),
                     if (_isEditing) ...[
                       const SizedBox(height: 4),

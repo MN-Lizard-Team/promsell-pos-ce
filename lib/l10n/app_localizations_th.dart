@@ -439,4 +439,95 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get productFormImageUrlLabel => 'URL รูปภาพ (ไม่บังคับ)';
+
+  @override
+  String get trackStock => 'ติดตามสต็อค';
+
+  @override
+  String get trackStockHint => 'ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)';
+
+  @override
+  String get settingsStockPolicy => 'นโยบายสต็อค';
+
+  @override
+  String get allowOversell => 'อนุญาตขายเกินสต็อค';
+
+  @override
+  String get allowOversellHint => 'อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้';
+
+  @override
+  String get lowStockThreshold => 'เตือนสต็อคต่ำ (จำนวน)';
+
+  @override
+  String get lowStockWarning => 'สต็อคใกล้หมด';
+
+  @override
+  String get discountSectionLabel => 'ส่วนลด';
+
+  @override
+  String get discountDialogTitle => 'ใส่ส่วนลด';
+
+  @override
+  String get discountTypePercent => '% ประเภทเปอร์เซ็นต์';
+
+  @override
+  String get discountTypeAmount => 'บาท';
+
+  @override
+  String discountPreview(String amount) {
+    return 'หลังหัก: $amount';
+  }
+
+  @override
+  String get discountApply => 'ใช้ส่วนลด';
+
+  @override
+  String get discountClear => 'ลบส่วนลด';
+
+  @override
+  String get cartDiscount => 'ส่วนลดทั้งบิล';
+
+  @override
+  String get applyCartDiscount => 'เพิ่มส่วนลดทั้งบิล';
+
+  @override
+  String discountLabel(String amount) {
+    return '-$amount';
+  }
+
+  @override
+  String get discountValueRequired => 'กรุณาใส่จำนวนส่วนลด';
+
+  @override
+  String get discountValueInvalid => 'ส่วนลดไม่ถูกต้อง';
+
+  @override
+  String get preTaxTotal => 'ยอดก่อภาษี';
+
+  @override
+  String get draftsTitle => 'บิลที่บันทึก';
+
+  @override
+  String get newDraft => 'บิลใหม่';
+
+  @override
+  String get renameDraft => 'เปลี่ยนชื่อ';
+
+  @override
+  String get deleteDraft => 'ลบบิล';
+
+  @override
+  String get deleteDraftConfirm => 'ยืนยันลบบิลนี้?';
+
+  @override
+  String get draftLimitReached => 'บิลเต็ม  10 บิลแล้ว กรุณาลบบิลเก่าก่อน';
+
+  @override
+  String get activeDraftLabel => 'ใช้งานอยู่';
+
+  @override
+  String get draftNameHint => 'ชื่อบิล (ไม่บังคับ)';
+
+  @override
+  String get switchDraft => 'สลับไปบิลนี้';
 }

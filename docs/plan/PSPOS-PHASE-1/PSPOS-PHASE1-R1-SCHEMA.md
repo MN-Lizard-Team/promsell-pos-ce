@@ -2,9 +2,10 @@
 
 > Goal: Migrate database ให้ตรง Phase 1 spec ทั้งหมด ก่อนเพิ่ม feature ใด ๆ — UUID ทุก table, สร้าง table ใหม่ครบ, indexes, migration safety.
 
-**Version target:** `v0.4.0`
+**Version:** `v0.4.0`
+**Completed:** 2026-05-27
 **Effort:** ~3 dev-days
-**Risk:** 🔴 High (touches every datasource + repository + test)
+**Risk:** 🔴 High → DONE
 
 ---
 

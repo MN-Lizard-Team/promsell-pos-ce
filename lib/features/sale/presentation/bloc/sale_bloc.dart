@@ -1,14 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 
 class SaleBloc extends Bloc<SaleEvent, SaleState> {
-  SaleBloc({required CreateSale createSale})
-    : _createSale = createSale,
-      super(const SaleState()) {
+  SaleBloc({
+    required CreateSale createSale,
+    required DraftCartRepository draftRepo,
+  }) : _createSale = createSale,
+       _draftRepo = draftRepo,
+       super(const SaleState()) {
     on<SaleProductAdded>(_onProductAdded);
     on<SaleProductRemoved>(_onProductRemoved);
     on<SaleItemQtyChanged>(_onQtyChanged);
@@ -17,21 +23,32 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     on<SaleNoteChanged>(_onNoteChanged);
     on<SaleCartProductsRefreshed>(_onProductsRefreshed);
     on<SaleReset>(_onReset);
+    on<SaleItemDiscountChanged>(_onItemDiscountChanged);
+    on<SaleItemDiscountCleared>(_onItemDiscountCleared);
+    on<SaleCartDiscountChanged>(_onCartDiscountChanged);
+    on<SaleCartDiscountCleared>(_onCartDiscountCleared);
+    on<SaleDraftInitialized>(_onDraftInitialized);
+    on<SaleDraftSwitched>(_onDraftSwitched);
+    on<SaleDraftCreated>(_onDraftCreated);
+    on<SaleDraftDeleted>(_onDraftDeleted);
+    on<SaleDraftRenamed>(_onDraftRenamed);
   }
 
   final CreateSale _createSale;
+  final DraftCartRepository _draftRepo;
+  Timer? _saveTimer;
 
   void _onProductAdded(SaleProductAdded event, Emitter<SaleState> emit) {
-    final existing = state.items.indexWhere(
-      (i) => i.product.id == event.product.id,
-    );
+    final p = event.product;
+    final existing = state.items.indexWhere((i) => i.product.id == p.id);
     final updated = List<CartItem>.from(state.items);
     if (existing >= 0) {
       final currentQty = updated[existing].qty;
-      if (currentQty >= event.product.stock) return;
+      final stockLimited = p.trackStock && !event.allowOversell;
+      if (stockLimited && currentQty >= p.stock) return;
       updated[existing] = updated[existing].copyWith(qty: currentQty + 1);
     } else {
-      updated.add(CartItem(product: event.product, qty: 1));
+      updated.add(CartItem(product: p, qty: 1));
     }
     emit(
       state.copyWith(
@@ -40,6 +57,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         errorMessage: null,
       ),
     );
+    _scheduleSave();
   }
 
   void _onProductRemoved(SaleProductRemoved event, Emitter<SaleState> emit) {
@@ -47,6 +65,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         .where((i) => i.product.id != event.productId)
         .toList();
     emit(state.copyWith(items: updated));
+    _scheduleSave();
   }
 
   void _onQtyChanged(SaleItemQtyChanged event, Emitter<SaleState> emit) {
@@ -56,19 +75,81 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     }
     final updated = state.items.map((i) {
       if (i.product.id == event.productId) {
-        return i.copyWith(qty: event.qty.clamp(1, i.product.stock));
+        final stockLimited = i.product.trackStock && !event.allowOversell;
+        final clamped = stockLimited
+            ? event.qty.clamp(1, i.product.stock)
+            : event.qty.clamp(1, 99999);
+        return i.copyWith(qty: clamped);
       }
       return i;
     }).toList();
     emit(state.copyWith(items: updated));
+    _scheduleSave();
   }
 
   void _onCartCleared(SaleCartCleared event, Emitter<SaleState> emit) {
-    emit(const SaleState());
+    emit(
+      SaleState(
+        activeDraftId: state.activeDraftId,
+        activeDraftName: state.activeDraftName,
+      ),
+    );
+    _scheduleSave();
+  }
+
+  void _onItemDiscountChanged(
+    SaleItemDiscountChanged event,
+    Emitter<SaleState> emit,
+  ) {
+    final updated = state.items.map((i) {
+      if (i.product.id == event.productId) {
+        return i.copyWith(
+          discountType: event.discountType,
+          discountValue: event.discountValue,
+        );
+      }
+      return i;
+    }).toList();
+    emit(state.copyWith(items: updated));
+    _scheduleSave();
+  }
+
+  void _onItemDiscountCleared(
+    SaleItemDiscountCleared event,
+    Emitter<SaleState> emit,
+  ) {
+    final updated = state.items.map((i) {
+      if (i.product.id == event.productId) return i.clearDiscount();
+      return i;
+    }).toList();
+    emit(state.copyWith(items: updated));
+    _scheduleSave();
+  }
+
+  void _onCartDiscountChanged(
+    SaleCartDiscountChanged event,
+    Emitter<SaleState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        cartDiscountType: event.discountType,
+        cartDiscountValue: event.discountValue,
+      ),
+    );
+    _scheduleSave();
+  }
+
+  void _onCartDiscountCleared(
+    SaleCartDiscountCleared event,
+    Emitter<SaleState> emit,
+  ) {
+    emit(state.copyWith(cartDiscountType: null, cartDiscountValue: null));
+    _scheduleSave();
   }
 
   void _onNoteChanged(SaleNoteChanged event, Emitter<SaleState> emit) {
     emit(state.copyWith(note: event.note));
+    _scheduleSave();
   }
 
   void _onProductsRefreshed(
@@ -80,14 +161,24 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     final updated = state.items
         .where((i) => productMap.containsKey(i.product.id))
         .map((i) => i.copyWith(product: productMap[i.product.id]!))
-        .where((i) => i.product.stock > 0)
-        .map((i) => i.copyWith(qty: i.qty.clamp(1, i.product.stock)))
+        .where((i) => !i.product.trackStock || i.product.stock > 0)
+        .map((i) {
+          if (!i.product.trackStock) return i;
+          return i.copyWith(qty: i.qty.clamp(1, i.product.stock));
+        })
         .toList();
     emit(state.copyWith(items: updated));
   }
 
   void _onReset(SaleReset event, Emitter<SaleState> emit) {
-    emit(const SaleState().copyWith(items: state.items, note: state.note));
+    emit(
+      SaleState(
+        items: state.items,
+        note: state.note,
+        activeDraftId: state.activeDraftId,
+        activeDraftName: state.activeDraftName,
+      ),
+    );
   }
 
   Future<void> _onConfirmed(
@@ -102,15 +193,138 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         paymentMethod: event.paymentMethod,
         vatMode: event.vatMode,
         vatRate: event.vatRate,
+        cartDiscountType: event.cartDiscountType,
+        cartDiscountValue: event.cartDiscountValue,
+        cartDiscountAmount: event.cartDiscountAmount,
         amountReceived: event.amountReceived,
         changeAmount: event.changeAmount,
         note: event.note,
       );
-      emit(SaleState(status: SaleStatus.success, lastSale: sale));
+      final prevDraftId = state.activeDraftId;
+      if (prevDraftId != null) {
+        await _draftRepo.deleteDraft(prevDraftId);
+      }
+      final newDraftId = await _draftRepo.createDraft();
+      emit(
+        SaleState(
+          status: SaleStatus.success,
+          lastSale: sale,
+          activeDraftId: newDraftId,
+        ),
+      );
     } catch (e) {
       emit(
         state.copyWith(status: SaleStatus.failure, errorMessage: e.toString()),
       );
     }
+  }
+
+  void _scheduleSave() {
+    final draftId = state.activeDraftId;
+    if (draftId == null) return;
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 500), () {
+      if (!isClosed && state.activeDraftId == draftId) {
+        _draftRepo.saveDraft(draftId, state);
+      }
+    });
+  }
+
+  Future<void> _onDraftInitialized(
+    SaleDraftInitialized event,
+    Emitter<SaleState> emit,
+  ) async {
+    try {
+      final drafts = await _draftRepo.listDrafts();
+      if (drafts.isEmpty) {
+        final id = await _draftRepo.createDraft();
+        emit(state.copyWith(activeDraftId: id));
+      } else {
+        final draft = drafts.first;
+        emit(
+          SaleState(
+            activeDraftId: draft.id,
+            activeDraftName: draft.name,
+            items: draft.items,
+            note: draft.note ?? '',
+          ),
+        );
+      }
+    } catch (_) {
+      final id = await _draftRepo.createDraft();
+      emit(state.copyWith(activeDraftId: id));
+    }
+  }
+
+  Future<void> _onDraftSwitched(
+    SaleDraftSwitched event,
+    Emitter<SaleState> emit,
+  ) async {
+    if (event.draftId == state.activeDraftId) return;
+    if (state.activeDraftId != null) {
+      await _draftRepo.saveDraft(state.activeDraftId!, state);
+    }
+    final draft = await _draftRepo.loadDraft(event.draftId);
+    if (draft == null) return;
+    emit(
+      SaleState(
+        activeDraftId: draft.id,
+        activeDraftName: draft.name,
+        items: draft.items,
+        note: draft.note ?? '',
+      ),
+    );
+  }
+
+  Future<void> _onDraftCreated(
+    SaleDraftCreated event,
+    Emitter<SaleState> emit,
+  ) async {
+    final count = await _draftRepo.countDrafts();
+    if (count >= 10) return;
+    if (state.activeDraftId != null) {
+      await _draftRepo.saveDraft(state.activeDraftId!, state);
+    }
+    final id = await _draftRepo.createDraft(name: event.name);
+    emit(SaleState(activeDraftId: id, activeDraftName: event.name));
+  }
+
+  Future<void> _onDraftDeleted(
+    SaleDraftDeleted event,
+    Emitter<SaleState> emit,
+  ) async {
+    await _draftRepo.deleteDraft(event.draftId);
+    if (event.draftId != state.activeDraftId) return;
+    final remaining = await _draftRepo.listDrafts();
+    if (remaining.isNotEmpty) {
+      final draft = remaining.first;
+      emit(
+        SaleState(
+          activeDraftId: draft.id,
+          activeDraftName: draft.name,
+          items: draft.items,
+          note: draft.note ?? '',
+        ),
+      );
+    } else {
+      final id = await _draftRepo.createDraft();
+      emit(SaleState(activeDraftId: id));
+    }
+  }
+
+  Future<void> _onDraftRenamed(
+    SaleDraftRenamed event,
+    Emitter<SaleState> emit,
+  ) async {
+    await _draftRepo.renameDraft(event.draftId, event.name);
+    if (event.draftId == state.activeDraftId) {
+      emit(state.copyWith(activeDraftName: event.name));
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _saveTimer?.cancel();
+    return super.close();
   }
 }

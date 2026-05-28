@@ -15,6 +15,8 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -32,7 +34,9 @@ class SalePage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: sl<ProductBloc>()),
-        BlocProvider(create: (_) => SaleBloc(createSale: sl())),
+        BlocProvider(
+          create: (_) => sl<SaleBloc>()..add(const SaleDraftInitialized()),
+        ),
       ],
       child: const _SaleView(),
     );
@@ -54,7 +58,21 @@ class _SaleView extends StatelessWidget {
         context.read<SaleBloc>().add(SaleCartProductsRefreshed(state.products));
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(context.l10n.salePageTitle)),
+        appBar: AppBar(
+          title: Text(context.l10n.salePageTitle),
+          actions: [
+            BlocBuilder<SaleBloc, SaleState>(
+              builder: (ctx, state) => IconButton(
+                icon: Badge(
+                  isLabelVisible: state.activeDraftId != null,
+                  child: const Icon(Icons.bookmarks_outlined),
+                ),
+                tooltip: ctx.l10n.draftsTitle,
+                onPressed: () => _showDraftsSheet(ctx),
+              ),
+            ),
+          ],
+        ),
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
@@ -260,7 +278,14 @@ class _ProductCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           HapticFeedback.selectionClick();
-          context.read<SaleBloc>().add(SaleProductAdded(product));
+          final allowOversell = context
+              .read<SettingsCubit>()
+              .state
+              .settings
+              .allowOversell;
+          context.read<SaleBloc>().add(
+            SaleProductAdded(product, allowOversell: allowOversell),
+          );
           if (cartQty == 0) {
             OverlayToast.show(
               context,
@@ -316,9 +341,13 @@ class _ProductCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        context.l10n.stockLabel(product.stock),
+                        product.trackStock
+                            ? context.l10n.stockLabel(product.stock)
+                            : '\u221e',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color: product.trackStock && product.stock <= 5
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -610,7 +639,15 @@ class _CartItemRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final atStockLimit = item.qty >= item.product.stock;
+    final allowOversell = context
+        .read<SettingsCubit>()
+        .state
+        .settings
+        .allowOversell;
+    final atStockLimit =
+        item.product.trackStock &&
+        !allowOversell &&
+        item.qty >= item.product.stock;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -635,14 +672,42 @@ class _CartItemRow extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  MoneyText(
-                    value: item.product.price,
-                    currency: currency,
-                    style: theme.textTheme.bodySmall,
-                    color: theme.colorScheme.onSurfaceVariant,
+                  Row(
+                    children: [
+                      MoneyText(
+                        value: item.product.price,
+                        currency: currency,
+                        style: theme.textTheme.bodySmall,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      if (item.discountAmount > 0) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          context.l10n.discountLabel(
+                            item.discountAmount.toStringAsFixed(2),
+                          ),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.error,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
+            ),
+            IconButton(
+              icon: Icon(
+                item.discountAmount > 0
+                    ? Icons.local_offer
+                    : Icons.local_offer_outlined,
+                size: 18,
+                color: item.discountAmount > 0
+                    ? theme.colorScheme.error
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              tooltip: context.l10n.discountDialogTitle,
+              onPressed: () => _showItemDiscountDialog(context, item, currency),
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -653,6 +718,7 @@ class _CartItemRow extends StatelessWidget {
                     SaleItemQtyChanged(
                       productId: item.product.id,
                       qty: item.qty - 1,
+                      allowOversell: allowOversell,
                     ),
                   ),
                 ),
@@ -673,6 +739,7 @@ class _CartItemRow extends StatelessWidget {
                           SaleItemQtyChanged(
                             productId: item.product.id,
                             qty: item.qty + 1,
+                            allowOversell: allowOversell,
                           ),
                         ),
                 ),
@@ -749,18 +816,44 @@ class _CartTotalBar extends StatelessWidget {
             label: Text(context.l10n.checkout(state.itemCount)),
           );
 
+          final discountBtn = TextButton.icon(
+            onPressed: () => _showCartDiscountDialog(context, state, currency),
+            icon: Icon(
+              state.hasCartDiscount
+                  ? Icons.local_offer
+                  : Icons.local_offer_outlined,
+              size: 18,
+              color: state.hasCartDiscount
+                  ? Theme.of(context).colorScheme.error
+                  : null,
+            ),
+            label: Text(
+              state.hasCartDiscount
+                  ? '$currency${state.cartDiscountAmount.toStringAsFixed(2)}'
+                  : context.l10n.applyCartDiscount,
+              style: state.hasCartDiscount
+                  ? TextStyle(color: Theme.of(context).colorScheme.error)
+                  : null,
+            ),
+          );
+
           if (isNarrow) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [total, const SizedBox(height: 10), checkout],
+              children: [
+                discountBtn,
+                total,
+                const SizedBox(height: 10),
+                checkout,
+              ],
             );
           }
 
-          return Row(
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: total),
-              const SizedBox(width: 12),
-              checkout,
+              Row(children: [discountBtn, const Spacer(), checkout]),
+              total,
             ],
           );
         },
@@ -777,6 +870,453 @@ class _CartTotalBar extends StatelessWidget {
         value: context.read<SaleBloc>(),
         child: PaymentSheet(total: state.total),
       ),
+    );
+  }
+}
+
+void _showItemDiscountDialog(
+  BuildContext context,
+  CartItem item,
+  String currency,
+) {
+  showDialog(
+    context: context,
+    builder: (ctx) => _DiscountDialog(
+      title: item.product.name,
+      currency: currency,
+      initialType: item.discountType ?? 'PERCENT',
+      initialValue: item.discountValue,
+      onApply: (type, value) {
+        context.read<SaleBloc>().add(
+          SaleItemDiscountChanged(
+            productId: item.product.id,
+            discountType: type,
+            discountValue: value,
+          ),
+        );
+      },
+      onClear: item.discountAmount > 0
+          ? () => context.read<SaleBloc>().add(
+              SaleItemDiscountCleared(item.product.id),
+            )
+          : null,
+    ),
+  );
+}
+
+void _showCartDiscountDialog(
+  BuildContext context,
+  SaleState state,
+  String currency,
+) {
+  showDialog(
+    context: context,
+    builder: (ctx) => _DiscountDialog(
+      title: context.l10n.cartDiscount,
+      currency: currency,
+      initialType: state.cartDiscountType ?? 'PERCENT',
+      initialValue: state.cartDiscountValue,
+      onApply: (type, value) {
+        context.read<SaleBloc>().add(
+          SaleCartDiscountChanged(discountType: type, discountValue: value),
+        );
+      },
+      onClear: state.hasCartDiscount
+          ? () => context.read<SaleBloc>().add(const SaleCartDiscountCleared())
+          : null,
+    ),
+  );
+}
+
+void _showDraftsSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (_) => BlocProvider.value(
+      value: context.read<SaleBloc>(),
+      child: const _DraftsBottomSheet(),
+    ),
+  );
+}
+
+class _DraftsBottomSheet extends StatefulWidget {
+  const _DraftsBottomSheet();
+
+  @override
+  State<_DraftsBottomSheet> createState() => _DraftsBottomSheetState();
+}
+
+class _DraftsBottomSheetState extends State<_DraftsBottomSheet> {
+  late Future<List<DraftCart>> _draftsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _reload();
+  }
+
+  void _reload() => setState(() {
+    _draftsFuture = sl<DraftCartRepository>().listDrafts();
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final currency = context.watch<SettingsCubit>().state.settings.currency;
+
+    return BlocListener<SaleBloc, SaleState>(
+      listenWhen: (prev, curr) => prev.activeDraftId != curr.activeDraftId,
+      listener: (ctx, st) => _reload(),
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (_, scrollCtrl) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    l10n.draftsTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  FilledButton.tonalIcon(
+                    onPressed: () {
+                      context.read<SaleBloc>().add(const SaleDraftCreated());
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.add, size: 18),
+                    label: Text(l10n.newDraft),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: FutureBuilder<List<DraftCart>>(
+                  future: _draftsFuture,
+                  builder: (_, snap) {
+                    if (snap.connectionState != ConnectionState.done) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final drafts = snap.data ?? [];
+                    final activeDraftId = context
+                        .read<SaleBloc>()
+                        .state
+                        .activeDraftId;
+                    return ListView.builder(
+                      controller: scrollCtrl,
+                      itemCount: drafts.length,
+                      itemBuilder: (_, i) {
+                        final draft = drafts[i];
+                        final isActive = draft.id == activeDraftId;
+                        return _DraftTile(
+                          id: draft.id,
+                          name: draft.name,
+                          itemCount: draft.itemCount,
+                          total: draft.total,
+                          currency: currency,
+                          isActive: isActive,
+                          l10n: l10n,
+                          theme: theme,
+                          onSwitch: isActive
+                              ? null
+                              : () {
+                                  context
+                                      .read<SaleBloc>()
+                                      .add(SaleDraftSwitched(draft.id));
+                                  Navigator.pop(context);
+                                },
+                          onDelete: drafts.length > 1
+                              ? () {
+                                  context
+                                      .read<SaleBloc>()
+                                      .add(SaleDraftDeleted(draft.id));
+                                  _reload();
+                                }
+                              : null,
+                          onRename: (name) => context.read<SaleBloc>().add(
+                            SaleDraftRenamed(draftId: draft.id, name: name),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _DraftTile extends StatelessWidget {
+  const _DraftTile({
+    required this.id,
+    required this.name,
+    required this.itemCount,
+    required this.total,
+    required this.currency,
+    required this.isActive,
+    required this.l10n,
+    required this.theme,
+    required this.onSwitch,
+    required this.onDelete,
+    required this.onRename,
+  });
+
+  final String id;
+  final String? name;
+  final int itemCount;
+  final double total;
+  final String currency;
+  final bool isActive;
+  final dynamic l10n;
+  final ThemeData theme;
+  final VoidCallback? onSwitch;
+  final VoidCallback? onDelete;
+  final void Function(String)? onRename;
+
+  @override
+  Widget build(BuildContext context) {
+    final displayName = name?.isNotEmpty == true ? name! : 'Draft';
+    return ListTile(
+      leading: Icon(
+        Icons.receipt_outlined,
+        color: isActive ? theme.colorScheme.primary : null,
+      ),
+      title: Text(
+        isActive ? '$displayName (${l10n.activeDraftLabel})' : displayName,
+        style: isActive
+            ? TextStyle(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              )
+            : null,
+      ),
+      subtitle: Text('$itemCount items · $currency${total.toStringAsFixed(2)}'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (onRename != null)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, size: 20),
+              tooltip: l10n.renameDraft,
+              onPressed: () => _showRenameDialog(context, displayName),
+            ),
+          if (onDelete != null)
+            IconButton(
+              icon: Icon(
+                Icons.delete_outline,
+                size: 20,
+                color: theme.colorScheme.error,
+              ),
+              tooltip: l10n.deleteDraft,
+              onPressed: () => _confirmDelete(context),
+            ),
+        ],
+      ),
+      onTap: onSwitch,
+    );
+  }
+
+  void _showRenameDialog(BuildContext context, String current) {
+    final ctrl = TextEditingController(text: current);
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(context.l10n.renameDraft),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: InputDecoration(hintText: context.l10n.draftNameHint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(context.l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (ctrl.text.trim().isNotEmpty) {
+                onRename?.call(ctrl.text.trim());
+              }
+              Navigator.pop(context);
+            },
+            child: Text(context.l10n.save),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(context.l10n.deleteDraft),
+        content: Text(context.l10n.deleteDraftConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(context.l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              onDelete?.call();
+              Navigator.pop(context);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(context.l10n.deleteDraft),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DiscountDialog extends StatefulWidget {
+  const _DiscountDialog({
+    required this.title,
+    required this.currency,
+    required this.initialType,
+    required this.onApply,
+    this.initialValue,
+    this.onClear,
+  });
+
+  final String title;
+  final String currency;
+  final String initialType;
+  final double? initialValue;
+  final void Function(String type, double value) onApply;
+  final VoidCallback? onClear;
+
+  @override
+  State<_DiscountDialog> createState() => _DiscountDialogState();
+}
+
+class _DiscountDialogState extends State<_DiscountDialog> {
+  late String _type;
+  final _ctrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _type = widget.initialType;
+    _ctrl.text = widget.initialValue?.toStringAsFixed(2) ?? '';
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final value = double.tryParse(_ctrl.text) ?? 0;
+
+    return AlertDialog(
+      title: Text(l10n.discountDialogTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.title,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SegmentedButton<String>(
+            segments: [
+              ButtonSegment(
+                value: 'PERCENT',
+                label: Text(l10n.discountTypePercent),
+              ),
+              ButtonSegment(
+                value: 'AMOUNT',
+                label: Text(l10n.discountTypeAmount),
+              ),
+            ],
+            selected: {_type},
+            onSelectionChanged: (v) => setState(() => _type = v.first),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _ctrl,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: _type == 'PERCENT' ? '%' : widget.currency,
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (_) => setState(() {}),
+          ),
+          if (value > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              l10n.discountPreview(
+                '${widget.currency}${value.toStringAsFixed(2)}',
+              ),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        if (widget.onClear != null)
+          TextButton(
+            onPressed: () {
+              widget.onClear!();
+              Navigator.pop(context);
+            },
+            child: Text(
+              l10n.discountClear,
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
+          ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: value > 0
+              ? () {
+                  widget.onApply(_type, value);
+                  Navigator.pop(context);
+                }
+              : null,
+          child: Text(l10n.discountApply),
+        ),
+      ],
     );
   }
 }

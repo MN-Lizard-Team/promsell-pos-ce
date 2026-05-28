@@ -121,7 +121,7 @@ void main() {
       expect(find.text('10.00'), findsOneWidget);
       expect(find.text('100'), findsOneWidget);
       expect(find.text('Drinks'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsOneWidget);
+      expect(find.byType(SwitchListTile), findsNWidgets(2));
     });
 
     testWidgets('dispatches ProductUpdated on edit submit', (tester) async {
