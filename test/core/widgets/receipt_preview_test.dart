@@ -25,6 +25,8 @@ void main() {
       vat: 'VAT',
       vatIncluded: 'VAT (included)',
       subtotal: 'Subtotal',
+      itemDiscounts: 'Item Discounts',
+      cartDiscount: 'Cart Discount',
     );
 
     final items = const [

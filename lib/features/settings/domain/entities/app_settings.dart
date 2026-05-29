@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 
 class AppSettings extends Equatable {
   const AppSettings({
@@ -20,6 +21,20 @@ class AppSettings extends Equatable {
     this.showPostSalePreview = true,
     this.allowOversell = false,
     this.lowStockThreshold = 5,
+    this.enableItemDiscount = true,
+    this.enableCartDiscount = true,
+    this.maxDiscountPercent = 100.0,
+    this.maxDiscountAmount = 0.0,
+    this.defaultDiscountType = 'PERCENT',
+    this.discountPresets = const [
+      DiscountPreset(
+        id: 'default',
+        name: 'Default',
+        type: 'PERCENT',
+        values: [5.0, 10.0, 20.0, 50.0],
+      ),
+    ],
+    this.activeDiscountPresetId = 'default',
   });
 
   final Locale locale;
@@ -39,6 +54,18 @@ class AppSettings extends Equatable {
   final bool showPostSalePreview;
   final bool allowOversell;
   final int lowStockThreshold;
+  final bool enableItemDiscount;
+  final bool enableCartDiscount;
+  final double maxDiscountPercent;
+  final double maxDiscountAmount;
+  final String defaultDiscountType;
+  final List<DiscountPreset> discountPresets;
+  final String activeDiscountPresetId;
+
+  DiscountPreset get activeDiscountPreset {
+    final match = discountPresets.where((p) => p.id == activeDiscountPresetId);
+    return match.isNotEmpty ? match.first : discountPresets.first;
+  }
 
   AppSettings copyWith({
     Locale? locale,
@@ -58,6 +85,13 @@ class AppSettings extends Equatable {
     bool? showPostSalePreview,
     bool? allowOversell,
     int? lowStockThreshold,
+    bool? enableItemDiscount,
+    bool? enableCartDiscount,
+    double? maxDiscountPercent,
+    double? maxDiscountAmount,
+    String? defaultDiscountType,
+    List<DiscountPreset>? discountPresets,
+    String? activeDiscountPresetId,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -78,6 +112,14 @@ class AppSettings extends Equatable {
       showPostSalePreview: showPostSalePreview ?? this.showPostSalePreview,
       allowOversell: allowOversell ?? this.allowOversell,
       lowStockThreshold: lowStockThreshold ?? this.lowStockThreshold,
+      enableItemDiscount: enableItemDiscount ?? this.enableItemDiscount,
+      enableCartDiscount: enableCartDiscount ?? this.enableCartDiscount,
+      maxDiscountPercent: maxDiscountPercent ?? this.maxDiscountPercent,
+      maxDiscountAmount: maxDiscountAmount ?? this.maxDiscountAmount,
+      defaultDiscountType: defaultDiscountType ?? this.defaultDiscountType,
+      discountPresets: discountPresets ?? this.discountPresets,
+      activeDiscountPresetId:
+          activeDiscountPresetId ?? this.activeDiscountPresetId,
     );
   }
 
@@ -100,5 +142,12 @@ class AppSettings extends Equatable {
     showPostSalePreview,
     allowOversell,
     lowStockThreshold,
+    enableItemDiscount,
+    enableCartDiscount,
+    maxDiscountPercent,
+    maxDiscountAmount,
+    defaultDiscountType,
+    discountPresets,
+    activeDiscountPresetId,
   ];
 }

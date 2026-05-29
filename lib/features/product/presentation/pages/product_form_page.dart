@@ -3,6 +3,8 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
@@ -31,9 +33,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
   late final _categoryCtrl = TextEditingController(
     text: widget.product?.category ?? '',
   );
-  late final _imageUrlCtrl = TextEditingController(
-    text: widget.product?.imageUrl ?? '',
-  );
+  String? _imagePath;
+  String? _imageUrl;
   late bool _isActive;
   late bool _trackStock;
 
@@ -44,6 +45,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
     super.initState();
     _isActive = widget.product?.isActive ?? true;
     _trackStock = widget.product?.trackStock ?? true;
+    _imagePath = widget.product?.imagePath;
+    _imageUrl = widget.product?.imageUrl;
   }
 
   @override
@@ -52,7 +55,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _priceCtrl.dispose();
     _stockCtrl.dispose();
     _categoryCtrl.dispose();
-    _imageUrlCtrl.dispose();
     super.dispose();
   }
 
@@ -73,9 +75,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
             category: _categoryCtrl.text.trim().isEmpty
                 ? null
                 : _categoryCtrl.text.trim(),
-            imageUrl: _imageUrlCtrl.text.trim().isEmpty
-                ? null
-                : _imageUrlCtrl.text.trim(),
+            imagePath: _imagePath,
+            imageUrl: _imageUrl,
             isActive: _isActive,
             trackStock: _trackStock,
           ),
@@ -90,9 +91,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
           category: _categoryCtrl.text.trim().isEmpty
               ? null
               : _categoryCtrl.text.trim(),
-          imageUrl: _imageUrlCtrl.text.trim().isEmpty
-              ? null
-              : _imageUrlCtrl.text.trim(),
+          imagePath: _imagePath,
+          imageUrl: _imageUrl,
           trackStock: _trackStock,
         ),
       );
@@ -172,7 +172,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   },
                 );
 
-                final imageUrl = _imageUrlCtrl.text.trim();
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -190,7 +189,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        ProductFormAvatar(imageUrl: imageUrl),
+                        ProductFormAvatar(
+                          imagePath: _imagePath,
+                          imageUrl: _imageUrl,
+                          onTap: () => _showImageSourceSheet(context),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -203,16 +206,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
                                 style: theme.textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w800,
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              ProductTextField(
-                                controller: _imageUrlCtrl,
-                                labelText:
-                                    context.l10n.productFormImageUrlLabel,
-                                icon: Icons.image_outlined,
-                                keyboardType: TextInputType.url,
-                                textInputAction: TextInputAction.next,
-                                onChanged: (_) => setState(() {}),
                               ),
                             ],
                           ),
@@ -311,5 +304,55 @@ class _ProductFormPageState extends State<ProductFormPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _showImageSourceSheet(BuildContext context) async {
+    final l10n = context.l10n;
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.pickImageGallery),
+              onTap: () => Navigator.pop(ctx, 'gallery'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: Text(l10n.pickImageCamera),
+              onTap: () => Navigator.pop(ctx, 'camera'),
+            ),
+            if (_imagePath != null || _imageUrl != null)
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.removeImage),
+                onTap: () => Navigator.pop(ctx, 'remove'),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (result == null || !mounted) return;
+
+    final imageService = GetIt.I<ProductImageService>();
+    final productId = _isEditing ? widget.product!.id : 'new';
+
+    if (result == 'gallery') {
+      final path = await imageService.pickFromGallery(productId);
+      if (path != null && mounted) setState(() => _imagePath = path);
+    } else if (result == 'camera') {
+      final path = await imageService.pickFromCamera(productId);
+      if (path != null && mounted) setState(() => _imagePath = path);
+    } else if (result == 'remove') {
+      await imageService.deleteImage(_imagePath);
+      if (mounted) {
+        setState(() {
+          _imagePath = null;
+          _imageUrl = null;
+        });
+      }
+    }
   }
 }

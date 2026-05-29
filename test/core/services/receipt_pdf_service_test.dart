@@ -40,6 +40,8 @@ void main() {
       vat: 'VAT',
       vatIncluded: 'VAT (included)',
       subtotal: 'Subtotal',
+      itemDiscounts: 'Item Discounts',
+      cartDiscount: 'Cart Discount',
     );
 
     test('receipt number used instead of sale id', () {

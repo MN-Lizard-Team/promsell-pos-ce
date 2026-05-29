@@ -24,6 +24,7 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
     stock: d.stock,
     category: d.categoryId,
     imageUrl: d.imageUrl,
+    imagePath: d.imagePath,
     isActive: d.isActive,
     trackStock: d.trackStock,
     createdAt: d.createdAt,

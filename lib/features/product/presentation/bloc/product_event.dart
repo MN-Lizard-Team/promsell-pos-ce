@@ -18,6 +18,7 @@ class ProductAdded extends ProductEvent {
     required this.stock,
     this.category,
     this.imageUrl,
+    this.imagePath,
     this.trackStock = true,
   });
   final String name;
@@ -25,6 +26,7 @@ class ProductAdded extends ProductEvent {
   final int stock;
   final String? category;
   final String? imageUrl;
+  final String? imagePath;
   final bool trackStock;
 
   @override
@@ -34,6 +36,7 @@ class ProductAdded extends ProductEvent {
     stock,
     category,
     imageUrl,
+    imagePath,
     trackStock,
   ];
 }

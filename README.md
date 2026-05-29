@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.5.3** — EXCLUSIVE VAT payment fix, receipt double-VAT fix, draft cart discount persistence, and bill UX improvements (name display, New Bill button, auto-naming).
+> **Latest Release: v0.5.4** — Discount policy settings with preset manager, discount clamping in sale flow, receipt discount rows, and product image management (gallery/camera pick with local compression).
  
 ---
  
@@ -64,14 +64,14 @@
  
 | Feature | Description |
 |---------|-------------|
-| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, and discount dialog per item |
+| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, per-item/cart discount with preset chips |
 | **Draft Cart** | Auto-save every 500 ms; up to 10 simultaneous bills; switch/rename/delete drafts; active draft restored on app launch; cleared on checkout |
-| **Discount** | Per-item discount (% or ฿) with live preview; per-cart discount below subtotal; full payment sheet breakdown (Subtotal → discounts → Total); VAT applied after discounts |
-| **Products** | List/grid toggle, category filter chips, image URL avatar with live preview, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, `trackStock` toggle, active/inactive toggle |
+| **Discount** | Per-item / per-cart discount (% or ฿) with live preview; merchant-configurable preset groups with quick-apply chips; max discount clamping; full payment sheet breakdown; VAT applied after discounts |
+| **Products** | List/grid toggle, category filter chips, image picker (gallery/camera) with local JPEG compression, image URL for future sync, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, `trackStock` toggle, active/inactive toggle |
 | **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, VAT breakdown rows (Subtotal + VAT rate %) when VAT is active, void sale action with reason, and notes |
 | **Report** | Dashboard cards for net revenue (excludes voided), voided summary, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
 | **Inventory** | Inventory audit log (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT), manual stock adjustment dialog with reason, and per-product log viewer |
-| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, VAT mode/rate, preview style toggles, stock policy (allow oversell + low-stock threshold), dirty-state save behavior |
+| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, VAT mode/rate, preview style toggles, stock policy (allow oversell + low-stock threshold), discount policy (presets, max limits, toggles), dirty-state save behavior |
 | **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation |
 | **Receipt Preview** | On-screen preview in `thermal` (80mm paper) and `card` styles, with independent pre/post-sale toggles and `"none"` option |
 | **VAT** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` modes with correct subtotal/VAT/total breakdown on receipts and PDFs; VAT mode and rate are snapshotted at sale time and used for accurate historical reprints |
@@ -93,6 +93,7 @@
 | **Persistence** | SettingsLocalDatasource (Drift-backed typed key-value store); Drift tables for receipt sequences |
 | **Localization** | flutter_localizations + Flutter ARB intl |
 | **PDF / Print** | pdf + printing |
+| **Image handling** | image_picker + flutter_image_compress (gallery/camera → local JPEG, 800px/80%) |
 | **Design** | Material 3, NotoSansThai (bundled local fonts), shared UI primitives |
  
 ---
@@ -215,6 +216,7 @@ features/<name>/
 - [x] **R4 — UX Polish & Accessibility** (v0.5.1): Theme accessibility (borders, contrast, ColorScheme overrides), overlay toast, cart undo, DI compile-time safety, lazy tabs
 - [x] **R4 — Code Quality** (v0.5.2): Drift build optimization, page structure refactoring (private widgets → public `widgets/` subfolders across 6 features)
 - [x] **R4 — VAT & Draft Cart Fixes** (v0.5.3): EXCLUSIVE VAT payment fix, receipt double-VAT fix, draft cart discount persistence, bill UX (name display, New Bill button, auto-naming)
+- [x] **R4 — Discount Policy & Product Images** (v0.5.4): Merchant-configurable discount presets with clamping, receipt discount rows, product image picker with local compression
 - [ ] **R4 — Merchant Tools**: PromptPay QR, backup/restore
 - [ ] **R5 — Operations**: Daily close, onboarding wizard, final polish
 
@@ -233,7 +235,7 @@ features/<name>/
 
 ## Testing
 
-**216 tests** covering every application layer:
+**215 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -315,6 +317,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.5.2 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.5.4 · AGPL-3.0</sub>
 
 </div>

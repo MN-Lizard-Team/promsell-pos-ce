@@ -20,6 +20,14 @@ void main() {
       expect(settings.showPostSalePreview, isTrue);
       expect(settings.allowOversell, isFalse);
       expect(settings.lowStockThreshold, 5);
+      expect(settings.enableItemDiscount, isTrue);
+      expect(settings.enableCartDiscount, isTrue);
+      expect(settings.maxDiscountPercent, 100.0);
+      expect(settings.maxDiscountAmount, 0.0);
+      expect(settings.defaultDiscountType, 'PERCENT');
+      expect(settings.discountPresets.length, 1);
+      expect(settings.discountPresets.first.id, 'default');
+      expect(settings.activeDiscountPresetId, 'default');
     });
 
     test('supports value equality', () {
@@ -43,7 +51,7 @@ void main() {
 
     test('props contains all fields', () {
       const settings = AppSettings();
-      expect(settings.props.length, 17);
+      expect(settings.props.length, 24);
     });
   });
 }

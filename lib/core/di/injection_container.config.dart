@@ -30,6 +30,8 @@ import 'package:promsell_pos_ce/features/product/data/datasources/product_local_
     as _i409;
 import 'package:promsell_pos_ce/features/product/data/repositories/product_repository_impl.dart'
     as _i23;
+import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart'
+    as _i502;
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart'
     as _i126;
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart'
@@ -86,6 +88,9 @@ extension GetItInjectableX on _i174.GetIt {
     final blocModule = _$BlocModule();
     gh.lazySingleton<_i422.AppDatabase>(() => databaseModule.appDatabase);
     gh.lazySingleton<_i808.ReceiptPdfService>(() => _i808.ReceiptPdfService());
+    gh.lazySingleton<_i502.ProductImageService>(
+      () => _i502.ProductImageServiceImpl(),
+    );
     gh.lazySingleton<_i409.ProductLocalDatasource>(
       () => _i409.ProductLocalDatasourceImpl(gh<_i422.AppDatabase>()),
     );

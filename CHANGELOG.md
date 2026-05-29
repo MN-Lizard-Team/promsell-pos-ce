@@ -17,6 +17,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.4] - 2026-05-29
+
+Discount policy settings with preset manager, and product image management with gallery/camera pick.
+
+### Highlights
+
+- **Discount Policy settings** — Toggles for item/cart discount, max % and max amount limits, and card-based preset manager.
+- **Discount Presets** — Named groups with type and values; quick-apply chips in `DiscountDialog`; PERCENT/AMOUNT clamped to configured max.
+- **Receipt discount visibility** — Item and cart discounts appear as localized rows on the receipt PDF.
+- **Product image management** — Gallery/camera pick, local JPEG compression (800px/80%), `imagePath` takes precedence over `imageUrl`; URL field retained for future sync.
+
+### Added
+
+#### Discount Policy
+
+- **`DiscountPreset` entity** — `id`, `name`, `type` (PERCENT/AMOUNT), `values` (List<double>).
+- **`AppSettings` discount fields** — `enableItemDiscount`, `enableCartDiscount`, `maxDiscountPercent`, `maxDiscountAmount`, `defaultDiscountType`, `discountPresets`, `activeDiscountPresetId` + `activeDiscountPreset` getter.
+- **`DiscountPresetCard` widget** — Inline name editing, type toggle, value chips with add/remove, active/set/delete.
+- **SettingsPage "Discount Policy" section** — Toggles, max fields, preset card list.
+- **`DiscountDialog` preset chips** — `ActionChip` buttons from active preset; auto-switches type; AMOUNT clamped to `maxAmount`.
+- **Receipt PDF discount rows** — Localized `receiptItemDiscounts` / `receiptCartDiscount`.
+- **18 l10n keys** (EN + TH) for discount policy, presets, and receipt labels.
+
+#### Product Images
+
+- **`ProductImageService`** — `pickFromGallery`, `pickFromCamera`, `deleteImage`; compresses to `/images/{productId}.jpg` (800px, 80% JPEG); `@LazySingleton`.
+- **`imagePath` column** — `products` table; schema v3→v4 migration.
+- **`Product.imagePath` field** — Nullable local path; takes precedence over `imageUrl` in all display widgets.
+- **`ProductFormAvatar` tap-to-pick** — Bottom sheet with Gallery / Camera / Remove.
+- **`ProductAvatar` local image** — `Image.file` from `imagePath` → `Image.network` from `imageUrl` → placeholder.
+- **4 l10n keys** (EN + TH) — `pickImageGallery`, `pickImageCamera`, `removeImage`, `imagePickError`.
+- **Dependencies** — `image_picker: ^1.2.2`, `flutter_image_compress: ^2.4.0`.
+
+### Changed
+
+- **`DiscountDialog`** — Accepts `maxAmount` and `presetType`; helper text shows max for AMOUNT mode.
+- **`cart_item_row.dart`** — Discount button hidden when `enableItemDiscount` is `false`; passes preset values and limits to dialog.
+- **`cart_total_bar.dart`** — Cart discount button hidden when `enableCartDiscount` is `false`; passes preset values and limits.
+- **`ReceiptLabels`** — Added required `itemDiscounts` and `cartDiscount` fields.
+- **`AppSettings`** — Replaced `presetDiscountValues: List<double>` with `discountPresets: List<DiscountPreset>`.
+- **`ProductFormPage`** — Replaced imageUrl text field with `ProductFormAvatar` tap-to-pick; `_imageUrlCtrl` → `_imagePath`/`_imageUrl` state fields.
+- **Product data layer** — `ProductAdded`, `AddProduct`, `ProductRepository.addProduct` accept `imagePath`; `ProductRepositoryImpl` and `ProductLocalDatasource` persist/mapped `imagePath`.
+- **`product_tile.dart` / `product_grid_card.dart`** — Pass `product.imagePath` to `ProductAvatar`.
+
+### Removed
+
+- **`_presetValuesCtrl` / `_parsePresetValues`** — Replaced by `DiscountPresetCard` chip editor.
+- **`_imageUrlCtrl`** — URL text input replaced by image picker.
+
+### Tests
+
+- **`app_settings_test.dart`** — `props.length` updated for new discount fields (24 total).
+- **`product_test.dart`** — `props.length` → 11; `imagePath` in equality test.
+- **`product_bloc_test.dart` / `product_usecases_test.dart`** — Added `imagePath` to mock `when` clauses.
+- **`product_form_page_test.dart`** — TextFormField indices 5→4; mock `ProductImageService` registered in GetIt.
+- **Receipt PDF / ReceiptPreview tests** — `ReceiptLabels` updated with new required fields.
+
+`flutter analyze` → **0 issues** · `flutter test` → **215/215 passing**
+
+---
+
 ## [0.5.3] - 2026-05-29
 
 VAT calculation and payment fixes, draft cart persistence overhaul, and bill UX improvements.
@@ -644,7 +705,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.4...HEAD
+[0.5.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.0...v0.5.1

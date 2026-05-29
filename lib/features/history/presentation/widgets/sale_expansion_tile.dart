@@ -152,10 +152,7 @@ class SaleExpansionTile extends StatelessWidget {
               children: [
                 if (!isVoided)
                   TextButton.icon(
-                    icon: Icon(
-                      Icons.block,
-                      color: theme.colorScheme.error,
-                    ),
+                    icon: Icon(Icons.block, color: theme.colorScheme.error),
                     label: Text(
                       context.l10n.voidSale,
                       style: TextStyle(color: theme.colorScheme.error),
@@ -197,7 +194,10 @@ class SaleExpansionTile extends StatelessWidget {
         labels: ReceiptLabels(
           receipt: l.receiptLabelReceipt,
           payment: l.receiptLabelPayment,
-          paymentMethodLabel: localizePaymentMethod(context, sale.paymentMethod),
+          paymentMethodLabel: localizePaymentMethod(
+            context,
+            sale.paymentMethod,
+          ),
           total: l.receiptLabelTotal,
           received: l.receiptLabelReceived,
           change: l.receiptLabelChange,
@@ -205,10 +205,14 @@ class SaleExpansionTile extends StatelessWidget {
           vat: l.receiptLabelVat,
           vatIncluded: l.receiptLabelVatIncluded(sale.vatRate),
           subtotal: l.receiptLabelSubtotal,
+          itemDiscounts: l.receiptItemDiscounts,
+          cartDiscount: l.receiptCartDiscount,
         ),
       );
     } catch (_) {
-      if (context.mounted) AppSnackBar.error(context, context.l10n.errorOccurred);
+      if (context.mounted) {
+        AppSnackBar.error(context, context.l10n.errorOccurred);
+      }
     }
   }
 
@@ -229,7 +233,10 @@ class SaleExpansionTile extends StatelessWidget {
         labels: ReceiptLabels(
           receipt: l.receiptLabelReceipt,
           payment: l.receiptLabelPayment,
-          paymentMethodLabel: localizePaymentMethod(context, sale.paymentMethod),
+          paymentMethodLabel: localizePaymentMethod(
+            context,
+            sale.paymentMethod,
+          ),
           total: l.receiptLabelTotal,
           received: l.receiptLabelReceived,
           change: l.receiptLabelChange,
@@ -237,10 +244,14 @@ class SaleExpansionTile extends StatelessWidget {
           vat: l.receiptLabelVat,
           vatIncluded: l.receiptLabelVatIncluded(sale.vatRate),
           subtotal: l.receiptLabelSubtotal,
+          itemDiscounts: l.receiptItemDiscounts,
+          cartDiscount: l.receiptCartDiscount,
         ),
       );
     } catch (_) {
-      if (context.mounted) AppSnackBar.error(context, context.l10n.errorOccurred);
+      if (context.mounted) {
+        AppSnackBar.error(context, context.l10n.errorOccurred);
+      }
     }
   }
 }

@@ -1,8 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ProductAvatar extends StatelessWidget {
-  const ProductAvatar({super.key, required this.imageUrl, this.size = 52});
+  const ProductAvatar({
+    super.key,
+    this.imagePath,
+    this.imageUrl,
+    this.size = 52,
+  });
 
+  final String? imagePath;
   final String? imageUrl;
   final double size;
 
@@ -10,6 +18,22 @@ class ProductAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final radius = size * 0.27;
+
+    if (imagePath != null && imagePath!.isNotEmpty) {
+      final file = File(imagePath!);
+      if (file.existsSync()) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: Image.file(
+            file,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _iconBox(theme, radius),
+          ),
+        );
+      }
+    }
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(radius),
@@ -18,7 +42,7 @@ class ProductAvatar extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (_, err, st) => _iconBox(theme, radius),
+          errorBuilder: (context, error, stackTrace) => _iconBox(theme, radius),
         ),
       );
     }

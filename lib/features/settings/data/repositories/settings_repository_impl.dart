@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 @LazySingleton(as: SettingsRepository)
@@ -27,6 +30,14 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyShowPostSalePreview = 'showPostSalePreview';
   static const _keyAllowOversell = 'allowOversell';
   static const _keyLowStockThreshold = 'lowStockThreshold';
+  static const _keyEnableItemDiscount = 'enableItemDiscount';
+  static const _keyEnableCartDiscount = 'enableCartDiscount';
+  static const _keyMaxDiscountPercent = 'maxDiscountPercent';
+  static const _keyDefaultDiscountType = 'defaultDiscountType';
+  static const _keyDiscountPresets = 'discountPresets';
+  static const _keyMaxDiscountAmount = 'maxDiscountAmount';
+  static const _keyActiveDiscountPresetId = 'activeDiscountPresetId';
+  static const _keyPresetDiscountValues = 'presetDiscountValues';
 
   @override
   Future<AppSettings> load() async {
@@ -60,6 +71,19 @@ class SettingsRepositoryImpl implements SettingsRepository {
           await _datasource.getBool(_keyShowPostSalePreview) ?? true,
       allowOversell: await _datasource.getBool(_keyAllowOversell) ?? false,
       lowStockThreshold: await _datasource.getInt(_keyLowStockThreshold) ?? 5,
+      enableItemDiscount:
+          await _datasource.getBool(_keyEnableItemDiscount) ?? true,
+      enableCartDiscount:
+          await _datasource.getBool(_keyEnableCartDiscount) ?? true,
+      maxDiscountPercent:
+          await _datasource.getDouble(_keyMaxDiscountPercent) ?? 100.0,
+      defaultDiscountType:
+          await _datasource.getString(_keyDefaultDiscountType) ?? 'PERCENT',
+      maxDiscountAmount:
+          await _datasource.getDouble(_keyMaxDiscountAmount) ?? 0.0,
+      discountPresets: await _loadDiscountPresets(),
+      activeDiscountPresetId:
+          await _datasource.getString(_keyActiveDiscountPresetId) ?? 'default',
     );
   }
 
@@ -91,5 +115,99 @@ class SettingsRepositoryImpl implements SettingsRepository {
     );
     await _datasource.setBool(_keyAllowOversell, settings.allowOversell);
     await _datasource.setInt(_keyLowStockThreshold, settings.lowStockThreshold);
+    await _datasource.setBool(
+      _keyEnableItemDiscount,
+      settings.enableItemDiscount,
+    );
+    await _datasource.setBool(
+      _keyEnableCartDiscount,
+      settings.enableCartDiscount,
+    );
+    await _datasource.setDouble(
+      _keyMaxDiscountPercent,
+      settings.maxDiscountPercent,
+    );
+    await _datasource.setString(
+      _keyDefaultDiscountType,
+      settings.defaultDiscountType,
+    );
+    await _datasource.setDouble(
+      _keyMaxDiscountAmount,
+      settings.maxDiscountAmount,
+    );
+    await _datasource.setString(
+      _keyDiscountPresets,
+      _serializeDiscountPresets(settings.discountPresets),
+    );
+    await _datasource.setString(
+      _keyActiveDiscountPresetId,
+      settings.activeDiscountPresetId,
+    );
+  }
+
+  Future<List<DiscountPreset>> _loadDiscountPresets() async {
+    final jsonStr = await _datasource.getString(_keyDiscountPresets);
+    if (jsonStr != null && jsonStr.trim().isNotEmpty) {
+      try {
+        final list = jsonDecode(jsonStr) as List;
+        final presets = list
+            .map(
+              (e) => DiscountPreset(
+                id: e['id'] as String? ?? '',
+                name: e['name'] as String? ?? '',
+                type: e['type'] as String? ?? 'PERCENT',
+                values:
+                    (e['values'] as List?)
+                        ?.map((v) => (v as num).toDouble())
+                        .toList() ??
+                    const [5.0, 10.0, 20.0, 50.0],
+              ),
+            )
+            .where((p) => p.id.isNotEmpty)
+            .toList();
+        if (presets.isNotEmpty) return presets;
+      } catch (_) {
+        // fall through to migration / default
+      }
+    }
+
+    // Backward-compat: migrate old comma-separated presetDiscountValues
+    final oldRaw = await _datasource.getString(_keyPresetDiscountValues);
+    final values = _parseOldPresetValues(oldRaw);
+    return [
+      DiscountPreset(
+        id: 'default',
+        name: 'Default',
+        type: 'PERCENT',
+        values: values,
+      ),
+    ];
+  }
+
+  List<double> _parseOldPresetValues(String? raw) {
+    if (raw == null || raw.trim().isEmpty) {
+      return const [5.0, 10.0, 20.0, 50.0];
+    }
+    final values = raw
+        .split(',')
+        .map((s) => double.tryParse(s.trim()))
+        .whereType<double>()
+        .where((v) => v > 0)
+        .toList();
+    return values.isNotEmpty ? values : const [5.0, 10.0, 20.0, 50.0];
+  }
+
+  String _serializeDiscountPresets(List<DiscountPreset> presets) {
+    final list = presets
+        .map(
+          (p) => {
+            'id': p.id,
+            'name': p.name,
+            'type': p.type,
+            'values': p.values,
+          },
+        )
+        .toList();
+    return jsonEncode(list);
   }
 }

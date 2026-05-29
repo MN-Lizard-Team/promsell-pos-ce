@@ -505,6 +505,60 @@ class AppLocalizationsTh extends AppLocalizations {
   String get preTaxTotal => 'ยอดก่อภาษี';
 
   @override
+  String get settingsDiscountPolicy => 'นโยบายส่วนลด';
+
+  @override
+  String get enableItemDiscount => 'เปิดใช้ส่วนลดต่อรายการ';
+
+  @override
+  String get enableCartDiscount => 'เปิดใช้ส่วนลดต่อบิล';
+
+  @override
+  String get maxDiscountPercent => 'ส่วนลดสูงสุด (%)';
+
+  @override
+  String get maxDiscountAmount => 'ส่วนลดสูงสุด (บาท)';
+
+  @override
+  String get defaultDiscountType => 'ประเภทส่วนลดเริ่มต้น';
+
+  @override
+  String get presetDiscountValues => 'ค่าส่วนลดเร็ว (คั่นด้วย ,)';
+
+  @override
+  String get discountPresetsTitle => 'ชุดส่วนลด';
+
+  @override
+  String get discountPresetName => 'ชื่อชุด';
+
+  @override
+  String get discountPresetType => 'ประเภท';
+
+  @override
+  String get discountPresetValues => 'ค่าส่วนลด';
+
+  @override
+  String get addDiscountPreset => 'เพิ่มชุดส่วนลด';
+
+  @override
+  String get deleteDiscountPreset => 'ลบชุด';
+
+  @override
+  String get activeDiscountPreset => 'ใช้งานอยู่';
+
+  @override
+  String get noDiscountPresets => 'ยังไม่มีชุดส่วนลด';
+
+  @override
+  String get addPresetValue => 'เพิ่มค่า';
+
+  @override
+  String get receiptItemDiscounts => 'ส่วนลดรายการ';
+
+  @override
+  String get receiptCartDiscount => 'ส่วนลดบิล';
+
+  @override
   String get draftsTitle => 'บิลที่บันทึก';
 
   @override
@@ -558,4 +612,16 @@ class AppLocalizationsTh extends AppLocalizations {
   String discountPreviewPercent(String value) {
     return 'หลังหัก: $value%';
   }
+
+  @override
+  String get pickImageGallery => 'เลือกจากคลังรูป';
+
+  @override
+  String get pickImageCamera => 'ถ่ายรูป';
+
+  @override
+  String get removeImage => 'ลบรูป';
+
+  @override
+  String get imagePickError => 'ไม่สามารถเลือกรูปได้';
 }

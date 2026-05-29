@@ -20,6 +20,8 @@ class ReceiptLabels {
     required this.vat,
     required this.vatIncluded,
     required this.subtotal,
+    required this.itemDiscounts,
+    required this.cartDiscount,
   });
 
   final String receipt;
@@ -32,6 +34,8 @@ class ReceiptLabels {
   final String vat;
   final String vatIncluded;
   final String subtotal;
+  final String itemDiscounts;
+  final String cartDiscount;
 }
 
 @lazySingleton
@@ -182,6 +186,28 @@ class ReceiptPdfService {
               ),
             ),
             pw.Divider(),
+            if (sale.items.any((i) => i.discountAmount > 0)) ...[
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(labels.itemDiscounts),
+                  pw.Text(
+                    '-${settings.currency}${sale.items.fold(0.0, (s, i) => s + i.discountAmount).toStringAsFixed(2)}',
+                  ),
+                ],
+              ),
+            ],
+            if (sale.discountAmount > 0) ...[
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(labels.cartDiscount),
+                  pw.Text(
+                    '-${settings.currency}${sale.discountAmount.toStringAsFixed(2)}',
+                  ),
+                ],
+              ),
+            ],
             if (vatInfo != null) ...[
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,

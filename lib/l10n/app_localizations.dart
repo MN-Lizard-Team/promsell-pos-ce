@@ -1034,6 +1034,114 @@ abstract class AppLocalizations {
   /// **'ยอดก่อภาษี'**
   String get preTaxTotal;
 
+  /// No description provided for @settingsDiscountPolicy.
+  ///
+  /// In th, this message translates to:
+  /// **'นโยบายส่วนลด'**
+  String get settingsDiscountPolicy;
+
+  /// No description provided for @enableItemDiscount.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดใช้ส่วนลดต่อรายการ'**
+  String get enableItemDiscount;
+
+  /// No description provided for @enableCartDiscount.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดใช้ส่วนลดต่อบิล'**
+  String get enableCartDiscount;
+
+  /// No description provided for @maxDiscountPercent.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดสูงสุด (%)'**
+  String get maxDiscountPercent;
+
+  /// No description provided for @maxDiscountAmount.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดสูงสุด (บาท)'**
+  String get maxDiscountAmount;
+
+  /// No description provided for @defaultDiscountType.
+  ///
+  /// In th, this message translates to:
+  /// **'ประเภทส่วนลดเริ่มต้น'**
+  String get defaultDiscountType;
+
+  /// No description provided for @presetDiscountValues.
+  ///
+  /// In th, this message translates to:
+  /// **'ค่าส่วนลดเร็ว (คั่นด้วย ,)'**
+  String get presetDiscountValues;
+
+  /// No description provided for @discountPresetsTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ชุดส่วนลด'**
+  String get discountPresetsTitle;
+
+  /// No description provided for @discountPresetName.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อชุด'**
+  String get discountPresetName;
+
+  /// No description provided for @discountPresetType.
+  ///
+  /// In th, this message translates to:
+  /// **'ประเภท'**
+  String get discountPresetType;
+
+  /// No description provided for @discountPresetValues.
+  ///
+  /// In th, this message translates to:
+  /// **'ค่าส่วนลด'**
+  String get discountPresetValues;
+
+  /// No description provided for @addDiscountPreset.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มชุดส่วนลด'**
+  String get addDiscountPreset;
+
+  /// No description provided for @deleteDiscountPreset.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบชุด'**
+  String get deleteDiscountPreset;
+
+  /// No description provided for @activeDiscountPreset.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้งานอยู่'**
+  String get activeDiscountPreset;
+
+  /// No description provided for @noDiscountPresets.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีชุดส่วนลด'**
+  String get noDiscountPresets;
+
+  /// No description provided for @addPresetValue.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มค่า'**
+  String get addPresetValue;
+
+  /// No description provided for @receiptItemDiscounts.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดรายการ'**
+  String get receiptItemDiscounts;
+
+  /// No description provided for @receiptCartDiscount.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดบิล'**
+  String get receiptCartDiscount;
+
   /// No description provided for @draftsTitle.
   ///
   /// In th, this message translates to:
@@ -1135,6 +1243,30 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'หลังหัก: {value}%'**
   String discountPreviewPercent(String value);
+
+  /// No description provided for @pickImageGallery.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกจากคลังรูป'**
+  String get pickImageGallery;
+
+  /// No description provided for @pickImageCamera.
+  ///
+  /// In th, this message translates to:
+  /// **'ถ่ายรูป'**
+  String get pickImageCamera;
+
+  /// No description provided for @removeImage.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบรูป'**
+  String get removeImage;
+
+  /// No description provided for @imagePickError.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถเลือกรูปได้'**
+  String get imagePickError;
 }
 
 class _AppLocalizationsDelegate

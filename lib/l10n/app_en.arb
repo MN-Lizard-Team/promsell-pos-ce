@@ -213,6 +213,24 @@
   "discountValueRequired": "Please enter a discount value",
   "discountValueInvalid": "Invalid discount value",
   "preTaxTotal": "Pre-tax total",
+  "settingsDiscountPolicy": "Discount Policy",
+  "enableItemDiscount": "Enable item discount",
+  "enableCartDiscount": "Enable cart discount",
+  "maxDiscountPercent": "Max discount (%)",
+  "maxDiscountAmount": "Max discount (amount)",
+  "defaultDiscountType": "Default discount type",
+  "presetDiscountValues": "Preset values (comma-separated)",
+  "discountPresetsTitle": "Discount Presets",
+  "discountPresetName": "Preset name",
+  "discountPresetType": "Type",
+  "discountPresetValues": "Values",
+  "addDiscountPreset": "Add preset",
+  "deleteDiscountPreset": "Delete preset",
+  "activeDiscountPreset": "Active preset",
+  "noDiscountPresets": "No discount presets",
+  "addPresetValue": "Add value",
+  "receiptItemDiscounts": "Item Discounts",
+  "receiptCartDiscount": "Cart Discount",
 
   "draftsTitle": "Saved Bills",
   "newDraft": "New bill",
@@ -240,5 +258,10 @@
   "discountPreviewPercent": "After discount: {value}%",
   "@discountPreviewPercent": {
     "placeholders": { "value": { "type": "String" } }
-  }
+  },
+
+  "pickImageGallery": "Choose from Gallery",
+  "pickImageCamera": "Take a Photo",
+  "removeImage": "Remove Image",
+  "imagePickError": "Unable to pick image"
 }

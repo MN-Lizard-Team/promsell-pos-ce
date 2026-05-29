@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.5.3
+# CODEBASE.md — Promsell POS CE v0.5.4
 
 ## System overview
 
@@ -21,7 +21,7 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 ┌──────────────────────────────────────────────────┐
 │   lib/features/ — Feature modules               │
 │   sale/       — Cart, checkout, draft, discount  │
-│   product/    — CRUD inventory, ProductBloc      │
+│   product/    — CRUD inventory, ProductBloc, image service │
 │   history/    — Sale history viewer              │
 │   report/     — Analytics dashboard             │
 │   settings/   — Locale, theme, shop info        │
@@ -74,7 +74,7 @@ features/<name>/
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v3, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v4, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/core/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -83,6 +83,7 @@ features/<name>/
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
+| `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → JPEG compression (800px/80%) → local `/images/{productId}.jpg`; deleteImage; `@LazySingleton` |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
 | `DraftCartLocalDatasource` | `lib/features/sale/data/datasources/` | Persist/load `DraftCarts` + `DraftCartItems`; used by `DraftCartRepository` |
 | `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
@@ -98,7 +99,7 @@ features/<name>/
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
 | Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`; widgets: `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `ChangePreview`, `PaymentTotalRow` |
-| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel` |
+| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
 | Settings | `SettingsCubit` | `settings_page.dart`; widgets: `SettingsSectionHeader`, `SettingsTextField`, `LanguageTile`, `ThemeTile`, `CurrencyTile`, `DateFormatTile`, `ResponsiveSettingsPicker` |
@@ -120,13 +121,13 @@ features/<name>/
 
 ---
 
-## Database schema (v3)
+## Database schema (v4)
 
 Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
 | Table | Key fields |
 |-------|--------|
-| `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, trackStock, isActive, createdAt, updatedAt, deletedAt, version, deviceId |
+| `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, imagePath, trackStock, isActive, createdAt, updatedAt, deletedAt, version, deviceId |
 | `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, note, voidedAt, voidReason, createdAt, updatedAt, deletedAt, version, deviceId |
 | `SaleItems` | id, saleId, productId, productName, price, qty, subtotal, discountAmount, vatAmount |
 | `Categories` | id, name, sortOrder, createdAt, updatedAt, deletedAt, version, deviceId |
@@ -186,6 +187,13 @@ All state classes extend `Equatable` for efficient rebuilds.
 | `showPostSalePreview` | bool | `true` |
 | `allowOversell` | bool | `false` |
 | `lowStockThreshold` | int | `5` |
+| `enableItemDiscount` | bool | `false` |
+| `enableCartDiscount` | bool | `false` |
+| `maxDiscountPercent` | double | `0` |
+| `maxDiscountAmount` | double | `0` |
+| `defaultDiscountType` | String | `PERCENT` |
+| `discountPresets` | String (JSON) | `[]` |
+| `activeDiscountPresetId` | String | `''` |
 
 ---
 
@@ -267,7 +275,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-216 automated tests across 7 layers. Run with `flutter test`.
+215 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 

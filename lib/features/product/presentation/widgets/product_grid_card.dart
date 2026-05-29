@@ -33,7 +33,11 @@ class ProductGridCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child: ProductAvatar(imageUrl: product.imageUrl, size: 72),
+                  child: ProductAvatar(
+                    imagePath: product.imagePath,
+                    imageUrl: product.imageUrl,
+                    size: 72,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(

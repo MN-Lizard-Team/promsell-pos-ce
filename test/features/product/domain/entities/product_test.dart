@@ -14,6 +14,7 @@ void main() {
         stock: 50,
         category: 'Drinks',
         imageUrl: null,
+        imagePath: null,
         isActive: true,
         createdAt: tNow,
         updatedAt: tNow,
@@ -44,7 +45,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tProduct.props.length, 10);
+      expect(tProduct.props.length, 11);
     });
   });
 }

@@ -338,6 +338,8 @@ class _PaymentSheetState extends State<PaymentSheet> {
                         settings.vatRate,
                       ),
                       subtotal: context.l10n.receiptLabelSubtotal,
+                      itemDiscounts: context.l10n.receiptItemDiscounts,
+                      cartDiscount: context.l10n.receiptCartDiscount,
                     );
                     final vatInfo = sl<ReceiptPdfService>().calculateVat(
                       total: cartState.total,

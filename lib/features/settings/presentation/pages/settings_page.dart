@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/section_card.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_header.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_text_field.dart';
@@ -12,6 +13,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/theme_til
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/currency_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/date_format_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/responsive_settings_picker.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount_preset_card.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -42,6 +44,8 @@ class _SettingsViewState extends State<_SettingsView> {
   late final TextEditingController _receiptNoteCtrl;
   late final TextEditingController _lowStockCtrl;
   late final TextEditingController _vatRateCtrl;
+  late final TextEditingController _maxDiscountCtrl;
+  late final TextEditingController _maxDiscountAmountCtrl;
   bool _manualSave = false;
 
   bool get _hasTextChanges =>
@@ -50,7 +54,11 @@ class _SettingsViewState extends State<_SettingsView> {
       _phoneCtrl.text.trim() != _draft.phone ||
       _receiptNoteCtrl.text.trim() != _draft.receiptNote ||
       (int.tryParse(_lowStockCtrl.text) ?? 5) != _draft.lowStockThreshold ||
-      (double.tryParse(_vatRateCtrl.text) ?? 7.0) != _draft.vatRate;
+      (double.tryParse(_vatRateCtrl.text) ?? 7.0) != _draft.vatRate ||
+      (double.tryParse(_maxDiscountCtrl.text) ?? 100.0) !=
+          _draft.maxDiscountPercent ||
+      (double.tryParse(_maxDiscountAmountCtrl.text) ?? 0.0) !=
+          _draft.maxDiscountAmount;
 
   @override
   void initState() {
@@ -64,6 +72,12 @@ class _SettingsViewState extends State<_SettingsView> {
       text: _draft.lowStockThreshold.toString(),
     );
     _vatRateCtrl = TextEditingController(text: _draft.vatRate.toString());
+    _maxDiscountCtrl = TextEditingController(
+      text: _draft.maxDiscountPercent.toString(),
+    );
+    _maxDiscountAmountCtrl = TextEditingController(
+      text: _draft.maxDiscountAmount.toString(),
+    );
   }
 
   @override
@@ -86,6 +100,15 @@ class _SettingsViewState extends State<_SettingsView> {
       if (_vatRateCtrl.text == oldWidget.settings.vatRate.toString()) {
         _vatRateCtrl.text = widget.settings.vatRate.toString();
       }
+      if (_maxDiscountCtrl.text ==
+          oldWidget.settings.maxDiscountPercent.toString()) {
+        _maxDiscountCtrl.text = widget.settings.maxDiscountPercent.toString();
+      }
+      if (_maxDiscountAmountCtrl.text ==
+          oldWidget.settings.maxDiscountAmount.toString()) {
+        _maxDiscountAmountCtrl.text = widget.settings.maxDiscountAmount
+            .toString();
+      }
     }
   }
 
@@ -97,6 +120,8 @@ class _SettingsViewState extends State<_SettingsView> {
     _receiptNoteCtrl.dispose();
     _lowStockCtrl.dispose();
     _vatRateCtrl.dispose();
+    _maxDiscountCtrl.dispose();
+    _maxDiscountAmountCtrl.dispose();
     super.dispose();
   }
 
@@ -111,8 +136,57 @@ class _SettingsViewState extends State<_SettingsView> {
       lowStockThreshold:
           int.tryParse(_lowStockCtrl.text.trim()) ?? _draft.lowStockThreshold,
       vatRate: double.tryParse(_vatRateCtrl.text.trim()) ?? _draft.vatRate,
+      maxDiscountPercent:
+          double.tryParse(_maxDiscountCtrl.text.trim()) ??
+          _draft.maxDiscountPercent,
+      maxDiscountAmount:
+          double.tryParse(_maxDiscountAmountCtrl.text.trim()) ??
+          _draft.maxDiscountAmount,
     );
     context.read<SettingsCubit>().update(updated);
+  }
+
+  void _updateDraft(AppSettings updated) {
+    setState(() => _draft = updated);
+    context.read<SettingsCubit>().update(updated);
+  }
+
+  void _updatePreset(int index, DiscountPreset preset) {
+    final presets = [..._draft.discountPresets];
+    presets[index] = preset;
+    _updateDraft(_draft.copyWith(discountPresets: presets));
+  }
+
+  void _addPreset() {
+    final id = 'preset-${DateTime.now().millisecondsSinceEpoch}';
+    final preset = DiscountPreset(
+      id: id,
+      name: 'New Preset',
+      type: 'PERCENT',
+      values: const [5.0, 10.0],
+    );
+    _updateDraft(
+      _draft.copyWith(discountPresets: [..._draft.discountPresets, preset]),
+    );
+  }
+
+  void _deletePreset(int index) {
+    if (_draft.discountPresets.length <= 1) return;
+    final presets = [..._draft.discountPresets]..removeAt(index);
+    final deletedId = _draft.discountPresets[index].id;
+    final newActiveId = _draft.activeDiscountPresetId == deletedId
+        ? presets.first.id
+        : _draft.activeDiscountPresetId;
+    _updateDraft(
+      _draft.copyWith(
+        discountPresets: presets,
+        activeDiscountPresetId: newActiveId,
+      ),
+    );
+  }
+
+  void _setActivePreset(String id) {
+    _updateDraft(_draft.copyWith(activeDiscountPresetId: id));
   }
 
   @override
@@ -364,6 +438,105 @@ class _SettingsViewState extends State<_SettingsView> {
                         ),
                         onChanged: (_) => setState(() {}),
                       ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SectionCard(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    SettingsSectionHeader(l10n.settingsDiscountPolicy),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.local_offer_outlined),
+                      title: Text(l10n.enableItemDiscount),
+                      value: _draft.enableItemDiscount,
+                      onChanged: (value) {
+                        _updateDraft(
+                          _draft.copyWith(enableItemDiscount: value),
+                        );
+                      },
+                    ),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.local_offer),
+                      title: Text(l10n.enableCartDiscount),
+                      value: _draft.enableCartDiscount,
+                      onChanged: (value) {
+                        _updateDraft(
+                          _draft.copyWith(enableCartDiscount: value),
+                        );
+                      },
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SettingsTextField(
+                            controller: _maxDiscountCtrl,
+                            label: l10n.maxDiscountPercent,
+                            icon: Icons.percent_outlined,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                        ),
+                        Expanded(
+                          child: SettingsTextField(
+                            controller: _maxDiscountAmountCtrl,
+                            label: l10n.maxDiscountAmount,
+                            icon: Icons.trending_down_outlined,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            l10n.discountPresetsTitle,
+                            style: theme.textTheme.titleSmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ..._draft.discountPresets.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final preset = entry.value;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        child: DiscountPresetCard(
+                          preset: preset,
+                          isActive: preset.id == _draft.activeDiscountPresetId,
+                          canDelete: _draft.discountPresets.length > 1,
+                          onChanged: (p) => _updatePreset(index, p),
+                          onDelete: () => _deletePreset(index),
+                          onSetActive: () => _setActivePreset(preset.id),
+                        ),
+                      );
+                    }),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: OutlinedButton.icon(
+                        onPressed: _addPreset,
+                        icon: const Icon(Icons.add),
+                        label: Text(l10n.addDiscountPreset),
+                      ),
+                    ),
                   ],
                 ),
               ),

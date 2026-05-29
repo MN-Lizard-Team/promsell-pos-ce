@@ -20,6 +20,8 @@ class CartTotalBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final settings = context.read<SettingsCubit>().state.settings;
+    final enableCartDiscount = settings.enableCartDiscount;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
@@ -56,51 +58,58 @@ class CartTotalBar extends StatelessWidget {
             label: Text(context.l10n.checkout(state.itemCount)),
           );
 
-          final discountBtn = TextButton.icon(
-            onPressed: () => DiscountDialog.showCartDiscount(
-              context,
-              title: context.l10n.cartDiscount,
-              currency: currency,
-              initialType: state.cartDiscountType ?? 'PERCENT',
-              initialValue: state.cartDiscountValue,
-              onApply: (type, value) {
-                context.read<SaleBloc>().add(
-                  SaleCartDiscountChanged(
-                    discountType: type,
-                    discountValue: value,
+          final discountBtn = enableCartDiscount
+              ? TextButton.icon(
+                  onPressed: () => DiscountDialog.showCartDiscount(
+                    context,
+                    title: context.l10n.cartDiscount,
+                    currency: currency,
+                    initialType:
+                        state.cartDiscountType ?? settings.defaultDiscountType,
+                    initialValue: state.cartDiscountValue,
+                    onApply: (type, value) {
+                      context.read<SaleBloc>().add(
+                        SaleCartDiscountChanged(
+                          discountType: type,
+                          discountValue: value,
+                        ),
+                      );
+                    },
+                    onClear: state.hasCartDiscount
+                        ? () => context.read<SaleBloc>().add(
+                            const SaleCartDiscountCleared(),
+                          )
+                        : null,
+                    maxPercent: settings.maxDiscountPercent,
+                    maxAmount: settings.maxDiscountAmount,
+                    presetValues: settings.activeDiscountPreset.values,
+                    presetType: settings.activeDiscountPreset.type,
                   ),
-                );
-              },
-              onClear: state.hasCartDiscount
-                  ? () => context.read<SaleBloc>().add(
-                      const SaleCartDiscountCleared(),
-                    )
-                  : null,
-            ),
-            icon: Icon(
-              state.hasCartDiscount
-                  ? Icons.local_offer
-                  : Icons.local_offer_outlined,
-              size: 18,
-              color: state.hasCartDiscount
-                  ? Theme.of(context).colorScheme.error
-                  : null,
-            ),
-            label: Text(
-              state.hasCartDiscount
-                  ? '$currency${state.cartDiscountAmount.toStringAsFixed(2)}'
-                  : context.l10n.applyCartDiscount,
-              style: state.hasCartDiscount
-                  ? TextStyle(color: Theme.of(context).colorScheme.error)
-                  : null,
-            ),
-          );
+                  icon: Icon(
+                    state.hasCartDiscount
+                        ? Icons.local_offer
+                        : Icons.local_offer_outlined,
+                    size: 18,
+                    color: state.hasCartDiscount
+                        ? Theme.of(context).colorScheme.error
+                        : null,
+                  ),
+                  label: Text(
+                    state.hasCartDiscount
+                        ? '$currency${state.cartDiscountAmount.toStringAsFixed(2)}'
+                        : context.l10n.applyCartDiscount,
+                    style: state.hasCartDiscount
+                        ? TextStyle(color: Theme.of(context).colorScheme.error)
+                        : null,
+                  ),
+                )
+              : null;
 
           if (isNarrow) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                discountBtn,
+                ...(discountBtn != null ? [discountBtn] : const <Widget>[]),
                 total,
                 const SizedBox(height: 10),
                 checkout,
@@ -111,7 +120,13 @@ class CartTotalBar extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(children: [discountBtn, const Spacer(), checkout]),
+              Row(
+                children: [
+                  ...(discountBtn != null ? [discountBtn] : const <Widget>[]),
+                  const Spacer(),
+                  checkout,
+                ],
+              ),
               total,
             ],
           );

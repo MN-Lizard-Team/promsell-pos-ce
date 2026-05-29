@@ -31,6 +31,7 @@ void main() {
           stock: any(named: 'stock'),
           category: any(named: 'category'),
           imageUrl: any(named: 'imageUrl'),
+          imagePath: any(named: 'imagePath'),
         ),
       ).thenAnswer((_) async => 'new-uuid');
 

@@ -10,6 +10,10 @@ class DiscountDialog extends StatefulWidget {
     required this.onApply,
     this.initialValue,
     this.onClear,
+    this.maxPercent = 100.0,
+    this.maxAmount = 0.0,
+    this.presetValues = const [],
+    this.presetType = 'PERCENT',
   });
 
   final String title;
@@ -18,6 +22,10 @@ class DiscountDialog extends StatefulWidget {
   final double? initialValue;
   final void Function(String type, double value) onApply;
   final VoidCallback? onClear;
+  final double maxPercent;
+  final double maxAmount;
+  final List<double> presetValues;
+  final String presetType;
 
   @override
   State<DiscountDialog> createState() => _DiscountDialogState();
@@ -30,6 +38,10 @@ class DiscountDialog extends StatefulWidget {
     double? initialValue,
     required void Function(String, double) onApply,
     VoidCallback? onClear,
+    double maxPercent = 100.0,
+    double maxAmount = 0.0,
+    List<double> presetValues = const [],
+    String presetType = 'PERCENT',
   }) {
     showDialog(
       context: context,
@@ -40,6 +52,10 @@ class DiscountDialog extends StatefulWidget {
         initialValue: initialValue,
         onApply: onApply,
         onClear: onClear,
+        maxPercent: maxPercent,
+        maxAmount: maxAmount,
+        presetValues: presetValues,
+        presetType: presetType,
       ),
     );
   }
@@ -52,6 +68,10 @@ class DiscountDialog extends StatefulWidget {
     double? initialValue,
     required void Function(String, double) onApply,
     VoidCallback? onClear,
+    double maxPercent = 100.0,
+    double maxAmount = 0.0,
+    List<double> presetValues = const [],
+    String presetType = 'PERCENT',
   }) {
     showDialog(
       context: context,
@@ -62,6 +82,10 @@ class DiscountDialog extends StatefulWidget {
         initialValue: initialValue,
         onApply: onApply,
         onClear: onClear,
+        maxPercent: maxPercent,
+        maxAmount: maxAmount,
+        presetValues: presetValues,
+        presetType: presetType,
       ),
     );
   }
@@ -118,6 +142,32 @@ class _DiscountDialogState extends State<DiscountDialog> {
             onSelectionChanged: (v) => setState(() => _type = v.first),
           ),
           const SizedBox(height: 12),
+          if (widget.presetValues.isNotEmpty) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: widget.presetValues.map((preset) {
+                final isPresetPercent = widget.presetType == 'PERCENT';
+                final label = isPresetPercent
+                    ? '${preset.toStringAsFixed(0)}%'
+                    : '${widget.currency}${preset.toStringAsFixed(2)}';
+                return ActionChip(
+                  label: Text(label),
+                  onPressed: () {
+                    _ctrl.text = preset.toStringAsFixed(
+                      isPresetPercent ? 0 : 2,
+                    );
+                    if (isPresetPercent) {
+                      setState(() => _type = 'PERCENT');
+                    } else {
+                      setState(() => _type = 'AMOUNT');
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 12),
+          ],
           TextField(
             controller: _ctrl,
             autofocus: true,
@@ -125,6 +175,11 @@ class _DiscountDialogState extends State<DiscountDialog> {
             decoration: InputDecoration(
               labelText: _type == 'PERCENT' ? '%' : widget.currency,
               border: const OutlineInputBorder(),
+              helperText: _type == 'PERCENT'
+                  ? '${context.l10n.maxDiscountPercent}: ${widget.maxPercent.toStringAsFixed(0)}%'
+                  : widget.maxAmount > 0
+                  ? '${context.l10n.maxDiscountAmount}: ${widget.currency}${widget.maxAmount.toStringAsFixed(2)}'
+                  : null,
             ),
             onChanged: (_) => setState(() {}),
           ),
@@ -162,7 +217,12 @@ class _DiscountDialogState extends State<DiscountDialog> {
         FilledButton(
           onPressed: value > 0
               ? () {
-                  widget.onApply(_type, value);
+                  final effectiveValue = _type == 'PERCENT'
+                      ? value.clamp(0.0, widget.maxPercent)
+                      : widget.maxAmount > 0
+                      ? value.clamp(0.0, widget.maxAmount)
+                      : value;
+                  widget.onApply(_type, effectiveValue);
                   Navigator.pop(context);
                 }
               : null,

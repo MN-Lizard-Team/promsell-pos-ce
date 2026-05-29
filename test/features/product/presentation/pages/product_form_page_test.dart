@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
@@ -11,13 +13,20 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
 
+class MockProductImageService extends Mock implements ProductImageService {}
+
 void main() {
   late MockProductBloc mockProductBloc;
   late MockSettingsCubit mockSettingsCubit;
+  late MockProductImageService mockImageService;
 
   setUp(() {
     mockProductBloc = MockProductBloc();
     mockSettingsCubit = MockSettingsCubit();
+    mockImageService = MockProductImageService();
+    if (!GetIt.I.isRegistered<ProductImageService>()) {
+      GetIt.I.registerSingleton<ProductImageService>(mockImageService);
+    }
     when(
       () => mockProductBloc.state,
     ).thenReturn(const ProductState(status: ProductStatus.success));
@@ -28,6 +37,8 @@ void main() {
       ),
     );
   });
+
+  tearDown(() => GetIt.I.reset());
 
   setUpAll(() {
     registerFallbackValue(const ProductAdded(name: '', price: 0, stock: 0));
@@ -54,7 +65,7 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(TextFormField), findsNWidgets(5));
+      expect(find.byType(TextFormField), findsNWidgets(4));
       expect(find.byType(FilledButton), findsOneWidget);
     });
 
@@ -68,7 +79,7 @@ void main() {
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
-      expect(find.byType(TextFormField), findsNWidgets(5));
+      expect(find.byType(TextFormField), findsNWidgets(4));
     });
 
     testWidgets('dispatches ProductAdded on valid submit', (tester) async {
@@ -80,13 +91,13 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      final nameField = find.byType(TextFormField).at(1);
+      final nameField = find.byType(TextFormField).at(0);
       await tester.enterText(nameField, 'Water');
 
-      final priceField = find.byType(TextFormField).at(2);
+      final priceField = find.byType(TextFormField).at(1);
       await tester.enterText(priceField, '10.00');
 
-      final stockField = find.byType(TextFormField).at(3);
+      final stockField = find.byType(TextFormField).at(2);
       await tester.enterText(stockField, '100');
 
       await tester.tap(find.byType(FilledButton));
@@ -152,7 +163,7 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      final stockField = find.byType(TextFormField).at(3);
+      final stockField = find.byType(TextFormField).at(2);
       await tester.enterText(stockField, '0');
       await tester.pumpAndSettle();
 
@@ -166,7 +177,7 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      final stockField = find.byType(TextFormField).at(3);
+      final stockField = find.byType(TextFormField).at(2);
       await tester.enterText(stockField, '10');
       await tester.pumpAndSettle();
 

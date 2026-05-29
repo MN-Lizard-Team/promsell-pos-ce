@@ -508,6 +508,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preTaxTotal => 'Pre-tax total';
 
   @override
+  String get settingsDiscountPolicy => 'Discount Policy';
+
+  @override
+  String get enableItemDiscount => 'Enable item discount';
+
+  @override
+  String get enableCartDiscount => 'Enable cart discount';
+
+  @override
+  String get maxDiscountPercent => 'Max discount (%)';
+
+  @override
+  String get maxDiscountAmount => 'Max discount (amount)';
+
+  @override
+  String get defaultDiscountType => 'Default discount type';
+
+  @override
+  String get presetDiscountValues => 'Preset values (comma-separated)';
+
+  @override
+  String get discountPresetsTitle => 'Discount Presets';
+
+  @override
+  String get discountPresetName => 'Preset name';
+
+  @override
+  String get discountPresetType => 'Type';
+
+  @override
+  String get discountPresetValues => 'Values';
+
+  @override
+  String get addDiscountPreset => 'Add preset';
+
+  @override
+  String get deleteDiscountPreset => 'Delete preset';
+
+  @override
+  String get activeDiscountPreset => 'Active preset';
+
+  @override
+  String get noDiscountPresets => 'No discount presets';
+
+  @override
+  String get addPresetValue => 'Add value';
+
+  @override
+  String get receiptItemDiscounts => 'Item Discounts';
+
+  @override
+  String get receiptCartDiscount => 'Cart Discount';
+
+  @override
   String get draftsTitle => 'Saved Bills';
 
   @override
@@ -562,4 +616,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String discountPreviewPercent(String value) {
     return 'After discount: $value%';
   }
+
+  @override
+  String get pickImageGallery => 'Choose from Gallery';
+
+  @override
+  String get pickImageCamera => 'Take a Photo';
+
+  @override
+  String get removeImage => 'Remove Image';
+
+  @override
+  String get imagePickError => 'Unable to pick image';
 }

@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -46,6 +46,11 @@ class AppDatabase extends _$AppDatabase {
         );
         await customStatement(
           'ALTER TABLE draft_carts ADD COLUMN cart_discount_value REAL',
+        );
+      }
+      if (from < 4) {
+        await customStatement(
+          'ALTER TABLE products ADD COLUMN image_path TEXT',
         );
       }
     },

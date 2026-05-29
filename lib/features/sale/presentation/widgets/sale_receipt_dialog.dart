@@ -26,6 +26,8 @@ class SaleReceiptDialog {
       vat: l.receiptLabelVat,
       vatIncluded: l.receiptLabelVatIncluded(sale.vatRate),
       subtotal: l.receiptLabelSubtotal,
+      itemDiscounts: l.receiptItemDiscounts,
+      cartDiscount: l.receiptCartDiscount,
     );
     final vatInfo = sl<ReceiptPdfService>().calculateVat(
       total: sale.totalAmount,

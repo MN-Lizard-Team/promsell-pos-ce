@@ -10,6 +10,7 @@ class Product extends Equatable {
     required this.stock,
     this.category,
     this.imageUrl,
+    this.imagePath,
     required this.isActive,
     this.trackStock = true,
     required this.createdAt,
@@ -22,6 +23,7 @@ class Product extends Equatable {
   final int stock;
   final String? category;
   final String? imageUrl;
+  final String? imagePath;
   final bool isActive;
   final bool trackStock;
   final DateTime createdAt;
@@ -36,6 +38,7 @@ class Product extends Equatable {
     int? stock,
     Object? category = _unset,
     Object? imageUrl = _unset,
+    Object? imagePath = _unset,
     bool? isActive,
     bool? trackStock,
     DateTime? createdAt,
@@ -52,6 +55,9 @@ class Product extends Equatable {
       imageUrl: identical(imageUrl, _unset)
           ? this.imageUrl
           : imageUrl as String?,
+      imagePath: identical(imagePath, _unset)
+          ? this.imagePath
+          : imagePath as String?,
       isActive: isActive ?? this.isActive,
       trackStock: trackStock ?? this.trackStock,
       createdAt: createdAt ?? this.createdAt,
@@ -67,6 +73,7 @@ class Product extends Equatable {
     stock,
     category,
     imageUrl,
+    imagePath,
     isActive,
     trackStock,
     createdAt,

@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.5.3+1
+version: 0.5.4+2
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +121,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 216+ tests pass
+- [ ] `flutter test` — all 215+ tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -152,7 +152,8 @@ Before distributing a build with UI changes:
 10. Open History again — voided sale shows strikethrough amount and red badge.
 11. Open Report and verify net revenue excludes voided sales; voided summary card appears.
 12. Tap **Print Receipt** or **Share Receipt** on any sale.
-13. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold); switch theme/locale, and save shop info.
+13. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); switch theme/locale, and save shop info.
+14. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid.
 
 ---
 

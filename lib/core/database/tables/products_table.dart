@@ -11,6 +11,7 @@ class Products extends Table {
   IntColumn get stock => integer().withDefault(const Constant(0))();
   TextColumn get categoryId => text().nullable()();
   TextColumn get imageUrl => text().nullable()();
+  TextColumn get imagePath => text().nullable()();
   BoolColumn get trackStock => boolean().withDefault(const Constant(true))();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();

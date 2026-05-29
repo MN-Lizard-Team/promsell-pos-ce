@@ -210,6 +210,24 @@
   "discountValueRequired": "กรุณาใส่จำนวนส่วนลด",
   "discountValueInvalid": "ส่วนลดไม่ถูกต้อง",
   "preTaxTotal": "ยอดก่อภาษี",
+  "settingsDiscountPolicy": "นโยบายส่วนลด",
+  "enableItemDiscount": "เปิดใช้ส่วนลดต่อรายการ",
+  "enableCartDiscount": "เปิดใช้ส่วนลดต่อบิล",
+  "maxDiscountPercent": "ส่วนลดสูงสุด (%)",
+  "maxDiscountAmount": "ส่วนลดสูงสุด (บาท)",
+  "defaultDiscountType": "ประเภทส่วนลดเริ่มต้น",
+  "presetDiscountValues": "ค่าส่วนลดเร็ว (คั่นด้วย ,)",
+  "discountPresetsTitle": "ชุดส่วนลด",
+  "discountPresetName": "ชื่อชุด",
+  "discountPresetType": "ประเภท",
+  "discountPresetValues": "ค่าส่วนลด",
+  "addDiscountPreset": "เพิ่มชุดส่วนลด",
+  "deleteDiscountPreset": "ลบชุด",
+  "activeDiscountPreset": "ใช้งานอยู่",
+  "noDiscountPresets": "ยังไม่มีชุดส่วนลด",
+  "addPresetValue": "เพิ่มค่า",
+  "receiptItemDiscounts": "ส่วนลดรายการ",
+  "receiptCartDiscount": "ส่วนลดบิล",
 
   "draftsTitle": "บิลที่บันทึก",
   "newDraft": "บิลใหม่",
@@ -237,5 +255,10 @@
   "discountPreviewPercent": "หลังหัก: {value}%",
   "@discountPreviewPercent": {
     "placeholders": { "value": { "type": "String" } }
-  }
+  },
+
+  "pickImageGallery": "เลือกจากคลังรูป",
+  "pickImageCamera": "ถ่ายรูป",
+  "removeImage": "ลบรูป",
+  "imagePickError": "ไม่สามารถเลือกรูปได้"
 }

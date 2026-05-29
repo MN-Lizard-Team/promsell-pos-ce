@@ -18,11 +18,9 @@ class CartItemRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final allowOversell = context
-        .read<SettingsCubit>()
-        .state
-        .settings
-        .allowOversell;
+    final settings = context.read<SettingsCubit>().state.settings;
+    final allowOversell = settings.allowOversell;
+    final enableItemDiscount = settings.enableItemDiscount;
     final atStockLimit =
         item.product.trackStock &&
         !allowOversell &&
@@ -76,39 +74,45 @@ class CartItemRow extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              icon: Icon(
-                item.discountAmount > 0
-                    ? Icons.local_offer
-                    : Icons.local_offer_outlined,
-                size: 18,
-                color: item.discountAmount > 0
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.onSurfaceVariant,
+            if (enableItemDiscount)
+              IconButton(
+                icon: Icon(
+                  item.discountAmount > 0
+                      ? Icons.local_offer
+                      : Icons.local_offer_outlined,
+                  size: 18,
+                  color: item.discountAmount > 0
+                      ? theme.colorScheme.error
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
+                tooltip: context.l10n.discountDialogTitle,
+                onPressed: () => DiscountDialog.showItemDiscount(
+                  context,
+                  title: item.product.name,
+                  currency: currency,
+                  initialType:
+                      item.discountType ?? settings.defaultDiscountType,
+                  initialValue: item.discountValue,
+                  maxPercent: settings.maxDiscountPercent,
+                  maxAmount: settings.maxDiscountAmount,
+                  presetValues: settings.activeDiscountPreset.values,
+                  presetType: settings.activeDiscountPreset.type,
+                  onApply: (type, value) {
+                    context.read<SaleBloc>().add(
+                      SaleItemDiscountChanged(
+                        productId: item.product.id,
+                        discountType: type,
+                        discountValue: value,
+                      ),
+                    );
+                  },
+                  onClear: item.discountAmount > 0
+                      ? () => context.read<SaleBloc>().add(
+                          SaleItemDiscountCleared(item.product.id),
+                        )
+                      : null,
+                ),
               ),
-              tooltip: context.l10n.discountDialogTitle,
-              onPressed: () => DiscountDialog.showItemDiscount(
-                context,
-                title: item.product.name,
-                currency: currency,
-                initialType: item.discountType ?? 'PERCENT',
-                initialValue: item.discountValue,
-                onApply: (type, value) {
-                  context.read<SaleBloc>().add(
-                    SaleItemDiscountChanged(
-                      productId: item.product.id,
-                      discountType: type,
-                      discountValue: value,
-                    ),
-                  );
-                },
-                onClear: item.discountAmount > 0
-                    ? () => context.read<SaleBloc>().add(
-                        SaleItemDiscountCleared(item.product.id),
-                      )
-                    : null,
-              ),
-            ),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [

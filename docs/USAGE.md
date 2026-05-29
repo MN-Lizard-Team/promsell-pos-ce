@@ -161,9 +161,9 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 - Toggle between **List** and **Grid** view with the icon pair in the app bar
 - Use category **filter chips** to narrow the catalog; combined with the search bar
-- Each product shows an image avatar (`Image.network` with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
+- Each product shows an image avatar (local file from gallery/camera, or `Image.network` with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
 - Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form: paste an image URL in the header for a live rounded preview; fill name, price, quantity, category; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
+- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed (800px, 80% JPEG) and saved locally; or paste an image URL for future online sync; fill name, price, quantity, category; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
 - Search filters by name and category in real time
 
@@ -217,6 +217,12 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Show post-sale preview** | Show preview in success dialog |
 | **Allow oversell** | Permit selling beyond available stock (default off) |
 | **Low stock threshold** | Stock count at which the product card turns red (default `5`) |
+| **Enable item discount** | Show discount button on each cart item (default off) |
+| **Enable cart discount** | Show bill-wide discount button below subtotal (default off) |
+| **Max discount percent** | Upper limit for percentage discounts (default `0` = unlimited) |
+| **Max discount amount** | Upper limit for fixed-amount discounts (default `0` = unlimited) |
+| **Discount presets** | Named preset groups with type (%/฿) and quick-apply values |
+| **Active discount preset** | Which preset group is active in the sale discount dialog |
 
 To save text-field changes, tap the **Save** button in the app bar or at the bottom of the page.
 
@@ -304,7 +310,7 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart       # Database class, schema v2, migration, indexes, seed
+├── app_database.dart       # Database class, schema v4, migration, indexes, seed
 ├── app_database.g.dart     # GENERATED — do not edit
 └── tables/
     ├── products_table.dart
@@ -334,9 +340,9 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **3** (v0.5.3). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **4** (v0.5.4). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
-> **Note:** v0.5.3 uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
+> **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 
 ---
 
@@ -391,7 +397,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **216 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **215 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
 
 ### Running tests
 

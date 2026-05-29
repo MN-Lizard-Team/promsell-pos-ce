@@ -30,7 +30,11 @@ class ProductTile extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
             child: Row(
               children: [
-                ProductAvatar(imageUrl: product.imageUrl, size: 52),
+                ProductAvatar(
+                  imagePath: product.imagePath,
+                  imageUrl: product.imageUrl,
+                  size: 52,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

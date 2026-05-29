@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.5.3
+# Database Handbook — Promsell POS CE v0.5.4
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -27,7 +27,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 3 |
+| **Schema version** | 4 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -62,6 +62,7 @@ erDiagram
         int stock
         text categoryId FK
         text imageUrl
+        text imagePath
         bool trackStock
         bool isActive
         datetime createdAt
@@ -202,7 +203,8 @@ Source: `lib/core/database/tables/products_table.dart`
 | `cost` | REAL | Yes | — | |
 | `stock` | INTEGER | No | `0` | |
 | `categoryId` | TEXT | Yes | — | Logical ref → categories |
-| `imageUrl` | TEXT | Yes | — | |
+| `imageUrl` | TEXT | Yes | — | Network URL for future online sync |
+| `imagePath` | TEXT | Yes | — | Local file path from gallery/camera pick |
 | `trackStock` | BOOLEAN | No | `true` | `false` = service item: skip stock check, no deduction, show ∞ in UI |
 | `isActive` | BOOLEAN | No | `true` | |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
@@ -636,7 +638,7 @@ Future<void> upsertDraft(String cartId, SaleState state) async {
 
 ### Current strategy (v0.5.x, pre-release)
 
-Schema version 2→3 uses **incremental migration** (non-destructive). Earlier versions (v1→v2) used destructive drop+recreate.
+Schema version 2→3 and 3→4 use **incremental migration** (non-destructive). Earlier versions (v1→v2) used destructive drop+recreate.
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -654,7 +656,7 @@ onUpgrade: (m, from, to) async {
 
 ### Production migration (future)
 
-Schema v3 already uses incremental migration:
+Schema v3→v4 incremental migration:
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -663,7 +665,7 @@ onUpgrade: (m, from, to) async {
     await m.addColumn(draftCarts, draftCarts.cartDiscountValue);
   }
   if (from < 4) {
-    await m.createTable(newTable);
+    await m.addColumn(products, products.imagePath);
   }
 },
 ```
@@ -841,4 +843,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.5.3 · Schema v3 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.5.4 · Schema v4 · 9 tables · UUIDv4</sub>
