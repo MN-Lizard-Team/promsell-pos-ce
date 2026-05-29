@@ -31,6 +31,7 @@ class SaleReceiptDialog {
       total: sale.totalAmount,
       rate: sale.vatRate,
       mode: sale.vatMode,
+      isTotalPreTax: false,
     );
     final previewStyle = switch (settings.receiptPreviewStyle) {
       'card' => ReceiptPreviewStyle.card,

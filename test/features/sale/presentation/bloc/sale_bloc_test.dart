@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
@@ -16,10 +17,12 @@ void main() {
   setUp(() {
     mockCreateSale = MockCreateSale();
     mockDraftRepo = MockDraftCartRepository();
-    when(() => mockDraftRepo.createDraft(name: any(named: 'name')))
-        .thenAnswer((_) async => 'draft-id-1');
-    when(() => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')))
-        .thenAnswer((_) async {});
+    when(
+      () => mockDraftRepo.createDraft(name: any(named: 'name')),
+    ).thenAnswer((_) async => 'draft-id-1');
+    when(
+      () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
+    ).thenAnswer((_) async {});
     when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
     when(() => mockDraftRepo.deleteDraft(any())).thenAnswer((_) async {});
     when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
@@ -122,6 +125,7 @@ void main() {
           status: SaleStatus.success,
           lastSale: tSale,
           activeDraftId: 'draft-id-1',
+          activeDraftName: 'Bill #1',
         ),
       ],
     );
@@ -161,6 +165,95 @@ void main() {
         const SaleConfirmed(paymentMethod: 'cash', vatMode: 'NONE', vatRate: 0),
       ),
       expect: () => [],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleReset preserves cart discount and clears success status',
+      build: buildBloc,
+      seed: () => SaleState(
+        status: SaleStatus.success,
+        lastSale: tSale,
+        items: [tCartItem],
+        note: 'note',
+        activeDraftId: 'draft-1',
+        activeDraftName: 'Test Draft',
+        cartDiscountType: 'PERCENT',
+        cartDiscountValue: 10.0,
+      ),
+      act: (b) => b.add(const SaleReset()),
+      expect: () => [
+        SaleState(
+          items: [tCartItem],
+          note: 'note',
+          activeDraftId: 'draft-1',
+          activeDraftName: 'Test Draft',
+          cartDiscountType: 'PERCENT',
+          cartDiscountValue: 10.0,
+        ),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleDraftSwitched restores cart discount',
+      build: buildBloc,
+      seed: () => SaleState(
+        items: [tCartItem],
+        activeDraftId: 'draft-1',
+        activeDraftName: 'Old',
+        cartDiscountType: 'PERCENT',
+        cartDiscountValue: 10.0,
+      ),
+      setUp: () {
+        when(() => mockDraftRepo.loadDraft('draft-2')).thenAnswer(
+          (_) async => DraftCart(
+            id: 'draft-2',
+            name: 'New Draft',
+            items: [tCartItem],
+            cartDiscountType: 'AMOUNT',
+            cartDiscountValue: 20.0,
+            updatedAt: DateTime(2024),
+          ),
+        );
+      },
+      act: (b) => b.add(const SaleDraftSwitched('draft-2')),
+      expect: () => [
+        SaleState(
+          items: [tCartItem],
+          activeDraftId: 'draft-2',
+          activeDraftName: 'New Draft',
+          cartDiscountType: 'AMOUNT',
+          cartDiscountValue: 20.0,
+        ),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleDraftInitialized restores cart discount from existing draft',
+      build: buildBloc,
+      setUp: () {
+        when(() => mockDraftRepo.listDrafts()).thenAnswer(
+          (_) async => [
+            DraftCart(
+              id: 'draft-1',
+              name: 'Saved Draft',
+              items: [tCartItem],
+              cartDiscountType: 'PERCENT',
+              cartDiscountValue: 15.0,
+              updatedAt: DateTime(2024),
+            ),
+          ],
+        );
+      },
+      act: (b) => b.add(const SaleDraftInitialized()),
+      expect: () => [
+        SaleState(
+          items: [tCartItem],
+          activeDraftId: 'draft-1',
+          activeDraftName: 'Saved Draft',
+          cartDiscountType: 'PERCENT',
+          cartDiscountValue: 15.0,
+        ),
+      ],
     );
   });
 }

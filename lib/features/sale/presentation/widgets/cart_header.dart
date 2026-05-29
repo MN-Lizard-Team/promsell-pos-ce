@@ -15,31 +15,89 @@ class CartHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final draftName = state.activeDraftName?.isNotEmpty == true
+        ? state.activeDraftName!
+        : null;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 12, 8, 8),
+      padding: const EdgeInsets.fromLTRB(14, 8, 8, 4),
       child: Row(
         children: [
-          Icon(Icons.shopping_cart_outlined, color: theme.colorScheme.primary),
+          Icon(
+            Icons.shopping_cart_outlined,
+            color: theme.colorScheme.primary,
+            size: 22,
+          ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              context.l10n.cartTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  draftName ?? context.l10n.cartTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (draftName != null)
+                  Text(
+                    context.l10n.cartTitle,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
             ),
+          ),
+          IconButton(
+            onPressed: () => _showCreateDialog(context),
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            tooltip: context.l10n.newDraft,
+            visualDensity: VisualDensity.compact,
           ),
           if (!state.isEmpty)
             TextButton.icon(
               onPressed: () => _confirmClearCart(context),
-              icon: const Icon(Icons.delete_outline),
+              icon: const Icon(Icons.delete_outline, size: 18),
               label: Text(context.l10n.clearCart),
               style: TextButton.styleFrom(
                 foregroundColor: theme.colorScheme.error,
-                minimumSize: const Size(48, 48),
+                visualDensity: VisualDensity.compact,
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateDialog(BuildContext context) {
+    final bloc = context.read<SaleBloc>();
+    final ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(context.l10n.newDraft),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: InputDecoration(hintText: context.l10n.draftNameHint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(context.l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = ctrl.text.trim().isEmpty ? null : ctrl.text.trim();
+              bloc.add(SaleDraftCreated(name: name));
+              Navigator.pop(context);
+            },
+            child: Text(context.l10n.save),
+          ),
         ],
       ),
     );

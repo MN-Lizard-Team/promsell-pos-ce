@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.5.2** — Drift build optimization (generated code -44% lines, -49% size) and page structure refactoring across all features (private widgets extracted into public `widgets/` subfolders).
+> **Latest Release: v0.5.3** — EXCLUSIVE VAT payment fix, receipt double-VAT fix, draft cart discount persistence, and bill UX improvements (name display, New Bill button, auto-naming).
  
 ---
  
@@ -214,6 +214,7 @@ features/<name>/
 - [x] **R3 — Cashier UX** (v0.5.0): Draft carts (multi-draft, auto-save), per-item + per-cart discounts, VAT post-discount, `trackStock` per-product, `allowOversell` + low-stock threshold
 - [x] **R4 — UX Polish & Accessibility** (v0.5.1): Theme accessibility (borders, contrast, ColorScheme overrides), overlay toast, cart undo, DI compile-time safety, lazy tabs
 - [x] **R4 — Code Quality** (v0.5.2): Drift build optimization, page structure refactoring (private widgets → public `widgets/` subfolders across 6 features)
+- [x] **R4 — VAT & Draft Cart Fixes** (v0.5.3): EXCLUSIVE VAT payment fix, receipt double-VAT fix, draft cart discount persistence, bill UX (name display, New Bill button, auto-naming)
 - [ ] **R4 — Merchant Tools**: PromptPay QR, backup/restore
 - [ ] **R5 — Operations**: Daily close, onboarding wizard, final polish
 
@@ -232,12 +233,12 @@ features/<name>/
 
 ## Testing
 
-**208 tests** covering every application layer:
+**216 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
 | **Domain** | Entity equality, use case delegation, discount math | ~30 |
-| **BLoC / Cubit** | Event→state transitions, discount events, draft events, stock policy | ~25 |
+| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy | ~28 |
 | **Repository** | Impl with mocked datasources | ~15 |
 | **Datasource** | Real in-memory SQLite (Drift) | ~11 |
 | **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService | ~15 |

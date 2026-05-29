@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -40,9 +40,14 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultSettings();
     },
     onUpgrade: (m, from, to) async {
-      // v0.4.1: no destructive migrations in patch releases.
-      // Production schema changes (v3+) will use incremental steps:
-      // if (from < 3) { await m.addColumn(...); }
+      if (from < 3) {
+        await customStatement(
+          'ALTER TABLE draft_carts ADD COLUMN cart_discount_type TEXT',
+        );
+        await customStatement(
+          'ALTER TABLE draft_carts ADD COLUMN cart_discount_value REAL',
+        );
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA journal_mode=WAL');

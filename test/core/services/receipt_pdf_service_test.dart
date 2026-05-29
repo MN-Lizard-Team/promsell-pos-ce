@@ -23,6 +23,8 @@ void main() {
           price: 100.0,
           qty: 1,
           subtotal: 100.0,
+          discountAmount: 0.0,
+          vatAmount: 0.0,
         ),
       ],
     );
@@ -110,6 +112,37 @@ void main() {
         expect(result.subtotal, 100.0);
         expect(result.vatAmount, closeTo(7.0, 0.01));
         expect(result.totalWithVat, closeTo(107.0, 0.01));
+      });
+
+      test('EXCLUSIVE with isTotalPreTax=false decomposes VAT from total', () {
+        final result = service.calculateVat(
+          total: 107,
+          rate: 7,
+          mode: 'EXCLUSIVE',
+          isTotalPreTax: false,
+        );
+        expect(result, isNotNull);
+        expect(result!.isInclusive, isFalse);
+        expect(result.totalWithVat, 107.0);
+        expect(result.vatAmount, closeTo(7.0, 0.01));
+        expect(result.subtotal, closeTo(100.0, 0.01));
+      });
+
+      test('INCLUSIVE with rounding produces exact 2-decimal values', () {
+        final result = service.calculateVat(
+          total: 99.99,
+          rate: 7,
+          mode: 'INCLUSIVE',
+        );
+        expect(result, isNotNull);
+        expect(
+          result!.subtotal,
+          double.parse(result.subtotal.toStringAsFixed(2)),
+        );
+        expect(
+          result.vatAmount,
+          double.parse(result.vatAmount.toStringAsFixed(2)),
+        );
       });
     });
   });

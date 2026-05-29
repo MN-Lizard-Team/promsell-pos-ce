@@ -15,9 +15,22 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart'
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class PaymentSheet extends StatefulWidget {
-  const PaymentSheet({super.key, required this.total});
+  const PaymentSheet({
+    super.key,
+    required this.preTaxTotal,
+    required this.vatInfo,
+  });
 
-  final double total;
+  final double preTaxTotal;
+  final ({
+    double subtotal,
+    double vatAmount,
+    double totalWithVat,
+    bool isInclusive,
+  })?
+  vatInfo;
+
+  double get effectiveTotal => vatInfo?.totalWithVat ?? preTaxTotal;
 
   @override
   State<PaymentSheet> createState() => _PaymentSheetState();
@@ -31,7 +44,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
   bool _submitted = false;
 
   double get _received => double.tryParse(_receivedCtrl.text) ?? 0;
-  double get _change => _received - widget.total;
+  double get _change => _received - widget.effectiveTotal;
 
   @override
   void dispose() {
@@ -189,7 +202,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                                 ),
                               ),
                               MoneyText(
-                                value: widget.total,
+                                value: widget.effectiveTotal,
                                 currency: currency,
                                 style: theme.textTheme.headlineSmall,
                                 color: theme.colorScheme.primary,
@@ -388,7 +401,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 builder: (_, state) {
                   final isProcessing = state.status == SaleStatus.processing;
                   final canConfirm =
-                      _method != 'cash' || _received >= widget.total;
+                      _method != 'cash' || _received >= widget.effectiveTotal;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -420,7 +433,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                         label: Text(
                           context.l10n.confirmPaymentAmount(
                             currency,
-                            widget.total.toStringAsFixed(2),
+                            widget.effectiveTotal.toStringAsFixed(2),
                           ),
                         ),
                       ),
@@ -436,13 +449,13 @@ class _PaymentSheetState extends State<PaymentSheet> {
   }
 
   List<double> _quickAmounts() {
-    final roundedTen = (widget.total / 10).ceil() * 10.0;
-    final roundedHundred = (widget.total / 100).ceil() * 100.0;
-    final nextTen = roundedTen > widget.total ? roundedTen : roundedTen + 10;
-    final nextHundred = roundedHundred > widget.total
+    final total = widget.effectiveTotal;
+    final roundedTen = (total / 10).ceil() * 10.0;
+    final roundedHundred = (total / 100).ceil() * 100.0;
+    final nextTen = roundedTen > total ? roundedTen : roundedTen + 10;
+    final nextHundred = roundedHundred > total
         ? roundedHundred
         : roundedHundred + 100;
-    return {widget.total, nextTen, nextHundred}.where((v) => v > 0).toList()
-      ..sort();
+    return {total, nextTen, nextHundred}.where((v) => v > 0).toList()..sort();
   }
 }

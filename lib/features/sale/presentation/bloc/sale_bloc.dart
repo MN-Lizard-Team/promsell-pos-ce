@@ -95,6 +95,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       SaleState(
         activeDraftId: state.activeDraftId,
         activeDraftName: state.activeDraftName,
+        cartDiscountType: state.cartDiscountType,
+        cartDiscountValue: state.cartDiscountValue,
       ),
     );
     _scheduleSave();
@@ -191,6 +193,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         note: state.note,
         activeDraftId: state.activeDraftId,
         activeDraftName: state.activeDraftName,
+        cartDiscountType: state.cartDiscountType,
+        cartDiscountValue: state.cartDiscountValue,
       ),
     );
   }
@@ -218,12 +222,15 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       if (prevDraftId != null) {
         await _draftRepo.deleteDraft(prevDraftId);
       }
-      final newDraftId = await _draftRepo.createDraft();
+      final draftCount = await _draftRepo.countDrafts();
+      final newDraftName = 'Bill #${draftCount + 1}';
+      final newDraftId = await _draftRepo.createDraft(name: newDraftName);
       emit(
         SaleState(
           status: SaleStatus.success,
           lastSale: sale,
           activeDraftId: newDraftId,
+          activeDraftName: newDraftName,
         ),
       );
     } catch (e) {
@@ -239,7 +246,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 500), () {
       if (!isClosed && state.activeDraftId == draftId) {
-        _draftRepo.saveDraft(draftId, state);
+        _draftRepo.saveDraft(draftId, state, name: state.activeDraftName);
       }
     });
   }
@@ -261,6 +268,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
             activeDraftName: draft.name,
             items: draft.items,
             note: draft.note ?? '',
+            cartDiscountType: draft.cartDiscountType,
+            cartDiscountValue: draft.cartDiscountValue,
           ),
         );
       }
@@ -276,7 +285,11 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   ) async {
     if (event.draftId == state.activeDraftId) return;
     if (state.activeDraftId != null) {
-      await _draftRepo.saveDraft(state.activeDraftId!, state);
+      await _draftRepo.saveDraft(
+        state.activeDraftId!,
+        state,
+        name: state.activeDraftName,
+      );
     }
     final draft = await _draftRepo.loadDraft(event.draftId);
     if (draft == null) return;
@@ -286,6 +299,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         activeDraftName: draft.name,
         items: draft.items,
         note: draft.note ?? '',
+        cartDiscountType: draft.cartDiscountType,
+        cartDiscountValue: draft.cartDiscountValue,
       ),
     );
   }
@@ -297,10 +312,14 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     final count = await _draftRepo.countDrafts();
     if (count >= 10) return;
     if (state.activeDraftId != null) {
-      await _draftRepo.saveDraft(state.activeDraftId!, state);
+      await _draftRepo.saveDraft(
+        state.activeDraftId!,
+        state,
+        name: state.activeDraftName,
+      );
     }
     final id = await _draftRepo.createDraft(name: event.name);
-    emit(SaleState(activeDraftId: id, activeDraftName: event.name));
+    emit(SaleState(activeDraftId: id, activeDraftName: event.name ?? 'Draft'));
   }
 
   Future<void> _onDraftDeleted(
@@ -318,6 +337,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
           activeDraftName: draft.name,
           items: draft.items,
           note: draft.note ?? '',
+          cartDiscountType: draft.cartDiscountType,
+          cartDiscountValue: draft.cartDiscountValue,
         ),
       );
     } else {

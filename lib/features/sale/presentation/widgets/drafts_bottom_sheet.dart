@@ -41,6 +41,35 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
     _draftsFuture = sl<DraftCartRepository>().listDrafts();
   });
 
+  void _showCreateDialog(BuildContext context, dynamic l10n) {
+    final ctrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(l10n.newDraft),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.draftNameHint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = ctrl.text.trim().isEmpty ? null : ctrl.text.trim();
+              context.read<SaleBloc>().add(SaleDraftCreated(name: name));
+              Navigator.pop(context);
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -78,10 +107,7 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                   ),
                   const Spacer(),
                   FilledButton.tonalIcon(
-                    onPressed: () {
-                      context.read<SaleBloc>().add(const SaleDraftCreated());
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => _showCreateDialog(context, l10n),
                     icon: const Icon(Icons.add, size: 18),
                     label: Text(l10n.newDraft),
                   ),
@@ -128,12 +154,21 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                                   context.read<SaleBloc>().add(
                                     SaleDraftDeleted(draft.id),
                                   );
-                                  _reload();
+                                  Future.delayed(
+                                    const Duration(milliseconds: 300),
+                                    _reload,
+                                  );
                                 }
                               : null,
-                          onRename: (name) => context.read<SaleBloc>().add(
-                            SaleDraftRenamed(draftId: draft.id, name: name),
-                          ),
+                          onRename: (name) {
+                            context.read<SaleBloc>().add(
+                              SaleDraftRenamed(draftId: draft.id, name: name),
+                            );
+                            Future.delayed(
+                              const Duration(milliseconds: 300),
+                              _reload,
+                            );
+                          },
                         );
                       },
                     );

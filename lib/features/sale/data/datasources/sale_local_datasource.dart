@@ -44,6 +44,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     receiptNumber: s.receiptNumber,
     status: s.status,
     subtotalAmount: s.subtotalAmount,
+    discountType: s.discountType,
+    discountValue: s.discountValue,
+    discountAmount: s.discountAmount,
     vatMode: s.vatMode,
     vatRate: s.vatRate,
     vatAmount: s.vatAmount,
@@ -65,6 +68,8 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             price: i.price,
             qty: i.qty,
             subtotal: i.subtotal,
+            discountAmount: i.discountAmount,
+            vatAmount: i.vatAmount,
           ),
         )
         .toList(),

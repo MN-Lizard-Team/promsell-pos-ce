@@ -61,7 +61,7 @@ void main() {
       ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 3)]));
 
       await tester.pumpApp(
-        const PaymentSheet(total: 30.0),
+        const PaymentSheet(preTaxTotal: 30.0, vatInfo: null),
         saleBloc: mockSaleBloc,
         settingsCubit: mockSettingsCubit,
       );
@@ -75,7 +75,7 @@ void main() {
       ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 1)]));
 
       await tester.pumpApp(
-        const PaymentSheet(total: 10.0),
+        const PaymentSheet(preTaxTotal: 10.0, vatInfo: null),
         saleBloc: mockSaleBloc,
         settingsCubit: mockSettingsCubit,
       );
@@ -91,7 +91,7 @@ void main() {
         );
 
         await tester.pumpApp(
-          const PaymentSheet(total: 30.0),
+          const PaymentSheet(preTaxTotal: 30.0, vatInfo: null),
           saleBloc: mockSaleBloc,
           settingsCubit: mockSettingsCubit,
         );

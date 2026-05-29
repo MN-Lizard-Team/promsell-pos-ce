@@ -15,12 +15,14 @@ void main() {
         price: 100.0,
         qty: 2,
         subtotal: 200.0,
+        discountAmount: 0.0,
+        vatAmount: 0.0,
       );
       expect(a, equals(b));
     });
 
     test('props contains all fields', () {
-      expect(tSaleItem.props.length, 7);
+      expect(tSaleItem.props.length, 9);
     });
   });
 
@@ -31,6 +33,9 @@ void main() {
         id: 'sale-0001-0001-0001-000000000001',
         totalAmount: 200.0,
         subtotalAmount: 200.0,
+        discountType: null,
+        discountValue: null,
+        discountAmount: 0.0,
         vatMode: 'NONE',
         vatRate: 0.0,
         vatAmount: 0.0,
@@ -55,7 +60,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tSale.props.length, 16);
+      expect(tSale.props.length, 19);
     });
   });
 }

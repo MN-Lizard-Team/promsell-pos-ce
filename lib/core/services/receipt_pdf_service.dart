@@ -104,6 +104,7 @@ class ReceiptPdfService {
       total: sale.totalAmount,
       rate: settings.vatRate,
       mode: settings.vatMode,
+      isTotalPreTax: false,
     );
 
     doc.addPage(
@@ -273,25 +274,37 @@ class ReceiptPdfService {
     required double total,
     required double rate,
     required String mode,
+    bool isTotalPreTax = true,
   }) {
     if (mode == 'NONE') return null;
     final r = rate / 100;
     if (mode == 'INCLUSIVE') {
-      final subtotal = total / (1 + r);
-      final vatAmount = total - subtotal;
+      final subtotal = double.parse((total / (1 + r)).toStringAsFixed(2));
+      final vatAmount = double.parse((total - subtotal).toStringAsFixed(2));
       return (
         subtotal: subtotal,
         vatAmount: vatAmount,
-        totalWithVat: total,
+        totalWithVat: double.parse(total.toStringAsFixed(2)),
         isInclusive: true,
       );
     }
     // EXCLUSIVE
-    final vatAmount = total * r;
+    if (isTotalPreTax) {
+      final vatAmount = double.parse((total * r).toStringAsFixed(2));
+      return (
+        subtotal: double.parse(total.toStringAsFixed(2)),
+        vatAmount: vatAmount,
+        totalWithVat: double.parse((total + vatAmount).toStringAsFixed(2)),
+        isInclusive: false,
+      );
+    }
+    // total already includes VAT (e.g. sale.totalAmount from DB)
+    final vatAmount = double.parse((total * r / (1 + r)).toStringAsFixed(2));
+    final subtotal = double.parse((total - vatAmount).toStringAsFixed(2));
     return (
-      subtotal: total,
+      subtotal: subtotal,
       vatAmount: vatAmount,
-      totalWithVat: total + vatAmount,
+      totalWithVat: double.parse(total.toStringAsFixed(2)),
       isInclusive: false,
     );
   }

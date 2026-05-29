@@ -9,6 +9,8 @@ class SaleItem extends Equatable {
     required this.price,
     required this.qty,
     required this.subtotal,
+    this.discountAmount = 0.0,
+    this.vatAmount = 0.0,
   });
 
   final String id;
@@ -18,6 +20,8 @@ class SaleItem extends Equatable {
   final double price;
   final int qty;
   final double subtotal;
+  final double discountAmount;
+  final double vatAmount;
 
   @override
   List<Object?> get props => [
@@ -28,6 +32,8 @@ class SaleItem extends Equatable {
     price,
     qty,
     subtotal,
+    discountAmount,
+    vatAmount,
   ];
 }
 
@@ -39,6 +45,9 @@ class Sale extends Equatable {
     this.receiptNumber,
     this.status = 'COMPLETED',
     this.subtotalAmount = 0.0,
+    this.discountType,
+    this.discountValue,
+    this.discountAmount = 0.0,
     this.vatMode = 'NONE',
     this.vatRate = 0.0,
     this.vatAmount = 0.0,
@@ -55,6 +64,9 @@ class Sale extends Equatable {
   final String? receiptNumber;
   final String status;
   final double subtotalAmount;
+  final String? discountType;
+  final double? discountValue;
+  final double discountAmount;
   final String vatMode;
   final double vatRate;
   final double vatAmount;
@@ -76,6 +88,9 @@ class Sale extends Equatable {
     receiptNumber,
     status,
     subtotalAmount,
+    discountType,
+    discountValue,
+    discountAmount,
     vatMode,
     vatRate,
     vatAmount,

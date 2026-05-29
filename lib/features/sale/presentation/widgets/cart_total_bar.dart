@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/discount_dialog.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CartTotalBar extends StatelessWidget {
   const CartTotalBar({super.key, required this.state, required this.currency});
@@ -62,11 +65,16 @@ class CartTotalBar extends StatelessWidget {
               initialValue: state.cartDiscountValue,
               onApply: (type, value) {
                 context.read<SaleBloc>().add(
-                  SaleCartDiscountChanged(discountType: type, discountValue: value),
+                  SaleCartDiscountChanged(
+                    discountType: type,
+                    discountValue: value,
+                  ),
                 );
               },
               onClear: state.hasCartDiscount
-                  ? () => context.read<SaleBloc>().add(const SaleCartDiscountCleared())
+                  ? () => context.read<SaleBloc>().add(
+                      const SaleCartDiscountCleared(),
+                    )
                   : null,
             ),
             icon: Icon(
@@ -113,13 +121,19 @@ class CartTotalBar extends StatelessWidget {
   }
 
   void _showPayment(BuildContext context, SaleState state) {
+    final settings = context.read<SettingsCubit>().state.settings;
+    final vatInfo = sl<ReceiptPdfService>().calculateVat(
+      total: state.total,
+      rate: settings.vatRate,
+      mode: settings.vatMode,
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (_) => BlocProvider.value(
         value: context.read<SaleBloc>(),
-        child: PaymentSheet(total: state.total),
+        child: PaymentSheet(preTaxTotal: state.total, vatInfo: vatInfo),
       ),
     );
   }

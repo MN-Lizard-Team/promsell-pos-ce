@@ -17,6 +17,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.3] - 2026-05-29
+
+VAT calculation and payment fixes, draft cart persistence overhaul, and bill UX improvements.
+
+### Highlights
+
+- **EXCLUSIVE VAT payment fix** — Payment sheet now charges the correct VAT-inclusive total.
+- **Receipt double-VAT fix** — Reprinting receipts no longer adds VAT twice for EXCLUSIVE mode.
+- **Draft cart discount round-trip** — Cart-level discounts persist across draft switch, app restart, clear, and delete.
+- **Bill UX improvements** — Cart header shows bill name, New Bill button on cart, auto-named bills after sale, name dialog on create.
+
+### Added
+
+- **`CartHeader` bill name display** — Shows `activeDraftName` as title with `cartTitle` as subtitle.
+- **New Bill button on cart** — `IconButton` in `CartHeader` opens name dialog and dispatches `SaleDraftCreated`.
+- **New Draft name dialog** — `DraftsBottomSheet` "New Draft" button now prompts for a name before creating.
+- **Auto-named bills** — `_onConfirmed` creates draft with name `Bill #N` based on draft count.
+
+### Fixed
+
+#### VAT & Payment
+
+- **Payment sheet undercharged EXCLUSIVE VAT** — `PaymentSheet` used `SaleState.total` (pre-tax) as the amount to pay; now computes `effectiveTotal` including VAT for EXCLUSIVE mode. Affected: confirm button label, cash validation, change calculation, quick-amount chips.
+- **Receipt double-VAT on reprint** — `ReceiptPdfService.calculateVat` received `sale.totalAmount` (already includes VAT for EXCLUSIVE) and added VAT again. Added `isTotalPreTax` parameter; post-sale callers now pass `isTotalPreTax: false`.
+- **`calculateVat` floating-point drift** — No `toStringAsFixed(2)` rounding; could produce values like `7.0000000001`. All outputs now rounded.
+
+#### Entity & Data Integrity
+
+- **Sale entity missing discount fields** — `_buildSale()` did not map `discountType`, `discountValue`, `discountAmount` from `SaleData`; fields added to entity and mapped in datasource.
+- **SaleItem entity missing discount/vat fields** — `_buildSale()` did not map `discountAmount`, `vatAmount` from `SaleItemData`; fields added to entity and mapped in datasource.
+
+#### Draft Cart Persistence
+
+- **Draft names cleared on every save** — `upsertDraft` always set `name` to `Value(null)` from auto-save; now uses `Value.absent()` to preserve existing names.
+- **Cart discount lost on draft switch/restart** — `DraftCarts` table and `DraftCart` entity had no `cartDiscountType`/`cartDiscountValue` fields; added to DB schema, entity, datasource, and bloc state restoration.
+- **`SaleReset` dropped cart discount** — `_onReset` emitted `SaleState` without `cartDiscountType`/`cartDiscountValue`; now preserved.
+- **`_onCartCleared` dropped cart discount** — Clearing the cart lost `cartDiscountType`/`cartDiscountValue`; now preserved.
+- **`_onDraftDeleted` didn't restore cart discount** — After deleting the active draft, the replacement draft's discount fields were not restored in state.
+- **Draft total ignored cart discount** — `DraftCart.total` summed item subtotals only; now subtracts `discountAmount` like `SaleState.total`.
+
+#### Bill UX
+
+- **Delete didn't refresh draft list** — `DraftsBottomSheet` called `_reload()` synchronously after delete, but BLoC event hadn't completed yet; draft remained visible until sheet was reopened. Now uses `Future.delayed(300ms)`.
+- **Rename didn't refresh draft list** — Same race condition as delete; now uses `Future.delayed(300ms)` to wait for DB write.
+- **New draft after sale had no name** — `_onConfirmed` created a draft with `createDraft()` (no name); now uses `createDraft(name: 'Bill #N')` and sets `activeDraftName`.
+- **CartHeader overflow** — Adding draft name subtitle + New Bill button caused `RenderFlex` overflow by 14px in compact cart; fixed with smaller text styles (`titleSmall`/`labelSmall`), compact `visualDensity`, and reduced padding.
+
+### Changed
+
+- **`PaymentSheet`** — Constructor changed from `total` to `preTaxTotal` + `vatInfo`; computes `effectiveTotal` internally.
+- **`CartTotalBar`** — Now computes `vatInfo` via `ReceiptPdfService.calculateVat` and passes it to `PaymentSheet`.
+- **`calculateVat`** — New `isTotalPreTax` parameter (default `true` for backward compatibility with pre-sale usage).
+- **`DraftCarts` table** — Schema v2→v3; added `cart_discount_type` and `cart_discount_value` columns via `ALTER TABLE` migration.
+- **`DraftCart` entity** — Added `cartDiscountType`, `cartDiscountValue`, `discountAmount`, and corrected `total` getter.
+- **`SaleBloc`** — All `saveDraft` calls now pass `activeDraftName`; `_onDraftInitialized`, `_onDraftSwitched`, `_onReset`, `_onCartCleared`, `_onDraftDeleted` restore cart discount fields; `_onConfirmed` auto-names new draft `Bill #N`.
+- **`CartHeader`** — Shows `activeDraftName` as title with `cartTitle` as subtitle; added New Bill button with name dialog.
+- **`DraftsBottomSheet`** — `_reload()` delayed 300ms after rename/delete to avoid race condition; New Draft button now prompts for name before creating.
+
+`flutter analyze` → **0 issues** · `flutter test` → **216/216 passing**
+
+---
+
 ## [0.5.2] - 2026-05-29
 
 Drift build optimization and page structure refactoring across all features.
@@ -582,7 +644,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.2...v0.5.0

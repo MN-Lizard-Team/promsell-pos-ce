@@ -48,8 +48,10 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
         _db.draftCarts,
       )..where((t) => t.id.equals(cartId))).write(
         DraftCartsCompanion(
-          name: Value(name),
+          name: name != null ? Value(name) : const Value.absent(),
           note: Value(state.note.isEmpty ? null : state.note),
+          cartDiscountType: Value(state.cartDiscountType),
+          cartDiscountValue: Value(state.cartDiscountValue),
           updatedAt: Value(DateTime.now()),
         ),
       );
@@ -110,6 +112,8 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       id: cart.id,
       name: cart.name,
       note: cart.note,
+      cartDiscountType: cart.cartDiscountType,
+      cartDiscountValue: cart.cartDiscountValue,
       items: items,
       updatedAt: cart.updatedAt,
     );
@@ -154,6 +158,8 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           id: cart.id,
           name: cart.name,
           note: cart.note,
+          cartDiscountType: cart.cartDiscountType,
+          cartDiscountValue: cart.cartDiscountValue,
           items: items,
           updatedAt: cart.updatedAt,
         ),

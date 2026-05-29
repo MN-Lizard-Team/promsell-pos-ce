@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.5.2+1
+version: 0.5.3+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +121,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 208+ tests pass
+- [ ] `flutter test` — all 216+ tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date

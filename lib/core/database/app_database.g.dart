@@ -3353,6 +3353,23 @@ class $DraftCartsTable extends DraftCarts
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumn<String> cartDiscountType = GeneratedColumn<String>(
+    'cart_discount_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumn<double> cartDiscountValue =
+      GeneratedColumn<double>(
+        'cart_discount_value',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
     aliasedName,
@@ -3383,6 +3400,8 @@ class $DraftCartsTable extends DraftCarts
     id,
     name,
     note,
+    cartDiscountType,
+    cartDiscountValue,
     createdAt,
     updatedAt,
     deviceId,
@@ -3410,6 +3429,14 @@ class $DraftCartsTable extends DraftCarts
         DriftSqlType.string,
         data['${effectivePrefix}note'],
       ),
+      cartDiscountType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cart_discount_type'],
+      ),
+      cartDiscountValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cart_discount_value'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -3435,6 +3462,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
   final String id;
   final String? name;
   final String? note;
+  final String? cartDiscountType;
+  final double? cartDiscountValue;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? deviceId;
@@ -3442,6 +3471,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     required this.id,
     this.name,
     this.note,
+    this.cartDiscountType,
+    this.cartDiscountValue,
     required this.createdAt,
     required this.updatedAt,
     this.deviceId,
@@ -3456,6 +3487,12 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
+    if (!nullToAbsent || cartDiscountType != null) {
+      map['cart_discount_type'] = Variable<String>(cartDiscountType);
+    }
+    if (!nullToAbsent || cartDiscountValue != null) {
+      map['cart_discount_value'] = Variable<double>(cartDiscountValue);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deviceId != null) {
@@ -3469,6 +3506,12 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
       id: Value(id),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      cartDiscountType: cartDiscountType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cartDiscountType),
+      cartDiscountValue: cartDiscountValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cartDiscountValue),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deviceId: deviceId == null && nullToAbsent
@@ -3486,6 +3529,10 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String?>(json['name']),
       note: serializer.fromJson<String?>(json['note']),
+      cartDiscountType: serializer.fromJson<String?>(json['cartDiscountType']),
+      cartDiscountValue: serializer.fromJson<double?>(
+        json['cartDiscountValue'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deviceId: serializer.fromJson<String?>(json['deviceId']),
@@ -3498,6 +3545,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String?>(name),
       'note': serializer.toJson<String?>(note),
+      'cartDiscountType': serializer.toJson<String?>(cartDiscountType),
+      'cartDiscountValue': serializer.toJson<double?>(cartDiscountValue),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deviceId': serializer.toJson<String?>(deviceId),
@@ -3508,6 +3557,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     String? id,
     Value<String?> name = const Value.absent(),
     Value<String?> note = const Value.absent(),
+    Value<String?> cartDiscountType = const Value.absent(),
+    Value<double?> cartDiscountValue = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<String?> deviceId = const Value.absent(),
@@ -3515,6 +3566,12 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     id: id ?? this.id,
     name: name.present ? name.value : this.name,
     note: note.present ? note.value : this.note,
+    cartDiscountType: cartDiscountType.present
+        ? cartDiscountType.value
+        : this.cartDiscountType,
+    cartDiscountValue: cartDiscountValue.present
+        ? cartDiscountValue.value
+        : this.cartDiscountValue,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deviceId: deviceId.present ? deviceId.value : this.deviceId,
@@ -3524,6 +3581,12 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       note: data.note.present ? data.note.value : this.note,
+      cartDiscountType: data.cartDiscountType.present
+          ? data.cartDiscountType.value
+          : this.cartDiscountType,
+      cartDiscountValue: data.cartDiscountValue.present
+          ? data.cartDiscountValue.value
+          : this.cartDiscountValue,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
@@ -3536,6 +3599,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('note: $note, ')
+          ..write('cartDiscountType: $cartDiscountType, ')
+          ..write('cartDiscountValue: $cartDiscountValue, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deviceId: $deviceId')
@@ -3544,8 +3609,16 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, note, createdAt, updatedAt, deviceId);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    note,
+    cartDiscountType,
+    cartDiscountValue,
+    createdAt,
+    updatedAt,
+    deviceId,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3553,6 +3626,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
           other.id == this.id &&
           other.name == this.name &&
           other.note == this.note &&
+          other.cartDiscountType == this.cartDiscountType &&
+          other.cartDiscountValue == this.cartDiscountValue &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deviceId == this.deviceId);
@@ -3562,6 +3637,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
   final Value<String> id;
   final Value<String?> name;
   final Value<String?> note;
+  final Value<String?> cartDiscountType;
+  final Value<double?> cartDiscountValue;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<String?> deviceId;
@@ -3570,6 +3647,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.note = const Value.absent(),
+    this.cartDiscountType = const Value.absent(),
+    this.cartDiscountValue = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deviceId = const Value.absent(),
@@ -3579,6 +3658,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     required String id,
     this.name = const Value.absent(),
     this.note = const Value.absent(),
+    this.cartDiscountType = const Value.absent(),
+    this.cartDiscountValue = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deviceId = const Value.absent(),
@@ -3588,6 +3669,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     Expression<String>? id,
     Expression<String>? name,
     Expression<String>? note,
+    Expression<String>? cartDiscountType,
+    Expression<double>? cartDiscountValue,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? deviceId,
@@ -3597,6 +3680,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (note != null) 'note': note,
+      if (cartDiscountType != null) 'cart_discount_type': cartDiscountType,
+      if (cartDiscountValue != null) 'cart_discount_value': cartDiscountValue,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deviceId != null) 'device_id': deviceId,
@@ -3608,6 +3693,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     Value<String>? id,
     Value<String?>? name,
     Value<String?>? note,
+    Value<String?>? cartDiscountType,
+    Value<double?>? cartDiscountValue,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<String?>? deviceId,
@@ -3617,6 +3704,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
       id: id ?? this.id,
       name: name ?? this.name,
       note: note ?? this.note,
+      cartDiscountType: cartDiscountType ?? this.cartDiscountType,
+      cartDiscountValue: cartDiscountValue ?? this.cartDiscountValue,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deviceId: deviceId ?? this.deviceId,
@@ -3635,6 +3724,12 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
+    }
+    if (cartDiscountType.present) {
+      map['cart_discount_type'] = Variable<String>(cartDiscountType.value);
+    }
+    if (cartDiscountValue.present) {
+      map['cart_discount_value'] = Variable<double>(cartDiscountValue.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -3657,6 +3752,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('note: $note, ')
+          ..write('cartDiscountType: $cartDiscountType, ')
+          ..write('cartDiscountValue: $cartDiscountValue, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deviceId: $deviceId, ')

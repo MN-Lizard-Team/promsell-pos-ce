@@ -149,5 +149,50 @@ void main() {
         emitsThrough(predicate<List>((list) => list.isNotEmpty)),
       );
     });
+
+    test('insertSaleWithItems preserves discount fields', () async {
+      final product = await seedProduct(price: 200.0, stock: 50);
+      final cartItem = CartItem(
+        product: product,
+        qty: 2,
+        discountType: 'PERCENT',
+        discountValue: 10.0,
+      );
+
+      final sale = await saleDatasource.insertSaleWithItems(
+        items: [cartItem],
+        paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
+        cartDiscountType: 'AMOUNT',
+        cartDiscountValue: 20.0,
+        cartDiscountAmount: 20.0,
+      );
+
+      expect(sale.discountType, 'AMOUNT');
+      expect(sale.discountValue, 20.0);
+      expect(sale.discountAmount, 20.0);
+      expect(sale.items.first.discountAmount, greaterThan(0));
+    });
+
+    test(
+      'insertSaleWithItems with EXCLUSIVE VAT stores total with VAT',
+      () async {
+        final product = await seedProduct(price: 100.0, stock: 50);
+        final cartItem = CartItem(product: product, qty: 1);
+
+        final sale = await saleDatasource.insertSaleWithItems(
+          items: [cartItem],
+          paymentMethod: 'cash',
+          vatMode: 'EXCLUSIVE',
+          vatRate: 7.0,
+        );
+
+        expect(sale.totalAmount, closeTo(107.0, 0.01));
+        expect(sale.subtotalAmount, 100.0);
+        expect(sale.vatAmount, closeTo(7.0, 0.01));
+        expect(sale.vatMode, 'EXCLUSIVE');
+      },
+    );
   });
 }

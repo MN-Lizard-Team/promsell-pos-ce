@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.5.2
+# CODEBASE.md — Promsell POS CE v0.5.3
 
 ## System overview
 
@@ -74,7 +74,7 @@ features/<name>/
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v2, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v3, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/core/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -120,7 +120,7 @@ features/<name>/
 
 ---
 
-## Database schema (v2)
+## Database schema (v3)
 
 Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
@@ -132,7 +132,7 @@ Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All 
 | `Categories` | id, name, sortOrder, createdAt, updatedAt, deletedAt, version, deviceId |
 | `InventoryLogs` | id, productId, type, qtyChange, balanceAfter, reason, refSaleId, createdAt, deviceId |
 | `AppSettings` | key (PK), value, updatedAt |
-| `DraftCarts` | id, name, note, createdAt, updatedAt, deviceId |
+| `DraftCarts` | id, name, note, cartDiscountType, cartDiscountValue, createdAt, updatedAt, deviceId |
 | `DraftCartItems` | id, cartId, productId, productName, price, qty, discountType, discountValue |
 | `DailyCloses` | id, closeDate, openingCash, expectedCash, countedCash, overShortAmount, totalRevenue, totalVoid, salesCount, voidCount, note, closedAt, deviceId |
 
@@ -258,6 +258,8 @@ Two generators must be run after changes:
 | `SaleLocalDatasource` | Update `ReceiptNumberService`/`InventoryLogService` injection in tests |
 | `CartItem` entity | Update `cart_item_test.dart` props count + discount test fixtures |
 | `SaleBloc` constructor | Update `sale_bloc_test.dart` to inject `MockDraftCartRepository` |
+| `DraftCart` entity (new fields) | Update `draft_cart.dart` + `DraftCartLocalDatasource` + `SaleBloc` draft event handlers + `sale_bloc_test.dart` |
+| `DraftCarts` table schema | Run `build_runner build`; bump schema version + add migration in `app_database.dart` |
 | `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` |
 | Parent `BlocListener` that calls `showDialog` alongside a modal's `BlocListener` | Wrap `showDialog` in `WidgetsBinding.instance.addPostFrameCallback` — see ADR-009 in `docs/ARCHITECTURE.md` |
 
@@ -265,7 +267,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-208 automated tests across 7 layers. Run with `flutter test`.
+216 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 
