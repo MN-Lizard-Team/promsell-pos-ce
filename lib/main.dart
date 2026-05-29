@@ -7,8 +7,6 @@ import 'package:promsell_pos_ce/features/history/presentation/pages/history_page
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page_redesign.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
@@ -16,7 +14,7 @@ import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initDependencies();
+  configureDependencies();
   await sl<SettingsCubit>().load();
   runApp(const PromsellApp());
 }
@@ -65,25 +63,39 @@ class _MainShell extends StatefulWidget {
 class _MainShellState extends State<_MainShell> {
   int _index = 0;
 
-  static const _pages = [
-    SalePage(),
-    ProductListPage(),
-    HistoryPage(),
-    ReportPage(),
-    SettingsPage(),
+  /// Lazy-loaded tabs: only the active tab is built; previously visited
+  /// tabs are kept alive so their state (scroll position, BLoC, etc.) is
+  /// preserved when the user switches back.
+  final Map<int, Widget> _cachedPages = {};
+
+  static const _pageBuilders = <Widget Function()>[
+    SalePage.new,
+    ProductListPage.new,
+    HistoryPage.new,
+    ReportPage.new,
+    SettingsPage.new,
   ];
+
+  Widget _pageFor(int i) => _cachedPages.putIfAbsent(i, _pageBuilders[i]);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _index, children: _pages),
+      body: IndexedStack(
+        index: _index,
+        children: [
+          for (int i = 0; i < _pageBuilders.length; i++)
+            i == _index || _cachedPages.containsKey(i)
+                ? _pageFor(i)
+                : const SizedBox.shrink(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) {
-          if (i != _index && (i == 0 || _index == 0)) {
-            sl<ProductBloc>().add(const ProductSearchChanged(''));
+          if (i != _index) {
+            setState(() => _index = i);
           }
-          setState(() => _index = i);
         },
         destinations: [
           NavigationDestination(

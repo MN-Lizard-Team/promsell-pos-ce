@@ -12,6 +12,7 @@ class ProductState extends Equatable {
     this.status = ProductStatus.initial,
     this.products = const [],
     this.searchQuery = '',
+    this.categoryFilter,
     this.errorMessage,
     this.saveStatus = ProductSaveStatus.idle,
   });
@@ -19,25 +20,33 @@ class ProductState extends Equatable {
   final ProductStatus status;
   final List<Product> products;
   final String searchQuery;
+  final String? categoryFilter;
   final String? errorMessage;
   final ProductSaveStatus saveStatus;
 
   List<Product> get filtered {
-    if (searchQuery.isEmpty) return products;
-    final q = searchQuery.toLowerCase();
-    return products
-        .where(
-          (p) =>
-              p.name.toLowerCase().contains(q) ||
-              (p.category?.toLowerCase().contains(q) ?? false),
-        )
-        .toList();
+    var result = products;
+    if (searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      result = result
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(q) ||
+                (p.category?.toLowerCase().contains(q) ?? false),
+          )
+          .toList();
+    }
+    if (categoryFilter != null) {
+      result = result.where((p) => p.category == categoryFilter).toList();
+    }
+    return result;
   }
 
   ProductState copyWith({
     ProductStatus? status,
     List<Product>? products,
     String? searchQuery,
+    Object? categoryFilter = _unset,
     Object? errorMessage = _unset,
     ProductSaveStatus? saveStatus,
   }) {
@@ -45,6 +54,9 @@ class ProductState extends Equatable {
       status: status ?? this.status,
       products: products ?? this.products,
       searchQuery: searchQuery ?? this.searchQuery,
+      categoryFilter: identical(categoryFilter, _unset)
+          ? this.categoryFilter
+          : categoryFilter as String?,
       errorMessage: identical(errorMessage, _unset)
           ? this.errorMessage
           : errorMessage as String?,
@@ -57,6 +69,7 @@ class ProductState extends Equatable {
     status,
     products,
     searchQuery,
+    categoryFilter,
     errorMessage,
     saveStatus,
   ];

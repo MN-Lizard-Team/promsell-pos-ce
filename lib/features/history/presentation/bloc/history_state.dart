@@ -3,7 +3,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 
 const Object _unset = Object();
 
-enum HistoryStatus { initial, loading, success, failure }
+enum HistoryStatus { initial, loading, success, failure, voiding }
 
 class HistoryState extends Equatable {
   const HistoryState({

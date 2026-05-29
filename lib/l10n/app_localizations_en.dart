@@ -534,4 +534,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get switchDraft => 'Switch to this bill';
+
+  @override
+  String get cartCleared => 'Cart cleared';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get itemRemoved => 'Item removed';
+
+  @override
+  String get removeItem => 'Remove item';
+
+  @override
+  String get listView => 'List view';
+
+  @override
+  String get gridView => 'Grid view';
+
+  @override
+  String confirmPaymentAmount(String currency, String amount) {
+    return 'Confirm $currency$amount';
+  }
+
+  @override
+  String discountPreviewPercent(String value) {
+    return 'After discount: $value%';
+  }
 }

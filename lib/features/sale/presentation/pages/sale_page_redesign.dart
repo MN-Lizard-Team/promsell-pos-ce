@@ -7,7 +7,6 @@ import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/core/widgets/adaptive_breakpoints.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
-import 'package:promsell_pos_ce/core/widgets/overlay_toast.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -108,7 +107,6 @@ class _SaleCatalog extends StatefulWidget {
 
 class _SaleCatalogState extends State<_SaleCatalog> {
   final _searchController = TextEditingController();
-  String? _selectedCategory;
 
   @override
   void dispose() {
@@ -134,6 +132,19 @@ class _SaleCatalogState extends State<_SaleCatalog> {
             controller: _searchController,
             hintText: context.l10n.saleSearchProducts,
             leading: const Icon(Icons.search),
+            elevation: const WidgetStatePropertyAll(0),
+            backgroundColor: WidgetStatePropertyAll(
+              Theme.of(context).colorScheme.surfaceContainerHighest,
+            ),
+            side: WidgetStatePropertyAll(
+              BorderSide(color: Theme.of(context).colorScheme.outline),
+            ),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 16),
+            ),
             onChanged: (query) =>
                 context.read<ProductBloc>().add(ProductSearchChanged(query)),
           ),
@@ -157,8 +168,9 @@ class _SaleCatalogState extends State<_SaleCatalog> {
                     .where((product) => product.isActive && product.isInStock)
                     .toList();
                 final categories = _categoriesOf(activeProducts);
-                final selectedCategory = categories.contains(_selectedCategory)
-                    ? _selectedCategory
+                final selectedCategory =
+                    categories.contains(state.categoryFilter)
+                    ? state.categoryFilter
                     : null;
                 final products = selectedCategory == null
                     ? activeProducts
@@ -195,8 +207,9 @@ class _SaleCatalogState extends State<_SaleCatalog> {
                               isAll ? ctx.l10n.allCategories : category!,
                             ),
                             selected: selected,
-                            onSelected: (_) =>
-                                setState(() => _selectedCategory = category),
+                            onSelected: (_) => ctx.read<ProductBloc>().add(
+                              ProductCategoryFilterChanged(category),
+                            ),
                           );
                         },
                       ),
@@ -287,7 +300,7 @@ class _ProductCard extends StatelessWidget {
             SaleProductAdded(product, allowOversell: allowOversell),
           );
           if (cartQty == 0) {
-            OverlayToast.show(
+            AppSnackBar.info(
               context,
               context.l10n.productAddedToCart(product.name),
             );
@@ -430,21 +443,27 @@ class _CartPanel extends StatelessWidget {
 
           if (expanded) return content;
 
-          return SizedBox(
-            height: state.isEmpty ? 184 : 292,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-                    blurRadius: 18,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: content,
+          final cartHeight = state.isEmpty ? 120.0 : null;
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, -4),
+                ),
+              ],
             ),
+            child: cartHeight != null
+                ? SizedBox(height: cartHeight, child: content)
+                : ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: 200,
+                      maxHeight: 360,
+                    ),
+                    child: content,
+                  ),
           );
         },
       ),
@@ -604,6 +623,9 @@ class _CartHeader extends StatelessWidget {
 
   void _confirmClearCart(BuildContext context) {
     final bloc = context.read<SaleBloc>();
+    final prevItems = List<CartItem>.from(bloc.state.items);
+    final prevDiscountType = bloc.state.cartDiscountType;
+    final prevDiscountValue = bloc.state.cartDiscountValue;
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -616,8 +638,21 @@ class _CartHeader extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
+              final l10n = context.l10n;
               bloc.add(const SaleCartCleared());
               Navigator.pop(dialogCtx);
+              AppSnackBar.withAction(
+                context,
+                l10n.cartCleared,
+                actionLabel: l10n.undo,
+                onAction: () => bloc.add(
+                  SaleCartRestored(
+                    items: prevItems,
+                    cartDiscountType: prevDiscountType,
+                    cartDiscountValue: prevDiscountValue,
+                  ),
+                ),
+              );
             },
             child: Text(
               context.l10n.clearCart,
@@ -655,6 +690,7 @@ class _CartItemRow extends StatelessWidget {
           alpha: 0.45,
         ),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
@@ -712,16 +748,47 @@ class _CartItemRow extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: () => context.read<SaleBloc>().add(
-                    SaleItemQtyChanged(
-                      productId: item.product.id,
-                      qty: item.qty - 1,
-                      allowOversell: allowOversell,
+                if (item.qty == 1)
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: theme.colorScheme.error,
+                    ),
+                    tooltip: context.l10n.removeItem,
+                    onPressed: () {
+                      final prevItem = item;
+                      final bloc = context.read<SaleBloc>();
+                      final l10n = context.l10n;
+                      bloc.add(
+                        SaleItemQtyChanged(
+                          productId: item.product.id,
+                          qty: 0,
+                          allowOversell: allowOversell,
+                        ),
+                      );
+                      AppSnackBar.withAction(
+                        context,
+                        l10n.itemRemoved,
+                        actionLabel: l10n.undo,
+                        onAction: () => bloc.add(
+                          SaleCartRestored(
+                            items: [...bloc.state.items, prevItem],
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(Icons.remove),
+                    onPressed: () => context.read<SaleBloc>().add(
+                      SaleItemQtyChanged(
+                        productId: item.product.id,
+                        qty: item.qty - 1,
+                        allowOversell: allowOversell,
+                      ),
                     ),
                   ),
-                ),
                 ConstrainedBox(
                   constraints: const BoxConstraints(minWidth: 32),
                   child: Text(
@@ -1037,16 +1104,16 @@ class _DraftsBottomSheetState extends State<_DraftsBottomSheet> {
                           onSwitch: isActive
                               ? null
                               : () {
-                                  context
-                                      .read<SaleBloc>()
-                                      .add(SaleDraftSwitched(draft.id));
+                                  context.read<SaleBloc>().add(
+                                    SaleDraftSwitched(draft.id),
+                                  );
                                   Navigator.pop(context);
                                 },
                           onDelete: drafts.length > 1
                               ? () {
-                                  context
-                                      .read<SaleBloc>()
-                                      .add(SaleDraftDeleted(draft.id));
+                                  context.read<SaleBloc>().add(
+                                    SaleDraftDeleted(draft.id),
+                                  );
                                   _reload();
                                 }
                               : null,
@@ -1067,7 +1134,6 @@ class _DraftsBottomSheetState extends State<_DraftsBottomSheet> {
     );
   }
 }
-
 
 class _DraftTile extends StatelessWidget {
   const _DraftTile({
@@ -1281,9 +1347,11 @@ class _DiscountDialogState extends State<_DiscountDialog> {
           if (value > 0) ...[
             const SizedBox(height: 8),
             Text(
-              l10n.discountPreview(
-                '${widget.currency}${value.toStringAsFixed(2)}',
-              ),
+              _type == 'PERCENT'
+                  ? l10n.discountPreviewPercent(value.toStringAsFixed(0))
+                  : l10n.discountPreview(
+                      '${widget.currency}${value.toStringAsFixed(2)}',
+                    ),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.primary,
               ),

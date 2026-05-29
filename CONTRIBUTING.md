@@ -120,6 +120,7 @@ When working on presentation code:
 
 - Prefer shared primitives from `lib/core/widgets/` before creating feature-local duplicates
 - Prefer theme tokens from `lib/core/theme/` over ad-hoc colors, radius, or padding
+- Use `colorScheme.*` (e.g., `colorScheme.primary`, `colorScheme.error`) instead of `Colors.*` — never hardcode Material colors in feature code
 - Keep primary actions touch-friendly and reachable on compact mobile screens
 - Test constrained layouts such as bottom sheets, cart panels, and forms with the keyboard open
 - Verify light, dark, and system theme modes if colors or surfaces changed
@@ -224,7 +225,7 @@ test('description of what is tested', () {
 Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs).
 
 **Key files:**
-- `lib/core/di/injection_container.dart` — service locator registrations
+- `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)
 - `lib/core/extensions/l10n_extension.dart` — `context.l10n` helper
 - `lib/core/utils/payment_method_helper.dart` — payment method normalization
 - `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints)

@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -33,6 +34,7 @@ class ReceiptLabels {
   final String subtotal;
 }
 
+@lazySingleton
 class ReceiptPdfService {
   ReceiptPdfService();
 

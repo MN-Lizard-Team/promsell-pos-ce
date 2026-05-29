@@ -117,12 +117,22 @@ class _PaymentSheetState extends State<PaymentSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              Text(
-                context.l10n.paymentTitle,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.l10n.paymentTitle,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
               ),
               const SizedBox(height: 14),
               BlocBuilder<SaleBloc, SaleState>(
@@ -406,7 +416,12 @@ class _PaymentSheetState extends State<PaymentSheet> {
                                 ),
                               )
                             : const Icon(Icons.check_circle_outline),
-                        label: Text(context.l10n.confirmPayment),
+                        label: Text(
+                          context.l10n.confirmPaymentAmount(
+                            currency,
+                            widget.total.toStringAsFixed(2),
+                          ),
+                        ),
                       ),
                     ],
                   );

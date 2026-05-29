@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 
 abstract interface class SettingsLocalDatasource {
@@ -12,6 +13,7 @@ abstract interface class SettingsLocalDatasource {
   Future<Map<String, String>> getAll();
 }
 
+@LazySingleton(as: SettingsLocalDatasource)
 class SettingsLocalDatasourceImpl implements SettingsLocalDatasource {
   SettingsLocalDatasourceImpl(this._db);
   final AppDatabase _db;

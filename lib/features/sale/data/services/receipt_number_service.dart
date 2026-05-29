@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 
+@lazySingleton
 class ReceiptNumberService {
   ReceiptNumberService(this._db);
   final AppDatabase _db;

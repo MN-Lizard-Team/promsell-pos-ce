@@ -1,7 +1,7 @@
 name: promsell_pos_ce
 description: "PromSell POS Community Edition — Offline-first mobile POS for small businesses"
 publish_to: 'none'
-version: 0.5.0+1
+version: 0.5.1+1
 
 environment:
   sdk: ^3.11.1
@@ -25,6 +25,7 @@ dependencies:
 
   # Dependency Injection
   get_it: ^8.0.3
+  injectable: ^2.6.0
 
   # PDF Receipt
   pdf: ^3.11.3
@@ -48,6 +49,9 @@ dev_dependencies:
   # Drift codegen
   drift_dev: ^2.26.1
   build_runner: ^2.4.15
+
+  # DI codegen
+  injectable_generator: ^2.6.0
 
   # App Icon Generator
   flutter_launcher_icons: ^0.14.3

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 
@@ -11,6 +12,7 @@ abstract class ProductLocalDatasource {
   Future<void> deleteProduct(String id);
 }
 
+@LazySingleton(as: ProductLocalDatasource)
 class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   const ProductLocalDatasourceImpl(this._db);
   final AppDatabase _db;

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -16,6 +17,7 @@ abstract class DraftCartLocalDatasource {
   Future<int> countDrafts();
 }
 
+@LazySingleton(as: DraftCartLocalDatasource)
 class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   const DraftCartLocalDatasourceImpl(this._db);
   final AppDatabase _db;

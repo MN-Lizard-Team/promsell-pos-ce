@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_hist
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart';
 
 class _HistorySalesUpdated extends HistoryEvent {
   const _HistorySalesUpdated(this.sales);
@@ -21,16 +22,21 @@ class _HistoryError extends HistoryEvent {
 }
 
 class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
-  HistoryBloc({required WatchSaleHistory watchSaleHistory})
-    : _watchSaleHistory = watchSaleHistory,
-      super(const HistoryState()) {
+  HistoryBloc({
+    required WatchSaleHistory watchSaleHistory,
+    required VoidSale voidSale,
+  }) : _watchSaleHistory = watchSaleHistory,
+       _voidSale = voidSale,
+       super(const HistoryState()) {
     on<HistorySubscribed>(_onSubscribed);
     on<HistoryDateRangeChanged>(_onDateRangeChanged);
+    on<SaleVoidRequested>(_onVoidRequested);
     on<_HistorySalesUpdated>(_onSalesUpdated);
     on<_HistoryError>(_onError);
   }
 
   final WatchSaleHistory _watchSaleHistory;
+  final VoidSale _voidSale;
   StreamSubscription<List<Sale>>? _sub;
 
   void _startListening(DateTime? from, DateTime? to) {
@@ -78,6 +84,24 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
         errorMessage: event.message,
       ),
     );
+  }
+
+  Future<void> _onVoidRequested(
+    SaleVoidRequested event,
+    Emitter<HistoryState> emit,
+  ) async {
+    emit(state.copyWith(status: HistoryStatus.voiding));
+    try {
+      await _voidSale(event.saleId, reason: event.reason);
+      emit(state.copyWith(status: HistoryStatus.success));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: HistoryStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
   }
 
   @override

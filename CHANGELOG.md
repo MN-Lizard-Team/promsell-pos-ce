@@ -17,9 +17,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.1] - 2026-05-29
+
+Theme accessibility, overlay toast, UX fixes, and DI compile-time safety.
+
+### Highlights
+
+- **Theme accessibility** — Explicit ColorScheme overrides, visible borders on all components, higher contrast for elderly readability.
+- **Overlay-based toast** — `AppSnackBar` migrated from `ScaffoldMessenger` to `Overlay` with reliable auto-dismiss.
+- **Cart undo** — Clear-cart and item-removal show undo toast via `SaleCartRestored` event.
+- **Category filter sync** — `categoryFilter` moved into `ProductState`; shared across Sale and Product pages.
+- **History void via BLoC** — Void routes through `HistoryBloc` with loading/success/failure states.
+- **Injectable DI** — `get_it` registrations replaced by `injectable` annotations + code generation.
+- **Lazy-loaded tabs** — Only active tab is built; visited tabs kept alive.
+
+### Added
+
+- **BLoC events** — `SaleCartRestored`, `ProductCategoryFilterChanged`, `SaleVoidRequested`; `HistoryStatus.voiding`.
+- **`AppSnackBar.withAction`** — Overlay-based undo toast with action button.
+- **Payment sheet close button** — Visible `✕` for non-technical staff.
+- **8 l10n strings** (EN + TH) — Cart, view-mode, payment, discount labels.
+- **Theme colors** — All ColorScheme properties explicitly defined for both light and dark themes; borders added to Card, Button, Chip, Input, Cart panel, SearchBar.
+
+### Changed
+
+- **Toast system** — `AppSnackBar` → `Overlay`-based; `OverlayToast` merged and removed.
+- **Light theme** — Softer surfaces, darker borders/dividers, all ColorScheme properties overridden.
+- **Dark theme** — All ColorScheme properties overridden; no more overly bright greens.
+- **Component borders** — Card, ElevatedButton, FilledButton, Chip, Cart panel, Input all have visible outlines.
+- **Hardcoded colors removed** — Feature pages now use `colorScheme` instead of `Colors.*`.
+- **Cart panel** — Responsive height (120 empty / 200–360 with items); border added.
+- **Qty=1** — Minus button becomes delete icon; removal shows undo toast.
+- **Discount preview** — Shows `15%` for PERCENT type instead of `฿15.00`.
+- **Confirm payment** — Shows amount: "Confirm ฿150.00".
+- **Report date range** — `ActionChip` → prominent `Card` with edit icon.
+- **VAT rate field** — Persistent `TextEditingController`; saves correctly.
+- **DI** — `initDependencies()` → `configureDependencies()` with `@injectable` annotations.
+- **Tab navigation** — Eager `IndexedStack` → lazy `_pageBuilders` + `_cachedPages`.
+
+### Fixed
+
+- **SnackBar persistence** — Stayed on screen indefinitely; fixed by Overlay migration.
+- **SnackBar not showing** — After `hideCurrentSnackBar()`; fixed by eliminating `ScaffoldMessenger`.
+- **Sale search not filtering** — Used `state.products` instead of `state.filtered`.
+- **Light theme `onPrimary`** — Icon on green buttons was dark; fixed by explicit `onPrimary`.
+- **Dark theme bright greens** — `ColorScheme.fromSeed` auto-gen; fixed by overriding all properties.
+- **Invisible component boundaries** — No borders; fixed by adding `side: BorderSide(...)`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **208/208 passing**
+
+---
+
 ## [0.5.0] - 2026-05-28
 
-R3 Cashier UX — draft carts, discount system, and stock policy for real-shop workflow.
+Draft cart persistence, discount system, and stock policy for real-shop workflow.
 
 ### Highlights
 
@@ -30,23 +81,23 @@ R3 Cashier UX — draft carts, discount system, and stock policy for real-shop w
 
 ### Added
 
-- **Draft cart** — bookmarks icon in Sale AppBar opens draft sheet; list, switch, rename, delete drafts; new-draft button; cap enforced at 10
-- **Per-item discount** — tag icon in cart row → dialog (% / ฿, live preview, apply / clear); discount badge shown on item
-- **Cart-level discount** — "Apply cart discount" button below subtotal; discount line in cart summary
-- **Payment sheet breakdown** — Subtotal / item discounts / cart discount / TOTAL when any discount is active
-- **`trackStock` per-product** — switch in product form; `∞` stock display and no DB deduction when off
-- **Stock Policy settings section** — Allow oversell toggle + Low stock threshold input
-- **30 new localization keys** (EN + TH) — stock policy, discount dialog, draft cart labels
+- **Draft cart** — Bookmarks icon in Sale AppBar opens draft sheet; list, switch, rename, delete drafts; new-draft button; cap enforced at 10.
+- **Per-item discount** — Tag icon in cart row → dialog (% / ฿, live preview, apply / clear); discount badge shown on item.
+- **Cart-level discount** — "Apply cart discount" button below subtotal; discount line in cart summary.
+- **Payment sheet breakdown** — Subtotal / item discounts / cart discount / TOTAL when any discount is active.
+- **`trackStock` per-product** — Switch in product form; `∞` stock display and no DB deduction when off.
+- **Stock Policy settings section** — Allow oversell toggle + Low stock threshold input.
+- **30 new localization keys** (EN + TH) — Stock policy, discount dialog, draft cart labels.
 
 ### Changed
 
-- VAT now calculated on pre-discount total (`preTaxTotal`) in sale datasource
-- `DailyCloses` `@Deprecated` removed — table stays in schema v2 for upcoming R5 Daily Close UI
+- **VAT calculation** — Now calculated on pre-discount total (`preTaxTotal`) in sale datasource.
+- **`DailyCloses` `@Deprecated` removed** — Table stays in schema v2 for upcoming R5 Daily Close UI.
 
 ### Fixed
 
-- Products with `trackStock=false` (stock = 0) no longer removed from cart on product refresh
-- Qty clamp skipped for non-tracked products (no artificial stock ceiling)
+- **Non-tracked products removed from cart** — Products with `trackStock=false` (stock = 0) no longer removed from cart on product refresh.
+- **Qty clamp for non-tracked products** — Skipped for non-tracked products (no artificial stock ceiling).
 
 `flutter analyze` → **0 issues** · `flutter test` → **208/208 passing**
 
@@ -508,6 +559,7 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 ---
 
 [Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.0...HEAD
+[0.5.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.0...v0.4.1

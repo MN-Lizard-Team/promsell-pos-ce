@@ -1,6 +1,8 @@
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 
+@injectable
 class GetProducts {
   const GetProducts(this._repository);
   final ProductRepository _repository;

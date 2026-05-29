@@ -219,5 +219,23 @@
   "draftLimitReached": "บิลเต็ม  10 บิลแล้ว กรุณาลบบิลเก่าก่อน",
   "activeDraftLabel": "ใช้งานอยู่",
   "draftNameHint": "ชื่อบิล (ไม่บังคับ)",
-  "switchDraft": "สลับไปบิลนี้"
+  "switchDraft": "สลับไปบิลนี้",
+
+  "cartCleared": "ล้างตะกร้าแล้ว",
+  "undo": "เรียกคืน",
+  "itemRemoved": "ลบรายการแล้ว",
+  "removeItem": "ลบรายการ",
+  "listView": "มุมมองรายการ",
+  "gridView": "มุมมองตาราง",
+  "confirmPaymentAmount": "ยืนยัน {currency}{amount}",
+  "@confirmPaymentAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "discountPreviewPercent": "หลังหัก: {value}%",
+  "@discountPreviewPercent": {
+    "placeholders": { "value": { "type": "String" } }
+  }
 }

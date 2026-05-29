@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
@@ -8,6 +9,7 @@ import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 
+@injectable
 class SaleBloc extends Bloc<SaleEvent, SaleState> {
   SaleBloc({
     required CreateSale createSale,
@@ -32,6 +34,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     on<SaleDraftCreated>(_onDraftCreated);
     on<SaleDraftDeleted>(_onDraftDeleted);
     on<SaleDraftRenamed>(_onDraftRenamed);
+    on<SaleCartRestored>(_onCartRestored);
   }
 
   final CreateSale _createSale;
@@ -92,6 +95,17 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       SaleState(
         activeDraftId: state.activeDraftId,
         activeDraftName: state.activeDraftName,
+      ),
+    );
+    _scheduleSave();
+  }
+
+  void _onCartRestored(SaleCartRestored event, Emitter<SaleState> emit) {
+    emit(
+      state.copyWith(
+        items: event.items,
+        cartDiscountType: event.cartDiscountType,
+        cartDiscountValue: event.cartDiscountValue,
       ),
     );
     _scheduleSave();

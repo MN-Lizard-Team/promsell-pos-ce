@@ -35,8 +35,10 @@ class HistoryPage extends StatelessWidget {
           second: 59,
           millisecond: 999,
         );
-        return HistoryBloc(watchSaleHistory: sl<WatchSaleHistory>())
-          ..add(HistoryDateRangeChanged(from: from, to: to));
+        return HistoryBloc(
+          watchSaleHistory: sl<WatchSaleHistory>(),
+          voidSale: sl<VoidSale>(),
+        )..add(HistoryDateRangeChanged(from: from, to: to));
       },
       child: const _HistoryView(),
     );
@@ -65,275 +67,297 @@ class _HistoryView extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocBuilder<HistoryBloc, HistoryState>(
-        builder: (ctx, state) {
-          if (state.status == HistoryStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.status == HistoryStatus.failure) {
-            return AppEmptyState(
-              icon: Icons.error_outline,
-              title: state.errorMessage ?? ctx.l10n.errorOccurred,
-              actionLabel: ctx.l10n.retry,
-              onAction: () =>
-                  ctx.read<HistoryBloc>().add(const HistorySubscribed()),
+      body: BlocListener<HistoryBloc, HistoryState>(
+        listenWhen: (prev, curr) =>
+            (curr.status == HistoryStatus.success &&
+                prev.status == HistoryStatus.voiding) ||
+            (curr.status == HistoryStatus.failure &&
+                prev.status == HistoryStatus.voiding),
+        listener: (ctx, state) {
+          if (state.status == HistoryStatus.success) {
+            AppSnackBar.success(ctx, ctx.l10n.voidSuccess);
+          } else if (state.status == HistoryStatus.failure) {
+            AppSnackBar.error(
+              ctx,
+              state.errorMessage ?? ctx.l10n.errorOccurred,
             );
           }
-          if (state.sales.isEmpty) {
-            return AppEmptyState(
-              icon: Icons.receipt_long_outlined,
-              title: ctx.l10n.noSalesYet,
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              final bloc = ctx.read<HistoryBloc>();
-              bloc.add(const HistorySubscribed());
-              await bloc.stream.firstWhere(
-                (s) =>
-                    s.status == HistoryStatus.success ||
-                    s.status == HistoryStatus.failure,
+        },
+        child: BlocBuilder<HistoryBloc, HistoryState>(
+          builder: (ctx, state) {
+            if (state.status == HistoryStatus.loading ||
+                state.status == HistoryStatus.voiding) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.status == HistoryStatus.failure) {
+              return AppEmptyState(
+                icon: Icons.error_outline,
+                title: state.errorMessage ?? ctx.l10n.errorOccurred,
+                actionLabel: ctx.l10n.retry,
+                onAction: () =>
+                    ctx.read<HistoryBloc>().add(const HistorySubscribed()),
               );
-            },
-            child: ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: state.sales.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (_, i) {
-                final sale = state.sales[i];
-                final isVoided = sale.isVoided;
-                return Opacity(
-                  opacity: isVoided ? 0.6 : 1.0,
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: ExpansionTile(
-                      leading: CircleAvatar(
-                        backgroundColor: isVoided
-                            ? theme.colorScheme.errorContainer
-                            : theme.colorScheme.primaryContainer,
-                        child: Icon(
-                          isVoided ? Icons.block : Icons.receipt_long_outlined,
-                          color: isVoided
-                              ? theme.colorScheme.error
-                              : theme.colorScheme.primary,
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          Expanded(
-                            child: MoneyText(
-                              value: sale.totalAmount,
-                              currency: settings.currency,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                decoration: isVoided
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                              ),
-                              color: isVoided
-                                  ? theme.colorScheme.error
-                                  : theme.colorScheme.primary,
-                            ),
-                          ),
-                          if (isVoided)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.errorContainer,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                ctx.l10n.voided,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.error,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      subtitle: Text(
-                        '${sale.receiptNumber ?? '#${sale.id.substring(0, 8)}'}  •  ${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      children: [
-                        ...sale.items.map(
-                          (item) => ListTile(
-                            dense: true,
-                            title: Text(item.productName),
-                            subtitle: Text(
-                              '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}',
-                            ),
-                            trailing: MoneyText(
-                              value: item.subtotal,
-                              currency: settings.currency,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (sale.vatMode != 'NONE') ...[
-                          const Divider(height: 1, indent: 16, endIndent: 16),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      ctx.l10n.receiptLabelSubtotal,
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                    MoneyText(
-                                      value: sale.subtotalAmount,
-                                      currency: settings.currency,
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '${ctx.l10n.receiptLabelVat} ${sale.vatRate.toStringAsFixed(0)}%',
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                    MoneyText(
-                                      value: sale.vatAmount,
-                                      currency: settings.currency,
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        if (sale.note != null && sale.note!.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                            child: Text(
-                              ctx.l10n.noteLabel(sale.note!),
-                              style: theme.textTheme.bodySmall,
-                            ),
-                          ),
-                        OverflowBar(
-                          alignment: MainAxisAlignment.end,
-                          children: [
-                            if (!isVoided)
-                              TextButton.icon(
-                                icon: Icon(
-                                  Icons.block,
-                                  color: theme.colorScheme.error,
-                                ),
-                                label: Text(
-                                  ctx.l10n.voidSale,
-                                  style: TextStyle(
-                                    color: theme.colorScheme.error,
-                                  ),
-                                ),
-                                onPressed: () => _showVoidDialog(ctx, sale),
-                              ),
-                            TextButton.icon(
-                              icon: const Icon(Icons.print_outlined),
-                              label: Text(ctx.l10n.printReceipt),
-                              onPressed: () async {
-                                try {
-                                  final l = ctx.l10n;
-                                  final saleSettings = settings.copyWith(
-                                    vatRate: sale.vatRate,
-                                    vatMode: sale.vatMode,
-                                  );
-                                  await sl<ReceiptPdfService>().printReceipt(
-                                    sale: sale,
-                                    settings: saleSettings,
-                                    labels: ReceiptLabels(
-                                      receipt: l.receiptLabelReceipt,
-                                      payment: l.receiptLabelPayment,
-                                      paymentMethodLabel: localizePaymentMethod(
-                                        ctx,
-                                        sale.paymentMethod,
-                                      ),
-                                      total: l.receiptLabelTotal,
-                                      received: l.receiptLabelReceived,
-                                      change: l.receiptLabelChange,
-                                      note: l.receiptLabelNote,
-                                      vat: l.receiptLabelVat,
-                                      vatIncluded: l.receiptLabelVatIncluded(
-                                        sale.vatRate,
-                                      ),
-                                      subtotal: l.receiptLabelSubtotal,
-                                    ),
-                                  );
-                                } catch (_) {
-                                  if (ctx.mounted) {
-                                    AppSnackBar.error(
-                                      ctx,
-                                      ctx.l10n.errorOccurred,
-                                    );
-                                  }
-                                }
-                              },
-                            ),
-                            TextButton.icon(
-                              icon: const Icon(Icons.share_outlined),
-                              label: Text(ctx.l10n.shareReceipt),
-                              onPressed: () async {
-                                try {
-                                  final l = ctx.l10n;
-                                  final saleSettings = settings.copyWith(
-                                    vatRate: sale.vatRate,
-                                    vatMode: sale.vatMode,
-                                  );
-                                  await sl<ReceiptPdfService>().shareReceipt(
-                                    sale: sale,
-                                    settings: saleSettings,
-                                    labels: ReceiptLabels(
-                                      receipt: l.receiptLabelReceipt,
-                                      payment: l.receiptLabelPayment,
-                                      paymentMethodLabel: localizePaymentMethod(
-                                        ctx,
-                                        sale.paymentMethod,
-                                      ),
-                                      total: l.receiptLabelTotal,
-                                      received: l.receiptLabelReceived,
-                                      change: l.receiptLabelChange,
-                                      note: l.receiptLabelNote,
-                                      vat: l.receiptLabelVat,
-                                      vatIncluded: l.receiptLabelVatIncluded(
-                                        sale.vatRate,
-                                      ),
-                                      subtotal: l.receiptLabelSubtotal,
-                                    ),
-                                  );
-                                } catch (_) {
-                                  if (ctx.mounted) {
-                                    AppSnackBar.error(
-                                      ctx,
-                                      ctx.l10n.errorOccurred,
-                                    );
-                                  }
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+            }
+            if (state.sales.isEmpty) {
+              return AppEmptyState(
+                icon: Icons.receipt_long_outlined,
+                title: ctx.l10n.noSalesYet,
+              );
+            }
+            return RefreshIndicator(
+              onRefresh: () async {
+                final bloc = ctx.read<HistoryBloc>();
+                bloc.add(const HistorySubscribed());
+                await bloc.stream.firstWhere(
+                  (s) =>
+                      s.status == HistoryStatus.success ||
+                      s.status == HistoryStatus.failure,
                 );
               },
-            ),
-          );
-        },
+              child: ListView.separated(
+                padding: const EdgeInsets.all(12),
+                itemCount: state.sales.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                itemBuilder: (_, i) {
+                  final sale = state.sales[i];
+                  final isVoided = sale.isVoided;
+                  return Opacity(
+                    opacity: isVoided ? 0.6 : 1.0,
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: ExpansionTile(
+                        leading: CircleAvatar(
+                          backgroundColor: isVoided
+                              ? theme.colorScheme.errorContainer
+                              : theme.colorScheme.primaryContainer,
+                          child: Icon(
+                            isVoided
+                                ? Icons.block
+                                : Icons.receipt_long_outlined,
+                            color: isVoided
+                                ? theme.colorScheme.error
+                                : theme.colorScheme.primary,
+                          ),
+                        ),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: MoneyText(
+                                value: sale.totalAmount,
+                                currency: settings.currency,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  decoration: isVoided
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                                color: isVoided
+                                    ? theme.colorScheme.error
+                                    : theme.colorScheme.primary,
+                              ),
+                            ),
+                            if (isVoided)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.errorContainer,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  ctx.l10n.voided,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.error,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        subtitle: Text(
+                          '${sale.receiptNumber ?? '#${sale.id.substring(0, 8)}'}  •  ${fmt.format(sale.createdAt)}  •  ${localizePaymentMethod(ctx, sale.paymentMethod)}',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                        children: [
+                          ...sale.items.map(
+                            (item) => ListTile(
+                              dense: true,
+                              title: Text(item.productName),
+                              subtitle: Text(
+                                '${item.qty} × ${settings.currency}${item.price.toStringAsFixed(2)}',
+                              ),
+                              trailing: MoneyText(
+                                value: item.subtotal,
+                                currency: settings.currency,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (sale.vatMode != 'NONE') ...[
+                            const Divider(height: 1, indent: 16, endIndent: 16),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        ctx.l10n.receiptLabelSubtotal,
+                                        style: theme.textTheme.bodySmall,
+                                      ),
+                                      MoneyText(
+                                        value: sale.subtotalAmount,
+                                        currency: settings.currency,
+                                        style: theme.textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '${ctx.l10n.receiptLabelVat} ${sale.vatRate.toStringAsFixed(0)}%',
+                                        style: theme.textTheme.bodySmall,
+                                      ),
+                                      MoneyText(
+                                        value: sale.vatAmount,
+                                        currency: settings.currency,
+                                        style: theme.textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          if (sale.note != null && sale.note!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                              child: Text(
+                                ctx.l10n.noteLabel(sale.note!),
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                          OverflowBar(
+                            alignment: MainAxisAlignment.end,
+                            children: [
+                              if (!isVoided)
+                                TextButton.icon(
+                                  icon: Icon(
+                                    Icons.block,
+                                    color: theme.colorScheme.error,
+                                  ),
+                                  label: Text(
+                                    ctx.l10n.voidSale,
+                                    style: TextStyle(
+                                      color: theme.colorScheme.error,
+                                    ),
+                                  ),
+                                  onPressed: () => _showVoidDialog(ctx, sale),
+                                ),
+                              TextButton.icon(
+                                icon: const Icon(Icons.print_outlined),
+                                label: Text(ctx.l10n.printReceipt),
+                                onPressed: () async {
+                                  try {
+                                    final l = ctx.l10n;
+                                    final saleSettings = settings.copyWith(
+                                      vatRate: sale.vatRate,
+                                      vatMode: sale.vatMode,
+                                    );
+                                    await sl<ReceiptPdfService>().printReceipt(
+                                      sale: sale,
+                                      settings: saleSettings,
+                                      labels: ReceiptLabels(
+                                        receipt: l.receiptLabelReceipt,
+                                        payment: l.receiptLabelPayment,
+                                        paymentMethodLabel:
+                                            localizePaymentMethod(
+                                              ctx,
+                                              sale.paymentMethod,
+                                            ),
+                                        total: l.receiptLabelTotal,
+                                        received: l.receiptLabelReceived,
+                                        change: l.receiptLabelChange,
+                                        note: l.receiptLabelNote,
+                                        vat: l.receiptLabelVat,
+                                        vatIncluded: l.receiptLabelVatIncluded(
+                                          sale.vatRate,
+                                        ),
+                                        subtotal: l.receiptLabelSubtotal,
+                                      ),
+                                    );
+                                  } catch (_) {
+                                    if (ctx.mounted) {
+                                      AppSnackBar.error(
+                                        ctx,
+                                        ctx.l10n.errorOccurred,
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                              TextButton.icon(
+                                icon: const Icon(Icons.share_outlined),
+                                label: Text(ctx.l10n.shareReceipt),
+                                onPressed: () async {
+                                  try {
+                                    final l = ctx.l10n;
+                                    final saleSettings = settings.copyWith(
+                                      vatRate: sale.vatRate,
+                                      vatMode: sale.vatMode,
+                                    );
+                                    await sl<ReceiptPdfService>().shareReceipt(
+                                      sale: sale,
+                                      settings: saleSettings,
+                                      labels: ReceiptLabels(
+                                        receipt: l.receiptLabelReceipt,
+                                        payment: l.receiptLabelPayment,
+                                        paymentMethodLabel:
+                                            localizePaymentMethod(
+                                              ctx,
+                                              sale.paymentMethod,
+                                            ),
+                                        total: l.receiptLabelTotal,
+                                        received: l.receiptLabelReceived,
+                                        change: l.receiptLabelChange,
+                                        note: l.receiptLabelNote,
+                                        vat: l.receiptLabelVat,
+                                        vatIncluded: l.receiptLabelVatIncluded(
+                                          sale.vatRate,
+                                        ),
+                                        subtotal: l.receiptLabelSubtotal,
+                                      ),
+                                    );
+                                  } catch (_) {
+                                    if (ctx.mounted) {
+                                      AppSnackBar.error(
+                                        ctx,
+                                        ctx.l10n.errorOccurred,
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -374,20 +398,13 @@ class _HistoryView extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      try {
-        final reason = reasonController.text.trim();
-        await sl<VoidSale>().call(
-          sale.id,
+      final reason = reasonController.text.trim();
+      context.read<HistoryBloc>().add(
+        SaleVoidRequested(
+          saleId: sale.id,
           reason: reason.isEmpty ? null : reason,
-        );
-        if (context.mounted) {
-          AppSnackBar.success(context, context.l10n.voidSuccess);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          AppSnackBar.error(context, e.toString());
-        }
-      }
+        ),
+      );
     }
     reasonController.dispose();
   }

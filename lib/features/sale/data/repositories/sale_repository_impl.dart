@@ -1,8 +1,10 @@
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 
+@LazySingleton(as: SaleRepository)
 class SaleRepositoryImpl implements SaleRepository {
   const SaleRepositoryImpl(this._datasource);
   final SaleLocalDatasource _datasource;

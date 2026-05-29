@@ -61,3 +61,11 @@ class ProductSearchChanged extends ProductEvent {
   @override
   List<Object?> get props => [query];
 }
+
+class ProductCategoryFilterChanged extends ProductEvent {
+  const ProductCategoryFilterChanged(this.category);
+  final String? category;
+
+  @override
+  List<Object?> get props => [category];
+}

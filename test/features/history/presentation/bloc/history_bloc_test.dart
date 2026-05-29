@@ -13,30 +13,38 @@ import '../../../../helpers/mocks.dart';
 
 void main() {
   late MockWatchSaleHistory mockWatchSaleHistory;
+  late MockVoidSale mockVoidSale;
 
   setUp(() {
     mockWatchSaleHistory = MockWatchSaleHistory();
+    mockVoidSale = MockVoidSale();
   });
 
-  HistoryBloc buildBloc() =>
-      HistoryBloc(watchSaleHistory: mockWatchSaleHistory);
+  HistoryBloc buildBloc() => HistoryBloc(
+    watchSaleHistory: mockWatchSaleHistory,
+    voidSale: mockVoidSale,
+  );
 
   group('HistoryBloc', () {
     test('initial state is HistoryState()', () {
-      when(() => mockWatchSaleHistory(
-            from: any(named: 'from'),
-            to: any(named: 'to'),
-          )).thenAnswer((_) => const Stream.empty());
+      when(
+        () => mockWatchSaleHistory(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => const Stream.empty());
       expect(buildBloc().state, const HistoryState());
     });
 
     blocTest<HistoryBloc, HistoryState>(
       'HistorySubscribed emits loading then success',
       setUp: () {
-        when(() => mockWatchSaleHistory(
-              from: any(named: 'from'),
-              to: any(named: 'to'),
-            )).thenAnswer((_) => Stream.value([tSale]));
+        when(
+          () => mockWatchSaleHistory(
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenAnswer((_) => Stream.value([tSale]));
       },
       build: buildBloc,
       act: (b) => b.add(const HistorySubscribed()),
@@ -50,10 +58,12 @@ void main() {
     blocTest<HistoryBloc, HistoryState>(
       'HistoryDateRangeChanged restarts subscription with dates',
       setUp: () {
-        when(() => mockWatchSaleHistory(
-              from: any(named: 'from'),
-              to: any(named: 'to'),
-            )).thenAnswer((_) => Stream.value([]));
+        when(
+          () => mockWatchSaleHistory(
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenAnswer((_) => Stream.value([]));
       },
       build: buildBloc,
       act: (b) {
@@ -64,19 +74,27 @@ void main() {
       wait: const Duration(milliseconds: 100),
       expect: () => [
         isA<HistoryState>().having(
-            (s) => s.status, 'status', HistoryStatus.loading),
+          (s) => s.status,
+          'status',
+          HistoryStatus.loading,
+        ),
         isA<HistoryState>().having(
-            (s) => s.status, 'status', HistoryStatus.success),
+          (s) => s.status,
+          'status',
+          HistoryStatus.success,
+        ),
       ],
     );
 
     blocTest<HistoryBloc, HistoryState>(
       'stream error emits failure',
       setUp: () {
-        when(() => mockWatchSaleHistory(
-              from: any(named: 'from'),
-              to: any(named: 'to'),
-            )).thenAnswer((_) => Stream<List<Sale>>.error('db error'));
+        when(
+          () => mockWatchSaleHistory(
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenAnswer((_) => Stream<List<Sale>>.error('db error'));
       },
       build: buildBloc,
       act: (b) => b.add(const HistorySubscribed()),

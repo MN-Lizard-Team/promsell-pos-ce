@@ -41,6 +41,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ProductUpdated>(_onUpdated);
     on<ProductDeleted>(_onDeleted);
     on<ProductSearchChanged>(_onSearchChanged);
+    on<ProductCategoryFilterChanged>(_onCategoryFilterChanged);
   }
 
   final GetProducts _getProducts;
@@ -141,6 +142,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     Emitter<ProductState> emit,
   ) {
     emit(state.copyWith(searchQuery: event.query));
+  }
+
+  void _onCategoryFilterChanged(
+    ProductCategoryFilterChanged event,
+    Emitter<ProductState> emit,
+  ) {
+    emit(state.copyWith(categoryFilter: event.category));
   }
 
   @override

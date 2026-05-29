@@ -222,5 +222,23 @@
   "draftLimitReached": "Maximum 10 bills reached. Please delete an old one first.",
   "activeDraftLabel": "Active",
   "draftNameHint": "Bill name (optional)",
-  "switchDraft": "Switch to this bill"
+  "switchDraft": "Switch to this bill",
+
+  "cartCleared": "Cart cleared",
+  "undo": "Undo",
+  "itemRemoved": "Item removed",
+  "removeItem": "Remove item",
+  "listView": "List view",
+  "gridView": "Grid view",
+  "confirmPaymentAmount": "Confirm {currency}{amount}",
+  "@confirmPaymentAmount": {
+    "placeholders": {
+      "currency": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "discountPreviewPercent": "After discount: {value}%",
+  "@discountPreviewPercent": {
+    "placeholders": { "value": { "type": "String" } }
+  }
 }

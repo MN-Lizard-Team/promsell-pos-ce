@@ -49,11 +49,11 @@ class InventoryLogPage extends StatelessWidget {
               return ListTile(
                 leading: CircleAvatar(
                   backgroundColor: isPositive
-                      ? Colors.green.shade50
-                      : Colors.red.shade50,
+                      ? theme.colorScheme.primaryContainer
+                      : theme.colorScheme.errorContainer,
                   child: Icon(
                     _iconForType(log.type),
-                    color: isPositive ? Colors.green : Colors.red,
+                    color: isPositive ? theme.colorScheme.primary : theme.colorScheme.error,
                     size: 20,
                   ),
                 ),
@@ -61,7 +61,7 @@ class InventoryLogPage extends StatelessWidget {
                   '${isPositive ? '+' : ''}${log.qtyChange}  →  ${log.balanceAfter}',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isPositive ? Colors.green : Colors.red,
+                    color: isPositive ? theme.colorScheme.primary : theme.colorScheme.error,
                   ),
                 ),
                 subtitle: Column(

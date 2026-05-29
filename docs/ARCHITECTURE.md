@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.5.0
+# Architecture — Promsell POS CE v0.5.1
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -282,9 +282,9 @@ Multiple `BlocListener`s subscribed to the same BLoC receive emissions in **subs
 
 | Registration | Instance | Reason |
 |-------------|----------|--------|
-| `registerLazySingleton` | `ProductBloc` | Shared across Sale + Product tabs via IndexedStack — same product list everywhere |
-| `registerLazySingleton` | `SettingsCubit` | Global app state (locale, theme) — must persist across navigation |
-| `registerLazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()` |
+| `@LazySingleton` | `ProductBloc` | Shared across Sale + Product tabs — same product list everywhere |
+| `@LazySingleton` | `SettingsCubit` | Global app state (locale, theme) — must persist across navigation |
+| `@LazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()` |
 
 ### State immutability
 
@@ -309,7 +309,7 @@ Drift's `watch()` queries use SQLite update hooks — no polling, no manual refr
 
 ## Dependency Injection Graph
 
-Registered in `lib/core/di/injection_container.dart` via `get_it`.
+Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it` (generated config in `injection_container.config.dart`).
 
 ```
 ┌─────────────────── BLoCs / Cubits ───────────────────────┐
@@ -453,7 +453,7 @@ try {
 ### Scaling characteristics
 
 - **WAL mode** — concurrent reads during writes (no reader blocking)
-- **IndexedStack** — all 5 tabs stay alive, no rebuild on tab switch
+- **Lazy-loaded tabs** — only active tab is built; visited tabs kept alive via `_cachedPages` map
 - **Stream-based queries** — Drift watch() uses SQLite update hooks, zero polling
 - **Lazy DI registration** — services only instantiated on first access
 - **UUID generation** — pure Dart, ~1μs per call, no I/O
@@ -498,18 +498,18 @@ try {
 
 ---
 
-### ADR-003: get_it for DI (no code generation)
+### ADR-003: injectable + get_it for DI
 
-**Context:** Need dependency injection without framework coupling.
+**Context:** Need dependency injection with compile-time safety.
 
-**Decision:** Use `get_it` service locator with manual registration.
+**Decision:** Use `injectable` annotations + `get_it` service locator with code generation.
 
 **Consequences:**
-- ✅ Simple, no code generation needed
-- ✅ Works with any class (no annotations)
+- ✅ Compile-time dependency graph verification
+- ✅ Annotations (`@injectable`, `@LazySingleton`, `@lazySingleton`, `@module`) are self-documenting
+- ✅ Generated config in `injection_container.config.dart`
 - ✅ Singleton + factory + lazy patterns supported
-- ⚠️ No compile-time dependency graph verification
-- ⚠️ Registration order matters (runtime error if dependency missing)
+- ⚠️ Requires `build_runner` code generation step
 
 ---
 
@@ -662,4 +662,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.5.0 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.5.1 · Architecture Document · Deep Technical Reference</sub>

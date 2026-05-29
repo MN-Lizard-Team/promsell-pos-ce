@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart';
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 
+@lazySingleton
 class InventoryLogService {
   InventoryLogService(this._db);
   final AppDatabase _db;

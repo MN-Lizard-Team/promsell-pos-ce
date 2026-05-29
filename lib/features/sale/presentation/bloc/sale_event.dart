@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 abstract class SaleEvent extends Equatable {
   const SaleEvent();
@@ -37,6 +38,19 @@ class SaleItemQtyChanged extends SaleEvent {
 
 class SaleCartCleared extends SaleEvent {
   const SaleCartCleared();
+}
+
+class SaleCartRestored extends SaleEvent {
+  const SaleCartRestored({
+    required this.items,
+    this.cartDiscountType,
+    this.cartDiscountValue,
+  });
+  final List<CartItem> items;
+  final String? cartDiscountType;
+  final double? cartDiscountValue;
+  @override
+  List<Object?> get props => [items, cartDiscountType, cartDiscountValue];
 }
 
 class SaleConfirmed extends SaleEvent {

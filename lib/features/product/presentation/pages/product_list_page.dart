@@ -36,7 +36,6 @@ class _ProductListView extends StatefulWidget {
 class _ProductListViewState extends State<_ProductListView> {
   final _searchController = TextEditingController();
   _ViewMode _viewMode = _ViewMode.list;
-  String? _selectedCategory;
 
   @override
   void dispose() {
@@ -65,7 +64,7 @@ class _ProductListViewState extends State<_ProductListView> {
             title: Text(context.l10n.productsTitle),
             actions: [
               IconButton(
-                tooltip: 'List view',
+                tooltip: context.l10n.listView,
                 icon: _viewMode == _ViewMode.list
                     ? const Icon(Icons.view_list)
                     : const Icon(Icons.view_list_outlined),
@@ -75,7 +74,7 @@ class _ProductListViewState extends State<_ProductListView> {
                 onPressed: () => setState(() => _viewMode = _ViewMode.list),
               ),
               IconButton(
-                tooltip: 'Grid view',
+                tooltip: context.l10n.gridView,
                 icon: _viewMode == _ViewMode.grid
                     ? const Icon(Icons.grid_view)
                     : const Icon(Icons.grid_view_outlined),
@@ -89,14 +88,6 @@ class _ProductListViewState extends State<_ProductListView> {
                 tooltip: context.l10n.addProduct,
                 icon: const Icon(Icons.add),
                 onPressed: () => _showProductForm(context, null),
-                style: IconButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Color.lerp(
-                    Theme.of(context).colorScheme.primary,
-                    Colors.black,
-                    0.30,
-                  ),
-                ),
               ),
               const SizedBox(width: 12),
             ],
@@ -111,10 +102,14 @@ class _ProductListViewState extends State<_ProductListView> {
                         .toSet()
                         .toList()
                       ..sort();
-                final products = _selectedCategory == null
+                final selectedCategory =
+                    categories.contains(state.categoryFilter)
+                    ? state.categoryFilter
+                    : null;
+                final products = selectedCategory == null
                     ? state.filtered
                     : state.filtered
-                          .where((p) => p.category == _selectedCategory)
+                          .where((p) => p.category == selectedCategory)
                           .toList();
 
                 return Column(
@@ -143,19 +138,23 @@ class _ProductListViewState extends State<_ProductListView> {
                             if (i == 0) {
                               return FilterChip(
                                 label: Text(context.l10n.allCategories),
-                                selected: _selectedCategory == null,
+                                selected: selectedCategory == null,
                                 onSelected: (_) =>
-                                    setState(() => _selectedCategory = null),
+                                    context.read<ProductBloc>().add(
+                                      const ProductCategoryFilterChanged(null),
+                                    ),
                               );
                             }
                             final cat = categories[i - 1];
                             return FilterChip(
                               label: Text(cat),
-                              selected: _selectedCategory == cat,
-                              onSelected: (_) => setState(
-                                () => _selectedCategory =
-                                    _selectedCategory == cat ? null : cat,
-                              ),
+                              selected: selectedCategory == cat,
+                              onSelected: (_) =>
+                                  context.read<ProductBloc>().add(
+                                    ProductCategoryFilterChanged(
+                                      selectedCategory == cat ? null : cat,
+                                    ),
+                                  ),
                             );
                           },
                         ),
@@ -576,9 +575,9 @@ class _StockBadge extends StatelessWidget {
     if (stock == 0) {
       color = theme.colorScheme.error;
     } else if (stock <= 5) {
-      color = isDark ? Colors.orange.shade300 : Colors.orange.shade700;
+      color = theme.colorScheme.tertiary;
     } else {
-      color = isDark ? Colors.green.shade300 : Colors.green.shade700;
+      color = theme.colorScheme.primary;
     }
 
     return DecoratedBox(

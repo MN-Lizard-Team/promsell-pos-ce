@@ -530,4 +530,32 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get switchDraft => 'สลับไปบิลนี้';
+
+  @override
+  String get cartCleared => 'ล้างตะกร้าแล้ว';
+
+  @override
+  String get undo => 'เรียกคืน';
+
+  @override
+  String get itemRemoved => 'ลบรายการแล้ว';
+
+  @override
+  String get removeItem => 'ลบรายการ';
+
+  @override
+  String get listView => 'มุมมองรายการ';
+
+  @override
+  String get gridView => 'มุมมองตาราง';
+
+  @override
+  String confirmPaymentAmount(String currency, String amount) {
+    return 'ยืนยัน $currency$amount';
+  }
+
+  @override
+  String discountPreviewPercent(String value) {
+    return 'หลังหัก: $value%';
+  }
 }

@@ -34,6 +34,7 @@ class _SettingsViewState extends State<_SettingsView> {
   late final TextEditingController _phoneCtrl;
   late final TextEditingController _receiptNoteCtrl;
   late final TextEditingController _lowStockCtrl;
+  late final TextEditingController _vatRateCtrl;
   bool _manualSave = false;
 
   bool get _hasTextChanges =>
@@ -41,7 +42,8 @@ class _SettingsViewState extends State<_SettingsView> {
       _addressCtrl.text.trim() != _draft.address ||
       _phoneCtrl.text.trim() != _draft.phone ||
       _receiptNoteCtrl.text.trim() != _draft.receiptNote ||
-      (int.tryParse(_lowStockCtrl.text) ?? 5) != _draft.lowStockThreshold;
+      (int.tryParse(_lowStockCtrl.text) ?? 5) != _draft.lowStockThreshold ||
+      (double.tryParse(_vatRateCtrl.text) ?? 7.0) != _draft.vatRate;
 
   @override
   void initState() {
@@ -54,6 +56,7 @@ class _SettingsViewState extends State<_SettingsView> {
     _lowStockCtrl = TextEditingController(
       text: _draft.lowStockThreshold.toString(),
     );
+    _vatRateCtrl = TextEditingController(text: _draft.vatRate.toString());
   }
 
   @override
@@ -73,6 +76,9 @@ class _SettingsViewState extends State<_SettingsView> {
       if (_receiptNoteCtrl.text == oldWidget.settings.receiptNote) {
         _receiptNoteCtrl.text = widget.settings.receiptNote;
       }
+      if (_vatRateCtrl.text == oldWidget.settings.vatRate.toString()) {
+        _vatRateCtrl.text = widget.settings.vatRate.toString();
+      }
     }
   }
 
@@ -83,6 +89,7 @@ class _SettingsViewState extends State<_SettingsView> {
     _phoneCtrl.dispose();
     _receiptNoteCtrl.dispose();
     _lowStockCtrl.dispose();
+    _vatRateCtrl.dispose();
     super.dispose();
   }
 
@@ -96,6 +103,7 @@ class _SettingsViewState extends State<_SettingsView> {
       receiptNote: _receiptNoteCtrl.text.trim(),
       lowStockThreshold:
           int.tryParse(_lowStockCtrl.text.trim()) ?? _draft.lowStockThreshold,
+      vatRate: double.tryParse(_vatRateCtrl.text.trim()) ?? _draft.vatRate,
     );
     context.read<SettingsCubit>().update(updated);
   }
@@ -341,14 +349,13 @@ class _SettingsViewState extends State<_SettingsView> {
                     ),
                     if (_draft.vatMode != 'NONE')
                       _TextField(
-                        controller: TextEditingController(
-                          text: _draft.vatRate.toString(),
-                        ),
+                        controller: _vatRateCtrl,
                         label: l10n.settingsVatRate,
                         icon: Icons.percent,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        onChanged: (_) => setState(() {}),
                       ),
                   ],
                 ),
@@ -388,6 +395,7 @@ class _SettingsViewState extends State<_SettingsView> {
                   _phoneCtrl,
                   _receiptNoteCtrl,
                   _lowStockCtrl,
+                  _vatRateCtrl,
                 ]),
                 builder: (_, _) => FilledButton.icon(
                   onPressed: _hasTextChanges ? _save : null,

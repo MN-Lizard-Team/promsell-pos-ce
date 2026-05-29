@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.5.0** — R3 Cashier UX: draft cart persistence (auto-save, multi-draft up to 10, restore on launch), per-item and cart-level discounts (% or ฿) with VAT applied post-discount, per-product `trackStock` toggle for service items, `allowOversell` and low-stock threshold settings.
+> **Latest Release: v0.5.1** — Theme accessibility overhaul (explicit ColorScheme, visible borders, elderly-friendly contrast), overlay-based toast system, cart undo, category filter sync, DI compile-time safety via `injectable`, and lazy-loaded tabs.
  
 ---
  
@@ -88,8 +88,8 @@
 | **Framework** | Flutter 3.x · Dart 3.11+ |
 | **State management** | flutter_bloc (BLoC + Cubit pattern) |
 | **Database** | Drift (SQLite ORM) with code generation — 9 tables, UUID PKs |
-| **DI** | get_it service locator |
-| **Routing** | Navigator + IndexedStack |
+| **DI** | injectable + get_it (compile-time safe) |
+| **Routing** | Navigator + lazy-loaded tabs |
 | **Persistence** | SettingsLocalDatasource (Drift-backed typed key-value store); Drift tables for receipt sequences |
 | **Localization** | flutter_localizations + Flutter ARB intl |
 | **PDF / Print** | pdf + printing |
@@ -142,7 +142,7 @@ promsell-pos-ce/
 ├── lib/
 │   ├── core/
 │   │   ├── database/          # Drift schema, tables, and migrations
-│   │   ├── di/                # get_it service locator
+│   │   ├── di/                # injectable + get_it DI
 │   │   ├── extensions/        # context.l10n helper
 │   │   ├── utils/             # IdGenerator, payment_method, etc.
 │   │   └── widgets/           # shared UI primitives
@@ -211,6 +211,7 @@ features/<name>/
 
 - [x] **Schema + Sale Integrity Overhaul** (v0.4.0): UUID migration, 9 tables, indexes, sync-ready columns, atomic receipt numbers, inventory logs, void/refund, stock adjustments
 - [x] **R3 — Cashier UX** (v0.5.0): Draft carts (multi-draft, auto-save), per-item + per-cart discounts, VAT post-discount, `trackStock` per-product, `allowOversell` + low-stock threshold
+- [x] **R4 — UX Polish & Accessibility** (v0.5.1): Theme accessibility (borders, contrast, ColorScheme overrides), overlay toast, cart undo, DI compile-time safety, lazy tabs
 - [ ] **R4 — Merchant Tools**: PromptPay QR, backup/restore
 - [ ] **R5 — Operations**: Daily close, onboarding wizard, final polish
 
@@ -311,6 +312,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.5.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.5.1 · AGPL-3.0</sub>
 
 </div>

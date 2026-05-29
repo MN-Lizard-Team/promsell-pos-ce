@@ -18,3 +18,11 @@ class HistoryDateRangeChanged extends HistoryEvent {
   @override
   List<Object?> get props => [from, to];
 }
+
+class SaleVoidRequested extends HistoryEvent {
+  const SaleVoidRequested({required this.saleId, this.reason});
+  final String saleId;
+  final String? reason;
+  @override
+  List<Object?> get props => [saleId, reason];
+}

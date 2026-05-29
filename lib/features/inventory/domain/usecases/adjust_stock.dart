@@ -1,7 +1,9 @@
 import 'package:drift/drift.dart';
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 
+@injectable
 class AdjustStock {
   const AdjustStock(this._db, this._inventoryLogService);
   final AppDatabase _db;

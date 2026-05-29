@@ -1087,6 +1087,54 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'สลับไปบิลนี้'**
   String get switchDraft;
+
+  /// No description provided for @cartCleared.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้างตะกร้าแล้ว'**
+  String get cartCleared;
+
+  /// No description provided for @undo.
+  ///
+  /// In th, this message translates to:
+  /// **'เรียกคืน'**
+  String get undo;
+
+  /// No description provided for @itemRemoved.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบรายการแล้ว'**
+  String get itemRemoved;
+
+  /// No description provided for @removeItem.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบรายการ'**
+  String get removeItem;
+
+  /// No description provided for @listView.
+  ///
+  /// In th, this message translates to:
+  /// **'มุมมองรายการ'**
+  String get listView;
+
+  /// No description provided for @gridView.
+  ///
+  /// In th, this message translates to:
+  /// **'มุมมองตาราง'**
+  String get gridView;
+
+  /// No description provided for @confirmPaymentAmount.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยัน {currency}{amount}'**
+  String confirmPaymentAmount(String currency, String amount);
+
+  /// No description provided for @discountPreviewPercent.
+  ///
+  /// In th, this message translates to:
+  /// **'หลังหัก: {value}%'**
+  String discountPreviewPercent(String value);
 }
 
 class _AppLocalizationsDelegate

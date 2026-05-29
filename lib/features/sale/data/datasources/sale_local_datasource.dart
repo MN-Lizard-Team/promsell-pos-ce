@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
@@ -27,6 +28,7 @@ abstract class SaleLocalDatasource {
   Future<void> voidSale(String saleId, {String? reason});
 }
 
+@LazySingleton(as: SaleLocalDatasource)
 class SaleLocalDatasourceImpl implements SaleLocalDatasource {
   const SaleLocalDatasourceImpl(
     this._db, {
