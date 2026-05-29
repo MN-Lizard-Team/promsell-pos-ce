@@ -5,6 +5,13 @@ import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/section_card.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_header.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_text_field.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/language_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/theme_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/currency_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/date_format_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/responsive_settings_picker.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -152,8 +159,8 @@ class _SettingsViewState extends State<_SettingsView> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   children: [
-                    _SectionHeader(l10n.settingsGeneral),
-                    _LanguageTile(
+                    SettingsSectionHeader(l10n.settingsGeneral),
+                    LanguageTile(
                       current: _draft.locale,
                       onChanged: (locale) {
                         setState(
@@ -164,7 +171,7 @@ class _SettingsViewState extends State<_SettingsView> {
                         );
                       },
                     ),
-                    _ThemeTile(
+                    ThemeTile(
                       current: _draft.themeMode,
                       onChanged: (mode) {
                         setState(
@@ -183,19 +190,19 @@ class _SettingsViewState extends State<_SettingsView> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   children: [
-                    _SectionHeader(l10n.settingsShopInfo),
-                    _TextField(
+                    SettingsSectionHeader(l10n.settingsShopInfo),
+                    SettingsTextField(
                       controller: _shopNameCtrl,
                       label: l10n.settingsShopName,
                       icon: Icons.store_outlined,
                     ),
-                    _TextField(
+                    SettingsTextField(
                       controller: _addressCtrl,
                       label: l10n.settingsAddress,
                       icon: Icons.location_on_outlined,
                       maxLines: 2,
                     ),
-                    _TextField(
+                    SettingsTextField(
                       controller: _phoneCtrl,
                       label: l10n.settingsPhone,
                       icon: Icons.phone_outlined,
@@ -209,8 +216,8 @@ class _SettingsViewState extends State<_SettingsView> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   children: [
-                    _SectionHeader(l10n.settingsSales),
-                    _CurrencyTile(
+                    SettingsSectionHeader(l10n.settingsSales),
+                    CurrencyTile(
                       current: _draft.currency,
                       onChanged: (currency) {
                         final updated = _draft.copyWith(currency: currency);
@@ -218,7 +225,7 @@ class _SettingsViewState extends State<_SettingsView> {
                         context.read<SettingsCubit>().update(updated);
                       },
                     ),
-                    _DateFormatTile(
+                    DateFormatTile(
                       current: _draft.dateFormat,
                       onChanged: (format) {
                         final updated = _draft.copyWith(dateFormat: format);
@@ -234,8 +241,8 @@ class _SettingsViewState extends State<_SettingsView> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   children: [
-                    _SectionHeader(l10n.settingsReceipt),
-                    _TextField(
+                    SettingsSectionHeader(l10n.settingsReceipt),
+                    SettingsTextField(
                       controller: _receiptNoteCtrl,
                       label: l10n.settingsReceiptNote,
                       icon: Icons.receipt_long_outlined,
@@ -287,7 +294,7 @@ class _SettingsViewState extends State<_SettingsView> {
                         context.read<SettingsCubit>().update(updated);
                       },
                     ),
-                    _ResponsiveSettingsPicker(
+                    ResponsiveSettingsPicker(
                       icon: Icons.receipt_long_outlined,
                       title: l10n.settingsReceiptPreviewStyle,
                       child: DropdownButton<String>(
@@ -318,7 +325,7 @@ class _SettingsViewState extends State<_SettingsView> {
                         },
                       ),
                     ),
-                    _ResponsiveSettingsPicker(
+                    ResponsiveSettingsPicker(
                       icon: Icons.percent_outlined,
                       title: l10n.settingsVatMode,
                       child: DropdownButton<String>(
@@ -348,7 +355,7 @@ class _SettingsViewState extends State<_SettingsView> {
                       ),
                     ),
                     if (_draft.vatMode != 'NONE')
-                      _TextField(
+                      SettingsTextField(
                         controller: _vatRateCtrl,
                         label: l10n.settingsVatRate,
                         icon: Icons.percent,
@@ -365,7 +372,7 @@ class _SettingsViewState extends State<_SettingsView> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   children: [
-                    _SectionHeader(l10n.settingsStockPolicy),
+                    SettingsSectionHeader(l10n.settingsStockPolicy),
                     SwitchListTile(
                       secondary: const Icon(Icons.shopping_cart_outlined),
                       title: Text(l10n.allowOversell),
@@ -377,7 +384,7 @@ class _SettingsViewState extends State<_SettingsView> {
                         context.read<SettingsCubit>().update(updated);
                       },
                     ),
-                    _TextField(
+                    SettingsTextField(
                       controller: _lowStockCtrl,
                       label: l10n.lowStockThreshold,
                       icon: Icons.warning_amber_outlined,
@@ -416,220 +423,6 @@ class _SettingsViewState extends State<_SettingsView> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.title);
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-class _TextField extends StatelessWidget {
-  const _TextField({
-    required this.controller,
-    required this.label,
-    required this.icon,
-    this.maxLines = 1,
-    this.keyboardType,
-    this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final IconData icon;
-  final int maxLines;
-  final TextInputType? keyboardType;
-  final ValueChanged<String>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          border: const OutlineInputBorder(),
-        ),
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _LanguageTile extends StatelessWidget {
-  const _LanguageTile({required this.current, required this.onChanged});
-  final Locale current;
-  final ValueChanged<Locale> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return _ResponsiveSettingsPicker(
-      icon: Icons.language,
-      title: l10n.settingsLanguage,
-      child: DropdownButton<String>(
-        value: current.languageCode,
-        isExpanded: true,
-        items: [
-          DropdownMenuItem(value: 'th', child: Text(l10n.langThai)),
-          DropdownMenuItem(value: 'en', child: Text(l10n.langEnglish)),
-        ],
-        onChanged: (code) {
-          if (code != null) onChanged(Locale(code));
-        },
-      ),
-    );
-  }
-}
-
-class _ThemeTile extends StatelessWidget {
-  const _ThemeTile({required this.current, required this.onChanged});
-  final ThemeMode current;
-  final ValueChanged<ThemeMode> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return _ResponsiveSettingsPicker(
-      icon: Icons.brightness_6_outlined,
-      title: l10n.settingsTheme,
-      child: DropdownButton<ThemeMode>(
-        value: current,
-        isExpanded: true,
-        items: [
-          DropdownMenuItem(
-            value: ThemeMode.light,
-            child: Text(l10n.settingsThemeLight),
-          ),
-          DropdownMenuItem(
-            value: ThemeMode.dark,
-            child: Text(l10n.settingsThemeDark),
-          ),
-          DropdownMenuItem(
-            value: ThemeMode.system,
-            child: Text(l10n.settingsThemeSystem),
-          ),
-        ],
-        onChanged: (m) {
-          if (m != null) onChanged(m);
-        },
-      ),
-    );
-  }
-}
-
-class _CurrencyTile extends StatelessWidget {
-  const _CurrencyTile({required this.current, required this.onChanged});
-  final String current;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ResponsiveSettingsPicker(
-      icon: Icons.attach_money,
-      title: context.l10n.settingsCurrency,
-      child: DropdownButton<String>(
-        value: current,
-        isExpanded: true,
-        items: const [
-          DropdownMenuItem(value: '฿', child: Text('฿ (THB)')),
-          DropdownMenuItem(value: '\$', child: Text('\$ (USD)')),
-          DropdownMenuItem(value: '€', child: Text('€ (EUR)')),
-        ],
-        onChanged: (v) {
-          if (v != null) onChanged(v);
-        },
-      ),
-    );
-  }
-}
-
-class _DateFormatTile extends StatelessWidget {
-  const _DateFormatTile({required this.current, required this.onChanged});
-  final String current;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ResponsiveSettingsPicker(
-      icon: Icons.calendar_today_outlined,
-      title: context.l10n.settingsDateFormat,
-      child: DropdownButton<String>(
-        value: current,
-        isExpanded: true,
-        items: const [
-          DropdownMenuItem(value: 'dd/MM/yyyy', child: Text('dd/MM/yyyy')),
-          DropdownMenuItem(value: 'MM/dd/yyyy', child: Text('MM/dd/yyyy')),
-          DropdownMenuItem(value: 'yyyy-MM-dd', child: Text('yyyy-MM-dd')),
-        ],
-        onChanged: (v) {
-          if (v != null) onChanged(v);
-        },
-      ),
-    );
-  }
-}
-
-class _ResponsiveSettingsPicker extends StatelessWidget {
-  const _ResponsiveSettingsPicker({
-    required this.icon,
-    required this.title,
-    required this.child,
-  });
-
-  final IconData icon;
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 360) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Icon(icon),
-                    const SizedBox(width: 16),
-                    Expanded(child: Text(title)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                child,
-              ],
-            ),
-          );
-        }
-
-        return ListTile(
-          leading: Icon(icon),
-          title: Text(title),
-          trailing: SizedBox(width: 180, child: child),
-        );
-      },
     );
   }
 }

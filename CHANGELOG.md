@@ -17,6 +17,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.2] - 2026-05-29
+
+Drift build optimization and page structure refactoring across all features.
+
+### Highlights
+
+- **Drift build optimization** — `build.yaml` added with `generate_manager: false` and `skip_verification_code: true`, reducing `app_database.g.dart` from 8,549 lines / 293KB to 4,769 lines / 150KB (-44% lines, -49% size).
+- **Page structure refactoring** — Private widgets extracted into public widget files under `widgets/` subfolders across 6 features; helper functions converted to static methods. No behavior changes.
+
+### Changed
+
+- **`build.yaml`** — New file at project root configuring Drift code generation options.
+- **`app_database.g.dart`** — Regenerated without Manager/Composer classes (FilterComposer, OrderingComposer, AnnotationComposer, TableManager, ProcessedTableManager typedefs) and without verification metadata code. These APIs were not used by the project.
+- **Sale page** — Extracted 9 widgets (`DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`) into `lib/features/sale/presentation/widgets/`; helper functions → static methods (`DiscountDialog.showItemDiscount`, `DraftsBottomSheet.show`, `SaleReceiptDialog.show`).
+- **Product page** — Extracted 7 widgets (`ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`) into `lib/features/product/presentation/widgets/`.
+- **Settings page** — Extracted 7 widgets (`SettingsSectionHeader`, `SettingsTextField`, `LanguageTile`, `ThemeTile`, `CurrencyTile`, `DateFormatTile`, `ResponsiveSettingsPicker`) into `lib/features/settings/presentation/widgets/`.
+- **Payment sheet** — Extracted 2 widgets (`ChangePreview`, `PaymentTotalRow`) into `lib/features/sale/presentation/widgets/payment_widgets.dart`.
+- **History page** — Extracted 2 widgets (`SaleExpansionTile`, `VoidSaleDialog`) into `lib/features/history/presentation/widgets/`; `_showVoidDialog` → `VoidSaleDialog.show()`.
+- **Report page** — Extracted `SummaryCard` into `lib/features/report/presentation/widgets/`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **208/208 passing**
+
+---
+
 ## [0.5.1] - 2026-05-29
 
 Theme accessibility, overlay toast, UX fixes, and DI compile-time safety.
@@ -558,7 +582,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.4.1...v0.4.2

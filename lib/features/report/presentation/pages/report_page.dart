@@ -10,6 +10,7 @@ import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/summary_card.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -108,7 +109,7 @@ class _ReportView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _SummaryCard(
+                  SummaryCard(
                     title: context.l10n.netRevenue,
                     value: _netRevenue(sales),
                     currency: settings.currency,
@@ -120,7 +121,7 @@ class _ReportView extends StatelessWidget {
                   ),
                   if (_voidedSales(sales).isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    _SummaryCard(
+                    SummaryCard(
                       title: context.l10n.voidedTotal,
                       value: _voidedTotal(sales),
                       currency: settings.currency,
@@ -310,59 +311,5 @@ class _ReportView extends StatelessWidget {
         range.end.copyWith(hour: 23, minute: 59, second: 59, millisecond: 999),
       );
     }
-  }
-}
-
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.title,
-    required this.value,
-    required this.currency,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
-
-  final String title;
-  final double value;
-  final String currency;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: color.withValues(alpha: 0.12),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: theme.textTheme.bodySmall),
-                  MoneyText(
-                    value: value,
-                    currency: currency,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    color: color,
-                  ),
-                  Text(subtitle, style: theme.textTheme.bodySmall),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

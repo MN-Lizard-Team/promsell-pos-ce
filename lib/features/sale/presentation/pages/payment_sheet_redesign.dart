@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment_widgets.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
@@ -152,14 +153,14 @@ class _PaymentSheetState extends State<PaymentSheet> {
                       child: Column(
                         children: [
                           if (hasItemDiscounts || cartState.hasCartDiscount)
-                            _TotalRow(
+                            PaymentTotalRow(
                               label: context.l10n.receiptLabelSubtotal,
                               value: cartState.itemsSubtotal,
                               currency: currency,
                               style: theme.textTheme.bodyMedium,
                             ),
                           if (hasItemDiscounts)
-                            _TotalRow(
+                            PaymentTotalRow(
                               label: context.l10n.discountSectionLabel,
                               value: -cartState.items.fold(
                                 0.0,
@@ -171,7 +172,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                               ),
                             ),
                           if (cartState.hasCartDiscount)
-                            _TotalRow(
+                            PaymentTotalRow(
                               label: context.l10n.cartDiscount,
                               value: -cartState.cartDiscountAmount,
                               currency: currency,
@@ -272,7 +273,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 10),
-                _ChangePreview(
+                ChangePreview(
                   change: _change,
                   currency: currency,
                   visible: _received > 0,
@@ -443,89 +444,5 @@ class _PaymentSheetState extends State<PaymentSheet> {
         : roundedHundred + 100;
     return {widget.total, nextTen, nextHundred}.where((v) => v > 0).toList()
       ..sort();
-  }
-}
-
-class _ChangePreview extends StatelessWidget {
-  const _ChangePreview({
-    required this.change,
-    required this.currency,
-    required this.visible,
-  });
-
-  final double change;
-  final String currency;
-  final bool visible;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!visible) return const SizedBox.shrink();
-
-    final theme = Theme.of(context);
-    final isEnough = change >= 0;
-    final color = isEnough
-        ? theme.colorScheme.primary
-        : theme.colorScheme.error;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Icon(
-              isEnough ? Icons.price_check : Icons.warning_amber_rounded,
-              color: color,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                context.l10n.change,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ),
-            MoneyText(
-              value: isEnough ? change : 0,
-              currency: currency,
-              style: theme.textTheme.titleMedium,
-              color: color,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TotalRow extends StatelessWidget {
-  const _TotalRow({
-    required this.label,
-    required this.value,
-    required this.currency,
-    this.style,
-  });
-
-  final String label;
-  final double value;
-  final String currency;
-  final TextStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: style)),
-          Text(
-            '${value < 0 ? '-' : ''}$currency${value.abs().toStringAsFixed(2)}',
-            style: style,
-          ),
-        ],
-      ),
-    );
   }
 }

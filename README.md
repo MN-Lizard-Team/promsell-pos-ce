@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.5.1** — Theme accessibility overhaul (explicit ColorScheme, visible borders, elderly-friendly contrast), overlay-based toast system, cart undo, category filter sync, DI compile-time safety via `injectable`, and lazy-loaded tabs.
+> **Latest Release: v0.5.2** — Drift build optimization (generated code -44% lines, -49% size) and page structure refactoring across all features (private widgets extracted into public `widgets/` subfolders).
  
 ---
  
@@ -188,7 +188,8 @@ features/<name>/
 │   └── usecases/         # Business logic
 └── presentation/
     ├── bloc/ or cubit/   # State management
-    └── pages/            # UI widgets
+    ├── pages/            # Page-level UI
+    └── widgets/          # Extracted reusable widgets
 ```
  
 ---
@@ -212,6 +213,7 @@ features/<name>/
 - [x] **Schema + Sale Integrity Overhaul** (v0.4.0): UUID migration, 9 tables, indexes, sync-ready columns, atomic receipt numbers, inventory logs, void/refund, stock adjustments
 - [x] **R3 — Cashier UX** (v0.5.0): Draft carts (multi-draft, auto-save), per-item + per-cart discounts, VAT post-discount, `trackStock` per-product, `allowOversell` + low-stock threshold
 - [x] **R4 — UX Polish & Accessibility** (v0.5.1): Theme accessibility (borders, contrast, ColorScheme overrides), overlay toast, cart undo, DI compile-time safety, lazy tabs
+- [x] **R4 — Code Quality** (v0.5.2): Drift build optimization, page structure refactoring (private widgets → public `widgets/` subfolders across 6 features)
 - [ ] **R4 — Merchant Tools**: PromptPay QR, backup/restore
 - [ ] **R5 — Operations**: Daily close, onboarding wizard, final polish
 
@@ -312,6 +314,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.5.1 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.5.2 · AGPL-3.0</sub>
 
 </div>

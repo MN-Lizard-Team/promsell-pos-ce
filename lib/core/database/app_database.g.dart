@@ -9,7 +9,6 @@ class $ProductsTable extends Products
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ProductsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -18,7 +17,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
@@ -31,7 +29,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
   @override
   late final GeneratedColumn<String> sku = GeneratedColumn<String>(
     'sku',
@@ -39,9 +36,6 @@ class $ProductsTable extends Products
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _barcodeMeta = const VerificationMeta(
-    'barcode',
   );
   @override
   late final GeneratedColumn<String> barcode = GeneratedColumn<String>(
@@ -51,7 +45,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _priceMeta = const VerificationMeta('price');
   @override
   late final GeneratedColumn<double> price = GeneratedColumn<double>(
     'price',
@@ -60,7 +53,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _costMeta = const VerificationMeta('cost');
   @override
   late final GeneratedColumn<double> cost = GeneratedColumn<double>(
     'cost',
@@ -69,7 +61,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _stockMeta = const VerificationMeta('stock');
   @override
   late final GeneratedColumn<int> stock = GeneratedColumn<int>(
     'stock',
@@ -79,9 +70,6 @@ class $ProductsTable extends Products
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
-    'categoryId',
-  );
   @override
   late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
     'category_id',
@@ -90,9 +78,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _imageUrlMeta = const VerificationMeta(
-    'imageUrl',
-  );
   @override
   late final GeneratedColumn<String> imageUrl = GeneratedColumn<String>(
     'image_url',
@@ -100,9 +85,6 @@ class $ProductsTable extends Products
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _trackStockMeta = const VerificationMeta(
-    'trackStock',
   );
   @override
   late final GeneratedColumn<bool> trackStock = GeneratedColumn<bool>(
@@ -116,9 +98,6 @@ class $ProductsTable extends Products
     ),
     defaultValue: const Constant(true),
   );
-  static const VerificationMeta _isActiveMeta = const VerificationMeta(
-    'isActive',
-  );
   @override
   late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
     'is_active',
@@ -131,9 +110,6 @@ class $ProductsTable extends Products
     ),
     defaultValue: const Constant(true),
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
@@ -142,9 +118,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
   );
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
@@ -155,9 +128,6 @@ class $ProductsTable extends Products
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
   @override
   late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
     'deleted_at',
@@ -165,9 +135,6 @@ class $ProductsTable extends Products
     true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _versionMeta = const VerificationMeta(
-    'version',
   );
   @override
   late final GeneratedColumn<int> version = GeneratedColumn<int>(
@@ -177,9 +144,6 @@ class $ProductsTable extends Products
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
-  );
-  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
-    'deviceId',
   );
   @override
   late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
@@ -213,115 +177,6 @@ class $ProductsTable extends Products
   @override
   String get actualTableName => $name;
   static const String $name = 'products';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<ProductData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('sku')) {
-      context.handle(
-        _skuMeta,
-        sku.isAcceptableOrUnknown(data['sku']!, _skuMeta),
-      );
-    }
-    if (data.containsKey('barcode')) {
-      context.handle(
-        _barcodeMeta,
-        barcode.isAcceptableOrUnknown(data['barcode']!, _barcodeMeta),
-      );
-    }
-    if (data.containsKey('price')) {
-      context.handle(
-        _priceMeta,
-        price.isAcceptableOrUnknown(data['price']!, _priceMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_priceMeta);
-    }
-    if (data.containsKey('cost')) {
-      context.handle(
-        _costMeta,
-        cost.isAcceptableOrUnknown(data['cost']!, _costMeta),
-      );
-    }
-    if (data.containsKey('stock')) {
-      context.handle(
-        _stockMeta,
-        stock.isAcceptableOrUnknown(data['stock']!, _stockMeta),
-      );
-    }
-    if (data.containsKey('category_id')) {
-      context.handle(
-        _categoryIdMeta,
-        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
-      );
-    }
-    if (data.containsKey('image_url')) {
-      context.handle(
-        _imageUrlMeta,
-        imageUrl.isAcceptableOrUnknown(data['image_url']!, _imageUrlMeta),
-      );
-    }
-    if (data.containsKey('track_stock')) {
-      context.handle(
-        _trackStockMeta,
-        trackStock.isAcceptableOrUnknown(data['track_stock']!, _trackStockMeta),
-      );
-    }
-    if (data.containsKey('is_active')) {
-      context.handle(
-        _isActiveMeta,
-        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    if (data.containsKey('version')) {
-      context.handle(
-        _versionMeta,
-        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
-      );
-    }
-    if (data.containsKey('device_id')) {
-      context.handle(
-        _deviceIdMeta,
-        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -899,7 +754,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $SalesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -907,9 +761,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _receiptNumberMeta = const VerificationMeta(
-    'receiptNumber',
   );
   @override
   late final GeneratedColumn<String> receiptNumber = GeneratedColumn<String>(
@@ -919,7 +770,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
     'status',
@@ -928,9 +778,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultValue: const Constant('COMPLETED'),
-  );
-  static const VerificationMeta _subtotalAmountMeta = const VerificationMeta(
-    'subtotalAmount',
   );
   @override
   late final GeneratedColumn<double> subtotalAmount = GeneratedColumn<double>(
@@ -941,9 +788,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _discountTypeMeta = const VerificationMeta(
-    'discountType',
-  );
   @override
   late final GeneratedColumn<String> discountType = GeneratedColumn<String>(
     'discount_type',
@@ -952,9 +796,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _discountValueMeta = const VerificationMeta(
-    'discountValue',
-  );
   @override
   late final GeneratedColumn<double> discountValue = GeneratedColumn<double>(
     'discount_value',
@@ -962,9 +803,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     true,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _discountAmountMeta = const VerificationMeta(
-    'discountAmount',
   );
   @override
   late final GeneratedColumn<double> discountAmount = GeneratedColumn<double>(
@@ -975,9 +813,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _totalAmountMeta = const VerificationMeta(
-    'totalAmount',
-  );
   @override
   late final GeneratedColumn<double> totalAmount = GeneratedColumn<double>(
     'total_amount',
@@ -985,9 +820,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _vatModeMeta = const VerificationMeta(
-    'vatMode',
   );
   @override
   late final GeneratedColumn<String> vatMode = GeneratedColumn<String>(
@@ -998,9 +830,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     requiredDuringInsert: false,
     defaultValue: const Constant('NONE'),
   );
-  static const VerificationMeta _vatRateMeta = const VerificationMeta(
-    'vatRate',
-  );
   @override
   late final GeneratedColumn<double> vatRate = GeneratedColumn<double>(
     'vat_rate',
@@ -1009,9 +838,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.double,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _vatAmountMeta = const VerificationMeta(
-    'vatAmount',
   );
   @override
   late final GeneratedColumn<double> vatAmount = GeneratedColumn<double>(
@@ -1022,9 +848,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _paymentMethodMeta = const VerificationMeta(
-    'paymentMethod',
-  );
   @override
   late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
     'payment_method',
@@ -1032,9 +855,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _amountReceivedMeta = const VerificationMeta(
-    'amountReceived',
   );
   @override
   late final GeneratedColumn<double> amountReceived = GeneratedColumn<double>(
@@ -1044,9 +864,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _changeAmountMeta = const VerificationMeta(
-    'changeAmount',
-  );
   @override
   late final GeneratedColumn<double> changeAmount = GeneratedColumn<double>(
     'change_amount',
@@ -1055,7 +872,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
     'note',
@@ -1063,9 +879,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _voidedAtMeta = const VerificationMeta(
-    'voidedAt',
   );
   @override
   late final GeneratedColumn<DateTime> voidedAt = GeneratedColumn<DateTime>(
@@ -1075,9 +888,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _voidReasonMeta = const VerificationMeta(
-    'voidReason',
-  );
   @override
   late final GeneratedColumn<String> voidReason = GeneratedColumn<String>(
     'void_reason',
@@ -1085,9 +895,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
   );
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
@@ -1098,9 +905,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
@@ -1110,9 +914,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
   @override
   late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
     'deleted_at',
@@ -1120,9 +921,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _versionMeta = const VerificationMeta(
-    'version',
   );
   @override
   late final GeneratedColumn<int> version = GeneratedColumn<int>(
@@ -1132,9 +930,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
-  );
-  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
-    'deviceId',
   );
   @override
   late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
@@ -1174,178 +969,6 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
   @override
   String get actualTableName => $name;
   static const String $name = 'sales';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SaleData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('receipt_number')) {
-      context.handle(
-        _receiptNumberMeta,
-        receiptNumber.isAcceptableOrUnknown(
-          data['receipt_number']!,
-          _receiptNumberMeta,
-        ),
-      );
-    }
-    if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
-    }
-    if (data.containsKey('subtotal_amount')) {
-      context.handle(
-        _subtotalAmountMeta,
-        subtotalAmount.isAcceptableOrUnknown(
-          data['subtotal_amount']!,
-          _subtotalAmountMeta,
-        ),
-      );
-    }
-    if (data.containsKey('discount_type')) {
-      context.handle(
-        _discountTypeMeta,
-        discountType.isAcceptableOrUnknown(
-          data['discount_type']!,
-          _discountTypeMeta,
-        ),
-      );
-    }
-    if (data.containsKey('discount_value')) {
-      context.handle(
-        _discountValueMeta,
-        discountValue.isAcceptableOrUnknown(
-          data['discount_value']!,
-          _discountValueMeta,
-        ),
-      );
-    }
-    if (data.containsKey('discount_amount')) {
-      context.handle(
-        _discountAmountMeta,
-        discountAmount.isAcceptableOrUnknown(
-          data['discount_amount']!,
-          _discountAmountMeta,
-        ),
-      );
-    }
-    if (data.containsKey('total_amount')) {
-      context.handle(
-        _totalAmountMeta,
-        totalAmount.isAcceptableOrUnknown(
-          data['total_amount']!,
-          _totalAmountMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_totalAmountMeta);
-    }
-    if (data.containsKey('vat_mode')) {
-      context.handle(
-        _vatModeMeta,
-        vatMode.isAcceptableOrUnknown(data['vat_mode']!, _vatModeMeta),
-      );
-    }
-    if (data.containsKey('vat_rate')) {
-      context.handle(
-        _vatRateMeta,
-        vatRate.isAcceptableOrUnknown(data['vat_rate']!, _vatRateMeta),
-      );
-    }
-    if (data.containsKey('vat_amount')) {
-      context.handle(
-        _vatAmountMeta,
-        vatAmount.isAcceptableOrUnknown(data['vat_amount']!, _vatAmountMeta),
-      );
-    }
-    if (data.containsKey('payment_method')) {
-      context.handle(
-        _paymentMethodMeta,
-        paymentMethod.isAcceptableOrUnknown(
-          data['payment_method']!,
-          _paymentMethodMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_paymentMethodMeta);
-    }
-    if (data.containsKey('amount_received')) {
-      context.handle(
-        _amountReceivedMeta,
-        amountReceived.isAcceptableOrUnknown(
-          data['amount_received']!,
-          _amountReceivedMeta,
-        ),
-      );
-    }
-    if (data.containsKey('change_amount')) {
-      context.handle(
-        _changeAmountMeta,
-        changeAmount.isAcceptableOrUnknown(
-          data['change_amount']!,
-          _changeAmountMeta,
-        ),
-      );
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
-      );
-    }
-    if (data.containsKey('voided_at')) {
-      context.handle(
-        _voidedAtMeta,
-        voidedAt.isAcceptableOrUnknown(data['voided_at']!, _voidedAtMeta),
-      );
-    }
-    if (data.containsKey('void_reason')) {
-      context.handle(
-        _voidReasonMeta,
-        voidReason.isAcceptableOrUnknown(data['void_reason']!, _voidReasonMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    if (data.containsKey('version')) {
-      context.handle(
-        _versionMeta,
-        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
-      );
-    }
-    if (data.containsKey('device_id')) {
-      context.handle(
-        _deviceIdMeta,
-        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -2122,7 +1745,6 @@ class $SaleItemsTable extends SaleItems
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $SaleItemsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -2131,7 +1753,6 @@ class $SaleItemsTable extends SaleItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _saleIdMeta = const VerificationMeta('saleId');
   @override
   late final GeneratedColumn<String> saleId = GeneratedColumn<String>(
     'sale_id',
@@ -2143,9 +1764,6 @@ class $SaleItemsTable extends SaleItems
       'REFERENCES sales (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _productIdMeta = const VerificationMeta(
-    'productId',
-  );
   @override
   late final GeneratedColumn<String> productId = GeneratedColumn<String>(
     'product_id',
@@ -2153,9 +1771,6 @@ class $SaleItemsTable extends SaleItems
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _productNameMeta = const VerificationMeta(
-    'productName',
   );
   @override
   late final GeneratedColumn<String> productName = GeneratedColumn<String>(
@@ -2165,7 +1780,6 @@ class $SaleItemsTable extends SaleItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _priceMeta = const VerificationMeta('price');
   @override
   late final GeneratedColumn<double> price = GeneratedColumn<double>(
     'price',
@@ -2174,7 +1788,6 @@ class $SaleItemsTable extends SaleItems
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _qtyMeta = const VerificationMeta('qty');
   @override
   late final GeneratedColumn<int> qty = GeneratedColumn<int>(
     'qty',
@@ -2182,9 +1795,6 @@ class $SaleItemsTable extends SaleItems
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _discountAmountMeta = const VerificationMeta(
-    'discountAmount',
   );
   @override
   late final GeneratedColumn<double> discountAmount = GeneratedColumn<double>(
@@ -2195,9 +1805,6 @@ class $SaleItemsTable extends SaleItems
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _vatAmountMeta = const VerificationMeta(
-    'vatAmount',
-  );
   @override
   late final GeneratedColumn<double> vatAmount = GeneratedColumn<double>(
     'vat_amount',
@@ -2206,9 +1813,6 @@ class $SaleItemsTable extends SaleItems
     type: DriftSqlType.double,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _subtotalMeta = const VerificationMeta(
-    'subtotal',
   );
   @override
   late final GeneratedColumn<double> subtotal = GeneratedColumn<double>(
@@ -2235,87 +1839,6 @@ class $SaleItemsTable extends SaleItems
   @override
   String get actualTableName => $name;
   static const String $name = 'sale_items';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<SaleItemData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('sale_id')) {
-      context.handle(
-        _saleIdMeta,
-        saleId.isAcceptableOrUnknown(data['sale_id']!, _saleIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_saleIdMeta);
-    }
-    if (data.containsKey('product_id')) {
-      context.handle(
-        _productIdMeta,
-        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_productIdMeta);
-    }
-    if (data.containsKey('product_name')) {
-      context.handle(
-        _productNameMeta,
-        productName.isAcceptableOrUnknown(
-          data['product_name']!,
-          _productNameMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_productNameMeta);
-    }
-    if (data.containsKey('price')) {
-      context.handle(
-        _priceMeta,
-        price.isAcceptableOrUnknown(data['price']!, _priceMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_priceMeta);
-    }
-    if (data.containsKey('qty')) {
-      context.handle(
-        _qtyMeta,
-        qty.isAcceptableOrUnknown(data['qty']!, _qtyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_qtyMeta);
-    }
-    if (data.containsKey('discount_amount')) {
-      context.handle(
-        _discountAmountMeta,
-        discountAmount.isAcceptableOrUnknown(
-          data['discount_amount']!,
-          _discountAmountMeta,
-        ),
-      );
-    }
-    if (data.containsKey('vat_amount')) {
-      context.handle(
-        _vatAmountMeta,
-        vatAmount.isAcceptableOrUnknown(data['vat_amount']!, _vatAmountMeta),
-      );
-    }
-    if (data.containsKey('subtotal')) {
-      context.handle(
-        _subtotalMeta,
-        subtotal.isAcceptableOrUnknown(data['subtotal']!, _subtotalMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_subtotalMeta);
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -2685,7 +2208,6 @@ class $CategoriesTable extends Categories
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $CategoriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -2694,7 +2216,6 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
@@ -2707,9 +2228,6 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
-    'sortOrder',
-  );
   @override
   late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
     'sort_order',
@@ -2718,9 +2236,6 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
   );
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
@@ -2731,9 +2246,6 @@ class $CategoriesTable extends Categories
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
@@ -2743,9 +2255,6 @@ class $CategoriesTable extends Categories
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
-    'deletedAt',
-  );
   @override
   late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
     'deleted_at',
@@ -2753,9 +2262,6 @@ class $CategoriesTable extends Categories
     true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _versionMeta = const VerificationMeta(
-    'version',
   );
   @override
   late final GeneratedColumn<int> version = GeneratedColumn<int>(
@@ -2765,9 +2271,6 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
-  );
-  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
-    'deviceId',
   );
   @override
   late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
@@ -2793,65 +2296,6 @@ class $CategoriesTable extends Categories
   @override
   String get actualTableName => $name;
   static const String $name = 'categories';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<CategoryData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('sort_order')) {
-      context.handle(
-        _sortOrderMeta,
-        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('deleted_at')) {
-      context.handle(
-        _deletedAtMeta,
-        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
-      );
-    }
-    if (data.containsKey('version')) {
-      context.handle(
-        _versionMeta,
-        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
-      );
-    }
-    if (data.containsKey('device_id')) {
-      context.handle(
-        _deviceIdMeta,
-        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -3193,7 +2637,6 @@ class $InventoryLogsTable extends InventoryLogs
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $InventoryLogsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -3201,9 +2644,6 @@ class $InventoryLogsTable extends InventoryLogs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _productIdMeta = const VerificationMeta(
-    'productId',
   );
   @override
   late final GeneratedColumn<String> productId = GeneratedColumn<String>(
@@ -3213,7 +2653,6 @@ class $InventoryLogsTable extends InventoryLogs
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
     'type',
@@ -3221,9 +2660,6 @@ class $InventoryLogsTable extends InventoryLogs
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _qtyChangeMeta = const VerificationMeta(
-    'qtyChange',
   );
   @override
   late final GeneratedColumn<int> qtyChange = GeneratedColumn<int>(
@@ -3233,9 +2669,6 @@ class $InventoryLogsTable extends InventoryLogs
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _balanceAfterMeta = const VerificationMeta(
-    'balanceAfter',
-  );
   @override
   late final GeneratedColumn<int> balanceAfter = GeneratedColumn<int>(
     'balance_after',
@@ -3244,7 +2677,6 @@ class $InventoryLogsTable extends InventoryLogs
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
   @override
   late final GeneratedColumn<String> reason = GeneratedColumn<String>(
     'reason',
@@ -3252,9 +2684,6 @@ class $InventoryLogsTable extends InventoryLogs
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _refSaleIdMeta = const VerificationMeta(
-    'refSaleId',
   );
   @override
   late final GeneratedColumn<String> refSaleId = GeneratedColumn<String>(
@@ -3264,9 +2693,6 @@ class $InventoryLogsTable extends InventoryLogs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
     'created_at',
@@ -3275,9 +2701,6 @@ class $InventoryLogsTable extends InventoryLogs
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
-    'deviceId',
   );
   @override
   late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
@@ -3304,80 +2727,6 @@ class $InventoryLogsTable extends InventoryLogs
   @override
   String get actualTableName => $name;
   static const String $name = 'inventory_logs';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<InventoryLogData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('product_id')) {
-      context.handle(
-        _productIdMeta,
-        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_productIdMeta);
-    }
-    if (data.containsKey('type')) {
-      context.handle(
-        _typeMeta,
-        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_typeMeta);
-    }
-    if (data.containsKey('qty_change')) {
-      context.handle(
-        _qtyChangeMeta,
-        qtyChange.isAcceptableOrUnknown(data['qty_change']!, _qtyChangeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_qtyChangeMeta);
-    }
-    if (data.containsKey('balance_after')) {
-      context.handle(
-        _balanceAfterMeta,
-        balanceAfter.isAcceptableOrUnknown(
-          data['balance_after']!,
-          _balanceAfterMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_balanceAfterMeta);
-    }
-    if (data.containsKey('reason')) {
-      context.handle(
-        _reasonMeta,
-        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
-      );
-    }
-    if (data.containsKey('ref_sale_id')) {
-      context.handle(
-        _refSaleIdMeta,
-        refSaleId.isAcceptableOrUnknown(data['ref_sale_id']!, _refSaleIdMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('device_id')) {
-      context.handle(
-        _deviceIdMeta,
-        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -3756,7 +3105,6 @@ class $AppSettingsTable extends AppSettings
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $AppSettingsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _keyMeta = const VerificationMeta('key');
   @override
   late final GeneratedColumn<String> key = GeneratedColumn<String>(
     'key',
@@ -3765,7 +3113,6 @@ class $AppSettingsTable extends AppSettings
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _valueMeta = const VerificationMeta('value');
   @override
   late final GeneratedColumn<String> value = GeneratedColumn<String>(
     'value',
@@ -3773,9 +3120,6 @@ class $AppSettingsTable extends AppSettings
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
   );
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
@@ -3793,38 +3137,6 @@ class $AppSettingsTable extends AppSettings
   @override
   String get actualTableName => $name;
   static const String $name = 'app_settings';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<AppSettingData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('key')) {
-      context.handle(
-        _keyMeta,
-        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_keyMeta);
-    }
-    if (data.containsKey('value')) {
-      context.handle(
-        _valueMeta,
-        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_valueMeta);
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {key};
   @override
@@ -4016,7 +3328,6 @@ class $DraftCartsTable extends DraftCarts
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DraftCartsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -4025,7 +3336,6 @@ class $DraftCartsTable extends DraftCarts
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
@@ -4034,7 +3344,6 @@ class $DraftCartsTable extends DraftCarts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
     'note',
@@ -4042,9 +3351,6 @@ class $DraftCartsTable extends DraftCarts
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
   );
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
@@ -4055,9 +3361,6 @@ class $DraftCartsTable extends DraftCarts
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
     'updated_at',
@@ -4066,9 +3369,6 @@ class $DraftCartsTable extends DraftCarts
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
-    'deviceId',
   );
   @override
   late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
@@ -4092,51 +3392,6 @@ class $DraftCartsTable extends DraftCarts
   @override
   String get actualTableName => $name;
   static const String $name = 'draft_carts';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<DraftCartData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('device_id')) {
-      context.handle(
-        _deviceIdMeta,
-        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -4417,7 +3672,6 @@ class $DraftCartItemsTable extends DraftCartItems
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DraftCartItemsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -4426,7 +3680,6 @@ class $DraftCartItemsTable extends DraftCartItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _cartIdMeta = const VerificationMeta('cartId');
   @override
   late final GeneratedColumn<String> cartId = GeneratedColumn<String>(
     'cart_id',
@@ -4438,9 +3691,6 @@ class $DraftCartItemsTable extends DraftCartItems
       'REFERENCES draft_carts (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _productIdMeta = const VerificationMeta(
-    'productId',
-  );
   @override
   late final GeneratedColumn<String> productId = GeneratedColumn<String>(
     'product_id',
@@ -4448,9 +3698,6 @@ class $DraftCartItemsTable extends DraftCartItems
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _productNameMeta = const VerificationMeta(
-    'productName',
   );
   @override
   late final GeneratedColumn<String> productName = GeneratedColumn<String>(
@@ -4460,7 +3707,6 @@ class $DraftCartItemsTable extends DraftCartItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _priceMeta = const VerificationMeta('price');
   @override
   late final GeneratedColumn<double> price = GeneratedColumn<double>(
     'price',
@@ -4469,7 +3715,6 @@ class $DraftCartItemsTable extends DraftCartItems
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _qtyMeta = const VerificationMeta('qty');
   @override
   late final GeneratedColumn<int> qty = GeneratedColumn<int>(
     'qty',
@@ -4478,9 +3723,6 @@ class $DraftCartItemsTable extends DraftCartItems
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _discountTypeMeta = const VerificationMeta(
-    'discountType',
-  );
   @override
   late final GeneratedColumn<String> discountType = GeneratedColumn<String>(
     'discount_type',
@@ -4488,9 +3730,6 @@ class $DraftCartItemsTable extends DraftCartItems
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _discountValueMeta = const VerificationMeta(
-    'discountValue',
   );
   @override
   late final GeneratedColumn<double> discountValue = GeneratedColumn<double>(
@@ -4516,82 +3755,6 @@ class $DraftCartItemsTable extends DraftCartItems
   @override
   String get actualTableName => $name;
   static const String $name = 'draft_cart_items';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<DraftCartItemData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('cart_id')) {
-      context.handle(
-        _cartIdMeta,
-        cartId.isAcceptableOrUnknown(data['cart_id']!, _cartIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_cartIdMeta);
-    }
-    if (data.containsKey('product_id')) {
-      context.handle(
-        _productIdMeta,
-        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_productIdMeta);
-    }
-    if (data.containsKey('product_name')) {
-      context.handle(
-        _productNameMeta,
-        productName.isAcceptableOrUnknown(
-          data['product_name']!,
-          _productNameMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_productNameMeta);
-    }
-    if (data.containsKey('price')) {
-      context.handle(
-        _priceMeta,
-        price.isAcceptableOrUnknown(data['price']!, _priceMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_priceMeta);
-    }
-    if (data.containsKey('qty')) {
-      context.handle(
-        _qtyMeta,
-        qty.isAcceptableOrUnknown(data['qty']!, _qtyMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_qtyMeta);
-    }
-    if (data.containsKey('discount_type')) {
-      context.handle(
-        _discountTypeMeta,
-        discountType.isAcceptableOrUnknown(
-          data['discount_type']!,
-          _discountTypeMeta,
-        ),
-      );
-    }
-    if (data.containsKey('discount_value')) {
-      context.handle(
-        _discountValueMeta,
-        discountValue.isAcceptableOrUnknown(
-          data['discount_value']!,
-          _discountValueMeta,
-        ),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -4946,7 +4109,6 @@ class $DailyClosesTable extends DailyCloses
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DailyClosesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
@@ -4955,9 +4117,6 @@ class $DailyClosesTable extends DailyCloses
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _closeDateMeta = const VerificationMeta(
-    'closeDate',
-  );
   @override
   late final GeneratedColumn<String> closeDate = GeneratedColumn<String>(
     'close_date',
@@ -4965,9 +4124,6 @@ class $DailyClosesTable extends DailyCloses
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-  );
-  static const VerificationMeta _openingCashMeta = const VerificationMeta(
-    'openingCash',
   );
   @override
   late final GeneratedColumn<double> openingCash = GeneratedColumn<double>(
@@ -4978,9 +4134,6 @@ class $DailyClosesTable extends DailyCloses
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _expectedCashMeta = const VerificationMeta(
-    'expectedCash',
-  );
   @override
   late final GeneratedColumn<double> expectedCash = GeneratedColumn<double>(
     'expected_cash',
@@ -4989,9 +4142,6 @@ class $DailyClosesTable extends DailyCloses
     type: DriftSqlType.double,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _countedCashMeta = const VerificationMeta(
-    'countedCash',
   );
   @override
   late final GeneratedColumn<double> countedCash = GeneratedColumn<double>(
@@ -5002,9 +4152,6 @@ class $DailyClosesTable extends DailyCloses
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _overShortAmountMeta = const VerificationMeta(
-    'overShortAmount',
-  );
   @override
   late final GeneratedColumn<double> overShortAmount = GeneratedColumn<double>(
     'over_short_amount',
@@ -5013,9 +4160,6 @@ class $DailyClosesTable extends DailyCloses
     type: DriftSqlType.double,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _totalRevenueMeta = const VerificationMeta(
-    'totalRevenue',
   );
   @override
   late final GeneratedColumn<double> totalRevenue = GeneratedColumn<double>(
@@ -5026,9 +4170,6 @@ class $DailyClosesTable extends DailyCloses
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _totalVoidMeta = const VerificationMeta(
-    'totalVoid',
-  );
   @override
   late final GeneratedColumn<double> totalVoid = GeneratedColumn<double>(
     'total_void',
@@ -5037,9 +4178,6 @@ class $DailyClosesTable extends DailyCloses
     type: DriftSqlType.double,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _salesCountMeta = const VerificationMeta(
-    'salesCount',
   );
   @override
   late final GeneratedColumn<int> salesCount = GeneratedColumn<int>(
@@ -5050,9 +4188,6 @@ class $DailyClosesTable extends DailyCloses
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _voidCountMeta = const VerificationMeta(
-    'voidCount',
-  );
   @override
   late final GeneratedColumn<int> voidCount = GeneratedColumn<int>(
     'void_count',
@@ -5062,7 +4197,6 @@ class $DailyClosesTable extends DailyCloses
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
     'note',
@@ -5070,9 +4204,6 @@ class $DailyClosesTable extends DailyCloses
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-  );
-  static const VerificationMeta _closedAtMeta = const VerificationMeta(
-    'closedAt',
   );
   @override
   late final GeneratedColumn<DateTime> closedAt = GeneratedColumn<DateTime>(
@@ -5082,9 +4213,6 @@ class $DailyClosesTable extends DailyCloses
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
-    'deviceId',
   );
   @override
   late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
@@ -5115,110 +4243,6 @@ class $DailyClosesTable extends DailyCloses
   @override
   String get actualTableName => $name;
   static const String $name = 'daily_closes';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<DailyCloseData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('close_date')) {
-      context.handle(
-        _closeDateMeta,
-        closeDate.isAcceptableOrUnknown(data['close_date']!, _closeDateMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_closeDateMeta);
-    }
-    if (data.containsKey('opening_cash')) {
-      context.handle(
-        _openingCashMeta,
-        openingCash.isAcceptableOrUnknown(
-          data['opening_cash']!,
-          _openingCashMeta,
-        ),
-      );
-    }
-    if (data.containsKey('expected_cash')) {
-      context.handle(
-        _expectedCashMeta,
-        expectedCash.isAcceptableOrUnknown(
-          data['expected_cash']!,
-          _expectedCashMeta,
-        ),
-      );
-    }
-    if (data.containsKey('counted_cash')) {
-      context.handle(
-        _countedCashMeta,
-        countedCash.isAcceptableOrUnknown(
-          data['counted_cash']!,
-          _countedCashMeta,
-        ),
-      );
-    }
-    if (data.containsKey('over_short_amount')) {
-      context.handle(
-        _overShortAmountMeta,
-        overShortAmount.isAcceptableOrUnknown(
-          data['over_short_amount']!,
-          _overShortAmountMeta,
-        ),
-      );
-    }
-    if (data.containsKey('total_revenue')) {
-      context.handle(
-        _totalRevenueMeta,
-        totalRevenue.isAcceptableOrUnknown(
-          data['total_revenue']!,
-          _totalRevenueMeta,
-        ),
-      );
-    }
-    if (data.containsKey('total_void')) {
-      context.handle(
-        _totalVoidMeta,
-        totalVoid.isAcceptableOrUnknown(data['total_void']!, _totalVoidMeta),
-      );
-    }
-    if (data.containsKey('sales_count')) {
-      context.handle(
-        _salesCountMeta,
-        salesCount.isAcceptableOrUnknown(data['sales_count']!, _salesCountMeta),
-      );
-    }
-    if (data.containsKey('void_count')) {
-      context.handle(
-        _voidCountMeta,
-        voidCount.isAcceptableOrUnknown(data['void_count']!, _voidCountMeta),
-      );
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
-      );
-    }
-    if (data.containsKey('closed_at')) {
-      context.handle(
-        _closedAtMeta,
-        closedAt.isAcceptableOrUnknown(data['closed_at']!, _closedAtMeta),
-      );
-    }
-    if (data.containsKey('device_id')) {
-      context.handle(
-        _deviceIdMeta,
-        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
-      );
-    }
-    return context;
-  }
-
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
@@ -5701,7 +4725,6 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
-  $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ProductsTable products = $ProductsTable(this);
   late final $SalesTable sales = $SalesTable(this);
   late final $SaleItemsTable saleItems = $SaleItemsTable(this);
@@ -5743,3250 +4766,4 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       result: [TableUpdate('draft_cart_items', kind: UpdateKind.delete)],
     ),
   ]);
-}
-
-typedef $$ProductsTableCreateCompanionBuilder =
-    ProductsCompanion Function({
-      required String id,
-      required String name,
-      Value<String?> sku,
-      Value<String?> barcode,
-      required double price,
-      Value<double?> cost,
-      Value<int> stock,
-      Value<String?> categoryId,
-      Value<String?> imageUrl,
-      Value<bool> trackStock,
-      Value<bool> isActive,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> version,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-typedef $$ProductsTableUpdateCompanionBuilder =
-    ProductsCompanion Function({
-      Value<String> id,
-      Value<String> name,
-      Value<String?> sku,
-      Value<String?> barcode,
-      Value<double> price,
-      Value<double?> cost,
-      Value<int> stock,
-      Value<String?> categoryId,
-      Value<String?> imageUrl,
-      Value<bool> trackStock,
-      Value<bool> isActive,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> version,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-
-class $$ProductsTableFilterComposer
-    extends Composer<_$AppDatabase, $ProductsTable> {
-  $$ProductsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get sku => $composableBuilder(
-    column: $table.sku,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get barcode => $composableBuilder(
-    column: $table.barcode,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get price => $composableBuilder(
-    column: $table.price,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get cost => $composableBuilder(
-    column: $table.cost,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get stock => $composableBuilder(
-    column: $table.stock,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get categoryId => $composableBuilder(
-    column: $table.categoryId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get imageUrl => $composableBuilder(
-    column: $table.imageUrl,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get trackStock => $composableBuilder(
-    column: $table.trackStock,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isActive => $composableBuilder(
-    column: $table.isActive,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$ProductsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ProductsTable> {
-  $$ProductsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get sku => $composableBuilder(
-    column: $table.sku,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get barcode => $composableBuilder(
-    column: $table.barcode,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get price => $composableBuilder(
-    column: $table.price,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get cost => $composableBuilder(
-    column: $table.cost,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get stock => $composableBuilder(
-    column: $table.stock,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get categoryId => $composableBuilder(
-    column: $table.categoryId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get imageUrl => $composableBuilder(
-    column: $table.imageUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get trackStock => $composableBuilder(
-    column: $table.trackStock,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isActive => $composableBuilder(
-    column: $table.isActive,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$ProductsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ProductsTable> {
-  $$ProductsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get sku =>
-      $composableBuilder(column: $table.sku, builder: (column) => column);
-
-  GeneratedColumn<String> get barcode =>
-      $composableBuilder(column: $table.barcode, builder: (column) => column);
-
-  GeneratedColumn<double> get price =>
-      $composableBuilder(column: $table.price, builder: (column) => column);
-
-  GeneratedColumn<double> get cost =>
-      $composableBuilder(column: $table.cost, builder: (column) => column);
-
-  GeneratedColumn<int> get stock =>
-      $composableBuilder(column: $table.stock, builder: (column) => column);
-
-  GeneratedColumn<String> get categoryId => $composableBuilder(
-    column: $table.categoryId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get imageUrl =>
-      $composableBuilder(column: $table.imageUrl, builder: (column) => column);
-
-  GeneratedColumn<bool> get trackStock => $composableBuilder(
-    column: $table.trackStock,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get isActive =>
-      $composableBuilder(column: $table.isActive, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
-
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-}
-
-class $$ProductsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $ProductsTable,
-          ProductData,
-          $$ProductsTableFilterComposer,
-          $$ProductsTableOrderingComposer,
-          $$ProductsTableAnnotationComposer,
-          $$ProductsTableCreateCompanionBuilder,
-          $$ProductsTableUpdateCompanionBuilder,
-          (
-            ProductData,
-            BaseReferences<_$AppDatabase, $ProductsTable, ProductData>,
-          ),
-          ProductData,
-          PrefetchHooks Function()
-        > {
-  $$ProductsTableTableManager(_$AppDatabase db, $ProductsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ProductsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ProductsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ProductsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String?> sku = const Value.absent(),
-                Value<String?> barcode = const Value.absent(),
-                Value<double> price = const Value.absent(),
-                Value<double?> cost = const Value.absent(),
-                Value<int> stock = const Value.absent(),
-                Value<String?> categoryId = const Value.absent(),
-                Value<String?> imageUrl = const Value.absent(),
-                Value<bool> trackStock = const Value.absent(),
-                Value<bool> isActive = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> version = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ProductsCompanion(
-                id: id,
-                name: name,
-                sku: sku,
-                barcode: barcode,
-                price: price,
-                cost: cost,
-                stock: stock,
-                categoryId: categoryId,
-                imageUrl: imageUrl,
-                trackStock: trackStock,
-                isActive: isActive,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                version: version,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String name,
-                Value<String?> sku = const Value.absent(),
-                Value<String?> barcode = const Value.absent(),
-                required double price,
-                Value<double?> cost = const Value.absent(),
-                Value<int> stock = const Value.absent(),
-                Value<String?> categoryId = const Value.absent(),
-                Value<String?> imageUrl = const Value.absent(),
-                Value<bool> trackStock = const Value.absent(),
-                Value<bool> isActive = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> version = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ProductsCompanion.insert(
-                id: id,
-                name: name,
-                sku: sku,
-                barcode: barcode,
-                price: price,
-                cost: cost,
-                stock: stock,
-                categoryId: categoryId,
-                imageUrl: imageUrl,
-                trackStock: trackStock,
-                isActive: isActive,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                version: version,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$ProductsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $ProductsTable,
-      ProductData,
-      $$ProductsTableFilterComposer,
-      $$ProductsTableOrderingComposer,
-      $$ProductsTableAnnotationComposer,
-      $$ProductsTableCreateCompanionBuilder,
-      $$ProductsTableUpdateCompanionBuilder,
-      (ProductData, BaseReferences<_$AppDatabase, $ProductsTable, ProductData>),
-      ProductData,
-      PrefetchHooks Function()
-    >;
-typedef $$SalesTableCreateCompanionBuilder =
-    SalesCompanion Function({
-      required String id,
-      Value<String?> receiptNumber,
-      Value<String> status,
-      Value<double> subtotalAmount,
-      Value<String?> discountType,
-      Value<double?> discountValue,
-      Value<double> discountAmount,
-      required double totalAmount,
-      Value<String> vatMode,
-      Value<double> vatRate,
-      Value<double> vatAmount,
-      required String paymentMethod,
-      Value<double?> amountReceived,
-      Value<double?> changeAmount,
-      Value<String?> note,
-      Value<DateTime?> voidedAt,
-      Value<String?> voidReason,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> version,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-typedef $$SalesTableUpdateCompanionBuilder =
-    SalesCompanion Function({
-      Value<String> id,
-      Value<String?> receiptNumber,
-      Value<String> status,
-      Value<double> subtotalAmount,
-      Value<String?> discountType,
-      Value<double?> discountValue,
-      Value<double> discountAmount,
-      Value<double> totalAmount,
-      Value<String> vatMode,
-      Value<double> vatRate,
-      Value<double> vatAmount,
-      Value<String> paymentMethod,
-      Value<double?> amountReceived,
-      Value<double?> changeAmount,
-      Value<String?> note,
-      Value<DateTime?> voidedAt,
-      Value<String?> voidReason,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> version,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-
-final class $$SalesTableReferences
-    extends BaseReferences<_$AppDatabase, $SalesTable, SaleData> {
-  $$SalesTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$SaleItemsTable, List<SaleItemData>>
-  _saleItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.saleItems,
-    aliasName: $_aliasNameGenerator(db.sales.id, db.saleItems.saleId),
-  );
-
-  $$SaleItemsTableProcessedTableManager get saleItemsRefs {
-    final manager = $$SaleItemsTableTableManager(
-      $_db,
-      $_db.saleItems,
-    ).filter((f) => f.saleId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_saleItemsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$SalesTableFilterComposer extends Composer<_$AppDatabase, $SalesTable> {
-  $$SalesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get receiptNumber => $composableBuilder(
-    column: $table.receiptNumber,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get subtotalAmount => $composableBuilder(
-    column: $table.subtotalAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get discountType => $composableBuilder(
-    column: $table.discountType,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get discountValue => $composableBuilder(
-    column: $table.discountValue,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get discountAmount => $composableBuilder(
-    column: $table.discountAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get totalAmount => $composableBuilder(
-    column: $table.totalAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get vatMode => $composableBuilder(
-    column: $table.vatMode,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get vatRate => $composableBuilder(
-    column: $table.vatRate,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get vatAmount => $composableBuilder(
-    column: $table.vatAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get paymentMethod => $composableBuilder(
-    column: $table.paymentMethod,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get amountReceived => $composableBuilder(
-    column: $table.amountReceived,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get changeAmount => $composableBuilder(
-    column: $table.changeAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get voidedAt => $composableBuilder(
-    column: $table.voidedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get voidReason => $composableBuilder(
-    column: $table.voidReason,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> saleItemsRefs(
-    Expression<bool> Function($$SaleItemsTableFilterComposer f) f,
-  ) {
-    final $$SaleItemsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.saleItems,
-      getReferencedColumn: (t) => t.saleId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SaleItemsTableFilterComposer(
-            $db: $db,
-            $table: $db.saleItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$SalesTableOrderingComposer
-    extends Composer<_$AppDatabase, $SalesTable> {
-  $$SalesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get receiptNumber => $composableBuilder(
-    column: $table.receiptNumber,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get subtotalAmount => $composableBuilder(
-    column: $table.subtotalAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get discountType => $composableBuilder(
-    column: $table.discountType,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get discountValue => $composableBuilder(
-    column: $table.discountValue,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get discountAmount => $composableBuilder(
-    column: $table.discountAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get totalAmount => $composableBuilder(
-    column: $table.totalAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get vatMode => $composableBuilder(
-    column: $table.vatMode,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get vatRate => $composableBuilder(
-    column: $table.vatRate,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get vatAmount => $composableBuilder(
-    column: $table.vatAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get paymentMethod => $composableBuilder(
-    column: $table.paymentMethod,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get amountReceived => $composableBuilder(
-    column: $table.amountReceived,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get changeAmount => $composableBuilder(
-    column: $table.changeAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get voidedAt => $composableBuilder(
-    column: $table.voidedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get voidReason => $composableBuilder(
-    column: $table.voidReason,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$SalesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SalesTable> {
-  $$SalesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get receiptNumber => $composableBuilder(
-    column: $table.receiptNumber,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<double> get subtotalAmount => $composableBuilder(
-    column: $table.subtotalAmount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get discountType => $composableBuilder(
-    column: $table.discountType,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get discountValue => $composableBuilder(
-    column: $table.discountValue,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get discountAmount => $composableBuilder(
-    column: $table.discountAmount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get totalAmount => $composableBuilder(
-    column: $table.totalAmount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get vatMode =>
-      $composableBuilder(column: $table.vatMode, builder: (column) => column);
-
-  GeneratedColumn<double> get vatRate =>
-      $composableBuilder(column: $table.vatRate, builder: (column) => column);
-
-  GeneratedColumn<double> get vatAmount =>
-      $composableBuilder(column: $table.vatAmount, builder: (column) => column);
-
-  GeneratedColumn<String> get paymentMethod => $composableBuilder(
-    column: $table.paymentMethod,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get amountReceived => $composableBuilder(
-    column: $table.amountReceived,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get changeAmount => $composableBuilder(
-    column: $table.changeAmount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get voidedAt =>
-      $composableBuilder(column: $table.voidedAt, builder: (column) => column);
-
-  GeneratedColumn<String> get voidReason => $composableBuilder(
-    column: $table.voidReason,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
-
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  Expression<T> saleItemsRefs<T extends Object>(
-    Expression<T> Function($$SaleItemsTableAnnotationComposer a) f,
-  ) {
-    final $$SaleItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.saleItems,
-      getReferencedColumn: (t) => t.saleId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SaleItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.saleItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$SalesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $SalesTable,
-          SaleData,
-          $$SalesTableFilterComposer,
-          $$SalesTableOrderingComposer,
-          $$SalesTableAnnotationComposer,
-          $$SalesTableCreateCompanionBuilder,
-          $$SalesTableUpdateCompanionBuilder,
-          (SaleData, $$SalesTableReferences),
-          SaleData,
-          PrefetchHooks Function({bool saleItemsRefs})
-        > {
-  $$SalesTableTableManager(_$AppDatabase db, $SalesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$SalesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SalesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SalesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String?> receiptNumber = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<double> subtotalAmount = const Value.absent(),
-                Value<String?> discountType = const Value.absent(),
-                Value<double?> discountValue = const Value.absent(),
-                Value<double> discountAmount = const Value.absent(),
-                Value<double> totalAmount = const Value.absent(),
-                Value<String> vatMode = const Value.absent(),
-                Value<double> vatRate = const Value.absent(),
-                Value<double> vatAmount = const Value.absent(),
-                Value<String> paymentMethod = const Value.absent(),
-                Value<double?> amountReceived = const Value.absent(),
-                Value<double?> changeAmount = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<DateTime?> voidedAt = const Value.absent(),
-                Value<String?> voidReason = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> version = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SalesCompanion(
-                id: id,
-                receiptNumber: receiptNumber,
-                status: status,
-                subtotalAmount: subtotalAmount,
-                discountType: discountType,
-                discountValue: discountValue,
-                discountAmount: discountAmount,
-                totalAmount: totalAmount,
-                vatMode: vatMode,
-                vatRate: vatRate,
-                vatAmount: vatAmount,
-                paymentMethod: paymentMethod,
-                amountReceived: amountReceived,
-                changeAmount: changeAmount,
-                note: note,
-                voidedAt: voidedAt,
-                voidReason: voidReason,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                version: version,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                Value<String?> receiptNumber = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<double> subtotalAmount = const Value.absent(),
-                Value<String?> discountType = const Value.absent(),
-                Value<double?> discountValue = const Value.absent(),
-                Value<double> discountAmount = const Value.absent(),
-                required double totalAmount,
-                Value<String> vatMode = const Value.absent(),
-                Value<double> vatRate = const Value.absent(),
-                Value<double> vatAmount = const Value.absent(),
-                required String paymentMethod,
-                Value<double?> amountReceived = const Value.absent(),
-                Value<double?> changeAmount = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<DateTime?> voidedAt = const Value.absent(),
-                Value<String?> voidReason = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> version = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SalesCompanion.insert(
-                id: id,
-                receiptNumber: receiptNumber,
-                status: status,
-                subtotalAmount: subtotalAmount,
-                discountType: discountType,
-                discountValue: discountValue,
-                discountAmount: discountAmount,
-                totalAmount: totalAmount,
-                vatMode: vatMode,
-                vatRate: vatRate,
-                vatAmount: vatAmount,
-                paymentMethod: paymentMethod,
-                amountReceived: amountReceived,
-                changeAmount: changeAmount,
-                note: note,
-                voidedAt: voidedAt,
-                voidReason: voidReason,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                version: version,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) =>
-                    (e.readTable(table), $$SalesTableReferences(db, table, e)),
-              )
-              .toList(),
-          prefetchHooksCallback: ({saleItemsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (saleItemsRefs) db.saleItems],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (saleItemsRefs)
-                    await $_getPrefetchedData<
-                      SaleData,
-                      $SalesTable,
-                      SaleItemData
-                    >(
-                      currentTable: table,
-                      referencedTable: $$SalesTableReferences
-                          ._saleItemsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$SalesTableReferences(db, table, p0).saleItemsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.saleId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$SalesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $SalesTable,
-      SaleData,
-      $$SalesTableFilterComposer,
-      $$SalesTableOrderingComposer,
-      $$SalesTableAnnotationComposer,
-      $$SalesTableCreateCompanionBuilder,
-      $$SalesTableUpdateCompanionBuilder,
-      (SaleData, $$SalesTableReferences),
-      SaleData,
-      PrefetchHooks Function({bool saleItemsRefs})
-    >;
-typedef $$SaleItemsTableCreateCompanionBuilder =
-    SaleItemsCompanion Function({
-      required String id,
-      required String saleId,
-      required String productId,
-      required String productName,
-      required double price,
-      required int qty,
-      Value<double> discountAmount,
-      Value<double> vatAmount,
-      required double subtotal,
-      Value<int> rowid,
-    });
-typedef $$SaleItemsTableUpdateCompanionBuilder =
-    SaleItemsCompanion Function({
-      Value<String> id,
-      Value<String> saleId,
-      Value<String> productId,
-      Value<String> productName,
-      Value<double> price,
-      Value<int> qty,
-      Value<double> discountAmount,
-      Value<double> vatAmount,
-      Value<double> subtotal,
-      Value<int> rowid,
-    });
-
-final class $$SaleItemsTableReferences
-    extends BaseReferences<_$AppDatabase, $SaleItemsTable, SaleItemData> {
-  $$SaleItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $SalesTable _saleIdTable(_$AppDatabase db) => db.sales.createAlias(
-    $_aliasNameGenerator(db.saleItems.saleId, db.sales.id),
-  );
-
-  $$SalesTableProcessedTableManager get saleId {
-    final $_column = $_itemColumn<String>('sale_id')!;
-
-    final manager = $$SalesTableTableManager(
-      $_db,
-      $_db.sales,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_saleIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$SaleItemsTableFilterComposer
-    extends Composer<_$AppDatabase, $SaleItemsTable> {
-  $$SaleItemsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get productId => $composableBuilder(
-    column: $table.productId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get productName => $composableBuilder(
-    column: $table.productName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get price => $composableBuilder(
-    column: $table.price,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get qty => $composableBuilder(
-    column: $table.qty,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get discountAmount => $composableBuilder(
-    column: $table.discountAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get vatAmount => $composableBuilder(
-    column: $table.vatAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get subtotal => $composableBuilder(
-    column: $table.subtotal,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$SalesTableFilterComposer get saleId {
-    final $$SalesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.saleId,
-      referencedTable: $db.sales,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SalesTableFilterComposer(
-            $db: $db,
-            $table: $db.sales,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$SaleItemsTableOrderingComposer
-    extends Composer<_$AppDatabase, $SaleItemsTable> {
-  $$SaleItemsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get productId => $composableBuilder(
-    column: $table.productId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get productName => $composableBuilder(
-    column: $table.productName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get price => $composableBuilder(
-    column: $table.price,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get qty => $composableBuilder(
-    column: $table.qty,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get discountAmount => $composableBuilder(
-    column: $table.discountAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get vatAmount => $composableBuilder(
-    column: $table.vatAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get subtotal => $composableBuilder(
-    column: $table.subtotal,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$SalesTableOrderingComposer get saleId {
-    final $$SalesTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.saleId,
-      referencedTable: $db.sales,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SalesTableOrderingComposer(
-            $db: $db,
-            $table: $db.sales,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$SaleItemsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SaleItemsTable> {
-  $$SaleItemsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get productId =>
-      $composableBuilder(column: $table.productId, builder: (column) => column);
-
-  GeneratedColumn<String> get productName => $composableBuilder(
-    column: $table.productName,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get price =>
-      $composableBuilder(column: $table.price, builder: (column) => column);
-
-  GeneratedColumn<int> get qty =>
-      $composableBuilder(column: $table.qty, builder: (column) => column);
-
-  GeneratedColumn<double> get discountAmount => $composableBuilder(
-    column: $table.discountAmount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get vatAmount =>
-      $composableBuilder(column: $table.vatAmount, builder: (column) => column);
-
-  GeneratedColumn<double> get subtotal =>
-      $composableBuilder(column: $table.subtotal, builder: (column) => column);
-
-  $$SalesTableAnnotationComposer get saleId {
-    final $$SalesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.saleId,
-      referencedTable: $db.sales,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SalesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.sales,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$SaleItemsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $SaleItemsTable,
-          SaleItemData,
-          $$SaleItemsTableFilterComposer,
-          $$SaleItemsTableOrderingComposer,
-          $$SaleItemsTableAnnotationComposer,
-          $$SaleItemsTableCreateCompanionBuilder,
-          $$SaleItemsTableUpdateCompanionBuilder,
-          (SaleItemData, $$SaleItemsTableReferences),
-          SaleItemData,
-          PrefetchHooks Function({bool saleId})
-        > {
-  $$SaleItemsTableTableManager(_$AppDatabase db, $SaleItemsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$SaleItemsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$SaleItemsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$SaleItemsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> saleId = const Value.absent(),
-                Value<String> productId = const Value.absent(),
-                Value<String> productName = const Value.absent(),
-                Value<double> price = const Value.absent(),
-                Value<int> qty = const Value.absent(),
-                Value<double> discountAmount = const Value.absent(),
-                Value<double> vatAmount = const Value.absent(),
-                Value<double> subtotal = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => SaleItemsCompanion(
-                id: id,
-                saleId: saleId,
-                productId: productId,
-                productName: productName,
-                price: price,
-                qty: qty,
-                discountAmount: discountAmount,
-                vatAmount: vatAmount,
-                subtotal: subtotal,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String saleId,
-                required String productId,
-                required String productName,
-                required double price,
-                required int qty,
-                Value<double> discountAmount = const Value.absent(),
-                Value<double> vatAmount = const Value.absent(),
-                required double subtotal,
-                Value<int> rowid = const Value.absent(),
-              }) => SaleItemsCompanion.insert(
-                id: id,
-                saleId: saleId,
-                productId: productId,
-                productName: productName,
-                price: price,
-                qty: qty,
-                discountAmount: discountAmount,
-                vatAmount: vatAmount,
-                subtotal: subtotal,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$SaleItemsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({saleId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (saleId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.saleId,
-                                referencedTable: $$SaleItemsTableReferences
-                                    ._saleIdTable(db),
-                                referencedColumn: $$SaleItemsTableReferences
-                                    ._saleIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$SaleItemsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $SaleItemsTable,
-      SaleItemData,
-      $$SaleItemsTableFilterComposer,
-      $$SaleItemsTableOrderingComposer,
-      $$SaleItemsTableAnnotationComposer,
-      $$SaleItemsTableCreateCompanionBuilder,
-      $$SaleItemsTableUpdateCompanionBuilder,
-      (SaleItemData, $$SaleItemsTableReferences),
-      SaleItemData,
-      PrefetchHooks Function({bool saleId})
-    >;
-typedef $$CategoriesTableCreateCompanionBuilder =
-    CategoriesCompanion Function({
-      required String id,
-      required String name,
-      Value<int> sortOrder,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> version,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-typedef $$CategoriesTableUpdateCompanionBuilder =
-    CategoriesCompanion Function({
-      Value<String> id,
-      Value<String> name,
-      Value<int> sortOrder,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> deletedAt,
-      Value<int> version,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-
-class $$CategoriesTableFilterComposer
-    extends Composer<_$AppDatabase, $CategoriesTable> {
-  $$CategoriesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-    column: $table.sortOrder,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$CategoriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $CategoriesTable> {
-  $$CategoriesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get sortOrder => $composableBuilder(
-    column: $table.sortOrder,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-    column: $table.deletedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$CategoriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CategoriesTable> {
-  $$CategoriesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<int> get sortOrder =>
-      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get deletedAt =>
-      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
-
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-}
-
-class $$CategoriesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $CategoriesTable,
-          CategoryData,
-          $$CategoriesTableFilterComposer,
-          $$CategoriesTableOrderingComposer,
-          $$CategoriesTableAnnotationComposer,
-          $$CategoriesTableCreateCompanionBuilder,
-          $$CategoriesTableUpdateCompanionBuilder,
-          (
-            CategoryData,
-            BaseReferences<_$AppDatabase, $CategoriesTable, CategoryData>,
-          ),
-          CategoryData,
-          PrefetchHooks Function()
-        > {
-  $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$CategoriesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$CategoriesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$CategoriesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<int> sortOrder = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> version = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CategoriesCompanion(
-                id: id,
-                name: name,
-                sortOrder: sortOrder,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                version: version,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String name,
-                Value<int> sortOrder = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> deletedAt = const Value.absent(),
-                Value<int> version = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => CategoriesCompanion.insert(
-                id: id,
-                name: name,
-                sortOrder: sortOrder,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deletedAt: deletedAt,
-                version: version,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$CategoriesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $CategoriesTable,
-      CategoryData,
-      $$CategoriesTableFilterComposer,
-      $$CategoriesTableOrderingComposer,
-      $$CategoriesTableAnnotationComposer,
-      $$CategoriesTableCreateCompanionBuilder,
-      $$CategoriesTableUpdateCompanionBuilder,
-      (
-        CategoryData,
-        BaseReferences<_$AppDatabase, $CategoriesTable, CategoryData>,
-      ),
-      CategoryData,
-      PrefetchHooks Function()
-    >;
-typedef $$InventoryLogsTableCreateCompanionBuilder =
-    InventoryLogsCompanion Function({
-      required String id,
-      required String productId,
-      required String type,
-      required int qtyChange,
-      required int balanceAfter,
-      Value<String?> reason,
-      Value<String?> refSaleId,
-      Value<DateTime> createdAt,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-typedef $$InventoryLogsTableUpdateCompanionBuilder =
-    InventoryLogsCompanion Function({
-      Value<String> id,
-      Value<String> productId,
-      Value<String> type,
-      Value<int> qtyChange,
-      Value<int> balanceAfter,
-      Value<String?> reason,
-      Value<String?> refSaleId,
-      Value<DateTime> createdAt,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-
-class $$InventoryLogsTableFilterComposer
-    extends Composer<_$AppDatabase, $InventoryLogsTable> {
-  $$InventoryLogsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get productId => $composableBuilder(
-    column: $table.productId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get qtyChange => $composableBuilder(
-    column: $table.qtyChange,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get balanceAfter => $composableBuilder(
-    column: $table.balanceAfter,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get reason => $composableBuilder(
-    column: $table.reason,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get refSaleId => $composableBuilder(
-    column: $table.refSaleId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$InventoryLogsTableOrderingComposer
-    extends Composer<_$AppDatabase, $InventoryLogsTable> {
-  $$InventoryLogsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get productId => $composableBuilder(
-    column: $table.productId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get qtyChange => $composableBuilder(
-    column: $table.qtyChange,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get balanceAfter => $composableBuilder(
-    column: $table.balanceAfter,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get reason => $composableBuilder(
-    column: $table.reason,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get refSaleId => $composableBuilder(
-    column: $table.refSaleId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$InventoryLogsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $InventoryLogsTable> {
-  $$InventoryLogsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get productId =>
-      $composableBuilder(column: $table.productId, builder: (column) => column);
-
-  GeneratedColumn<String> get type =>
-      $composableBuilder(column: $table.type, builder: (column) => column);
-
-  GeneratedColumn<int> get qtyChange =>
-      $composableBuilder(column: $table.qtyChange, builder: (column) => column);
-
-  GeneratedColumn<int> get balanceAfter => $composableBuilder(
-    column: $table.balanceAfter,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get reason =>
-      $composableBuilder(column: $table.reason, builder: (column) => column);
-
-  GeneratedColumn<String> get refSaleId =>
-      $composableBuilder(column: $table.refSaleId, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-}
-
-class $$InventoryLogsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $InventoryLogsTable,
-          InventoryLogData,
-          $$InventoryLogsTableFilterComposer,
-          $$InventoryLogsTableOrderingComposer,
-          $$InventoryLogsTableAnnotationComposer,
-          $$InventoryLogsTableCreateCompanionBuilder,
-          $$InventoryLogsTableUpdateCompanionBuilder,
-          (
-            InventoryLogData,
-            BaseReferences<
-              _$AppDatabase,
-              $InventoryLogsTable,
-              InventoryLogData
-            >,
-          ),
-          InventoryLogData,
-          PrefetchHooks Function()
-        > {
-  $$InventoryLogsTableTableManager(_$AppDatabase db, $InventoryLogsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$InventoryLogsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$InventoryLogsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$InventoryLogsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> productId = const Value.absent(),
-                Value<String> type = const Value.absent(),
-                Value<int> qtyChange = const Value.absent(),
-                Value<int> balanceAfter = const Value.absent(),
-                Value<String?> reason = const Value.absent(),
-                Value<String?> refSaleId = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => InventoryLogsCompanion(
-                id: id,
-                productId: productId,
-                type: type,
-                qtyChange: qtyChange,
-                balanceAfter: balanceAfter,
-                reason: reason,
-                refSaleId: refSaleId,
-                createdAt: createdAt,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String productId,
-                required String type,
-                required int qtyChange,
-                required int balanceAfter,
-                Value<String?> reason = const Value.absent(),
-                Value<String?> refSaleId = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => InventoryLogsCompanion.insert(
-                id: id,
-                productId: productId,
-                type: type,
-                qtyChange: qtyChange,
-                balanceAfter: balanceAfter,
-                reason: reason,
-                refSaleId: refSaleId,
-                createdAt: createdAt,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$InventoryLogsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $InventoryLogsTable,
-      InventoryLogData,
-      $$InventoryLogsTableFilterComposer,
-      $$InventoryLogsTableOrderingComposer,
-      $$InventoryLogsTableAnnotationComposer,
-      $$InventoryLogsTableCreateCompanionBuilder,
-      $$InventoryLogsTableUpdateCompanionBuilder,
-      (
-        InventoryLogData,
-        BaseReferences<_$AppDatabase, $InventoryLogsTable, InventoryLogData>,
-      ),
-      InventoryLogData,
-      PrefetchHooks Function()
-    >;
-typedef $$AppSettingsTableCreateCompanionBuilder =
-    AppSettingsCompanion Function({
-      required String key,
-      required String value,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
-typedef $$AppSettingsTableUpdateCompanionBuilder =
-    AppSettingsCompanion Function({
-      Value<String> key,
-      Value<String> value,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
-
-class $$AppSettingsTableFilterComposer
-    extends Composer<_$AppDatabase, $AppSettingsTable> {
-  $$AppSettingsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$AppSettingsTableOrderingComposer
-    extends Composer<_$AppDatabase, $AppSettingsTable> {
-  $$AppSettingsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$AppSettingsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AppSettingsTable> {
-  $$AppSettingsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get key =>
-      $composableBuilder(column: $table.key, builder: (column) => column);
-
-  GeneratedColumn<String> get value =>
-      $composableBuilder(column: $table.value, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-}
-
-class $$AppSettingsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $AppSettingsTable,
-          AppSettingData,
-          $$AppSettingsTableFilterComposer,
-          $$AppSettingsTableOrderingComposer,
-          $$AppSettingsTableAnnotationComposer,
-          $$AppSettingsTableCreateCompanionBuilder,
-          $$AppSettingsTableUpdateCompanionBuilder,
-          (
-            AppSettingData,
-            BaseReferences<_$AppDatabase, $AppSettingsTable, AppSettingData>,
-          ),
-          AppSettingData,
-          PrefetchHooks Function()
-        > {
-  $$AppSettingsTableTableManager(_$AppDatabase db, $AppSettingsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$AppSettingsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$AppSettingsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$AppSettingsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> key = const Value.absent(),
-                Value<String> value = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => AppSettingsCompanion(
-                key: key,
-                value: value,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String key,
-                required String value,
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => AppSettingsCompanion.insert(
-                key: key,
-                value: value,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$AppSettingsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $AppSettingsTable,
-      AppSettingData,
-      $$AppSettingsTableFilterComposer,
-      $$AppSettingsTableOrderingComposer,
-      $$AppSettingsTableAnnotationComposer,
-      $$AppSettingsTableCreateCompanionBuilder,
-      $$AppSettingsTableUpdateCompanionBuilder,
-      (
-        AppSettingData,
-        BaseReferences<_$AppDatabase, $AppSettingsTable, AppSettingData>,
-      ),
-      AppSettingData,
-      PrefetchHooks Function()
-    >;
-typedef $$DraftCartsTableCreateCompanionBuilder =
-    DraftCartsCompanion Function({
-      required String id,
-      Value<String?> name,
-      Value<String?> note,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-typedef $$DraftCartsTableUpdateCompanionBuilder =
-    DraftCartsCompanion Function({
-      Value<String> id,
-      Value<String?> name,
-      Value<String?> note,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-
-final class $$DraftCartsTableReferences
-    extends BaseReferences<_$AppDatabase, $DraftCartsTable, DraftCartData> {
-  $$DraftCartsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$DraftCartItemsTable, List<DraftCartItemData>>
-  _draftCartItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.draftCartItems,
-    aliasName: $_aliasNameGenerator(db.draftCarts.id, db.draftCartItems.cartId),
-  );
-
-  $$DraftCartItemsTableProcessedTableManager get draftCartItemsRefs {
-    final manager = $$DraftCartItemsTableTableManager(
-      $_db,
-      $_db.draftCartItems,
-    ).filter((f) => f.cartId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_draftCartItemsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$DraftCartsTableFilterComposer
-    extends Composer<_$AppDatabase, $DraftCartsTable> {
-  $$DraftCartsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> draftCartItemsRefs(
-    Expression<bool> Function($$DraftCartItemsTableFilterComposer f) f,
-  ) {
-    final $$DraftCartItemsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.draftCartItems,
-      getReferencedColumn: (t) => t.cartId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$DraftCartItemsTableFilterComposer(
-            $db: $db,
-            $table: $db.draftCartItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$DraftCartsTableOrderingComposer
-    extends Composer<_$AppDatabase, $DraftCartsTable> {
-  $$DraftCartsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$DraftCartsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $DraftCartsTable> {
-  $$DraftCartsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  Expression<T> draftCartItemsRefs<T extends Object>(
-    Expression<T> Function($$DraftCartItemsTableAnnotationComposer a) f,
-  ) {
-    final $$DraftCartItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.draftCartItems,
-      getReferencedColumn: (t) => t.cartId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$DraftCartItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.draftCartItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$DraftCartsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $DraftCartsTable,
-          DraftCartData,
-          $$DraftCartsTableFilterComposer,
-          $$DraftCartsTableOrderingComposer,
-          $$DraftCartsTableAnnotationComposer,
-          $$DraftCartsTableCreateCompanionBuilder,
-          $$DraftCartsTableUpdateCompanionBuilder,
-          (DraftCartData, $$DraftCartsTableReferences),
-          DraftCartData,
-          PrefetchHooks Function({bool draftCartItemsRefs})
-        > {
-  $$DraftCartsTableTableManager(_$AppDatabase db, $DraftCartsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$DraftCartsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$DraftCartsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$DraftCartsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String?> name = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => DraftCartsCompanion(
-                id: id,
-                name: name,
-                note: note,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                Value<String?> name = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => DraftCartsCompanion.insert(
-                id: id,
-                name: name,
-                note: note,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$DraftCartsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({draftCartItemsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (draftCartItemsRefs) db.draftCartItems,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (draftCartItemsRefs)
-                    await $_getPrefetchedData<
-                      DraftCartData,
-                      $DraftCartsTable,
-                      DraftCartItemData
-                    >(
-                      currentTable: table,
-                      referencedTable: $$DraftCartsTableReferences
-                          ._draftCartItemsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$DraftCartsTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).draftCartItemsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.cartId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$DraftCartsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $DraftCartsTable,
-      DraftCartData,
-      $$DraftCartsTableFilterComposer,
-      $$DraftCartsTableOrderingComposer,
-      $$DraftCartsTableAnnotationComposer,
-      $$DraftCartsTableCreateCompanionBuilder,
-      $$DraftCartsTableUpdateCompanionBuilder,
-      (DraftCartData, $$DraftCartsTableReferences),
-      DraftCartData,
-      PrefetchHooks Function({bool draftCartItemsRefs})
-    >;
-typedef $$DraftCartItemsTableCreateCompanionBuilder =
-    DraftCartItemsCompanion Function({
-      required String id,
-      required String cartId,
-      required String productId,
-      required String productName,
-      required double price,
-      required int qty,
-      Value<String?> discountType,
-      Value<double?> discountValue,
-      Value<int> rowid,
-    });
-typedef $$DraftCartItemsTableUpdateCompanionBuilder =
-    DraftCartItemsCompanion Function({
-      Value<String> id,
-      Value<String> cartId,
-      Value<String> productId,
-      Value<String> productName,
-      Value<double> price,
-      Value<int> qty,
-      Value<String?> discountType,
-      Value<double?> discountValue,
-      Value<int> rowid,
-    });
-
-final class $$DraftCartItemsTableReferences
-    extends
-        BaseReferences<_$AppDatabase, $DraftCartItemsTable, DraftCartItemData> {
-  $$DraftCartItemsTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static $DraftCartsTable _cartIdTable(_$AppDatabase db) =>
-      db.draftCarts.createAlias(
-        $_aliasNameGenerator(db.draftCartItems.cartId, db.draftCarts.id),
-      );
-
-  $$DraftCartsTableProcessedTableManager get cartId {
-    final $_column = $_itemColumn<String>('cart_id')!;
-
-    final manager = $$DraftCartsTableTableManager(
-      $_db,
-      $_db.draftCarts,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_cartIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$DraftCartItemsTableFilterComposer
-    extends Composer<_$AppDatabase, $DraftCartItemsTable> {
-  $$DraftCartItemsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get productId => $composableBuilder(
-    column: $table.productId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get productName => $composableBuilder(
-    column: $table.productName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get price => $composableBuilder(
-    column: $table.price,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get qty => $composableBuilder(
-    column: $table.qty,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get discountType => $composableBuilder(
-    column: $table.discountType,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get discountValue => $composableBuilder(
-    column: $table.discountValue,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$DraftCartsTableFilterComposer get cartId {
-    final $$DraftCartsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.cartId,
-      referencedTable: $db.draftCarts,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$DraftCartsTableFilterComposer(
-            $db: $db,
-            $table: $db.draftCarts,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$DraftCartItemsTableOrderingComposer
-    extends Composer<_$AppDatabase, $DraftCartItemsTable> {
-  $$DraftCartItemsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get productId => $composableBuilder(
-    column: $table.productId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get productName => $composableBuilder(
-    column: $table.productName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get price => $composableBuilder(
-    column: $table.price,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get qty => $composableBuilder(
-    column: $table.qty,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get discountType => $composableBuilder(
-    column: $table.discountType,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get discountValue => $composableBuilder(
-    column: $table.discountValue,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$DraftCartsTableOrderingComposer get cartId {
-    final $$DraftCartsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.cartId,
-      referencedTable: $db.draftCarts,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$DraftCartsTableOrderingComposer(
-            $db: $db,
-            $table: $db.draftCarts,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$DraftCartItemsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $DraftCartItemsTable> {
-  $$DraftCartItemsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get productId =>
-      $composableBuilder(column: $table.productId, builder: (column) => column);
-
-  GeneratedColumn<String> get productName => $composableBuilder(
-    column: $table.productName,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get price =>
-      $composableBuilder(column: $table.price, builder: (column) => column);
-
-  GeneratedColumn<int> get qty =>
-      $composableBuilder(column: $table.qty, builder: (column) => column);
-
-  GeneratedColumn<String> get discountType => $composableBuilder(
-    column: $table.discountType,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get discountValue => $composableBuilder(
-    column: $table.discountValue,
-    builder: (column) => column,
-  );
-
-  $$DraftCartsTableAnnotationComposer get cartId {
-    final $$DraftCartsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.cartId,
-      referencedTable: $db.draftCarts,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$DraftCartsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.draftCarts,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$DraftCartItemsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $DraftCartItemsTable,
-          DraftCartItemData,
-          $$DraftCartItemsTableFilterComposer,
-          $$DraftCartItemsTableOrderingComposer,
-          $$DraftCartItemsTableAnnotationComposer,
-          $$DraftCartItemsTableCreateCompanionBuilder,
-          $$DraftCartItemsTableUpdateCompanionBuilder,
-          (DraftCartItemData, $$DraftCartItemsTableReferences),
-          DraftCartItemData,
-          PrefetchHooks Function({bool cartId})
-        > {
-  $$DraftCartItemsTableTableManager(
-    _$AppDatabase db,
-    $DraftCartItemsTable table,
-  ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$DraftCartItemsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$DraftCartItemsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$DraftCartItemsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> cartId = const Value.absent(),
-                Value<String> productId = const Value.absent(),
-                Value<String> productName = const Value.absent(),
-                Value<double> price = const Value.absent(),
-                Value<int> qty = const Value.absent(),
-                Value<String?> discountType = const Value.absent(),
-                Value<double?> discountValue = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => DraftCartItemsCompanion(
-                id: id,
-                cartId: cartId,
-                productId: productId,
-                productName: productName,
-                price: price,
-                qty: qty,
-                discountType: discountType,
-                discountValue: discountValue,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String cartId,
-                required String productId,
-                required String productName,
-                required double price,
-                required int qty,
-                Value<String?> discountType = const Value.absent(),
-                Value<double?> discountValue = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => DraftCartItemsCompanion.insert(
-                id: id,
-                cartId: cartId,
-                productId: productId,
-                productName: productName,
-                price: price,
-                qty: qty,
-                discountType: discountType,
-                discountValue: discountValue,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$DraftCartItemsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({cartId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (cartId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.cartId,
-                                referencedTable: $$DraftCartItemsTableReferences
-                                    ._cartIdTable(db),
-                                referencedColumn:
-                                    $$DraftCartItemsTableReferences
-                                        ._cartIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$DraftCartItemsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $DraftCartItemsTable,
-      DraftCartItemData,
-      $$DraftCartItemsTableFilterComposer,
-      $$DraftCartItemsTableOrderingComposer,
-      $$DraftCartItemsTableAnnotationComposer,
-      $$DraftCartItemsTableCreateCompanionBuilder,
-      $$DraftCartItemsTableUpdateCompanionBuilder,
-      (DraftCartItemData, $$DraftCartItemsTableReferences),
-      DraftCartItemData,
-      PrefetchHooks Function({bool cartId})
-    >;
-typedef $$DailyClosesTableCreateCompanionBuilder =
-    DailyClosesCompanion Function({
-      required String id,
-      required String closeDate,
-      Value<double> openingCash,
-      Value<double> expectedCash,
-      Value<double> countedCash,
-      Value<double> overShortAmount,
-      Value<double> totalRevenue,
-      Value<double> totalVoid,
-      Value<int> salesCount,
-      Value<int> voidCount,
-      Value<String?> note,
-      Value<DateTime> closedAt,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-typedef $$DailyClosesTableUpdateCompanionBuilder =
-    DailyClosesCompanion Function({
-      Value<String> id,
-      Value<String> closeDate,
-      Value<double> openingCash,
-      Value<double> expectedCash,
-      Value<double> countedCash,
-      Value<double> overShortAmount,
-      Value<double> totalRevenue,
-      Value<double> totalVoid,
-      Value<int> salesCount,
-      Value<int> voidCount,
-      Value<String?> note,
-      Value<DateTime> closedAt,
-      Value<String?> deviceId,
-      Value<int> rowid,
-    });
-
-class $$DailyClosesTableFilterComposer
-    extends Composer<_$AppDatabase, $DailyClosesTable> {
-  $$DailyClosesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get closeDate => $composableBuilder(
-    column: $table.closeDate,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get openingCash => $composableBuilder(
-    column: $table.openingCash,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get expectedCash => $composableBuilder(
-    column: $table.expectedCash,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get countedCash => $composableBuilder(
-    column: $table.countedCash,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get overShortAmount => $composableBuilder(
-    column: $table.overShortAmount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get totalRevenue => $composableBuilder(
-    column: $table.totalRevenue,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<double> get totalVoid => $composableBuilder(
-    column: $table.totalVoid,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get salesCount => $composableBuilder(
-    column: $table.salesCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get voidCount => $composableBuilder(
-    column: $table.voidCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get closedAt => $composableBuilder(
-    column: $table.closedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$DailyClosesTableOrderingComposer
-    extends Composer<_$AppDatabase, $DailyClosesTable> {
-  $$DailyClosesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get closeDate => $composableBuilder(
-    column: $table.closeDate,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get openingCash => $composableBuilder(
-    column: $table.openingCash,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get expectedCash => $composableBuilder(
-    column: $table.expectedCash,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get countedCash => $composableBuilder(
-    column: $table.countedCash,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get overShortAmount => $composableBuilder(
-    column: $table.overShortAmount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get totalRevenue => $composableBuilder(
-    column: $table.totalRevenue,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get totalVoid => $composableBuilder(
-    column: $table.totalVoid,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get salesCount => $composableBuilder(
-    column: $table.salesCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get voidCount => $composableBuilder(
-    column: $table.voidCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get closedAt => $composableBuilder(
-    column: $table.closedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-    column: $table.deviceId,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$DailyClosesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $DailyClosesTable> {
-  $$DailyClosesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get closeDate =>
-      $composableBuilder(column: $table.closeDate, builder: (column) => column);
-
-  GeneratedColumn<double> get openingCash => $composableBuilder(
-    column: $table.openingCash,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get expectedCash => $composableBuilder(
-    column: $table.expectedCash,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get countedCash => $composableBuilder(
-    column: $table.countedCash,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get overShortAmount => $composableBuilder(
-    column: $table.overShortAmount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get totalRevenue => $composableBuilder(
-    column: $table.totalRevenue,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<double> get totalVoid =>
-      $composableBuilder(column: $table.totalVoid, builder: (column) => column);
-
-  GeneratedColumn<int> get salesCount => $composableBuilder(
-    column: $table.salesCount,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get voidCount =>
-      $composableBuilder(column: $table.voidCount, builder: (column) => column);
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get closedAt =>
-      $composableBuilder(column: $table.closedAt, builder: (column) => column);
-
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-}
-
-class $$DailyClosesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $DailyClosesTable,
-          DailyCloseData,
-          $$DailyClosesTableFilterComposer,
-          $$DailyClosesTableOrderingComposer,
-          $$DailyClosesTableAnnotationComposer,
-          $$DailyClosesTableCreateCompanionBuilder,
-          $$DailyClosesTableUpdateCompanionBuilder,
-          (
-            DailyCloseData,
-            BaseReferences<_$AppDatabase, $DailyClosesTable, DailyCloseData>,
-          ),
-          DailyCloseData,
-          PrefetchHooks Function()
-        > {
-  $$DailyClosesTableTableManager(_$AppDatabase db, $DailyClosesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$DailyClosesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$DailyClosesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$DailyClosesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> closeDate = const Value.absent(),
-                Value<double> openingCash = const Value.absent(),
-                Value<double> expectedCash = const Value.absent(),
-                Value<double> countedCash = const Value.absent(),
-                Value<double> overShortAmount = const Value.absent(),
-                Value<double> totalRevenue = const Value.absent(),
-                Value<double> totalVoid = const Value.absent(),
-                Value<int> salesCount = const Value.absent(),
-                Value<int> voidCount = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<DateTime> closedAt = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => DailyClosesCompanion(
-                id: id,
-                closeDate: closeDate,
-                openingCash: openingCash,
-                expectedCash: expectedCash,
-                countedCash: countedCash,
-                overShortAmount: overShortAmount,
-                totalRevenue: totalRevenue,
-                totalVoid: totalVoid,
-                salesCount: salesCount,
-                voidCount: voidCount,
-                note: note,
-                closedAt: closedAt,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String closeDate,
-                Value<double> openingCash = const Value.absent(),
-                Value<double> expectedCash = const Value.absent(),
-                Value<double> countedCash = const Value.absent(),
-                Value<double> overShortAmount = const Value.absent(),
-                Value<double> totalRevenue = const Value.absent(),
-                Value<double> totalVoid = const Value.absent(),
-                Value<int> salesCount = const Value.absent(),
-                Value<int> voidCount = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<DateTime> closedAt = const Value.absent(),
-                Value<String?> deviceId = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => DailyClosesCompanion.insert(
-                id: id,
-                closeDate: closeDate,
-                openingCash: openingCash,
-                expectedCash: expectedCash,
-                countedCash: countedCash,
-                overShortAmount: overShortAmount,
-                totalRevenue: totalRevenue,
-                totalVoid: totalVoid,
-                salesCount: salesCount,
-                voidCount: voidCount,
-                note: note,
-                closedAt: closedAt,
-                deviceId: deviceId,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$DailyClosesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $DailyClosesTable,
-      DailyCloseData,
-      $$DailyClosesTableFilterComposer,
-      $$DailyClosesTableOrderingComposer,
-      $$DailyClosesTableAnnotationComposer,
-      $$DailyClosesTableCreateCompanionBuilder,
-      $$DailyClosesTableUpdateCompanionBuilder,
-      (
-        DailyCloseData,
-        BaseReferences<_$AppDatabase, $DailyClosesTable, DailyCloseData>,
-      ),
-      DailyCloseData,
-      PrefetchHooks Function()
-    >;
-
-class $AppDatabaseManager {
-  final _$AppDatabase _db;
-  $AppDatabaseManager(this._db);
-  $$ProductsTableTableManager get products =>
-      $$ProductsTableTableManager(_db, _db.products);
-  $$SalesTableTableManager get sales =>
-      $$SalesTableTableManager(_db, _db.sales);
-  $$SaleItemsTableTableManager get saleItems =>
-      $$SaleItemsTableTableManager(_db, _db.saleItems);
-  $$CategoriesTableTableManager get categories =>
-      $$CategoriesTableTableManager(_db, _db.categories);
-  $$InventoryLogsTableTableManager get inventoryLogs =>
-      $$InventoryLogsTableTableManager(_db, _db.inventoryLogs);
-  $$AppSettingsTableTableManager get appSettings =>
-      $$AppSettingsTableTableManager(_db, _db.appSettings);
-  $$DraftCartsTableTableManager get draftCarts =>
-      $$DraftCartsTableTableManager(_db, _db.draftCarts);
-  $$DraftCartItemsTableTableManager get draftCartItems =>
-      $$DraftCartItemsTableTableManager(_db, _db.draftCartItems);
-  $$DailyClosesTableTableManager get dailyCloses =>
-      $$DailyClosesTableTableManager(_db, _db.dailyCloses);
 }

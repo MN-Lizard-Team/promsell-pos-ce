@@ -8,6 +8,8 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_text_field.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form_avatar.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key, this.product});
@@ -126,7 +128,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final useTwoColumns = constraints.maxWidth >= 420;
-                final priceField = _ProductTextField(
+                final priceField = ProductTextField(
                   controller: _priceCtrl,
                   labelText: context.l10n.priceLabel(currency),
                   icon: Icons.sell_outlined,
@@ -149,7 +151,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     return null;
                   },
                 );
-                final stockField = _ProductTextField(
+                final stockField = ProductTextField(
                   controller: _stockCtrl,
                   labelText: context.l10n.quantityLabel,
                   icon: Icons.inventory_outlined,
@@ -188,7 +190,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        _FormAvatar(imageUrl: imageUrl),
+                        ProductFormAvatar(imageUrl: imageUrl),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -203,7 +205,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                                 ),
                               ),
                               const SizedBox(height: 6),
-                              _ProductTextField(
+                              ProductTextField(
                                 controller: _imageUrlCtrl,
                                 labelText:
                                     context.l10n.productFormImageUrlLabel,
@@ -218,11 +220,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    _SectionLabel(
+                    ProductSectionLabel(
                       label: context.l10n.productFormSectionBasicInfo,
                     ),
                     const SizedBox(height: 8),
-                    _ProductTextField(
+                    ProductTextField(
                       controller: _nameCtrl,
                       labelText: context.l10n.productNameLabel,
                       icon: Icons.badge_outlined,
@@ -247,11 +249,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       stockField,
                     ],
                     const SizedBox(height: 20),
-                    _SectionLabel(
+                    ProductSectionLabel(
                       label: context.l10n.productFormSectionDetails,
                     ),
                     const SizedBox(height: 8),
-                    _ProductTextField(
+                    ProductTextField(
                       controller: _categoryCtrl,
                       labelText: context.l10n.categoryLabel,
                       icon: Icons.category_outlined,
@@ -307,113 +309,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ProductTextField extends StatelessWidget {
-  const _ProductTextField({
-    required this.controller,
-    required this.labelText,
-    required this.icon,
-    this.keyboardType,
-    this.inputFormatters,
-    this.validator,
-    this.textInputAction,
-    this.onFieldSubmitted,
-    this.helperText,
-    this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final String labelText;
-  final IconData icon;
-  final TextInputType? keyboardType;
-  final List<TextInputFormatter>? inputFormatters;
-  final String? Function(String?)? validator;
-  final TextInputAction? textInputAction;
-  final ValueChanged<String>? onFieldSubmitted;
-  final String? helperText;
-  final ValueChanged<String>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: Icon(icon),
-        helperText: helperText,
-        helperMaxLines: 2,
-      ),
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      validator: validator,
-      textInputAction: textInputAction,
-      onFieldSubmitted: onFieldSubmitted,
-      onChanged: onChanged,
-    );
-  }
-}
-
-class _FormAvatar extends StatelessWidget {
-  const _FormAvatar({required this.imageUrl});
-
-  final String imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    const size = 80.0;
-    const radius = 20.0;
-
-    if (imageUrl.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: Image.network(
-          imageUrl,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (_, err, st) => _placeholder(theme),
-        ),
-      );
-    }
-    return _placeholder(theme);
-  }
-
-  Widget _placeholder(ThemeData theme) {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Icon(
-        Icons.image_outlined,
-        size: 36,
-        color: theme.colorScheme.primary,
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Text(
-      label.toUpperCase(),
-      style: theme.textTheme.labelSmall?.copyWith(
-        color: theme.colorScheme.onSurfaceVariant,
-        letterSpacing: 1.1,
-        fontWeight: FontWeight.w700,
       ),
     );
   }

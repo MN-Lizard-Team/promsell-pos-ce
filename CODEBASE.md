@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.5.0
+# CODEBASE.md — Promsell POS CE v0.5.2
 
 ## System overview
 
@@ -62,7 +62,8 @@ features/<name>/
 │   └── usecases/             # Business logic
 └── presentation/
     ├── bloc/ or cubit/       # State management
-    └── pages/                # Widgets
+    ├── pages/                # Page-level UI
+    └── widgets/              # Extracted reusable widgets
 ```
 
 **Dependency rule:** `presentation → domain ← data`. Domain has zero external dependencies.
@@ -96,11 +97,11 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`, `ReceiptPreview` (thermal/card/none); discount dialog, drafts sheet |
-| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart` (+ `trackStock` switch) |
-| History | `HistoryBloc` | `history_page.dart` (+ print/share receipt, void sale dialog) |
-| Report | `ReportCubit` (lazySingleton) | `report_page.dart` (net revenue, voided summary, exclude voided); `load()` called once in `initState()` |
-| Settings | `SettingsCubit` | `settings_page.dart`, `settings_cubit.dart`, `settings_state.dart` |
+| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`; widgets: `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `ChangePreview`, `PaymentTotalRow` |
+| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel` |
+| History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
+| Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
+| Settings | `SettingsCubit` | `settings_page.dart`; widgets: `SettingsSectionHeader`, `SettingsTextField`, `LanguageTile`, `ThemeTile`, `CurrencyTile`, `DateFormatTile`, `ResponsiveSettingsPicker` |
 | Inventory | — | `inventory_log_page.dart`, `adjust_stock_dialog.dart`, `InventoryLogService`, `AdjustStock` |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
 
@@ -250,6 +251,7 @@ Two generators must be run after changes:
 | Shared UI behavior | `lib/core/widgets/` tests under `test/core/widgets/` |
 | Feature UI strings | Both ARB files + generated localization files |
 | Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |
+| Feature `widgets/` folder | Corresponding page file import + widget tests |
 | BLoC / Cubit class | Update mock in `test/helpers/mocks.dart` |
 | Domain entity | Update `test/helpers/fixtures.dart` + corresponding `_test.dart` files |
 | `Sale` entity (new fields) | Update `sale_test.dart` props count, `_buildSale` in datasource |
