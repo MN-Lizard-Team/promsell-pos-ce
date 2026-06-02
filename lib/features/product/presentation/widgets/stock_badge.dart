@@ -20,19 +20,35 @@ class StockBadge extends StatelessWidget {
       color = theme.colorScheme.primary;
     }
 
+    final IconData icon;
+    if (stock == 0) {
+      icon = Icons.error_outline;
+    } else if (stock <= 5) {
+      icon = Icons.warning_amber;
+    } else {
+      icon = Icons.check_circle_outline;
+    }
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.22 : 0.12),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-        child: Text(
-          context.l10n.stockLabel(stock),
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w700,
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+            Text(
+              context.l10n.stockLabel(stock),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );

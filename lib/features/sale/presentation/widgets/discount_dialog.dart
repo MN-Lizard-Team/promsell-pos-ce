@@ -172,6 +172,7 @@ class _DiscountDialogState extends State<DiscountDialog> {
             controller: _ctrl,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            textInputAction: TextInputAction.done,
             decoration: InputDecoration(
               labelText: _type == 'PERCENT' ? '%' : widget.currency,
               border: const OutlineInputBorder(),
@@ -182,6 +183,17 @@ class _DiscountDialogState extends State<DiscountDialog> {
                   : null,
             ),
             onChanged: (_) => setState(() {}),
+            onSubmitted: (_) {
+              if (value > 0) {
+                final effectiveValue = _type == 'PERCENT'
+                    ? value.clamp(0.0, widget.maxPercent)
+                    : widget.maxAmount > 0
+                    ? value.clamp(0.0, widget.maxAmount)
+                    : value;
+                widget.onApply(_type, effectiveValue);
+                Navigator.pop(context);
+              }
+            },
           ),
           if (value > 0) ...[
             const SizedBox(height: 8),

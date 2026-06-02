@@ -775,4 +775,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get bulkDelete => 'ลบรายการ';
+
+  @override
+  String get reorderItem => 'ลากเพื่อจัดเรียง';
 }

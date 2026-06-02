@@ -96,12 +96,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
       promptpayId: await _datasource.getString(_keyPromptpayId) ?? '',
       receiptSize: await _datasource.getString(_keyReceiptSize) ?? '80mm',
       backupReminderDays: await _datasource.getInt(_keyBackupReminderDays) ?? 7,
-      lastBackupAt: await _datasource.getString(_keyLastBackupAt),
+      lastBackupAt: _nullIfEmpty(await _datasource.getString(_keyLastBackupAt)),
       imageMaxWidth: await _datasource.getInt(_keyImageMaxWidth) ?? 800,
       imageQuality: await _datasource.getInt(_keyImageQuality) ?? 80,
       maxDrafts: await _datasource.getInt(_keyMaxDrafts) ?? 30,
       cartCompactMode: await _datasource.getBool(_keyCartCompactMode) ?? false,
-      ultraCompactMode: await _datasource.getBool(_keyUltraCompactMode) ?? false,
+      ultraCompactMode:
+          await _datasource.getBool(_keyUltraCompactMode) ?? false,
     );
   }
 
@@ -169,6 +170,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     );
     if (settings.lastBackupAt != null) {
       await _datasource.setString(_keyLastBackupAt, settings.lastBackupAt!);
+    } else {
+      await _datasource.setString(_keyLastBackupAt, '');
     }
     await _datasource.setInt(_keyImageMaxWidth, settings.imageMaxWidth);
     await _datasource.setInt(_keyImageQuality, settings.imageQuality);
@@ -242,4 +245,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         .toList();
     return jsonEncode(list);
   }
+
+  static String? _nullIfEmpty(String? value) =>
+      value == null || value.isEmpty ? null : value;
 }

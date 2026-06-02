@@ -176,6 +176,7 @@ class _CartPanelState extends State<CartPanel> {
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       itemCount: items.length,
+      // ignore: deprecated_member_use
       onReorder: (oldIndex, newIndex) {
         if (newIndex > oldIndex) newIndex--;
         final reordered = List<CartItem>.from(items);

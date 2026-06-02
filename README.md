@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.6.1** — Cart panel overhaul (search, grouping, multi-select, swipe, drag-to-reorder, resizable panel, compact modes), interactive checkout review, receipt preview zoom, centralized image viewer, and product image system polish.
+> **Latest Release: v0.6.2** — UX/UI accessibility & performance batch: checkbox touch targets, drag handle tooltips, stock badge icons for colorblind accessibility, search clear button, delete confirmation dialogs, keyboard submit on discount dialog, toast tap-to-dismiss, cart drag `ValueNotifier` refactor (eliminates jank), checkout VAT deduplication, and `useRootNavigator` fixes on all bottom sheets.
  
 ---
  
@@ -64,7 +64,7 @@
  
 | Feature | Description |
 |---------|-------------|
-| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, per-item/cart discount with preset chips, cart search & group-by-category, multi-select bulk actions, swipe gestures, drag-to-reorder, resizable panel, compact/ultra-compact modes |
+| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, per-item/cart discount with preset chips, cart search & group-by-category, multi-select bulk actions, swipe gestures, drag-to-reorder, resizable panel, compact/ultra-compact modes. **v0.6.2 UX**: checkbox 48dp touch targets, drag tooltips, focus indicators, delete confirmations, keyboard submit on discount, toast tap-dismiss, drag performance refactor |
 | **Draft Cart** | Auto-save every 1.5s; configurable max drafts (5–100); search + sort; count badge; auto-archive after 7 days; switch/rename/delete drafts; active draft restored on app launch; cleared on checkout |
 | **Discount** | Per-item / per-cart discount (% or ฿) with live preview; merchant-configurable preset groups with quick-apply chips; max discount clamping; full payment sheet breakdown; VAT applied after discounts |
 | **Products** | List/grid toggle, category filter chips, image picker (gallery/camera) with pure Dart compression + thumbnail system, `CachedNetworkImage` for network URLs, configurable image quality, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, `trackStock` toggle, active/inactive toggle, orphaned file cleanup, remove-then-cancel protection |
@@ -225,6 +225,7 @@ features/<name>/
 - [x] **R4 — Discount Policy & Product Images** (v0.5.4): Merchant-configurable discount presets with clamping, receipt discount rows, product image picker with local compression
 - [x] **R4 — Merchant Tools** (v0.6.0): PDF receipt print/share, PromptPay QR, backup/restore, receipt settings expansion, product image system overhaul (pure Dart compression, thumbnails, CachedNetworkImage, image cleanup, compression settings)
 - [x] **R5 — Cart UX Redesign** (v0.6.1): Cart panel overhaul (search, group-by-category, multi-select, swipe, drag-to-reorder, resizable panel, compact modes), interactive checkout review (`CheckoutPage` + `CartReviewPage`), receipt preview zoom, centralized `ImageViewerDialog`, product image polish
+- [x] **R5 — UX Polish & Performance** (v0.6.2): Accessibility touch targets, tooltips, focus indicators, colorblind stock badges, search clear button, delete confirmation dialogs, keyboard submit, toast tap-dismiss, `ValueNotifier` drag refactor (jank fix), VAT calculation deduplication, `useRootNavigator` fixes
 - [ ] **R6 — Operations**: Daily close, onboarding wizard, final polish
 
 ### Future
@@ -324,6 +325,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.6.1 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.6.2 · AGPL-3.0</sub>
 
 </div>

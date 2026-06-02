@@ -76,6 +76,7 @@ class ProductGridCard extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
       builder: (_) => BlocProvider.value(
         value: context.read<ProductBloc>(),
         child: ProductFormPage(product: product),
@@ -90,6 +91,7 @@ class ProductGridCard extends StatelessWidget {
     final theme = Theme.of(context);
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       builder: (sheetCtx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 
+const Object _unset = Object();
+
 class AppSettings extends Equatable {
   const AppSettings({
     this.locale = const Locale('th'),
@@ -113,7 +115,7 @@ class AppSettings extends Equatable {
     String? promptpayId,
     String? receiptSize,
     int? backupReminderDays,
-    String? lastBackupAt,
+    Object? lastBackupAt = _unset,
     int? imageMaxWidth,
     int? imageQuality,
     int? maxDrafts,
@@ -150,7 +152,9 @@ class AppSettings extends Equatable {
       promptpayId: promptpayId ?? this.promptpayId,
       receiptSize: receiptSize ?? this.receiptSize,
       backupReminderDays: backupReminderDays ?? this.backupReminderDays,
-      lastBackupAt: lastBackupAt ?? this.lastBackupAt,
+      lastBackupAt: identical(lastBackupAt, _unset)
+          ? this.lastBackupAt
+          : lastBackupAt as String?,
       imageMaxWidth: imageMaxWidth ?? this.imageMaxWidth,
       imageQuality: imageQuality ?? this.imageQuality,
       maxDrafts: maxDrafts ?? this.maxDrafts,

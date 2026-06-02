@@ -779,4 +779,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bulkDelete => 'Delete';
+
+  @override
+  String get reorderItem => 'Drag to reorder';
 }

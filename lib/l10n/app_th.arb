@@ -319,5 +319,6 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "bulkClearDiscount": "ล้างส่วนลด",
-  "bulkDelete": "ลบรายการ"
+  "bulkDelete": "ลบรายการ",
+  "reorderItem": "ลากเพื่อจัดเรียง"
 }

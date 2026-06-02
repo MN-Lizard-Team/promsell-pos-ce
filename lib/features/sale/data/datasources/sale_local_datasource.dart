@@ -97,7 +97,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     final effectiveCartDiscount = cartDiscountAmount ?? 0.0;
     final preTaxTotal = double.parse(
       (itemsSubtotal - effectiveCartDiscount).toStringAsFixed(2),
-    );
+    ).clamp(0.0, double.maxFinite);
     final r = vatRate / 100;
     final double subtotal;
     final double vatAmount;
@@ -173,6 +173,16 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
 
       // 4. Insert sale items + deduct stock (trackStock only) + log inventory
       for (final item in items) {
+        final double itemVatAmount;
+        if (vatMode == 'INCLUSIVE' && r > 0) {
+          itemVatAmount = double.parse(
+            (item.subtotal * r / (1 + r)).toStringAsFixed(2),
+          );
+        } else if (vatMode == 'EXCLUSIVE' && r > 0) {
+          itemVatAmount = double.parse((item.subtotal * r).toStringAsFixed(2));
+        } else {
+          itemVatAmount = 0.0;
+        }
         await _db
             .into(_db.saleItems)
             .insert(
@@ -185,6 +195,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
                 qty: item.qty,
                 subtotal: item.subtotal,
                 discountAmount: Value(item.discountAmount),
+                vatAmount: Value(itemVatAmount),
               ),
             );
         if (!productMap[item.product.id]!.trackStock) continue;
@@ -330,6 +341,16 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             qty: item.qty,
             saleId: saleId,
             balanceAfter: 0,
+          );
+          continue;
+        }
+
+        if (!product.trackStock) {
+          await inventoryLogService.logVoidReversal(
+            productId: item.productId,
+            qty: item.qty,
+            saleId: saleId,
+            balanceAfter: product.stock,
           );
           continue;
         }

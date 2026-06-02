@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 
+const Object _unset = Object();
+
 enum ReportStatus { initial, loading, success, failure }
 
 class ReportState extends Equatable {
@@ -22,14 +24,14 @@ class ReportState extends Equatable {
   ReportState copyWith({
     ReportStatus? status,
     List<Sale>? sales,
-    DateTime? from,
-    DateTime? to,
+    Object? from = _unset,
+    Object? to = _unset,
   }) {
     return ReportState(
       status: status ?? this.status,
       sales: sales ?? this.sales,
-      from: from ?? this.from,
-      to: to ?? this.to,
+      from: identical(from, _unset) ? this.from : from as DateTime?,
+      to: identical(to, _unset) ? this.to : to as DateTime?,
     );
   }
 

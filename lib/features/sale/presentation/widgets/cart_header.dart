@@ -60,6 +60,7 @@ class _CartHeaderState extends State<CartHeader> {
                 Icons.shopping_cart_outlined,
                 color: theme.colorScheme.primary,
                 size: 22,
+                semanticLabel: context.l10n.cartTitle,
               ),
               const SizedBox(width: 10),
               Expanded(

@@ -20,7 +20,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(state.copyWith(status: SettingsStatus.loaded, settings: settings));
     } catch (e) {
       debugPrint('SettingsCubit.load failed: $e');
-      emit(state.copyWith(status: SettingsStatus.loaded));
+      emit(state.copyWith(status: SettingsStatus.failure));
     }
   }
 

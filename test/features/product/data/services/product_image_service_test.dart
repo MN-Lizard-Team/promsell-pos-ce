@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as img_lib;
 import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
@@ -99,8 +100,8 @@ void main() {
     });
 
     test('returns existing thumbnail without recreating', () async {
-      final fullPath = '${tempDir.path}/test2.jpg';
-      final thumbPath = '${tempDir.path}/test2_thumb.jpg';
+      final fullPath = p.join(tempDir.path, 'test2.jpg');
+      final thumbPath = p.join(tempDir.path, 'test2_thumb.jpg');
       await File(fullPath).writeAsBytes([1, 2, 3]);
       await File(thumbPath).writeAsBytes([4, 5, 6]);
 

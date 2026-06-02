@@ -1543,6 +1543,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ลบรายการ'**
   String get bulkDelete;
+
+  /// No description provided for @reorderItem.
+  ///
+  /// In th, this message translates to:
+  /// **'ลากเพื่อจัดเรียง'**
+  String get reorderItem;
 }
 
 class _AppLocalizationsDelegate

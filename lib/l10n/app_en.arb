@@ -322,5 +322,6 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "bulkClearDiscount": "Clear Discount",
-  "bulkDelete": "Delete"
+  "bulkDelete": "Delete",
+  "reorderItem": "Drag to reorder"
 }

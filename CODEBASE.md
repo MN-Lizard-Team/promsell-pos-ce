@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.6.1
+# CODEBASE.md — Promsell POS CE v0.6.2
 
 ## System overview
 

@@ -54,7 +54,7 @@ class ReceiptNumberService {
 
   Future<String> _generateDevicePrefix() async {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final rng = Random();
+    final rng = Random.secure();
     final prefix = String.fromCharCodes(
       Iterable.generate(2, (_) => chars.codeUnitAt(rng.nextInt(chars.length))),
     );

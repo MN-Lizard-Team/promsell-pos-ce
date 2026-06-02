@@ -17,6 +17,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.2] - 2026-06-02
+
+UX accessibility & performance improvements plus 14 systematic bug fixes.
+
+### Highlights
+
+- **Cart drag performance** — `ValueNotifier` refactor eliminates frame jank during panel resize.
+- **Checkout VAT efficiency** — Single `calculateVat()` call deduplicated from total + receipt preview.
+- **Accessibility batch** — 48dp checkbox touch targets, drag tooltips, focus indicators, colorblind stock badge icons.
+- **Delete confirmation** — Cart item removal shows `AlertDialog` confirmation; consistent with product deletion.
+
+### Added
+
+- Drag handle tooltip (`reorderItem` l10n key, EN + TH).
+- Semantic labels on key icons for screen readers.
+- Focus color on `_QtyButton` for keyboard navigation visibility.
+- Colorblind-friendly stock badge icons (`error_outline` / `warning_amber` / `check_circle_outline`).
+- Product list `SearchBar` clear button.
+- `DiscountDialog` keyboard submit (`TextInputAction.done`).
+
+### Changed
+
+- `SalePage` drag panel uses `ValueNotifier<double>` + `ValueListenableBuilder` instead of `setState`.
+- `CheckoutBody` computes `calculateVat()` once per `BlocBuilder` callback and reuses result.
+- Toast now dismissible by tap (replaced `IgnorePointer` with `GestureDetector`).
+- Cart minus button always shows `remove` icon; delete confirmation on last qty.
+- All `showModalBottomSheet` calls use `useRootNavigator: true`.
+
+### Fixed
+
+- Checkbox touch target below 48dp minimum.
+- BUG-1 — Cart/Checkout VAT display inconsistent in EXCLUSIVE mode.
+- BUG-2/11 — Negative `preTaxTotal` when cart discount exceeds subtotal.
+- BUG-3 — Void sale restored stock for non-tracked products.
+- BUG-4 — `ReportState.copyWith` couldn't set `from`/`to` to null.
+- BUG-5 — `AppSettings.copyWith` couldn't clear `lastBackupAt`.
+- BUG-6 — `lastBackupAt` null handling in settings save/load.
+- BUG-7 — `SaleCartCleared` preserved cart discount fields.
+- BUG-8 — `SaleReset` carried over old items/note/discount.
+- BUG-9 — Windows path separator bug in `ProductImageService`.
+- BUG-10 — `ReceiptNumberService` used insecure `Random()`.
+- BUG-12 — `CheckoutBody` `_effectiveTotal` side-effect in `build()`.
+- BUG-13 — `SettingsCubit.load` silently marked error as `loaded`.
+- BUG-14 — `_compressAndSave` didn't check source file exists.
+- BUG-17 — Cart reorder fallback inserted unknown items at index 0.
+- BUG-18 — Per-item `vatAmount` not persisted in `saleItems`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **243/243 passing**
+
+---
+
 ## [0.6.1] - 2026-06-02
 
 Sale flow UX redesign, cart panel overhaul, interactive checkout review, and product image system polish.

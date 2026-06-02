@@ -102,8 +102,6 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       SaleState(
         activeDraftId: state.activeDraftId,
         activeDraftName: state.activeDraftName,
-        cartDiscountType: state.cartDiscountType,
-        cartDiscountValue: state.cartDiscountValue,
       ),
     );
     _scheduleSave();
@@ -179,10 +177,11 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     final orderMap = {
       for (var i = 0; i < event.productIds.length; i++) event.productIds[i]: i,
     };
+    final fallbackIndex = event.productIds.length;
     final updated = [...state.items];
     updated.sort((a, b) {
-      final aIndex = orderMap[a.product.id] ?? 0;
-      final bIndex = orderMap[b.product.id] ?? 0;
+      final aIndex = orderMap[a.product.id] ?? fallbackIndex;
+      final bIndex = orderMap[b.product.id] ?? fallbackIndex;
       return aIndex.compareTo(bIndex);
     });
     emit(state.copyWith(items: updated));
@@ -236,12 +235,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   void _onReset(SaleReset event, Emitter<SaleState> emit) {
     emit(
       SaleState(
-        items: state.items,
-        note: state.note,
         activeDraftId: state.activeDraftId,
         activeDraftName: state.activeDraftName,
-        cartDiscountType: state.cartDiscountType,
-        cartDiscountValue: state.cartDiscountValue,
       ),
     );
   }

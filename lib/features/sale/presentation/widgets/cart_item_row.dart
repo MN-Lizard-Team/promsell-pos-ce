@@ -98,8 +98,6 @@ class CartItemRow extends StatelessWidget {
                   value: isSelected,
                   onChanged: (_) => onTap?.call(),
                   shape: const CircleBorder(),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
                 ),
                 const SizedBox(width: 4),
               ],
@@ -191,30 +189,10 @@ class CartItemRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _QtyButton(
-                    icon: item.qty == 1 ? Icons.delete_outline : Icons.remove,
-                    color: item.qty == 1 ? theme.colorScheme.error : null,
+                    icon: Icons.remove,
                     onPressed: () {
                       if (item.qty == 1) {
-                        final prevItem = item;
-                        final bloc = context.read<SaleBloc>();
-                        final l10n = context.l10n;
-                        bloc.add(
-                          SaleItemQtyChanged(
-                            productId: item.product.id,
-                            qty: 0,
-                            allowOversell: allowOversell,
-                          ),
-                        );
-                        AppSnackBar.withAction(
-                          context,
-                          l10n.itemRemoved,
-                          actionLabel: l10n.undo,
-                          onAction: () => bloc.add(
-                            SaleCartRestored(
-                              items: [...bloc.state.items, prevItem],
-                            ),
-                          ),
-                        );
+                        _confirmRemove(context, item, allowOversell);
                       } else {
                         context.read<SaleBloc>().add(
                           SaleItemQtyChanged(
@@ -282,12 +260,15 @@ class CartItemRow extends StatelessWidget {
               ),
               if (dragHandleIndex != null) ...[
                 const SizedBox(width: 6),
-                ReorderableDragStartListener(
-                  index: dragHandleIndex!,
-                  child: Icon(
-                    Icons.drag_indicator,
-                    size: 20,
-                    color: theme.colorScheme.onSurfaceVariant,
+                Tooltip(
+                  message: context.l10n.reorderItem,
+                  child: ReorderableDragStartListener(
+                    index: dragHandleIndex!,
+                    child: Icon(
+                      Icons.drag_indicator,
+                      size: 20,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ],
@@ -297,13 +278,55 @@ class CartItemRow extends StatelessWidget {
       ),
     );
   }
+
+  void _confirmRemove(BuildContext context, CartItem item, bool allowOversell) {
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(l10n.deleteProduct),
+        content: Text(l10n.confirmDeleteProduct(item.product.name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final prevItem = item;
+              final bloc = context.read<SaleBloc>();
+              bloc.add(
+                SaleItemQtyChanged(
+                  productId: item.product.id,
+                  qty: 0,
+                  allowOversell: allowOversell,
+                ),
+              );
+              Navigator.pop(context);
+              AppSnackBar.withAction(
+                context,
+                l10n.itemRemoved,
+                actionLabel: l10n.undo,
+                onAction: () => bloc.add(
+                  SaleCartRestored(items: [...bloc.state.items, prevItem]),
+                ),
+              );
+            },
+            child: Text(
+              l10n.delete,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _QtyButton extends StatelessWidget {
-  const _QtyButton({required this.icon, this.color, this.onPressed});
+  const _QtyButton({required this.icon, this.onPressed});
 
   final IconData icon;
-  final Color? color;
   final VoidCallback? onPressed;
 
   @override
@@ -314,6 +337,7 @@ class _QtyButton extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: onPressed,
+        focusColor: theme.colorScheme.primary.withValues(alpha: 0.12),
         child: Container(
           width: 36,
           height: 36,
@@ -326,11 +350,9 @@ class _QtyButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 20,
-            color:
-                color ??
-                (onPressed == null
-                    ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4)
-                    : theme.colorScheme.primary),
+            color: onPressed == null
+                ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4)
+                : theme.colorScheme.primary,
           ),
         ),
       ),

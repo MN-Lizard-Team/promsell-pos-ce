@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:image/image.dart' as img_lib;
+import 'package:path/path.dart' as p;
 import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
@@ -92,12 +93,17 @@ class ProductImageServiceImpl implements ProductImageService {
   }
 
   Future<String> _compressAndSave(String sourcePath, String productId) async {
+    final sourceFile = File(sourcePath);
+    if (!await sourceFile.exists()) {
+      throw StateError('Source image not found: $sourcePath');
+    }
+
     final settings = await _settingsRepository.load();
     final maxWidth = settings.imageMaxWidth;
     final quality = settings.imageQuality;
 
     final dir = await _imageDirectory;
-    final bytes = await File(sourcePath).readAsBytes();
+    final bytes = await sourceFile.readAsBytes();
     final image = img_lib.decodeImage(bytes);
     if (image == null) {
       throw StateError('Failed to decode image: $sourcePath');
@@ -106,12 +112,12 @@ class ProductImageServiceImpl implements ProductImageService {
     final resized = img_lib.copyResize(image, width: maxWidth);
     final jpg = img_lib.encodeJpg(resized, quality: quality);
 
-    final targetPath = '${dir.path}/$productId.jpg';
+    final targetPath = p.join(dir.path, '$productId.jpg');
     await File(targetPath).writeAsBytes(jpg);
 
     final thumb = img_lib.copyResize(image, width: _thumbWidth);
     final thumbJpg = img_lib.encodeJpg(thumb, quality: _thumbQuality);
-    final thumbPath = '${dir.path}/${productId}_thumb.jpg';
+    final thumbPath = p.join(dir.path, '${productId}_thumb.jpg');
     await File(thumbPath).writeAsBytes(thumbJpg);
 
     return targetPath;
@@ -124,8 +130,8 @@ class ProductImageServiceImpl implements ProductImageService {
     if (!await oldFile.exists()) return null;
 
     final dir = await _imageDirectory;
-    final newPath = '${dir.path}/$newProductId.jpg';
-    final newThumbPath = '${dir.path}/${newProductId}_thumb.jpg';
+    final newPath = p.join(dir.path, '$newProductId.jpg');
+    final newThumbPath = p.join(dir.path, '${newProductId}_thumb.jpg');
 
     await oldFile.rename(newPath);
 
@@ -139,15 +145,15 @@ class ProductImageServiceImpl implements ProductImageService {
   }
 
   String _thumbPathFromFull(String fullPath) {
-    final dir = fullPath.substring(0, fullPath.lastIndexOf('/'));
-    final fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
+    final dir = p.dirname(fullPath);
+    final fileName = p.basename(fullPath);
     final thumbName = fileName.replaceAll('.jpg', '_thumb.jpg');
-    return '$dir/$thumbName';
+    return p.join(dir, thumbName);
   }
 
   Future<Directory> get _imageDirectory async {
     final appDir = await getApplicationDocumentsDirectory();
-    final imageDir = Directory('${appDir.path}/images');
+    final imageDir = Directory(p.join(appDir.path, 'images'));
     if (!await imageDir.exists()) {
       await imageDir.create(recursive: true);
     }

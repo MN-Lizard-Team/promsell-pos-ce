@@ -29,7 +29,9 @@ void main() {
     when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
     when(() => mockDraftRepo.deleteDraft(any())).thenAnswer((_) async {});
     when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
-    when(() => mockDraftRepo.archiveOldDrafts(any())).thenAnswer((_) async => 0);
+    when(
+      () => mockDraftRepo.archiveOldDrafts(any()),
+    ).thenAnswer((_) async => 0);
     when(
       () => mockSettingsRepo.load(),
     ).thenAnswer((_) async => const AppSettings(maxDrafts: 30));
@@ -178,7 +180,7 @@ void main() {
     );
 
     blocTest<SaleBloc, SaleState>(
-      'SaleReset preserves cart discount and clears success status',
+      'SaleReset clears items, note, and discount but preserves draft identity',
       build: buildBloc,
       seed: () => SaleState(
         status: SaleStatus.success,
@@ -192,13 +194,9 @@ void main() {
       ),
       act: (b) => b.add(const SaleReset()),
       expect: () => [
-        SaleState(
-          items: [tCartItem],
-          note: 'note',
+        const SaleState(
           activeDraftId: 'draft-1',
           activeDraftName: 'Test Draft',
-          cartDiscountType: 'PERCENT',
-          cartDiscountValue: 10.0,
         ),
       ],
     );
@@ -271,9 +269,7 @@ void main() {
       build: buildBloc,
       seed: () => SaleState(items: [tCartItem, tCartItem2]),
       act: (b) => b.add(SaleBulkItemsRemoved([tProduct.id, tProduct2.id])),
-      expect: () => [
-        const SaleState(items: []),
-      ],
+      expect: () => [const SaleState(items: [])],
     );
 
     blocTest<SaleBloc, SaleState>(
@@ -285,13 +281,11 @@ void main() {
           tCartItem2.copyWith(discountType: 'AMOUNT', discountValue: 5.0),
         ],
       ),
-      act: (b) => b.add(SaleBulkItemDiscountsCleared([tProduct.id, tProduct2.id])),
+      act: (b) =>
+          b.add(SaleBulkItemDiscountsCleared([tProduct.id, tProduct2.id])),
       expect: () => [
         SaleState(
-          items: [
-            tCartItem.clearDiscount(),
-            tCartItem2.clearDiscount(),
-          ],
+          items: [tCartItem.clearDiscount(), tCartItem2.clearDiscount()],
         ),
       ],
     );

@@ -120,6 +120,25 @@ class _ProductListViewState extends State<_ProductListView> {
                         controller: _searchController,
                         hintText: context.l10n.searchProducts,
                         leading: const Icon(Icons.search),
+                        trailing: [
+                          ValueListenableBuilder<TextEditingValue>(
+                            valueListenable: _searchController,
+                            builder: (context, value, child) {
+                              if (value.text.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  context.read<ProductBloc>().add(
+                                    const ProductSearchChanged(''),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
                         onChanged: (q) => context.read<ProductBloc>().add(
                           ProductSearchChanged(q),
                         ),
@@ -234,6 +253,7 @@ class _ProductListViewState extends State<_ProductListView> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
       builder: (_) => BlocProvider.value(
         value: context.read<ProductBloc>(),
         child: ProductFormPage(product: product),

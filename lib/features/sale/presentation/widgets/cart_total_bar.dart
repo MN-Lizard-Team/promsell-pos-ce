@@ -84,6 +84,15 @@ class CartTotalBar extends StatelessWidget {
                   ],
                 ),
               ],
+              if (settings.vatMode == 'EXCLUSIVE' && settings.vatRate > 0) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '+${context.l10n.receiptLabelVat} ${settings.vatRate}%',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ],
           );
           final checkout = FilledButton.icon(

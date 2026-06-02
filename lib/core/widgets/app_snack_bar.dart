@@ -134,7 +134,8 @@ class _SimpleToastState extends State<_SimpleToast>
       top: topPadding + 16,
       left: 0,
       right: 0,
-      child: IgnorePointer(
+      child: GestureDetector(
+        onTap: _dismiss,
         child: Center(
           child: FadeTransition(
             opacity: _opacity,
@@ -273,7 +274,9 @@ class _ActionToastState extends State<_ActionToast>
                       _dismiss();
                     },
                     style: TextButton.styleFrom(
-                      backgroundColor: colorScheme.primary.withValues(alpha: 0.12),
+                      backgroundColor: colorScheme.primary.withValues(
+                        alpha: 0.12,
+                      ),
                       foregroundColor: colorScheme.primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -282,7 +285,9 @@ class _ActionToastState extends State<_ActionToast>
                       minimumSize: const Size(72, 40),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.4)),
+                        side: BorderSide(
+                          color: colorScheme.primary.withValues(alpha: 0.4),
+                        ),
                       ),
                     ),
                     child: Text(

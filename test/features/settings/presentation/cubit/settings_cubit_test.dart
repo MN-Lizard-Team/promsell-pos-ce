@@ -43,7 +43,7 @@ void main() {
     );
 
     blocTest<SettingsCubit, SettingsState>(
-      'load falls back to loaded defaults on error',
+      'load emits failure on error',
       setUp: () {
         when(() => mockRepo.load()).thenThrow(Exception('fail'));
       },
@@ -51,7 +51,7 @@ void main() {
       act: (c) => c.load(),
       expect: () => [
         const SettingsState(status: SettingsStatus.loading),
-        const SettingsState(status: SettingsStatus.loaded),
+        const SettingsState(status: SettingsStatus.failure),
       ],
     );
 

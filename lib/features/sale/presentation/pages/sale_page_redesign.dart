@@ -37,22 +37,43 @@ class _SaleView extends StatefulWidget {
 }
 
 class _SaleViewState extends State<_SaleView> {
-  double _cartHeight = 280;
-  double _cartWidth = 390;
-  bool _isDraggingHandle = false;
+  late final ValueNotifier<double> _cartHeight;
+  late final ValueNotifier<double> _cartWidth;
+  late final ValueNotifier<bool> _isDraggingHandle;
 
   static const double _minCartHeightPortrait = 260;
   static const double _minCartHeightLandscape = 220;
   static const double _maxCartHeightRatioPortrait = 0.65;
   static const double _maxCartHeightRatioLandscape = 0.50;
 
-  double get _minCartHeight {
+  static const double _minCartWidth = 300;
+  static const double _maxCartWidth = 560;
+  static const double _handleHeight = 18;
+  static const double _snapTolerance = 18;
+
+  @override
+  void initState() {
+    super.initState();
+    _cartHeight = ValueNotifier(280);
+    _cartWidth = ValueNotifier(390);
+    _isDraggingHandle = ValueNotifier(false);
+  }
+
+  @override
+  void dispose() {
+    _cartHeight.dispose();
+    _cartWidth.dispose();
+    _isDraggingHandle.dispose();
+    super.dispose();
+  }
+
+  double _minCartHeight(BuildContext context) {
     final isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
     return isLandscape ? _minCartHeightLandscape : _minCartHeightPortrait;
   }
 
-  double get _maxCartHeightRatio {
+  double _maxCartHeightRatio(BuildContext context) {
     final isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
     return isLandscape
@@ -60,48 +81,38 @@ class _SaleViewState extends State<_SaleView> {
         : _maxCartHeightRatioPortrait;
   }
 
-  static const double _minCartWidth = 300;
-  static const double _maxCartWidth = 560;
-  static const double _handleHeight = 18;
-  static const double _snapTolerance = 18;
+  double _maxCartHeight(BuildContext context) =>
+      MediaQuery.sizeOf(context).height * _maxCartHeightRatio(context);
 
-  double get _maxCartHeight =>
-      MediaQuery.sizeOf(context).height * _maxCartHeightRatio;
-
-  void _onVerticalDrag(DragUpdateDetails details) {
-    setState(() {
-      _cartHeight = (_cartHeight - details.delta.dy).clamp(
-        _minCartHeight,
-        _maxCartHeight,
-      );
-    });
+  void _onVerticalDrag(BuildContext context, DragUpdateDetails details) {
+    final minH = _minCartHeight(context);
+    final maxH = _maxCartHeight(context);
+    _cartHeight.value = (_cartHeight.value - details.delta.dy).clamp(
+      minH,
+      maxH,
+    );
   }
 
   void _onHorizontalDrag(DragUpdateDetails details) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final dxAdjusted = isRtl ? -details.delta.dx : details.delta.dx;
-    setState(() {
-      _cartWidth = (_cartWidth - dxAdjusted).clamp(
-        _minCartWidth,
-        _maxCartWidth,
-      );
-    });
+    _cartWidth.value = (_cartWidth.value - dxAdjusted).clamp(
+      _minCartWidth,
+      _maxCartWidth,
+    );
   }
 
-  void _onDragEnd() {
-    setState(() => _isDraggingHandle = false);
-  }
+  void _onDragEnd() => _isDraggingHandle.value = false;
 
-  void _onDragStart() {
-    setState(() => _isDraggingHandle = true);
-  }
+  void _onDragStart() => _isDraggingHandle.value = true;
 
-  void _onVerticalDragEnd(DragEndDetails details) {
-    final maxH = _maxCartHeight;
-    final presets = <double>[_minCartHeight, maxH];
+  void _onVerticalDragEnd(BuildContext context, DragEndDetails details) {
+    final maxH = _maxCartHeight(context);
+    final minH = _minCartHeight(context);
+    final presets = <double>[minH, maxH];
     for (final p in presets) {
-      if ((_cartHeight - p).abs() < _snapTolerance) {
-        setState(() => _cartHeight = p);
+      if ((_cartHeight.value - p).abs() < _snapTolerance) {
+        _cartHeight.value = p;
         break;
       }
     }
@@ -111,43 +122,39 @@ class _SaleViewState extends State<_SaleView> {
   void _onHorizontalDragEnd(DragEndDetails details) {
     const presets = <double>[320, 500];
     for (final p in presets) {
-      if ((_cartWidth - p).abs() < _snapTolerance) {
-        setState(() => _cartWidth = p);
+      if ((_cartWidth.value - p).abs() < _snapTolerance) {
+        _cartWidth.value = p;
         break;
       }
     }
     _onDragEnd();
   }
 
-  void _onSizePresetChanged(double value) {
-    setState(() {
-      if (value <= 0.0) {
-        _cartHeight = _minCartHeight;
-      } else {
-        _cartHeight = _maxCartHeight;
-      }
-    });
+  void _onSizePresetChanged(BuildContext context, double value) {
+    if (value <= 0.0) {
+      _cartHeight.value = _minCartHeight(context);
+    } else {
+      _cartHeight.value = _maxCartHeight(context);
+    }
   }
 
   void _onWidthPresetChanged(double value) {
-    setState(() {
-      if (value <= 0.0) {
-        _cartWidth = 320;
-      } else {
-        _cartWidth = 500;
-      }
-    });
+    if (value <= 0.0) {
+      _cartWidth.value = 320;
+    } else {
+      _cartWidth.value = 500;
+    }
   }
 
-  double? _currentSizePreset() {
-    if (_cartHeight <= _minCartHeight + 1) return 0.0;
-    if (_cartHeight >= _maxCartHeight - 1) return 1.0;
+  double? _currentSizePreset(BuildContext context) {
+    if (_cartHeight.value <= _minCartHeight(context) + 1) return 0.0;
+    if (_cartHeight.value >= _maxCartHeight(context) - 1) return 1.0;
     return null;
   }
 
   double? _currentWidthPreset() {
-    if ((_cartWidth - 320).abs() < 10) return 0.0;
-    if ((_cartWidth - 500).abs() < 10) return 1.0;
+    if ((_cartWidth.value - 320).abs() < 10) return 0.0;
+    if ((_cartWidth.value - 500).abs() < 10) return 1.0;
     return null;
   }
 
@@ -197,11 +204,9 @@ class _SaleViewState extends State<_SaleView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxCartH =
-            (constraints.maxHeight * _maxCartHeightRatio - _handleHeight).clamp(
-              _minCartHeight,
-              double.infinity,
-            );
-        final effectiveH = _cartHeight.clamp(_minCartHeight, maxCartH);
+            (constraints.maxHeight * _maxCartHeightRatio(context) -
+                    _handleHeight)
+                .clamp(_minCartHeight(context), double.infinity);
         return Column(
           children: [
             const Expanded(child: SaleCatalog()),
@@ -209,35 +214,50 @@ class _SaleViewState extends State<_SaleView> {
               cursor: SystemMouseCursors.resizeRow,
               child: GestureDetector(
                 onVerticalDragStart: (_) => _onDragStart(),
-                onVerticalDragUpdate: _onVerticalDrag,
-                onVerticalDragEnd: _onVerticalDragEnd,
+                onVerticalDragUpdate: (d) => _onVerticalDrag(context, d),
+                onVerticalDragEnd: (d) => _onVerticalDragEnd(context, d),
                 onVerticalDragCancel: _onDragEnd,
                 behavior: HitTestBehavior.opaque,
                 child: SizedBox(
                   height: 24,
                   child: Center(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      width: _isDraggingHandle ? 56 : 40,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: _isDraggingHandle
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _isDraggingHandle,
+                      builder: (context, isDragging, child) {
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          width: isDragging ? 56 : 40,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: isDragging
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
               ),
             ),
-            SizedBox(
-              height: effectiveH,
-              child: CartPanel(
-                expanded: false,
-                sizePreset: _currentSizePreset(),
-                onSizePresetChanged: _onSizePresetChanged,
-              ),
+            ValueListenableBuilder<double>(
+              valueListenable: _cartHeight,
+              builder: (context, cartHeight, _) {
+                final effectiveH = cartHeight.clamp(
+                  _minCartHeight(context),
+                  maxCartH,
+                );
+                return SizedBox(
+                  height: effectiveH,
+                  child: CartPanel(
+                    expanded: false,
+                    sizePreset: _currentSizePreset(context),
+                    onSizePresetChanged: (v) =>
+                        _onSizePresetChanged(context, v),
+                  ),
+                );
+              },
             ),
           ],
         );
@@ -261,28 +281,38 @@ class _SaleViewState extends State<_SaleView> {
             child: SizedBox(
               width: 20,
               child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  width: 6,
-                  height: _isDraggingHandle ? 56 : 40,
-                  decoration: BoxDecoration(
-                    color: _isDraggingHandle
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _isDraggingHandle,
+                  builder: (context, isDragging, child) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: 6,
+                      height: isDragging ? 56 : 40,
+                      decoration: BoxDecoration(
+                        color: isDragging
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
           ),
         ),
-        SizedBox(
-          width: _cartWidth,
-          child: CartPanel(
-            expanded: true,
-            widthPreset: _currentWidthPreset(),
-            onWidthPresetChanged: _onWidthPresetChanged,
-          ),
+        ValueListenableBuilder<double>(
+          valueListenable: _cartWidth,
+          builder: (context, cartWidth, child) {
+            return SizedBox(
+              width: cartWidth,
+              child: CartPanel(
+                expanded: true,
+                widthPreset: _currentWidthPreset(),
+                onWidthPresetChanged: _onWidthPresetChanged,
+              ),
+            );
+          },
         ),
       ],
     );

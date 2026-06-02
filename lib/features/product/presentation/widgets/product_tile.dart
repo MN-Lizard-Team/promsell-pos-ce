@@ -120,6 +120,7 @@ class ProductTile extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      useRootNavigator: true,
       builder: (_) => BlocProvider.value(
         value: context.read<ProductBloc>(),
         child: ProductFormPage(product: product),
