@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
@@ -20,6 +22,9 @@ class DraftsBottomSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => BlocProvider.value(
         value: context.read<SaleBloc>(),
         child: const DraftsBottomSheet(),
@@ -30,6 +35,8 @@ class DraftsBottomSheet extends StatefulWidget {
 
 class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
   late Future<List<DraftCart>> _draftsFuture;
+  final _searchCtrl = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
@@ -37,11 +44,34 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
     _reload();
   }
 
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
   void _reload() => setState(() {
     _draftsFuture = sl<DraftCartRepository>().listDrafts();
   });
 
-  void _showCreateDialog(BuildContext context, dynamic l10n) {
+  List<DraftCart> _filterAndSort(List<DraftCart> drafts, String? activeId) {
+    var result = List<DraftCart>.from(drafts);
+    if (_query.isNotEmpty) {
+      final lower = _query.toLowerCase();
+      result = result
+          .where((d) => (d.name ?? '').toLowerCase().contains(lower))
+          .toList();
+    }
+    result.sort((a, b) {
+      final aActive = a.id == activeId ? 1 : 0;
+      final bActive = b.id == activeId ? 1 : 0;
+      if (aActive != bActive) return bActive - aActive;
+      return b.updatedAt.compareTo(a.updatedAt);
+    });
+    return result;
+  }
+
+  void _showCreateDialog(BuildContext context, AppLocalizations l10n) {
     final ctrl = TextEditingController();
     showDialog(
       context: context,
@@ -114,6 +144,29 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                 ],
               ),
               const SizedBox(height: 8),
+              TextField(
+                controller: _searchCtrl,
+                decoration: InputDecoration(
+                  hintText: l10n.searchDrafts,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  suffixIcon: _query.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            setState(() => _query = '');
+                          },
+                        )
+                      : null,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              ),
+              const SizedBox(height: 8),
               Expanded(
                 child: FutureBuilder<List<DraftCart>>(
                   future: _draftsFuture,
@@ -121,11 +174,18 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                     if (snap.connectionState != ConnectionState.done) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    final drafts = snap.data ?? [];
+                    final allDrafts = snap.data ?? [];
                     final activeDraftId = context
                         .read<SaleBloc>()
                         .state
                         .activeDraftId;
+                    final drafts = _filterAndSort(allDrafts, activeDraftId);
+                    if (drafts.isEmpty && _query.isNotEmpty) {
+                      return AppEmptyState(
+                        icon: Icons.search_off,
+                        title: l10n.noMatchingDrafts,
+                      );
+                    }
                     return ListView.builder(
                       controller: scrollCtrl,
                       itemCount: drafts.length,
@@ -139,6 +199,7 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                           total: draft.total,
                           currency: currency,
                           isActive: isActive,
+                          updatedAt: draft.updatedAt,
                           l10n: l10n,
                           theme: theme,
                           onSwitch: isActive
@@ -192,6 +253,7 @@ class _DraftTile extends StatelessWidget {
     required this.total,
     required this.currency,
     required this.isActive,
+    this.updatedAt,
     required this.l10n,
     required this.theme,
     required this.onSwitch,
@@ -205,7 +267,8 @@ class _DraftTile extends StatelessWidget {
   final double total;
   final String currency;
   final bool isActive;
-  final dynamic l10n;
+  final DateTime? updatedAt;
+  final AppLocalizations l10n;
   final ThemeData theme;
   final VoidCallback? onSwitch;
   final VoidCallback? onDelete;
@@ -213,45 +276,73 @@ class _DraftTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayName = name?.isNotEmpty == true ? name! : 'Draft';
-    return ListTile(
-      leading: Icon(
-        Icons.receipt_outlined,
-        color: isActive ? theme.colorScheme.primary : null,
+    final displayName = name?.isNotEmpty == true ? name! : l10n.untitledDraft;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: isActive ? 1 : 0,
+      color: isActive
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+          : theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: isActive
+              ? theme.colorScheme.primary
+              : theme.colorScheme.outlineVariant,
+          width: isActive ? 1.5 : 1,
+        ),
       ),
-      title: Text(
-        isActive ? '$displayName (${l10n.activeDraftLabel})' : displayName,
-        style: isActive
-            ? TextStyle(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
-              )
-            : null,
-      ),
-      subtitle: Text('$itemCount items · $currency${total.toStringAsFixed(2)}'),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (onRename != null)
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, size: 20),
-              tooltip: l10n.renameDraft,
-              onPressed: () => _showRenameDialog(context, displayName),
-            ),
-          if (onDelete != null)
-            IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                size: 20,
-                color: theme.colorScheme.error,
+      child: ListTile(
+        leading: Icon(
+          Icons.receipt_outlined,
+          color: isActive ? theme.colorScheme.primary : null,
+        ),
+        title: Text(
+          isActive ? '$displayName (${l10n.activeDraftLabel})' : displayName,
+          style: isActive
+              ? TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                )
+              : null,
+        ),
+        subtitle: Text(
+          '$itemCount ${l10n.itemsLabel} · '
+          '$currency${total.toStringAsFixed(2)}'
+          '${updatedAt != null ? ' · ${_timeAgo(updatedAt!)}' : ''}',
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (onRename != null)
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 20),
+                tooltip: l10n.renameDraft,
+                onPressed: () => _showRenameDialog(context, displayName),
               ),
-              tooltip: l10n.deleteDraft,
-              onPressed: () => _confirmDelete(context),
-            ),
-        ],
+            if (onDelete != null)
+              IconButton(
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: theme.colorScheme.error,
+                ),
+                tooltip: l10n.deleteDraft,
+                onPressed: () => _confirmDelete(context),
+              ),
+          ],
+        ),
+        onTap: onSwitch,
       ),
-      onTap: onSwitch,
     );
+  }
+
+  String _timeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays > 0) return l10n.timeAgoDays(diff.inDays);
+    if (diff.inHours > 0) return l10n.timeAgoHours(diff.inHours);
+    if (diff.inMinutes > 0) return l10n.timeAgoMinutes(diff.inMinutes);
+    return l10n.justNow;
   }
 
   void _showRenameDialog(BuildContext context, String current) {

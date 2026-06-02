@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
@@ -13,10 +14,12 @@ import '../../../../helpers/mocks.dart';
 void main() {
   late MockCreateSale mockCreateSale;
   late MockDraftCartRepository mockDraftRepo;
+  late MockSettingsRepository mockSettingsRepo;
 
   setUp(() {
     mockCreateSale = MockCreateSale();
     mockDraftRepo = MockDraftCartRepository();
+    mockSettingsRepo = MockSettingsRepository();
     when(
       () => mockDraftRepo.createDraft(name: any(named: 'name')),
     ).thenAnswer((_) async => 'draft-id-1');
@@ -26,6 +29,10 @@ void main() {
     when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
     when(() => mockDraftRepo.deleteDraft(any())).thenAnswer((_) async {});
     when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
+    when(() => mockDraftRepo.archiveOldDrafts(any())).thenAnswer((_) async => 0);
+    when(
+      () => mockSettingsRepo.load(),
+    ).thenAnswer((_) async => const AppSettings(maxDrafts: 30));
   });
 
   setUpAll(() {
@@ -33,8 +40,11 @@ void main() {
     registerFallbackValue(const SaleState());
   });
 
-  SaleBloc buildBloc() =>
-      SaleBloc(createSale: mockCreateSale, draftRepo: mockDraftRepo);
+  SaleBloc buildBloc() => SaleBloc(
+    createSale: mockCreateSale,
+    draftRepo: mockDraftRepo,
+    settingsRepo: mockSettingsRepo,
+  );
 
   group('SaleBloc', () {
     test('initial state is SaleState()', () {
@@ -253,6 +263,46 @@ void main() {
           cartDiscountType: 'PERCENT',
           cartDiscountValue: 15.0,
         ),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleBulkItemsRemoved removes multiple items from cart',
+      build: buildBloc,
+      seed: () => SaleState(items: [tCartItem, tCartItem2]),
+      act: (b) => b.add(SaleBulkItemsRemoved([tProduct.id, tProduct2.id])),
+      expect: () => [
+        const SaleState(items: []),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleBulkItemDiscountsCleared clears discounts on specified items',
+      build: buildBloc,
+      seed: () => SaleState(
+        items: [
+          tCartItem.copyWith(discountType: 'PERCENT', discountValue: 10.0),
+          tCartItem2.copyWith(discountType: 'AMOUNT', discountValue: 5.0),
+        ],
+      ),
+      act: (b) => b.add(SaleBulkItemDiscountsCleared([tProduct.id, tProduct2.id])),
+      expect: () => [
+        SaleState(
+          items: [
+            tCartItem.clearDiscount(),
+            tCartItem2.clearDiscount(),
+          ],
+        ),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleCartItemsReordered reorders items',
+      build: buildBloc,
+      seed: () => SaleState(items: [tCartItem, tCartItem2]),
+      act: (b) => b.add(SaleCartItemsReordered([tProduct2.id, tProduct.id])),
+      expect: () => [
+        SaleState(items: [tCartItem2, tCartItem]),
       ],
     );
   });

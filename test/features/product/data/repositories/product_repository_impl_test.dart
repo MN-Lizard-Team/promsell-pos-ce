@@ -72,6 +72,9 @@ void main() {
     });
 
     test('updateProduct builds companion and delegates', () async {
+      when(
+        () => mockDs.getProductById(any()),
+      ).thenAnswer((_) async => tProduct);
       when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
 
       await repo.updateProduct(tProduct);
@@ -82,6 +85,76 @@ void main() {
       expect(captured.id.value, tProduct.id);
       expect(captured.name.value, tProduct.name);
       expect(captured.price.value, tProduct.price);
+    });
+
+    test('updateProduct deletes old images when imagePath changes', () async {
+      final oldProduct = tProduct.copyWith(
+        imagePath: '/old/path.jpg',
+        imageThumbnailPath: '/old/path_thumb.jpg',
+      );
+      final updatedProduct = tProduct.copyWith(
+        imagePath: '/new/path.jpg',
+        imageThumbnailPath: '/new/path_thumb.jpg',
+      );
+      when(
+        () => mockDs.getProductById(any()),
+      ).thenAnswer((_) async => oldProduct);
+      when(
+        () => mockImageService.deleteImages(any(), any()),
+      ).thenAnswer((_) async {});
+      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+
+      await repo.updateProduct(updatedProduct);
+
+      verify(
+        () => mockImageService.deleteImages(
+          '/old/path.jpg',
+          '/old/path_thumb.jpg',
+        ),
+      ).called(1);
+    });
+
+    test('updateProduct deletes old images when image is removed', () async {
+      final oldProduct = tProduct.copyWith(
+        imagePath: '/old/path.jpg',
+        imageThumbnailPath: '/old/path_thumb.jpg',
+      );
+      final updatedProduct = tProduct.copyWith(
+        imagePath: null,
+        imageThumbnailPath: null,
+      );
+      when(
+        () => mockDs.getProductById(any()),
+      ).thenAnswer((_) async => oldProduct);
+      when(
+        () => mockImageService.deleteImages(any(), any()),
+      ).thenAnswer((_) async {});
+      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+
+      await repo.updateProduct(updatedProduct);
+
+      verify(
+        () => mockImageService.deleteImages(
+          '/old/path.jpg',
+          '/old/path_thumb.jpg',
+        ),
+      ).called(1);
+    });
+
+    test('updateProduct does not delete images when paths unchanged', () async {
+      final oldProduct = tProduct.copyWith(
+        imagePath: '/same/path.jpg',
+        imageThumbnailPath: '/same/path_thumb.jpg',
+      );
+      final updatedProduct = oldProduct.copyWith(name: 'New Name');
+      when(
+        () => mockDs.getProductById(any()),
+      ).thenAnswer((_) async => oldProduct);
+      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+
+      await repo.updateProduct(updatedProduct);
+
+      verifyNever(() => mockImageService.deleteImages(any(), any()));
     });
 
     test('deleteProduct deletes images then delegates', () async {

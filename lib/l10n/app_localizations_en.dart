@@ -602,10 +602,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeItem => 'Remove item';
 
   @override
+  String get itemsLabel => 'items';
+
+  @override
+  String get searchCartItems => 'Search items...';
+
+  @override
+  String get searchDrafts => 'Search drafts...';
+
+  @override
+  String get untitledDraft => 'Draft';
+
+  @override
+  String get noMatchingItems => 'No matching items';
+
+  @override
+  String get noMatchingDrafts => 'No drafts match your search';
+
+  @override
+  String get groupView => 'Group view';
+
+  @override
   String get listView => 'List view';
 
   @override
   String get gridView => 'Grid view';
+
+  @override
+  String get cartSizeMini => 'Mini';
+
+  @override
+  String get cartSizeHalf => 'Half';
+
+  @override
+  String get cartSizeFull => 'Full';
+
+  @override
+  String get cartCompactNormal => 'Normal density';
+
+  @override
+  String get cartCompactCompact => 'Compact density';
+
+  @override
+  String get cartCompactUltra => 'Ultra compact density';
+
+  @override
+  String get atStockLimit => 'Stock limit reached';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String timeAgoMinutes(int m) {
+    return '$m min ago';
+  }
+
+  @override
+  String timeAgoHours(int h) {
+    return '$h h ago';
+  }
+
+  @override
+  String timeAgoDays(int d) {
+    return '$d d ago';
+  }
+
+  @override
+  String searchResultsCount(int n) {
+    return '$n results';
+  }
 
   @override
   String confirmPaymentAmount(String currency, String amount) {
@@ -703,4 +768,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportSuccess => 'Export successful';
+
+  @override
+  String bulkSelected(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get bulkClearDiscount => 'Clear Discount';
+
+  @override
+  String get bulkDelete => 'Delete';
 }

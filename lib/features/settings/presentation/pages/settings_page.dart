@@ -46,6 +46,7 @@ class _SettingsViewState extends State<_SettingsView> {
   late final TextEditingController _vatRateCtrl;
   late final TextEditingController _maxDiscountCtrl;
   late final TextEditingController _maxDiscountAmountCtrl;
+  late final TextEditingController _maxDraftsCtrl;
   bool _manualSave = false;
 
   bool get _hasTextChanges =>
@@ -58,7 +59,8 @@ class _SettingsViewState extends State<_SettingsView> {
       (double.tryParse(_maxDiscountCtrl.text) ?? 100.0) !=
           _draft.maxDiscountPercent ||
       (double.tryParse(_maxDiscountAmountCtrl.text) ?? 0.0) !=
-          _draft.maxDiscountAmount;
+          _draft.maxDiscountAmount ||
+      (int.tryParse(_maxDraftsCtrl.text) ?? 30) != _draft.maxDrafts;
 
   @override
   void initState() {
@@ -78,6 +80,7 @@ class _SettingsViewState extends State<_SettingsView> {
     _maxDiscountAmountCtrl = TextEditingController(
       text: _draft.maxDiscountAmount.toString(),
     );
+    _maxDraftsCtrl = TextEditingController(text: _draft.maxDrafts.toString());
   }
 
   @override
@@ -109,6 +112,9 @@ class _SettingsViewState extends State<_SettingsView> {
         _maxDiscountAmountCtrl.text = widget.settings.maxDiscountAmount
             .toString();
       }
+      if (_maxDraftsCtrl.text == oldWidget.settings.maxDrafts.toString()) {
+        _maxDraftsCtrl.text = widget.settings.maxDrafts.toString();
+      }
     }
   }
 
@@ -122,6 +128,7 @@ class _SettingsViewState extends State<_SettingsView> {
     _vatRateCtrl.dispose();
     _maxDiscountCtrl.dispose();
     _maxDiscountAmountCtrl.dispose();
+    _maxDraftsCtrl.dispose();
     super.dispose();
   }
 
@@ -142,6 +149,7 @@ class _SettingsViewState extends State<_SettingsView> {
       maxDiscountAmount:
           double.tryParse(_maxDiscountAmountCtrl.text.trim()) ??
           _draft.maxDiscountAmount,
+      maxDrafts: int.tryParse(_maxDraftsCtrl.text.trim()) ?? _draft.maxDrafts,
     );
     context.read<SettingsCubit>().update(updated);
   }
@@ -303,6 +311,36 @@ class _SettingsViewState extends State<_SettingsView> {
                       current: _draft.dateFormat,
                       onChanged: (format) {
                         final updated = _draft.copyWith(dateFormat: format);
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                    SettingsTextField(
+                      controller: _maxDraftsCtrl,
+                      label: 'Max Drafts',
+                      icon: Icons.folder_copy_outlined,
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.view_compact_outlined),
+                      title: const Text('Compact Cart Mode'),
+                      value: _draft.cartCompactMode,
+                      onChanged: (value) {
+                        final updated = _draft.copyWith(cartCompactMode: value);
+                        setState(() => _draft = updated);
+                        context.read<SettingsCubit>().update(updated);
+                      },
+                    ),
+                    SwitchListTile(
+                      secondary: const Icon(Icons.density_small),
+                      title: const Text('Ultra Compact Mode'),
+                      subtitle: const Text('Smaller items for maximum density'),
+                      value: _draft.ultraCompactMode,
+                      onChanged: (value) {
+                        final updated = _draft.copyWith(
+                          ultraCompactMode: value,
+                        );
                         setState(() => _draft = updated);
                         context.read<SettingsCubit>().update(updated);
                       },

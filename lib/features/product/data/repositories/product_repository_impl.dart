@@ -35,6 +35,17 @@ class ProductRepositoryImpl implements ProductRepository {
   }) async {
     final id = IdGenerator.newId();
     final now = DateTime.now();
+
+    String? finalImagePath = imagePath;
+    String? finalThumbPath = imageThumbnailPath;
+    if (imagePath != null && imagePath.isNotEmpty) {
+      final renamed = await _imageService.renameImages(imagePath, id);
+      if (renamed != null) {
+        finalImagePath = renamed.fullPath;
+        finalThumbPath = renamed.thumbnailPath;
+      }
+    }
+
     await _datasource.insertProduct(
       ProductsCompanion.insert(
         id: id,
@@ -43,8 +54,8 @@ class ProductRepositoryImpl implements ProductRepository {
         stock: Value(stock),
         categoryId: Value(category),
         imageUrl: Value(imageUrl),
-        imagePath: Value(imagePath),
-        imageThumbnailPath: Value(imageThumbnailPath),
+        imagePath: Value(finalImagePath),
+        imageThumbnailPath: Value(finalThumbPath),
         trackStock: Value(trackStock),
         createdAt: Value(now),
         updatedAt: Value(now),
@@ -54,9 +65,26 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<void> updateProduct(Product product) {
+  Future<void> updateProduct(Product product) async {
+    final existing = await _datasource.getProductById(product.id);
+    if (existing != null) {
+      final oldPath = existing.imagePath;
+      final oldThumb = existing.imageThumbnailPath;
+      final newPath = product.imagePath;
+      final newThumb = product.imageThumbnailPath;
+
+      final imageChanged = oldPath != newPath || oldThumb != newThumb;
+      final imageRemoved =
+          (oldPath != null || oldThumb != null) &&
+          (newPath == null && newThumb == null);
+
+      if (imageChanged || imageRemoved) {
+        await _imageService.deleteImages(oldPath, oldThumb);
+      }
+    }
+
     final now = DateTime.now();
-    return _datasource.updateProduct(
+    await _datasource.updateProduct(
       ProductsCompanion(
         id: Value(product.id),
         name: Value(product.name),

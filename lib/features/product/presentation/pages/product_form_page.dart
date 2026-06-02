@@ -38,6 +38,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   String? _imageThumbnailPath;
   late bool _isActive;
   late bool _trackStock;
+  bool _isPickingImage = false;
 
   bool get _isEditing => widget.product != null;
 
@@ -196,6 +197,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                         ProductFormAvatar(
                           imagePath: _imagePath,
                           imageUrl: _imageUrl,
+                          isLoading: _isPickingImage,
                           onTap: () => _showImageSourceSheet(context),
                         ),
                         const SizedBox(width: 16),
@@ -314,27 +316,44 @@ class _ProductFormPageState extends State<ProductFormPage> {
     final l10n = context.l10n;
     final result = await showModalBottomSheet<String>(
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(l10n.pickImageGallery),
-              onTap: () => Navigator.pop(ctx, 'gallery'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: Text(l10n.pickImageCamera),
-              onTap: () => Navigator.pop(ctx, 'camera'),
-            ),
-            if (_imagePath != null || _imageUrl != null)
-              ListTile(
-                leading: const Icon(Icons.delete_outline),
-                title: Text(l10n.removeImage),
-                onTap: () => Navigator.pop(ctx, 'remove'),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
               ),
-          ],
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(l10n.pickImageGallery),
+                onTap: () => Navigator.pop(ctx, 'gallery'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: Text(l10n.pickImageCamera),
+                onTap: () => Navigator.pop(ctx, 'camera'),
+              ),
+              if (_imagePath != null || _imageUrl != null)
+                ListTile(
+                  leading: const Icon(Icons.delete_outline),
+                  title: Text(l10n.removeImage),
+                  onTap: () => Navigator.pop(ctx, 'remove'),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -344,25 +363,32 @@ class _ProductFormPageState extends State<ProductFormPage> {
     final productId = _isEditing ? widget.product!.id : 'new';
 
     if (result == 'gallery') {
+      setState(() => _isPickingImage = true);
       final path = await imageService.pickFromGallery(productId);
       if (path != null && mounted) {
         final thumbPath = await imageService.generateThumbnail(path);
         setState(() {
           _imagePath = path;
           _imageThumbnailPath = thumbPath;
+          _isPickingImage = false;
         });
+      } else if (mounted) {
+        setState(() => _isPickingImage = false);
       }
     } else if (result == 'camera') {
+      setState(() => _isPickingImage = true);
       final path = await imageService.pickFromCamera(productId);
       if (path != null && mounted) {
         final thumbPath = await imageService.generateThumbnail(path);
         setState(() {
           _imagePath = path;
           _imageThumbnailPath = thumbPath;
+          _isPickingImage = false;
         });
+      } else if (mounted) {
+        setState(() => _isPickingImage = false);
       }
     } else if (result == 'remove') {
-      await imageService.deleteImages(_imagePath, _imageThumbnailPath);
       if (mounted) {
         setState(() {
           _imagePath = null;

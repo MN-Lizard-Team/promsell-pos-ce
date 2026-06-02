@@ -57,7 +57,7 @@ void main() {
 
     test('props contains all fields', () {
       const settings = AppSettings();
-      expect(settings.props.length, 30);
+      expect(settings.props.length, 33);
     });
   });
 }

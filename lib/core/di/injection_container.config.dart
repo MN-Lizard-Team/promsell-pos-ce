@@ -10,10 +10,12 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:get_it/get_it.dart' as _i174;
+import 'package:image_picker/image_picker.dart' as _i183;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:promsell_pos_ce/core/database/app_database.dart' as _i422;
 import 'package:promsell_pos_ce/core/di/bloc_module.dart' as _i1055;
 import 'package:promsell_pos_ce/core/di/database_module.dart' as _i205;
+import 'package:promsell_pos_ce/core/di/image_picker_module.dart' as _i714;
 import 'package:promsell_pos_ce/features/history/data/repositories/history_repository_impl.dart'
     as _i190;
 import 'package:promsell_pos_ce/features/history/domain/repositories/history_repository.dart'
@@ -85,8 +87,10 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final databaseModule = _$DatabaseModule();
+    final imagePickerModule = _$ImagePickerModule();
     final blocModule = _$BlocModule();
     gh.lazySingleton<_i422.AppDatabase>(() => databaseModule.appDatabase);
+    gh.lazySingleton<_i183.ImagePicker>(() => imagePickerModule.imagePicker);
     gh.lazySingleton<_i734.ReceiptPdfService>(() => _i734.ReceiptPdfService());
     gh.lazySingleton<_i409.ProductLocalDatasource>(
       () => _i409.ProductLocalDatasourceImpl(gh<_i422.AppDatabase>()),
@@ -132,9 +136,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i425.SettingsCubit>(
       () => _i425.SettingsCubit(gh<_i243.SettingsRepository>()),
     );
-    gh.lazySingleton<_i502.ProductImageService>(
-      () => _i502.ProductImageServiceImpl(gh<_i425.SettingsCubit>()),
-    );
     gh.factory<_i744.WatchReport>(
       () => _i744.WatchReport(gh<_i771.SaleRepository>()),
     );
@@ -144,10 +145,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i233.VoidSale>(
       () => _i233.VoidSale(gh<_i771.SaleRepository>()),
     );
-    gh.lazySingleton<_i126.ProductRepository>(
-      () => _i23.ProductRepositoryImpl(
-        gh<_i409.ProductLocalDatasource>(),
-        gh<_i502.ProductImageService>(),
+    gh.factory<_i648.SaleBloc>(
+      () => _i648.SaleBloc(
+        createSale: gh<_i648.CreateSale>(),
+        draftRepo: gh<_i564.DraftCartRepository>(),
+        settingsRepo: gh<_i243.SettingsRepository>(),
       ),
     );
     gh.lazySingleton<_i593.ReportCubit>(
@@ -155,6 +157,18 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i426.WatchSaleHistory>(
       () => _i426.WatchSaleHistory(gh<_i26.HistoryRepository>()),
+    );
+    gh.lazySingleton<_i502.ProductImageService>(
+      () => _i502.ProductImageServiceImpl(
+        gh<_i243.SettingsRepository>(),
+        picker: gh<_i183.ImagePicker>(),
+      ),
+    );
+    gh.lazySingleton<_i126.ProductRepository>(
+      () => _i23.ProductRepositoryImpl(
+        gh<_i409.ProductLocalDatasource>(),
+        gh<_i502.ProductImageService>(),
+      ),
     );
     gh.factory<_i747.AddProduct>(
       () => _i747.AddProduct(gh<_i126.ProductRepository>()),
@@ -167,12 +181,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i107.UpdateProduct>(
       () => _i107.UpdateProduct(gh<_i126.ProductRepository>()),
-    );
-    gh.factory<_i648.SaleBloc>(
-      () => _i648.SaleBloc(
-        createSale: gh<_i648.CreateSale>(),
-        draftRepo: gh<_i564.DraftCartRepository>(),
-      ),
     );
     gh.lazySingleton<_i372.ProductBloc>(
       () => blocModule.productBloc(
@@ -187,5 +195,7 @@ extension GetItInjectableX on _i174.GetIt {
 }
 
 class _$DatabaseModule extends _i205.DatabaseModule {}
+
+class _$ImagePickerModule extends _i714.ImagePickerModule {}
 
 class _$BlocModule extends _i1055.BlocModule {}

@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.6.0
+# Architecture — Promsell POS CE v0.6.1
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -112,7 +112,9 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 ┌──────────────────── Presentation ───────────────────────┐
 │                                                       │
 │  SalePage ──┐   HistoryPage ──┐   ReportPage          │
-│  PaymentSheet ┤   VoidDialog   │                       │
+│  CheckoutPage  │   VoidDialog   │                       │
+│  PaymentSheet  │                │                       │
+│  CheckoutBody  │                │                       │
 │              ▼                ▼              │        │
 │         SaleBloc        HistoryBloc   ReportCubit    │
 │         ProductBloc                                   │
@@ -579,9 +581,9 @@ try {
 
 ### ADR-009: Deferred route push after modal pop (addPostFrameCallback)
 
-**Context:** Both a modal bottom sheet (`PaymentSheet`) and its parent page (`_CartPanel`) listen to `SaleBloc`. On `SaleStatus.success`, the parent listener (subscribed first) pushes a receipt dialog before the modal listener can pop the sheet. `Navigator.pop()` then removes the dialog, not the modal — leaving it open and `_submitted = true` permanently.
+**Context:** Both a modal bottom sheet (`PaymentSheet`) / full-screen page (`CheckoutPage`) and its parent page (`_CartPanel`) listen to `SaleBloc`. On `SaleStatus.success`, the parent listener (subscribed first) pushes a receipt dialog before the modal/page listener can pop. `Navigator.pop()` then removes the dialog, not the modal — leaving it open and `_submitted = true` permanently.
 
-**Decision:** Wrap any `showDialog` call in the parent `BlocListener` with `WidgetsBinding.instance.addPostFrameCallback`. The dialog push is deferred to the next frame, after the modal's `Navigator.pop()` has already run.
+**Decision:** Wrap any `showDialog` call in the parent `BlocListener` with `WidgetsBinding.instance.addPostFrameCallback`. The dialog push is deferred to the next frame, after the modal/page's `Navigator.pop()` has already run. Applies to both `PaymentSheet` (legacy bottom sheet) and `CheckoutPage` (v0.6.1+ full-screen page).
 
 **Consequences:**
 - ✅ Modal always closes correctly before the receipt dialog appears
@@ -626,11 +628,11 @@ try {
 
 **Context:** Cart state changes rapidly on every tap (add item, change qty, apply discount). Saving to SQLite synchronously on every event would cause write thrashing.
 
-**Decision:** Use a `Timer?` field in `SaleBloc`. Every cart-mutating handler cancels the previous timer and schedules a new 500 ms save. The save captures `state.activeDraftId` at schedule time and validates it's still the same draft at fire time.
+**Decision:** Use a `Timer?` field in `SaleBloc`. Every cart-mutating handler cancels the previous timer and schedules a new 1.5 s save (increased from 500 ms in v0.6.1 to reduce write pressure). The save captures `state.activeDraftId` at schedule time and validates it's still the same draft at fire time.
 
 **Consequences:**
 - ✅ Batches rapid edits into a single write
-- ✅ No lost state — even a crash within the 500 ms window only loses the last 500 ms of changes
+- ✅ No lost state — even a crash within the 1.5 s window only loses the last 1.5 s of changes
 - ✅ `Timer` is cancelled in `close()` to prevent post-dispose writes
 - ⚠️ `SaleBloc` must be registered as `factory` (not singleton) so each `SalePage` instance gets its own timer lifecycle
 
@@ -653,6 +655,24 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 - ✅ Receipt math is consistent: subtotal + VAT = total
 - ✅ Per-item `discountAmount` stored at sale time for accurate historical reprints
 - ⚠️ Payment sheet must read `SaleState.total` (preTaxTotal) not the raw `itemsSubtotal`
+
+---
+
+### ADR-013: CheckoutBody extraction with dynamic total from SaleBloc
+
+**Context:** v0.6.1 introduces a full-screen `CheckoutPage` and interactive `CartReviewPage` where merchants can edit quantities mid-checkout. Previously `CheckoutPage` and `PaymentSheet` received static `preTaxTotal`/`vatInfo` as constructor parameters — these became stale after returning from `CartReviewPage`.
+
+**Decision:** Extract shared payment UI into `CheckoutBody` (stateful widget). Remove static `preTaxTotal`/`vatInfo` parameters from `CheckoutPage`, `PaymentSheet`, and `CheckoutBody`. The effective total is computed dynamically on every build by reading the live `SaleBloc` state via `context.read<SaleBloc>()`. This ensures:
+- `CartReviewPage` quantity changes immediately reflect in `CheckoutPage` upon return
+- `CheckoutBody` is reusable by both `CheckoutPage` (full-screen) and `PaymentSheet` (bottom sheet wrapper)
+- Quick amount chips, change calculation, and `canConfirm` logic all use the live `_effectiveTotal`
+
+**Consequences:**
+- ✅ Total is always fresh — no stale parameters
+- ✅ Single source of truth (`SaleBloc` state) for all checkout widgets
+- ✅ `CheckoutBody` is framework-agnostic to its container (page or sheet)
+- ⚠️ `CheckoutBody` must be placed inside a `BlocProvider<SaleBloc>` scope (enforced by `BlocBuilder` assertion at runtime)
+- ⚠️ Slightly more build-time computation (total recomputed on every frame) — negligible for POS-scale cart sizes
 
 ---
 
@@ -687,4 +707,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.6.0 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.6.1 · Architecture Document · Deep Technical Reference</sub>

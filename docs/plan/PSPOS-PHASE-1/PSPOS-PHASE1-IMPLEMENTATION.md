@@ -23,7 +23,7 @@
 | **R1** ✅ | Schema Foundation | UUID migration + new tables + indexes + migration safety | 🔴 High → DONE |
 | **R2** ✅ | Sale Integrity | Inventory log + Receipt number + Sale status + Void/Refund | 🟡 Medium → DONE |
 | **R3** ✅ | Cashier UX | Draft cart + Discount (item/cart) + VAT (incl/excl) + Stock policy | 🟡 Medium → DONE |
-| **R4** 🟡 | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low — Pre-flight ✅ |
+| **R4** ✅ | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low — DONE (v0.6.0) |
 | **R5** | Operations | Daily Close + Onboarding wizard + Final polish + Phase 4 readiness check | 🟢 Low |
 
 Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~2 days. **Total ~13 dev-days.**
@@ -232,7 +232,7 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 | **Tests** | Add unit + widget + integration tests with each feature. Maintain >80% coverage |
 | **L10n** | EN + TH for every new string in same commit |
 | **CHANGELOG** | Update at end of each round |
-| **Version bump** | R1+R2→0.4.0, R3→0.5.0, R4→0.6.0, R5→1.0.0-rc1 |
+| **Version bump** | R1+R2→0.4.0, R3→0.5.0, R4→0.6.0, R4.5→0.6.1 (Cart UX Redesign), R5→1.0.0-rc1 |
 | **No partial commits** | Each round is a self-contained release |
 
 ---
@@ -271,7 +271,9 @@ R2 (Integrity) → verify → merged into v0.4.0 ✅
    ↓
 R3 (Cashier) → verify → release v0.5.0 ✅
    ↓
-R4 (Tools) → verify → release v0.6.0
+R4 (Tools) → verify → release v0.6.0 ✅
+   ↓
+R4.5 (Cart UX) → verify → release v0.6.1 ✅
    ↓
 R5 (Ops) → verify → release v1.0.0-rc1 → Phase 1 DONE
 ```

@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -61,6 +61,11 @@ class AppDatabase extends _$AppDatabase {
           'ALTER TABLE products ADD COLUMN image_thumbnail_path TEXT',
         );
         await _seedR45Settings();
+      }
+      if (from < 7) {
+        await customStatement(
+          'ALTER TABLE draft_carts ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0',
+        );
       }
     },
     beforeOpen: (details) async {

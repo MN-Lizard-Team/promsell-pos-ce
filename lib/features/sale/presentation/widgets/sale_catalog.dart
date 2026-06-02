@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
@@ -27,6 +28,7 @@ class _SaleCatalogState extends State<SaleCatalog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
     return BlocListener<ProductBloc, ProductState>(
@@ -104,27 +106,65 @@ class _SaleCatalogState extends State<SaleCatalog> {
                   children: [
                     SizedBox(
                       height: 44,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: categories.length + 1,
-                        separatorBuilder: (_, _) => const SizedBox(width: 8),
-                        itemBuilder: (_, index) {
-                          final isAll = index == 0;
-                          final category = isAll ? null : categories[index - 1];
-                          final selected = selectedCategory == category;
+                      child: ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            Colors.white,
+                            Colors.white,
+                            Colors.white.withValues(alpha: 0),
+                          ],
+                          stops: const [0, 0.85, 1],
+                        ).createShader(bounds),
+                        blendMode: BlendMode.dstIn,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categories.length + 1,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (_, index) {
+                            final isAll = index == 0;
+                            final category = isAll
+                                ? null
+                                : categories[index - 1];
+                            final selected = selectedCategory == category;
 
-                          return ChoiceChip(
-                            label: Text(
-                              isAll ? ctx.l10n.allCategories : category!,
-                            ),
-                            selected: selected,
-                            onSelected: (_) => ctx.read<ProductBloc>().add(
-                              ProductCategoryFilterChanged(category),
-                            ),
-                          );
-                        },
+                            return ChoiceChip(
+                              label: Text(
+                                isAll ? ctx.l10n.allCategories : category!,
+                              ),
+                              selected: selected,
+                              selectedColor: theme.colorScheme.primaryContainer,
+                              backgroundColor:
+                                  theme.colorScheme.surfaceContainerHighest,
+                              checkmarkColor: theme.colorScheme.primary,
+                              labelStyle: TextStyle(
+                                color: selected
+                                    ? theme.colorScheme.onPrimaryContainer
+                                    : theme.colorScheme.onSurfaceVariant,
+                                fontWeight: selected ? FontWeight.w600 : null,
+                              ),
+                              onSelected: (_) {
+                                HapticFeedback.selectionClick();
+                                ctx.read<ProductBloc>().add(
+                                  ProductCategoryFilterChanged(category),
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
+                    if (state.searchQuery.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                          ctx.l10n.searchResultsCount(products.length),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 10),
                     if (products.isEmpty)
                       Expanded(
@@ -143,8 +183,8 @@ class _SaleCatalogState extends State<SaleCatalog> {
                               padding: const EdgeInsets.only(bottom: 8),
                               gridDelegate:
                                   SliverGridDelegateWithMaxCrossAxisExtent(
-                                    maxCrossAxisExtent: isWide ? 210 : 176,
-                                    mainAxisExtent: isWide ? 148 : 136,
+                                    maxCrossAxisExtent: isWide ? 220 : 186,
+                                    mainAxisExtent: isWide ? 160 : 148,
                                     crossAxisSpacing: 10,
                                     mainAxisSpacing: 10,
                                   ),

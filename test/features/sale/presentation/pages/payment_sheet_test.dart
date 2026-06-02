@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment_widgets.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
@@ -62,7 +63,7 @@ void main() {
       ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 3)]));
 
       await tester.pumpApp(
-        const PaymentSheet(preTaxTotal: 30.0, vatInfo: null),
+        const PaymentSheet(),
         saleBloc: mockSaleBloc,
         settingsCubit: mockSettingsCubit,
       );
@@ -76,12 +77,12 @@ void main() {
       ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 1)]));
 
       await tester.pumpApp(
-        const PaymentSheet(preTaxTotal: 10.0, vatInfo: null),
+        const PaymentSheet(),
         saleBloc: mockSaleBloc,
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(SegmentedButton<String>), findsOneWidget);
+      expect(find.byType(PaymentMethodCard), findsNWidgets(3));
     });
 
     testWidgets(
@@ -92,7 +93,7 @@ void main() {
         );
 
         await tester.pumpApp(
-          const PaymentSheet(preTaxTotal: 30.0, vatInfo: null),
+          const PaymentSheet(),
           saleBloc: mockSaleBloc,
           settingsCubit: mockSettingsCubit,
         );

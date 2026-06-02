@@ -173,3 +173,24 @@ class SaleDraftRenamed extends SaleEvent {
   @override
   List<Object?> get props => [draftId, name];
 }
+
+class SaleBulkItemsRemoved extends SaleEvent {
+  const SaleBulkItemsRemoved(this.productIds);
+  final List<String> productIds;
+  @override
+  List<Object?> get props => [productIds];
+}
+
+class SaleBulkItemDiscountsCleared extends SaleEvent {
+  const SaleBulkItemDiscountsCleared(this.productIds);
+  final List<String> productIds;
+  @override
+  List<Object?> get props => [productIds];
+}
+
+class SaleCartItemsReordered extends SaleEvent {
+  const SaleCartItemsReordered(this.productIds);
+  final List<String> productIds;
+  @override
+  List<Object?> get props => [productIds];
+}

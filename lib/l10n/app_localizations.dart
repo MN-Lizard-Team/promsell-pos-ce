@@ -1220,6 +1220,48 @@ abstract class AppLocalizations {
   /// **'ลบรายการ'**
   String get removeItem;
 
+  /// No description provided for @itemsLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'รายการ'**
+  String get itemsLabel;
+
+  /// No description provided for @searchCartItems.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาสินค้าในตะกร้า...'**
+  String get searchCartItems;
+
+  /// No description provided for @searchDrafts.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาบิล...'**
+  String get searchDrafts;
+
+  /// No description provided for @untitledDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลใหม่'**
+  String get untitledDraft;
+
+  /// No description provided for @noMatchingItems.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบสินค้าที่ตรงกัน'**
+  String get noMatchingItems;
+
+  /// No description provided for @noMatchingDrafts.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบบิลที่ตรงกัน'**
+  String get noMatchingDrafts;
+
+  /// No description provided for @groupView.
+  ///
+  /// In th, this message translates to:
+  /// **'มุมมองแบบกลุ่ม'**
+  String get groupView;
+
   /// No description provided for @listView.
   ///
   /// In th, this message translates to:
@@ -1231,6 +1273,78 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'มุมมองตาราง'**
   String get gridView;
+
+  /// No description provided for @cartSizeMini.
+  ///
+  /// In th, this message translates to:
+  /// **'เล็ก'**
+  String get cartSizeMini;
+
+  /// No description provided for @cartSizeHalf.
+  ///
+  /// In th, this message translates to:
+  /// **'ปกติ'**
+  String get cartSizeHalf;
+
+  /// No description provided for @cartSizeFull.
+  ///
+  /// In th, this message translates to:
+  /// **'เต็ม'**
+  String get cartSizeFull;
+
+  /// No description provided for @cartCompactNormal.
+  ///
+  /// In th, this message translates to:
+  /// **'ขนาดปกติ'**
+  String get cartCompactNormal;
+
+  /// No description provided for @cartCompactCompact.
+  ///
+  /// In th, this message translates to:
+  /// **'กะทัดรัด'**
+  String get cartCompactCompact;
+
+  /// No description provided for @cartCompactUltra.
+  ///
+  /// In th, this message translates to:
+  /// **'กะทัดรัดมาก'**
+  String get cartCompactUltra;
+
+  /// No description provided for @atStockLimit.
+  ///
+  /// In th, this message translates to:
+  /// **'สินค้าหมดสต็อก'**
+  String get atStockLimit;
+
+  /// No description provided for @justNow.
+  ///
+  /// In th, this message translates to:
+  /// **'เมื่อสักครู่'**
+  String get justNow;
+
+  /// No description provided for @timeAgoMinutes.
+  ///
+  /// In th, this message translates to:
+  /// **'{m} นาทีที่แล้ว'**
+  String timeAgoMinutes(int m);
+
+  /// No description provided for @timeAgoHours.
+  ///
+  /// In th, this message translates to:
+  /// **'{h} ชั่วโมงที่แล้ว'**
+  String timeAgoHours(int h);
+
+  /// No description provided for @timeAgoDays.
+  ///
+  /// In th, this message translates to:
+  /// **'{d} วันที่แล้ว'**
+  String timeAgoDays(int d);
+
+  /// No description provided for @searchResultsCount.
+  ///
+  /// In th, this message translates to:
+  /// **'{n} รายการ'**
+  String searchResultsCount(int n);
 
   /// No description provided for @confirmPaymentAmount.
   ///
@@ -1411,6 +1525,24 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ส่งออกสำเร็จ'**
   String get exportSuccess;
+
+  /// No description provided for @bulkSelected.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกแล้ว {count} รายการ'**
+  String bulkSelected(int count);
+
+  /// No description provided for @bulkClearDiscount.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้างส่วนลด'**
+  String get bulkClearDiscount;
+
+  /// No description provided for @bulkDelete.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบรายการ'**
+  String get bulkDelete;
 }
 
 class _AppLocalizationsDelegate

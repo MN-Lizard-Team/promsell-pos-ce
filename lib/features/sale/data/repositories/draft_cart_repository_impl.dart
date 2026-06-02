@@ -21,7 +21,8 @@ class DraftCartRepositoryImpl implements DraftCartRepository {
   Future<DraftCart?> loadDraft(String cartId) => _datasource.loadDraft(cartId);
 
   @override
-  Future<List<DraftCart>> listDrafts() => _datasource.listDrafts();
+  Future<List<DraftCart>> listDrafts({bool includeArchived = false}) =>
+      _datasource.listDrafts(includeArchived: includeArchived);
 
   @override
   Future<void> deleteDraft(String cartId) => _datasource.deleteDraft(cartId);
@@ -32,4 +33,8 @@ class DraftCartRepositoryImpl implements DraftCartRepository {
 
   @override
   Future<int> countDrafts() => _datasource.countDrafts();
+
+  @override
+  Future<int> archiveOldDrafts(DateTime cutoff) =>
+      _datasource.archiveOldDrafts(cutoff);
 }

@@ -22,7 +22,7 @@ class ProductAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final radius = size * 0.27;
+    final radius = size / 2;
 
     final localPath = _useThumbnail
         ? (imageThumbnailPath ?? imagePath)
@@ -65,7 +65,7 @@ class ProductAvatar extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
       ),
       child: Icon(
-        Icons.inventory_2_outlined,
+        Icons.image_outlined,
         color: theme.colorScheme.primary,
         size: size * 0.48,
       ),
@@ -134,7 +134,7 @@ class _LocalImageState extends State<_LocalImage> {
         borderRadius: BorderRadius.circular(widget.radius),
       ),
       child: Icon(
-        Icons.inventory_2_outlined,
+        Icons.image_outlined,
         color: theme.colorScheme.primary,
         size: widget.size * 0.48,
       ),

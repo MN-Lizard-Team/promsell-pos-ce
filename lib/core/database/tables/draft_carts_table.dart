@@ -9,6 +9,7 @@ class DraftCarts extends Table {
   RealColumn get cartDiscountValue => real().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
   TextColumn get deviceId => text().nullable()();
 
   @override

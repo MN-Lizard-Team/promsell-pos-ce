@@ -227,13 +227,28 @@ Settings → Receipt section:
 
 ## Success Gate
 
-- ✅ Receipt PDF renders TH + EN, both 80mm + A4
-- ✅ PromptPay QR scannable by ≥2 banking apps with correct amount + recipient
-- ✅ Backup roundtrip preserves all data (verified by test + manual)
-- ✅ CSV exports open cleanly in Excel + Google Sheets
-- ✅ Backup reminder banner appears as configured
-- ✅ Test count grows ~210 → ~230+
+### Core R4 (shipped in v0.6.0)
+
+- ✅ Receipt PDF generator (80mm + A4) with TH font
+- ✅ Print + Share actions after sale + from history
+- ✅ PromptPay payload generator + CRC16
+- ✅ PromptPay QR display in payment sheet
+- ✅ Backup export (SQLite full) + import with version check
+- ✅ CSV export (sales + products)
+- ✅ Backup reminder banner
+- ✅ Settings UI: receipt size, promptpay id, backup section
+- ✅ Test count ~243, all pass
 - ✅ CHANGELOG + v0.6.0
+
+### R4 Backlog — NOT done (carry to R5 or patch)
+
+- ❌ **E1** Category Autocomplete in `ProductFormPage` — still free-text
+- ❌ **E2** Cart Item Direct Qty Input — still `+`/`-` only
+- ❌ **E3** `InventoryLogPage` Clean Architecture refactor — still queries DB directly
+- ❌ **E4** History Search / Filter Bar — still date-range only
+- ❌ Manual PromptPay QR scan verified with real banking app (pre-flight item still open)
+
+> **Note:** v0.6.0 shipped core R4 (PDF, PromptPay, Backup). v0.6.1 added Cart UX Redesign separately. The R4 UX enhancement backlog (E1–E4) remains pending and should be picked up in R5 or a dedicated patch.
 
 ---
 
@@ -321,17 +336,26 @@ These were identified in the Round-2 bug analysis but are small UX improvements,
 ## Definition of Done
 
 ```
-□ Receipt PDF generator (80mm + A4) with TH font
-□ Print + Share actions after sale + from history
-□ PromptPay payload generator + CRC16
-□ PromptPay QR display in payment sheet
-□ Manual scan verified with real banking app
-□ Backup export (SQLite full)
-□ Backup import with confirmation + version check
-□ CSV export (sales + products)
-□ Backup reminder banner
-□ Settings UI: receipt size, promptpay id, backup section
-□ All tests pass (~230 total)
-□ CHANGELOG + v0.6.0
-□ PR merged
+✅ Receipt PDF generator (80mm + A4) with TH font
+✅ Print + Share actions after sale + from history
+✅ PromptPay payload generator + CRC16
+✅ PromptPay QR display in payment sheet
+❌ Manual scan verified with real banking app  ← still pending
+✅ Backup export (SQLite full)
+✅ Backup import with confirmation + version check
+✅ CSV export (sales + products)
+✅ Backup reminder banner
+✅ Settings UI: receipt size, promptpay id, backup section
+✅ All tests pass (~243 total)
+✅ CHANGELOG + v0.6.0
+✅ PR merged (as v0.6.0)
+```
+
+### R4 UX Backlog (pending — not in v0.6.0)
+
+```
+❌ E1 Category Autocomplete in ProductFormPage
+❌ E2 Cart Item Direct Qty Input
+❌ E3 InventoryLogPage Clean Architecture Refactor
+❌ E4 History Search / Filter Bar
 ```

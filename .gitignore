@@ -49,3 +49,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# Aiyu MultiAgent
+.agent/usage.json
+.windsurf/.version

@@ -44,6 +44,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyLastBackupAt = 'lastBackupAt';
   static const _keyImageMaxWidth = 'imageMaxWidth';
   static const _keyImageQuality = 'imageQuality';
+  static const _keyMaxDrafts = 'maxDrafts';
+  static const _keyCartCompactMode = 'cartCompactMode';
+  static const _keyUltraCompactMode = 'ultraCompactMode';
 
   @override
   Future<AppSettings> load() async {
@@ -96,6 +99,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
       lastBackupAt: await _datasource.getString(_keyLastBackupAt),
       imageMaxWidth: await _datasource.getInt(_keyImageMaxWidth) ?? 800,
       imageQuality: await _datasource.getInt(_keyImageQuality) ?? 80,
+      maxDrafts: await _datasource.getInt(_keyMaxDrafts) ?? 30,
+      cartCompactMode: await _datasource.getBool(_keyCartCompactMode) ?? false,
+      ultraCompactMode: await _datasource.getBool(_keyUltraCompactMode) ?? false,
     );
   }
 
@@ -166,6 +172,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
     await _datasource.setInt(_keyImageMaxWidth, settings.imageMaxWidth);
     await _datasource.setInt(_keyImageQuality, settings.imageQuality);
+    await _datasource.setInt(_keyMaxDrafts, settings.maxDrafts);
+    await _datasource.setBool(_keyCartCompactMode, settings.cartCompactMode);
+    await _datasource.setBool(_keyUltraCompactMode, settings.ultraCompactMode);
   }
 
   Future<List<DiscountPreset>> _loadDiscountPresets() async {

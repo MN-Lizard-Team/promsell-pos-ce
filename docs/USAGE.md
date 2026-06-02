@@ -143,17 +143,22 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 
 1. Use the search bar or category chips to narrow the product catalog
 2. Tap any product card to add it to the cart
-3. Adjust quantity with `+` / `-` controls in the cart panel
-4. **Apply discounts** (optional):
+3. Adjust quantity with `+` / `-` controls in the cart panel; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
+4. **Cart search & grouping** — When the cart has more than 5 items, a search bar appears to filter by product name. Use the view toggle to switch between **flat list** and **group-by-category** views. In flat list, swipe right to delete (with undo), swipe left to increment quantity, and drag the handle to reorder items
+5. **Compact modes** — Tap the density cycle button in the cart header to switch between Normal → Compact → Ultra-Compact layouts
+6. **Resizable panel** — Drag the handle between the catalog and cart to resize the panel, or use the size slider in the cart header for Small/Large presets
+7. **Apply discounts** (optional):
    - Tap the 🏷️ tag icon on any cart item → choose **%** or **฿**, enter value, tap Apply
    - Tap **Apply cart discount** below the subtotal for a bill-wide discount
    - Payment sheet shows the full breakdown: Subtotal → discounts → Total
-5. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, switch between customers / tables, or delete; cart auto-saves every 500 ms
-6. Tap **Checkout** → payment sheet opens
-7. Select **Cash / Transfer / Card / PromptPay**
-8. For cash, use quick cash chips or enter the amount received — change is calculated automatically
-9. Optionally add a sale note
-10. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
+8. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, search, switch between customers / tables, or delete; cart auto-saves every 1.5 s
+9. Tap **Checkout** → full-screen `CheckoutPage` opens
+10. Select **Cash / Transfer / Card / PromptPay**
+11. For cash, use quick cash chips or enter the amount received — change is calculated automatically
+12. Optionally add a sale note
+13. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
+
+> **Review cart before checkout:** Tap the 🛒 cart icon with the item-count badge in the app bar to open `CartReviewPage` — tap a product image for zoom, tap a row for product detail, use +/- to adjust quantities, or delete items with undo. The total updates live on every change.
 
 On compact phones, the cart appears as a bottom command panel. On tablet or expanded width layouts, the cart remains visible beside the product grid.
 
@@ -228,6 +233,9 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Backup reminder** | Days before backup reminder appears (0 = off, default `7`) |
 | **Image max width** | Maximum width for product image compression in pixels (default `800`) |
 | **Image quality** | JPEG quality for product images 1–100 (default `80`) |
+| **Max drafts** | Maximum number of simultaneous draft carts (default `30`, range 5–100) |
+| **Compact cart** | Reduce padding and font size in the cart panel |
+| **Ultra-compact cart** | Hide unit price line and shrink avatar for maximum density |
 | **Export database** | Full SQLite backup via share sheet |
 | **Export sales CSV** | Sales data as CSV for a date range |
 | **Export products CSV** | Product catalog as CSV |
@@ -406,7 +414,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **215 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **243 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
 
 ### Running tests
 

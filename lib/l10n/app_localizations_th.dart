@@ -598,10 +598,75 @@ class AppLocalizationsTh extends AppLocalizations {
   String get removeItem => 'ลบรายการ';
 
   @override
+  String get itemsLabel => 'รายการ';
+
+  @override
+  String get searchCartItems => 'ค้นหาสินค้าในตะกร้า...';
+
+  @override
+  String get searchDrafts => 'ค้นหาบิล...';
+
+  @override
+  String get untitledDraft => 'บิลใหม่';
+
+  @override
+  String get noMatchingItems => 'ไม่พบสินค้าที่ตรงกัน';
+
+  @override
+  String get noMatchingDrafts => 'ไม่พบบิลที่ตรงกัน';
+
+  @override
+  String get groupView => 'มุมมองแบบกลุ่ม';
+
+  @override
   String get listView => 'มุมมองรายการ';
 
   @override
   String get gridView => 'มุมมองตาราง';
+
+  @override
+  String get cartSizeMini => 'เล็ก';
+
+  @override
+  String get cartSizeHalf => 'ปกติ';
+
+  @override
+  String get cartSizeFull => 'เต็ม';
+
+  @override
+  String get cartCompactNormal => 'ขนาดปกติ';
+
+  @override
+  String get cartCompactCompact => 'กะทัดรัด';
+
+  @override
+  String get cartCompactUltra => 'กะทัดรัดมาก';
+
+  @override
+  String get atStockLimit => 'สินค้าหมดสต็อก';
+
+  @override
+  String get justNow => 'เมื่อสักครู่';
+
+  @override
+  String timeAgoMinutes(int m) {
+    return '$m นาทีที่แล้ว';
+  }
+
+  @override
+  String timeAgoHours(int h) {
+    return '$h ชั่วโมงที่แล้ว';
+  }
+
+  @override
+  String timeAgoDays(int d) {
+    return '$d วันที่แล้ว';
+  }
+
+  @override
+  String searchResultsCount(int n) {
+    return '$n รายการ';
+  }
 
   @override
   String confirmPaymentAmount(String currency, String amount) {
@@ -699,4 +764,15 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get exportSuccess => 'ส่งออกสำเร็จ';
+
+  @override
+  String bulkSelected(int count) {
+    return 'เลือกแล้ว $count รายการ';
+  }
+
+  @override
+  String get bulkClearDiscount => 'ล้างส่วนลด';
+
+  @override
+  String get bulkDelete => 'ลบรายการ';
 }

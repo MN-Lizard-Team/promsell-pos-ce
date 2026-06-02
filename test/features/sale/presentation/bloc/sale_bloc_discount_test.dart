@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
@@ -12,17 +13,24 @@ import '../../../../helpers/mocks.dart';
 void main() {
   late MockCreateSale mockCreateSale;
   late MockDraftCartRepository mockDraftRepo;
+  late MockSettingsRepository mockSettingsRepo;
 
   setUp(() {
     mockCreateSale = MockCreateSale();
     mockDraftRepo = MockDraftCartRepository();
-    when(() => mockDraftRepo.createDraft(name: any(named: 'name')))
-        .thenAnswer((_) async => 'draft-1');
-    when(() => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')))
-        .thenAnswer((_) async {});
+    mockSettingsRepo = MockSettingsRepository();
+    when(
+      () => mockDraftRepo.createDraft(name: any(named: 'name')),
+    ).thenAnswer((_) async => 'draft-1');
+    when(
+      () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
+    ).thenAnswer((_) async {});
     when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
     when(() => mockDraftRepo.deleteDraft(any())).thenAnswer((_) async {});
     when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
+    when(
+      () => mockSettingsRepo.load(),
+    ).thenAnswer((_) async => const AppSettings(maxDrafts: 30));
   });
 
   setUpAll(() {
@@ -30,8 +38,11 @@ void main() {
     registerFallbackValue(const SaleState());
   });
 
-  SaleBloc buildBloc() =>
-      SaleBloc(createSale: mockCreateSale, draftRepo: mockDraftRepo);
+  SaleBloc buildBloc() => SaleBloc(
+    createSale: mockCreateSale,
+    draftRepo: mockDraftRepo,
+    settingsRepo: mockSettingsRepo,
+  );
 
   group('SaleBloc — item discount', () {
     blocTest<SaleBloc, SaleState>(
@@ -136,18 +147,19 @@ void main() {
     blocTest<SaleBloc, SaleState>(
       'allowOversell=false: cannot add beyond stock',
       build: buildBloc,
-      seed: () =>
-          SaleState(items: [CartItem(product: tProduct, qty: tProduct.stock)]),
-      act: (b) =>
-          b.add(SaleProductAdded(tProduct, allowOversell: false)),
+      seed: () => SaleState(
+        items: [CartItem(product: tProduct, qty: tProduct.stock)],
+      ),
+      act: (b) => b.add(SaleProductAdded(tProduct, allowOversell: false)),
       expect: () => [],
     );
 
     blocTest<SaleBloc, SaleState>(
       'allowOversell=true: can add beyond stock',
       build: buildBloc,
-      seed: () =>
-          SaleState(items: [CartItem(product: tProduct, qty: tProduct.stock)]),
+      seed: () => SaleState(
+        items: [CartItem(product: tProduct, qty: tProduct.stock)],
+      ),
       act: (b) => b.add(SaleProductAdded(tProduct, allowOversell: true)),
       expect: () => [
         SaleState(
@@ -159,7 +171,8 @@ void main() {
     blocTest<SaleBloc, SaleState>(
       'trackStock=false: can always add regardless of stock=0',
       build: buildBloc,
-      act: (b) => b.add(SaleProductAdded(tServiceProduct, allowOversell: false)),
+      act: (b) =>
+          b.add(SaleProductAdded(tServiceProduct, allowOversell: false)),
       expect: () => [
         SaleState(items: [CartItem(product: tServiceProduct, qty: 1)]),
       ],

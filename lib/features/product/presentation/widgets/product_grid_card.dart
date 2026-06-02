@@ -37,7 +37,7 @@ class ProductGridCard extends StatelessWidget {
                     imagePath: product.imagePath,
                     imageThumbnailPath: product.imageThumbnailPath,
                     imageUrl: product.imageUrl,
-                    size: 72,
+                    size: 96,
                   ),
                 ),
                 const SizedBox(height: 10),

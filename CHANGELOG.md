@@ -17,6 +17,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.1] - 2026-06-02
+
+Sale flow UX redesign, cart panel overhaul, interactive checkout review, and product image system polish.
+
+### Highlights
+
+- **Cart Panel Overhaul** — Search, group-by-category, multi-select, swipe actions, drag-to-reorder, resizable panel with drag handles, compact/ultra-compact modes, landscape support.
+- **Interactive Checkout Review** — Full-screen `CheckoutPage` with `CartReviewPage` for cart editing (qty +/-, delete, undo), product image zoom, and detail bottom sheet.
+- **Product Image Polish** — Orphaned file cleanup, remove-then-cancel fix, image visibility throughout sale flow, avatar and form improvements.
+
+### Added
+
+- **Cart search & grouping** — `CartPanel` search bar filters by name (appears at >5 items); group-by-category view with section headers; toggle between grouped/flat list.
+- **Multi-select & swipe** — Long-press enters selection mode for bulk delete/clear discount; flat list supports swipe-right-to-delete and swipe-left-to-increment.
+- **Drag-to-reorder** — Flat list uses `ReorderableListView` with explicit drag handle (`ReorderableDragStartListener`).
+- **Compact modes** — `cartCompactMode` / `ultraCompactMode` settings; quick cycle button in `CartHeader` (Normal → Compact → Ultra-Compact).
+- **Resizable cart panel** — Drag handle for freeform height/width resizing with hit-area (24/20px), mouse cursor hints, snap-to-preset, and landscape side-by-side layout.
+- **Checkout flow** — Full-screen `CheckoutPage` with `CartReviewPage` (interactive cart editing, image zoom, product detail sheet, receipt summary); `CheckoutBody` auto-computes total from live `SaleBloc` state.
+- **Receipt preview zoom** — Tap receipt to open full-screen `InteractiveViewer` dialog (pinch zoom 0.8x–3x, close button, background dismiss).
+- **Centralized `ImageViewerDialog`** — Reusable `core/widgets/image_viewer_dialog.dart` with pinch zoom, double-tap zoom (2.5x), swipe gallery, page indicators. Used in `CartReviewPage` and `ProductFormAvatar`.
+- **Draft system** — Configurable `maxDrafts` (5–100), draft search + sort, count badge in `CartHeader`, auto-archive after 7 days, count caching.
+- **Product image polish** — `ProductAvatar` in sale flow, `ProductFormAvatar` edit badge + ripple, long-press zoom preview, loading overlay during pick, Material 3 picker bottom sheet, `renameImages()` API.
+- **17 new ARB keys** (EN + TH) — `searchDrafts`, `untitledDraft`, `noMatchingItems`, `noMatchingDrafts`, `groupView`, `cartSizeMini/Half/Full`, `cartCompactNormal/Compact/Ultra`, `atStockLimit`, `justNow`, `timeAgoMinutes/Hours/Days`, `searchResultsCount`.
+
+### Fixed
+
+- **Orphaned product images** — `updateProduct()` deletes old file + thumbnail on replacement/removal; `addProduct()` renames temp files to match product ID.
+- **Remove-then-cancel** — Image deletion deferred to repository `updateProduct()` so canceling the form doesn't leave broken references.
+- **Draft cart images** — `_productFromData()` now copies `imagePath` and `imageThumbnailPath` so restored drafts preserve images.
+- **Cart overflows** — `CartItemRow` overflow (5.6px), `CartPanel` bottom overflow (8.6px), `CartTotalBar` narrow layout all fixed.
+- **Layer violation** — `ProductImageService` no longer depends on `SettingsCubit`; accepts `SettingsRepository` instead.
+- **Draft count error state** — Badge shows `'—'` instead of `0` on `FutureBuilder` error.
+- **Thai uppercase** — Category headers skip `.toUpperCase()` for Thai text.
+
+### Changed
+
+- **Auto-save debounce** — Increased from 500ms to 1.5s.
+- **Visual design** — Unified `image_outlined` placeholder; grid avatar 72→96px; `SaleProductCard` switched to vertical layout; catalog grid sizing bumped; category chips use `primaryContainer` + fade gradient.
+- **Cart widgets** — `CartItemRow` redesigned with `Card`, pill discount badge, `FittedBox` subtotal, stock tooltip; `CartTotalBar` top shadow, bold label, subtotal breakdown; `CartHeader` `PopupMenuButton` actions.
+- **Payment & drafts** — `PaymentMethodCard` replaces `SegmentedButton`; `DraftsBottomSheet` rounded corners + `Card` tiles; checkout via `Navigator.push` instead of bottom sheet.
+
+### Tests
+
+- `ProductImageService` unit tests: `deleteImage`, `deleteImages`, `generateThumbnail`, `pickFromGallery` cancellation.
+- Repository tests for orphaned-image cleanup in `updateProduct`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **243/243 passing**
+
+---
+
 ## [0.6.0] - 2026-06-02
 
 Merchant Tools — PDF receipt, PromptPay QR, backup/restore, and product image system overhaul.
@@ -774,7 +824,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.2...v0.5.3

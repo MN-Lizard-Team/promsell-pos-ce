@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -31,6 +32,7 @@ class SaleProductCard extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
+      elevation: cartQty > 0 ? 2 : 0,
       child: InkWell(
         onTap: () {
           HapticFeedback.selectionClick();
@@ -52,35 +54,34 @@ class SaleProductCard extends StatelessWidget {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.inventory_2_outlined,
-                        size: 18,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          product.category ?? context.l10n.noCategory,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Center(
+                    child: ProductAvatar(
+                      imagePath: product.imagePath,
+                      imageThumbnailPath: product.imageThumbnailPath,
+                      imageUrl: product.imageUrl,
+                      size: 52,
+                    ),
                   ),
                   const SizedBox(height: 8),
+                  Text(
+                    product.category ?? context.l10n.noCategory,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
                   Text(
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -92,7 +93,9 @@ class SaleProductCard extends StatelessWidget {
                         child: MoneyText(
                           value: product.price,
                           currency: currency,
-                          style: theme.textTheme.titleMedium,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
                           color: theme.colorScheme.primary,
                         ),
                       ),
@@ -113,11 +116,12 @@ class SaleProductCard extends StatelessWidget {
             ),
             if (cartQty > 0)
               Positioned(
-                top: 8,
-                right: 8,
+                top: 6,
+                right: 6,
                 child: Badge(
-                  label: Text('×$cartQty'),
+                  label: Text('$cartQty'),
                   backgroundColor: theme.colorScheme.primary,
+                  textColor: theme.colorScheme.onPrimary,
                 ),
               ),
           ],

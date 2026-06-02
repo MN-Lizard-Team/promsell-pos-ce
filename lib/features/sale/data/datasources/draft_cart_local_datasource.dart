@@ -11,10 +11,11 @@ abstract class DraftCartLocalDatasource {
   Future<String> createDraft({String? name});
   Future<void> upsertDraft(String cartId, SaleState state, {String? name});
   Future<DraftCart?> loadDraft(String cartId);
-  Future<List<DraftCart>> listDrafts();
+  Future<List<DraftCart>> listDrafts({bool includeArchived = false});
   Future<void> deleteDraft(String cartId);
   Future<void> renameDraft(String cartId, String name);
   Future<int> countDrafts();
+  Future<int> archiveOldDrafts(DateTime cutoff);
 }
 
 @LazySingleton(as: DraftCartLocalDatasource)
@@ -120,10 +121,13 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   }
 
   @override
-  Future<List<DraftCart>> listDrafts() async {
-    final carts = await (_db.select(
-      _db.draftCarts,
-    )..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])).get();
+  Future<List<DraftCart>> listDrafts({bool includeArchived = false}) async {
+    final query = _db.select(_db.draftCarts)
+      ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
+    if (!includeArchived) {
+      query.where((t) => t.isArchived.equals(false));
+    }
+    final carts = await query.get();
 
     final result = <DraftCart>[];
     for (final cart in carts) {
@@ -180,8 +184,25 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
 
   @override
   Future<int> countDrafts() async {
-    final count = await _db.draftCarts.count().getSingle();
-    return count;
+    final countExpr = _db.draftCarts.id.count();
+    final query = _db.selectOnly(_db.draftCarts)
+      ..where(_db.draftCarts.isArchived.equals(false))
+      ..addColumns([countExpr]);
+    final row = await query.getSingle();
+    return row.read(countExpr) ?? 0;
+  }
+
+  @override
+  Future<int> archiveOldDrafts(DateTime cutoff) async {
+    final query = _db.update(_db.draftCarts)
+      ..where(
+        (t) =>
+            t.isArchived.equals(false) & t.updatedAt.isSmallerThanValue(cutoff),
+      );
+    final rows = await query.write(
+      const DraftCartsCompanion(isArchived: Value(true)),
+    );
+    return rows;
   }
 
   Product _productFromData(ProductData d) => Product(
@@ -191,6 +212,8 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
     stock: d.stock,
     category: d.categoryId,
     imageUrl: d.imageUrl,
+    imagePath: d.imagePath,
+    imageThumbnailPath: d.imageThumbnailPath,
     isActive: d.isActive,
     trackStock: d.trackStock,
     createdAt: d.createdAt,

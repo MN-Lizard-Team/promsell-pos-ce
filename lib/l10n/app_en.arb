@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "en",
   "appTitle": "Promsell POS",
 
@@ -246,8 +246,31 @@
   "undo": "Undo",
   "itemRemoved": "Item removed",
   "removeItem": "Remove item",
+  "itemsLabel": "items",
+  "searchCartItems": "Search items...",
+  "searchDrafts": "Search drafts...",
+  "untitledDraft": "Draft",
+  "noMatchingItems": "No matching items",
+  "noMatchingDrafts": "No drafts match your search",
+  "groupView": "Group view",
   "listView": "List view",
   "gridView": "Grid view",
+  "cartSizeMini": "Mini",
+  "cartSizeHalf": "Half",
+  "cartSizeFull": "Full",
+  "cartCompactNormal": "Normal density",
+  "cartCompactCompact": "Compact density",
+  "cartCompactUltra": "Ultra compact density",
+  "atStockLimit": "Stock limit reached",
+  "justNow": "Just now",
+  "timeAgoMinutes": "{m} min ago",
+  "@timeAgoMinutes": {"placeholders": {"m": {"type": "int"}}},
+  "timeAgoHours": "{h} h ago",
+  "@timeAgoHours": {"placeholders": {"h": {"type": "int"}}},
+  "timeAgoDays": "{d} d ago",
+  "@timeAgoDays": {"placeholders": {"d": {"type": "int"}}},
+  "searchResultsCount": "{n} results",
+  "@searchResultsCount": {"placeholders": {"n": {"type": "int"}}},
   "confirmPaymentAmount": "Confirm {currency}{amount}",
   "@confirmPaymentAmount": {
     "placeholders": {
@@ -293,5 +316,11 @@
   },
   "settingsBackupReminderDays": "Backup reminder (days, 0=off)",
   "backupNow": "Backup Now",
-  "exportSuccess": "Export successful"
+  "exportSuccess": "Export successful",
+  "bulkSelected": "{count} selected",
+  "@bulkSelected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "bulkClearDiscount": "Clear Discount",
+  "bulkDelete": "Delete"
 }

@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 abstract class ProductImageService {
   Future<String?> pickFromGallery(String productId);
@@ -13,6 +13,13 @@ abstract class ProductImageService {
   Future<void> deleteImage(String? imagePath);
   Future<void> deleteImages(String? imagePath, String? thumbnailPath);
   Future<String?> generateThumbnail(String imagePath);
+  Future<ImagePaths?> renameImages(String? oldPath, String newProductId);
+}
+
+class ImagePaths {
+  const ImagePaths({required this.fullPath, required this.thumbnailPath});
+  final String fullPath;
+  final String thumbnailPath;
 }
 
 @LazySingleton(as: ProductImageService)
@@ -20,13 +27,11 @@ class ProductImageServiceImpl implements ProductImageService {
   static const _thumbWidth = 200;
   static const _thumbQuality = 70;
 
-  final ImagePicker _picker = ImagePicker();
-  final SettingsCubit _settingsCubit;
+  final ImagePicker _picker;
+  final SettingsRepository _settingsRepository;
 
-  ProductImageServiceImpl(this._settingsCubit);
-
-  int get _maxWidth => _settingsCubit.state.settings.imageMaxWidth;
-  int get _quality => _settingsCubit.state.settings.imageQuality;
+  ProductImageServiceImpl(this._settingsRepository, {ImagePicker? picker})
+    : _picker = picker ?? ImagePicker();
 
   @override
   Future<String?> pickFromGallery(String productId) async {
@@ -87,6 +92,10 @@ class ProductImageServiceImpl implements ProductImageService {
   }
 
   Future<String> _compressAndSave(String sourcePath, String productId) async {
+    final settings = await _settingsRepository.load();
+    final maxWidth = settings.imageMaxWidth;
+    final quality = settings.imageQuality;
+
     final dir = await _imageDirectory;
     final bytes = await File(sourcePath).readAsBytes();
     final image = img_lib.decodeImage(bytes);
@@ -94,8 +103,8 @@ class ProductImageServiceImpl implements ProductImageService {
       throw StateError('Failed to decode image: $sourcePath');
     }
 
-    final resized = img_lib.copyResize(image, width: _maxWidth);
-    final jpg = img_lib.encodeJpg(resized, quality: _quality);
+    final resized = img_lib.copyResize(image, width: maxWidth);
+    final jpg = img_lib.encodeJpg(resized, quality: quality);
 
     final targetPath = '${dir.path}/$productId.jpg';
     await File(targetPath).writeAsBytes(jpg);
@@ -106,6 +115,27 @@ class ProductImageServiceImpl implements ProductImageService {
     await File(thumbPath).writeAsBytes(thumbJpg);
 
     return targetPath;
+  }
+
+  @override
+  Future<ImagePaths?> renameImages(String? oldPath, String newProductId) async {
+    if (oldPath == null || oldPath.isEmpty) return null;
+    final oldFile = File(oldPath);
+    if (!await oldFile.exists()) return null;
+
+    final dir = await _imageDirectory;
+    final newPath = '${dir.path}/$newProductId.jpg';
+    final newThumbPath = '${dir.path}/${newProductId}_thumb.jpg';
+
+    await oldFile.rename(newPath);
+
+    final oldThumbPath = _thumbPathFromFull(oldPath);
+    final oldThumbFile = File(oldThumbPath);
+    if (await oldThumbFile.exists()) {
+      await oldThumbFile.rename(newThumbPath);
+    }
+
+    return ImagePaths(fullPath: newPath, thumbnailPath: newThumbPath);
   }
 
   String _thumbPathFromFull(String fullPath) {

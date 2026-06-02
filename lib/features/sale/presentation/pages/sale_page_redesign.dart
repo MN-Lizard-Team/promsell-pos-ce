@@ -29,12 +29,136 @@ class SalePage extends StatelessWidget {
   }
 }
 
-class _SaleView extends StatelessWidget {
+class _SaleView extends StatefulWidget {
   const _SaleView();
 
   @override
+  State<_SaleView> createState() => _SaleViewState();
+}
+
+class _SaleViewState extends State<_SaleView> {
+  double _cartHeight = 280;
+  double _cartWidth = 390;
+  bool _isDraggingHandle = false;
+
+  static const double _minCartHeightPortrait = 260;
+  static const double _minCartHeightLandscape = 220;
+  static const double _maxCartHeightRatioPortrait = 0.65;
+  static const double _maxCartHeightRatioLandscape = 0.50;
+
+  double get _minCartHeight {
+    final isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    return isLandscape ? _minCartHeightLandscape : _minCartHeightPortrait;
+  }
+
+  double get _maxCartHeightRatio {
+    final isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    return isLandscape
+        ? _maxCartHeightRatioLandscape
+        : _maxCartHeightRatioPortrait;
+  }
+
+  static const double _minCartWidth = 300;
+  static const double _maxCartWidth = 560;
+  static const double _handleHeight = 18;
+  static const double _snapTolerance = 18;
+
+  double get _maxCartHeight =>
+      MediaQuery.sizeOf(context).height * _maxCartHeightRatio;
+
+  void _onVerticalDrag(DragUpdateDetails details) {
+    setState(() {
+      _cartHeight = (_cartHeight - details.delta.dy).clamp(
+        _minCartHeight,
+        _maxCartHeight,
+      );
+    });
+  }
+
+  void _onHorizontalDrag(DragUpdateDetails details) {
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final dxAdjusted = isRtl ? -details.delta.dx : details.delta.dx;
+    setState(() {
+      _cartWidth = (_cartWidth - dxAdjusted).clamp(
+        _minCartWidth,
+        _maxCartWidth,
+      );
+    });
+  }
+
+  void _onDragEnd() {
+    setState(() => _isDraggingHandle = false);
+  }
+
+  void _onDragStart() {
+    setState(() => _isDraggingHandle = true);
+  }
+
+  void _onVerticalDragEnd(DragEndDetails details) {
+    final maxH = _maxCartHeight;
+    final presets = <double>[_minCartHeight, maxH];
+    for (final p in presets) {
+      if ((_cartHeight - p).abs() < _snapTolerance) {
+        setState(() => _cartHeight = p);
+        break;
+      }
+    }
+    _onDragEnd();
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    const presets = <double>[320, 500];
+    for (final p in presets) {
+      if ((_cartWidth - p).abs() < _snapTolerance) {
+        setState(() => _cartWidth = p);
+        break;
+      }
+    }
+    _onDragEnd();
+  }
+
+  void _onSizePresetChanged(double value) {
+    setState(() {
+      if (value <= 0.0) {
+        _cartHeight = _minCartHeight;
+      } else {
+        _cartHeight = _maxCartHeight;
+      }
+    });
+  }
+
+  void _onWidthPresetChanged(double value) {
+    setState(() {
+      if (value <= 0.0) {
+        _cartWidth = 320;
+      } else {
+        _cartWidth = 500;
+      }
+    });
+  }
+
+  double? _currentSizePreset() {
+    if (_cartHeight <= _minCartHeight + 1) return 0.0;
+    if (_cartHeight >= _maxCartHeight - 1) return 1.0;
+    return null;
+  }
+
+  double? _currentWidthPreset() {
+    if ((_cartWidth - 320).abs() < 10) return 0.0;
+    if ((_cartWidth - 500).abs() < 10) return 1.0;
+    return null;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isExpanded = AdaptiveBreakpoints.isExpanded(context);
+    final size = MediaQuery.sizeOf(context);
+    final isLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final isExpanded =
+        AdaptiveBreakpoints.isExpanded(context) ||
+        (isLandscape && size.width >= 600);
 
     return BlocListener<ProductBloc, ProductState>(
       listenWhen: (prev, curr) =>
@@ -62,25 +186,105 @@ class _SaleView extends StatelessWidget {
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
-            child: isExpanded
-                ? const Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(child: SaleCatalog()),
-                      SizedBox(width: 12),
-                      SizedBox(width: 390, child: CartPanel(expanded: true)),
-                    ],
-                  )
-                : const Column(
-                    children: [
-                      Expanded(child: SaleCatalog()),
-                      SizedBox(height: 8),
-                      CartPanel(expanded: false),
-                    ],
-                  ),
+            child: isExpanded ? _buildExpandedLayout() : _buildCompactLayout(),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCompactLayout() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxCartH =
+            (constraints.maxHeight * _maxCartHeightRatio - _handleHeight).clamp(
+              _minCartHeight,
+              double.infinity,
+            );
+        final effectiveH = _cartHeight.clamp(_minCartHeight, maxCartH);
+        return Column(
+          children: [
+            const Expanded(child: SaleCatalog()),
+            MouseRegion(
+              cursor: SystemMouseCursors.resizeRow,
+              child: GestureDetector(
+                onVerticalDragStart: (_) => _onDragStart(),
+                onVerticalDragUpdate: _onVerticalDrag,
+                onVerticalDragEnd: _onVerticalDragEnd,
+                onVerticalDragCancel: _onDragEnd,
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox(
+                  height: 24,
+                  child: Center(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: _isDraggingHandle ? 56 : 40,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: _isDraggingHandle
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: effectiveH,
+              child: CartPanel(
+                expanded: false,
+                sizePreset: _currentSizePreset(),
+                onSizePresetChanged: _onSizePresetChanged,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildExpandedLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Expanded(child: SaleCatalog()),
+        MouseRegion(
+          cursor: SystemMouseCursors.resizeColumn,
+          child: GestureDetector(
+            onHorizontalDragStart: (_) => _onDragStart(),
+            onHorizontalDragUpdate: _onHorizontalDrag,
+            onHorizontalDragEnd: _onHorizontalDragEnd,
+            onHorizontalDragCancel: _onDragEnd,
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(
+              width: 20,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: 6,
+                  height: _isDraggingHandle ? 56 : 40,
+                  decoration: BoxDecoration(
+                    color: _isDraggingHandle
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: _cartWidth,
+          child: CartPanel(
+            expanded: true,
+            widthPreset: _currentWidthPreset(),
+            onWidthPresetChanged: _onWidthPresetChanged,
+          ),
+        ),
+      ],
     );
   }
 }

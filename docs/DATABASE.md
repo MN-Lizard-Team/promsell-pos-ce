@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.6.0
+# Database Handbook — Promsell POS CE v0.6.1
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 

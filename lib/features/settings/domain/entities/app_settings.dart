@@ -41,6 +41,9 @@ class AppSettings extends Equatable {
     this.lastBackupAt,
     this.imageMaxWidth = 800,
     this.imageQuality = 80,
+    this.maxDrafts = 30,
+    this.cartCompactMode = false,
+    this.ultraCompactMode = false,
   });
 
   final Locale locale;
@@ -73,6 +76,9 @@ class AppSettings extends Equatable {
   final String? lastBackupAt;
   final int imageMaxWidth;
   final int imageQuality;
+  final int maxDrafts;
+  final bool cartCompactMode;
+  final bool ultraCompactMode;
 
   DiscountPreset get activeDiscountPreset {
     final match = discountPresets.where((p) => p.id == activeDiscountPresetId);
@@ -110,6 +116,9 @@ class AppSettings extends Equatable {
     String? lastBackupAt,
     int? imageMaxWidth,
     int? imageQuality,
+    int? maxDrafts,
+    bool? cartCompactMode,
+    bool? ultraCompactMode,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -144,6 +153,9 @@ class AppSettings extends Equatable {
       lastBackupAt: lastBackupAt ?? this.lastBackupAt,
       imageMaxWidth: imageMaxWidth ?? this.imageMaxWidth,
       imageQuality: imageQuality ?? this.imageQuality,
+      maxDrafts: maxDrafts ?? this.maxDrafts,
+      cartCompactMode: cartCompactMode ?? this.cartCompactMode,
+      ultraCompactMode: ultraCompactMode ?? this.ultraCompactMode,
     );
   }
 
@@ -179,5 +191,8 @@ class AppSettings extends Equatable {
     lastBackupAt,
     imageMaxWidth,
     imageQuality,
+    maxDrafts,
+    cartCompactMode,
+    ultraCompactMode,
   ];
 }

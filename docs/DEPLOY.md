@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.6.0+1
+version: 0.6.1+2
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +121,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 215+ tests pass
+- [ ] `flutter test` — all 243+ tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -143,19 +143,27 @@ Before distributing a build with UI changes:
 1. Add a product (set trackStock=off on one service item to verify ∞ display).
 2. Search and filter products in the Sale tab.
 3. Add items to cart and adjust quantity.
-4. Tap the tag icon on a cart item → apply a 10% discount — verify discount badge and updated subtotal.
-5. Tap **Apply cart discount** → apply a fixed amount — verify breakdown in payment sheet (Subtotal → discounts → Total).
-6. Tap the bookmarks icon → create a second draft, switch between drafts — cart content should swap; kill and relaunch app to verify draft restore.
-7. Complete one cash sale using quick cash chips.
-8. Open History, expand the saved sale — verify receipt number; if VAT mode is INCLUSIVE or EXCLUSIVE, verify Subtotal + VAT rows appear; verify discount rows if discount was applied.
-9. Tap **Void Sale** on a sale, enter a reason, confirm — verify VOIDED badge appears and stock is restored.
-10. Open History again — voided sale shows strikethrough amount and red badge.
-11. Open Report and verify net revenue excludes voided sales; voided summary card appears.
-12. Tap **Print Receipt** or **Share Receipt** on any sale.
-13. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); verify PromptPay ID field and Receipt Size toggle; switch theme/locale, and save shop info.
-14. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; delete the product and verify both image files are removed from storage.
-15. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file; tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
-16. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
+4. Long-press a cart item → enter multi-select mode → select multiple items → tap bulk delete or clear discount.
+5. With more than 5 items in cart, verify the search bar appears and filters by product name; toggle between flat list and group-by-category views.
+6. In flat list view, swipe right to delete (with undo snackbar); swipe left to increment quantity; drag the reorder handle to move items.
+7. Tap the density cycle button in the cart header → cycle through Normal → Compact → Ultra-Compact.
+8. Drag the resize handle between catalog and cart to resize the panel; use the size slider for Small/Large presets.
+9. Tap the cart icon with the item-count badge in the app bar → verify `CartReviewPage` opens with interactive cart editing; tap a product image for zoom dialog; tap a row for product detail sheet; adjust quantities and verify total updates live; tap **Back to Sale** and verify the cart reflects changes.
+10. Tap the tag icon on a cart item → apply a 10% discount — verify discount badge and updated subtotal.
+11. Tap **Apply cart discount** → apply a fixed amount — verify breakdown in full-screen `CheckoutPage` (Subtotal → discounts → Total); verify receipt preview pinch-to-zoom works.
+12. Tap the bookmarks icon → create a second draft, switch between drafts — cart content should swap; verify draft count badge (e.g. "Cart · 1/5") and draft search/sort functionality; kill and relaunch app to verify draft restore.
+13. Complete one cash sale using quick cash chips.
+14. Open History, expand the saved sale — verify receipt number; if VAT mode is INCLUSIVE or EXCLUSIVE, verify Subtotal + VAT rows appear; verify discount rows if discount was applied.
+15. Tap **Void Sale** on a sale, enter a reason, confirm — verify VOIDED badge appears and stock is restored.
+16. Open History again — voided sale shows strikethrough amount and red badge.
+17. Open Report and verify net revenue excludes voided sales; voided summary card appears.
+18. Tap **Print Receipt** or **Share Receipt** on any sale.
+19. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); verify PromptPay ID field and Receipt Size toggle; switch theme/locale, and save shop info.
+20. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; delete the product and verify both image files are removed from storage.
+21. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file; tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
+22. In the Products tab, long-press a product image → verify `ImageViewerDialog` opens with pinch zoom and close button.
+23. In Settings, verify **Max drafts** input (default 30, range 5–100), **Compact cart**, and **Ultra-compact cart** toggles appear.
+24. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
 
 ---
 

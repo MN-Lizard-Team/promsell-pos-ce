@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.6.0
+# CODEBASE.md — Promsell POS CE v0.6.1
 
 ## System overview
 
@@ -84,7 +84,7 @@ features/<name>/
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
-| `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; `deleteImages`; reads settings from `SettingsCubit`; `@LazySingleton` |
+| `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; `deleteImages`, `renameImages`; accepts `SettingsRepository`; `@LazySingleton` |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
 | `DraftCartLocalDatasource` | `lib/features/sale/data/datasources/` | Persist/load `DraftCarts` + `DraftCartItems`; used by `DraftCartRepository` |
 | `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
@@ -92,6 +92,7 @@ features/<name>/
 | `AppEmptyState` | `lib/core/widgets/` | Consistent empty/error states with compact-height support |
 | `MoneyText` | `lib/core/widgets/` | Currency text with fixed decimal formatting |
 | `SectionCard` | `lib/core/widgets/` | Shared grouped card surface for settings and dashboards |
+| `ImageViewerDialog` | `lib/core/widgets/` | Reusable full-screen image viewer with `InteractiveViewer` (pinch zoom, pan, double-tap zoom), swipe gallery, page indicators, close button, background dismiss. Used by product image tap and receipt preview |
 
 ---
 
@@ -99,7 +100,7 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page_redesign.dart`, `payment_sheet_redesign.dart`; widgets: `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `ChangePreview`, `PaymentTotalRow` |
+| Sale | `SaleBloc` | `sale_page_redesign.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog` |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
@@ -202,6 +203,9 @@ All state classes extend `Equatable` for efficient rebuilds.
 | `lastBackupAt` | String | `null` |
 | `imageMaxWidth` | int | `800` |
 | `imageQuality` | int | `80` |
+| `maxDrafts` | int | `30` |
+| `cartCompactMode` | bool | `false` |
+| `ultraCompactMode` | bool | `false` |
 
 ---
 
@@ -283,7 +287,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-215 automated tests across 7 layers. Run with `flutter test`.
+243 automated tests across 7 layers. Run with `flutter test`.
 
 ### Test directory structure
 

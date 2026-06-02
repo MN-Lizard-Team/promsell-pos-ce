@@ -8,14 +8,17 @@ import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_rep
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 @injectable
 class SaleBloc extends Bloc<SaleEvent, SaleState> {
   SaleBloc({
     required CreateSale createSale,
     required DraftCartRepository draftRepo,
+    required SettingsRepository settingsRepo,
   }) : _createSale = createSale,
        _draftRepo = draftRepo,
+       _settingsRepo = settingsRepo,
        super(const SaleState()) {
     on<SaleProductAdded>(_onProductAdded);
     on<SaleProductRemoved>(_onProductRemoved);
@@ -35,10 +38,14 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     on<SaleDraftDeleted>(_onDraftDeleted);
     on<SaleDraftRenamed>(_onDraftRenamed);
     on<SaleCartRestored>(_onCartRestored);
+    on<SaleBulkItemsRemoved>(_onBulkItemsRemoved);
+    on<SaleBulkItemDiscountsCleared>(_onBulkItemDiscountsCleared);
+    on<SaleCartItemsReordered>(_onCartItemsReordered);
   }
 
   final CreateSale _createSale;
   final DraftCartRepository _draftRepo;
+  final SettingsRepository _settingsRepo;
   Timer? _saveTimer;
 
   void _onProductAdded(SaleProductAdded event, Emitter<SaleState> emit) {
@@ -138,6 +145,46 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       if (i.product.id == event.productId) return i.clearDiscount();
       return i;
     }).toList();
+    emit(state.copyWith(items: updated));
+    _scheduleSave();
+  }
+
+  void _onBulkItemsRemoved(
+    SaleBulkItemsRemoved event,
+    Emitter<SaleState> emit,
+  ) {
+    final updated = state.items
+        .where((i) => !event.productIds.contains(i.product.id))
+        .toList();
+    emit(state.copyWith(items: updated));
+    _scheduleSave();
+  }
+
+  void _onBulkItemDiscountsCleared(
+    SaleBulkItemDiscountsCleared event,
+    Emitter<SaleState> emit,
+  ) {
+    final updated = state.items.map((i) {
+      if (event.productIds.contains(i.product.id)) return i.clearDiscount();
+      return i;
+    }).toList();
+    emit(state.copyWith(items: updated));
+    _scheduleSave();
+  }
+
+  void _onCartItemsReordered(
+    SaleCartItemsReordered event,
+    Emitter<SaleState> emit,
+  ) {
+    final orderMap = {
+      for (var i = 0; i < event.productIds.length; i++) event.productIds[i]: i,
+    };
+    final updated = [...state.items];
+    updated.sort((a, b) {
+      final aIndex = orderMap[a.product.id] ?? 0;
+      final bIndex = orderMap[b.product.id] ?? 0;
+      return aIndex.compareTo(bIndex);
+    });
     emit(state.copyWith(items: updated));
     _scheduleSave();
   }
@@ -244,7 +291,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     final draftId = state.activeDraftId;
     if (draftId == null) return;
     _saveTimer?.cancel();
-    _saveTimer = Timer(const Duration(milliseconds: 500), () {
+    _saveTimer = Timer(const Duration(milliseconds: 1500), () {
       if (!isClosed && state.activeDraftId == draftId) {
         _draftRepo.saveDraft(draftId, state, name: state.activeDraftName);
       }
@@ -256,6 +303,10 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     Emitter<SaleState> emit,
   ) async {
     try {
+      // Archive drafts older than 7 days
+      final cutoff = DateTime.now().subtract(const Duration(days: 7));
+      await _draftRepo.archiveOldDrafts(cutoff);
+
       final drafts = await _draftRepo.listDrafts();
       if (drafts.isEmpty) {
         final id = await _draftRepo.createDraft();
@@ -310,7 +361,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     Emitter<SaleState> emit,
   ) async {
     final count = await _draftRepo.countDrafts();
-    if (count >= 10) return;
+    final settings = await _settingsRepo.load();
+    if (count >= settings.maxDrafts) return;
     if (state.activeDraftId != null) {
       await _draftRepo.saveDraft(
         state.activeDraftId!,

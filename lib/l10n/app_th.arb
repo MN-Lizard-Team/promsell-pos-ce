@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "th",
   "appTitle": "Promsell POS",
 
@@ -243,8 +243,31 @@
   "undo": "เรียกคืน",
   "itemRemoved": "ลบรายการแล้ว",
   "removeItem": "ลบรายการ",
+  "itemsLabel": "รายการ",
+  "searchCartItems": "ค้นหาสินค้าในตะกร้า...",
+  "searchDrafts": "ค้นหาบิล...",
+  "untitledDraft": "บิลใหม่",
+  "noMatchingItems": "ไม่พบสินค้าที่ตรงกัน",
+  "noMatchingDrafts": "ไม่พบบิลที่ตรงกัน",
+  "groupView": "มุมมองแบบกลุ่ม",
   "listView": "มุมมองรายการ",
   "gridView": "มุมมองตาราง",
+  "cartSizeMini": "เล็ก",
+  "cartSizeHalf": "ปกติ",
+  "cartSizeFull": "เต็ม",
+  "cartCompactNormal": "ขนาดปกติ",
+  "cartCompactCompact": "กะทัดรัด",
+  "cartCompactUltra": "กะทัดรัดมาก",
+  "atStockLimit": "สินค้าหมดสต็อก",
+  "justNow": "เมื่อสักครู่",
+  "timeAgoMinutes": "{m} นาทีที่แล้ว",
+  "@timeAgoMinutes": {"placeholders": {"m": {"type": "int"}}},
+  "timeAgoHours": "{h} ชั่วโมงที่แล้ว",
+  "@timeAgoHours": {"placeholders": {"h": {"type": "int"}}},
+  "timeAgoDays": "{d} วันที่แล้ว",
+  "@timeAgoDays": {"placeholders": {"d": {"type": "int"}}},
+  "searchResultsCount": "{n} รายการ",
+  "@searchResultsCount": {"placeholders": {"n": {"type": "int"}}},
   "confirmPaymentAmount": "ยืนยัน {currency}{amount}",
   "@confirmPaymentAmount": {
     "placeholders": {
@@ -290,5 +313,11 @@
   },
   "settingsBackupReminderDays": "เตือนสำรองข้อมูล (วัน, 0=ปิด)",
   "backupNow": "สำรองเลย",
-  "exportSuccess": "ส่งออกสำเร็จ"
+  "exportSuccess": "ส่งออกสำเร็จ",
+  "bulkSelected": "เลือกแล้ว {count} รายการ",
+  "@bulkSelected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "bulkClearDiscount": "ล้างส่วนลด",
+  "bulkDelete": "ลบรายการ"
 }
