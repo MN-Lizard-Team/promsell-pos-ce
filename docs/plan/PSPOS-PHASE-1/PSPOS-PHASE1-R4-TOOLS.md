@@ -21,16 +21,20 @@ R3 จบ business logic. R4 = **interface กับโลกภายนอก*
 ## Pre-flight
 
 - [x] R1+R2 merged → `v0.4.0` released (2026-05-27)
-- [ ] R3 merged + `v0.5.0` released
-- [ ] Branch `feat/phase1-r4-merchant-tools`
+- [x] R3 merged + `v0.5.0` released
 - [ ] Test PromptPay ID พร้อมใช้ (สำหรับ manual scan test ด้วย banking app จริง)
-- [ ] Add deps:
+- [x] Add deps:
   ```yaml
   share_plus: ^10.0.2
   file_picker: ^8.1.2
   csv: ^6.0.0
+  qr_flutter: ^4.1.0
   ```
-  (re-add `qr_flutter` ที่เคยถูกถอดออก)
+- [x] Move `ReceiptPdfService` → `lib/features/receipt/data/services/`
+- [x] Extract `ReceiptLabels` → `lib/features/receipt/domain/entities/receipt_labels.dart`
+- [x] Add 4 `AppSettings` fields: `promptpayId`, `receiptSize`, `backupReminderDays`, `lastBackupAt`
+- [x] Schema migration v4→v5 (`_seedR4Settings`)
+- [x] Version bump `0.5.4+1`
 
 ---
 
@@ -38,8 +42,9 @@ R3 จบ business logic. R4 = **interface กับโลกภายนอก*
 
 ### 1. Receipt PDF Generator
 
-#### File
-`lib/features/receipt/data/services/receipt_pdf_service.dart`
+#### Files
+- `lib/features/receipt/data/services/receipt_pdf_service.dart` (service)
+- `lib/features/receipt/domain/entities/receipt_labels.dart` (labels entity, extracted from service)
 
 #### Layout (80mm thermal — primary)
 

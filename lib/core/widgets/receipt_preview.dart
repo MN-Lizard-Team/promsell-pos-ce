@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
+import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 
 /// A data item for receipt preview (works for both pre-sale cart items
@@ -262,144 +262,147 @@ class _CardPreview extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 2,
         child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            if (s.shopName.isNotEmpty)
-              Text(
-                s.shopName,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            if (s.showShopInfoOnReceipt) ...[
-              if (s.address.isNotEmpty)
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              if (s.shopName.isNotEmpty)
                 Text(
-                  s.address,
-                  style: theme.textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-              if (s.phone.isNotEmpty)
-                Text(
-                  s.phone,
-                  style: theme.textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-            ],
-            const Divider(height: 20),
-            // Meta
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    '${l.receipt} #${_parent.receiptNumber ?? 'Preview'}',
-                    style: theme.textTheme.bodySmall,
-                    overflow: TextOverflow.ellipsis,
+                  s.shopName,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                if (_parent.createdAt != null)
+              if (s.showShopInfoOnReceipt) ...[
+                if (s.address.isNotEmpty)
                   Text(
-                    _parent._formatDate(_parent.createdAt!),
+                    s.address,
                     style: theme.textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                if (s.phone.isNotEmpty)
+                  Text(
+                    s.phone,
+                    style: theme.textTheme.bodySmall,
+                    textAlign: TextAlign.center,
                   ),
               ],
-            ),
-            if (_parent.paymentMethod != null)
-              Text(
-                '${l.payment}: ${_parent.paymentMethod}',
-                style: theme.textTheme.bodySmall,
+              const Divider(height: 20),
+              // Meta
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${l.receipt} #${_parent.receiptNumber ?? 'Preview'}',
+                      style: theme.textTheme.bodySmall,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (_parent.createdAt != null)
+                    Text(
+                      _parent._formatDate(_parent.createdAt!),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                ],
               ),
-            const SizedBox(height: 8),
-            // Items
-            ..._parent.items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+              if (_parent.paymentMethod != null)
+                Text(
+                  '${l.payment}: ${_parent.paymentMethod}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              const SizedBox(height: 8),
+              // Items
+              ..._parent.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text('${item.name} x${item.qty}')),
+                      Text('${s.currency}${item.subtotal.toStringAsFixed(2)}'),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: 16),
+              // VAT
+              if (vat != null) ...[
+                _row(
+                  theme,
+                  l.subtotal,
+                  '${s.currency}${vat.subtotal.toStringAsFixed(2)}',
+                ),
+                _row(
+                  theme,
+                  vat.isInclusive ? l.vatIncluded : '${l.vat} ${s.vatRate}%',
+                  '${s.currency}${vat.vatAmount.toStringAsFixed(2)}',
+                ),
+              ],
+              // Total
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.3,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(child: Text('${item.name} x${item.qty}')),
-                    Text('${s.currency}${item.subtotal.toStringAsFixed(2)}'),
+                    Text(
+                      l.total,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${s.currency}${vat?.totalWithVat.toStringAsFixed(2) ?? _parent.total.toStringAsFixed(2)}',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            const Divider(height: 16),
-            // VAT
-            if (vat != null) ...[
-              _row(
-                theme,
-                l.subtotal,
-                '${s.currency}${vat.subtotal.toStringAsFixed(2)}',
-              ),
-              _row(
-                theme,
-                vat.isInclusive ? l.vatIncluded : '${l.vat} ${s.vatRate}%',
-                '${s.currency}${vat.vatAmount.toStringAsFixed(2)}',
-              ),
-            ],
-            // Total
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withValues(
-                  alpha: 0.3,
+              if (_parent.amountReceived != null) ...[
+                const SizedBox(height: 4),
+                _row(
+                  theme,
+                  l.received,
+                  '${s.currency}${_parent.amountReceived!.toStringAsFixed(2)}',
                 ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l.total,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${s.currency}${vat?.totalWithVat.toStringAsFixed(2) ?? _parent.total.toStringAsFixed(2)}',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (_parent.amountReceived != null) ...[
-              const SizedBox(height: 4),
-              _row(
-                theme,
-                l.received,
-                '${s.currency}${_parent.amountReceived!.toStringAsFixed(2)}',
-              ),
-              _row(
-                theme,
-                l.change,
-                '${s.currency}${(_parent.changeAmount ?? 0).toStringAsFixed(2)}',
-              ),
-            ],
-            if (_parent.note != null && _parent.note!.isNotEmpty) ...[
+                _row(
+                  theme,
+                  l.change,
+                  '${s.currency}${(_parent.changeAmount ?? 0).toStringAsFixed(2)}',
+                ),
+              ],
+              if (_parent.note != null && _parent.note!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '${l.note}: ${_parent.note}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
               const SizedBox(height: 8),
               Text(
-                '${l.note}: ${_parent.note}',
+                s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!',
                 style: theme.textTheme.bodySmall,
+                textAlign: TextAlign.center,
               ),
             ],
-            const SizedBox(height: 8),
-            Text(
-              s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!',
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _row(ThemeData theme, String left, String right) => Padding(

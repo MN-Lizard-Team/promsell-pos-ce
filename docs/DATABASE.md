@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.5.4
+# Database Handbook — Promsell POS CE v0.6.0
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -27,7 +27,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 4 |
+| **Schema version** | 6 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -63,6 +63,7 @@ erDiagram
         text categoryId FK
         text imageUrl
         text imagePath
+        text imageThumbnailPath
         bool trackStock
         bool isActive
         datetime createdAt
@@ -205,6 +206,7 @@ Source: `lib/core/database/tables/products_table.dart`
 | `categoryId` | TEXT | Yes | — | Logical ref → categories |
 | `imageUrl` | TEXT | Yes | — | Network URL for future online sync |
 | `imagePath` | TEXT | Yes | — | Local file path from gallery/camera pick |
+| `imageThumbnailPath` | TEXT | Yes | — | Local thumbnail path (200px) for small avatar display |
 | `trackStock` | BOOLEAN | No | `true` | `false` = service item: skip stock check, no deduction, show ∞ in UI |
 | `isActive` | BOOLEAN | No | `true` | |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
@@ -399,7 +401,12 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 |-----|---------|----------|
 | `allowOversell` | `false` | v0.5.0 |
 | `lowStockThreshold` | `5` | v0.5.0 |
-| `promptpayId` | `""` | R4 |
+| `promptpayId` | `""` | v0.6.0 |
+| `receiptSize` | `"80mm"` | v0.6.0 |
+| `backupReminderDays` | `"7"` | v0.6.0 |
+| `lastBackupAt` | `null` | v0.6.0 |
+| `imageMaxWidth` | `"800"` | v0.6.0 |
+| `imageQuality` | `"80"` | v0.6.0 |
 | `deviceId` | generated UUID | R5 |
 | `onboardingCompleted` | `false` | R5 |
 | `dailyCloseLock` | `false` | R5 |
@@ -656,7 +663,7 @@ onUpgrade: (m, from, to) async {
 
 ### Production migration (future)
 
-Schema v3→v4 incremental migration:
+Schema v3→v4, v4→v5, and v5→v6 incremental migration:
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -666,6 +673,13 @@ onUpgrade: (m, from, to) async {
   }
   if (from < 4) {
     await m.addColumn(products, products.imagePath);
+  }
+  if (from < 5) {
+    await _seedR4Settings(); // promptpayId, receiptSize, backupReminderDays
+  }
+  if (from < 6) {
+    await m.addColumn(products, products.imageThumbnailPath);
+    await _seedR45Settings(); // imageMaxWidth, imageQuality
   }
 },
 ```
@@ -737,7 +751,7 @@ PRAGMA wal_checkpoint(TRUNCATE);
 ### Cautions
 
 - **Version mismatch:** Restoring a v1 backup on v2 app will trigger `onUpgrade` — which currently drops all data. Production builds must handle this gracefully.
-- **CSV export** (planned for R4): Export sales data as CSV for a date range via the share sheet.
+- **CSV export** (v0.6.0): Export sales and products data as CSV via `csv` + `share_plus`.
 
 ---
 
@@ -843,4 +857,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.5.4 · Schema v4 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.6.0 · Schema v6 · 9 tables · UUIDv4</sub>

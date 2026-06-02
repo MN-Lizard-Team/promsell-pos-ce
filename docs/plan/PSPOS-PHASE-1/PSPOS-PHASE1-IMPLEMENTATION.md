@@ -23,7 +23,7 @@
 | **R1** ✅ | Schema Foundation | UUID migration + new tables + indexes + migration safety | 🔴 High → DONE |
 | **R2** ✅ | Sale Integrity | Inventory log + Receipt number + Sale status + Void/Refund | 🟡 Medium → DONE |
 | **R3** ✅ | Cashier UX | Draft cart + Discount (item/cart) + VAT (incl/excl) + Stock policy | 🟡 Medium → DONE |
-| **R4** | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low |
+| **R4** 🟡 | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low — Pre-flight ✅ |
 | **R5** | Operations | Daily Close + Onboarding wizard + Final polish + Phase 4 readiness check | 🟢 Low |
 
 Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~2 days. **Total ~13 dev-days.**
@@ -152,9 +152,11 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 
 ---
 
-## Round 4 — Merchant Tools 🟢
+## Round 4 — Merchant Tools � Pre-flight ✅
 
 > Goal: ส่งใบเสร็จ + รับเงิน QR + backup ข้อมูลได้
+>
+> **Pre-flight complete:** deps, ReceiptPdfService move, ReceiptLabels extract, 4 AppSettings fields, schema v4→v5, l10n keys, version bump. Feature code (Tasks 1–5) pending.
 
 ### Tasks
 

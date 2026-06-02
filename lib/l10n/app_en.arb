@@ -263,5 +263,35 @@
   "pickImageGallery": "Choose from Gallery",
   "pickImageCamera": "Take a Photo",
   "removeImage": "Remove Image",
-  "imagePickError": "Unable to pick image"
+  "imagePickError": "Unable to pick image",
+
+  "promptpay": "PromptPay",
+  "settingsPromptpayId": "PromptPay ID",
+  "settingsPromptpayIdHint": "Phone number or Citizen ID",
+  "promptpayQrTitle": "Scan to Pay",
+  "promptpayConfirmPayment": "Confirm Payment Received",
+  "promptpayNotConfigured": "PromptPay not configured",
+  "promptpaySettingsHint": "Go to Settings",
+
+  "settingsReceiptSize": "Receipt Size",
+  "receiptSize80mm": "80mm (Thermal)",
+  "receiptSizeA4": "A4",
+
+  "settingsData": "Data",
+  "exportDatabase": "Export Database (Full Backup)",
+  "exportSalesCsv": "Export Sales (CSV)",
+  "exportProductsCsv": "Export Products (CSV)",
+  "restoreFromBackup": "Restore from Backup...",
+  "restoreConfirmTitle": "Confirm Data Restore?",
+  "restoreConfirmMessage": "Current data will be overwritten. Continue?",
+  "restoreSuccess": "Data restored successfully",
+  "restoreError": "Failed to restore data",
+  "backupReminderTitle": "Backup Recommended",
+  "backupReminderMessage": "No backup for more than {days} days",
+  "@backupReminderMessage": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "settingsBackupReminderDays": "Backup reminder (days, 0=off)",
+  "backupNow": "Backup Now",
+  "exportSuccess": "Export successful"
 }

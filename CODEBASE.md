@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.5.4
+# CODEBASE.md — Promsell POS CE v0.6.0
 
 ## System overview
 
@@ -32,7 +32,7 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   database/   — Drift schema, tables, DAOs       │
 │   di/         — injectable + get_it DI             │
 │   extensions/ — context.l10n helper             │
-│   services/   — ReceiptPdfService (PDF/print)   │
+│   services/   — (empty — services moved to features) │
 │   utils/      — IdGenerator, payment_method      │
 │   widgets/    — shared UI primitives             │
 └────────────────────┬─────────────────────────────┘
@@ -74,16 +74,17 @@ features/<name>/
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v4, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v6, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
-| `ReceiptPdfService` | `lib/core/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
+| `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
+| `ReceiptLabels` | `lib/features/receipt/domain/entities/` | Localized label entity for receipt rendering |
 | `ReceiptPreview` | `lib/core/widgets/` | On-screen receipt preview in `thermal` and `card` styles; VAT-aware |
 | `OverlayToast` | `lib/core/widgets/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow |
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
-| `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → JPEG compression (800px/80%) → local `/images/{productId}.jpg`; deleteImage; `@LazySingleton` |
+| `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; `deleteImages`; reads settings from `SettingsCubit`; `@LazySingleton` |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
 | `DraftCartLocalDatasource` | `lib/features/sale/data/datasources/` | Persist/load `DraftCarts` + `DraftCartItems`; used by `DraftCartRepository` |
 | `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
@@ -104,6 +105,7 @@ features/<name>/
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
 | Settings | `SettingsCubit` | `settings_page.dart`; widgets: `SettingsSectionHeader`, `SettingsTextField`, `LanguageTile`, `ThemeTile`, `CurrencyTile`, `DateFormatTile`, `ResponsiveSettingsPicker` |
 | Inventory | — | `inventory_log_page.dart`, `adjust_stock_dialog.dart`, `InventoryLogService`, `AdjustStock` |
+| Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
 
 ---
@@ -121,13 +123,13 @@ features/<name>/
 
 ---
 
-## Database schema (v4)
+## Database schema (v6)
 
 Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
 | Table | Key fields |
 |-------|--------|
-| `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, imagePath, trackStock, isActive, createdAt, updatedAt, deletedAt, version, deviceId |
+| `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, imagePath, imageThumbnailPath, trackStock, isActive, createdAt, updatedAt, deletedAt, version, deviceId |
 | `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, note, voidedAt, voidReason, createdAt, updatedAt, deletedAt, version, deviceId |
 | `SaleItems` | id, saleId, productId, productName, price, qty, subtotal, discountAmount, vatAmount |
 | `Categories` | id, name, sortOrder, createdAt, updatedAt, deletedAt, version, deviceId |
@@ -194,6 +196,12 @@ All state classes extend `Equatable` for efficient rebuilds.
 | `defaultDiscountType` | String | `PERCENT` |
 | `discountPresets` | String (JSON) | `[]` |
 | `activeDiscountPresetId` | String | `''` |
+| `promptpayId` | String | `''` |
+| `receiptSize` | String | `80mm` |
+| `backupReminderDays` | int | `7` |
+| `lastBackupAt` | String | `null` |
+| `imageMaxWidth` | int | `800` |
+| `imageQuality` | int | `80` |
 
 ---
 
@@ -268,8 +276,8 @@ Two generators must be run after changes:
 | `SaleBloc` constructor | Update `sale_bloc_test.dart` to inject `MockDraftCartRepository` |
 | `DraftCart` entity (new fields) | Update `draft_cart.dart` + `DraftCartLocalDatasource` + `SaleBloc` draft event handlers + `sale_bloc_test.dart` |
 | `DraftCarts` table schema | Run `build_runner build`; bump schema version + add migration in `app_database.dart` |
-| `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` |
-| Parent `BlocListener` that calls `showDialog` alongside a modal's `BlocListener` | Wrap `showDialog` in `WidgetsBinding.instance.addPostFrameCallback` — see ADR-009 in `docs/ARCHITECTURE.md` |
+| `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductRepositoryImpl` constructor if services added |
+| `ProductRepositoryImpl` constructor | Update `product_repository_impl_test.dart` to inject `MockProductImageService` |
 
 ---
 

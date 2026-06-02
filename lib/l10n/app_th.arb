@@ -260,5 +260,35 @@
   "pickImageGallery": "เลือกจากคลังรูป",
   "pickImageCamera": "ถ่ายรูป",
   "removeImage": "ลบรูป",
-  "imagePickError": "ไม่สามารถเลือกรูปได้"
+  "imagePickError": "ไม่สามารถเลือกรูปได้",
+
+  "promptpay": "พร้อมเพย์",
+  "settingsPromptpayId": "PromptPay ID",
+  "settingsPromptpayIdHint": "เบอร์โทรหรือเลขบัตรประชาชน",
+  "promptpayQrTitle": "สแกนจ่ายเงิน",
+  "promptpayConfirmPayment": "ยืนยันรับเงินแล้ว",
+  "promptpayNotConfigured": "ยังไม่ได้ตั้งค่า PromptPay",
+  "promptpaySettingsHint": "ไปตั้งค่า",
+
+  "settingsReceiptSize": "ขนาดใบเสร็จ",
+  "receiptSize80mm": "80mm (กระดาษความร้อน)",
+  "receiptSizeA4": "A4",
+
+  "settingsData": "ข้อมูล",
+  "exportDatabase": "ส่งออกฐานข้อมูล (สำรองข้อมูลเต็มรูปแบบ)",
+  "exportSalesCsv": "ส่งออกยอดขาย (CSV)",
+  "exportProductsCsv": "ส่งออกสินค้า (CSV)",
+  "restoreFromBackup": "กู้คืนจากสำรอง...",
+  "restoreConfirmTitle": "ยืนยันกู้คืนข้อมูล?",
+  "restoreConfirmMessage": "ข้อมูลปัจจุบันจะถูกเขียนทับ ดำเนินการต่อ?",
+  "restoreSuccess": "กู้คืนข้อมูลสำเร็จ",
+  "restoreError": "กู้คืนข้อมูลไม่สำเร็จ",
+  "backupReminderTitle": "แนะนำสำรองข้อมูล",
+  "backupReminderMessage": "ยังไม่ได้สำรองข้อมูลมากกว่า {days} วัน",
+  "@backupReminderMessage": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "settingsBackupReminderDays": "เตือนสำรองข้อมูล (วัน, 0=ปิด)",
+  "backupNow": "สำรองเลย",
+  "exportSuccess": "ส่งออกสำเร็จ"
 }

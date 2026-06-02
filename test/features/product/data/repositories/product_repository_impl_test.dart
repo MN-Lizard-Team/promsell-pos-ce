@@ -9,10 +9,12 @@ import '../../../../helpers/mocks.dart';
 void main() {
   late ProductRepositoryImpl repo;
   late MockProductLocalDatasource mockDs;
+  late MockProductImageService mockImageService;
 
   setUp(() {
     mockDs = MockProductLocalDatasource();
-    repo = ProductRepositoryImpl(mockDs);
+    mockImageService = MockProductImageService();
+    repo = ProductRepositoryImpl(mockDs, mockImageService);
   });
 
   setUpAll(() {
@@ -82,11 +84,18 @@ void main() {
       expect(captured.price.value, tProduct.price);
     });
 
-    test('deleteProduct delegates to datasource', () async {
+    test('deleteProduct deletes images then delegates', () async {
+      when(
+        () => mockDs.getProductById(any()),
+      ).thenAnswer((_) async => tProduct);
+      when(
+        () => mockImageService.deleteImages(any(), any()),
+      ).thenAnswer((_) async {});
       when(() => mockDs.deleteProduct(any())).thenAnswer((_) async {});
 
       await repo.deleteProduct('prod-0001-0001-0001-000000000001');
 
+      verify(() => mockImageService.deleteImages(any(), any())).called(1);
       verify(
         () => mockDs.deleteProduct('prod-0001-0001-0001-000000000001'),
       ).called(1);

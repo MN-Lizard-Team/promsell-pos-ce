@@ -4,7 +4,8 @@
 
 | Version | Supported |
 |---------|-----------|
-| 0.5.x   | Active |
+| 0.6.x   | Active |
+| 0.5.x   | Security fixes only |
 | 0.4.x   | Security fixes only |
 | < 0.4   | No longer supported |
 

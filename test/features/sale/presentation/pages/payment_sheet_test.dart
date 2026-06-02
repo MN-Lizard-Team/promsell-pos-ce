@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:promsell_pos_ce/core/services/receipt_pdf_service.dart';
+import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -23,6 +23,7 @@ void main() {
     name: 'Water',
     price: 10.0,
     stock: 100,
+    imageThumbnailPath: null,
     isActive: true,
     createdAt: DateTime(2024),
     updatedAt: DateTime(2024),

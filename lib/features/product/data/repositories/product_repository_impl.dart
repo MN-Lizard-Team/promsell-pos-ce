@@ -3,13 +3,15 @@ import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 
 @LazySingleton(as: ProductRepository)
 class ProductRepositoryImpl implements ProductRepository {
-  const ProductRepositoryImpl(this._datasource);
+  const ProductRepositoryImpl(this._datasource, this._imageService);
   final ProductLocalDatasource _datasource;
+  final ProductImageService _imageService;
 
   @override
   Stream<List<Product>> watchAllProducts() => _datasource.watchAllProducts();
@@ -28,6 +30,7 @@ class ProductRepositoryImpl implements ProductRepository {
     String? category,
     String? imageUrl,
     String? imagePath,
+    String? imageThumbnailPath,
     bool trackStock = true,
   }) async {
     final id = IdGenerator.newId();
@@ -41,6 +44,7 @@ class ProductRepositoryImpl implements ProductRepository {
         categoryId: Value(category),
         imageUrl: Value(imageUrl),
         imagePath: Value(imagePath),
+        imageThumbnailPath: Value(imageThumbnailPath),
         trackStock: Value(trackStock),
         createdAt: Value(now),
         updatedAt: Value(now),
@@ -61,6 +65,7 @@ class ProductRepositoryImpl implements ProductRepository {
         categoryId: Value(product.category),
         imageUrl: Value(product.imageUrl),
         imagePath: Value(product.imagePath),
+        imageThumbnailPath: Value(product.imageThumbnailPath),
         isActive: Value(product.isActive),
         trackStock: Value(product.trackStock),
         updatedAt: Value(now),
@@ -69,5 +74,14 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<void> deleteProduct(String id) => _datasource.deleteProduct(id);
+  Future<void> deleteProduct(String id) async {
+    final product = await _datasource.getProductById(id);
+    if (product != null) {
+      await _imageService.deleteImages(
+        product.imagePath,
+        product.imageThumbnailPath,
+      );
+    }
+    await _datasource.deleteProduct(id);
+  }
 }

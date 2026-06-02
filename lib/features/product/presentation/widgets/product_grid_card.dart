@@ -35,6 +35,7 @@ class ProductGridCard extends StatelessWidget {
                 Center(
                   child: ProductAvatar(
                     imagePath: product.imagePath,
+                    imageThumbnailPath: product.imageThumbnailPath,
                     imageUrl: product.imageUrl,
                     size: 72,
                   ),

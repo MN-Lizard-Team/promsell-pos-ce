@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -52,6 +52,15 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'ALTER TABLE products ADD COLUMN image_path TEXT',
         );
+      }
+      if (from < 5) {
+        await _seedR4Settings();
+      }
+      if (from < 6) {
+        await customStatement(
+          'ALTER TABLE products ADD COLUMN image_thumbnail_path TEXT',
+        );
+        await _seedR45Settings();
       }
     },
     beforeOpen: (details) async {
@@ -98,6 +107,25 @@ class AppDatabase extends _$AppDatabase {
         AppSettingsCompanion.insert(key: 'vat_rate', value: '7'),
         AppSettingsCompanion.insert(key: 'vat_mode', value: 'NONE'),
         AppSettingsCompanion.insert(key: 'currency_symbol', value: '฿'),
+      ], mode: InsertMode.insertOrIgnore);
+    });
+  }
+
+  Future<void> _seedR4Settings() async {
+    await batch((b) {
+      b.insertAll(appSettings, [
+        AppSettingsCompanion.insert(key: 'promptpayId', value: ''),
+        AppSettingsCompanion.insert(key: 'receiptSize', value: '80mm'),
+        AppSettingsCompanion.insert(key: 'backupReminderDays', value: '7'),
+      ], mode: InsertMode.insertOrIgnore);
+    });
+  }
+
+  Future<void> _seedR45Settings() async {
+    await batch((b) {
+      b.insertAll(appSettings, [
+        AppSettingsCompanion.insert(key: 'imageMaxWidth', value: '800'),
+        AppSettingsCompanion.insert(key: 'imageQuality', value: '80'),
       ], mode: InsertMode.insertOrIgnore);
     });
   }

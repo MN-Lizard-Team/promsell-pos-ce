@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.5.4+2
+version: 0.6.0+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -152,8 +152,10 @@ Before distributing a build with UI changes:
 10. Open History again — voided sale shows strikethrough amount and red badge.
 11. Open Report and verify net revenue excludes voided sales; voided summary card appears.
 12. Tap **Print Receipt** or **Share Receipt** on any sale.
-13. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); switch theme/locale, and save shop info.
-14. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid.
+13. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); verify PromptPay ID field and Receipt Size toggle; switch theme/locale, and save shop info.
+14. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; delete the product and verify both image files are removed from storage.
+15. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file; tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
+16. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
 
 ---
 

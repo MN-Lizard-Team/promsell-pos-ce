@@ -1267,6 +1267,150 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ไม่สามารถเลือกรูปได้'**
   String get imagePickError;
+
+  /// No description provided for @promptpay.
+  ///
+  /// In th, this message translates to:
+  /// **'พร้อมเพย์'**
+  String get promptpay;
+
+  /// No description provided for @settingsPromptpayId.
+  ///
+  /// In th, this message translates to:
+  /// **'PromptPay ID'**
+  String get settingsPromptpayId;
+
+  /// No description provided for @settingsPromptpayIdHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เบอร์โทรหรือเลขบัตรประชาชน'**
+  String get settingsPromptpayIdHint;
+
+  /// No description provided for @promptpayQrTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนจ่ายเงิน'**
+  String get promptpayQrTitle;
+
+  /// No description provided for @promptpayConfirmPayment.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันรับเงินแล้ว'**
+  String get promptpayConfirmPayment;
+
+  /// No description provided for @promptpayNotConfigured.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ได้ตั้งค่า PromptPay'**
+  String get promptpayNotConfigured;
+
+  /// No description provided for @promptpaySettingsHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ไปตั้งค่า'**
+  String get promptpaySettingsHint;
+
+  /// No description provided for @settingsReceiptSize.
+  ///
+  /// In th, this message translates to:
+  /// **'ขนาดใบเสร็จ'**
+  String get settingsReceiptSize;
+
+  /// No description provided for @receiptSize80mm.
+  ///
+  /// In th, this message translates to:
+  /// **'80mm (กระดาษความร้อน)'**
+  String get receiptSize80mm;
+
+  /// No description provided for @receiptSizeA4.
+  ///
+  /// In th, this message translates to:
+  /// **'A4'**
+  String get receiptSizeA4;
+
+  /// No description provided for @settingsData.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูล'**
+  String get settingsData;
+
+  /// No description provided for @exportDatabase.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกฐานข้อมูล (สำรองข้อมูลเต็มรูปแบบ)'**
+  String get exportDatabase;
+
+  /// No description provided for @exportSalesCsv.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกยอดขาย (CSV)'**
+  String get exportSalesCsv;
+
+  /// No description provided for @exportProductsCsv.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกสินค้า (CSV)'**
+  String get exportProductsCsv;
+
+  /// No description provided for @restoreFromBackup.
+  ///
+  /// In th, this message translates to:
+  /// **'กู้คืนจากสำรอง...'**
+  String get restoreFromBackup;
+
+  /// No description provided for @restoreConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันกู้คืนข้อมูล?'**
+  String get restoreConfirmTitle;
+
+  /// No description provided for @restoreConfirmMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลปัจจุบันจะถูกเขียนทับ ดำเนินการต่อ?'**
+  String get restoreConfirmMessage;
+
+  /// No description provided for @restoreSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'กู้คืนข้อมูลสำเร็จ'**
+  String get restoreSuccess;
+
+  /// No description provided for @restoreError.
+  ///
+  /// In th, this message translates to:
+  /// **'กู้คืนข้อมูลไม่สำเร็จ'**
+  String get restoreError;
+
+  /// No description provided for @backupReminderTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'แนะนำสำรองข้อมูล'**
+  String get backupReminderTitle;
+
+  /// No description provided for @backupReminderMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ได้สำรองข้อมูลมากกว่า {days} วัน'**
+  String backupReminderMessage(int days);
+
+  /// No description provided for @settingsBackupReminderDays.
+  ///
+  /// In th, this message translates to:
+  /// **'เตือนสำรองข้อมูล (วัน, 0=ปิด)'**
+  String get settingsBackupReminderDays;
+
+  /// No description provided for @backupNow.
+  ///
+  /// In th, this message translates to:
+  /// **'สำรองเลย'**
+  String get backupNow;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกสำเร็จ'**
+  String get exportSuccess;
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,7 @@ class AddProduct {
     String? category,
     String? imageUrl,
     String? imagePath,
+    String? imageThumbnailPath,
     bool trackStock = true,
   }) {
     Validators.productName(name);
@@ -29,6 +30,7 @@ class AddProduct {
       category: category,
       imageUrl: imageUrl,
       imagePath: imagePath,
+      imageThumbnailPath: imageThumbnailPath,
       trackStock: trackStock,
     );
   }

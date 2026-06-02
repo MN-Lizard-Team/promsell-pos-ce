@@ -32,6 +32,7 @@ class ProductTile extends StatelessWidget {
               children: [
                 ProductAvatar(
                   imagePath: product.imagePath,
+                  imageThumbnailPath: product.imageThumbnailPath,
                   imageUrl: product.imageUrl,
                   size: 52,
                 ),

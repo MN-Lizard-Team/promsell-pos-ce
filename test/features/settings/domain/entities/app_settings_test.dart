@@ -28,6 +28,12 @@ void main() {
       expect(settings.discountPresets.length, 1);
       expect(settings.discountPresets.first.id, 'default');
       expect(settings.activeDiscountPresetId, 'default');
+      expect(settings.promptpayId, '');
+      expect(settings.receiptSize, '80mm');
+      expect(settings.backupReminderDays, 7);
+      expect(settings.lastBackupAt, isNull);
+      expect(settings.imageMaxWidth, 800);
+      expect(settings.imageQuality, 80);
     });
 
     test('supports value equality', () {
@@ -51,7 +57,7 @@ void main() {
 
     test('props contains all fields', () {
       const settings = AppSettings();
-      expect(settings.props.length, 24);
+      expect(settings.props.length, 30);
     });
   });
 }

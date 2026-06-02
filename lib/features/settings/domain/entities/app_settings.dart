@@ -35,6 +35,12 @@ class AppSettings extends Equatable {
       ),
     ],
     this.activeDiscountPresetId = 'default',
+    this.promptpayId = '',
+    this.receiptSize = '80mm',
+    this.backupReminderDays = 7,
+    this.lastBackupAt,
+    this.imageMaxWidth = 800,
+    this.imageQuality = 80,
   });
 
   final Locale locale;
@@ -61,6 +67,12 @@ class AppSettings extends Equatable {
   final String defaultDiscountType;
   final List<DiscountPreset> discountPresets;
   final String activeDiscountPresetId;
+  final String promptpayId;
+  final String receiptSize;
+  final int backupReminderDays;
+  final String? lastBackupAt;
+  final int imageMaxWidth;
+  final int imageQuality;
 
   DiscountPreset get activeDiscountPreset {
     final match = discountPresets.where((p) => p.id == activeDiscountPresetId);
@@ -92,6 +104,12 @@ class AppSettings extends Equatable {
     String? defaultDiscountType,
     List<DiscountPreset>? discountPresets,
     String? activeDiscountPresetId,
+    String? promptpayId,
+    String? receiptSize,
+    int? backupReminderDays,
+    String? lastBackupAt,
+    int? imageMaxWidth,
+    int? imageQuality,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -120,6 +138,12 @@ class AppSettings extends Equatable {
       discountPresets: discountPresets ?? this.discountPresets,
       activeDiscountPresetId:
           activeDiscountPresetId ?? this.activeDiscountPresetId,
+      promptpayId: promptpayId ?? this.promptpayId,
+      receiptSize: receiptSize ?? this.receiptSize,
+      backupReminderDays: backupReminderDays ?? this.backupReminderDays,
+      lastBackupAt: lastBackupAt ?? this.lastBackupAt,
+      imageMaxWidth: imageMaxWidth ?? this.imageMaxWidth,
+      imageQuality: imageQuality ?? this.imageQuality,
     );
   }
 
@@ -149,5 +173,11 @@ class AppSettings extends Equatable {
     defaultDiscountType,
     discountPresets,
     activeDiscountPresetId,
+    promptpayId,
+    receiptSize,
+    backupReminderDays,
+    lastBackupAt,
+    imageMaxWidth,
+    imageQuality,
   ];
 }

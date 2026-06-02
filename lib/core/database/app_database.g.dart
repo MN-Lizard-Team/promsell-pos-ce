@@ -95,6 +95,15 @@ class $ProductsTable extends Products
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumn<String> imageThumbnailPath =
+      GeneratedColumn<String>(
+        'image_thumbnail_path',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  @override
   late final GeneratedColumn<bool> trackStock = GeneratedColumn<bool>(
     'track_stock',
     aliasedName,
@@ -173,6 +182,7 @@ class $ProductsTable extends Products
     categoryId,
     imageUrl,
     imagePath,
+    imageThumbnailPath,
     trackStock,
     isActive,
     createdAt,
@@ -232,6 +242,10 @@ class $ProductsTable extends Products
         DriftSqlType.string,
         data['${effectivePrefix}image_path'],
       ),
+      imageThumbnailPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_thumbnail_path'],
+      ),
       trackStock: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}track_stock'],
@@ -280,6 +294,7 @@ class ProductData extends DataClass implements Insertable<ProductData> {
   final String? categoryId;
   final String? imageUrl;
   final String? imagePath;
+  final String? imageThumbnailPath;
   final bool trackStock;
   final bool isActive;
   final DateTime createdAt;
@@ -298,6 +313,7 @@ class ProductData extends DataClass implements Insertable<ProductData> {
     this.categoryId,
     this.imageUrl,
     this.imagePath,
+    this.imageThumbnailPath,
     required this.trackStock,
     required this.isActive,
     required this.createdAt,
@@ -330,6 +346,9 @@ class ProductData extends DataClass implements Insertable<ProductData> {
     }
     if (!nullToAbsent || imagePath != null) {
       map['image_path'] = Variable<String>(imagePath);
+    }
+    if (!nullToAbsent || imageThumbnailPath != null) {
+      map['image_thumbnail_path'] = Variable<String>(imageThumbnailPath);
     }
     map['track_stock'] = Variable<bool>(trackStock);
     map['is_active'] = Variable<bool>(isActive);
@@ -365,6 +384,9 @@ class ProductData extends DataClass implements Insertable<ProductData> {
       imagePath: imagePath == null && nullToAbsent
           ? const Value.absent()
           : Value(imagePath),
+      imageThumbnailPath: imageThumbnailPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageThumbnailPath),
       trackStock: Value(trackStock),
       isActive: Value(isActive),
       createdAt: Value(createdAt),
@@ -395,6 +417,9 @@ class ProductData extends DataClass implements Insertable<ProductData> {
       categoryId: serializer.fromJson<String?>(json['categoryId']),
       imageUrl: serializer.fromJson<String?>(json['imageUrl']),
       imagePath: serializer.fromJson<String?>(json['imagePath']),
+      imageThumbnailPath: serializer.fromJson<String?>(
+        json['imageThumbnailPath'],
+      ),
       trackStock: serializer.fromJson<bool>(json['trackStock']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -418,6 +443,7 @@ class ProductData extends DataClass implements Insertable<ProductData> {
       'categoryId': serializer.toJson<String?>(categoryId),
       'imageUrl': serializer.toJson<String?>(imageUrl),
       'imagePath': serializer.toJson<String?>(imagePath),
+      'imageThumbnailPath': serializer.toJson<String?>(imageThumbnailPath),
       'trackStock': serializer.toJson<bool>(trackStock),
       'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -439,6 +465,7 @@ class ProductData extends DataClass implements Insertable<ProductData> {
     Value<String?> categoryId = const Value.absent(),
     Value<String?> imageUrl = const Value.absent(),
     Value<String?> imagePath = const Value.absent(),
+    Value<String?> imageThumbnailPath = const Value.absent(),
     bool? trackStock,
     bool? isActive,
     DateTime? createdAt,
@@ -457,6 +484,9 @@ class ProductData extends DataClass implements Insertable<ProductData> {
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
     imageUrl: imageUrl.present ? imageUrl.value : this.imageUrl,
     imagePath: imagePath.present ? imagePath.value : this.imagePath,
+    imageThumbnailPath: imageThumbnailPath.present
+        ? imageThumbnailPath.value
+        : this.imageThumbnailPath,
     trackStock: trackStock ?? this.trackStock,
     isActive: isActive ?? this.isActive,
     createdAt: createdAt ?? this.createdAt,
@@ -479,6 +509,9 @@ class ProductData extends DataClass implements Insertable<ProductData> {
           : this.categoryId,
       imageUrl: data.imageUrl.present ? data.imageUrl.value : this.imageUrl,
       imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      imageThumbnailPath: data.imageThumbnailPath.present
+          ? data.imageThumbnailPath.value
+          : this.imageThumbnailPath,
       trackStock: data.trackStock.present
           ? data.trackStock.value
           : this.trackStock,
@@ -504,6 +537,7 @@ class ProductData extends DataClass implements Insertable<ProductData> {
           ..write('categoryId: $categoryId, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('imagePath: $imagePath, ')
+          ..write('imageThumbnailPath: $imageThumbnailPath, ')
           ..write('trackStock: $trackStock, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
@@ -527,6 +561,7 @@ class ProductData extends DataClass implements Insertable<ProductData> {
     categoryId,
     imageUrl,
     imagePath,
+    imageThumbnailPath,
     trackStock,
     isActive,
     createdAt,
@@ -549,6 +584,7 @@ class ProductData extends DataClass implements Insertable<ProductData> {
           other.categoryId == this.categoryId &&
           other.imageUrl == this.imageUrl &&
           other.imagePath == this.imagePath &&
+          other.imageThumbnailPath == this.imageThumbnailPath &&
           other.trackStock == this.trackStock &&
           other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
@@ -569,6 +605,7 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
   final Value<String?> categoryId;
   final Value<String?> imageUrl;
   final Value<String?> imagePath;
+  final Value<String?> imageThumbnailPath;
   final Value<bool> trackStock;
   final Value<bool> isActive;
   final Value<DateTime> createdAt;
@@ -588,6 +625,7 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
     this.categoryId = const Value.absent(),
     this.imageUrl = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.imageThumbnailPath = const Value.absent(),
     this.trackStock = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -608,6 +646,7 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
     this.categoryId = const Value.absent(),
     this.imageUrl = const Value.absent(),
     this.imagePath = const Value.absent(),
+    this.imageThumbnailPath = const Value.absent(),
     this.trackStock = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -630,6 +669,7 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
     Expression<String>? categoryId,
     Expression<String>? imageUrl,
     Expression<String>? imagePath,
+    Expression<String>? imageThumbnailPath,
     Expression<bool>? trackStock,
     Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
@@ -650,6 +690,8 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
       if (categoryId != null) 'category_id': categoryId,
       if (imageUrl != null) 'image_url': imageUrl,
       if (imagePath != null) 'image_path': imagePath,
+      if (imageThumbnailPath != null)
+        'image_thumbnail_path': imageThumbnailPath,
       if (trackStock != null) 'track_stock': trackStock,
       if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
@@ -672,6 +714,7 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
     Value<String?>? categoryId,
     Value<String?>? imageUrl,
     Value<String?>? imagePath,
+    Value<String?>? imageThumbnailPath,
     Value<bool>? trackStock,
     Value<bool>? isActive,
     Value<DateTime>? createdAt,
@@ -692,6 +735,7 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
       categoryId: categoryId ?? this.categoryId,
       imageUrl: imageUrl ?? this.imageUrl,
       imagePath: imagePath ?? this.imagePath,
+      imageThumbnailPath: imageThumbnailPath ?? this.imageThumbnailPath,
       trackStock: trackStock ?? this.trackStock,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
@@ -736,6 +780,9 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
     if (imagePath.present) {
       map['image_path'] = Variable<String>(imagePath.value);
     }
+    if (imageThumbnailPath.present) {
+      map['image_thumbnail_path'] = Variable<String>(imageThumbnailPath.value);
+    }
     if (trackStock.present) {
       map['track_stock'] = Variable<bool>(trackStock.value);
     }
@@ -776,6 +823,7 @@ class ProductsCompanion extends UpdateCompanion<ProductData> {
           ..write('categoryId: $categoryId, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('imagePath: $imagePath, ')
+          ..write('imageThumbnailPath: $imageThumbnailPath, ')
           ..write('trackStock: $trackStock, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')

@@ -30,6 +30,7 @@ import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 
 // ── Repositories ──
 class MockSaleRepository extends Mock implements SaleRepository {}
@@ -85,3 +86,6 @@ class MockSettingsCubit extends MockCubit<SettingsState>
     implements SettingsCubit {}
 
 class MockReportCubit extends MockCubit<ReportState> implements ReportCubit {}
+
+// ── Services ──
+class MockProductImageService extends Mock implements ProductImageService {}

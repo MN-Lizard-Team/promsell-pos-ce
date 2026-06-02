@@ -624,4 +624,79 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get imagePickError => 'ไม่สามารถเลือกรูปได้';
+
+  @override
+  String get promptpay => 'พร้อมเพย์';
+
+  @override
+  String get settingsPromptpayId => 'PromptPay ID';
+
+  @override
+  String get settingsPromptpayIdHint => 'เบอร์โทรหรือเลขบัตรประชาชน';
+
+  @override
+  String get promptpayQrTitle => 'สแกนจ่ายเงิน';
+
+  @override
+  String get promptpayConfirmPayment => 'ยืนยันรับเงินแล้ว';
+
+  @override
+  String get promptpayNotConfigured => 'ยังไม่ได้ตั้งค่า PromptPay';
+
+  @override
+  String get promptpaySettingsHint => 'ไปตั้งค่า';
+
+  @override
+  String get settingsReceiptSize => 'ขนาดใบเสร็จ';
+
+  @override
+  String get receiptSize80mm => '80mm (กระดาษความร้อน)';
+
+  @override
+  String get receiptSizeA4 => 'A4';
+
+  @override
+  String get settingsData => 'ข้อมูล';
+
+  @override
+  String get exportDatabase => 'ส่งออกฐานข้อมูล (สำรองข้อมูลเต็มรูปแบบ)';
+
+  @override
+  String get exportSalesCsv => 'ส่งออกยอดขาย (CSV)';
+
+  @override
+  String get exportProductsCsv => 'ส่งออกสินค้า (CSV)';
+
+  @override
+  String get restoreFromBackup => 'กู้คืนจากสำรอง...';
+
+  @override
+  String get restoreConfirmTitle => 'ยืนยันกู้คืนข้อมูล?';
+
+  @override
+  String get restoreConfirmMessage =>
+      'ข้อมูลปัจจุบันจะถูกเขียนทับ ดำเนินการต่อ?';
+
+  @override
+  String get restoreSuccess => 'กู้คืนข้อมูลสำเร็จ';
+
+  @override
+  String get restoreError => 'กู้คืนข้อมูลไม่สำเร็จ';
+
+  @override
+  String get backupReminderTitle => 'แนะนำสำรองข้อมูล';
+
+  @override
+  String backupReminderMessage(int days) {
+    return 'ยังไม่ได้สำรองข้อมูลมากกว่า $days วัน';
+  }
+
+  @override
+  String get settingsBackupReminderDays => 'เตือนสำรองข้อมูล (วัน, 0=ปิด)';
+
+  @override
+  String get backupNow => 'สำรองเลย';
+
+  @override
+  String get exportSuccess => 'ส่งออกสำเร็จ';
 }

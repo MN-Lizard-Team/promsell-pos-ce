@@ -4,39 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
-
-/// Labels for receipt text that must be localized by the caller.
-class ReceiptLabels {
-  const ReceiptLabels({
-    required this.receipt,
-    required this.payment,
-    required this.paymentMethodLabel,
-    required this.total,
-    required this.received,
-    required this.change,
-    required this.note,
-    required this.vat,
-    required this.vatIncluded,
-    required this.subtotal,
-    required this.itemDiscounts,
-    required this.cartDiscount,
-  });
-
-  final String receipt;
-  final String payment;
-  final String paymentMethodLabel;
-  final String total;
-  final String received;
-  final String change;
-  final String note;
-  final String vat;
-  final String vatIncluded;
-  final String subtotal;
-  final String itemDiscounts;
-  final String cartDiscount;
-}
 
 @lazySingleton
 class ReceiptPdfService {

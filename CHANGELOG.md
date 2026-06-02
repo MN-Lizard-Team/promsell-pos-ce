@@ -17,6 +17,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - 2026-06-02
+
+Merchant Tools — PDF receipt, PromptPay QR, backup/restore, and product image system overhaul.
+
+### Highlights
+
+- **Receipt PDF** — Print and share receipts as PDF with Thai font support (80mm thermal + A4).
+- **PromptPay QR** — EMVCo-compliant QR generation for static/dynamic payments; integrated into payment sheet.
+- **Backup System** — Full SQLite export/import, CSV export for sales & products, backup reminder banner.
+- **Product Image Overhaul** — Pure Dart compression, thumbnail system, image cleanup lifecycle, CachedNetworkImage, compression settings.
+
+### Added
+
+#### Receipt PDF & PromptPay QR
+
+- **`ReceiptPdfService`** — `printReceipt()` / `shareReceipt()` with Thai font; moved to feature-based architecture.
+- **`ReceiptLabels`** — Localized label entity extracted to `domain/entities/`.
+- **80mm thermal layout** — Shop info, items, VAT breakdown, payment details, footer note.
+- **`PromptpayQrService`** — EMVCo TLV payload generation (phone/citizen ID, static/dynamic).
+- **Payment sheet QR** — QR display with amount, confirm button.
+- **6 `AppSettings` fields** — `promptpayId`, `receiptSize`, `backupReminderDays`, `lastBackupAt`, `imageMaxWidth`, `imageQuality`.
+- **24 l10n keys** (EN + TH) — PromptPay (7), receipt size (3), backup/data (14).
+
+#### Backup System
+
+- **`BackupService`** — SQLite export with WAL checkpoint, import with schema validation + confirm dialog.
+- **CSV export** — Sales (date-range) and products via `csv` + `share_plus`.
+- **Backup reminder** — Configurable days threshold, banner on Settings page.
+
+#### Product Image Overhaul
+
+- **Pure Dart compression** — Replaced `flutter_image_compress` with `image` package; no native dependency.
+- **Thumbnail system** — 200px thumbnails alongside 800px full images; `ProductAvatar` uses thumbnails for sizes ≤100px.
+- **`imageThumbnailPath`** — Added to `Product` entity, `products` table, all data/domain/presentation layers.
+- **Image cleanup on delete** — `ProductRepositoryImpl` deletes images before DB row removal.
+- **`CachedNetworkImage`** — Replaced `Image.network` in `ProductAvatar` and `ProductFormAvatar` with caching + placeholders.
+- **Async file check** — `File.existsSync()` → `File.exists()` in both avatar widgets (converted to `StatefulWidget`).
+- **Image naming fix** — New products no longer get `new.jpg`; UUID-based naming.
+- **Compression settings** — `imageMaxWidth` (800) / `imageQuality` (80) in `AppSettings`; `ProductImageServiceImpl` reads from `SettingsCubit`.
+- **Schema migration v5→v6** — `image_thumbnail_path` column; `_seedR45Settings()` seeds image defaults.
+- **6 dependencies** — `share_plus`, `file_picker`, `csv`, `qr_flutter`, `image`, `cached_network_image`.
+
+### Changed
+
+- **`AppSettings.props`** — Count updated 24 → 30 (6 new fields).
+- **`SettingsRepositoryImpl`** — Added load/save keys for 6 new settings fields.
+- **`app_database.dart`** — Schema version bumped 4 → 6; `_seedR4Settings()` + `_seedR45Settings()` migration steps.
+- **`ProductImageServiceImpl`** — Requires `SettingsCubit` injection; reads `_maxWidth`/`_quality` from settings.
+- **`ProductRepositoryImpl`** — Requires `ProductImageService` injection; deletes images on product removal.
+- **`ProductAvatar` / `ProductFormAvatar`** — Rewritten as `StatefulWidget` with async file check, thumbnail support, `CachedNetworkImage`.
+- **`ProductFormPage`** — Tracks `_imageThumbnailPath`; generates thumbnail on pick; deletes both images on remove.
+- **Product data layer** — `ProductAdded`, `AddProduct`, `ProductRepository.addProduct` accept `imageThumbnailPath`.
+
+### Removed
+
+- **`flutter_image_compress`** — Replaced by pure Dart `image` package.
+
+### Tests
+
+- **`app_settings_test.dart`** — `props.length` 24 → 30; default assertions for 6 new fields.
+- **`product_test.dart`** — `props.length` → 12; `imageThumbnailPath` in equality test.
+- **`product_repository_impl_test.dart`** — `MockProductImageService`; deleteProduct verifies image cleanup.
+- **`checkout_flow_test.dart`** — `_NoOpImageService` stub for `ProductRepositoryImpl`.
+- **All `Product()` constructors** in tests updated with `imageThumbnailPath: null`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **215/215 passing**
+
+---
+
 ## [0.5.4] - 2026-05-29
 
 Discount policy settings with preset manager, and product image management with gallery/camera pick.
@@ -705,7 +774,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.4...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.1...v0.5.2

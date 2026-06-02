@@ -628,4 +628,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imagePickError => 'Unable to pick image';
+
+  @override
+  String get promptpay => 'PromptPay';
+
+  @override
+  String get settingsPromptpayId => 'PromptPay ID';
+
+  @override
+  String get settingsPromptpayIdHint => 'Phone number or Citizen ID';
+
+  @override
+  String get promptpayQrTitle => 'Scan to Pay';
+
+  @override
+  String get promptpayConfirmPayment => 'Confirm Payment Received';
+
+  @override
+  String get promptpayNotConfigured => 'PromptPay not configured';
+
+  @override
+  String get promptpaySettingsHint => 'Go to Settings';
+
+  @override
+  String get settingsReceiptSize => 'Receipt Size';
+
+  @override
+  String get receiptSize80mm => '80mm (Thermal)';
+
+  @override
+  String get receiptSizeA4 => 'A4';
+
+  @override
+  String get settingsData => 'Data';
+
+  @override
+  String get exportDatabase => 'Export Database (Full Backup)';
+
+  @override
+  String get exportSalesCsv => 'Export Sales (CSV)';
+
+  @override
+  String get exportProductsCsv => 'Export Products (CSV)';
+
+  @override
+  String get restoreFromBackup => 'Restore from Backup...';
+
+  @override
+  String get restoreConfirmTitle => 'Confirm Data Restore?';
+
+  @override
+  String get restoreConfirmMessage =>
+      'Current data will be overwritten. Continue?';
+
+  @override
+  String get restoreSuccess => 'Data restored successfully';
+
+  @override
+  String get restoreError => 'Failed to restore data';
+
+  @override
+  String get backupReminderTitle => 'Backup Recommended';
+
+  @override
+  String backupReminderMessage(int days) {
+    return 'No backup for more than $days days';
+  }
+
+  @override
+  String get settingsBackupReminderDays => 'Backup reminder (days, 0=off)';
+
+  @override
+  String get backupNow => 'Backup Now';
+
+  @override
+  String get exportSuccess => 'Export successful';
 }

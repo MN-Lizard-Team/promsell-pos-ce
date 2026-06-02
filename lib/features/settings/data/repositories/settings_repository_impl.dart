@@ -38,6 +38,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyMaxDiscountAmount = 'maxDiscountAmount';
   static const _keyActiveDiscountPresetId = 'activeDiscountPresetId';
   static const _keyPresetDiscountValues = 'presetDiscountValues';
+  static const _keyPromptpayId = 'promptpayId';
+  static const _keyReceiptSize = 'receiptSize';
+  static const _keyBackupReminderDays = 'backupReminderDays';
+  static const _keyLastBackupAt = 'lastBackupAt';
+  static const _keyImageMaxWidth = 'imageMaxWidth';
+  static const _keyImageQuality = 'imageQuality';
 
   @override
   Future<AppSettings> load() async {
@@ -84,6 +90,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
       discountPresets: await _loadDiscountPresets(),
       activeDiscountPresetId:
           await _datasource.getString(_keyActiveDiscountPresetId) ?? 'default',
+      promptpayId: await _datasource.getString(_keyPromptpayId) ?? '',
+      receiptSize: await _datasource.getString(_keyReceiptSize) ?? '80mm',
+      backupReminderDays: await _datasource.getInt(_keyBackupReminderDays) ?? 7,
+      lastBackupAt: await _datasource.getString(_keyLastBackupAt),
+      imageMaxWidth: await _datasource.getInt(_keyImageMaxWidth) ?? 800,
+      imageQuality: await _datasource.getInt(_keyImageQuality) ?? 80,
     );
   }
 
@@ -143,6 +155,17 @@ class SettingsRepositoryImpl implements SettingsRepository {
       _keyActiveDiscountPresetId,
       settings.activeDiscountPresetId,
     );
+    await _datasource.setString(_keyPromptpayId, settings.promptpayId);
+    await _datasource.setString(_keyReceiptSize, settings.receiptSize);
+    await _datasource.setInt(
+      _keyBackupReminderDays,
+      settings.backupReminderDays,
+    );
+    if (settings.lastBackupAt != null) {
+      await _datasource.setString(_keyLastBackupAt, settings.lastBackupAt!);
+    }
+    await _datasource.setInt(_keyImageMaxWidth, settings.imageMaxWidth);
+    await _datasource.setInt(_keyImageQuality, settings.imageQuality);
   }
 
   Future<List<DiscountPreset>> _loadDiscountPresets() async {

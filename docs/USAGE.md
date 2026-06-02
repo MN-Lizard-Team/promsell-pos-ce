@@ -150,7 +150,7 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
    - Payment sheet shows the full breakdown: Subtotal → discounts → Total
 5. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, switch between customers / tables, or delete; cart auto-saves every 500 ms
 6. Tap **Checkout** → payment sheet opens
-7. Select **Cash / Transfer / Card**
+7. Select **Cash / Transfer / Card / PromptPay**
 8. For cash, use quick cash chips or enter the amount received — change is calculated automatically
 9. Optionally add a sale note
 10. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
@@ -161,9 +161,9 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 - Toggle between **List** and **Grid** view with the icon pair in the app bar
 - Use category **filter chips** to narrow the catalog; combined with the search bar
-- Each product shows an image avatar (local file from gallery/camera, or `Image.network` with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
+- Each product shows an image avatar (local file from gallery/camera with thumbnail for small sizes, or `CachedNetworkImage` for network URLs with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
 - Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed (800px, 80% JPEG) and saved locally; or paste an image URL for future online sync; fill name, price, quantity, category; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
+- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; or paste an image URL for future online sync; fill name, price, quantity, category; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
 - Search filters by name and category in real time
 
@@ -223,6 +223,15 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Max discount amount** | Upper limit for fixed-amount discounts (default `0` = unlimited) |
 | **Discount presets** | Named preset groups with type (%/฿) and quick-apply values |
 | **Active discount preset** | Which preset group is active in the sale discount dialog |
+| **PromptPay ID** | Phone number or citizen ID for PromptPay QR generation |
+| **Receipt size** | `80mm` (thermal) or `A4` |
+| **Backup reminder** | Days before backup reminder appears (0 = off, default `7`) |
+| **Image max width** | Maximum width for product image compression in pixels (default `800`) |
+| **Image quality** | JPEG quality for product images 1–100 (default `80`) |
+| **Export database** | Full SQLite backup via share sheet |
+| **Export sales CSV** | Sales data as CSV for a date range |
+| **Export products CSV** | Product catalog as CSV |
+| **Restore from backup** | Import a previously exported database file |
 
 To save text-field changes, tap the **Save** button in the app bar or at the bottom of the page.
 
@@ -310,7 +319,7 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart       # Database class, schema v4, migration, indexes, seed
+├── app_database.dart       # Database class, schema v6, migration, indexes, seed
 ├── app_database.g.dart     # GENERATED — do not edit
 └── tables/
     ├── products_table.dart
@@ -340,7 +349,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **4** (v0.5.4). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **6** (v0.6.0). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 

@@ -15,6 +15,7 @@ void main() {
         category: 'Drinks',
         imageUrl: null,
         imagePath: null,
+        imageThumbnailPath: null,
         isActive: true,
         createdAt: tNow,
         updatedAt: tNow,
@@ -45,7 +46,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tProduct.props.length, 11);
+      expect(tProduct.props.length, 12);
     });
   });
 }

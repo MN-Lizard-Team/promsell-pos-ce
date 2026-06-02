@@ -35,6 +35,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   );
   String? _imagePath;
   String? _imageUrl;
+  String? _imageThumbnailPath;
   late bool _isActive;
   late bool _trackStock;
 
@@ -47,6 +48,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _trackStock = widget.product?.trackStock ?? true;
     _imagePath = widget.product?.imagePath;
     _imageUrl = widget.product?.imageUrl;
+    _imageThumbnailPath = widget.product?.imageThumbnailPath;
   }
 
   @override
@@ -77,6 +79,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 : _categoryCtrl.text.trim(),
             imagePath: _imagePath,
             imageUrl: _imageUrl,
+            imageThumbnailPath: _imageThumbnailPath,
             isActive: _isActive,
             trackStock: _trackStock,
           ),
@@ -93,6 +96,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
               : _categoryCtrl.text.trim(),
           imagePath: _imagePath,
           imageUrl: _imageUrl,
+          imageThumbnailPath: _imageThumbnailPath,
           trackStock: _trackStock,
         ),
       );
@@ -341,16 +345,29 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
     if (result == 'gallery') {
       final path = await imageService.pickFromGallery(productId);
-      if (path != null && mounted) setState(() => _imagePath = path);
+      if (path != null && mounted) {
+        final thumbPath = await imageService.generateThumbnail(path);
+        setState(() {
+          _imagePath = path;
+          _imageThumbnailPath = thumbPath;
+        });
+      }
     } else if (result == 'camera') {
       final path = await imageService.pickFromCamera(productId);
-      if (path != null && mounted) setState(() => _imagePath = path);
+      if (path != null && mounted) {
+        final thumbPath = await imageService.generateThumbnail(path);
+        setState(() {
+          _imagePath = path;
+          _imageThumbnailPath = thumbPath;
+        });
+      }
     } else if (result == 'remove') {
-      await imageService.deleteImage(_imagePath);
+      await imageService.deleteImages(_imagePath, _imageThumbnailPath);
       if (mounted) {
         setState(() {
           _imagePath = null;
           _imageUrl = null;
+          _imageThumbnailPath = null;
         });
       }
     }

@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/repositories/product_repository_impl.dart';
+import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/repositories/sale_repository_impl.dart';
@@ -11,6 +12,19 @@ import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_servi
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 import '../helpers/fake_database.dart';
+
+class _NoOpImageService implements ProductImageService {
+  @override
+  Future<String?> pickFromGallery(String productId) async => null;
+  @override
+  Future<String?> pickFromCamera(String productId) async => null;
+  @override
+  Future<void> deleteImage(String? imagePath) async {}
+  @override
+  Future<void> deleteImages(String? imagePath, String? thumbnailPath) async {}
+  @override
+  Future<String?> generateThumbnail(String imagePath) async => null;
+}
 
 void main() {
   late AppDatabase db;
@@ -27,7 +41,7 @@ void main() {
       receiptNumberService: ReceiptNumberService(db),
       inventoryLogService: InventoryLogService(db),
     );
-    productRepo = ProductRepositoryImpl(productDs);
+    productRepo = ProductRepositoryImpl(productDs, _NoOpImageService());
     saleRepo = SaleRepositoryImpl(saleDs);
   });
 

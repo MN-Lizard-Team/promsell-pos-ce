@@ -23,7 +23,6 @@ R2 ทำให้ระบบ trust ได้. R3 ทำให้ระบบ *
 ## Pre-flight
 
 - [x] R1+R2 merged → `v0.4.0` released (2026-05-27)
-- [ ] Branch `feat/phase1-r3-cashier-ux`
 
 ---
 

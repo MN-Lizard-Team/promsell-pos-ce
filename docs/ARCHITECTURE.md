@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.5.4
+# Architecture — Promsell POS CE v0.6.0
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -82,6 +82,9 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │  Data Layer                                        │
 │  Repo impls + Datasources + Services               │
 │  ReceiptPdfService (80mm thermal PDF)               │
+│  PromptpayQrService (EMVCo QR)                      │
+│  BackupService (export/import/CSV)                   │
+│  ProductImageService (pure Dart compression)         │
 └────────────────────────┬───────────────────────────┘
                 Drift │ queries + transactions
                          ▼
@@ -135,6 +138,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │       ├───→ ReceiptNumberService                       │
 │       ├───→ InventoryLogService                        │
 │       │                                               │
+│  ProductImageService ──→ SettingsCubit (image settings)│
 │  SettingsLocalDatasource (app_settings)                │
 └───────────────────────┬─────────────────────────────┘
                         │
@@ -338,6 +342,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │                                                           │
 │  SaleRepository ──→ SaleLocalDatasource                   │
 │  ProductRepository ──→ ProductLocalDatasource             │
+│                       ──→ ProductImageService              │
 │  HistoryRepository ──→ SaleLocalDatasource                │
 │  SettingsRepository ──→ SettingsLocalDatasource         │
 │                                                           │
@@ -350,8 +355,11 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │       ├──→ ReceiptNumberService ──→ AppDatabase           │
 │       └──→ InventoryLogService ──→ AppDatabase            │
 │  ProductLocalDatasource ──→ AppDatabase                   │
+│  ProductImageService ──→ SettingsCubit (imageMaxWidth/Quality)│
 │  SettingsLocalDatasource ──→ AppDatabase                  │
 │  ReceiptPdfService (stateless)                            │
+│  PromptpayQrService (stateless)                           │
+│  BackupService (stateless)                                │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
@@ -597,6 +605,23 @@ try {
 
 ---
 
+### ADR-012: Pure Dart image compression over native plugin
+
+**Context:** Product image compression previously used `flutter_image_compress` (native platform channels). This added a native dependency, complicated the build, and couldn't be configured at runtime.
+
+**Decision:** Replace with the `image` package (pure Dart). Compression settings (`imageMaxWidth`, `imageQuality`) are stored in `AppSettings` and read via `SettingsCubit`, allowing merchant configuration without app rebuild.
+
+**Consequences:**
+- ✅ No native dependency — simpler build, no platform channel issues
+- ✅ Runtime-configurable quality/size via settings
+- ✅ Thumbnail generation in same pass (200px + full size)
+- ✅ `CachedNetworkImage` replaces `Image.network` for better UX (placeholder, error widget, disk cache)
+- ✅ Async file existence check replaces sync `existsSync()` — no frame jank
+- ⚠️ Pure Dart decoding is slower than native libyuv for very large images (acceptable for POS photo scale)
+- ⚠️ `image` package increases APK size by ~2MB (wasm/JS decoder)
+
+---
+
 ### ADR-010: Draft cart auto-save via Timer debounce in BLoC
 
 **Context:** Cart state changes rapidly on every tap (add item, change qty, apply discount). Saving to SQLite synchronously on every event would cause write thrashing.
@@ -662,4 +687,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.5.4 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.6.0 · Architecture Document · Deep Technical Reference</sub>
