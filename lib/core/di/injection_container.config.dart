@@ -22,10 +22,20 @@ import 'package:promsell_pos_ce/features/history/domain/repositories/history_rep
     as _i26;
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart'
     as _i426;
+import 'package:promsell_pos_ce/features/inventory/data/datasources/inventory_log_local_datasource.dart'
+    as _i41;
+import 'package:promsell_pos_ce/features/inventory/data/repositories/inventory_log_repository_impl.dart'
+    as _i400;
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart'
     as _i216;
+import 'package:promsell_pos_ce/features/inventory/domain/repositories/inventory_log_repository.dart'
+    as _i551;
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart'
     as _i935;
+import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart'
+    as _i1073;
+import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart'
+    as _i21;
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart'
     as _i409;
 import 'package:promsell_pos_ce/features/product/data/repositories/product_repository_impl.dart'
@@ -101,6 +111,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i440.SettingsLocalDatasource>(
       () => _i440.SettingsLocalDatasourceImpl(gh<_i422.AppDatabase>()),
     );
+    gh.lazySingleton<_i41.InventoryLogLocalDatasource>(
+      () => _i41.InventoryLogLocalDatasource(gh<_i422.AppDatabase>()),
+    );
     gh.lazySingleton<_i216.InventoryLogService>(
       () => _i216.InventoryLogService(gh<_i422.AppDatabase>()),
     );
@@ -123,6 +136,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i564.DraftCartRepository>(
       () =>
           _i1037.DraftCartRepositoryImpl(gh<_i925.DraftCartLocalDatasource>()),
+    );
+    gh.lazySingleton<_i551.InventoryLogRepository>(
+      () => _i400.InventoryLogRepositoryImpl(
+        gh<_i41.InventoryLogLocalDatasource>(),
+      ),
     );
     gh.lazySingleton<_i243.SettingsRepository>(
       () => _i173.SettingsRepositoryImpl(gh<_i440.SettingsLocalDatasource>()),
@@ -152,6 +170,9 @@ extension GetItInjectableX on _i174.GetIt {
         settingsRepo: gh<_i243.SettingsRepository>(),
       ),
     );
+    gh.factory<_i1073.WatchInventoryLogs>(
+      () => _i1073.WatchInventoryLogs(gh<_i551.InventoryLogRepository>()),
+    );
     gh.lazySingleton<_i593.ReportCubit>(
       () => _i593.ReportCubit(watchReport: gh<_i744.WatchReport>()),
     );
@@ -162,6 +183,11 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i502.ProductImageServiceImpl(
         gh<_i243.SettingsRepository>(),
         picker: gh<_i183.ImagePicker>(),
+      ),
+    );
+    gh.factory<_i21.InventoryLogCubit>(
+      () => _i21.InventoryLogCubit(
+        watchInventoryLogs: gh<_i1073.WatchInventoryLogs>(),
       ),
     );
     gh.lazySingleton<_i126.ProductRepository>(

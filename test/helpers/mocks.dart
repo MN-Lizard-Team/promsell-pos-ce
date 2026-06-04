@@ -31,6 +31,10 @@ import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
+import 'package:promsell_pos_ce/features/inventory/domain/repositories/inventory_log_repository.dart';
+import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
+import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart';
+import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
 
 // ── Repositories ──
 class MockSaleRepository extends Mock implements SaleRepository {}
@@ -86,6 +90,15 @@ class MockSettingsCubit extends MockCubit<SettingsState>
     implements SettingsCubit {}
 
 class MockReportCubit extends MockCubit<ReportState> implements ReportCubit {}
+
+// ── Inventory ──
+class MockInventoryLogRepository extends Mock
+    implements InventoryLogRepository {}
+
+class MockWatchInventoryLogs extends Mock implements WatchInventoryLogs {}
+
+class MockInventoryLogCubit extends MockCubit<InventoryLogState>
+    implements InventoryLogCubit {}
 
 // ── Services ──
 class MockProductImageService extends Mock implements ProductImageService {}

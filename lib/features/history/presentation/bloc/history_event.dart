@@ -26,3 +26,10 @@ class SaleVoidRequested extends HistoryEvent {
   @override
   List<Object?> get props => [saleId, reason];
 }
+
+class HistorySearchChanged extends HistoryEvent {
+  const HistorySearchChanged(this.query);
+  final String query;
+  @override
+  List<Object?> get props => [query];
+}

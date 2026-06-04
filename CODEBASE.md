@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.6.2
+# CODEBASE.md — Promsell POS CE v0.6.3
 
 ## System overview
 
@@ -82,6 +82,7 @@ features/<name>/
 | `ReceiptPreview` | `lib/core/widgets/` | On-screen receipt preview in `thermal` and `card` styles; VAT-aware |
 | `OverlayToast` | `lib/core/widgets/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow |
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
+| `MoneyUtils` | `lib/core/utils/` | Centralized monetary rounding (`round(double)`) for VAT, discount, and total calculations |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
 | `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; `deleteImages`, `renameImages`; accepts `SettingsRepository`; `@LazySingleton` |
@@ -105,7 +106,7 @@ features/<name>/
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
 | Settings | `SettingsCubit` | `settings_page.dart`; widgets: `SettingsSectionHeader`, `SettingsTextField`, `LanguageTile`, `ThemeTile`, `CurrencyTile`, `DateFormatTile`, `ResponsiveSettingsPicker` |
-| Inventory | — | `inventory_log_page.dart`, `adjust_stock_dialog.dart`, `InventoryLogService`, `AdjustStock` |
+| Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
 
@@ -282,12 +283,15 @@ Two generators must be run after changes:
 | `DraftCarts` table schema | Run `build_runner build`; bump schema version + add migration in `app_database.dart` |
 | `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductRepositoryImpl` constructor if services added |
 | `ProductRepositoryImpl` constructor | Update `product_repository_impl_test.dart` to inject `MockProductImageService` |
+| `InventoryLog` entity | Update `inventory_log_test.dart` props count + `InventoryLogRepositoryImpl` mapping |
+| `InventoryLogCubit` constructor | Update mock in `test/helpers/mocks.dart` + inject `MockWatchInventoryLogs` in tests |
+| `InventoryLogLocalDatasource` | Update `InventoryLogRepositoryImpl` tests to inject mock datasource |
 
 ---
 
 ## Test infrastructure
 
-243 automated tests across 7 layers. Run with `flutter test`.
+258 automated tests across 8 layers. Run with `flutter test`.
 
 ### Test directory structure
 
@@ -295,14 +299,16 @@ Two generators must be run after changes:
 test/
 ├── helpers/
 │   ├── mocks.dart              # All mock classes (repos, datasources, use cases, BLoCs/Cubits)
+│   ├── fixtures.dart           # Test entity fixtures
 │   ├── pump_app.dart           # pumpApp extension for widget tests
 │   └── fake_database.dart      # In-memory Drift DB factory
 ├── core/
-│   └── utils/                  # Core utility tests
+│   └── utils/                  # Core utility tests (MoneyUtils, etc.)
 ├── features/
 │   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
 │   ├── history/                # Use case, BLoC, repo tests
+│   ├── inventory/              # InventoryLog entity, use case, cubit, repo tests
 │   ├── report/                 # ReportCubit tests
 │   └── settings/               # Cubit, repo, widget tests
 ├── integration/

@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.6.2
+# Database Handbook — Promsell POS CE v0.6.3
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -643,27 +643,33 @@ Future<void> upsertDraft(String cartId, SaleState state) async {
 
 ## Migration Guide
 
-### Current strategy (v0.5.x, pre-release)
+### Current strategy (v0.6.3+)
 
-Schema version 2→3 and 3→4 use **incremental migration** (non-destructive). Earlier versions (v1→v2) used destructive drop+recreate.
+All migrations are **non-destructive**. Pre-v2 schemas safely migrate via table creation + guarded column adds.
 
 ```dart
 onUpgrade: (m, from, to) async {
-  // v1→v2: destructive (pre-release)
+  // Safe migration for pre-v2 schemas
   if (from < 2) {
-    for (final table in allTables.toList().reversed) {
-      await m.deleteTable(table.actualTableName);
-    }
-    await m.createAll();
+    await m.createAll(); // creates tables at current schema
     await _createIndexes();
     await _seedDefaultSettings();
+    // Add columns that may not exist in old schemas
+    await _addColumnIfNotExists(m, products, products.imagePath);
+    await _addColumnIfNotExists(m, products, products.imageThumbnailPath);
+    await _addColumnIfNotExists(m, draftCarts, draftCarts.cartDiscountType);
+    await _addColumnIfNotExists(m, draftCarts, draftCarts.cartDiscountValue);
   }
+  if (from < 3) { ... }
+  if (from < 4) { ... }
+  if (from < 5) { ... }
+  if (from < 6) { ... }
 },
 ```
 
-### Production migration (future)
+### Incremental migrations (v2 → v6)
 
-Schema v3→v4, v4→v5, and v5→v6 incremental migration:
+Schema versions 2 through 6 use incremental `addColumn` migration:
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -750,7 +756,7 @@ PRAGMA wal_checkpoint(TRUNCATE);
 
 ### Cautions
 
-- **Version mismatch:** Restoring a v1 backup on v2 app will trigger `onUpgrade` — which currently drops all data. Production builds must handle this gracefully.
+- **Version mismatch:** Restoring a pre-v2 backup on v6+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
 - **CSV export** (v0.6.0): Export sales and products data as CSV via `csv` + `share_plus`.
 
 ---
@@ -857,4 +863,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.6.2 · Schema v6 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.6.3 · Schema v6 · 9 tables · UUIDv4</sub>

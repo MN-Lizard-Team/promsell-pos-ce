@@ -17,6 +17,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.3] - 2026-06-04
+
+InventoryLog Clean Architecture, category autocomplete, history search, cart qty input, bug fixes, platform hardening, and store submission prep.
+
+### Highlights
+
+- **InventoryLog Clean Architecture** — Domain/data/presentation layer split; UI no longer imports Drift directly.
+- **Category Autocomplete** — Product form suggests existing categories while preserving free-text entry.
+- **History Search Bar** — Filter sale history by receipt number, payment method, or amount.
+- **Cart Direct Qty Input** — Tap quantity in cart to open numeric input dialog with stock info.
+
+### Added
+
+- `InventoryLog` domain entity, repository, use case, cubit, and DI wiring (full Clean Architecture stack).
+- `_CategoryAutocomplete` widget with case-insensitive filtering.
+- `HistorySearchChanged` event + `HistoryState.filteredSales` for history search.
+- Cart qty tap dialog with stock clamping in `CartItemRow` and `CartReviewPage`.
+- Android permissions (`INTERNET`, `CAMERA`, `READ_EXTERNAL_STORAGE`, `READ_MEDIA_IMAGES`).
+- Android release signing config with `keystore.properties` fallback to debug.
+- iOS privacy strings (`NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`).
+- iOS App Store compliance (`ITSAppUsesNonExemptEncryption = false`) and ATS (`NSAllowsArbitraryLoads = true`).
+- Play Store + App Store metadata in `fastlane/metadata/`.
+- `docs/PRIVACY_POLICY.md` and `docs/STORE_SUBMISSION.md`.
+- GitHub Actions CI enhancements: `dart format`, `dart pub outdated`, `flutter build apk --debug`.
+- Dependabot weekly `pub` updates.
+- `android:allowBackup="false"` to prevent Google Cloud DB backups.
+- 2 l10n keys: `searchHistoryHint`, `noSearchResults`.
+
+### Changed
+
+- `InventoryLogPage` — Replaced direct Drift queries with `InventoryLogCubit` + `BlocBuilder`.
+- `ProductFormPage` — Category field replaced by `_CategoryAutocomplete`.
+- `HistoryBloc`/`HistoryPage` — Added search handler + filtered list view.
+- App label → `"Promsell"` on Android (`AndroidManifest.xml`) and iOS (`Info.plist`).
+- Version bumped `0.6.2+1` → `0.6.3+2`.
+
+### Fixed
+
+- Schema migration `from < 2` gap — safe migration with `_addColumnIfNotExists` guard.
+- Receipt number race condition — cached device prefix in `_cachedPrefix`.
+- `SettingsCubit.load` silently swallowed errors — now surfaces `errorMessage` in `failure` state.
+- Void sale deleted-product log — `logVoidReversal` accepts `reason` for semantic clarity.
+- VAT/discount rounding — centralized in `MoneyUtils.round()`.
+- Receipt number service — batched 3 queries into single `SELECT ... WHERE key IN (...)`.
+- `querySales` read consistency — wrapped in `_db.transaction()` for snapshot isolation.
+- `watchSales`/`watchRecentSales` N+1 verification confirmed — already uses `saleId.isIn()` batching.
+
+### Tests
+
+- InventoryLog entity equality, `isPositive`, `props`.
+- `WatchInventoryLogs` use case with/without `productId` filter.
+- `InventoryLogCubit` initial, success, failure states.
+- `HistoryBloc` search query updates and `filteredSales` behavior.
+
+`flutter analyze` → **0 issues** · `flutter test` → **258/258 passing**
+
+---
+
 ## [0.6.2] - 2026-06-02
 
 UX accessibility & performance improvements plus 14 systematic bug fixes.
@@ -875,7 +933,9 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.2...v0.6.3
+[0.6.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.5.3...v0.5.4

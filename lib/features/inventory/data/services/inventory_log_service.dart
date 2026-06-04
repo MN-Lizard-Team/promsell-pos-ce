@@ -30,12 +30,14 @@ class InventoryLogService {
     required int qty,
     required String saleId,
     required int balanceAfter,
+    String? reason,
   }) => _insert(
     productId: productId,
     type: 'VOID_REVERSAL',
     qtyChange: qty,
     balanceAfter: balanceAfter,
     refSaleId: saleId,
+    reason: reason,
   );
 
   /// Log a manual stock adjustment.

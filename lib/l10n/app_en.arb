@@ -85,6 +85,8 @@
   "stockZeroWarning": "Product won't appear in sale when stock is 0",
 
   "historyTitle": "Sale History",
+  "searchHistoryHint": "Search receipt, payment, amount…",
+  "noSearchResults": "No matching sales found",
   "noSalesYet": "No sales yet",
   "noteLabel": "Note: {note}",
   "@noteLabel": {

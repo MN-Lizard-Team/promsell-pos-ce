@@ -50,8 +50,11 @@ void main() {
       build: buildCubit,
       act: (c) => c.load(),
       expect: () => [
-        const SettingsState(status: SettingsStatus.loading),
-        const SettingsState(status: SettingsStatus.failure),
+        const SettingsState(status: SettingsStatus.loading, errorMessage: null),
+        const SettingsState(
+          status: SettingsStatus.failure,
+          errorMessage: 'Exception: fail',
+        ),
       ],
     );
 
@@ -66,6 +69,7 @@ void main() {
         const SettingsState(
           status: SettingsStatus.saving,
           settings: AppSettings(shopName: 'New'),
+          errorMessage: null,
         ),
         const SettingsState(
           status: SettingsStatus.saved,
@@ -89,10 +93,12 @@ void main() {
         const SettingsState(
           status: SettingsStatus.saving,
           settings: AppSettings(shopName: 'New'),
+          errorMessage: null,
         ),
         const SettingsState(
           status: SettingsStatus.failure,
           settings: AppSettings(shopName: 'Old'),
+          errorMessage: 'Exception: fail',
         ),
       ],
     );

@@ -204,6 +204,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get historyTitle => 'ประวัติการขาย';
 
   @override
+  String get searchHistoryHint => 'ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…';
+
+  @override
+  String get noSearchResults => 'ไม่พบรายการขายที่ตรงกัน';
+
+  @override
   String get noSalesYet => 'ยังไม่มีรายการขาย';
 
   @override

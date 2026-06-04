@@ -14,24 +14,41 @@ class SettingsCubit extends Cubit<SettingsState> {
   final SettingsRepository _repository;
 
   Future<void> load() async {
-    emit(state.copyWith(status: SettingsStatus.loading));
+    emit(state.copyWith(status: SettingsStatus.loading, errorMessage: null));
     try {
       final settings = await _repository.load();
       emit(state.copyWith(status: SettingsStatus.loaded, settings: settings));
     } catch (e) {
       debugPrint('SettingsCubit.load failed: $e');
-      emit(state.copyWith(status: SettingsStatus.failure));
+      emit(
+        state.copyWith(
+          status: SettingsStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
   Future<void> update(AppSettings settings) async {
     final previous = state.settings;
-    emit(state.copyWith(status: SettingsStatus.saving, settings: settings));
+    emit(
+      state.copyWith(
+        status: SettingsStatus.saving,
+        settings: settings,
+        errorMessage: null,
+      ),
+    );
     try {
       await _repository.save(settings);
       emit(state.copyWith(status: SettingsStatus.saved));
-    } catch (_) {
-      emit(state.copyWith(status: SettingsStatus.failure, settings: previous));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: SettingsStatus.failure,
+          settings: previous,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 }

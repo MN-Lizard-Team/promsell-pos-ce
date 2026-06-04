@@ -1,0 +1,15 @@
+Promsell is a free, offline-first point-of-sale app designed for small shops, market stalls, and local merchants in Thailand.
+
+**Core Features:**
+• **Quick Sales** — Add products to cart, apply discounts, calculate VAT, and checkout in seconds.
+• **Inventory Management** — Track stock levels, log adjustments, and get low-stock alerts.
+• **Receipts & QR** — Print or share 80mm/A4 PDF receipts. Generate PromptPay QR codes for easy payment.
+• **Offline-First** — All data stays on your device. Works 100% without internet.
+• **Multi-Language** — Switch between Thai and English instantly.
+• **Reports** — Daily sales summary and inventory reports.
+• **Backup & Restore** — Export your database and settings anytime.
+
+**Perfect for:**
+Grocery stores, cafés, food stalls, retail shops, and any small business that needs a simple, fast cash register.
+
+No subscription. No cloud lock-in. Your data, your device.

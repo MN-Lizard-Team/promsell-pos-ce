@@ -1,0 +1,1 @@
+pos,cashier,register,retail,shop,inventory,receipt,offline,thailand,small business

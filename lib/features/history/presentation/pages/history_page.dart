@@ -62,6 +62,18 @@ class _HistoryView extends StatelessWidget {
             onPressed: () => _pickRange(context),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: SearchBar(
+              hintText: context.l10n.searchHistoryHint,
+              leading: const Icon(Icons.search),
+              onChanged: (q) =>
+                  context.read<HistoryBloc>().add(HistorySearchChanged(q)),
+            ),
+          ),
+        ),
       ),
       body: BlocListener<HistoryBloc, HistoryState>(
         listenWhen: (prev, curr) =>
@@ -94,10 +106,13 @@ class _HistoryView extends StatelessWidget {
                     ctx.read<HistoryBloc>().add(const HistorySubscribed()),
               );
             }
-            if (state.sales.isEmpty) {
+            final filtered = state.filteredSales;
+            if (filtered.isEmpty) {
               return AppEmptyState(
                 icon: Icons.receipt_long_outlined,
-                title: ctx.l10n.noSalesYet,
+                title: state.searchQuery.isNotEmpty
+                    ? ctx.l10n.noSearchResults
+                    : ctx.l10n.noSalesYet,
               );
             }
             return RefreshIndicator(
@@ -112,11 +127,11 @@ class _HistoryView extends StatelessWidget {
               },
               child: ListView.separated(
                 padding: const EdgeInsets.all(12),
-                itemCount: state.sales.length,
+                itemCount: filtered.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (_, i) => SaleExpansionTile(
-                  sale: state.sales[i],
-                  dateFormat: fmt.format(state.sales[i].createdAt),
+                  sale: filtered[i],
+                  dateFormat: fmt.format(filtered[i].createdAt),
                 ),
               ),
             );

@@ -12,6 +12,7 @@ class HistoryState extends Equatable {
     this.from,
     this.to,
     this.errorMessage,
+    this.searchQuery = '',
   });
 
   final HistoryStatus status;
@@ -19,6 +20,18 @@ class HistoryState extends Equatable {
   final DateTime? from;
   final DateTime? to;
   final String? errorMessage;
+  final String searchQuery;
+
+  List<Sale> get filteredSales {
+    if (searchQuery.isEmpty) return sales;
+    final q = searchQuery.toLowerCase();
+    return sales.where((s) {
+      final receipt = s.receiptNumber?.toLowerCase() ?? '';
+      final payment = s.paymentMethod.toLowerCase();
+      final amount = s.totalAmount.toStringAsFixed(2);
+      return receipt.contains(q) || payment.contains(q) || amount.contains(q);
+    }).toList();
+  }
 
   HistoryState copyWith({
     HistoryStatus? status,
@@ -26,6 +39,7 @@ class HistoryState extends Equatable {
     Object? from = _unset,
     Object? to = _unset,
     Object? errorMessage = _unset,
+    String? searchQuery,
   }) => HistoryState(
     status: status ?? this.status,
     sales: sales ?? this.sales,
@@ -34,8 +48,16 @@ class HistoryState extends Equatable {
     errorMessage: identical(errorMessage, _unset)
         ? this.errorMessage
         : errorMessage as String?,
+    searchQuery: searchQuery ?? this.searchQuery,
   );
 
   @override
-  List<Object?> get props => [status, sales, from, to, errorMessage];
+  List<Object?> get props => [
+    status,
+    sales,
+    from,
+    to,
+    errorMessage,
+    searchQuery,
+  ];
 }

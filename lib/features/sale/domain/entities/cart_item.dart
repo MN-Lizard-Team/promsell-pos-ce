@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/utils/money_utils.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 
 class CartItem extends Equatable {
@@ -14,25 +15,19 @@ class CartItem extends Equatable {
   final String? discountType;
   final double? discountValue;
 
-  double get rawSubtotal =>
-      double.parse((product.price * qty).toStringAsFixed(2));
+  double get rawSubtotal => MoneyUtils.round(product.price * qty);
 
   double get discountAmount {
     if (discountType == null || discountValue == null || discountValue! <= 0) {
       return 0.0;
     }
     if (discountType == 'PERCENT') {
-      return double.parse(
-        (rawSubtotal * (discountValue! / 100)).toStringAsFixed(2),
-      );
+      return MoneyUtils.round(rawSubtotal * (discountValue! / 100));
     }
-    return double.parse(
-      discountValue!.clamp(0.0, rawSubtotal).toStringAsFixed(2),
-    );
+    return MoneyUtils.round(discountValue!.clamp(0.0, rawSubtotal));
   }
 
-  double get subtotal =>
-      double.parse((rawSubtotal - discountAmount).toStringAsFixed(2));
+  double get subtotal => MoneyUtils.round(rawSubtotal - discountAmount);
 
   CartItem copyWith({
     Product? product,

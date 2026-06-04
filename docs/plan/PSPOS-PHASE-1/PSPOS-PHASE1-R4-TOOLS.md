@@ -1,11 +1,11 @@
-# Round 4 — Merchant Tools 🟢
+# Round 4 — Merchant Tools ✅ DONE
 
 > Goal: ร้านใช้งานเต็มรูปแบบได้ — พิมพ์/แชร์ใบเสร็จ PDF, รับเงินผ่าน PromptPay QR, สำรอง/กู้คืนข้อมูลด้วยตัวเอง.
 
-**Version target:** `v0.6.0`
-**Effort:** ~2 dev-days
+**Version:** `v0.6.0` (core), `v0.6.3` (E1–E4 backlog cleared)
+**Effort:** ~2 dev-days (core) + ~1 day (E1–E4 backlog)
 **Risk:** 🟢 Low (existing pkg `pdf` + `printing` already in deps)
-**Depends on:** R1+R2 ✅ (v0.4.0), R3 complete
+**Depends on:** R1+R2 ✅ (v0.4.0), R3 ✅ (v0.5.0)
 
 ---
 
@@ -237,18 +237,18 @@ Settings → Receipt section:
 - ✅ CSV export (sales + products)
 - ✅ Backup reminder banner
 - ✅ Settings UI: receipt size, promptpay id, backup section
-- ✅ Test count ~243, all pass
-- ✅ CHANGELOG + v0.6.0
+- ✅ Test count ~243 (v0.6.0), **258/258 passing** (v0.6.3)
+- ✅ CHANGELOG + v0.6.0 → v0.6.3
 
-### R4 Backlog — NOT done (carry to R5 or patch)
+### R4 UX Enhancement Backlog — ✅ DONE in v0.6.3
 
-- ❌ **E1** Category Autocomplete in `ProductFormPage` — still free-text
-- ❌ **E2** Cart Item Direct Qty Input — still `+`/`-` only
-- ❌ **E3** `InventoryLogPage` Clean Architecture refactor — still queries DB directly
-- ❌ **E4** History Search / Filter Bar — still date-range only
-- ❌ Manual PromptPay QR scan verified with real banking app (pre-flight item still open)
+- ✅ **E1** Category Autocomplete in `ProductFormPage` — `Autocomplete<String>` with free-text, shipped v0.6.3
+- ✅ **E2** Cart Item Direct Qty Input — tap qty → numeric dialog with stock clamping, shipped v0.6.3
+- ✅ **E3** `InventoryLogPage` Clean Architecture refactor — `InventoryLogCubit` + repository + entity, shipped v0.6.3
+- ✅ **E4** History Search / Filter Bar — `SearchBar` + `filteredSales` getter, shipped v0.6.3
+- ❌ Manual PromptPay QR scan verified with real banking app (pre-flight item still open — manual verification required)
 
-> **Note:** v0.6.0 shipped core R4 (PDF, PromptPay, Backup). v0.6.1 added Cart UX Redesign separately. The R4 UX enhancement backlog (E1–E4) remains pending and should be picked up in R5 or a dedicated patch.
+> **Note:** v0.6.0 shipped core R4 (PDF, PromptPay, Backup). v0.6.1 added Cart UX Redesign. v0.6.2 added UX Polish & Performance. v0.6.3 cleared the entire R4 UX enhancement backlog (E1–E4).
 
 ---
 
@@ -351,11 +351,11 @@ These were identified in the Round-2 bug analysis but are small UX improvements,
 ✅ PR merged (as v0.6.0)
 ```
 
-### R4 UX Backlog (pending — not in v0.6.0)
+### R4 UX Backlog (completed in v0.6.3)
 
 ```
-❌ E1 Category Autocomplete in ProductFormPage
-❌ E2 Cart Item Direct Qty Input
-❌ E3 InventoryLogPage Clean Architecture Refactor
-❌ E4 History Search / Filter Bar
+✅ E1 Category Autocomplete in ProductFormPage
+✅ E2 Cart Item Direct Qty Input
+✅ E3 InventoryLogPage Clean Architecture Refactor
+✅ E4 History Search / Filter Bar
 ```

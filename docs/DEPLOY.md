@@ -50,7 +50,7 @@ Upload to Google Play Console under your app listing.
 1. Generate a keystore (one-time):
 
 ```bash
-keytool -genkey -v -keystore promsell-release.jks \
+keytool -genkey -v -keystore promsell-release-key.jks \
   -keyalg RSA -keysize 2048 -validity 10000 \
   -alias promsell
 ```
@@ -61,10 +61,10 @@ keytool -genkey -v -keystore promsell-release.jks \
 storePassword=<your-store-password>
 keyPassword=<your-key-password>
 keyAlias=promsell
-storeFile=../../promsell-release.jks
+storeFile=../../promsell-release-key.jks
 ```
 
-3. Reference in `android/app/build.gradle` — see [Flutter signing docs](https://docs.flutter.dev/deployment/android#signing-the-app).
+3. Reference in `android/app/build.gradle.kts` — see [Flutter signing docs](https://docs.flutter.dev/deployment/android#signing-the-app).
 
 > **Never commit `key.properties` or `.jks` files to git.** Both are in `.gitignore`.
 
@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.6.1+2
+version: 0.6.3+2
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +121,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 243+ tests pass
+- [ ] `flutter test` — all 258+ tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -143,6 +143,7 @@ Before distributing a build with UI changes:
 1. Add a product (set trackStock=off on one service item to verify ∞ display).
 2. Search and filter products in the Sale tab.
 3. Add items to cart and adjust quantity.
+3b. **Tap the quantity number** in cart → verify numeric input dialog opens with stock info and clamping.
 4. Long-press a cart item → enter multi-select mode → select multiple items → tap bulk delete or clear discount.
 5. With more than 5 items in cart, verify the search bar appears and filters by product name; toggle between flat list and group-by-category views.
 6. In flat list view, swipe right to delete (with undo snackbar); swipe left to increment quantity; drag the reorder handle to move items.
@@ -160,10 +161,12 @@ Before distributing a build with UI changes:
 18. Tap **Print Receipt** or **Share Receipt** on any sale.
 19. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); verify PromptPay ID field and Receipt Size toggle; switch theme/locale, and save shop info.
 20. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; delete the product and verify both image files are removed from storage.
+20b. In the Products tab, verify **category autocomplete** — type in the category field and see suggestions from existing categories; enter a new category freely.
 21. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file; tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
 22. In the Products tab, long-press a product image → verify `ImageViewerDialog` opens with pinch zoom and close button.
 23. In Settings, verify **Max drafts** input (default 30, range 5–100), **Compact cart**, and **Ultra-compact cart** toggles appear.
-24. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
+24. In History tab, verify **search bar** appears — filter by receipt number, payment method, or amount.
+25. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
 
 ---
 

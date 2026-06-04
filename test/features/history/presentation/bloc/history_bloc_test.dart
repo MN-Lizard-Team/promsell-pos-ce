@@ -106,5 +106,41 @@ void main() {
             .having((s) => s.errorMessage, 'errorMessage', isNotNull),
       ],
     );
+
+    blocTest<HistoryBloc, HistoryState>(
+      'HistorySearchChanged updates searchQuery',
+      build: buildBloc,
+      act: (b) => b.add(const HistorySearchChanged('cash')),
+      expect: () => [const HistoryState(searchQuery: 'cash')],
+    );
+  });
+
+  group('HistoryState.filteredSales', () {
+    test('returns all sales when searchQuery is empty', () {
+      final state = HistoryState(sales: [tSale]);
+      expect(state.filteredSales, [tSale]);
+    });
+
+    test('filters by payment method', () {
+      final state = HistoryState(sales: [tSale], searchQuery: 'cash');
+      expect(state.filteredSales, [tSale]);
+    });
+
+    test('filters by receipt number', () {
+      final sale = Sale(
+        id: 's1',
+        totalAmount: 100,
+        paymentMethod: 'cash',
+        receiptNumber: 'RCP-260527',
+        createdAt: tNow,
+      );
+      final state = HistoryState(sales: [sale], searchQuery: '260527');
+      expect(state.filteredSales, [sale]);
+    });
+
+    test('returns empty when no match', () {
+      final state = HistoryState(sales: [tSale], searchQuery: 'promptpay');
+      expect(state.filteredSales, isEmpty);
+    });
   });
 }

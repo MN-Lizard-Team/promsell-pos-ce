@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.6.2** — UX/UI accessibility & performance batch: checkbox touch targets, drag handle tooltips, stock badge icons for colorblind accessibility, search clear button, delete confirmation dialogs, keyboard submit on discount dialog, toast tap-to-dismiss, cart drag `ValueNotifier` refactor (eliminates jank), checkout VAT deduplication, and `useRootNavigator` fixes on all bottom sheets.
+> **Latest Release: v0.6.3** — InventoryLog Clean Architecture (full domain/data/presentation split), category autocomplete, history search bar, cart direct quantity input, 8 bug fixes (schema migration, receipt race condition, error surfacing, VAT rounding, query optimization), platform hardening (permissions, signing, iOS privacy strings), and store submission prep (Play Store + App Store metadata, privacy policy, keystore setup).
  
 ---
  
@@ -64,11 +64,11 @@
  
 | Feature | Description |
 |---------|-------------|
-| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, per-item/cart discount with preset chips, cart search & group-by-category, multi-select bulk actions, swipe gestures, drag-to-reorder, resizable panel, compact/ultra-compact modes. **v0.6.2 UX**: checkbox 48dp touch targets, drag tooltips, focus indicators, delete confirmations, keyboard submit on discount, toast tap-dismiss, drag performance refactor |
+| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, per-item/cart discount with preset chips, cart search & group-by-category, multi-select bulk actions, swipe gestures, drag-to-reorder, resizable panel, compact/ultra-compact modes, direct quantity input tap dialog with stock clamping. **v0.6.2 UX**: checkbox 48dp touch targets, drag tooltips, focus indicators, delete confirmations, keyboard submit on discount, toast tap-dismiss, drag performance refactor |
 | **Draft Cart** | Auto-save every 1.5s; configurable max drafts (5–100); search + sort; count badge; auto-archive after 7 days; switch/rename/delete drafts; active draft restored on app launch; cleared on checkout |
 | **Discount** | Per-item / per-cart discount (% or ฿) with live preview; merchant-configurable preset groups with quick-apply chips; max discount clamping; full payment sheet breakdown; VAT applied after discounts |
-| **Products** | List/grid toggle, category filter chips, image picker (gallery/camera) with pure Dart compression + thumbnail system, `CachedNetworkImage` for network URLs, configurable image quality, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, `trackStock` toggle, active/inactive toggle, orphaned file cleanup, remove-then-cancel protection |
-| **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, VAT breakdown rows (Subtotal + VAT rate %) when VAT is active, void sale action with reason, and notes |
+| **Products** | List/grid toggle, category filter chips, image picker (gallery/camera) with pure Dart compression + thumbnail system, `CachedNetworkImage` for network URLs, configurable image quality, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, `trackStock` toggle, active/inactive toggle, orphaned file cleanup, remove-then-cancel protection, category autocomplete with existing-category suggestions |
+| **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, VAT breakdown rows (Subtotal + VAT rate %) when VAT is active, void sale action with reason, notes, and search bar (filter by receipt number, payment method, or amount) |
 | **Report** | Dashboard cards for net revenue (excludes voided), voided summary, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
 | **Inventory** | Inventory audit log (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT), manual stock adjustment dialog with reason, and per-product log viewer |
 | **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, VAT mode/rate, preview style toggles, stock policy (allow oversell + low-stock threshold), discount policy (presets, max limits, toggles), dirty-state save behavior |
@@ -226,6 +226,7 @@ features/<name>/
 - [x] **R4 — Merchant Tools** (v0.6.0): PDF receipt print/share, PromptPay QR, backup/restore, receipt settings expansion, product image system overhaul (pure Dart compression, thumbnails, CachedNetworkImage, image cleanup, compression settings)
 - [x] **R5 — Cart UX Redesign** (v0.6.1): Cart panel overhaul (search, group-by-category, multi-select, swipe, drag-to-reorder, resizable panel, compact modes), interactive checkout review (`CheckoutPage` + `CartReviewPage`), receipt preview zoom, centralized `ImageViewerDialog`, product image polish
 - [x] **R5 — UX Polish & Performance** (v0.6.2): Accessibility touch targets, tooltips, focus indicators, colorblind stock badges, search clear button, delete confirmation dialogs, keyboard submit, toast tap-dismiss, `ValueNotifier` drag refactor (jank fix), VAT calculation deduplication, `useRootNavigator` fixes
+- [x] **R5 — Clean Architecture & Store Prep** (v0.6.3): InventoryLog full Clean Architecture refactor, category autocomplete, history search bar, cart direct qty input, 8 bug fixes, platform hardening (Android permissions, iOS privacy strings, release signing), store submission metadata and docs
 - [ ] **R6 — Operations**: Daily close, onboarding wizard, final polish
 
 ### Future
@@ -243,14 +244,14 @@ features/<name>/
 
 ## Testing
 
-**243 tests** covering every application layer:
+**258 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
-| **Domain** | Entity equality, use case delegation, discount math | ~30 |
-| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy | ~28 |
-| **Repository** | Impl with mocked datasources | ~15 |
-| **Datasource** | Real in-memory SQLite (Drift) | ~11 |
+| **Domain** | Entity equality, use case delegation, discount math, `InventoryLog` domain | ~35 |
+| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy, `InventoryLogCubit` | ~32 |
+| **Repository** | Impl with mocked datasources | ~18 |
+| **Datasource** | Real in-memory SQLite (Drift) | ~12 |
 | **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService | ~15 |
 | **Widget** | ProductList, ProductForm, PaymentSheet, Settings, ReceiptPreview | ~20 |
 | **Integration** | Checkout flow, sale integrity (void + adjust) | 13 |
@@ -296,6 +297,8 @@ For security vulnerabilities, see **[SECURITY.md](SECURITY.md)** — do not file
 | [`docs/DATABASE.md`](docs/DATABASE.md) | Full database handbook: ERD, schema, indexes, migration, query patterns |
 | [`docs/USAGE.md`](docs/USAGE.md) | Detailed usage guide: setup, build, settings, i18n, troubleshooting |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Build, signing, release checklist, smoke test |
+| [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md) | Privacy policy template for Play Store / App Store |
+| [`docs/STORE_SUBMISSION.md`](docs/STORE_SUBMISSION.md) | Store submission checklist: keystore, screenshots, build commands, console setup |
 | [`CHANGELOG.md`](CHANGELOG.md) | Version history, breaking changes, migration notes |
 
 ---
@@ -325,6 +328,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.6.2 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.6.3 · AGPL-3.0</sub>
 
 </div>

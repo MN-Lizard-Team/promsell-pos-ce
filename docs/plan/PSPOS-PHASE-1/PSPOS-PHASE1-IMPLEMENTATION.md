@@ -24,9 +24,11 @@
 | **R2** ✅ | Sale Integrity | Inventory log + Receipt number + Sale status + Void/Refund | 🟡 Medium → DONE |
 | **R3** ✅ | Cashier UX | Draft cart + Discount (item/cart) + VAT (incl/excl) + Stock policy | 🟡 Medium → DONE |
 | **R4** ✅ | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low — DONE (v0.6.0) |
-| **R5** | Operations | Daily Close + Onboarding wizard + Final polish + Phase 4 readiness check | 🟢 Low |
+| **R4.5** ✅ | UX Polish & Performance | Accessibility, drag refactor, VAT dedup, `useRootNavigator` fixes | 🟢 Low — DONE (v0.6.2) |
+| **R4.6** ✅ | UX Enhancement Backlog | E1 Category Autocomplete + E2 Cart Direct Qty + E3 InventoryLog Clean Arch + E4 History Search | 🟢 Low — DONE (v0.6.3) |
+| **R5** | Operations | Daily Close + Onboarding wizard + Final polish + Phase 4 readiness check | 🟢 Low — **PENDING** |
 
-Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~2 days. **Total ~13 dev-days.**
+Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R4.5 = ~1 day, R4.6 = ~1 day, R5 = ~2 days. **Total ~15 dev-days.**
 
 ---
 
@@ -156,7 +158,8 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 
 > Goal: ส่งใบเสร็จ + รับเงิน QR + backup ข้อมูลได้
 >
-> **Pre-flight complete:** deps, ReceiptPdfService move, ReceiptLabels extract, 4 AppSettings fields, schema v4→v5, l10n keys, version bump. Feature code (Tasks 1–5) pending.
+> **Shipped v0.6.0:** Receipt PDF (80mm+A4), PromptPay QR, Backup/Restore, CSV export, Settings expansion.
+> **Backlog E1–E4 completed v0.6.3:** Category Autocomplete, Cart Direct Qty, InventoryLog Clean Arch, History Search Bar.
 
 ### Tasks
 
@@ -232,7 +235,7 @@ Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R5 = ~
 | **Tests** | Add unit + widget + integration tests with each feature. Maintain >80% coverage |
 | **L10n** | EN + TH for every new string in same commit |
 | **CHANGELOG** | Update at end of each round |
-| **Version bump** | R1+R2→0.4.0, R3→0.5.0, R4→0.6.0, R4.5→0.6.1 (Cart UX Redesign), R5→1.0.0-rc1 |
+| **Version bump** | R1+R2→0.4.0, R3→0.5.0, R4→0.6.0, R4.5→0.6.1, R4.6→0.6.2→0.6.3, R5→1.0.0-rc1 |
 | **No partial commits** | Each round is a self-contained release |
 
 ---
@@ -273,7 +276,9 @@ R3 (Cashier) → verify → release v0.5.0 ✅
    ↓
 R4 (Tools) → verify → release v0.6.0 ✅
    ↓
-R4.5 (Cart UX) → verify → release v0.6.1 ✅
+R4.5 (Cart UX Redesign) → verify → release v0.6.1 ✅
+   ↓
+R4.6 (UX Polish & Backlog) → verify → release v0.6.2 → v0.6.3 ✅
    ↓
 R5 (Ops) → verify → release v1.0.0-rc1 → Phase 1 DONE
 ```

@@ -205,6 +205,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyTitle => 'Sale History';
 
   @override
+  String get searchHistoryHint => 'Search receipt, payment, amount…';
+
+  @override
+  String get noSearchResults => 'No matching sales found';
+
+  @override
   String get noSalesYet => 'No sales yet';
 
   @override

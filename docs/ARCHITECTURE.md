@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.6.2
+# Architecture — Promsell POS CE v0.6.3
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -278,7 +278,7 @@ AdjustStockDialog ← success → close dialog + refresh product
 | Pattern | Used by | Why chosen |
 |---------|---------|------------|
 | **BLoC** (event-driven) | `SaleBloc`, `ProductBloc`, `HistoryBloc` | Multiple event types, complex async flows, stream subscriptions |
-| **Cubit** (method-driven) | `SettingsCubit`, `ReportCubit` | Simple state, no event classes needed, direct method calls |
+| **Cubit** (method-driven) | `SettingsCubit`, `ReportCubit`, `InventoryLogCubit` | Simple state or stream-based data, no event classes needed, direct method calls |
 
 ### BlocListener ordering caution
 
@@ -324,6 +324,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │                  UpdateProduct, DeleteProduct              │
 │  SettingsCubit ──→ SettingsRepository                     │
 │  ReportCubit (lazySingleton) ──→ WatchReport               │
+│  InventoryLogCubit ──→ WatchInventoryLogs                   │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
@@ -336,6 +337,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  GetProducts / Add / Update / Delete ──→ ProductRepository│
 │  WatchSaleHistory ──→ HistoryRepository                   │
 │  WatchReport ──→ HistoryRepository                        │
+│  WatchInventoryLogs ──→ InventoryLogRepository              │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
@@ -346,6 +348,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  ProductRepository ──→ ProductLocalDatasource             │
 │                       ──→ ProductImageService              │
 │  HistoryRepository ──→ SaleLocalDatasource                │
+│  InventoryLogRepository ──→ InventoryLogLocalDatasource     │
 │  SettingsRepository ──→ SettingsLocalDatasource         │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
@@ -357,6 +360,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │       ├──→ ReceiptNumberService ──→ AppDatabase           │
 │       └──→ InventoryLogService ──→ AppDatabase            │
 │  ProductLocalDatasource ──→ AppDatabase                   │
+│  InventoryLogLocalDatasource ──→ AppDatabase                │
 │  ProductImageService ──→ SettingsCubit (imageMaxWidth/Quality)│
 │  SettingsLocalDatasource ──→ AppDatabase                  │
 │  ReceiptPdfService (stateless)                            │
@@ -707,4 +711,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.6.2 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.6.3 · Architecture Document · Deep Technical Reference</sub>

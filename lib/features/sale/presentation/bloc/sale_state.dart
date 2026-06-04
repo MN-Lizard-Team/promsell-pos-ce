@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/utils/money_utils.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 
@@ -29,9 +30,8 @@ class SaleState extends Equatable {
   final String? activeDraftId;
   final String? activeDraftName;
 
-  double get itemsSubtotal => double.parse(
-    items.fold(0.0, (sum, i) => sum + i.subtotal).toStringAsFixed(2),
-  );
+  double get itemsSubtotal =>
+      MoneyUtils.round(items.fold(0.0, (sum, i) => sum + i.subtotal));
 
   double get cartDiscountAmount {
     if (cartDiscountType == null ||
@@ -40,17 +40,12 @@ class SaleState extends Equatable {
       return 0.0;
     }
     if (cartDiscountType == 'PERCENT') {
-      return double.parse(
-        (itemsSubtotal * (cartDiscountValue! / 100)).toStringAsFixed(2),
-      );
+      return MoneyUtils.round(itemsSubtotal * (cartDiscountValue! / 100));
     }
-    return double.parse(
-      cartDiscountValue!.clamp(0.0, itemsSubtotal).toStringAsFixed(2),
-    );
+    return MoneyUtils.round(cartDiscountValue!.clamp(0.0, itemsSubtotal));
   }
 
-  double get total =>
-      double.parse((itemsSubtotal - cartDiscountAmount).toStringAsFixed(2));
+  double get total => MoneyUtils.round(itemsSubtotal - cartDiscountAmount);
 
   bool get isEmpty => items.isEmpty;
   int get itemCount => items.fold(0, (sum, i) => sum + i.qty);

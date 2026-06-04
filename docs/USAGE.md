@@ -143,7 +143,7 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 
 1. Use the search bar or category chips to narrow the product catalog
 2. Tap any product card to add it to the cart
-3. Adjust quantity with `+` / `-` controls in the cart panel; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
+3. Adjust quantity with `+` / `-` controls, or **tap the quantity number** to open a numeric input dialog with stock info and clamping; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
 4. **Cart search & grouping** — When the cart has more than 5 items, a search bar appears to filter by product name. Use the view toggle to switch between **flat list** and **group-by-category** views. In flat list, swipe right to delete (with undo), swipe left to increment quantity, and drag the handle to reorder items
 5. **Compact modes** — Tap the density cycle button in the cart header to switch between Normal → Compact → Ultra-Compact layouts
 6. **Resizable panel** — Drag the handle between the catalog and cart to resize the panel, or use the size slider in the cart header for Small/Large presets
@@ -168,7 +168,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - Use category **filter chips** to narrow the catalog; combined with the search bar
 - Each product shows an image avatar (local file from gallery/camera with thumbnail for small sizes, or `CachedNetworkImage` for network URLs with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
 - Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; or paste an image URL for future online sync; fill name, price, quantity, category; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
+- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; or paste an image URL for future online sync; fill name, price, quantity; the **category field** has autocomplete — type to see suggestions from existing categories or enter a new one freely; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
 - Search filters by name and category in real time
 
@@ -182,6 +182,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
   - **VAT breakdown** — when `vatMode` is INCLUSIVE or EXCLUSIVE, Subtotal and VAT (with rate %) rows are shown above the total, using the VAT settings that were active at the time of sale
   - **Void Sale** button (red) — opens confirmation dialog with optional reason; atomically marks sale as voided, restores stock, and logs VOID_REVERSAL
   - **Print Receipt** and **Share Receipt** buttons — generates an 80 mm thermal receipt PDF with sale-time VAT values
+- Use the **search bar** (appears below the app bar) to filter by receipt number, payment method, or amount
 - Use the date-range picker (calendar icon) to filter history by period
 
 ### Report tab
@@ -405,7 +406,7 @@ Presentation → Domain ← Data
 
 ### Why BLoC + Cubit?
 
-- **Cubit** — for simple state (e.g. `SettingsCubit`)
+- **Cubit** — for simple state or stream-based data (e.g. `SettingsCubit`, `InventoryLogCubit`)
 - **BLoC** — for event-driven flows (e.g. `ProductBloc`, `SaleBloc`)
 
 Both are reactive and easy to test.
@@ -414,7 +415,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **243 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **258 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
 
 ### Running tests
 
@@ -433,9 +434,10 @@ flutter test test/integration/checkout_flow_test.dart
 
 Tests mirror `lib/` structure under `test/`:
 
-- `test/helpers/` — shared mocks (`mocks.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`)
-- `test/features/` — per-feature tests: domain, data, presentation
+- `test/helpers/` — shared mocks (`mocks.dart`), entity fixtures (`fixtures.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`)
+- `test/features/` — per-feature tests: domain, data, presentation (sale, product, history, inventory, settings, report)
 - `test/integration/` — end-to-end checkout flow + sale integrity (void, adjust stock) with real in-memory SQLite
+- `test/core/` — utility tests (`MoneyUtils`, etc.)
 - `test/l10n/` — EN/TH translation parity test
 
 ### In-memory database testing

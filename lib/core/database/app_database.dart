@@ -40,12 +40,27 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultSettings();
     },
     onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // v1/v2 pre-release schemas: ensure all base tables exist before column migrations
+        await m.createTable(draftCarts);
+        await m.createTable(draftCartItems);
+        await m.createTable(dailyCloses);
+        await m.createTable(categories);
+        await m.createTable(inventoryLogs);
+        await m.createTable(appSettings);
+        await _createIndexes();
+        await _seedDefaultSettings();
+      }
       if (from < 3) {
-        await customStatement(
-          'ALTER TABLE draft_carts ADD COLUMN cart_discount_type TEXT',
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'cart_discount_type',
+          'TEXT',
         );
-        await customStatement(
-          'ALTER TABLE draft_carts ADD COLUMN cart_discount_value REAL',
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'cart_discount_value',
+          'REAL',
         );
       }
       if (from < 4) {
@@ -133,6 +148,19 @@ class AppDatabase extends _$AppDatabase {
         AppSettingsCompanion.insert(key: 'imageQuality', value: '80'),
       ], mode: InsertMode.insertOrIgnore);
     });
+  }
+
+  Future<void> _addColumnIfNotExists(
+    String table,
+    String column,
+    String type,
+  ) async {
+    try {
+      await customStatement('ALTER TABLE $table ADD COLUMN $column $type');
+    } catch (e) {
+      // Column may already exist; ignore
+      if (!e.toString().contains('duplicate column')) rethrow;
+    }
   }
 
   static QueryExecutor _openDatabase() {

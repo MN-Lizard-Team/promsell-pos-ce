@@ -142,7 +142,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **243 automated tests**. All must pass before submitting a PR.
+The project has **258 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests
@@ -182,6 +182,7 @@ Tests live in `test/` mirroring the `lib/` structure:
 test/
 ├── helpers/
 │   ├── mocks.dart              # Shared mocks (repos, datasources, BLoCs, Cubits)
+│   ├── fixtures.dart           # Test entity fixtures
 │   ├── pump_app.dart           # pumpApp extension for widget tests
 │   └── fake_database.dart      # In-memory Drift DB factory
 ├── features/
@@ -192,6 +193,7 @@ test/
 │   │   └── presentation/
 │   ├── product/
 │   ├── history/
+│   ├── inventory/
 │   └── settings/
 ├── integration/
 │   ├── checkout_flow_test.dart

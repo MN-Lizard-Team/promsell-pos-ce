@@ -30,6 +30,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
        super(const HistoryState()) {
     on<HistorySubscribed>(_onSubscribed);
     on<HistoryDateRangeChanged>(_onDateRangeChanged);
+    on<HistorySearchChanged>(_onSearchChanged);
     on<SaleVoidRequested>(_onVoidRequested);
     on<_HistorySalesUpdated>(_onSalesUpdated);
     on<_HistoryError>(_onError);
@@ -65,6 +66,13 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
       ),
     );
     _startListening(event.from, event.to);
+  }
+
+  void _onSearchChanged(
+    HistorySearchChanged event,
+    Emitter<HistoryState> emit,
+  ) {
+    emit(state.copyWith(searchQuery: event.query));
   }
 
   void _onSalesUpdated(_HistorySalesUpdated event, Emitter<HistoryState> emit) {

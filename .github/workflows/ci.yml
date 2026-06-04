@@ -39,3 +39,12 @@ jobs:
         with:
           name: coverage-report
           path: coverage/lcov.info
+
+      - name: Check Dart formatting
+        run: dart format --set-exit-if-changed lib/ test/
+
+      - name: Dependency audit
+        run: dart pub outdated --no-dev-dependencies
+
+      - name: Verify debug build
+        run: flutter build apk --debug

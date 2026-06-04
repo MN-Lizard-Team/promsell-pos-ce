@@ -397,10 +397,13 @@ class _ItemCard extends StatelessWidget {
                           theme: theme,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          '${item.qty}',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
+                        GestureDetector(
+                          onTap: () => _showQtyDialog(context, item: item),
+                          child: Text(
+                            '${item.qty}',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -440,6 +443,60 @@ class _ItemCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showQtyDialog(BuildContext context, {required CartItem item}) {
+    final allowOversell = context
+        .read<SettingsCubit>()
+        .state
+        .settings
+        .allowOversell;
+    final ctrl = TextEditingController(text: '${item.qty}');
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(item.product.name),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(signed: true),
+          decoration: InputDecoration(
+            labelText: l10n.quantityLabel,
+            suffixText: item.product.trackStock
+                ? l10n.stockLabel(item.product.stock)
+                : null,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final qty = int.tryParse(ctrl.text);
+              if (qty == null || qty < 0) return;
+              var clamped = qty;
+              if (item.product.trackStock && !allowOversell) {
+                clamped = qty.clamp(0, item.product.stock);
+              }
+              Navigator.pop(context);
+              if (clamped != item.qty) {
+                context.read<SaleBloc>().add(
+                  SaleItemQtyChanged(
+                    productId: item.product.id,
+                    qty: clamped,
+                    allowOversell: allowOversell,
+                  ),
+                );
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
       ),
     );
   }

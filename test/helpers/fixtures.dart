@@ -2,6 +2,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/inventory/domain/entities/inventory_log.dart';
 
 final tNow = DateTime(2025, 1, 15, 10, 30);
 
@@ -100,3 +101,25 @@ final tSale = Sale(
 );
 
 const tAppSettings = AppSettings();
+
+final tInventoryLog = InventoryLog(
+  id: 'invlog-0001-0001-0001-000000000001',
+  productId: 'prod-0001-0001-0001-000000000001',
+  type: 'ADJUSTMENT_IN',
+  qtyChange: 10,
+  balanceAfter: 60,
+  reason: 'Restock',
+  refSaleId: null,
+  createdAt: tNow,
+);
+
+final tInventoryLog2 = InventoryLog(
+  id: 'invlog-0002-0002-0002-000000000002',
+  productId: 'prod-0001-0001-0001-000000000001',
+  type: 'SALE',
+  qtyChange: -2,
+  balanceAfter: 58,
+  reason: null,
+  refSaleId: 'sale-0001-0001-0001-000000000001',
+  createdAt: tNow,
+);

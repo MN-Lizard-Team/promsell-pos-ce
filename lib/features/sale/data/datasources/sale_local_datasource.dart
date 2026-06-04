@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
+import 'package:promsell_pos_ce/core/utils/money_utils.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
@@ -91,25 +92,25 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     double? changeAmount,
     String? note,
   }) async {
-    final itemsSubtotal = double.parse(
-      items.fold(0.0, (sum, i) => sum + i.subtotal).toStringAsFixed(2),
+    final itemsSubtotal = MoneyUtils.round(
+      items.fold(0.0, (sum, i) => sum + i.subtotal),
     );
     final effectiveCartDiscount = cartDiscountAmount ?? 0.0;
-    final preTaxTotal = double.parse(
-      (itemsSubtotal - effectiveCartDiscount).toStringAsFixed(2),
+    final preTaxTotal = MoneyUtils.round(
+      itemsSubtotal - effectiveCartDiscount,
     ).clamp(0.0, double.maxFinite);
     final r = vatRate / 100;
     final double subtotal;
     final double vatAmount;
     final double finalTotal;
     if (vatMode == 'INCLUSIVE' && r > 0) {
-      subtotal = double.parse((preTaxTotal / (1 + r)).toStringAsFixed(2));
-      vatAmount = double.parse((preTaxTotal - subtotal).toStringAsFixed(2));
+      subtotal = MoneyUtils.round(preTaxTotal / (1 + r));
+      vatAmount = MoneyUtils.round(preTaxTotal - subtotal);
       finalTotal = preTaxTotal;
     } else if (vatMode == 'EXCLUSIVE' && r > 0) {
       subtotal = preTaxTotal;
-      vatAmount = double.parse((preTaxTotal * r).toStringAsFixed(2));
-      finalTotal = double.parse((preTaxTotal + vatAmount).toStringAsFixed(2));
+      vatAmount = MoneyUtils.round(preTaxTotal * r);
+      finalTotal = MoneyUtils.round(preTaxTotal + vatAmount);
     } else {
       subtotal = preTaxTotal;
       vatAmount = 0.0;
@@ -175,11 +176,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
       for (final item in items) {
         final double itemVatAmount;
         if (vatMode == 'INCLUSIVE' && r > 0) {
-          itemVatAmount = double.parse(
-            (item.subtotal * r / (1 + r)).toStringAsFixed(2),
-          );
+          itemVatAmount = MoneyUtils.round(item.subtotal * r / (1 + r));
         } else if (vatMode == 'EXCLUSIVE' && r > 0) {
-          itemVatAmount = double.parse((item.subtotal * r).toStringAsFixed(2));
+          itemVatAmount = MoneyUtils.round(item.subtotal * r);
         } else {
           itemVatAmount = 0.0;
         }
@@ -222,27 +221,29 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
 
   @override
   Future<List<Sale>> querySales({DateTime? from, DateTime? to}) async {
-    final query = _db.select(_db.sales);
-    if (from != null) {
-      query.where((s) => s.createdAt.isBiggerOrEqualValue(from));
-    }
-    if (to != null) {
-      query.where((s) => s.createdAt.isSmallerOrEqualValue(to));
-    }
-    query.orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
-    final salesData = await query.get();
-    if (salesData.isEmpty) return [];
-    final saleIds = salesData.map((s) => s.id).toList();
-    final allItems = await (_db.select(
-      _db.saleItems,
-    )..where((t) => t.saleId.isIn(saleIds))).get();
-    final itemsBySaleId = <String, List<SaleItemData>>{};
-    for (final item in allItems) {
-      (itemsBySaleId[item.saleId] ??= []).add(item);
-    }
-    return salesData
-        .map((s) => _buildSale(s, itemsBySaleId[s.id] ?? []))
-        .toList();
+    return await _db.transaction(() async {
+      final query = _db.select(_db.sales);
+      if (from != null) {
+        query.where((s) => s.createdAt.isBiggerOrEqualValue(from));
+      }
+      if (to != null) {
+        query.where((s) => s.createdAt.isSmallerOrEqualValue(to));
+      }
+      query.orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
+      final salesData = await query.get();
+      if (salesData.isEmpty) return [];
+      final saleIds = salesData.map((s) => s.id).toList();
+      final allItems = await (_db.select(
+        _db.saleItems,
+      )..where((t) => t.saleId.isIn(saleIds))).get();
+      final itemsBySaleId = <String, List<SaleItemData>>{};
+      for (final item in allItems) {
+        (itemsBySaleId[item.saleId] ??= []).add(item);
+      }
+      return salesData
+          .map((s) => _buildSale(s, itemsBySaleId[s.id] ?? []))
+          .toList();
+    });
   }
 
   @override
@@ -341,6 +342,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             qty: item.qty,
             saleId: saleId,
             balanceAfter: 0,
+            reason: 'Product deleted since sale',
           );
           continue;
         }

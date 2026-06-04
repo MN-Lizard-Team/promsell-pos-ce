@@ -85,6 +85,8 @@
   "stockZeroWarning": "สินค้าจะไม่แสดงในหน้าขายเมื่อสต็อก = 0",
 
   "historyTitle": "ประวัติการขาย",
+  "searchHistoryHint": "ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…",
+  "noSearchResults": "ไม่พบรายการขายที่ตรงกัน",
   "noSalesYet": "ยังไม่มีรายการขาย",
   "noteLabel": "หมายเหตุ: {note}",
   "@noteLabel": {

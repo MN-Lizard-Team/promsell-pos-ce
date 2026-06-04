@@ -204,20 +204,28 @@ class CartItemRow extends StatelessWidget {
                       }
                     },
                   ),
-                  Container(
-                    constraints: BoxConstraints(
-                      minWidth: ultraCompact ? 24 : 28,
+                  GestureDetector(
+                    onTap: () => _showQtyDialog(
+                      context,
+                      item: item,
+                      allowOversell: allowOversell,
+                      atStockLimit: atStockLimit,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${item.qty}',
-                      style:
-                          (ultraCompact
-                                  ? theme.textTheme.bodySmall
-                                  : compact
-                                  ? theme.textTheme.bodyMedium
-                                  : theme.textTheme.titleMedium)
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minWidth: ultraCompact ? 24 : 28,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '${item.qty}',
+                        style:
+                            (ultraCompact
+                                    ? theme.textTheme.bodySmall
+                                    : compact
+                                    ? theme.textTheme.bodyMedium
+                                    : theme.textTheme.titleMedium)
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                   Tooltip(
@@ -275,6 +283,60 @@ class CartItemRow extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showQtyDialog(
+    BuildContext context, {
+    required CartItem item,
+    required bool allowOversell,
+    required bool atStockLimit,
+  }) {
+    final ctrl = TextEditingController(text: '${item.qty}');
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(item.product.name),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(signed: true),
+          decoration: InputDecoration(
+            labelText: l10n.quantityLabel,
+            suffixText: item.product.trackStock
+                ? l10n.stockLabel(item.product.stock)
+                : null,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final qty = int.tryParse(ctrl.text);
+              if (qty == null || qty < 0) return;
+              var clamped = qty;
+              if (item.product.trackStock && !allowOversell) {
+                clamped = qty.clamp(0, item.product.stock);
+              }
+              Navigator.pop(context);
+              if (clamped != item.qty) {
+                context.read<SaleBloc>().add(
+                  SaleItemQtyChanged(
+                    productId: item.product.id,
+                    qty: clamped,
+                    allowOversell: allowOversell,
+                  ),
+                );
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
       ),
     );
   }

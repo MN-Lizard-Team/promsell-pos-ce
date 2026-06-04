@@ -1,10 +1,12 @@
-import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
+import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart';
+import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
 
 class InventoryLogPage extends StatelessWidget {
   const InventoryLogPage({super.key, this.productId});
@@ -12,23 +14,39 @@ class InventoryLogPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final db = sl<AppDatabase>();
-    final query = db.select(db.inventoryLogs)
-      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
-    if (productId != null) {
-      query.where((t) => t.productId.equals(productId!));
-    }
+    return BlocProvider(
+      create: (_) =>
+          InventoryLogCubit(watchInventoryLogs: sl<WatchInventoryLogs>())
+            ..load(productId: productId),
+      child: _InventoryLogView(productId: productId),
+    );
+  }
+}
 
+class _InventoryLogView extends StatelessWidget {
+  const _InventoryLogView({this.productId});
+  final String? productId;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.inventoryLog)),
-      body: StreamBuilder<List<InventoryLogData>>(
-        stream: query.watch(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: BlocBuilder<InventoryLogCubit, InventoryLogState>(
+        builder: (context, state) {
+          if (state.status == InventoryLogStatus.loading ||
+              state.status == InventoryLogStatus.initial) {
             return const Center(child: CircularProgressIndicator());
           }
-          final logs = snapshot.data ?? [];
-          if (logs.isEmpty) {
+          if (state.status == InventoryLogStatus.failure) {
+            return AppEmptyState(
+              icon: Icons.error_outline,
+              title: state.errorMessage ?? context.l10n.errorOccurred,
+              actionLabel: context.l10n.retry,
+              onAction: () =>
+                  context.read<InventoryLogCubit>().load(productId: productId),
+            );
+          }
+          if (state.logs.isEmpty) {
             return AppEmptyState(
               icon: Icons.inventory_2_outlined,
               title: context.l10n.noInventoryLogs,
@@ -40,11 +58,11 @@ class InventoryLogPage extends StatelessWidget {
 
           return ListView.separated(
             padding: const EdgeInsets.all(12),
-            itemCount: logs.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemCount: state.logs.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (_, i) {
-              final log = logs[i];
-              final isPositive = log.qtyChange >= 0;
+              final log = state.logs[i];
+              final isPositive = log.isPositive;
 
               return ListTile(
                 leading: CircleAvatar(
@@ -53,7 +71,9 @@ class InventoryLogPage extends StatelessWidget {
                       : theme.colorScheme.errorContainer,
                   child: Icon(
                     _iconForType(log.type),
-                    color: isPositive ? theme.colorScheme.primary : theme.colorScheme.error,
+                    color: isPositive
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.error,
                     size: 20,
                   ),
                 ),
@@ -61,7 +81,9 @@ class InventoryLogPage extends StatelessWidget {
                   '${isPositive ? '+' : ''}${log.qtyChange}  →  ${log.balanceAfter}',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isPositive ? theme.colorScheme.primary : theme.colorScheme.error,
+                    color: isPositive
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.error,
                   ),
                 ),
                 subtitle: Column(

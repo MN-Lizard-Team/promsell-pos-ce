@@ -13,6 +13,8 @@ class ReceiptNumberService {
   static const _keySequenceDate = 'receiptSequenceDate';
   static const _keyDevicePrefix = 'devicePrefix';
 
+  String? _cachedPrefix;
+
   /// Generate the next receipt number.
   /// Format: `{YYMMDD}-{devicePrefix}-{seq:0000}`
   /// Example: `260527-A1-0001`
@@ -24,10 +26,18 @@ class ReceiptNumberService {
     final dateKey = DateFormat('yyMMdd').format(now);
     final isoDate = DateFormat('yyyy-MM-dd').format(now);
 
-    final lastDate = await _readSetting(_keySequenceDate);
-    final lastSeq = int.tryParse(await _readSetting(_keySequence) ?? '0') ?? 0;
-    final devicePrefix =
-        await _readSetting(_keyDevicePrefix) ?? await _generateDevicePrefix();
+    final settings = await _readSettings([
+      _keySequenceDate,
+      _keySequence,
+      _keyDevicePrefix,
+    ]);
+
+    final lastDate = settings[_keySequenceDate];
+    final lastSeq = int.tryParse(settings[_keySequence] ?? '0') ?? 0;
+
+    _cachedPrefix ??= settings[_keyDevicePrefix];
+    final devicePrefix = _cachedPrefix ?? await _generateDevicePrefix();
+    _cachedPrefix = devicePrefix;
 
     final newSeq = (lastDate == isoDate) ? lastSeq + 1 : 1;
 
@@ -37,11 +47,11 @@ class ReceiptNumberService {
     return '$dateKey-$devicePrefix-${newSeq.toString().padLeft(4, '0')}';
   }
 
-  Future<String?> _readSetting(String key) async {
-    final row = await (_db.select(
+  Future<Map<String, String?>> _readSettings(List<String> keys) async {
+    final rows = await (_db.select(
       _db.appSettings,
-    )..where((t) => t.key.equals(key))).getSingleOrNull();
-    return row?.value;
+    )..where((t) => t.key.isIn(keys))).get();
+    return {for (final r in rows) r.key: r.value};
   }
 
   Future<void> _writeSetting(String key, String value) async {

@@ -464,6 +464,18 @@ abstract class AppLocalizations {
   /// **'ประวัติการขาย'**
   String get historyTitle;
 
+  /// No description provided for @searchHistoryHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…'**
+  String get searchHistoryHint;
+
+  /// No description provided for @noSearchResults.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบรายการขายที่ตรงกัน'**
+  String get noSearchResults;
+
   /// No description provided for @noSalesYet.
   ///
   /// In th, this message translates to:

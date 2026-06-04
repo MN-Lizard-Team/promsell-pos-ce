@@ -49,6 +49,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Signing keys and config (DO NOT COMMIT)
+/android/app/*.jks
+/android/app/*.keystore
+/android/app/keystore.properties
+
 # Aiyu MultiAgent
 .agent/usage.json
 .windsurf/.version
