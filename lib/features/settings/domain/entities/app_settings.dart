@@ -46,6 +46,7 @@ class AppSettings extends Equatable {
     this.maxDrafts = 30,
     this.cartCompactMode = false,
     this.ultraCompactMode = false,
+    this.accessibilityMode = false,
   });
 
   final Locale locale;
@@ -81,6 +82,7 @@ class AppSettings extends Equatable {
   final int maxDrafts;
   final bool cartCompactMode;
   final bool ultraCompactMode;
+  final bool accessibilityMode;
 
   DiscountPreset get activeDiscountPreset {
     final match = discountPresets.where((p) => p.id == activeDiscountPresetId);
@@ -121,6 +123,7 @@ class AppSettings extends Equatable {
     int? maxDrafts,
     bool? cartCompactMode,
     bool? ultraCompactMode,
+    bool? accessibilityMode,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -160,6 +163,7 @@ class AppSettings extends Equatable {
       maxDrafts: maxDrafts ?? this.maxDrafts,
       cartCompactMode: cartCompactMode ?? this.cartCompactMode,
       ultraCompactMode: ultraCompactMode ?? this.ultraCompactMode,
+      accessibilityMode: accessibilityMode ?? this.accessibilityMode,
     );
   }
 
@@ -198,5 +202,6 @@ class AppSettings extends Equatable {
     maxDrafts,
     cartCompactMode,
     ultraCompactMode,
+    accessibilityMode,
   ];
 }

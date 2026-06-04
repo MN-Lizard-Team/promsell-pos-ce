@@ -196,31 +196,41 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 ### Settings tab
 
-Settings are grouped into cards: general, shop info, sales, and receipt. See [Settings](#settings) below.
+The Settings root page shows a **dashboard card** at the top with 5 at-a-glance badges (shop name, language, theme, backup status, PromptPay status). Categories are grouped into three sections: **Store & Business**, **Payments**, and **System & Data**. Each category tile displays a colored **status chip** showing its current state. A **search bar** filters categories by title or subtitle in real time. See [Settings](#settings) below.
 
 ---
 
 ## Settings
 
-All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value store). Locale, theme, currency, and date format apply immediately; shop and receipt text fields are saved with the **Save** action.
+All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value store). Locale, theme, currency, and date format apply immediately; shop info and other text fields are saved automatically.
+
+### Root page
+
+- **Dashboard card** — Gradient card at the top showing current shop name, language, theme, backup status (Safe/Warning/Overdue), and PromptPay status (Active/Not set)
+- **Grouped sections** — Categories organized into `Store & Business`, `Payments`, and `System & Data`
+- **Status chips** — Each tile shows a colored badge: Complete/Incomplete, Active/Not set, Safe/Warning/Overdue, or the current value (language, currency, receipt size)
+- **Search** — Real-time filtering by title or subtitle
+
+### General Settings
+
+- **Summary card** — Gradient card showing current language, theme, and accessibility status as badge chips
+- **Language** — Tap to open a visual dialog picker with icon-based option cards for Thai (`th`) and English (`en`) — live reload
+- **Theme** — Tap to open a visual dialog picker with icon-based option cards for Light, Dark, or System — live reload
+- **Accessibility mode** — Toggle "Large Text & High Contrast" (default off)
+- **Reset to Defaults** — Confirmation dialog restoring `locale: th`, `themeMode: system`, `accessibilityMode: false`
+
+### Shop Info
+
+- **Preview card** — Live preview showing shop name, address, and phone as they will appear on receipts
+- **Inline form** — All 3 fields visible and editable at once with character counters and phone auto-format (`081-234-5678`)
+- **Receipt size** — `80mm` (thermal) or `A4` dropdown
+
+### Sales Settings
 
 | Setting | Description |
 |---------|-------------|
-| **Language** | Thai (`th`) or English (`en`) — live reload |
-| **Theme** | Light, Dark, or System (follows OS) — live reload |
-| **Shop name** | Displayed on receipts and preview |
-| **Shop address** | Displayed on receipts and preview |
-| **Shop phone** | Displayed on receipts and preview |
 | **Currency symbol** | Default `฿` — used in money formatting |
 | **Date format** | Default `dd/MM/yyyy` — `intl` format pattern |
-| **Receipt note** | Optional footer text on receipts |
-| **Show shop info on receipt** | Toggle on/off |
-| **Auto print prompt** | Ask to print receipt after sale |
-| **VAT mode** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` |
-| **VAT rate** | Percentage (default `7.0`) |
-| **Receipt preview style** | `thermal` / `card` / `none` |
-| **Show pre-sale preview** | Show preview in PaymentSheet |
-| **Show post-sale preview** | Show preview in success dialog |
 | **Allow oversell** | Permit selling beyond available stock (default off) |
 | **Low stock threshold** | Stock count at which the product card turns red (default `5`) |
 | **Enable item discount** | Show discount button on each cart item (default off) |
@@ -229,20 +239,47 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Max discount amount** | Upper limit for fixed-amount discounts (default `0` = unlimited) |
 | **Discount presets** | Named preset groups with type (%/฿) and quick-apply values |
 | **Active discount preset** | Which preset group is active in the sale discount dialog |
-| **PromptPay ID** | Phone number or citizen ID for PromptPay QR generation |
-| **Receipt size** | `80mm` (thermal) or `A4` |
-| **Backup reminder** | Days before backup reminder appears (0 = off, default `7`) |
+| **VAT mode** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` |
+| **VAT rate** | Percentage (default `7.0`) |
+
+### Receipt Settings
+
+| Setting | Description |
+|---------|-------------|
+| **Receipt note** | Optional footer text on receipts |
+| **Show shop info on receipt** | Toggle on/off |
+| **Auto print prompt** | Ask to print receipt after sale |
+| **Receipt preview style** | `thermal` / `card` / `none` |
+| **Show pre-sale preview** | Show preview in PaymentSheet |
+| **Show post-sale preview** | Show preview in success dialog |
+
+### PromptPay Settings
+
+- **Preview card** — Gradient card showing configured/not-configured state with QR icon and current PromptPay ID
+- **PromptPay ID** — Tap to open validation dialog: phone number (10 digits, starting with 0) or citizen ID (13 digits)
+- **Info card** — Explains how PromptPay ID is used for QR code payments
+
+### Backup Settings
+
+- **Status card** — Gradient card showing backup status (Safe/Warning/Overdue) with last backup date
+- **Backup reminder** — Switch to enable/disable; tap to open frequency picker dialog with preset chips (3/7/14/30 days) or custom input
+- **Backup Now** — Manual backup trigger action tile
+- **Export/Restore** — Export database, sales CSV, products CSV; restore from backup file
+
+### Image Settings
+
+| Setting | Description |
+|---------|-------------|
 | **Image max width** | Maximum width for product image compression in pixels (default `800`) |
 | **Image quality** | JPEG quality for product images 1–100 (default `80`) |
+
+### Draft Settings
+
+| Setting | Description |
+|---------|-------------|
 | **Max drafts** | Maximum number of simultaneous draft carts (default `30`, range 5–100) |
 | **Compact cart** | Reduce padding and font size in the cart panel |
 | **Ultra-compact cart** | Hide unit price line and shrink avatar for maximum density |
-| **Export database** | Full SQLite backup via share sheet |
-| **Export sales CSV** | Sales data as CSV for a date range |
-| **Export products CSV** | Product catalog as CSV |
-| **Restore from backup** | Import a previously exported database file |
-
-To save text-field changes, tap the **Save** button in the app bar or at the bottom of the page.
 
 ---
 

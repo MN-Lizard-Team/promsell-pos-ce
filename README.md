@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.6.3** — InventoryLog Clean Architecture (full domain/data/presentation split), category autocomplete, history search bar, cart direct quantity input, 8 bug fixes (schema migration, receipt race condition, error surfacing, VAT rounding, query optimization), platform hardening (permissions, signing, iOS privacy strings), and store submission prep (Play Store + App Store metadata, privacy policy, keystore setup).
+> **Latest Release: v0.7.0** — Full Settings UX overhaul with elderly-friendly redesign: gradient dashboard cards on every page, dialog-based visual pickers for language/theme, PromptPay ID validation, Shop Info inline form, backup reminder switch + frequency picker, "Reset to Defaults" confirmation dialog, and grouped category sections with real-time status chips on the root page.
  
 ---
  
@@ -71,7 +71,7 @@
 | **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, VAT breakdown rows (Subtotal + VAT rate %) when VAT is active, void sale action with reason, notes, and search bar (filter by receipt number, payment method, or amount) |
 | **Report** | Dashboard cards for net revenue (excludes voided), voided summary, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
 | **Inventory** | Inventory audit log (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT), manual stock adjustment dialog with reason, and per-product log viewer |
-| **Settings** | Grouped settings cards for language, theme, shop info, currency, date format, receipt customization, VAT mode/rate, preview style toggles, stock policy (allow oversell + low-stock threshold), discount policy (presets, max limits, toggles), dirty-state save behavior |
+| **Settings** | Elderly-friendly redesign with single soft-accent palette, larger touch targets (48dp icons, 64dp tiles), and 16px titles. Dashboard cards with gradient backgrounds and status badges on every page. Dialog-based visual pickers for language/theme with icon-based option cards. PromptPay ID validation (phone 10 digits / citizen ID 13 digits). Shop Info inline form with live preview and phone auto-format. Backup reminder switch + preset frequency picker (3/7/14/30 days). "Reset to Defaults" confirmation dialog. Root page dashboard with 5 summary badges and grouped sections (`Store & Business`, `Payments`, `System & Data`) with colored status chips on every tile |
 | **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation |
 | **Receipt Preview** | On-screen preview in `thermal` (80mm paper) and `card` styles, with independent pre/post-sale toggles and `"none"` option; pinch-to-zoom full-screen dialog |
 | **Receipt PDF** | Print and share receipts as PDF with Thai font support; 80mm thermal + A4 layouts; PromptPay QR on receipt; centralized `ImageViewerDialog` for product/receipt images |
@@ -227,7 +227,9 @@ features/<name>/
 - [x] **R5 — Cart UX Redesign** (v0.6.1): Cart panel overhaul (search, group-by-category, multi-select, swipe, drag-to-reorder, resizable panel, compact modes), interactive checkout review (`CheckoutPage` + `CartReviewPage`), receipt preview zoom, centralized `ImageViewerDialog`, product image polish
 - [x] **R5 — UX Polish & Performance** (v0.6.2): Accessibility touch targets, tooltips, focus indicators, colorblind stock badges, search clear button, delete confirmation dialogs, keyboard submit, toast tap-dismiss, `ValueNotifier` drag refactor (jank fix), VAT calculation deduplication, `useRootNavigator` fixes
 - [x] **R5 — Clean Architecture & Store Prep** (v0.6.3): InventoryLog full Clean Architecture refactor, category autocomplete, history search bar, cart direct qty input, 8 bug fixes, platform hardening (Android permissions, iOS privacy strings, release signing), store submission metadata and docs
-- [ ] **R6 — Operations**: Daily close, onboarding wizard, final polish
+- [x] **R5 — Settings Refactor** (v0.6.4): Sub-page navigation, auto-save, god page elimination, orphan field surfacing
+- [x] **R6 — Settings UX Overhaul** (v0.7.0): Elderly-friendly redesign, gradient dashboard cards, visual dialog pickers, validation, grouped sections with status chips, accessibility mode toggle
+- [ ] **R7 — Operations**: Daily close, onboarding wizard, final polish
 
 ### Future
 
@@ -328,6 +330,6 @@ Built by **[MN Lizard Team](https://github.com/teeprakorn1)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.6.3 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.7.0 · AGPL-3.0</sub>
 
 </div>

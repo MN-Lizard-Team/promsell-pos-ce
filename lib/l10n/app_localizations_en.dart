@@ -247,6 +247,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsGeneral => 'General';
 
   @override
+  String get settingsStoreBusiness => 'Store & Business';
+
+  @override
+  String get settingsPayments => 'Payments';
+
+  @override
+  String get settingsSystemData => 'System & Data';
+
+  @override
+  String get settingsStatusComplete => 'Complete';
+
+  @override
+  String get settingsStatusIncomplete => 'Incomplete';
+
+  @override
+  String get settingsStatusActive => 'Active';
+
+  @override
+  String get settingsStatusNotSet => 'Not set';
+
+  @override
   String get settingsLanguage => 'Language';
 
   @override
@@ -260,6 +281,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsAccessibilityMode => 'Large Text & High Contrast';
+
+  @override
+  String get settingsAccessibilityModeHint => 'Bigger fonts, clearer labels';
+
+  @override
+  String get generalSettingsAppearance => 'Appearance';
+
+  @override
+  String get generalSettingsLanguageRegion => 'Language & Region';
+
+  @override
+  String get generalSettingsReset => 'Reset to Defaults';
+
+  @override
+  String get generalSettingsResetConfirm =>
+      'Restore language, theme, and accessibility to factory settings?';
+
+  @override
+  String get generalSettingsResetTitle => 'Reset General Settings';
+
+  @override
+  String get generalSettingsInfoDescription =>
+      'Language affects all app labels and receipt text. Theme controls light/dark mode. Accessibility increases contrast and font sizes for better readability.';
 
   @override
   String get settingsShopInfo => 'Shop Info';
@@ -289,10 +336,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsReceiptNote => 'Receipt Footer Note';
 
   @override
+  String get settingsReceiptNoteHint => 'Thank you for your purchase';
+
+  @override
   String get settingsShowShopInfo => 'Show shop info on receipt';
 
   @override
+  String get settingsSectionContent => 'Content';
+
+  @override
+  String get settingsSectionPreview => 'Preview';
+
+  @override
+  String get settingsSectionTax => 'Tax';
+
+  @override
   String get settingsSaved => 'Settings saved';
+
+  @override
+  String get shopNameRequired => 'Shop name is required';
+
+  @override
+  String get shopNameTooLong => 'Shop name is too long';
+
+  @override
+  String get addressTooLong => 'Address is too long';
+
+  @override
+  String get phoneInvalid => 'Invalid phone number';
+
+  @override
+  String get shopInfoEmptyPreview => 'Your shop info will appear here';
 
   @override
   String get langThai => 'ภาษาไทย';
@@ -529,6 +603,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get maxDiscountAmount => 'Max discount (amount)';
 
   @override
+  String get maxAmountNoLimit => 'No limit';
+
+  @override
   String get defaultDiscountType => 'Default discount type';
 
   @override
@@ -554,6 +631,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activeDiscountPreset => 'Active preset';
+
+  @override
+  String get editDiscountPreset => 'Edit Preset';
 
   @override
   String get noDiscountPresets => 'No discount presets';
@@ -722,6 +802,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get promptpaySettingsHint => 'Go to Settings';
 
   @override
+  String get promptpayAccount => 'Account';
+
+  @override
+  String get promptpayScanToPay => 'Scan to Pay';
+
+  @override
+  String get promptpayQrPreview => 'Payment QR Preview';
+
+  @override
+  String get promptpayInfoDescription =>
+      'Enter your PromptPay ID (phone number or citizen ID) to receive payments via QR code.';
+
+  @override
+  String get promptpayInvalidId =>
+      'Please enter a valid phone number or citizen ID';
+
+  @override
   String get settingsReceiptSize => 'Receipt Size';
 
   @override
@@ -729,6 +826,77 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get receiptSizeA4 => 'A4';
+
+  @override
+  String get settingsMaxDrafts => 'Max Drafts';
+
+  @override
+  String get settingsCompactCartMode => 'Compact Cart Mode';
+
+  @override
+  String get settingsUltraCompactMode => 'Ultra Compact Mode';
+
+  @override
+  String get settingsUltraCompactModeHint =>
+      'Smaller items for maximum density';
+
+  @override
+  String get settingsCompactModeSubtitle =>
+      'Smaller item rows, more items visible';
+
+  @override
+  String get settingsUltraModeOverrides => 'Overrides Compact mode';
+
+  @override
+  String get settingsUltraModeSubtitle => 'Minimal padding, maximum density';
+
+  @override
+  String get settingsOversellAllowed => 'Oversell allowed';
+
+  @override
+  String get settingsImages => 'Images';
+
+  @override
+  String get settingsImageMaxWidth => 'Max Width (px)';
+
+  @override
+  String get settingsImageQuality => 'Quality (%)';
+
+  @override
+  String get imageWidthSmall => 'Small';
+
+  @override
+  String get imageWidthMedium => 'Medium';
+
+  @override
+  String get imageWidthLarge => 'Large';
+
+  @override
+  String get imageWidthExtraLarge => 'Extra Large';
+
+  @override
+  String get imageWidthFullHD => 'Full HD';
+
+  @override
+  String get imageQualityDraft => 'Draft';
+
+  @override
+  String get imageQualityStandard => 'Standard';
+
+  @override
+  String get imageQualityHigh => 'High';
+
+  @override
+  String get imageQualityBest => 'Best';
+
+  @override
+  String get imageQualityOriginal => 'Original';
+
+  @override
+  String get imageExample => 'Example';
+
+  @override
+  String get settingsBackup => 'Backup';
 
   @override
   String get settingsData => 'Data';
@@ -770,7 +938,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsBackupReminderDays => 'Backup reminder (days, 0=off)';
 
   @override
+  String get backupWeekly => 'Weekly';
+
+  @override
+  String get backupBiweekly => 'Biweekly';
+
+  @override
+  String get backupMonthly => 'Monthly';
+
+  @override
+  String get backupBimonthly => 'Bimonthly';
+
+  @override
+  String get backupQuarterly => 'Quarterly';
+
+  @override
+  String get backupLastBackup => 'Last backup';
+
+  @override
+  String get backupToday => 'Today';
+
+  @override
+  String get backupYesterday => 'Yesterday';
+
+  @override
+  String backupDaysAgo(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String get backupStatusSafe => 'Up to date';
+
+  @override
+  String get backupStatusWarning => 'Due soon';
+
+  @override
+  String get backupStatusOverdue => 'Overdue';
+
+  @override
   String get backupNow => 'Backup Now';
+
+  @override
+  String get backupSuccess => 'Backup completed';
+
+  @override
+  String get backupReminderLabel => 'Backup reminder';
+
+  @override
+  String get backupFrequency => 'Frequency';
+
+  @override
+  String backupEveryNDays(int n) {
+    return 'Every $n days';
+  }
+
+  @override
+  String get backupOff => 'Off';
+
+  @override
+  String get backupActionTitle => 'Manual backup';
+
+  @override
+  String get backupActionSubtitle =>
+      'Tap to record that you have backed up your data';
+
+  @override
+  String get backupInfoDescription =>
+      'Back up regularly to protect your sales data, products, and settings.';
 
   @override
   String get exportSuccess => 'Export successful';

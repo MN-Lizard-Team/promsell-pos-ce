@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.6.3+2
+version: 0.7.0+3
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -159,7 +159,12 @@ Before distributing a build with UI changes:
 16. Open History again — voided sale shows strikethrough amount and red badge.
 17. Open Report and verify net revenue excludes voided sales; voided summary card appears.
 18. Tap **Print Receipt** or **Share Receipt** on any sale.
-19. Open Settings, verify Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); verify PromptPay ID field and Receipt Size toggle; switch theme/locale, and save shop info.
+19. Open Settings root page — verify gradient dashboard card with 5 summary badges (shop name, language, theme, backup status, PromptPay status); verify categories are grouped into `Store & Business`, `Payments`, `System & Data`; verify colored status chips on every tile; verify real-time search bar filters categories.
+19b. Open **General Settings** — verify gradient summary card with language, theme, and accessibility badges; tap language/theme tiles to open visual dialog pickers with icon-based option cards; verify accessibility mode toggle; verify "Reset to Defaults" tile with confirmation dialog.
+19c. Open **Shop Info** — verify live preview card showing shop name/address/phone; verify inline form with character counters and phone auto-format (`081-234-5678`); verify receipt size dropdown.
+19d. Open **PromptPay Settings** — verify gradient preview card showing configured/not-configured state with QR icon; verify PromptPay ID tile with validation dialog (phone 10 digits / citizen ID 13 digits); verify info card explaining PromptPay usage.
+19e. Open **Backup Settings** — verify gradient status card (Safe/Warning/Overdue); verify backup reminder switch + frequency picker dialog with preset chips (3/7/14/30 days); verify "Backup Now" action tile.
+19f. Open Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); switch theme/locale, and save shop info.
 20. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; delete the product and verify both image files are removed from storage.
 20b. In the Products tab, verify **category autocomplete** — type in the category field and see suggestions from existing categories; enter a new category freely.
 21. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file; tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.

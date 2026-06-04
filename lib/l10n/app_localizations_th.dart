@@ -246,6 +246,27 @@ class AppLocalizationsTh extends AppLocalizations {
   String get settingsGeneral => 'ทั่วไป';
 
   @override
+  String get settingsStoreBusiness => 'ร้านค้าและธุรกิจ';
+
+  @override
+  String get settingsPayments => 'การชำระเงิน';
+
+  @override
+  String get settingsSystemData => 'ระบบและข้อมูล';
+
+  @override
+  String get settingsStatusComplete => 'สมบูรณ์';
+
+  @override
+  String get settingsStatusIncomplete => 'ยังไม่สมบูรณ์';
+
+  @override
+  String get settingsStatusActive => 'ใช้งานอยู่';
+
+  @override
+  String get settingsStatusNotSet => 'ยังไม่ตั้งค่า';
+
+  @override
   String get settingsLanguage => 'ภาษา';
 
   @override
@@ -259,6 +280,32 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get settingsThemeSystem => 'ตามระบบ';
+
+  @override
+  String get settingsAccessibilityMode => 'ตัวอักษรใหญ่และคอนทราสต์สูง';
+
+  @override
+  String get settingsAccessibilityModeHint => 'ตัวอักษรใหญ่ขึ้น อ่านง่ายขึ้น';
+
+  @override
+  String get generalSettingsAppearance => 'รูปแบบ';
+
+  @override
+  String get generalSettingsLanguageRegion => 'ภาษาและภูมิภาค';
+
+  @override
+  String get generalSettingsReset => 'คืนค่าเริ่มต้น';
+
+  @override
+  String get generalSettingsResetConfirm =>
+      'คืนค่าภาษา ธีม และการช่วยเหลือการเข้าถึงกลับเป็นค่าเริ่มต้น?';
+
+  @override
+  String get generalSettingsResetTitle => 'คืนค่าการตั้งค่าทั่วไป';
+
+  @override
+  String get generalSettingsInfoDescription =>
+      'ภาษามีผลต่อป้ายและข้อความใบเสร็จทั้งหมด ธีมควบคุมโหมดสว่าง/มืด การช่วยเหลือการเข้าถึงเพิ่มความคมชัดและขนาดตัวอักษรให้เห็นชัดเจนขึ้น';
 
   @override
   String get settingsShopInfo => 'ข้อมูลร้าน';
@@ -288,10 +335,37 @@ class AppLocalizationsTh extends AppLocalizations {
   String get settingsReceiptNote => 'หมายเหตุท้ายใบเสร็จ';
 
   @override
+  String get settingsReceiptNoteHint => 'ขอบคุณที่อุดหนุน';
+
+  @override
   String get settingsShowShopInfo => 'แสดงข้อมูลร้านในใบเสร็จ';
 
   @override
+  String get settingsSectionContent => 'เนื้อหา';
+
+  @override
+  String get settingsSectionPreview => 'ตัวอย่าง';
+
+  @override
+  String get settingsSectionTax => 'ภาษี';
+
+  @override
   String get settingsSaved => 'บันทึกการตั้งค่าแล้ว';
+
+  @override
+  String get shopNameRequired => 'กรุณากรอกชื่อร้าน';
+
+  @override
+  String get shopNameTooLong => 'ชื่อร้านยาวเกินไป';
+
+  @override
+  String get addressTooLong => 'ที่อยู่ยาวเกินไป';
+
+  @override
+  String get phoneInvalid => 'เบอร์โทรศัพท์ไม่ถูกต้อง';
+
+  @override
+  String get shopInfoEmptyPreview => 'ข้อมูลร้านจะปรากฏที่นี่';
 
   @override
   String get langThai => 'ภาษาไทย';
@@ -526,6 +600,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get maxDiscountAmount => 'ส่วนลดสูงสุด (บาท)';
 
   @override
+  String get maxAmountNoLimit => 'ไม่จำกัด';
+
+  @override
   String get defaultDiscountType => 'ประเภทส่วนลดเริ่มต้น';
 
   @override
@@ -551,6 +628,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get activeDiscountPreset => 'ใช้งานอยู่';
+
+  @override
+  String get editDiscountPreset => 'แก้ไขชุดส่วนลด';
 
   @override
   String get noDiscountPresets => 'ยังไม่มีชุดส่วนลด';
@@ -718,6 +798,23 @@ class AppLocalizationsTh extends AppLocalizations {
   String get promptpaySettingsHint => 'ไปตั้งค่า';
 
   @override
+  String get promptpayAccount => 'บัญชี';
+
+  @override
+  String get promptpayScanToPay => 'สแกนจ่ายเงิน';
+
+  @override
+  String get promptpayQrPreview => 'ตัวอย่าง QR รับเงิน';
+
+  @override
+  String get promptpayInfoDescription =>
+      'ป้อน PromptPay ID (เบอร์โทรหรือเลขบัตรประชาชน) เพื่อรับเงินผ่าน QR Code';
+
+  @override
+  String get promptpayInvalidId =>
+      'กรุณากรอกเบอร์โทรหรือเลขบัตรประชาชนที่ถูกต้อง';
+
+  @override
   String get settingsReceiptSize => 'ขนาดใบเสร็จ';
 
   @override
@@ -725,6 +822,76 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get receiptSizeA4 => 'A4';
+
+  @override
+  String get settingsMaxDrafts => 'บิลสูงสุด';
+
+  @override
+  String get settingsCompactCartMode => 'โหมดตะกร้ากะทัดรัด';
+
+  @override
+  String get settingsUltraCompactMode => 'โหมดกะทัดรัดมาก';
+
+  @override
+  String get settingsUltraCompactModeHint =>
+      'รายการเล็กลงเพื่อความหนาแน่นสูงสุด';
+
+  @override
+  String get settingsCompactModeSubtitle => 'แถวสินค้าเล็กลง มองเห็นได้มากขึ้น';
+
+  @override
+  String get settingsUltraModeOverrides => 'แทนที่โหมดกะทัดรัด';
+
+  @override
+  String get settingsUltraModeSubtitle => 'ระยะห่างน้อยที่สุด แสดงได้มากที่สุด';
+
+  @override
+  String get settingsOversellAllowed => 'อนุญาตขายเกิน';
+
+  @override
+  String get settingsImages => 'รูปภาพ';
+
+  @override
+  String get settingsImageMaxWidth => 'ความกว้างสูงสุด (px)';
+
+  @override
+  String get settingsImageQuality => 'คุณภาพ (%)';
+
+  @override
+  String get imageWidthSmall => 'เล็ก';
+
+  @override
+  String get imageWidthMedium => 'กลาง';
+
+  @override
+  String get imageWidthLarge => 'ใหญ่';
+
+  @override
+  String get imageWidthExtraLarge => 'ใหญ่พิเศษ';
+
+  @override
+  String get imageWidthFullHD => 'เต็มจอ';
+
+  @override
+  String get imageQualityDraft => 'ร่าง';
+
+  @override
+  String get imageQualityStandard => 'มาตรฐาน';
+
+  @override
+  String get imageQualityHigh => 'สูง';
+
+  @override
+  String get imageQualityBest => 'ดีที่สุด';
+
+  @override
+  String get imageQualityOriginal => 'ต้นฉบับ';
+
+  @override
+  String get imageExample => 'ตัวอย่าง';
+
+  @override
+  String get settingsBackup => 'สำรองข้อมูล';
 
   @override
   String get settingsData => 'ข้อมูล';
@@ -766,7 +933,72 @@ class AppLocalizationsTh extends AppLocalizations {
   String get settingsBackupReminderDays => 'เตือนสำรองข้อมูล (วัน, 0=ปิด)';
 
   @override
+  String get backupWeekly => 'รายสัปดาห์';
+
+  @override
+  String get backupBiweekly => '2 สัปดาห์';
+
+  @override
+  String get backupMonthly => 'รายเดือน';
+
+  @override
+  String get backupBimonthly => '2 เดือน';
+
+  @override
+  String get backupQuarterly => '3 เดือน';
+
+  @override
+  String get backupLastBackup => 'สำรองล่าสุด';
+
+  @override
+  String get backupToday => 'วันนี้';
+
+  @override
+  String get backupYesterday => 'เมื่อวาน';
+
+  @override
+  String backupDaysAgo(int days) {
+    return '$days วันที่แล้ว';
+  }
+
+  @override
+  String get backupStatusSafe => 'ปลอดภัย';
+
+  @override
+  String get backupStatusWarning => 'ใกล้ครบกำหนด';
+
+  @override
+  String get backupStatusOverdue => 'ล่าช้า';
+
+  @override
   String get backupNow => 'สำรองเลย';
+
+  @override
+  String get backupSuccess => 'สำรองข้อมูลสำเร็จ';
+
+  @override
+  String get backupReminderLabel => 'เตือนสำรองข้อมูล';
+
+  @override
+  String get backupFrequency => 'ความถี่';
+
+  @override
+  String backupEveryNDays(int n) {
+    return 'ทุก $n วัน';
+  }
+
+  @override
+  String get backupOff => 'ปิด';
+
+  @override
+  String get backupActionTitle => 'สำรองข้อมูลด้วยตนเอง';
+
+  @override
+  String get backupActionSubtitle => 'แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว';
+
+  @override
+  String get backupInfoDescription =>
+      'สำรองข้อมูลเป็นประจำเพื่อป้องกันข้อมูลการขาย สินค้า และการตั้งค่าของคุณ';
 
   @override
   String get exportSuccess => 'ส่งออกสำเร็จ';

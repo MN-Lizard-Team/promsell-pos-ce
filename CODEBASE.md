@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.6.3
+# CODEBASE.md — Promsell POS CE v0.7.0
 
 ## System overview
 
@@ -105,7 +105,7 @@ features/<name>/
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
-| Settings | `SettingsCubit` | `settings_page.dart`; widgets: `SettingsSectionHeader`, `SettingsTextField`, `LanguageTile`, `ThemeTile`, `CurrencyTile`, `DateFormatTile`, `ResponsiveSettingsPicker` |
+| Settings | `SettingsCubit` | Pages: `settings_root_page.dart` (dashboard + grouped sections), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension` |
 | Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
@@ -207,6 +207,7 @@ All state classes extend `Equatable` for efficient rebuilds.
 | `maxDrafts` | int | `30` |
 | `cartCompactMode` | bool | `false` |
 | `ultraCompactMode` | bool | `false` |
+| `accessibilityMode` | bool | `false` |
 
 ---
 

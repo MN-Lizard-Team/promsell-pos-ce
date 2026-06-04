@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_page.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_category_tile.dart';
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
@@ -27,7 +28,7 @@ void main() {
   });
 
   group('SettingsPage', () {
-    testWidgets('renders settings sections', (tester) async {
+    testWidgets('renders category list', (tester) async {
       await tester.pumpApp(
         const SettingsPage(),
         settingsCubit: mockSettingsCubit,
@@ -37,22 +38,23 @@ void main() {
       expect(find.byType(ListView), findsOneWidget);
     });
 
-    testWidgets('shows save button in app bar', (tester) async {
+    testWidgets('renders at least 6 category tiles', (tester) async {
       await tester.pumpApp(
         const SettingsPage(),
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(TextButton), findsOneWidget);
+      expect(find.byType(SettingsCategoryTile), findsAtLeastNWidgets(6));
     });
 
-    testWidgets('shows shop info text fields', (tester) async {
+    testWidgets('has no inline text fields or save button', (tester) async {
       await tester.pumpApp(
         const SettingsPage(),
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(TextField), findsAtLeast(3));
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byType(TextButton), findsNothing);
     });
   });
 }

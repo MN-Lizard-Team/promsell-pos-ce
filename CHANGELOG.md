@@ -17,6 +17,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - 2026-06-04
+
+Full Settings UX overhaul — dashboard cards, visual pickers, validation, and grouped sections across all pages
+
+### Highlights
+
+- **Elderly-Friendly Settings Redesign** — Single soft-accent palette replaces 10 garish colors. Larger touch targets (48dp icons, 64dp tiles), bigger fonts (16px titles, 14px subtitles), and real-time search on root page.
+- **Dashboard Cards on Every Page** — Gradient preview cards with status badges for Backup (Safe/Warning/Overdue), PromptPay (Active/Not set), and General (language, theme, accessibility).
+- **Visual Dialog Pickers & Validation** — Language and theme selection moved from inline `ChoiceChip`s to icon-based dialog cards. PromptPay ID validated (phone 10 digits / citizen ID 13 digits). Shop Info inline form with phone auto-format.
+- **Settings Root Dashboard** — At-a-glance dashboard with 5 summary badges; categories grouped into `Store & Business`, `Payments`, `System & Data`; colored status chips on every tile.
+
+### Added
+
+- `SettingsThemeExtension` — Single `softAccent` palette with accessibility sizing tokens (`tileMinHeight`, `iconSize`, `tilePadding`).
+- `ShopPreviewCard` — Live receipt preview; `ShopInfoForm` — inline form with dirty-state tracking, counters, and phone auto-format.
+- `SettingsCategoryTile` — Tap scale feedback, `InkWell` ripple, value preview below subtitle; `SettingsSectionCard` — softer borders, larger titles.
+- `accessibilityMode` field — Added to `AppSettings` (bool, default false).
+- Settings search — Real-time category filtering by title/subtitle on root page.
+- Dashboard cards — Gradient status cards for Backup (Safe/Warning/Overdue), PromptPay (Active/Not set), General (language/theme/badges), and root page (5-summary dashboard).
+- Info cards — `_BackupInfoCard`, `_PromptpayInfoCard`, `_GeneralInfoCard` explaining feature usage.
+- Visual dialog pickers — `_DialogOptionTile` for language/theme selection with icon, label, and selected highlight. PromptPay ID validation dialog (phone 10 digits / citizen ID 13 digits).
+- Backup reminder Switch + frequency picker — `SwitchListTile` with dialog of preset `ChoiceChip` options (3/7/14/30 days) + custom input. "Backup Now" action tile.
+- "Reset to Defaults" tile — Confirmation dialog restoring `locale: th`, `themeMode: system`, `accessibilityMode: false`.
+- `_StatusChip` — Reusable colored badge; `SettingsCategoryTile.statusChip` parameter. Category grouping into `Store & Business`, `Payments`, `System & Data` sections.
+- 32 new l10n keys — Backup, PromptPay, General, and Settings Root labels.
+
+### Changed
+
+- **Palette & touch targets** — 10 saturated category colors replaced by single `softAccent`. Titles 14→16px, subtitles 12→14px; icons 40→48dp, tile minHeight 64dp.
+- **Settings pages rewritten** — Shop Info (inline form + preview), Backup (`SwitchListTile` + dialog picker), PromptPay (preview card + validation dialog), General (dialog pickers + reset tile), Root (dashboard + grouped sections + status chips).
+- **Dropdown tiles** — Selected value shown as `subtitle` instead of trailing chip.
+- **Receipt size** — Moved from PromptPay settings to Shop Info settings.
+- `AppSettings.props` — 33 → 34 (accessibilityMode).
+- `SettingsValuePreview` — Removed chip background; now plain bold `softAccent` text.
+
+### Fixed
+
+- `app_settings_test.dart` — `props.length` updated 33 → 34.
+- `settings_page_test.dart` — Category tile count adjusted for new layout.
+
+### Tests
+
+- Settings root page renders with search and category tiles.
+- Settings root page shows ≥7 `SettingsCategoryTile` widgets.
+- Shop Info form validation, dirty state, and save flow.
+- Existing Cubit/repo/datasource tests unchanged (27 settings tests passing).
+
+`flutter analyze` → **0 issues** · `flutter test` → **258/258 passing**
+
+---
+
 ## [0.6.3] - 2026-06-04
 
 InventoryLog Clean Architecture, category autocomplete, history search, cart qty input, bug fixes, platform hardening, and store submission prep.
@@ -933,7 +984,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.0...v0.6.1

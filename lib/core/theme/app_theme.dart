@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class AppTheme {
   AppTheme._();
@@ -179,6 +180,7 @@ class AppTheme {
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
+    extensions: const <ThemeExtension<dynamic>>[SettingsThemeExtension.light],
   );
 
   static ThemeData get dark => ThemeData(
@@ -312,5 +314,6 @@ class AppTheme {
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
+    extensions: const <ThemeExtension<dynamic>>[SettingsThemeExtension.dark],
   );
 }

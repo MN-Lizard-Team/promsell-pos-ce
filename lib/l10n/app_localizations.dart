@@ -536,6 +536,48 @@ abstract class AppLocalizations {
   /// **'ทั่วไป'**
   String get settingsGeneral;
 
+  /// No description provided for @settingsStoreBusiness.
+  ///
+  /// In th, this message translates to:
+  /// **'ร้านค้าและธุรกิจ'**
+  String get settingsStoreBusiness;
+
+  /// No description provided for @settingsPayments.
+  ///
+  /// In th, this message translates to:
+  /// **'การชำระเงิน'**
+  String get settingsPayments;
+
+  /// No description provided for @settingsSystemData.
+  ///
+  /// In th, this message translates to:
+  /// **'ระบบและข้อมูล'**
+  String get settingsSystemData;
+
+  /// No description provided for @settingsStatusComplete.
+  ///
+  /// In th, this message translates to:
+  /// **'สมบูรณ์'**
+  String get settingsStatusComplete;
+
+  /// No description provided for @settingsStatusIncomplete.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่สมบูรณ์'**
+  String get settingsStatusIncomplete;
+
+  /// No description provided for @settingsStatusActive.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้งานอยู่'**
+  String get settingsStatusActive;
+
+  /// No description provided for @settingsStatusNotSet.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ตั้งค่า'**
+  String get settingsStatusNotSet;
+
   /// No description provided for @settingsLanguage.
   ///
   /// In th, this message translates to:
@@ -565,6 +607,54 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ตามระบบ'**
   String get settingsThemeSystem;
+
+  /// No description provided for @settingsAccessibilityMode.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอักษรใหญ่และคอนทราสต์สูง'**
+  String get settingsAccessibilityMode;
+
+  /// No description provided for @settingsAccessibilityModeHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอักษรใหญ่ขึ้น อ่านง่ายขึ้น'**
+  String get settingsAccessibilityModeHint;
+
+  /// No description provided for @generalSettingsAppearance.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปแบบ'**
+  String get generalSettingsAppearance;
+
+  /// No description provided for @generalSettingsLanguageRegion.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษาและภูมิภาค'**
+  String get generalSettingsLanguageRegion;
+
+  /// No description provided for @generalSettingsReset.
+  ///
+  /// In th, this message translates to:
+  /// **'คืนค่าเริ่มต้น'**
+  String get generalSettingsReset;
+
+  /// No description provided for @generalSettingsResetConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'คืนค่าภาษา ธีม และการช่วยเหลือการเข้าถึงกลับเป็นค่าเริ่มต้น?'**
+  String get generalSettingsResetConfirm;
+
+  /// No description provided for @generalSettingsResetTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'คืนค่าการตั้งค่าทั่วไป'**
+  String get generalSettingsResetTitle;
+
+  /// No description provided for @generalSettingsInfoDescription.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษามีผลต่อป้ายและข้อความใบเสร็จทั้งหมด ธีมควบคุมโหมดสว่าง/มืด การช่วยเหลือการเข้าถึงเพิ่มความคมชัดและขนาดตัวอักษรให้เห็นชัดเจนขึ้น'**
+  String get generalSettingsInfoDescription;
 
   /// No description provided for @settingsShopInfo.
   ///
@@ -620,17 +710,71 @@ abstract class AppLocalizations {
   /// **'หมายเหตุท้ายใบเสร็จ'**
   String get settingsReceiptNote;
 
+  /// No description provided for @settingsReceiptNoteHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ขอบคุณที่อุดหนุน'**
+  String get settingsReceiptNoteHint;
+
   /// No description provided for @settingsShowShopInfo.
   ///
   /// In th, this message translates to:
   /// **'แสดงข้อมูลร้านในใบเสร็จ'**
   String get settingsShowShopInfo;
 
+  /// No description provided for @settingsSectionContent.
+  ///
+  /// In th, this message translates to:
+  /// **'เนื้อหา'**
+  String get settingsSectionContent;
+
+  /// No description provided for @settingsSectionPreview.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอย่าง'**
+  String get settingsSectionPreview;
+
+  /// No description provided for @settingsSectionTax.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษี'**
+  String get settingsSectionTax;
+
   /// No description provided for @settingsSaved.
   ///
   /// In th, this message translates to:
   /// **'บันทึกการตั้งค่าแล้ว'**
   String get settingsSaved;
+
+  /// No description provided for @shopNameRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกชื่อร้าน'**
+  String get shopNameRequired;
+
+  /// No description provided for @shopNameTooLong.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อร้านยาวเกินไป'**
+  String get shopNameTooLong;
+
+  /// No description provided for @addressTooLong.
+  ///
+  /// In th, this message translates to:
+  /// **'ที่อยู่ยาวเกินไป'**
+  String get addressTooLong;
+
+  /// No description provided for @phoneInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'เบอร์โทรศัพท์ไม่ถูกต้อง'**
+  String get phoneInvalid;
+
+  /// No description provided for @shopInfoEmptyPreview.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลร้านจะปรากฏที่นี่'**
+  String get shopInfoEmptyPreview;
 
   /// No description provided for @langThai.
   ///
@@ -1076,6 +1220,12 @@ abstract class AppLocalizations {
   /// **'ส่วนลดสูงสุด (บาท)'**
   String get maxDiscountAmount;
 
+  /// No description provided for @maxAmountNoLimit.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่จำกัด'**
+  String get maxAmountNoLimit;
+
   /// No description provided for @defaultDiscountType.
   ///
   /// In th, this message translates to:
@@ -1129,6 +1279,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ใช้งานอยู่'**
   String get activeDiscountPreset;
+
+  /// No description provided for @editDiscountPreset.
+  ///
+  /// In th, this message translates to:
+  /// **'แก้ไขชุดส่วนลด'**
+  String get editDiscountPreset;
 
   /// No description provided for @noDiscountPresets.
   ///
@@ -1436,6 +1592,36 @@ abstract class AppLocalizations {
   /// **'ไปตั้งค่า'**
   String get promptpaySettingsHint;
 
+  /// No description provided for @promptpayAccount.
+  ///
+  /// In th, this message translates to:
+  /// **'บัญชี'**
+  String get promptpayAccount;
+
+  /// No description provided for @promptpayScanToPay.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนจ่ายเงิน'**
+  String get promptpayScanToPay;
+
+  /// No description provided for @promptpayQrPreview.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอย่าง QR รับเงิน'**
+  String get promptpayQrPreview;
+
+  /// No description provided for @promptpayInfoDescription.
+  ///
+  /// In th, this message translates to:
+  /// **'ป้อน PromptPay ID (เบอร์โทรหรือเลขบัตรประชาชน) เพื่อรับเงินผ่าน QR Code'**
+  String get promptpayInfoDescription;
+
+  /// No description provided for @promptpayInvalidId.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกเบอร์โทรหรือเลขบัตรประชาชนที่ถูกต้อง'**
+  String get promptpayInvalidId;
+
   /// No description provided for @settingsReceiptSize.
   ///
   /// In th, this message translates to:
@@ -1453,6 +1639,144 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'A4'**
   String get receiptSizeA4;
+
+  /// No description provided for @settingsMaxDrafts.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลสูงสุด'**
+  String get settingsMaxDrafts;
+
+  /// No description provided for @settingsCompactCartMode.
+  ///
+  /// In th, this message translates to:
+  /// **'โหมดตะกร้ากะทัดรัด'**
+  String get settingsCompactCartMode;
+
+  /// No description provided for @settingsUltraCompactMode.
+  ///
+  /// In th, this message translates to:
+  /// **'โหมดกะทัดรัดมาก'**
+  String get settingsUltraCompactMode;
+
+  /// No description provided for @settingsUltraCompactModeHint.
+  ///
+  /// In th, this message translates to:
+  /// **'รายการเล็กลงเพื่อความหนาแน่นสูงสุด'**
+  String get settingsUltraCompactModeHint;
+
+  /// No description provided for @settingsCompactModeSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'แถวสินค้าเล็กลง มองเห็นได้มากขึ้น'**
+  String get settingsCompactModeSubtitle;
+
+  /// No description provided for @settingsUltraModeOverrides.
+  ///
+  /// In th, this message translates to:
+  /// **'แทนที่โหมดกะทัดรัด'**
+  String get settingsUltraModeOverrides;
+
+  /// No description provided for @settingsUltraModeSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ระยะห่างน้อยที่สุด แสดงได้มากที่สุด'**
+  String get settingsUltraModeSubtitle;
+
+  /// No description provided for @settingsOversellAllowed.
+  ///
+  /// In th, this message translates to:
+  /// **'อนุญาตขายเกิน'**
+  String get settingsOversellAllowed;
+
+  /// No description provided for @settingsImages.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปภาพ'**
+  String get settingsImages;
+
+  /// No description provided for @settingsImageMaxWidth.
+  ///
+  /// In th, this message translates to:
+  /// **'ความกว้างสูงสุด (px)'**
+  String get settingsImageMaxWidth;
+
+  /// No description provided for @settingsImageQuality.
+  ///
+  /// In th, this message translates to:
+  /// **'คุณภาพ (%)'**
+  String get settingsImageQuality;
+
+  /// No description provided for @imageWidthSmall.
+  ///
+  /// In th, this message translates to:
+  /// **'เล็ก'**
+  String get imageWidthSmall;
+
+  /// No description provided for @imageWidthMedium.
+  ///
+  /// In th, this message translates to:
+  /// **'กลาง'**
+  String get imageWidthMedium;
+
+  /// No description provided for @imageWidthLarge.
+  ///
+  /// In th, this message translates to:
+  /// **'ใหญ่'**
+  String get imageWidthLarge;
+
+  /// No description provided for @imageWidthExtraLarge.
+  ///
+  /// In th, this message translates to:
+  /// **'ใหญ่พิเศษ'**
+  String get imageWidthExtraLarge;
+
+  /// No description provided for @imageWidthFullHD.
+  ///
+  /// In th, this message translates to:
+  /// **'เต็มจอ'**
+  String get imageWidthFullHD;
+
+  /// No description provided for @imageQualityDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'ร่าง'**
+  String get imageQualityDraft;
+
+  /// No description provided for @imageQualityStandard.
+  ///
+  /// In th, this message translates to:
+  /// **'มาตรฐาน'**
+  String get imageQualityStandard;
+
+  /// No description provided for @imageQualityHigh.
+  ///
+  /// In th, this message translates to:
+  /// **'สูง'**
+  String get imageQualityHigh;
+
+  /// No description provided for @imageQualityBest.
+  ///
+  /// In th, this message translates to:
+  /// **'ดีที่สุด'**
+  String get imageQualityBest;
+
+  /// No description provided for @imageQualityOriginal.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้นฉบับ'**
+  String get imageQualityOriginal;
+
+  /// No description provided for @imageExample.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอย่าง'**
+  String get imageExample;
+
+  /// No description provided for @settingsBackup.
+  ///
+  /// In th, this message translates to:
+  /// **'สำรองข้อมูล'**
+  String get settingsBackup;
 
   /// No description provided for @settingsData.
   ///
@@ -1526,11 +1850,131 @@ abstract class AppLocalizations {
   /// **'เตือนสำรองข้อมูล (วัน, 0=ปิด)'**
   String get settingsBackupReminderDays;
 
+  /// No description provided for @backupWeekly.
+  ///
+  /// In th, this message translates to:
+  /// **'รายสัปดาห์'**
+  String get backupWeekly;
+
+  /// No description provided for @backupBiweekly.
+  ///
+  /// In th, this message translates to:
+  /// **'2 สัปดาห์'**
+  String get backupBiweekly;
+
+  /// No description provided for @backupMonthly.
+  ///
+  /// In th, this message translates to:
+  /// **'รายเดือน'**
+  String get backupMonthly;
+
+  /// No description provided for @backupBimonthly.
+  ///
+  /// In th, this message translates to:
+  /// **'2 เดือน'**
+  String get backupBimonthly;
+
+  /// No description provided for @backupQuarterly.
+  ///
+  /// In th, this message translates to:
+  /// **'3 เดือน'**
+  String get backupQuarterly;
+
+  /// No description provided for @backupLastBackup.
+  ///
+  /// In th, this message translates to:
+  /// **'สำรองล่าสุด'**
+  String get backupLastBackup;
+
+  /// No description provided for @backupToday.
+  ///
+  /// In th, this message translates to:
+  /// **'วันนี้'**
+  String get backupToday;
+
+  /// No description provided for @backupYesterday.
+  ///
+  /// In th, this message translates to:
+  /// **'เมื่อวาน'**
+  String get backupYesterday;
+
+  /// No description provided for @backupDaysAgo.
+  ///
+  /// In th, this message translates to:
+  /// **'{days} วันที่แล้ว'**
+  String backupDaysAgo(int days);
+
+  /// No description provided for @backupStatusSafe.
+  ///
+  /// In th, this message translates to:
+  /// **'ปลอดภัย'**
+  String get backupStatusSafe;
+
+  /// No description provided for @backupStatusWarning.
+  ///
+  /// In th, this message translates to:
+  /// **'ใกล้ครบกำหนด'**
+  String get backupStatusWarning;
+
+  /// No description provided for @backupStatusOverdue.
+  ///
+  /// In th, this message translates to:
+  /// **'ล่าช้า'**
+  String get backupStatusOverdue;
+
   /// No description provided for @backupNow.
   ///
   /// In th, this message translates to:
   /// **'สำรองเลย'**
   String get backupNow;
+
+  /// No description provided for @backupSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'สำรองข้อมูลสำเร็จ'**
+  String get backupSuccess;
+
+  /// No description provided for @backupReminderLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'เตือนสำรองข้อมูล'**
+  String get backupReminderLabel;
+
+  /// No description provided for @backupFrequency.
+  ///
+  /// In th, this message translates to:
+  /// **'ความถี่'**
+  String get backupFrequency;
+
+  /// No description provided for @backupEveryNDays.
+  ///
+  /// In th, this message translates to:
+  /// **'ทุก {n} วัน'**
+  String backupEveryNDays(int n);
+
+  /// No description provided for @backupOff.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิด'**
+  String get backupOff;
+
+  /// No description provided for @backupActionTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สำรองข้อมูลด้วยตนเอง'**
+  String get backupActionTitle;
+
+  /// No description provided for @backupActionSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว'**
+  String get backupActionSubtitle;
+
+  /// No description provided for @backupInfoDescription.
+  ///
+  /// In th, this message translates to:
+  /// **'สำรองข้อมูลเป็นประจำเพื่อป้องกันข้อมูลการขาย สินค้า และการตั้งค่าของคุณ'**
+  String get backupInfoDescription;
 
   /// No description provided for @exportSuccess.
   ///
