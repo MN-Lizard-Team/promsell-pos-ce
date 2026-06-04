@@ -25,7 +25,10 @@ class _NoOpImageService implements ProductImageService {
   @override
   Future<String?> generateThumbnail(String imagePath) async => null;
   @override
-  Future<ImagePaths?> renameImages(String? oldPath, String newProductId) async => null;
+  Future<ImagePaths?> renameImages(
+    String? oldPath,
+    String newProductId,
+  ) async => null;
 }
 
 void main() {

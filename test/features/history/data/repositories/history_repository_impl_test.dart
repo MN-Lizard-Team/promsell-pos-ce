@@ -16,10 +16,12 @@ void main() {
 
   group('HistoryRepositoryImpl', () {
     test('getSales delegates to datasource.querySales', () async {
-      when(() => mockDs.querySales(
-            from: any(named: 'from'),
-            to: any(named: 'to'),
-          )).thenAnswer((_) async => [tSale]);
+      when(
+        () => mockDs.querySales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) async => [tSale]);
 
       final result = await repo.getSales();
 
@@ -28,10 +30,12 @@ void main() {
     });
 
     test('watchSales delegates to datasource.watchSales', () {
-      when(() => mockDs.watchSales(
-            from: any(named: 'from'),
-            to: any(named: 'to'),
-          )).thenAnswer((_) => Stream.value([tSale]));
+      when(
+        () => mockDs.watchSales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value([tSale]));
 
       final stream = repo.watchSales();
 

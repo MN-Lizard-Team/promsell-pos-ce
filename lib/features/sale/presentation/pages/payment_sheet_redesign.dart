@@ -50,9 +50,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
             ),
           ),
           const SizedBox(height: 6),
-          const Flexible(
-            child: CheckoutBody(),
-          ),
+          const Flexible(child: CheckoutBody()),
         ],
       ),
     );

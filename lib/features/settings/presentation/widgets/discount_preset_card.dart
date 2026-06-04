@@ -65,7 +65,9 @@ class DiscountPresetCard extends StatelessWidget {
                   selected: {preset.type},
                   onSelectionChanged: (v) =>
                       onChanged(preset.copyWith(type: v.first)),
-                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
               ],
             ),

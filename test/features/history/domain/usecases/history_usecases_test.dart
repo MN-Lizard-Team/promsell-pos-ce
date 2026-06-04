@@ -18,8 +18,12 @@ void main() {
     setUp(() => useCase = GetSaleHistory(mockRepo));
 
     test('delegates to repository.getSales', () async {
-      when(() => mockRepo.getSales(from: any(named: 'from'), to: any(named: 'to')))
-          .thenAnswer((_) async => [tSale]);
+      when(
+        () => mockRepo.getSales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) async => [tSale]);
 
       final result = await useCase();
 
@@ -30,8 +34,12 @@ void main() {
     test('passes date range parameters', () async {
       final from = DateTime(2025, 1, 1);
       final to = DateTime(2025, 1, 31);
-      when(() => mockRepo.getSales(from: any(named: 'from'), to: any(named: 'to')))
-          .thenAnswer((_) async => []);
+      when(
+        () => mockRepo.getSales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) async => []);
 
       await useCase(from: from, to: to);
 
@@ -44,8 +52,12 @@ void main() {
     setUp(() => useCase = WatchSaleHistory(mockRepo));
 
     test('delegates to repository.watchSales', () {
-      when(() => mockRepo.watchSales(from: any(named: 'from'), to: any(named: 'to')))
-          .thenAnswer((_) => Stream.value([tSale]));
+      when(
+        () => mockRepo.watchSales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value([tSale]));
 
       final stream = useCase();
 

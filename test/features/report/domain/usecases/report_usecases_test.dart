@@ -18,8 +18,12 @@ void main() {
     setUp(() => useCase = GetReport(mockRepo));
 
     test('delegates to repository.getSales', () async {
-      when(() => mockRepo.getSales(from: any(named: 'from'), to: any(named: 'to')))
-          .thenAnswer((_) async => [tSale]);
+      when(
+        () => mockRepo.getSales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) async => [tSale]);
 
       final result = await useCase();
 
@@ -33,8 +37,12 @@ void main() {
     setUp(() => useCase = WatchReport(mockRepo));
 
     test('delegates to repository.watchSales', () {
-      when(() => mockRepo.watchSales(from: any(named: 'from'), to: any(named: 'to')))
-          .thenAnswer((_) => Stream.value([tSale]));
+      when(
+        () => mockRepo.watchSales(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value([tSale]));
 
       final stream = useCase();
 
