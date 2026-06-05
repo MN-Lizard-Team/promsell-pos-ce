@@ -47,6 +47,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyMaxDrafts = 'maxDrafts';
   static const _keyCartCompactMode = 'cartCompactMode';
   static const _keyUltraCompactMode = 'ultraCompactMode';
+  static const _keyAccessibilityMode = 'accessibilityMode';
+  static const _keyDeviceId = 'deviceId';
+  static const _keyDevicePrefix = 'devicePrefix';
+  static const _keyOnboardingCompleted = 'onboardingCompleted';
+  static const _keyDailyCloseLock = 'dailyCloseLock';
+  static const _keyLastClosedDate = 'lastClosedDate';
 
   @override
   Future<AppSettings> load() async {
@@ -103,6 +109,16 @@ class SettingsRepositoryImpl implements SettingsRepository {
       cartCompactMode: await _datasource.getBool(_keyCartCompactMode) ?? false,
       ultraCompactMode:
           await _datasource.getBool(_keyUltraCompactMode) ?? false,
+      accessibilityMode:
+          await _datasource.getBool(_keyAccessibilityMode) ?? false,
+      deviceId: await _datasource.getString(_keyDeviceId) ?? '',
+      devicePrefix: await _datasource.getString(_keyDevicePrefix) ?? '',
+      onboardingCompleted:
+          await _datasource.getBool(_keyOnboardingCompleted) ?? false,
+      dailyCloseLock: await _datasource.getBool(_keyDailyCloseLock) ?? false,
+      lastClosedDate: _nullIfEmpty(
+        await _datasource.getString(_keyLastClosedDate),
+      ),
     );
   }
 
@@ -178,6 +194,22 @@ class SettingsRepositoryImpl implements SettingsRepository {
     await _datasource.setInt(_keyMaxDrafts, settings.maxDrafts);
     await _datasource.setBool(_keyCartCompactMode, settings.cartCompactMode);
     await _datasource.setBool(_keyUltraCompactMode, settings.ultraCompactMode);
+    await _datasource.setBool(
+      _keyAccessibilityMode,
+      settings.accessibilityMode,
+    );
+    await _datasource.setString(_keyDeviceId, settings.deviceId);
+    await _datasource.setString(_keyDevicePrefix, settings.devicePrefix);
+    await _datasource.setBool(
+      _keyOnboardingCompleted,
+      settings.onboardingCompleted,
+    );
+    await _datasource.setBool(_keyDailyCloseLock, settings.dailyCloseLock);
+    if (settings.lastClosedDate != null) {
+      await _datasource.setString(_keyLastClosedDate, settings.lastClosedDate!);
+    } else {
+      await _datasource.setString(_keyLastClosedDate, '');
+    }
   }
 
   Future<List<DiscountPreset>> _loadDiscountPresets() async {

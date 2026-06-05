@@ -2005,6 +2005,426 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ลากเพื่อจัดเรียง'**
   String get reorderItem;
+
+  /// No description provided for @dailyCloseTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดยอดประจำวัน'**
+  String get dailyCloseTitle;
+
+  /// No description provided for @dailyCloseHistoryTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ประวัติปิดยอด'**
+  String get dailyCloseHistoryTitle;
+
+  /// No description provided for @closeToday.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดยอดวันนี้'**
+  String get closeToday;
+
+  /// No description provided for @closeDay.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดยอด'**
+  String get closeDay;
+
+  /// No description provided for @reopenDay.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดยอดใหม่'**
+  String get reopenDay;
+
+  /// No description provided for @closeDayConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดยอด?'**
+  String get closeDayConfirmTitle;
+
+  /// No description provided for @closeDayConfirmMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'การดำเนินการนี้จะล็อกวันและบันทึกการตรวจสอบยอด'**
+  String get closeDayConfirmMessage;
+
+  /// No description provided for @reopenDayConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดยอดใหม่?'**
+  String get reopenDayConfirmTitle;
+
+  /// No description provided for @reopenDayConfirmMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'การดำเนินการนี้จะปลดล็อกวัน การขายจะถูกนับเข้ายอดใหม่'**
+  String get reopenDayConfirmMessage;
+
+  /// No description provided for @confirm.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยัน'**
+  String get confirm;
+
+  /// No description provided for @dbHealthTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สุขภาพฐานข้อมูล'**
+  String get dbHealthTitle;
+
+  /// No description provided for @dbHealthFileSize.
+  ///
+  /// In th, this message translates to:
+  /// **'ขนาดไฟล์ฐานข้อมูล'**
+  String get dbHealthFileSize;
+
+  /// No description provided for @dbHealthLarge.
+  ///
+  /// In th, this message translates to:
+  /// **'ใหญ่'**
+  String get dbHealthLarge;
+
+  /// No description provided for @dbHealthOk.
+  ///
+  /// In th, this message translates to:
+  /// **'ปกติ'**
+  String get dbHealthOk;
+
+  /// No description provided for @dbHealthLargeTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ฐานข้อมูลมีขนาดใหญ่'**
+  String get dbHealthLargeTitle;
+
+  /// No description provided for @dbHealthLargeMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'ฐานข้อมูลของคุณมีขนาดเกิน 50 MB พิจารณาสำรองข้อมูลและเก็บข้อมูลเก่า'**
+  String get dbHealthLargeMessage;
+
+  /// No description provided for @dbHealthRowCounts.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนแถว'**
+  String get dbHealthRowCounts;
+
+  /// No description provided for @dbHealthVacuum.
+  ///
+  /// In th, this message translates to:
+  /// **'บีบอัดฐานข้อมูล'**
+  String get dbHealthVacuum;
+
+  /// No description provided for @dbHealthVacuumDescription.
+  ///
+  /// In th, this message translates to:
+  /// **'บีบอัดจะสร้างไฟล์ฐานข้อมูลใหม่เพื่อคืนพื้นที่ว่างและลดการแตกกระจาย'**
+  String get dbHealthVacuumDescription;
+
+  /// No description provided for @onboardingWelcome.
+  ///
+  /// In th, this message translates to:
+  /// **'ยินดีต้อนรับ'**
+  String get onboardingWelcome;
+
+  /// No description provided for @onboardingShopInfoTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลร้าน'**
+  String get onboardingShopInfoTitle;
+
+  /// No description provided for @onboardingShopNameLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อร้าน'**
+  String get onboardingShopNameLabel;
+
+  /// No description provided for @onboardingShopNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ร้านค้าของฉัน'**
+  String get onboardingShopNameHint;
+
+  /// No description provided for @onboardingAddressLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ที่อยู่'**
+  String get onboardingAddressLabel;
+
+  /// No description provided for @onboardingAddressHint.
+  ///
+  /// In th, this message translates to:
+  /// **'123 ถนนหลัก'**
+  String get onboardingAddressHint;
+
+  /// No description provided for @onboardingPhoneLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'เบอร์โทรศัพท์'**
+  String get onboardingPhoneLabel;
+
+  /// No description provided for @onboardingPhoneHint.
+  ///
+  /// In th, this message translates to:
+  /// **'0812345678'**
+  String get onboardingPhoneHint;
+
+  /// No description provided for @onboardingPromptPayTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'พร้อมเพย์'**
+  String get onboardingPromptPayTitle;
+
+  /// No description provided for @onboardingPromptPaySubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ป้อนรหัสพร้อมเพย์เพื่อรับชำระผ่าน QR'**
+  String get onboardingPromptPaySubtitle;
+
+  /// No description provided for @onboardingPromptPayIdLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสพร้อมเพย์'**
+  String get onboardingPromptPayIdLabel;
+
+  /// No description provided for @onboardingPromptPayIdHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เบอร์โทร (10 หลัก) หรือบัตรประชาชน (13 หลัก)'**
+  String get onboardingPromptPayIdHint;
+
+  /// No description provided for @onboardingVatRateLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'อัตรา VAT %'**
+  String get onboardingVatRateLabel;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้ามไปก่อน'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingSkipSetup.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้ามการตั้งค่า'**
+  String get onboardingSkipSetup;
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ยินดีต้อนรับสู่ Promsell POS'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ระบบ POS มือถือออฟไลน์\nมาตั้งค่าร้านค้าของคุณในไม่กี่ขั้นตอน'**
+  String get onboardingWelcomeSubtitle;
+
+  /// No description provided for @onboardingLocaleCurrencyTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษาและสกุลเงิน'**
+  String get onboardingLocaleCurrencyTitle;
+
+  /// No description provided for @onboardingAllSet.
+  ///
+  /// In th, this message translates to:
+  /// **'พร้อมแล้ว!'**
+  String get onboardingAllSet;
+
+  /// No description provided for @onboardingReadyToSell.
+  ///
+  /// In th, this message translates to:
+  /// **'ร้านค้าของคุณถูกตั้งค่าและพร้อมขายแล้ว'**
+  String get onboardingReadyToSell;
+
+  /// No description provided for @onboardingShopInfo.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลร้าน'**
+  String get onboardingShopInfo;
+
+  /// No description provided for @onboardingLocaleCurrency.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษาและสกุลเงิน'**
+  String get onboardingLocaleCurrency;
+
+  /// No description provided for @onboardingTaxSetup.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งค่าภาษี'**
+  String get onboardingTaxSetup;
+
+  /// No description provided for @onboardingPromptPay.
+  ///
+  /// In th, this message translates to:
+  /// **'พร้อมเพย์'**
+  String get onboardingPromptPay;
+
+  /// No description provided for @onboardingDone.
+  ///
+  /// In th, this message translates to:
+  /// **'เสร็จสิ้น'**
+  String get onboardingDone;
+
+  /// No description provided for @onboardingBack.
+  ///
+  /// In th, this message translates to:
+  /// **'ย้อนกลับ'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In th, this message translates to:
+  /// **'ถัดไป'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingGetStarted.
+  ///
+  /// In th, this message translates to:
+  /// **'เริ่มต้นใช้งาน'**
+  String get onboardingGetStarted;
+
+  /// No description provided for @onboardingStartSelling.
+  ///
+  /// In th, this message translates to:
+  /// **'เริ่มขาย'**
+  String get onboardingStartSelling;
+
+  /// No description provided for @onboardingLanguage.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษา'**
+  String get onboardingLanguage;
+
+  /// No description provided for @onboardingThai.
+  ///
+  /// In th, this message translates to:
+  /// **'ไทย'**
+  String get onboardingThai;
+
+  /// No description provided for @onboardingEnglish.
+  ///
+  /// In th, this message translates to:
+  /// **'อังกฤษ'**
+  String get onboardingEnglish;
+
+  /// No description provided for @onboardingCurrency.
+  ///
+  /// In th, this message translates to:
+  /// **'สกุลเงิน'**
+  String get onboardingCurrency;
+
+  /// No description provided for @onboardingDateFormat.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปแบบวันที่'**
+  String get onboardingDateFormat;
+
+  /// No description provided for @onboardingVatMode.
+  ///
+  /// In th, this message translates to:
+  /// **'โหมด VAT (ไม่บังคับ)'**
+  String get onboardingVatMode;
+
+  /// No description provided for @onboardingNone.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มี'**
+  String get onboardingNone;
+
+  /// No description provided for @onboardingInclusive.
+  ///
+  /// In th, this message translates to:
+  /// **'รวมในราคา'**
+  String get onboardingInclusive;
+
+  /// No description provided for @onboardingExclusive.
+  ///
+  /// In th, this message translates to:
+  /// **'แยกจากราคา'**
+  String get onboardingExclusive;
+
+  /// No description provided for @dailyCloseLoadError.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อผิดพลาด: {message}'**
+  String dailyCloseLoadError(String message);
+
+  /// No description provided for @dailyCloseSales.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขาย: {count}'**
+  String dailyCloseSales(int count);
+
+  /// No description provided for @dailyCloseVoids.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิก: {count}'**
+  String dailyCloseVoids(int count);
+
+  /// No description provided for @settingsDailyCloseTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดยอดประจำวัน'**
+  String get settingsDailyCloseTitle;
+
+  /// No description provided for @settingsDailyCloseSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'การตรวจสอบยอดประจำวัน'**
+  String get settingsDailyCloseSubtitle;
+
+  /// No description provided for @settingsDbHealthTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สุขภาพฐานข้อมูล'**
+  String get settingsDbHealthTitle;
+
+  /// No description provided for @settingsDbHealthSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ขนาด จำนวนแถว บีบอัด'**
+  String get settingsDbHealthSubtitle;
+
+  /// No description provided for @settingsDailyCloseLockTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'บล็อกการขายหลังปิดยอด'**
+  String get settingsDailyCloseLockTitle;
+
+  /// No description provided for @settingsDailyCloseLockSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เมื่อเปิดใช้งาน การขายใหม่จะถูกบล็อกหากวันนี้ปิดยอดแล้ว'**
+  String get settingsDailyCloseLockSubtitle;
+
+  /// No description provided for @dbHealthVacuumSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'บีบอัดฐานข้อมูลสำเร็จ'**
+  String get dbHealthVacuumSuccess;
+
+  /// No description provided for @dbHealthVacuumFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'บีบอัดล้มเหลว: {error}'**
+  String dbHealthVacuumFailed(String error);
+
+  /// No description provided for @dbHealthError.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อผิดพลาด: {message}'**
+  String dbHealthError(String message);
+
+  /// No description provided for @dayClosedMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'วันนี้ปิดยอดแล้ว กรุณาเปิดยอดใหม่เพื่อขายต่อ'**
+  String get dayClosedMessage;
 }
 
 class _AppLocalizationsDelegate

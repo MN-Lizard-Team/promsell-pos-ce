@@ -53,7 +53,7 @@ class _CartHeaderState extends State<CartHeader> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+          padding: const EdgeInsets.fromLTRB(14, 4, 8, 4),
           child: Row(
             children: [
               Icon(

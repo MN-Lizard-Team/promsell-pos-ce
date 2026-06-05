@@ -1016,4 +1016,232 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get reorderItem => 'ลากเพื่อจัดเรียง';
+
+  @override
+  String get dailyCloseTitle => 'ปิดยอดประจำวัน';
+
+  @override
+  String get dailyCloseHistoryTitle => 'ประวัติปิดยอด';
+
+  @override
+  String get closeToday => 'ปิดยอดวันนี้';
+
+  @override
+  String get closeDay => 'ปิดยอด';
+
+  @override
+  String get reopenDay => 'เปิดยอดใหม่';
+
+  @override
+  String get closeDayConfirmTitle => 'ปิดยอด?';
+
+  @override
+  String get closeDayConfirmMessage =>
+      'การดำเนินการนี้จะล็อกวันและบันทึกการตรวจสอบยอด';
+
+  @override
+  String get reopenDayConfirmTitle => 'เปิดยอดใหม่?';
+
+  @override
+  String get reopenDayConfirmMessage =>
+      'การดำเนินการนี้จะปลดล็อกวัน การขายจะถูกนับเข้ายอดใหม่';
+
+  @override
+  String get confirm => 'ยืนยัน';
+
+  @override
+  String get dbHealthTitle => 'สุขภาพฐานข้อมูล';
+
+  @override
+  String get dbHealthFileSize => 'ขนาดไฟล์ฐานข้อมูล';
+
+  @override
+  String get dbHealthLarge => 'ใหญ่';
+
+  @override
+  String get dbHealthOk => 'ปกติ';
+
+  @override
+  String get dbHealthLargeTitle => 'ฐานข้อมูลมีขนาดใหญ่';
+
+  @override
+  String get dbHealthLargeMessage =>
+      'ฐานข้อมูลของคุณมีขนาดเกิน 50 MB พิจารณาสำรองข้อมูลและเก็บข้อมูลเก่า';
+
+  @override
+  String get dbHealthRowCounts => 'จำนวนแถว';
+
+  @override
+  String get dbHealthVacuum => 'บีบอัดฐานข้อมูล';
+
+  @override
+  String get dbHealthVacuumDescription =>
+      'บีบอัดจะสร้างไฟล์ฐานข้อมูลใหม่เพื่อคืนพื้นที่ว่างและลดการแตกกระจาย';
+
+  @override
+  String get onboardingWelcome => 'ยินดีต้อนรับ';
+
+  @override
+  String get onboardingShopInfoTitle => 'ข้อมูลร้าน';
+
+  @override
+  String get onboardingShopNameLabel => 'ชื่อร้าน';
+
+  @override
+  String get onboardingShopNameHint => 'ร้านค้าของฉัน';
+
+  @override
+  String get onboardingAddressLabel => 'ที่อยู่';
+
+  @override
+  String get onboardingAddressHint => '123 ถนนหลัก';
+
+  @override
+  String get onboardingPhoneLabel => 'เบอร์โทรศัพท์';
+
+  @override
+  String get onboardingPhoneHint => '0812345678';
+
+  @override
+  String get onboardingPromptPayTitle => 'พร้อมเพย์';
+
+  @override
+  String get onboardingPromptPaySubtitle =>
+      'ป้อนรหัสพร้อมเพย์เพื่อรับชำระผ่าน QR';
+
+  @override
+  String get onboardingPromptPayIdLabel => 'รหัสพร้อมเพย์';
+
+  @override
+  String get onboardingPromptPayIdHint =>
+      'เบอร์โทร (10 หลัก) หรือบัตรประชาชน (13 หลัก)';
+
+  @override
+  String get onboardingVatRateLabel => 'อัตรา VAT %';
+
+  @override
+  String get onboardingSkip => 'ข้ามไปก่อน';
+
+  @override
+  String get onboardingSkipSetup => 'ข้ามการตั้งค่า';
+
+  @override
+  String get onboardingWelcomeTitle => 'ยินดีต้อนรับสู่ Promsell POS';
+
+  @override
+  String get onboardingWelcomeSubtitle =>
+      'ระบบ POS มือถือออฟไลน์\nมาตั้งค่าร้านค้าของคุณในไม่กี่ขั้นตอน';
+
+  @override
+  String get onboardingLocaleCurrencyTitle => 'ภาษาและสกุลเงิน';
+
+  @override
+  String get onboardingAllSet => 'พร้อมแล้ว!';
+
+  @override
+  String get onboardingReadyToSell => 'ร้านค้าของคุณถูกตั้งค่าและพร้อมขายแล้ว';
+
+  @override
+  String get onboardingShopInfo => 'ข้อมูลร้าน';
+
+  @override
+  String get onboardingLocaleCurrency => 'ภาษาและสกุลเงิน';
+
+  @override
+  String get onboardingTaxSetup => 'ตั้งค่าภาษี';
+
+  @override
+  String get onboardingPromptPay => 'พร้อมเพย์';
+
+  @override
+  String get onboardingDone => 'เสร็จสิ้น';
+
+  @override
+  String get onboardingBack => 'ย้อนกลับ';
+
+  @override
+  String get onboardingNext => 'ถัดไป';
+
+  @override
+  String get onboardingGetStarted => 'เริ่มต้นใช้งาน';
+
+  @override
+  String get onboardingStartSelling => 'เริ่มขาย';
+
+  @override
+  String get onboardingLanguage => 'ภาษา';
+
+  @override
+  String get onboardingThai => 'ไทย';
+
+  @override
+  String get onboardingEnglish => 'อังกฤษ';
+
+  @override
+  String get onboardingCurrency => 'สกุลเงิน';
+
+  @override
+  String get onboardingDateFormat => 'รูปแบบวันที่';
+
+  @override
+  String get onboardingVatMode => 'โหมด VAT (ไม่บังคับ)';
+
+  @override
+  String get onboardingNone => 'ไม่มี';
+
+  @override
+  String get onboardingInclusive => 'รวมในราคา';
+
+  @override
+  String get onboardingExclusive => 'แยกจากราคา';
+
+  @override
+  String dailyCloseLoadError(String message) {
+    return 'ข้อผิดพลาด: $message';
+  }
+
+  @override
+  String dailyCloseSales(int count) {
+    return 'ยอดขาย: $count';
+  }
+
+  @override
+  String dailyCloseVoids(int count) {
+    return 'ยกเลิก: $count';
+  }
+
+  @override
+  String get settingsDailyCloseTitle => 'ปิดยอดประจำวัน';
+
+  @override
+  String get settingsDailyCloseSubtitle => 'การตรวจสอบยอดประจำวัน';
+
+  @override
+  String get settingsDbHealthTitle => 'สุขภาพฐานข้อมูล';
+
+  @override
+  String get settingsDbHealthSubtitle => 'ขนาด จำนวนแถว บีบอัด';
+
+  @override
+  String get settingsDailyCloseLockTitle => 'บล็อกการขายหลังปิดยอด';
+
+  @override
+  String get settingsDailyCloseLockSubtitle =>
+      'เมื่อเปิดใช้งาน การขายใหม่จะถูกบล็อกหากวันนี้ปิดยอดแล้ว';
+
+  @override
+  String get dbHealthVacuumSuccess => 'บีบอัดฐานข้อมูลสำเร็จ';
+
+  @override
+  String dbHealthVacuumFailed(String error) {
+    return 'บีบอัดล้มเหลว: $error';
+  }
+
+  @override
+  String dbHealthError(String message) {
+    return 'ข้อผิดพลาด: $message';
+  }
+
+  @override
+  String get dayClosedMessage => 'วันนี้ปิดยอดแล้ว กรุณาเปิดยอดใหม่เพื่อขายต่อ';
 }

@@ -4425,6 +4425,33 @@ class $DailyClosesTable extends DailyCloses
     defaultValue: const Constant(0),
   );
   @override
+  late final GeneratedColumn<String> paymentBreakdown = GeneratedColumn<String>(
+    'payment_breakdown',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  late final GeneratedColumn<double> vatAmount = GeneratedColumn<double>(
+    'vat_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  late final GeneratedColumn<double> discountAmount = GeneratedColumn<double>(
+    'discount_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
     'note',
     aliasedName,
@@ -4436,10 +4463,9 @@ class $DailyClosesTable extends DailyCloses
   late final GeneratedColumn<DateTime> closedAt = GeneratedColumn<DateTime>(
     'closed_at',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
   );
   @override
   late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
@@ -4461,6 +4487,9 @@ class $DailyClosesTable extends DailyCloses
     totalVoid,
     salesCount,
     voidCount,
+    paymentBreakdown,
+    vatAmount,
+    discountAmount,
     note,
     closedAt,
     deviceId,
@@ -4516,6 +4545,18 @@ class $DailyClosesTable extends DailyCloses
         DriftSqlType.int,
         data['${effectivePrefix}void_count'],
       )!,
+      paymentBreakdown: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_breakdown'],
+      )!,
+      vatAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}vat_amount'],
+      )!,
+      discountAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}discount_amount'],
+      )!,
       note: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}note'],
@@ -4523,7 +4564,7 @@ class $DailyClosesTable extends DailyCloses
       closedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}closed_at'],
-      )!,
+      ),
       deviceId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}device_id'],
@@ -4548,8 +4589,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
   final double totalVoid;
   final int salesCount;
   final int voidCount;
+  final String paymentBreakdown;
+  final double vatAmount;
+  final double discountAmount;
   final String? note;
-  final DateTime closedAt;
+  final DateTime? closedAt;
   final String? deviceId;
   const DailyCloseData({
     required this.id,
@@ -4562,8 +4606,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     required this.totalVoid,
     required this.salesCount,
     required this.voidCount,
+    required this.paymentBreakdown,
+    required this.vatAmount,
+    required this.discountAmount,
     this.note,
-    required this.closedAt,
+    this.closedAt,
     this.deviceId,
   });
   @override
@@ -4579,10 +4626,15 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     map['total_void'] = Variable<double>(totalVoid);
     map['sales_count'] = Variable<int>(salesCount);
     map['void_count'] = Variable<int>(voidCount);
+    map['payment_breakdown'] = Variable<String>(paymentBreakdown);
+    map['vat_amount'] = Variable<double>(vatAmount);
+    map['discount_amount'] = Variable<double>(discountAmount);
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
-    map['closed_at'] = Variable<DateTime>(closedAt);
+    if (!nullToAbsent || closedAt != null) {
+      map['closed_at'] = Variable<DateTime>(closedAt);
+    }
     if (!nullToAbsent || deviceId != null) {
       map['device_id'] = Variable<String>(deviceId);
     }
@@ -4601,8 +4653,13 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
       totalVoid: Value(totalVoid),
       salesCount: Value(salesCount),
       voidCount: Value(voidCount),
+      paymentBreakdown: Value(paymentBreakdown),
+      vatAmount: Value(vatAmount),
+      discountAmount: Value(discountAmount),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
-      closedAt: Value(closedAt),
+      closedAt: closedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(closedAt),
       deviceId: deviceId == null && nullToAbsent
           ? const Value.absent()
           : Value(deviceId),
@@ -4625,8 +4682,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
       totalVoid: serializer.fromJson<double>(json['totalVoid']),
       salesCount: serializer.fromJson<int>(json['salesCount']),
       voidCount: serializer.fromJson<int>(json['voidCount']),
+      paymentBreakdown: serializer.fromJson<String>(json['paymentBreakdown']),
+      vatAmount: serializer.fromJson<double>(json['vatAmount']),
+      discountAmount: serializer.fromJson<double>(json['discountAmount']),
       note: serializer.fromJson<String?>(json['note']),
-      closedAt: serializer.fromJson<DateTime>(json['closedAt']),
+      closedAt: serializer.fromJson<DateTime?>(json['closedAt']),
       deviceId: serializer.fromJson<String?>(json['deviceId']),
     );
   }
@@ -4644,8 +4704,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
       'totalVoid': serializer.toJson<double>(totalVoid),
       'salesCount': serializer.toJson<int>(salesCount),
       'voidCount': serializer.toJson<int>(voidCount),
+      'paymentBreakdown': serializer.toJson<String>(paymentBreakdown),
+      'vatAmount': serializer.toJson<double>(vatAmount),
+      'discountAmount': serializer.toJson<double>(discountAmount),
       'note': serializer.toJson<String?>(note),
-      'closedAt': serializer.toJson<DateTime>(closedAt),
+      'closedAt': serializer.toJson<DateTime?>(closedAt),
       'deviceId': serializer.toJson<String?>(deviceId),
     };
   }
@@ -4661,8 +4724,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     double? totalVoid,
     int? salesCount,
     int? voidCount,
+    String? paymentBreakdown,
+    double? vatAmount,
+    double? discountAmount,
     Value<String?> note = const Value.absent(),
-    DateTime? closedAt,
+    Value<DateTime?> closedAt = const Value.absent(),
     Value<String?> deviceId = const Value.absent(),
   }) => DailyCloseData(
     id: id ?? this.id,
@@ -4675,8 +4741,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     totalVoid: totalVoid ?? this.totalVoid,
     salesCount: salesCount ?? this.salesCount,
     voidCount: voidCount ?? this.voidCount,
+    paymentBreakdown: paymentBreakdown ?? this.paymentBreakdown,
+    vatAmount: vatAmount ?? this.vatAmount,
+    discountAmount: discountAmount ?? this.discountAmount,
     note: note.present ? note.value : this.note,
-    closedAt: closedAt ?? this.closedAt,
+    closedAt: closedAt.present ? closedAt.value : this.closedAt,
     deviceId: deviceId.present ? deviceId.value : this.deviceId,
   );
   DailyCloseData copyWithCompanion(DailyClosesCompanion data) {
@@ -4703,6 +4772,13 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
           ? data.salesCount.value
           : this.salesCount,
       voidCount: data.voidCount.present ? data.voidCount.value : this.voidCount,
+      paymentBreakdown: data.paymentBreakdown.present
+          ? data.paymentBreakdown.value
+          : this.paymentBreakdown,
+      vatAmount: data.vatAmount.present ? data.vatAmount.value : this.vatAmount,
+      discountAmount: data.discountAmount.present
+          ? data.discountAmount.value
+          : this.discountAmount,
       note: data.note.present ? data.note.value : this.note,
       closedAt: data.closedAt.present ? data.closedAt.value : this.closedAt,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
@@ -4722,6 +4798,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
           ..write('totalVoid: $totalVoid, ')
           ..write('salesCount: $salesCount, ')
           ..write('voidCount: $voidCount, ')
+          ..write('paymentBreakdown: $paymentBreakdown, ')
+          ..write('vatAmount: $vatAmount, ')
+          ..write('discountAmount: $discountAmount, ')
           ..write('note: $note, ')
           ..write('closedAt: $closedAt, ')
           ..write('deviceId: $deviceId')
@@ -4741,6 +4820,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     totalVoid,
     salesCount,
     voidCount,
+    paymentBreakdown,
+    vatAmount,
+    discountAmount,
     note,
     closedAt,
     deviceId,
@@ -4759,6 +4841,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
           other.totalVoid == this.totalVoid &&
           other.salesCount == this.salesCount &&
           other.voidCount == this.voidCount &&
+          other.paymentBreakdown == this.paymentBreakdown &&
+          other.vatAmount == this.vatAmount &&
+          other.discountAmount == this.discountAmount &&
           other.note == this.note &&
           other.closedAt == this.closedAt &&
           other.deviceId == this.deviceId);
@@ -4775,8 +4860,11 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
   final Value<double> totalVoid;
   final Value<int> salesCount;
   final Value<int> voidCount;
+  final Value<String> paymentBreakdown;
+  final Value<double> vatAmount;
+  final Value<double> discountAmount;
   final Value<String?> note;
-  final Value<DateTime> closedAt;
+  final Value<DateTime?> closedAt;
   final Value<String?> deviceId;
   final Value<int> rowid;
   const DailyClosesCompanion({
@@ -4790,6 +4878,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     this.totalVoid = const Value.absent(),
     this.salesCount = const Value.absent(),
     this.voidCount = const Value.absent(),
+    this.paymentBreakdown = const Value.absent(),
+    this.vatAmount = const Value.absent(),
+    this.discountAmount = const Value.absent(),
     this.note = const Value.absent(),
     this.closedAt = const Value.absent(),
     this.deviceId = const Value.absent(),
@@ -4806,6 +4897,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     this.totalVoid = const Value.absent(),
     this.salesCount = const Value.absent(),
     this.voidCount = const Value.absent(),
+    this.paymentBreakdown = const Value.absent(),
+    this.vatAmount = const Value.absent(),
+    this.discountAmount = const Value.absent(),
     this.note = const Value.absent(),
     this.closedAt = const Value.absent(),
     this.deviceId = const Value.absent(),
@@ -4823,6 +4917,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     Expression<double>? totalVoid,
     Expression<int>? salesCount,
     Expression<int>? voidCount,
+    Expression<String>? paymentBreakdown,
+    Expression<double>? vatAmount,
+    Expression<double>? discountAmount,
     Expression<String>? note,
     Expression<DateTime>? closedAt,
     Expression<String>? deviceId,
@@ -4839,6 +4936,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
       if (totalVoid != null) 'total_void': totalVoid,
       if (salesCount != null) 'sales_count': salesCount,
       if (voidCount != null) 'void_count': voidCount,
+      if (paymentBreakdown != null) 'payment_breakdown': paymentBreakdown,
+      if (vatAmount != null) 'vat_amount': vatAmount,
+      if (discountAmount != null) 'discount_amount': discountAmount,
       if (note != null) 'note': note,
       if (closedAt != null) 'closed_at': closedAt,
       if (deviceId != null) 'device_id': deviceId,
@@ -4857,8 +4957,11 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     Value<double>? totalVoid,
     Value<int>? salesCount,
     Value<int>? voidCount,
+    Value<String>? paymentBreakdown,
+    Value<double>? vatAmount,
+    Value<double>? discountAmount,
     Value<String?>? note,
-    Value<DateTime>? closedAt,
+    Value<DateTime?>? closedAt,
     Value<String?>? deviceId,
     Value<int>? rowid,
   }) {
@@ -4873,6 +4976,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
       totalVoid: totalVoid ?? this.totalVoid,
       salesCount: salesCount ?? this.salesCount,
       voidCount: voidCount ?? this.voidCount,
+      paymentBreakdown: paymentBreakdown ?? this.paymentBreakdown,
+      vatAmount: vatAmount ?? this.vatAmount,
+      discountAmount: discountAmount ?? this.discountAmount,
       note: note ?? this.note,
       closedAt: closedAt ?? this.closedAt,
       deviceId: deviceId ?? this.deviceId,
@@ -4913,6 +5019,15 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     if (voidCount.present) {
       map['void_count'] = Variable<int>(voidCount.value);
     }
+    if (paymentBreakdown.present) {
+      map['payment_breakdown'] = Variable<String>(paymentBreakdown.value);
+    }
+    if (vatAmount.present) {
+      map['vat_amount'] = Variable<double>(vatAmount.value);
+    }
+    if (discountAmount.present) {
+      map['discount_amount'] = Variable<double>(discountAmount.value);
+    }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
@@ -4941,6 +5056,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
           ..write('totalVoid: $totalVoid, ')
           ..write('salesCount: $salesCount, ')
           ..write('voidCount: $voidCount, ')
+          ..write('paymentBreakdown: $paymentBreakdown, ')
+          ..write('vatAmount: $vatAmount, ')
+          ..write('discountAmount: $discountAmount, ')
           ..write('note: $note, ')
           ..write('closedAt: $closedAt, ')
           ..write('deviceId: $deviceId, ')

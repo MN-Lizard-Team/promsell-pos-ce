@@ -16,6 +16,22 @@ import 'package:promsell_pos_ce/core/database/app_database.dart' as _i422;
 import 'package:promsell_pos_ce/core/di/bloc_module.dart' as _i1055;
 import 'package:promsell_pos_ce/core/di/database_module.dart' as _i205;
 import 'package:promsell_pos_ce/core/di/image_picker_module.dart' as _i714;
+import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart'
+    as _i622;
+import 'package:promsell_pos_ce/features/daily_close/data/repositories/daily_close_repository_impl.dart'
+    as _i725;
+import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart'
+    as _i819;
+import 'package:promsell_pos_ce/features/daily_close/domain/usecases/close_day.dart'
+    as _i320;
+import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_by_date.dart'
+    as _i696;
+import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_list.dart'
+    as _i351;
+import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.dart'
+    as _i858;
+import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart'
+    as _i983;
 import 'package:promsell_pos_ce/features/history/data/repositories/history_repository_impl.dart'
     as _i190;
 import 'package:promsell_pos_ce/features/history/domain/repositories/history_repository.dart'
@@ -127,6 +143,13 @@ extension GetItInjectableX on _i174.GetIt {
         inventoryLogService: gh<_i216.InventoryLogService>(),
       ),
     );
+    gh.lazySingleton<_i622.DailyCloseLocalDatasource>(
+      () => _i622.DailyCloseLocalDatasourceImpl(gh<_i422.AppDatabase>()),
+    );
+    gh.lazySingleton<_i819.DailyCloseRepository>(
+      () =>
+          _i725.DailyCloseRepositoryImpl(gh<_i622.DailyCloseLocalDatasource>()),
+    );
     gh.factory<_i935.AdjustStock>(
       () => _i935.AdjustStock(
         gh<_i422.AppDatabase>(),
@@ -148,11 +171,34 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i26.HistoryRepository>(
       () => _i190.HistoryRepositoryImpl(gh<_i942.SaleLocalDatasource>()),
     );
+    gh.factory<_i320.CloseDay>(
+      () => _i320.CloseDay(
+        gh<_i819.DailyCloseRepository>(),
+        gh<_i942.SaleLocalDatasource>(),
+      ),
+    );
     gh.lazySingleton<_i771.SaleRepository>(
       () => _i679.SaleRepositoryImpl(gh<_i942.SaleLocalDatasource>()),
     );
     gh.lazySingleton<_i425.SettingsCubit>(
       () => _i425.SettingsCubit(gh<_i243.SettingsRepository>()),
+    );
+    gh.factory<_i696.GetDailyCloseByDate>(
+      () => _i696.GetDailyCloseByDate(gh<_i819.DailyCloseRepository>()),
+    );
+    gh.factory<_i351.GetDailyCloseList>(
+      () => _i351.GetDailyCloseList(gh<_i819.DailyCloseRepository>()),
+    );
+    gh.factory<_i858.ReopenDay>(
+      () => _i858.ReopenDay(gh<_i819.DailyCloseRepository>()),
+    );
+    gh.factory<_i983.DailyCloseCubit>(
+      () => _i983.DailyCloseCubit(
+        gh<_i320.CloseDay>(),
+        gh<_i858.ReopenDay>(),
+        gh<_i696.GetDailyCloseByDate>(),
+        gh<_i243.SettingsRepository>(),
+      ),
     );
     gh.factory<_i744.WatchReport>(
       () => _i744.WatchReport(gh<_i771.SaleRepository>()),

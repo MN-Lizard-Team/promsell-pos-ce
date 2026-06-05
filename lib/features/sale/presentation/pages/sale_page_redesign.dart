@@ -8,9 +8,11 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_panel.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/sale_catalog.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SalePage extends StatelessWidget {
   const SalePage({super.key});
@@ -166,6 +168,9 @@ class _SaleViewState extends State<_SaleView> {
     final isExpanded =
         AdaptiveBreakpoints.isExpanded(context) ||
         (isLandscape && size.width >= 600);
+    final compactCart = context.select(
+      (SettingsCubit c) => c.state.settings.cartCompactMode,
+    );
 
     return BlocListener<ProductBloc, ProductState>(
       listenWhen: (prev, curr) =>
@@ -193,7 +198,18 @@ class _SaleViewState extends State<_SaleView> {
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
-            child: isExpanded ? _buildExpandedLayout() : _buildCompactLayout(),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: compactCart
+                      ? const SaleCatalog()
+                      : (isExpanded
+                            ? _buildExpandedLayout()
+                            : _buildCompactLayout()),
+                ),
+                if (compactCart) const _CompactCartFab(),
+              ],
+            ),
           ),
         ),
       ),
@@ -315,6 +331,74 @@ class _SaleViewState extends State<_SaleView> {
           },
         ),
       ],
+    );
+  }
+}
+
+class _CompactCartFab extends StatelessWidget {
+  const _CompactCartFab();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Positioned(
+      bottom: 16 + MediaQuery.paddingOf(context).bottom,
+      right: 0,
+      child: BlocBuilder<SaleBloc, SaleState>(
+        builder: (ctx, state) {
+          final count = state.itemCount;
+          return Material(
+            color: theme.colorScheme.primary,
+            borderRadius: BorderRadius.circular(16),
+            elevation: 6,
+            child: InkWell(
+              onTap: () => CartBottomSheet.show(ctx),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Icon(
+                      Icons.shopping_bag_outlined,
+                      color: theme.colorScheme.onPrimary,
+                      size: 24,
+                    ),
+                    if (count > 0)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.error,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$count',
+                            style: TextStyle(
+                              color: theme.colorScheme.onError,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

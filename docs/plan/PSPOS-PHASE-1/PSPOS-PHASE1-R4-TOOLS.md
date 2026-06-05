@@ -237,7 +237,7 @@ Settings → Receipt section:
 - ✅ CSV export (sales + products)
 - ✅ Backup reminder banner
 - ✅ Settings UI: receipt size, promptpay id, backup section
-- ✅ Test count ~243 (v0.6.0), **258/258 passing** (v0.6.3)
+- ✅ Test count ~243 (v0.6.0), **258/258 passing** (v0.6.3), **279/279 passing** (v0.7.1)
 - ✅ CHANGELOG + v0.6.0 → v0.6.3
 
 ### R4 UX Enhancement Backlog — ✅ DONE in v0.6.3

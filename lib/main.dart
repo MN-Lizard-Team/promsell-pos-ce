@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/features/history/presentation/pages/history_page
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page_redesign.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
@@ -15,12 +16,15 @@ import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   configureDependencies();
-  await sl<SettingsCubit>().load();
-  runApp(const PromsellApp());
+  final settingsCubit = sl<SettingsCubit>();
+  await settingsCubit.load();
+  final onboardingCompleted = settingsCubit.state.settings.onboardingCompleted;
+  runApp(PromsellApp(showOnboarding: !onboardingCompleted));
 }
 
 class PromsellApp extends StatelessWidget {
-  const PromsellApp({super.key});
+  const PromsellApp({super.key, this.showOnboarding = false});
+  final bool showOnboarding;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +49,7 @@ class PromsellApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const _MainShell(),
+            home: showOnboarding ? const OnboardingPage() : const _MainShell(),
           );
         },
       ),

@@ -61,6 +61,12 @@ class _CheckoutBodyState extends State<CheckoutBody> {
             '${context.l10n.paymentReferenceOptional}: $reference',
           ].join('\n');
     final settings = context.read<SettingsCubit>().state.settings;
+    final today = DateTime.now().toIso8601String().split('T').first;
+    if (settings.dailyCloseLock && settings.lastClosedDate == today) {
+      AppSnackBar.error(context, context.l10n.dayClosedMessage);
+      _submitted = false;
+      return;
+    }
     final cartState = context.read<SaleBloc>().state;
     context.read<SaleBloc>().add(
       SaleConfirmed(

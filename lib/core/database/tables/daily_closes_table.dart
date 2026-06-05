@@ -12,8 +12,11 @@ class DailyCloses extends Table {
   RealColumn get totalVoid => real().withDefault(const Constant(0))();
   IntColumn get salesCount => integer().withDefault(const Constant(0))();
   IntColumn get voidCount => integer().withDefault(const Constant(0))();
+  TextColumn get paymentBreakdown => text().withDefault(const Constant('{}'))();
+  RealColumn get vatAmount => real().withDefault(const Constant(0))();
+  RealColumn get discountAmount => real().withDefault(const Constant(0))();
   TextColumn get note => text().nullable()();
-  DateTimeColumn get closedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get closedAt => dateTime().nullable()();
   TextColumn get deviceId => text().nullable()();
 
   @override

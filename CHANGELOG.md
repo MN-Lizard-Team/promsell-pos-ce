@@ -17,6 +17,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.1] - 2026-06-05
+
+Business operations — daily close, onboarding, DB health, and compact POS layout
+
+### Highlights
+
+- **Daily Close** — End-of-day cash reconciliation with sales summary, payment breakdown, and reopen support.
+- **Onboarding Wizard** — First-launch setup flow for shop profile, locale, tax, and PromptPay with vertical card layout.
+- **DB Health Dashboard** — File size, per-table row counts, and one-tap VACUUM in Settings.
+- **Compact Cart Mode** — Floating cart icon with bottom sheet for compact POS layout (toggle in Settings → General).
+- **Global Theme Unification** — Premium green/dark palette (`#00C853`) across the entire app.
+
+### Added
+
+- `DailyClose` domain entity, repository, use case, cubit, and DI wiring (full Clean Architecture stack).
+- `DailyCloseListPage` / `DailyClosePage` with local `sl<T>()` + `BlocProvider.value` injection.
+- `OnboardingPage` — 6-step first-launch flow generating `deviceId` (UUIDv4) and `devicePrefix` (3-char); skippable.
+- `DbHealthPage` — Settings → Database Health with file size, row counts, large-DB warnings (>50MB), and VACUUM action.
+- `CartBottomSheet` — Floating cart bottom sheet for Compact Cart Mode with +/- qty, delete, and checkout.
+- 6 new `AppSettings` fields — `deviceId`, `devicePrefix`, `onboardingCompleted`, `dailyCloseLock`, `lastClosedDate`, `compactCartMode`.
+- Schema migration v8→v10; `daily_closes` table gains `payment_breakdown` (JSON), `vat_amount`, `discount_amount`, nullable `closed_at`.
+- Sales lock — `dailyCloseLock` blocks checkout when the current day is closed.
+- l10n parity — All Daily Close, Onboarding, DB Health, and Compact Cart strings in Thai + English.
+- Phase 4 Readiness Audit — Documented in `CODEBASE.md`; 4 of 9 tables sync-ready.
+
+### Changed
+
+- `OnboardingPage` UX — Vertical-scroll single-page layout with 4 card sections, theme-aware background, and consolidated language/theme bottom sheet. Shop name now optional. All colors now read from `Theme.of(context).colorScheme`.
+- Settings dashboard quick toggles — Tap language badge to toggle TH/EN, tap theme badge to cycle light → dark → system.
+- `SettingsPage` index numbering — Shifted to accommodate Daily Close and DB Health tiles in System & Data group.
+- **Global theme unification** — `AppColors.primary` → `#00C853`, dark background `#0D1117`; card radius → 16px, button/input radius → 12px. `SettingsThemeExtension.softAccent` → `#00C853`/`#00E676`.
+- Settings readability — Dashboard card gradient raised (0.18→0.35), badge backgrounds (0.12→0.20); icon container dark background → `#0D2B1A`.
+- Cart panel — Empty state icon color → `onSurfaceVariant`; replaced `Card` wrapper with `Container` + border.
+- Cart header — Reduced vertical padding (6px → 4px).
+- `CODEBASE.md` — Updated to schema v10; added Daily Close, Onboarding, DB Health, and CartBottomSheet modules.
+
+### Fixed
+
+- `accessibilityMode` persistence — Present in `AppSettings` entity but never saved/loaded by `SettingsRepositoryImpl`; now persisted correctly.
+- `DropdownButtonFormField` deprecation — Replaced deprecated `value` with `initialValue` in Onboarding locale step.
+- `DailyCloseData` const analyzer info — Added `const` to test constructors.
+- `DailyClose.copyWith` — Fixed nullable field clearing (`closedAt`, `note`, `deviceId`) when explicitly passed as `null`.
+- Hardcoded colors — Removed all hardcoded `Color(0xFF...)` outside `lib/core/theme/`; `Colors.red/orange/green` replaced with `colorScheme.error/primaryContainer`.
+
+### Tests
+
+- `DailyClose` entity equality, repository data mapping, cubit state transitions.
+- `CloseDay` and `ReopenDay` use cases.
+
+`flutter analyze` → **0 issues** · `flutter test` → **279/279 passing**
+
+---
+
 ## [0.7.0] - 2026-06-04
 
 Full Settings UX overhaul — dashboard cards, visual pickers, validation, and grouped sections across all pages
@@ -984,7 +1037,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.1...v0.6.2

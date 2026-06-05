@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -200,6 +201,12 @@ class CartTotalBar extends StatelessWidget {
   }
 
   void _showPayment(BuildContext context, SaleState state) {
+    final settings = context.read<SettingsCubit>().state.settings;
+    final today = DateTime.now().toIso8601String().split('T').first;
+    if (settings.dailyCloseLock && settings.lastClosedDate == today) {
+      AppSnackBar.error(context, context.l10n.dayClosedMessage);
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute(

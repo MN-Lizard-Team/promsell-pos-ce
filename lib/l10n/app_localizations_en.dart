@@ -1022,4 +1022,233 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reorderItem => 'Drag to reorder';
+
+  @override
+  String get dailyCloseTitle => 'Daily Close';
+
+  @override
+  String get dailyCloseHistoryTitle => 'Daily Close History';
+
+  @override
+  String get closeToday => 'Close Today';
+
+  @override
+  String get closeDay => 'Close Day';
+
+  @override
+  String get reopenDay => 'Reopen Day';
+
+  @override
+  String get closeDayConfirmTitle => 'Close Day?';
+
+  @override
+  String get closeDayConfirmMessage =>
+      'This will lock the day and save the reconciliation.';
+
+  @override
+  String get reopenDayConfirmTitle => 'Reopen Day?';
+
+  @override
+  String get reopenDayConfirmMessage =>
+      'This will unlock the day. Sales will count toward a new close.';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get dbHealthTitle => 'Database Health';
+
+  @override
+  String get dbHealthFileSize => 'Database file size';
+
+  @override
+  String get dbHealthLarge => 'LARGE';
+
+  @override
+  String get dbHealthOk => 'OK';
+
+  @override
+  String get dbHealthLargeTitle => 'Large database';
+
+  @override
+  String get dbHealthLargeMessage =>
+      'Your database is over 50 MB. Consider backing up and archiving old data.';
+
+  @override
+  String get dbHealthRowCounts => 'Row counts';
+
+  @override
+  String get dbHealthVacuum => 'Vacuum Database';
+
+  @override
+  String get dbHealthVacuumDescription =>
+      'Vacuum rebuilds the database file to reclaim unused space and reduce fragmentation.';
+
+  @override
+  String get onboardingWelcome => 'Welcome';
+
+  @override
+  String get onboardingShopInfoTitle => 'Shop Info';
+
+  @override
+  String get onboardingShopNameLabel => 'Shop name';
+
+  @override
+  String get onboardingShopNameHint => 'My Shop';
+
+  @override
+  String get onboardingAddressLabel => 'Address';
+
+  @override
+  String get onboardingAddressHint => '123 Main Street';
+
+  @override
+  String get onboardingPhoneLabel => 'Phone';
+
+  @override
+  String get onboardingPhoneHint => '0812345678';
+
+  @override
+  String get onboardingPromptPayTitle => 'PromptPay';
+
+  @override
+  String get onboardingPromptPaySubtitle =>
+      'Enter your PromptPay ID to accept QR payments.';
+
+  @override
+  String get onboardingPromptPayIdLabel => 'PromptPay ID';
+
+  @override
+  String get onboardingPromptPayIdHint =>
+      'Phone (10 digits) or Citizen ID (13 digits)';
+
+  @override
+  String get onboardingVatRateLabel => 'VAT rate %';
+
+  @override
+  String get onboardingSkip => 'Skip for now';
+
+  @override
+  String get onboardingSkipSetup => 'Skip Setup';
+
+  @override
+  String get onboardingWelcomeTitle => 'Welcome to Promsell POS';
+
+  @override
+  String get onboardingWelcomeSubtitle =>
+      'Your offline-first mobile point of sale.\nLet\'s set up your shop in a few steps.';
+
+  @override
+  String get onboardingLocaleCurrencyTitle => 'Locale & Currency';
+
+  @override
+  String get onboardingAllSet => 'All set!';
+
+  @override
+  String get onboardingReadyToSell =>
+      'Your shop is configured and ready to sell.';
+
+  @override
+  String get onboardingShopInfo => 'Shop Info';
+
+  @override
+  String get onboardingLocaleCurrency => 'Locale & Currency';
+
+  @override
+  String get onboardingTaxSetup => 'Tax Setup';
+
+  @override
+  String get onboardingPromptPay => 'PromptPay';
+
+  @override
+  String get onboardingDone => 'Done';
+
+  @override
+  String get onboardingBack => 'Back';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingGetStarted => 'Get Started';
+
+  @override
+  String get onboardingStartSelling => 'Start Selling';
+
+  @override
+  String get onboardingLanguage => 'Language';
+
+  @override
+  String get onboardingThai => 'Thai';
+
+  @override
+  String get onboardingEnglish => 'English';
+
+  @override
+  String get onboardingCurrency => 'Currency';
+
+  @override
+  String get onboardingDateFormat => 'Date format';
+
+  @override
+  String get onboardingVatMode => 'VAT mode (optional)';
+
+  @override
+  String get onboardingNone => 'None';
+
+  @override
+  String get onboardingInclusive => 'Inclusive';
+
+  @override
+  String get onboardingExclusive => 'Exclusive';
+
+  @override
+  String dailyCloseLoadError(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String dailyCloseSales(int count) {
+    return 'Sales: $count';
+  }
+
+  @override
+  String dailyCloseVoids(int count) {
+    return 'Voids: $count';
+  }
+
+  @override
+  String get settingsDailyCloseTitle => 'Daily Close';
+
+  @override
+  String get settingsDailyCloseSubtitle => 'End of day reconciliation';
+
+  @override
+  String get settingsDbHealthTitle => 'Database Health';
+
+  @override
+  String get settingsDbHealthSubtitle => 'Size, row counts, vacuum';
+
+  @override
+  String get settingsDailyCloseLockTitle => 'Block sales after day close';
+
+  @override
+  String get settingsDailyCloseLockSubtitle =>
+      'When enabled, new sales are blocked if the current day has been closed.';
+
+  @override
+  String get dbHealthVacuumSuccess => 'Database vacuumed successfully';
+
+  @override
+  String dbHealthVacuumFailed(String error) {
+    return 'Vacuum failed: $error';
+  }
+
+  @override
+  String dbHealthError(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get dayClosedMessage => 'Day closed. Reopen to continue.';
 }

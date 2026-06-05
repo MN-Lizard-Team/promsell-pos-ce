@@ -227,6 +227,7 @@ class _CartPanelState extends State<CartPanel> {
       },
       child: BlocBuilder<SaleBloc, SaleState>(
         builder: (ctx, state) {
+          final theme = Theme.of(ctx);
           if (state.isEmpty && _isSelecting) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) _exitSelectionMode();
@@ -236,8 +237,14 @@ class _CartPanelState extends State<CartPanel> {
           final items = _filterItems(state.items);
           final showSearch = state.items.length > 5;
 
-          final content = Card(
-            margin: EdgeInsets.zero,
+          final content = Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

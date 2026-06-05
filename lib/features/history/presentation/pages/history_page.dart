@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state.dart';
+import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_page.dart';
 import 'package:promsell_pos_ce/features/history/presentation/widgets/sale_expansion_tile.dart';
 
 class HistoryPage extends StatelessWidget {
@@ -74,6 +75,17 @@ class _HistoryView extends StatelessWidget {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => DailyClosePage(date: today)),
+          );
+        },
+        icon: const Icon(Icons.lock_outline),
+        label: const Text('Close Day'),
       ),
       body: BlocListener<HistoryBloc, HistoryState>(
         listenWhen: (prev, curr) =>

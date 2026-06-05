@@ -47,6 +47,11 @@ class AppSettings extends Equatable {
     this.cartCompactMode = false,
     this.ultraCompactMode = false,
     this.accessibilityMode = false,
+    this.deviceId = '',
+    this.devicePrefix = '',
+    this.onboardingCompleted = false,
+    this.dailyCloseLock = false,
+    this.lastClosedDate,
   });
 
   final Locale locale;
@@ -83,6 +88,11 @@ class AppSettings extends Equatable {
   final bool cartCompactMode;
   final bool ultraCompactMode;
   final bool accessibilityMode;
+  final String deviceId;
+  final String devicePrefix;
+  final bool onboardingCompleted;
+  final bool dailyCloseLock;
+  final String? lastClosedDate;
 
   DiscountPreset get activeDiscountPreset {
     final match = discountPresets.where((p) => p.id == activeDiscountPresetId);
@@ -124,6 +134,11 @@ class AppSettings extends Equatable {
     bool? cartCompactMode,
     bool? ultraCompactMode,
     bool? accessibilityMode,
+    String? deviceId,
+    String? devicePrefix,
+    bool? onboardingCompleted,
+    bool? dailyCloseLock,
+    Object? lastClosedDate = _unset,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -164,6 +179,13 @@ class AppSettings extends Equatable {
       cartCompactMode: cartCompactMode ?? this.cartCompactMode,
       ultraCompactMode: ultraCompactMode ?? this.ultraCompactMode,
       accessibilityMode: accessibilityMode ?? this.accessibilityMode,
+      deviceId: deviceId ?? this.deviceId,
+      devicePrefix: devicePrefix ?? this.devicePrefix,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      dailyCloseLock: dailyCloseLock ?? this.dailyCloseLock,
+      lastClosedDate: identical(lastClosedDate, _unset)
+          ? this.lastClosedDate
+          : lastClosedDate as String?,
     );
   }
 
@@ -203,5 +225,10 @@ class AppSettings extends Equatable {
     cartCompactMode,
     ultraCompactMode,
     accessibilityMode,
+    deviceId,
+    devicePrefix,
+    onboardingCompleted,
+    dailyCloseLock,
+    lastClosedDate,
   ];
 }

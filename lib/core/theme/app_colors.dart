@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFF2E7D32);
-  static const Color primaryLight = Color(0xFF4CAF50);
-  static const Color primaryDark = Color(0xFF1B5E20);
-  static const Color primaryContainer = Color(0xFFC8E6C9);
-  static const Color onPrimaryContainer = Color(0xFF123B17);
+  static const Color primary = Color(0xFF00C853);
+  static const Color primaryLight = Color(0xFF00E676);
+  static const Color primaryDark = Color(0xFF00B248);
+  static const Color primaryContainer = Color(0xFFE6F9ED);
+  static const Color onPrimaryContainer = Color(0xFF004D1F);
 
   static const Color secondary = Color(0xFF00796B);
   static const Color accent = Color(0xFFFF8F00);
@@ -42,20 +42,20 @@ class AppColors {
   static const Color cartBackground = Color(0xFFF9FBE7);
   static const Color posBackground = Color(0xFFF5F5F5);
 
-  static const Color darkBackground = Color(0xFF0B0F0C);
-  static const Color darkSurface = Color(0xFF121812);
-  static const Color darkCard = Color(0xFF182018);
-  static const Color darkOutline = Color(0xFF364238);
+  static const Color darkBackground = Color(0xFF0D1117);
+  static const Color darkSurface = Color(0xFF161B22);
+  static const Color darkCard = Color(0xFF161B22);
+  static const Color darkOutline = Color(0xFF30363D);
 
-  static const Color darkPrimaryContainer = Color(0xFF1B5E20);
-  static const Color darkOnPrimaryContainer = Color(0xFFA5D6A7);
+  static const Color darkPrimaryContainer = Color(0xFF00C853);
+  static const Color darkOnPrimaryContainer = Color(0xFFFFFFFF);
   static const Color darkOnPrimary = Color(0xFFE8F5E9);
-  static const Color darkTextPrimary = Color(0xFFE0E0E0);
-  static const Color darkTextSecondary = Color(0xFF9E9E9E);
-  static const Color darkBorder = Color(0xFF2C3E30);
-  static const Color darkDivider = Color(0xFF263028);
-  static const Color darkInputFill = Color(0xFF1A241C);
-  static const Color darkCartBackground = Color(0xFF1A2218);
+  static const Color darkTextPrimary = Color(0xFFF0F6FC);
+  static const Color darkTextSecondary = Color(0xFF8B949E);
+  static const Color darkBorder = Color(0xFF21262D);
+  static const Color darkDivider = Color(0xFF21262D);
+  static const Color darkInputFill = Color(0xFF0D1117);
+  static const Color darkCartBackground = Color(0xFF161B22);
   static const Color darkErrorContainer = Color(0xFF5C1A1A);
   static const Color darkOnErrorContainer = Color(0xFFEF9A9A);
 }

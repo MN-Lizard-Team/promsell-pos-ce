@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -81,6 +81,37 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'ALTER TABLE draft_carts ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0',
         );
+      }
+      if (from < 8) {
+        await _seedR5Settings();
+      }
+      if (from < 9) {
+        await _addColumnIfNotExists(
+          'daily_closes',
+          'payment_breakdown',
+          'TEXT NOT NULL DEFAULT \'{}\'',
+        );
+        await _addColumnIfNotExists(
+          'daily_closes',
+          'vat_amount',
+          'REAL NOT NULL DEFAULT 0',
+        );
+        await _addColumnIfNotExists(
+          'daily_closes',
+          'discount_amount',
+          'REAL NOT NULL DEFAULT 0',
+        );
+      }
+      if (from < 10) {
+        // Recreate daily_closes to make closed_at nullable
+        await customStatement(
+          'ALTER TABLE daily_closes RENAME TO daily_closes_old',
+        );
+        await m.createTable(dailyCloses);
+        await customStatement(
+          'INSERT INTO daily_closes SELECT * FROM daily_closes_old',
+        );
+        await customStatement('DROP TABLE daily_closes_old');
       }
     },
     beforeOpen: (details) async {
@@ -137,6 +168,19 @@ class AppDatabase extends _$AppDatabase {
         AppSettingsCompanion.insert(key: 'promptpayId', value: ''),
         AppSettingsCompanion.insert(key: 'receiptSize', value: '80mm'),
         AppSettingsCompanion.insert(key: 'backupReminderDays', value: '7'),
+      ], mode: InsertMode.insertOrIgnore);
+    });
+  }
+
+  Future<void> _seedR5Settings() async {
+    await batch((b) {
+      b.insertAll(appSettings, [
+        AppSettingsCompanion.insert(key: 'accessibilityMode', value: 'false'),
+        AppSettingsCompanion.insert(key: 'deviceId', value: ''),
+        AppSettingsCompanion.insert(key: 'devicePrefix', value: ''),
+        AppSettingsCompanion.insert(key: 'onboardingCompleted', value: 'false'),
+        AppSettingsCompanion.insert(key: 'dailyCloseLock', value: 'false'),
+        AppSettingsCompanion.insert(key: 'lastClosedDate', value: ''),
       ], mode: InsertMode.insertOrIgnore);
     });
   }

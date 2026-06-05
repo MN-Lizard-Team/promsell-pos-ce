@@ -17,6 +17,8 @@ import 'package:promsell_pos_ce/features/settings/presentation/pages/discount_pr
 import 'package:promsell_pos_ce/features/settings/presentation/pages/stock_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/image_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_settings_page.dart';
+import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_list_page.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/pages/db_health_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/promptpay_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -227,6 +229,22 @@ class _SettingsRootViewState extends State<_SettingsRootView>
               backupStatus: _backupStatus(context),
               st: st,
               l10n: l10n,
+              onLocaleToggle: () {
+                final cubit = context.read<SettingsCubit>();
+                final next = s.locale.languageCode == 'th'
+                    ? const Locale('en')
+                    : const Locale('th');
+                cubit.updateField((_) => s.copyWith(locale: next));
+              },
+              onThemeToggle: () {
+                final cubit = context.read<SettingsCubit>();
+                final next = switch (s.themeMode) {
+                  ThemeMode.light => ThemeMode.dark,
+                  ThemeMode.dark => ThemeMode.system,
+                  ThemeMode.system => ThemeMode.light,
+                };
+                cubit.updateField((_) => s.copyWith(themeMode: next));
+              },
             ),
             const SizedBox(height: 24),
           ],
@@ -234,25 +252,19 @@ class _SettingsRootViewState extends State<_SettingsRootView>
             if (storeBusiness.isNotEmpty)
               SettingsSectionCard(
                 title: l10n.settingsStoreBusiness,
-                children: storeBusiness
-                    .map((c) => _animatedTile(c))
-                    .toList(),
+                children: storeBusiness.map((c) => _animatedTile(c)).toList(),
               ),
             if (storeBusiness.isNotEmpty) const SizedBox(height: 24),
             if (payments.isNotEmpty)
               SettingsSectionCard(
                 title: l10n.settingsPayments,
-                children: payments
-                    .map((c) => _animatedTile(c))
-                    .toList(),
+                children: payments.map((c) => _animatedTile(c)).toList(),
               ),
             if (payments.isNotEmpty) const SizedBox(height: 24),
             if (system.isNotEmpty)
               SettingsSectionCard(
                 title: l10n.settingsSystemData,
-                children: system
-                    .map((c) => _animatedTile(c))
-                    .toList(),
+                children: system.map((c) => _animatedTile(c)).toList(),
               ),
           ] else
             ...filtered.map((c) => _animatedTile(c)),
@@ -300,7 +312,9 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         accent: st.softAccent,
         subtitle: s.shopName.isNotEmpty ? s.shopName : null,
         statusChip: _StatusChip(
-          label: shopComplete ? l10n.settingsStatusComplete : l10n.settingsStatusIncomplete,
+          label: shopComplete
+              ? l10n.settingsStatusComplete
+              : l10n.settingsStatusIncomplete,
           color: shopComplete ? Colors.green : Colors.orange,
           st: st,
         ),
@@ -311,7 +325,11 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         icon: Icons.point_of_sale_outlined,
         title: l10n.settingsSales,
         accent: st.softAccent,
-        statusChip: _StatusChip(label: s.currency, color: st.softAccent, st: st),
+        statusChip: _StatusChip(
+          label: s.currency,
+          color: st.softAccent,
+          st: st,
+        ),
         page: const SalesSettingsPage(),
       ),
       _CategoryItem(
@@ -319,7 +337,11 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         icon: Icons.receipt_long_outlined,
         title: l10n.settingsReceipt,
         accent: st.softAccent,
-        statusChip: _StatusChip(label: s.receiptSize, color: st.softAccent, st: st),
+        statusChip: _StatusChip(
+          label: s.receiptSize,
+          color: st.softAccent,
+          st: st,
+        ),
         page: const ReceiptSettingsPage(),
       ),
       _CategoryItem(
@@ -375,7 +397,9 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         accent: st.softAccent,
         subtitle: s.promptpayId.isNotEmpty ? s.promptpayId : null,
         statusChip: _StatusChip(
-          label: s.promptpayId.isNotEmpty ? l10n.settingsStatusActive : l10n.settingsStatusNotSet,
+          label: s.promptpayId.isNotEmpty
+              ? l10n.settingsStatusActive
+              : l10n.settingsStatusNotSet,
           color: s.promptpayId.isNotEmpty ? Colors.green : st.mutedText,
           st: st,
         ),
@@ -394,6 +418,19 @@ class _SettingsRootViewState extends State<_SettingsRootView>
     return [
       _CategoryItem(
         index: 7,
+        icon: Icons.lock_clock_outlined,
+        title: l10n.settingsDailyCloseTitle,
+        accent: st.softAccent,
+        subtitle: l10n.settingsDailyCloseSubtitle,
+        statusChip: _StatusChip(
+          label: l10n.closeDay,
+          color: st.softAccent,
+          st: st,
+        ),
+        page: const DailyCloseListPage(),
+      ),
+      _CategoryItem(
+        index: 8,
         icon: Icons.settings_outlined,
         title: l10n.settingsGeneral,
         accent: st.softAccent,
@@ -406,7 +443,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         page: const GeneralSettingsPage(),
       ),
       _CategoryItem(
-        index: 8,
+        index: 9,
         icon: Icons.image_outlined,
         title: l10n.settingsImages,
         accent: st.softAccent,
@@ -419,7 +456,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         page: const ImageSettingsPage(),
       ),
       _CategoryItem(
-        index: 9,
+        index: 10,
         icon: Icons.backup_outlined,
         title: l10n.settingsBackup,
         accent: st.softAccent,
@@ -432,6 +469,19 @@ class _SettingsRootViewState extends State<_SettingsRootView>
           st: st,
         ),
         page: const BackupSettingsPage(),
+      ),
+      _CategoryItem(
+        index: 11,
+        icon: Icons.storage_outlined,
+        title: l10n.settingsDbHealthTitle,
+        accent: st.softAccent,
+        subtitle: l10n.settingsDbHealthSubtitle,
+        statusChip: _StatusChip(
+          label: l10n.dbHealthTitle,
+          color: st.softAccent,
+          st: st,
+        ),
+        page: const DbHealthPage(),
       ),
     ];
   }
@@ -499,6 +549,8 @@ class _SettingsDashboardCard extends StatelessWidget {
     required this.backupStatus,
     required this.st,
     required this.l10n,
+    this.onLocaleToggle,
+    this.onThemeToggle,
   });
 
   final AppSettings settings;
@@ -509,6 +561,8 @@ class _SettingsDashboardCard extends StatelessWidget {
   final ({String label, Color color}) backupStatus;
   final SettingsThemeExtension st;
   final AppLocalizations l10n;
+  final VoidCallback? onLocaleToggle;
+  final VoidCallback? onThemeToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -523,13 +577,13 @@ class _SettingsDashboardCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            st.softAccent.withValues(alpha: 0.18),
-            st.softAccent.withValues(alpha: 0.04),
+            st.softAccent.withValues(alpha: 0.35),
+            st.softAccent.withValues(alpha: 0.10),
           ],
         ),
         borderRadius: BorderRadius.circular(st.cardRadius),
         border: Border.all(
-          color: st.softAccent.withValues(alpha: 0.35),
+          color: st.softAccent.withValues(alpha: 0.50),
           width: 1,
         ),
       ),
@@ -567,7 +621,9 @@ class _SettingsDashboardCard extends StatelessWidget {
               _DashboardBadge(
                 icon: Icons.store_outlined,
                 label: shopName,
-                color: settings.shopName.isNotEmpty ? st.softAccent : st.mutedText,
+                color: settings.shopName.isNotEmpty
+                    ? st.softAccent
+                    : st.mutedText,
                 st: st,
               ),
               _DashboardBadge(
@@ -575,12 +631,14 @@ class _SettingsDashboardCard extends StatelessWidget {
                 label: localeLabel,
                 color: st.softAccent,
                 st: st,
+                onTap: onLocaleToggle,
               ),
               _DashboardBadge(
                 icon: themeIcon,
                 label: themeLabel,
                 color: themeColor,
                 st: st,
+                onTap: onThemeToggle,
               ),
               _DashboardBadge(
                 icon: Icons.backup_outlined,
@@ -593,7 +651,9 @@ class _SettingsDashboardCard extends StatelessWidget {
                 label: settings.promptpayId.isNotEmpty
                     ? l10n.settingsStatusActive
                     : l10n.settingsStatusNotSet,
-                color: settings.promptpayId.isNotEmpty ? Colors.green : st.mutedText,
+                color: settings.promptpayId.isNotEmpty
+                    ? st.softAccent
+                    : st.mutedText,
                 st: st,
               ),
             ],
@@ -610,21 +670,23 @@ class _DashboardBadge extends StatelessWidget {
     required this.label,
     required this.color,
     required this.st,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
   final Color color;
   final SettingsThemeExtension st;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final badge = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: 0.20),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.50), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -640,6 +702,18 @@ class _DashboardBadge extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) return badge;
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: badge,
       ),
     );
   }

@@ -70,8 +70,7 @@ class ReceiptSettingsForm extends StatelessWidget {
                 label: l10n.settingsReceiptPreviewStyle,
                 options: const ['thermal', 'card', 'none'],
                 selected: s.receiptPreviewStyle,
-                onSelected: (v) =>
-                    onUpdate(s.copyWith(receiptPreviewStyle: v)),
+                onSelected: (v) => onUpdate(s.copyWith(receiptPreviewStyle: v)),
                 labelBuilder: (v) {
                   if (v == 'thermal') return l10n.receiptPreviewStyleThermal;
                   if (v == 'card') return l10n.receiptPreviewStyleCard;
@@ -84,8 +83,7 @@ class ReceiptSettingsForm extends StatelessWidget {
                 icon: Icons.preview_outlined,
                 title: l10n.settingsShowPreSalePreview,
                 value: s.showPreSalePreview,
-                onChanged: (v) =>
-                    onUpdate(s.copyWith(showPreSalePreview: v)),
+                onChanged: (v) => onUpdate(s.copyWith(showPreSalePreview: v)),
               ),
               const SizedBox(height: 8),
               _buildSwitchTile(
@@ -93,8 +91,7 @@ class ReceiptSettingsForm extends StatelessWidget {
                 icon: Icons.receipt_outlined,
                 title: l10n.settingsShowPostSalePreview,
                 value: s.showPostSalePreview,
-                onChanged: (v) =>
-                    onUpdate(s.copyWith(showPostSalePreview: v)),
+                onChanged: (v) => onUpdate(s.copyWith(showPostSalePreview: v)),
               ),
             ],
           ),

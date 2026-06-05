@@ -26,7 +26,7 @@
 | **R4** ✅ | Merchant Tools | Receipt PDF + PromptPay QR + Backup (SQLite/CSV) | 🟢 Low — DONE (v0.6.0) |
 | **R4.5** ✅ | UX Polish & Performance | Accessibility, drag refactor, VAT dedup, `useRootNavigator` fixes | 🟢 Low — DONE (v0.6.2) |
 | **R4.6** ✅ | UX Enhancement Backlog | E1 Category Autocomplete + E2 Cart Direct Qty + E3 InventoryLog Clean Arch + E4 History Search | 🟢 Low — DONE (v0.6.3) |
-| **R5** | Operations | Daily Close + Onboarding wizard + Final polish + Phase 4 readiness check | 🟢 Low — **PENDING** |
+| **R5** | Operations | Daily Close + Onboarding wizard + DB Health + Final polish + Phase 4 readiness check + Global theme unification + Compact Cart Mode | 🟢 Low — **SHIPPED v0.7.1** |
 
 Estimated effort: R1 = ~3 days, R2 = ~3 days, R3 = ~3 days, R4 = ~2 days, R4.5 = ~1 day, R4.6 = ~1 day, R5 = ~2 days. **Total ~15 dev-days.**
 

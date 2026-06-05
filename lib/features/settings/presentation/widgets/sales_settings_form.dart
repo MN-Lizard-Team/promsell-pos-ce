@@ -112,6 +112,29 @@ class SalesSettingsForm extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 24),
+        _buildSectionTitle(context, 'Daily Close'),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: st.cardBackground,
+            borderRadius: BorderRadius.circular(st.cardRadius),
+            border: Border.all(color: st.cardBorderColor, width: 0.8),
+          ),
+          child: Column(
+            children: [
+              _buildSwitchTile(
+                context: context,
+                icon: Icons.lock_clock_outlined,
+                title: context.l10n.settingsDailyCloseLockTitle,
+                subtitle: context.l10n.settingsDailyCloseLockSubtitle,
+                value: settings.dailyCloseLock,
+                onChanged: (v) =>
+                    onUpdate(settings.copyWith(dailyCloseLock: v)),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

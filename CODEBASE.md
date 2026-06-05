@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.7.0
+# CODEBASE.md — Promsell POS CE v0.7.1
 
 ## System overview
 
@@ -74,6 +74,8 @@ features/<name>/
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
+| `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#00C853` primary, `#0D1117` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
+| `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
 | `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v6, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
@@ -101,7 +103,7 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page_redesign.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog` |
+| Sale | `SaleBloc` | `sale_page_redesign.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet`, `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog` |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
@@ -109,37 +111,42 @@ features/<name>/
 | Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
+| Daily Close | `DailyCloseCubit` | `daily_close_page.dart`, `daily_close_list_page.dart`; domain: `DailyClose`, `CloseDay`, `ReopenDay`, `GetDailyCloseByDate`, `GetDailyCloseList` |
+| Onboarding | (stateless wizard) | `onboarding_page.dart` — 6-step first-launch flow with `deviceId`/`devicePrefix` generation |
+| DB Health | (stateful page) | `db_health_page.dart` — file size, row counts, vacuum |
 
 ---
 
 ## UI and design system notes
 
 - The current UI refresh follows a **Merchant Command Deck** direction: cashier-first, fast scanning, strong money hierarchy, and large touch targets.
+- **Theme system** lives in `lib/core/theme/` — `AppColors` (static palette), `AppTheme` (light/dark `ThemeData` with Material 3), and `SettingsThemeExtension` (settings-specific surface/accent tokens). All hardcoded `Color(0xFF...)` outside this folder is forbidden.
 - Shared visual behavior should live in `lib/core/theme/` and `lib/core/widgets/` before being duplicated in feature pages.
 - Sale layouts are adaptive:
   - Compact screens use a product catalog with a bottom cart command panel.
   - Expanded screens keep the cart pane visible beside the product grid.
+  - **Compact Cart Mode** (toggle in Settings → General) hides the full panel and shows a floating cart icon that opens `CartBottomSheet`.
 - User-facing strings must remain localized through ARB files and accessed with `context.l10n`.
 - Empty/error states should prefer `AppEmptyState`; money values should prefer `MoneyText`.
 - Compact constrained areas should avoid fixed-height `Column` content that can trigger `RenderFlex` overflow.
 
 ---
 
-## Database schema (v6)
+## Database schema (v10)
 
 Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
 | Table | Key fields |
 |-------|--------|
-| `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, imagePath, imageThumbnailPath, trackStock, isActive, createdAt, updatedAt, deletedAt, version, deviceId |
-| `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, note, voidedAt, voidReason, createdAt, updatedAt, deletedAt, version, deviceId |
+| `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, imagePath, imageThumbnailPath, trackStock, isActive, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
+| `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, note, voidedAt, voidReason, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
 | `SaleItems` | id, saleId, productId, productName, price, qty, subtotal, discountAmount, vatAmount |
-| `Categories` | id, name, sortOrder, createdAt, updatedAt, deletedAt, version, deviceId |
-| `InventoryLogs` | id, productId, type, qtyChange, balanceAfter, reason, refSaleId, createdAt, deviceId |
+| `Categories` | id, name, sortOrder, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
+| `InventoryLogs` | id, productId, type, qtyChange, balanceAfter, reason, refSaleId, createdAt, **deviceId** |
 | `AppSettings` | key (PK), value, updatedAt |
-| `DraftCarts` | id, name, note, cartDiscountType, cartDiscountValue, createdAt, updatedAt, deviceId |
+| `DraftCarts` | id, name, note, cartDiscountType, cartDiscountValue, createdAt, **updatedAt**, **deviceId** |
 | `DraftCartItems` | id, cartId, productId, productName, price, qty, discountType, discountValue |
-| `DailyCloses` | id, closeDate, openingCash, expectedCash, countedCash, overShortAmount, totalRevenue, totalVoid, salesCount, voidCount, note, closedAt, deviceId |
+| `DailyCloses` | id, closeDate, openingCash, expectedCash, countedCash, overShortAmount, totalRevenue, totalVoid, salesCount, voidCount, paymentBreakdown, vatAmount, discountAmount, note, closedAt, **deviceId** |
 
 **Indexes:** `idx_products_category_id`, `idx_products_is_active`, `idx_products_barcode`, `idx_sales_created_at`, `idx_sales_status`, `idx_sale_items_sale_id`, `idx_inventory_logs_product_id`, `idx_draft_cart_items_cart_id`, `idx_daily_closes_close_date`
 
@@ -154,6 +161,28 @@ To regenerate after schema changes:
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
+
+---
+
+## Phase 4 Sync Readiness Audit
+
+**Date:** 2026-06-05 | **Schema:** v10
+
+All tables require 4 sync columns: `updatedAt`, `deletedAt`, `version`, `deviceId`.
+
+| Table | updatedAt | deletedAt | version | deviceId | Status |
+|---|---|---|---|---|---|
+| `Products` | ✅ | ✅ | ✅ | ✅ | Ready |
+| `Sales` | ✅ | ✅ | ✅ | ✅ | Ready |
+| `SaleItems` | ❌ | ❌ | ❌ | ❌ | **Gap** |
+| `Categories` | ✅ | ✅ | ✅ | ✅ | Ready |
+| `InventoryLogs` | ❌ | ❌ | ❌ | ✅ | Partial |
+| `DraftCarts` | ✅ | ❌ | ❌ | ✅ | Partial |
+| `DraftCartItems` | ❌ | ❌ | ❌ | ❌ | **Gap** |
+| `DailyCloses` | ❌ | ❌ | ❌ | ✅ | Partial |
+| `AppSettings` | ✅ | ❌ | ❌ | ❌ | Partial (K/V store) |
+
+**Gap mitigation:** SaleItems, DraftCartItems, and DailyCloses need migration to add missing sync columns. Tracked as `phase-4-prep` issues. AppSettings as key-value store may use a different sync strategy.
 
 ---
 
