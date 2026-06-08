@@ -1,6 +1,8 @@
 {
   "@@locale": "th",
   "appTitle": "Promsell POS",
+  "appTagline": "ร้านค้าอัจฉริยะ",
+  "loading": "กำลังโหลด...",
 
   "navSale": "ขาย",
   "navProducts": "สินค้า",
@@ -88,6 +90,7 @@
   "searchHistoryHint": "ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…",
   "noSearchResults": "ไม่พบรายการขายที่ตรงกัน",
   "noSalesYet": "ยังไม่มีรายการขาย",
+  "noDailyClosesYet": "ยังไม่มีการปิดรับ",
   "noteLabel": "หมายเหตุ: {note}",
   "@noteLabel": {
     "placeholders": { "note": { "type": "String" } }
@@ -107,6 +110,8 @@
   },
 
   "settingsTitle": "ตั้งค่า",
+  "searchSettings": "ค้นหาการตั้งค่า...",
+  "pressBackAgainToExit": "กดย้อนกลับอีกครั้งเพื่อออก",
   "settingsGeneral": "ทั่วไป",
   "settingsStoreBusiness": "ร้านค้าและธุรกิจ",
   "settingsPayments": "การชำระเงิน",
@@ -394,6 +399,9 @@
   "backupOff": "ปิด",
   "backupActionTitle": "สำรองข้อมูลด้วยตนเอง",
   "backupActionSubtitle": "แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว",
+  "backupEncryptionTitle": "การเข้ารหัสสำรองข้อมูล",
+  "backupEncryptionLabel": "เข้ารหัสไฟล์สำรอง",
+  "backupEncryptionDesc": "ปกป้องไฟล์สำรองด้วยการเข้ารหัส AES-256-GCM (ต้องใส่ PIN)",
   "backupInfoDescription": "สำรองข้อมูลเป็นประจำเพื่อป้องกันข้อมูลการขาย สินค้า และการตั้งค่าของคุณ",
   "exportSuccess": "ส่งออกสำเร็จ",
   "bulkSelected": "เลือกแล้ว {count} รายการ",

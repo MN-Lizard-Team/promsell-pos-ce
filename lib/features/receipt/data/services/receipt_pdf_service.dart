@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
@@ -308,7 +309,8 @@ class ReceiptPdfService {
   String _formatDate(DateTime dt, String format) {
     try {
       return DateFormat(format).add_Hm().format(dt);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ReceiptPdfService._formatDate fallback: $e');
       return DateFormat('dd/MM/yyyy HH:mm').format(dt);
     }
   }

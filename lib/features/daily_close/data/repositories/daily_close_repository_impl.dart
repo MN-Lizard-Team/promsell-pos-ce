@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart';
@@ -52,6 +53,9 @@ class DailyCloseRepositoryImpl implements DailyCloseRepository {
       note: data.note,
       closedAt: data.closedAt,
       deviceId: data.deviceId,
+      updatedAt: data.updatedAt,
+      deletedAt: data.deletedAt,
+      version: data.version,
     );
   }
 
@@ -73,6 +77,9 @@ class DailyCloseRepositoryImpl implements DailyCloseRepository {
       note: entity.note,
       closedAt: entity.closedAt,
       deviceId: entity.deviceId,
+      updatedAt: entity.updatedAt ?? DateTime.now(),
+      deletedAt: entity.deletedAt,
+      version: entity.version,
     );
   }
 
@@ -80,7 +87,8 @@ class DailyCloseRepositoryImpl implements DailyCloseRepository {
     try {
       final map = jsonDecode(json) as Map<String, dynamic>;
       return map.map((k, v) => MapEntry(k, (v as num).toDouble()));
-    } catch (_) {
+    } catch (e) {
+      debugPrint('DailyCloseRepositoryImpl._parsePaymentBreakdown failed: $e');
       return const {};
     }
   }

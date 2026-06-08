@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
@@ -170,7 +171,7 @@ class _PromptpayPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasId = promptpayId.isNotEmpty;
-    final accentColor = hasId ? Colors.green : st.mutedText;
+    final accentColor = hasId ? AppColors.success : st.mutedText;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),

@@ -73,8 +73,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
         ProductUpdated(
           widget.product!.copyWith(
             name: _nameCtrl.text.trim(),
-            price: double.parse(_priceCtrl.text),
-            stock: int.parse(_stockCtrl.text),
+            price: double.tryParse(_priceCtrl.text) ?? 0.0,
+            stock: int.tryParse(_stockCtrl.text) ?? 0,
             category: _categoryCtrl.text.trim().isEmpty
                 ? null
                 : _categoryCtrl.text.trim(),
@@ -90,8 +90,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
       bloc.add(
         ProductAdded(
           name: _nameCtrl.text.trim(),
-          price: double.parse(_priceCtrl.text),
-          stock: int.parse(_stockCtrl.text),
+          price: double.tryParse(_priceCtrl.text) ?? 0.0,
+          stock: int.tryParse(_stockCtrl.text) ?? 0,
           category: _categoryCtrl.text.trim().isEmpty
               ? null
               : _categoryCtrl.text.trim(),

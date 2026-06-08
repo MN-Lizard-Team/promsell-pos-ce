@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
@@ -103,6 +104,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
       await _voidSale(event.saleId, reason: event.reason);
       emit(state.copyWith(status: HistoryStatus.success));
     } catch (e) {
+      debugPrint('HistoryBloc._onVoidRequested failed: $e');
       emit(
         state.copyWith(
           status: HistoryStatus.failure,

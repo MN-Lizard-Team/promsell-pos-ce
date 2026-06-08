@@ -68,7 +68,7 @@ Future<bool> showAdjustStockDialog(
     try {
       await sl<AdjustStock>().call(
         productId: productId,
-        qtyChange: int.parse(qtyController.text),
+        qtyChange: int.tryParse(qtyController.text) ?? 0,
         reason: reasonController.text.trim(),
       );
       if (context.mounted) {

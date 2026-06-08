@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.7.1
+# CODEBASE.md — Promsell POS CE v0.7.2
 
 ## System overview
 
@@ -76,7 +76,7 @@ features/<name>/
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#00C853` primary, `#0D1117` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v6, 9 tables, UUID PKs, WAL + FK pragma, batch seed |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v12, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -89,6 +89,7 @@ features/<name>/
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
 | `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; `deleteImages`, `renameImages`; accepts `SettingsRepository`; `@LazySingleton` |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
+| `BackupEncryptionService` | `lib/features/settings/data/services/` | AES-256-GCM encryption/decryption for SQLite backups with PIN-derived PBKDF2 key |
 | `DraftCartLocalDatasource` | `lib/features/sale/data/datasources/` | Persist/load `DraftCarts` + `DraftCartItems`; used by `DraftCartRepository` |
 | `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
 | `AdaptiveBreakpoints` | `lib/core/widgets/` | Compact / medium / expanded layout helpers |
@@ -103,11 +104,11 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page_redesign.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow`, `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet`, `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog` |
+| Sale | `SaleBloc` | `sale_page_redesign.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog` |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
-| Settings | `SettingsCubit` | Pages: `settings_root_page.dart` (dashboard + grouped sections), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension` |
+| Settings | `SettingsCubit` | Pages: 3-level hierarchy — `settings_root_page.dart` (topic groups), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `backup_settings_page.dart` (encryption toggle), `promptpay_settings_page.dart`, `db_health_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog` |
 | Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
@@ -321,7 +322,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-258 automated tests across 8 layers. Run with `flutter test`.
+286 automated tests across 8 layers. Run with `flutter test`.
 
 ### Test directory structure
 

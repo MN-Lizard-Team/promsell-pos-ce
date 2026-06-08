@@ -38,71 +38,75 @@ class _SaleCatalogState extends State<SaleCatalog> {
           _searchController.text = state.searchQuery;
         }
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SearchBar(
-            controller: _searchController,
-            hintText: context.l10n.saleSearchProducts,
-            leading: const Icon(Icons.search),
-            elevation: const WidgetStatePropertyAll(0),
-            backgroundColor: WidgetStatePropertyAll(
-              Theme.of(context).colorScheme.surfaceContainerHighest,
-            ),
-            side: WidgetStatePropertyAll(
-              BorderSide(color: Theme.of(context).colorScheme.outline),
-            ),
-            shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            padding: const WidgetStatePropertyAll(
-              EdgeInsets.symmetric(horizontal: 16),
-            ),
-            onChanged: (query) =>
-                context.read<ProductBloc>().add(ProductSearchChanged(query)),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: BlocBuilder<ProductBloc, ProductState>(
-              builder: (ctx, state) {
-                if (state.status == ProductStatus.loading ||
-                    state.status == ProductStatus.initial) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      child: BlocBuilder<ProductBloc, ProductState>(
+        builder: (ctx, state) {
+          if (state.status == ProductStatus.loading ||
+              state.status == ProductStatus.initial) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                if (state.status == ProductStatus.failure) {
-                  return AppEmptyState(
-                    icon: Icons.error_outline,
-                    title: state.errorMessage ?? ctx.l10n.errorOccurred,
-                  );
-                }
+          if (state.status == ProductStatus.failure) {
+            return AppEmptyState(
+              icon: Icons.error_outline,
+              title: state.errorMessage ?? ctx.l10n.errorOccurred,
+            );
+          }
 
-                final activeProducts = state.filtered
-                    .where((product) => product.isActive && product.isInStock)
+          final activeProducts = state.filtered
+              .where((product) => product.isActive && product.isInStock)
+              .toList();
+          final categories = _categoriesOf(activeProducts);
+          final selectedCategory = categories.contains(state.categoryFilter)
+              ? state.categoryFilter
+              : null;
+          final products = selectedCategory == null
+              ? activeProducts
+              : activeProducts
+                    .where((product) => product.category == selectedCategory)
                     .toList();
-                final categories = _categoriesOf(activeProducts);
-                final selectedCategory =
-                    categories.contains(state.categoryFilter)
-                    ? state.categoryFilter
-                    : null;
-                final products = selectedCategory == null
-                    ? activeProducts
-                    : activeProducts
-                          .where(
-                            (product) => product.category == selectedCategory,
-                          )
-                          .toList();
 
-                if (activeProducts.isEmpty) {
-                  return AppEmptyState(
-                    icon: Icons.inventory_2_outlined,
-                    title: ctx.l10n.noProducts,
-                    message: ctx.l10n.tapProductToAdd,
-                  );
-                }
+          if (activeProducts.isEmpty) {
+            return AppEmptyState(
+              icon: Icons.inventory_2_outlined,
+              title: ctx.l10n.noProducts,
+              message: ctx.l10n.tapProductToAdd,
+            );
+          }
 
-                return Column(
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: SearchBar(
+                    controller: _searchController,
+                    hintText: context.l10n.saleSearchProducts,
+                    leading: const Icon(Icons.search),
+                    elevation: const WidgetStatePropertyAll(0),
+                    backgroundColor: WidgetStatePropertyAll(
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                    ),
+                    side: WidgetStatePropertyAll(
+                      BorderSide(color: Theme.of(context).colorScheme.outline),
+                    ),
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    padding: const WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    onChanged: (query) => context.read<ProductBloc>().add(
+                      ProductSearchChanged(query),
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(
                       height: 44,
@@ -166,43 +170,41 @@ class _SaleCatalogState extends State<SaleCatalog> {
                         ),
                       ),
                     const SizedBox(height: 10),
-                    if (products.isEmpty)
-                      Expanded(
-                        child: AppEmptyState(
-                          icon: Icons.search_off,
-                          title: ctx.l10n.noMatchingProducts,
-                        ),
-                      )
-                    else
-                      Expanded(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final isWide = constraints.maxWidth >= 720;
-
-                            return GridView.builder(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              gridDelegate:
-                                  SliverGridDelegateWithMaxCrossAxisExtent(
-                                    maxCrossAxisExtent: isWide ? 220 : 186,
-                                    mainAxisExtent: isWide ? 160 : 148,
-                                    crossAxisSpacing: 10,
-                                    mainAxisSpacing: 10,
-                                  ),
-                              itemCount: products.length,
-                              itemBuilder: (_, index) => SaleProductCard(
-                                product: products[index],
-                                currency: currency,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
                   ],
-                );
-              },
-            ),
-          ),
-        ],
+                ),
+              ),
+              if (products.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: AppEmptyState(
+                    icon: Icons.search_off,
+                    title: ctx.l10n.noMatchingProducts,
+                  ),
+                )
+              else
+                SliverLayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.crossAxisExtent >= 720;
+                    return SliverGrid(
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: isWide ? 220 : 186,
+                        mainAxisExtent: isWide ? 160 : 148,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (_, index) => SaleProductCard(
+                          product: products[index],
+                          currency: currency,
+                        ),
+                        childCount: products.length,
+                      ),
+                    );
+                  },
+                ),
+            ],
+          );
+        },
       ),
     );
   }

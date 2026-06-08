@@ -1,6 +1,8 @@
 {
   "@@locale": "en",
   "appTitle": "Promsell POS",
+  "appTagline": "Smart Retail",
+  "loading": "Loading...",
 
   "navSale": "Sale",
   "navProducts": "Products",
@@ -88,6 +90,7 @@
   "searchHistoryHint": "Search receipt, payment, amount…",
   "noSearchResults": "No matching sales found",
   "noSalesYet": "No sales yet",
+  "noDailyClosesYet": "No daily closes yet",
   "noteLabel": "Note: {note}",
   "@noteLabel": {
     "placeholders": { "note": { "type": "String" } }
@@ -107,6 +110,8 @@
   },
 
   "settingsTitle": "Settings",
+  "searchSettings": "Search settings...",
+  "pressBackAgainToExit": "Press back again to exit",
   "settingsGeneral": "General",
   "settingsStoreBusiness": "Store & Business",
   "settingsPayments": "Payments",
@@ -397,6 +402,9 @@
   "backupOff": "Off",
   "backupActionTitle": "Manual backup",
   "backupActionSubtitle": "Tap to record that you have backed up your data",
+  "backupEncryptionTitle": "Backup encryption",
+  "backupEncryptionLabel": "Encrypt backups",
+  "backupEncryptionDesc": "Protect backup files with AES-256-GCM encryption (PIN required)",
   "backupInfoDescription": "Back up regularly to protect your sales data, products, and settings.",
   "exportSuccess": "Export successful",
   "bulkSelected": "{count} selected",

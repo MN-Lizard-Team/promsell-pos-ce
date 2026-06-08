@@ -17,12 +17,13 @@ void main() {
         subtotal: 200.0,
         discountAmount: 0.0,
         vatAmount: 0.0,
+        version: 1,
       );
       expect(a, equals(b));
     });
 
     test('props contains all fields', () {
-      expect(tSaleItem.props.length, 9);
+      expect(tSaleItem.props.length, 13);
     });
   });
 

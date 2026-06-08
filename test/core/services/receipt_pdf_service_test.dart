@@ -26,6 +26,7 @@ void main() {
           subtotal: 100.0,
           discountAmount: 0.0,
           vatAmount: 0.0,
+          version: 1,
         ),
       ],
     );

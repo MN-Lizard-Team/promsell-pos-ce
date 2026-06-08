@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:promsell_pos_ce/core/database/tables/app_settings_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/categories_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/daily_closes_table.dart';
@@ -30,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -40,8 +41,8 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultSettings();
     },
     onUpgrade: (m, from, to) async {
+      // incremental table creation (replaces old drop+recreate)
       if (from < 2) {
-        // v1/v2 pre-release schemas: ensure all base tables exist before column migrations
         await m.createTable(draftCarts);
         await m.createTable(draftCartItems);
         await m.createTable(dailyCloses);
@@ -64,22 +65,20 @@ class AppDatabase extends _$AppDatabase {
         );
       }
       if (from < 4) {
-        await customStatement(
-          'ALTER TABLE products ADD COLUMN image_path TEXT',
-        );
+        await _addColumnIfNotExists('products', 'image_path', 'TEXT');
       }
       if (from < 5) {
         await _seedR4Settings();
       }
       if (from < 6) {
-        await customStatement(
-          'ALTER TABLE products ADD COLUMN image_thumbnail_path TEXT',
-        );
+        await _addColumnIfNotExists('products', 'image_thumbnail_path', 'TEXT');
         await _seedR45Settings();
       }
       if (from < 7) {
-        await customStatement(
-          'ALTER TABLE draft_carts ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0',
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'is_archived',
+          'INTEGER NOT NULL DEFAULT 0',
         );
       }
       if (from < 8) {
@@ -112,6 +111,101 @@ class AppDatabase extends _$AppDatabase {
           'INSERT INTO daily_closes SELECT * FROM daily_closes_old',
         );
         await customStatement('DROP TABLE daily_closes_old');
+      }
+      // Add sync columns to all tables for Phase 2 multi-device readiness
+      if (from < 11) {
+        // SaleItems: add updatedAt, deletedAt, version, deviceId
+        await _addColumnIfNotExists(
+          'sale_items',
+          'updated_at',
+          'TEXT NOT NULL DEFAULT \'${DateTime.now().toIso8601String()}\'',
+        );
+        await _addColumnIfNotExists('sale_items', 'deleted_at', 'TEXT');
+        await _addColumnIfNotExists(
+          'sale_items',
+          'version',
+          'INTEGER NOT NULL DEFAULT 1',
+        );
+        await _addColumnIfNotExists('sale_items', 'device_id', 'TEXT');
+
+        // DraftCartItems: add updatedAt, deletedAt, version, deviceId
+        await _addColumnIfNotExists(
+          'draft_cart_items',
+          'updated_at',
+          'TEXT NOT NULL DEFAULT \'${DateTime.now().toIso8601String()}\'',
+        );
+        await _addColumnIfNotExists('draft_cart_items', 'deleted_at', 'TEXT');
+        await _addColumnIfNotExists(
+          'draft_cart_items',
+          'version',
+          'INTEGER NOT NULL DEFAULT 1',
+        );
+        await _addColumnIfNotExists('draft_cart_items', 'device_id', 'TEXT');
+
+        // DailyCloses: add updatedAt, deletedAt, version (deviceId already exists)
+        await _addColumnIfNotExists(
+          'daily_closes',
+          'updated_at',
+          'TEXT NOT NULL DEFAULT \'${DateTime.now().toIso8601String()}\'',
+        );
+        await _addColumnIfNotExists('daily_closes', 'deleted_at', 'TEXT');
+        await _addColumnIfNotExists(
+          'daily_closes',
+          'version',
+          'INTEGER NOT NULL DEFAULT 1',
+        );
+
+        // InventoryLogs: add updatedAt, deletedAt, version (deviceId already exists)
+        await _addColumnIfNotExists(
+          'inventory_logs',
+          'updated_at',
+          'TEXT NOT NULL DEFAULT \'${DateTime.now().toIso8601String()}\'',
+        );
+        await _addColumnIfNotExists('inventory_logs', 'deleted_at', 'TEXT');
+        await _addColumnIfNotExists(
+          'inventory_logs',
+          'version',
+          'INTEGER NOT NULL DEFAULT 1',
+        );
+
+        // DraftCarts: add deletedAt, version (updatedAt, deviceId already exist)
+        await _addColumnIfNotExists('draft_carts', 'deleted_at', 'TEXT');
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'version',
+          'INTEGER NOT NULL DEFAULT 1',
+        );
+
+        // AppSettings: add version, deviceId
+        await _addColumnIfNotExists(
+          'app_settings',
+          'version',
+          'INTEGER NOT NULL DEFAULT 1',
+        );
+        await _addColumnIfNotExists('app_settings', 'device_id', 'TEXT');
+      }
+      // TEXT ISO8601 → INTEGER milliseconds (strftime is universally available)
+      if (from < 12) {
+        final conversions = [
+          ('sale_items', 'updated_at'),
+          ('sale_items', 'deleted_at'),
+          ('draft_cart_items', 'updated_at'),
+          ('draft_cart_items', 'deleted_at'),
+          ('daily_closes', 'updated_at'),
+          ('daily_closes', 'deleted_at'),
+          ('inventory_logs', 'updated_at'),
+          ('inventory_logs', 'deleted_at'),
+          ('draft_carts', 'deleted_at'),
+        ];
+        for (final (table, column) in conversions) {
+          try {
+            await customStatement(
+              "UPDATE $table SET $column = CAST(strftime('%s', $column) AS INTEGER) * 1000 WHERE typeof($column) = 'text'",
+            );
+          } catch (e) {
+            debugPrint('Schema v12 migration failed for $table.$column: $e');
+          }
+        }
       }
     },
     beforeOpen: (details) async {
@@ -203,7 +297,11 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('ALTER TABLE $table ADD COLUMN $column $type');
     } catch (e) {
       // Column may already exist; ignore
-      if (!e.toString().contains('duplicate column')) rethrow;
+      if (!e.toString().contains('duplicate column')) {
+        // ignore: avoid_print
+        print('Migration ALTER failed for $table.$column: $e');
+        rethrow;
+      }
     }
   }
 

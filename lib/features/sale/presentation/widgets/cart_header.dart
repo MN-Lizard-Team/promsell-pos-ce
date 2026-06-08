@@ -150,39 +150,17 @@ class _CartHeaderState extends State<CartHeader> {
                 builder: (_, settingsState) {
                   final settings = settingsState.settings;
                   final isUltra = settings.ultraCompactMode;
-                  final isCompact = settings.cartCompactMode;
                   final (icon, tooltip) = isUltra
                       ? (Icons.density_small, context.l10n.cartCompactNormal)
-                      : isCompact
-                      ? (Icons.view_list, context.l10n.cartCompactUltra)
-                      : (Icons.view_agenda, context.l10n.cartCompactCompact);
+                      : (Icons.view_agenda, context.l10n.cartCompactUltra);
                   return IconButton(
                     icon: Icon(icon, size: 20),
                     tooltip: tooltip,
                     onPressed: () {
                       final cubit = context.read<SettingsCubit>();
-                      if (isUltra) {
-                        cubit.update(
-                          settings.copyWith(
-                            ultraCompactMode: false,
-                            cartCompactMode: false,
-                          ),
-                        );
-                      } else if (isCompact) {
-                        cubit.update(
-                          settings.copyWith(
-                            cartCompactMode: false,
-                            ultraCompactMode: true,
-                          ),
-                        );
-                      } else {
-                        cubit.update(
-                          settings.copyWith(
-                            cartCompactMode: true,
-                            ultraCompactMode: false,
-                          ),
-                        );
-                      }
+                      cubit.updateField(
+                        (s) => s.copyWith(ultraCompactMode: !isUltra),
+                      );
                     },
                   );
                 },

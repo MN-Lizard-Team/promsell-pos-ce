@@ -63,8 +63,7 @@ abstract final class AppSnackBar {
   }
 }
 
-// ── Simple toast (top, no action) ──
-
+// Simple toast (top, no action)
 class _SimpleEntry {
   _SimpleEntry({
     required this.message,
@@ -172,8 +171,7 @@ class _SimpleToastState extends State<_SimpleToast>
   }
 }
 
-// ── Action toast (bottom, with undo button) ──
-
+// Action toast (bottom, with undo button)
 class _ActionEntry {
   _ActionEntry({
     required this.message,

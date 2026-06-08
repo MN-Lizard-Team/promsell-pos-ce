@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.7.1** — Global theme unification with premium green/dark onboarding palette applied app-wide. Compact Cart Mode (floating icon + bottom sheet) for small screens. Settings readability fixes (contrast, badge colors, icon visibility). Daily Close, Onboarding wizard, DB Health, and schema v10.
+> **Latest Release: v0.7.2** — Data resilience and cart UX: sync columns (schema v12), backup encryption with AES-256-GCM, 3-level settings hierarchy, cart button animations with haptic feedback, single-row item redesign, and theme color migration.
  
 ---
  
@@ -64,14 +64,14 @@
  
 | Feature | Description |
 |---------|-------------|
-| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, per-item/cart discount with preset chips, cart search & group-by-category, multi-select bulk actions, swipe gestures, drag-to-reorder, resizable panel, compact/ultra-compact modes, direct quantity input tap dialog with stock clamping. **v0.7.1**: Compact Cart Mode — floating icon with item-count badge opens bottom sheet for quick qty +/-, delete, and checkout. **v0.6.2 UX**: checkbox 48dp touch targets, drag tooltips, focus indicators, delete confirmations, keyboard submit on discount, toast tap-dismiss, drag performance refactor |
+| **Sale** | Searchable product catalog, category chips, adaptive cart command panel, stock-limit controls, cart quantity badges, multi-method checkout, quick cash chips, payment references, change calculation, per-item/cart discount with preset chips, multi-select bulk actions, swipe gestures, drag-to-reorder, resizable panel, compact/ultra-compact modes, direct quantity input tap dialog with stock clamping. **v0.7.2**: Single-row item redesign (3-zone layout), press-scale button animations with haptic, FAB bounce/pulse, removed cart search, compact cart theming matches normal cart. **v0.7.1**: Compact Cart Mode — floating icon with item-count badge opens bottom sheet. **v0.6.2 UX**: checkbox 48dp touch targets, drag tooltips, focus indicators, delete confirmations, keyboard submit on discount, toast tap-dismiss, drag performance refactor |
 | **Draft Cart** | Auto-save every 1.5s; configurable max drafts (5–100); search + sort; count badge; auto-archive after 7 days; switch/rename/delete drafts; active draft restored on app launch; cleared on checkout |
 | **Discount** | Per-item / per-cart discount (% or ฿) with live preview; merchant-configurable preset groups with quick-apply chips; max discount clamping; full payment sheet breakdown; VAT applied after discounts |
 | **Products** | List/grid toggle, category filter chips, image picker (gallery/camera) with pure Dart compression + thumbnail system, `CachedNetworkImage` for network URLs, configurable image quality, `_StockBadge` (traffic-light), add/edit/delete with category, price, stock, `trackStock` toggle, active/inactive toggle, orphaned file cleanup, remove-then-cancel protection, category autocomplete with existing-category suggestions |
 | **History** | Date-ranged receipt-like sale history with expandable item breakdown, receipt numbers, VOIDED badge, VAT breakdown rows (Subtotal + VAT rate %) when VAT is active, void sale action with reason, notes, and search bar (filter by receipt number, payment method, or amount) |
 | **Report** | Dashboard cards for net revenue (excludes voided), voided summary, payment method breakdown, top 5 products, date filter chip, pull-to-refresh, and empty states |
 | **Inventory** | Inventory audit log (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT), manual stock adjustment dialog with reason, and per-product log viewer |
-| **Settings** | Elderly-friendly redesign with single soft-accent palette, larger touch targets (48dp icons, 64dp tiles), and 16px titles. Dashboard cards with gradient backgrounds and status badges on every page. Dialog-based visual pickers for language/theme with icon-based option cards. PromptPay ID validation (phone 10 digits / citizen ID 13 digits). Shop Info inline form with live preview and phone auto-format. Backup reminder switch + preset frequency picker (3/7/14/30 days). "Reset to Defaults" confirmation dialog. Root page dashboard with 5 summary badges and grouped sections (`Store & Business`, `Payments`, `System & Data`) with colored status chips on every tile. **v0.7.1**: Compact Cart Mode toggle, global theme unification (green accent `#00C853`, dark bg `#0D1117`, 16px card / 12px button radius), readability fixes for dark mode badges and icons |
+| **Settings** | Elderly-friendly redesign with single soft-accent palette, larger touch targets (48dp icons, 64dp tiles), and 16px titles. Dashboard cards with gradient backgrounds and status badges on every page. Dialog-based visual pickers for language/theme with icon-based option cards. PromptPay ID validation (phone 10 digits / citizen ID 13 digits). Shop Info inline form with live preview and phone auto-format. Backup reminder switch + preset frequency picker (3/7/14/30 days). "Reset to Defaults" confirmation dialog. Root page dashboard with 5 summary badges and grouped sections (`Store & Business`, `Payments`, `System & Data`) with colored status chips on every tile. **v0.7.2**: 3-level hierarchy (Root → SubTopic → Page) with flattened search, backup encryption toggle, theme color tokens (`AppColors`) replacing hardcoded values. **v0.7.1**: Compact Cart Mode toggle, global theme unification (green accent `#00C853`, dark bg `#0D1117`, 16px card / 12px button radius), readability fixes for dark mode badges and icons |
 | **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation |
 | **Receipt Preview** | On-screen preview in `thermal` (80mm paper) and `card` styles, with independent pre/post-sale toggles and `"none"` option; pinch-to-zoom full-screen dialog |
 | **Receipt PDF** | Print and share receipts as PDF with Thai font support; 80mm thermal + A4 layouts; PromptPay QR on receipt; centralized `ImageViewerDialog` for product/receipt images |
@@ -229,7 +229,8 @@ features/<name>/
 - [x] **R5 — Clean Architecture & Store Prep** (v0.6.3): InventoryLog full Clean Architecture refactor, category autocomplete, history search bar, cart direct qty input, 8 bug fixes, platform hardening (Android permissions, iOS privacy strings, release signing), store submission metadata and docs
 - [x] **R5 — Settings Refactor** (v0.6.4): Sub-page navigation, auto-save, god page elimination, orphan field surfacing
 - [x] **R6 — Settings UX Overhaul** (v0.7.0): Elderly-friendly redesign, gradient dashboard cards, visual dialog pickers, validation, grouped sections with status chips, accessibility mode toggle
-- [ ] **R7 — Operations**: Daily close, onboarding wizard, final polish
+- [x] **R7 — Operations** (v0.7.1): Daily close, onboarding wizard, DB health, compact cart mode, global theme unification
+- [x] **R8 — Data Resilience & Cart Polish** (v0.7.2): Sync columns (schema v12), backup encryption, 3-level settings hierarchy, cart button animations, single-row item redesign, theme color migration
 
 ### Future
 
@@ -330,6 +331,6 @@ Built by **[MN Lizard Team](https://github.com/MN-Lizard-Team)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.7.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.7.2 · AGPL-3.0</sub>
 
 </div>

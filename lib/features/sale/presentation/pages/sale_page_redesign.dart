@@ -43,14 +43,14 @@ class _SaleViewState extends State<_SaleView> {
   late final ValueNotifier<double> _cartWidth;
   late final ValueNotifier<bool> _isDraggingHandle;
 
-  static const double _minCartHeightPortrait = 260;
-  static const double _minCartHeightLandscape = 220;
-  static const double _maxCartHeightRatioPortrait = 0.65;
-  static const double _maxCartHeightRatioLandscape = 0.50;
+  static const double _minCartHeightPortrait = 320;
+  static const double _minCartHeightLandscape = 280;
+  static const double _maxCartHeightRatioPortrait = 0.95;
+  static const double _maxCartHeightRatioLandscape = 0.90;
 
   static const double _minCartWidth = 300;
   static const double _maxCartWidth = 560;
-  static const double _handleHeight = 18;
+  static const double _handleHeight = 24;
   static const double _snapTolerance = 18;
 
   @override
@@ -335,64 +335,160 @@ class _SaleViewState extends State<_SaleView> {
   }
 }
 
-class _CompactCartFab extends StatelessWidget {
+class _CompactCartFab extends StatefulWidget {
   const _CompactCartFab();
+
+  @override
+  State<_CompactCartFab> createState() => _CompactCartFabState();
+}
+
+class _CompactCartFabState extends State<_CompactCartFab>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pressController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final currency = context.read<SettingsCubit>().state.settings.currency;
 
     return Positioned(
       bottom: 16 + MediaQuery.paddingOf(context).bottom,
-      right: 0,
+      right: 16,
       child: BlocBuilder<SaleBloc, SaleState>(
         builder: (ctx, state) {
           final count = state.itemCount;
-          return Material(
-            color: theme.colorScheme.primary,
-            borderRadius: BorderRadius.circular(16),
-            elevation: 6,
-            child: InkWell(
-              onTap: () => CartBottomSheet.show(ctx),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Icon(
-                      Icons.shopping_bag_outlined,
-                      color: theme.colorScheme.onPrimary,
-                      size: 24,
+          final total = state.total;
+
+          return TweenAnimationBuilder<double>(
+            key: ValueKey('fab_bounce_$count'),
+            tween: Tween(begin: 1.15, end: 1.0),
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.elasticOut,
+            builder: (context, scale, child) {
+              return Transform.scale(scale: scale, child: child);
+            },
+            child: AnimatedBuilder(
+              animation: _pressController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: 1.0 - (_pressController.value * 0.06),
+                  child: child,
+                );
+              },
+              child: Material(
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(16),
+                elevation: 6,
+                shadowColor: theme.colorScheme.shadow,
+                child: GestureDetector(
+                  onTapDown: (_) => _pressController.forward(),
+                  onTapUp: (_) {
+                    _pressController.reverse();
+                    CartBottomSheet.show(ctx);
+                  },
+                  onTapCancel: () => _pressController.reverse(),
+                  onLongPress: () {
+                    final cubit = ctx.read<SettingsCubit>();
+                    cubit.update(
+                      cubit.state.settings.copyWith(
+                        cartCompactMode: false,
+                        ultraCompactMode: false,
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 56,
+                    height: count > 0 ? 68 : 56,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    if (count > 0)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.error,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '$count',
-                            style: TextStyle(
-                              color: theme.colorScheme.onError,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.shopping_bag_outlined,
+                              color: theme.colorScheme.onPrimary,
+                              size: 24,
+                            ),
+                            if (count > 0) ...[
+                              const SizedBox(height: 2),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                transitionBuilder: (child, animation) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  );
+                                },
+                                child: Text(
+                                  '$currency${total.toStringAsFixed(0)}',
+                                  key: ValueKey(total),
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onPrimary,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (count > 0)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: TweenAnimationBuilder<double>(
+                              key: ValueKey('badge_pulse_$count'),
+                              tween: Tween(begin: 1.4, end: 1.0),
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOutBack,
+                              builder: (context, scale, child) {
+                                return Transform.scale(
+                                  scale: scale,
+                                  child: child,
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.error,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onError,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

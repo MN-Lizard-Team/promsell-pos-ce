@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
@@ -39,7 +40,10 @@ class ReportCubit extends Cubit<ReportState> {
     _sub = _watchReport(from: state.from, to: to).listen(
       (sales) =>
           emit(state.copyWith(status: ReportStatus.success, sales: sales)),
-      onError: (_) => emit(state.copyWith(status: ReportStatus.failure)),
+      onError: (e) {
+        debugPrint('ReportCubit.load failed: $e');
+        emit(state.copyWith(status: ReportStatus.failure));
+      },
     );
   }
 
@@ -49,7 +53,10 @@ class ReportCubit extends Cubit<ReportState> {
     _sub = _watchReport(from: from, to: to).listen(
       (sales) =>
           emit(state.copyWith(status: ReportStatus.success, sales: sales)),
-      onError: (_) => emit(state.copyWith(status: ReportStatus.failure)),
+      onError: (e) {
+        debugPrint('ReportCubit.changeDateRange failed: $e');
+        emit(state.copyWith(status: ReportStatus.failure));
+      },
     );
   }
 

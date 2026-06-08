@@ -18,6 +18,9 @@ class DailyCloses extends Table {
   TextColumn get note => text().nullable()();
   DateTimeColumn get closedAt => dateTime().nullable()();
   TextColumn get deviceId => text().nullable()();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
 
   @override
   Set<Column> get primaryKey => {id};

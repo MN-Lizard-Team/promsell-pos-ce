@@ -10,6 +10,10 @@ class InventoryLog extends Equatable {
     this.reason,
     this.refSaleId,
     required this.createdAt,
+    this.deviceId,
+    this.updatedAt,
+    this.deletedAt,
+    this.version = 1,
   });
 
   final String id;
@@ -20,6 +24,10 @@ class InventoryLog extends Equatable {
   final String? reason;
   final String? refSaleId;
   final DateTime createdAt;
+  final String? deviceId;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  final int version;
 
   bool get isPositive => qtyChange >= 0;
 
@@ -33,5 +41,9 @@ class InventoryLog extends Equatable {
     reason,
     refSaleId,
     createdAt,
+    deviceId,
+    updatedAt,
+    deletedAt,
+    version,
   ];
 }

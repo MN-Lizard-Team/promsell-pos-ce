@@ -1,12 +1,12 @@
 # Store Submission Checklist
 
-Last updated: 2026-06-04 | Version: 0.6.3+2
+Last updated: 2026-06-08 | Version: 0.7.2+1
 
 ---
 
 ## Pre-Flight (Code — DONE)
 
-- [x] Version bumped to `0.6.3+2` in `pubspec.yaml`
+- [x] Version bumped to `0.7.2+1` in `pubspec.yaml`
 - [x] Android app label = "Promsell"
 - [x] iOS display name = "Promsell"
 - [x] iOS bundle name = "Promsell"
@@ -15,7 +15,7 @@ Last updated: 2026-06-04 | Version: 0.6.3+2
 - [x] Release signing config with keystore fallback
 - [x] `.gitignore` excludes keystore files
 - [x] `flutter analyze` → 0 issues
-- [x] `flutter test` → 258 passing
+- [x] `flutter test` → 286 passing
 
 ---
 
@@ -61,11 +61,11 @@ keyPassword=YOUR_STRONG_PASSWORD
 | App Store | 3 iPhone | 10 iPhone + 5 iPad |
 
 Use emulator or physical device. Capture key screens:
-- Sale / Cart
+- Sale / Cart (single-row 3-zone layout, inline discount chips)
 - Product list
 - Receipt / QR
 - Inventory
-- Settings
+- Settings (3-level hierarchy with search)
 - Reports
 
 Save to:
@@ -140,7 +140,7 @@ flutter build ipa
 | Item | Value |
 |------|-------|
 | App name | Promsell |
-| Version | 0.6.3+2 |
+| Version | 0.7.2+1 |
 | Contact | teepakorn.official@gmail.com |
 | Privacy URL | https://github.com/teepakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
 | Bundle ID (Android) | com.promsell.promsell_pos_ce |

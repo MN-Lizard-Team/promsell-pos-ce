@@ -47,6 +47,8 @@ void main() {
         vatAmount: 0,
         discountAmount: 0,
         closedAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        version: 1,
       );
       when(
         () => mockDatasource.getByDate('2026-06-05'),
@@ -64,7 +66,7 @@ void main() {
         totalRevenue: 100,
         paymentBreakdown: {'cash': 100},
       );
-      final savedData = const DailyCloseData(
+      final savedData = DailyCloseData(
         id: '1',
         closeDate: '2026-06-05',
         openingCash: 0,
@@ -78,6 +80,8 @@ void main() {
         paymentBreakdown: '{"cash":100.0}',
         vatAmount: 0,
         discountAmount: 0,
+        updatedAt: DateTime.now(),
+        version: 1,
       );
       when(() => mockDatasource.save(any())).thenAnswer((_) async => savedData);
 

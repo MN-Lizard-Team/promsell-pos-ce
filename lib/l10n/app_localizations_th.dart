@@ -12,6 +12,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get appTitle => 'Promsell POS';
 
   @override
+  String get appTagline => 'ร้านค้าอัจฉริยะ';
+
+  @override
+  String get loading => 'กำลังโหลด...';
+
+  @override
   String get navSale => 'ขาย';
 
   @override
@@ -213,6 +219,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get noSalesYet => 'ยังไม่มีรายการขาย';
 
   @override
+  String get noDailyClosesYet => 'ยังไม่มีการปิดรับ';
+
+  @override
   String noteLabel(String note) {
     return 'หมายเหตุ: $note';
   }
@@ -241,6 +250,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get settingsTitle => 'ตั้งค่า';
+
+  @override
+  String get searchSettings => 'ค้นหาการตั้งค่า...';
+
+  @override
+  String get pressBackAgainToExit => 'กดย้อนกลับอีกครั้งเพื่อออก';
 
   @override
   String get settingsGeneral => 'ทั่วไป';
@@ -995,6 +1010,16 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get backupActionSubtitle => 'แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว';
+
+  @override
+  String get backupEncryptionTitle => 'การเข้ารหัสสำรองข้อมูล';
+
+  @override
+  String get backupEncryptionLabel => 'เข้ารหัสไฟล์สำรอง';
+
+  @override
+  String get backupEncryptionDesc =>
+      'ปกป้องไฟล์สำรองด้วยการเข้ารหัส AES-256-GCM (ต้องใส่ PIN)';
 
   @override
   String get backupInfoDescription =>

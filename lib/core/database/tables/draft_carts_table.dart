@@ -11,6 +11,8 @@ class DraftCarts extends Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
   TextColumn get deviceId => text().nullable()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
 
   @override
   Set<Column> get primaryKey => {id};

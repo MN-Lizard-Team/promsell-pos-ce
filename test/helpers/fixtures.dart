@@ -80,6 +80,7 @@ const tSaleItem = SaleItem(
   subtotal: 200.0,
   discountAmount: 0.0,
   vatAmount: 0.0,
+  version: 1,
 );
 
 final tSale = Sale(
@@ -111,6 +112,7 @@ final tInventoryLog = InventoryLog(
   reason: 'Restock',
   refSaleId: null,
   createdAt: tNow,
+  version: 1,
 );
 
 final tInventoryLog2 = InventoryLog(
@@ -122,4 +124,5 @@ final tInventoryLog2 = InventoryLog(
   reason: null,
   refSaleId: 'sale-0001-0001-0001-000000000001',
   createdAt: tNow,
+  version: 1,
 );

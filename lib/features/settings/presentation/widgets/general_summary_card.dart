@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class GeneralSummaryCard extends StatelessWidget {
@@ -116,7 +117,7 @@ class GeneralSummaryCard extends StatelessWidget {
                     ? Icons.check_circle_outline
                     : Icons.cancel_outlined,
                 label: accessibilityMode ? 'ON' : 'OFF',
-                color: accessibilityMode ? Colors.green : st.mutedText,
+                color: accessibilityMode ? AppColors.success : st.mutedText,
                 st: st,
               ),
             ],

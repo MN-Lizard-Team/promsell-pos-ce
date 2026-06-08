@@ -104,6 +104,18 @@ abstract class AppLocalizations {
   /// **'Promsell POS'**
   String get appTitle;
 
+  /// No description provided for @appTagline.
+  ///
+  /// In th, this message translates to:
+  /// **'ร้านค้าอัจฉริยะ'**
+  String get appTagline;
+
+  /// No description provided for @loading.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังโหลด...'**
+  String get loading;
+
   /// No description provided for @navSale.
   ///
   /// In th, this message translates to:
@@ -482,6 +494,12 @@ abstract class AppLocalizations {
   /// **'ยังไม่มีรายการขาย'**
   String get noSalesYet;
 
+  /// No description provided for @noDailyClosesYet.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีการปิดรับ'**
+  String get noDailyClosesYet;
+
   /// No description provided for @noteLabel.
   ///
   /// In th, this message translates to:
@@ -529,6 +547,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ตั้งค่า'**
   String get settingsTitle;
+
+  /// No description provided for @searchSettings.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาการตั้งค่า...'**
+  String get searchSettings;
+
+  /// No description provided for @pressBackAgainToExit.
+  ///
+  /// In th, this message translates to:
+  /// **'กดย้อนกลับอีกครั้งเพื่อออก'**
+  String get pressBackAgainToExit;
 
   /// No description provided for @settingsGeneral.
   ///
@@ -1969,6 +1999,24 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว'**
   String get backupActionSubtitle;
+
+  /// No description provided for @backupEncryptionTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'การเข้ารหัสสำรองข้อมูล'**
+  String get backupEncryptionTitle;
+
+  /// No description provided for @backupEncryptionLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'เข้ารหัสไฟล์สำรอง'**
+  String get backupEncryptionLabel;
+
+  /// No description provided for @backupEncryptionDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'ปกป้องไฟล์สำรองด้วยการเข้ารหัส AES-256-GCM (ต้องใส่ PIN)'**
+  String get backupEncryptionDesc;
 
   /// No description provided for @backupInfoDescription.
   ///

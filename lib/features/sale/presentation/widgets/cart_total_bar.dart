@@ -21,6 +21,10 @@ class CartTotalBar extends StatelessWidget {
     final theme = Theme.of(context);
     final settings = context.read<SettingsCubit>().state.settings;
     final enableCartDiscount = settings.enableCartDiscount;
+    final itemDiscountTotal = state.items.fold<double>(
+      0,
+      (sum, i) => sum + i.discountAmount,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -30,172 +34,117 @@ class CartTotalBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.06),
+            color: theme.colorScheme.shadow,
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
         ],
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isNarrow = constraints.maxWidth < 520;
-          final showBreakdown = state.hasCartDiscount;
-          final total = Column(
-            crossAxisAlignment: isNarrow
-                ? CrossAxisAlignment.stretch
-                : CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                context.l10n.cartTotal,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 2),
-              MoneyText(
-                value: state.total,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _SummaryLine(
+              label: context.l10n.receiptLabelSubtotal,
+              value: state.itemsSubtotal,
+              currency: currency,
+              theme: theme,
+            ),
+            if (itemDiscountTotal > 0)
+              _SummaryLine(
+                label: context.l10n.receiptItemDiscounts,
+                value: -itemDiscountTotal,
                 currency: currency,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-                color: theme.colorScheme.primary,
+                theme: theme,
+                valueColor: theme.colorScheme.error,
               ),
-              if (showBreakdown) ...[
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MoneyText(
-                      value: state.itemsSubtotal,
-                      currency: currency,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '-$currency${state.cartDiscountAmount.toStringAsFixed(2)}',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              if (settings.vatMode == 'EXCLUSIVE' && settings.vatRate > 0) ...[
-                const SizedBox(height: 2),
-                Text(
-                  '+${context.l10n.receiptLabelVat} ${settings.vatRate}%',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ],
-          );
-          final checkout = FilledButton.icon(
-            onPressed: () => _showPayment(context, state),
-            icon: const Icon(Icons.payment, size: 18),
-            label: Text(context.l10n.checkout(state.itemCount)),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(0, 40),
-              textStyle: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
+            if (state.hasCartDiscount)
+              _SummaryLine(
+                label: context.l10n.cartDiscount,
+                value: -state.cartDiscountAmount,
+                currency: currency,
+                theme: theme,
+                valueColor: theme.colorScheme.error,
               ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Divider(height: 1),
             ),
-          );
-
-          final discountBtn = enableCartDiscount
-              ? TextButton.icon(
-                  onPressed: () => DiscountDialog.showCartDiscount(
-                    context,
-                    title: context.l10n.cartDiscount,
-                    currency: currency,
-                    initialType:
-                        state.cartDiscountType ?? settings.defaultDiscountType,
-                    initialValue: state.cartDiscountValue,
-                    onApply: (type, value) {
-                      context.read<SaleBloc>().add(
-                        SaleCartDiscountChanged(
-                          discountType: type,
-                          discountValue: value,
-                        ),
-                      );
-                    },
-                    onClear: state.hasCartDiscount
-                        ? () => context.read<SaleBloc>().add(
-                            const SaleCartDiscountCleared(),
-                          )
-                        : null,
-                    maxPercent: settings.maxDiscountPercent,
-                    maxAmount: settings.maxDiscountAmount,
-                    presetValues: settings.activeDiscountPreset.values,
-                    presetType: settings.activeDiscountPreset.type,
-                  ),
-                  icon: Icon(
-                    state.hasCartDiscount
-                        ? Icons.local_offer
-                        : Icons.local_offer_outlined,
-                    size: 18,
-                    color: state.hasCartDiscount
-                        ? theme.colorScheme.error
-                        : null,
-                  ),
-                  label: Text(
-                    state.hasCartDiscount
-                        ? '$currency${state.cartDiscountAmount.toStringAsFixed(2)}'
-                        : context.l10n.applyCartDiscount,
-                    style: state.hasCartDiscount
-                        ? TextStyle(color: theme.colorScheme.error)
-                        : null,
-                  ),
-                )
-              : null;
-
-          if (isNarrow) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(14, 4, 14, 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  total,
-                  const SizedBox(height: 2),
-                  ...(discountBtn != null ? [discountBtn] : const <Widget>[]),
-                  const SizedBox(height: 2),
-                  FilledButton.icon(
-                    onPressed: () => _showPayment(context, state),
-                    icon: const Icon(Icons.payment, size: 18),
-                    label: Text(context.l10n.checkout(state.itemCount)),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(0, 32),
-                      textStyle: theme.textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            Row(
               children: [
-                discountBtn ?? const SizedBox.shrink(),
+                Text(
+                  context.l10n.totalAmount,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const Spacer(),
-                total,
-                const SizedBox(width: 12),
-                checkout,
+                MoneyText(
+                  value: state.total,
+                  currency: currency,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                  color: theme.colorScheme.primary,
+                ),
               ],
             ),
-          );
-        },
+            if (enableCartDiscount) ...[
+              const SizedBox(height: 4),
+              TextButton.icon(
+                onPressed: () => DiscountDialog.showCartDiscount(
+                  context,
+                  title: context.l10n.cartDiscount,
+                  currency: currency,
+                  initialType:
+                      state.cartDiscountType ?? settings.defaultDiscountType,
+                  initialValue: state.cartDiscountValue,
+                  onApply: (type, value) {
+                    context.read<SaleBloc>().add(
+                      SaleCartDiscountChanged(
+                        discountType: type,
+                        discountValue: value,
+                      ),
+                    );
+                  },
+                  onClear: state.hasCartDiscount
+                      ? () => context.read<SaleBloc>().add(
+                          const SaleCartDiscountCleared(),
+                        )
+                      : null,
+                  maxPercent: settings.maxDiscountPercent,
+                  maxAmount: settings.maxDiscountAmount,
+                  presetValues: settings.activeDiscountPreset.values,
+                  presetType: settings.activeDiscountPreset.type,
+                ),
+                icon: Icon(
+                  state.hasCartDiscount
+                      ? Icons.local_offer
+                      : Icons.local_offer_outlined,
+                  size: 18,
+                ),
+                label: Text(
+                  state.hasCartDiscount
+                      ? context.l10n.cartDiscount
+                      : context.l10n.applyCartDiscount,
+                ),
+              ),
+            ],
+            const SizedBox(height: 4),
+            FilledButton.icon(
+              onPressed: () => _showPayment(context, state),
+              icon: const Icon(Icons.payment, size: 18),
+              label: Text(context.l10n.checkout(state.itemCount)),
+              style: theme.filledButtonTheme.style?.copyWith(
+                minimumSize: const WidgetStatePropertyAll(
+                  Size(double.infinity, 44),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -217,6 +166,48 @@ class CartTotalBar extends StatelessWidget {
             child: const CheckoutPage(),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SummaryLine extends StatelessWidget {
+  const _SummaryLine({
+    required this.label,
+    required this.value,
+    required this.currency,
+    required this.theme,
+    this.valueColor,
+  });
+
+  final String label;
+  final double value;
+  final String currency;
+  final ThemeData theme;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const Spacer(),
+          MoneyText(
+            value: value,
+            currency: currency,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            color: valueColor ?? theme.colorScheme.onSurface,
+          ),
+        ],
       ),
     );
   }

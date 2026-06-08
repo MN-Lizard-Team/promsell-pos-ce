@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.7.1
+# Architecture — Promsell POS CE v0.7.2
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -21,6 +21,9 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 - [Error Handling Strategy](#error-handling-strategy)
 - [Performance & Scaling](#performance--scaling)
 - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
+  - [ADR-015: Sync-ready columns](#adr-015-sync-ready-columns-on-all-core-tables)
+  - [ADR-016: Backup encryption](#adr-016-backup-encryption-with-aes-256-gcm)
+  - [ADR-017: Settings hierarchy](#adr-017-3-level-settings-hierarchy)
 - [PlantUML Source Files](#plantuml-source-files)
 
 ---
@@ -680,6 +683,59 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 
 ---
 
+### ADR-014: ProductImageService coupling is not an architectural issue
+
+**Context:** During the Phase 4 audit (A6), `ProductImageServiceImpl` was flagged as potentially coupled to `SettingsCubit` because it reads `imageMaxWidth` and `imageQuality` settings. Investigation revealed that the service depends on `SettingsRepository` (injected via `injectable`), **not** `SettingsCubit`. This follows the existing Clean Architecture layer rule: data/services depend on domain repository interfaces, never on presentation-layer cubits.
+
+**Decision:** No code change required. The perceived coupling was a false positive. The dependency graph is correct: `ProductImageServiceImpl` → `SettingsRepository` → `SettingsLocalDatasource`.
+
+**Consequences:** No action needed. Future reviews should verify the actual dependency graph before flagging coupling concerns.
+
+---
+
+### ADR-015: Sync-ready columns on all core tables
+
+**Context:** v0.7.2 prepares for future cloud sync by adding `updatedAt`, `deletedAt`, `version`, and `deviceId` columns to all 6 core tables (`products`, `sales`, `sale_items`, `inventory_logs`, `daily_closes`, `draft_carts`).
+
+**Decision:** Add columns via schema migration v11→v12. Use `DateTime` (TEXT ISO8601 in v11, millisecondsSinceEpoch in v12). All repositories update `updatedAt` and `version` on writes. Soft deletes set `deletedAt` instead of removing rows.
+
+**Consequences:**
+- ✅ Tables are sync-ready without future schema changes
+- ✅ Immutable audit trail preserved (soft delete)
+- ⚠️ Migration complexity: v11→v12 converts DateTime format
+- ⚠️ All repository write methods must now update timestamp columns
+
+---
+
+### ADR-016: Backup encryption with AES-256-GCM
+
+**Context:** Merchants requested encryption for SQLite backup exports to protect business data if backup files are shared or stored in cloud storage.
+
+**Decision:** Implement `BackupEncryptionService` using AES-256-GCM with a key derived from a user-supplied PIN via PBKDF2 (100,000 iterations). Encryption is optional — toggle in Settings → Backup.
+
+**Consequences:**
+- ✅ Backups are unreadable without the PIN
+- ✅ No external key storage needed (PIN is user-managed)
+- ⚠️ Forgotten PIN = unrecoverable backup
+- ⚠️ Adds `encrypt` / `pointycastle` dependencies
+
+---
+
+### ADR-017: 3-level settings hierarchy
+
+**Context:** The Settings page grew from 5 tiles (v0.5.x) to 12 tiles (v0.6.x) to 20+ individual settings (v0.7.0). Flat list became unwieldy. Merchants struggled to find specific settings.
+
+**Decision:** Restructure into 3-level navigation: topic groups (General, Store, Payment, System) → sub-topics (e.g., Store → Shop Info, Stock Policy) → individual pages. Add cross-sub-topic search on root page.
+
+**Consequences:**
+- ✅ Scales to 50+ settings without cognitive overload
+- ✅ Search finds settings across any sub-topic
+- ✅ Consistent navigation pattern (back arrow always returns to parent)
+- ⚠️ More navigation depth for single-setting changes
+- ⚠️ All settings pages must follow sub-topic grouping convention
+
+---
+
 ## PlantUML Source Files
 
 Detailed diagrams are available as `.puml` files for rendering with PlantUML tools:
@@ -711,4 +767,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.7.1 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.7.2 · Architecture Document · Deep Technical Reference</sub>

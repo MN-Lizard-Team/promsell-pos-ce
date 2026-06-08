@@ -1911,6 +1911,40 @@ class $SaleItemsTable extends SaleItems
     requiredDuringInsert: true,
   );
   @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     saleId,
@@ -1921,6 +1955,10 @@ class $SaleItemsTable extends SaleItems
     discountAmount,
     vatAmount,
     subtotal,
+    updatedAt,
+    deletedAt,
+    version,
+    deviceId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1969,6 +2007,22 @@ class $SaleItemsTable extends SaleItems
         DriftSqlType.double,
         data['${effectivePrefix}subtotal'],
       )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      ),
     );
   }
 
@@ -1988,6 +2042,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
   final double discountAmount;
   final double vatAmount;
   final double subtotal;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final int version;
+  final String? deviceId;
   const SaleItemData({
     required this.id,
     required this.saleId,
@@ -1998,6 +2056,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
     required this.discountAmount,
     required this.vatAmount,
     required this.subtotal,
+    required this.updatedAt,
+    this.deletedAt,
+    required this.version,
+    this.deviceId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2011,6 +2073,14 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
     map['discount_amount'] = Variable<double>(discountAmount);
     map['vat_amount'] = Variable<double>(vatAmount);
     map['subtotal'] = Variable<double>(subtotal);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['version'] = Variable<int>(version);
+    if (!nullToAbsent || deviceId != null) {
+      map['device_id'] = Variable<String>(deviceId);
+    }
     return map;
   }
 
@@ -2025,6 +2095,14 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
       discountAmount: Value(discountAmount),
       vatAmount: Value(vatAmount),
       subtotal: Value(subtotal),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      version: Value(version),
+      deviceId: deviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceId),
     );
   }
 
@@ -2043,6 +2121,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
       discountAmount: serializer.fromJson<double>(json['discountAmount']),
       vatAmount: serializer.fromJson<double>(json['vatAmount']),
       subtotal: serializer.fromJson<double>(json['subtotal']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      version: serializer.fromJson<int>(json['version']),
+      deviceId: serializer.fromJson<String?>(json['deviceId']),
     );
   }
   @override
@@ -2058,6 +2140,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
       'discountAmount': serializer.toJson<double>(discountAmount),
       'vatAmount': serializer.toJson<double>(vatAmount),
       'subtotal': serializer.toJson<double>(subtotal),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'version': serializer.toJson<int>(version),
+      'deviceId': serializer.toJson<String?>(deviceId),
     };
   }
 
@@ -2071,6 +2157,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
     double? discountAmount,
     double? vatAmount,
     double? subtotal,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    int? version,
+    Value<String?> deviceId = const Value.absent(),
   }) => SaleItemData(
     id: id ?? this.id,
     saleId: saleId ?? this.saleId,
@@ -2081,6 +2171,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
     discountAmount: discountAmount ?? this.discountAmount,
     vatAmount: vatAmount ?? this.vatAmount,
     subtotal: subtotal ?? this.subtotal,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    version: version ?? this.version,
+    deviceId: deviceId.present ? deviceId.value : this.deviceId,
   );
   SaleItemData copyWithCompanion(SaleItemsCompanion data) {
     return SaleItemData(
@@ -2097,6 +2191,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
           : this.discountAmount,
       vatAmount: data.vatAmount.present ? data.vatAmount.value : this.vatAmount,
       subtotal: data.subtotal.present ? data.subtotal.value : this.subtotal,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      version: data.version.present ? data.version.value : this.version,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
     );
   }
 
@@ -2111,7 +2209,11 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
           ..write('qty: $qty, ')
           ..write('discountAmount: $discountAmount, ')
           ..write('vatAmount: $vatAmount, ')
-          ..write('subtotal: $subtotal')
+          ..write('subtotal: $subtotal, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version, ')
+          ..write('deviceId: $deviceId')
           ..write(')'))
         .toString();
   }
@@ -2127,6 +2229,10 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
     discountAmount,
     vatAmount,
     subtotal,
+    updatedAt,
+    deletedAt,
+    version,
+    deviceId,
   );
   @override
   bool operator ==(Object other) =>
@@ -2140,7 +2246,11 @@ class SaleItemData extends DataClass implements Insertable<SaleItemData> {
           other.qty == this.qty &&
           other.discountAmount == this.discountAmount &&
           other.vatAmount == this.vatAmount &&
-          other.subtotal == this.subtotal);
+          other.subtotal == this.subtotal &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.version == this.version &&
+          other.deviceId == this.deviceId);
 }
 
 class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
@@ -2153,6 +2263,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
   final Value<double> discountAmount;
   final Value<double> vatAmount;
   final Value<double> subtotal;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> version;
+  final Value<String?> deviceId;
   final Value<int> rowid;
   const SaleItemsCompanion({
     this.id = const Value.absent(),
@@ -2164,6 +2278,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
     this.discountAmount = const Value.absent(),
     this.vatAmount = const Value.absent(),
     this.subtotal = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.deviceId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SaleItemsCompanion.insert({
@@ -2176,6 +2294,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
     this.discountAmount = const Value.absent(),
     this.vatAmount = const Value.absent(),
     required double subtotal,
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.deviceId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        saleId = Value(saleId),
@@ -2194,6 +2316,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
     Expression<double>? discountAmount,
     Expression<double>? vatAmount,
     Expression<double>? subtotal,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? version,
+    Expression<String>? deviceId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2206,6 +2332,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
       if (discountAmount != null) 'discount_amount': discountAmount,
       if (vatAmount != null) 'vat_amount': vatAmount,
       if (subtotal != null) 'subtotal': subtotal,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (version != null) 'version': version,
+      if (deviceId != null) 'device_id': deviceId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2220,6 +2350,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
     Value<double>? discountAmount,
     Value<double>? vatAmount,
     Value<double>? subtotal,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? version,
+    Value<String?>? deviceId,
     Value<int>? rowid,
   }) {
     return SaleItemsCompanion(
@@ -2232,6 +2366,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
       discountAmount: discountAmount ?? this.discountAmount,
       vatAmount: vatAmount ?? this.vatAmount,
       subtotal: subtotal ?? this.subtotal,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      version: version ?? this.version,
+      deviceId: deviceId ?? this.deviceId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2266,6 +2404,18 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
     if (subtotal.present) {
       map['subtotal'] = Variable<double>(subtotal.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2284,6 +2434,10 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItemData> {
           ..write('discountAmount: $discountAmount, ')
           ..write('vatAmount: $vatAmount, ')
           ..write('subtotal: $subtotal, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version, ')
+          ..write('deviceId: $deviceId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2799,6 +2953,32 @@ class $InventoryLogsTable extends InventoryLogs
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     productId,
@@ -2809,6 +2989,9 @@ class $InventoryLogsTable extends InventoryLogs
     refSaleId,
     createdAt,
     deviceId,
+    updatedAt,
+    deletedAt,
+    version,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2857,6 +3040,18 @@ class $InventoryLogsTable extends InventoryLogs
         DriftSqlType.string,
         data['${effectivePrefix}device_id'],
       ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
     );
   }
 
@@ -2877,6 +3072,9 @@ class InventoryLogData extends DataClass
   final String? refSaleId;
   final DateTime createdAt;
   final String? deviceId;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final int version;
   const InventoryLogData({
     required this.id,
     required this.productId,
@@ -2887,6 +3085,9 @@ class InventoryLogData extends DataClass
     this.refSaleId,
     required this.createdAt,
     this.deviceId,
+    required this.updatedAt,
+    this.deletedAt,
+    required this.version,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2906,6 +3107,11 @@ class InventoryLogData extends DataClass
     if (!nullToAbsent || deviceId != null) {
       map['device_id'] = Variable<String>(deviceId);
     }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['version'] = Variable<int>(version);
     return map;
   }
 
@@ -2926,6 +3132,11 @@ class InventoryLogData extends DataClass
       deviceId: deviceId == null && nullToAbsent
           ? const Value.absent()
           : Value(deviceId),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      version: Value(version),
     );
   }
 
@@ -2944,6 +3155,9 @@ class InventoryLogData extends DataClass
       refSaleId: serializer.fromJson<String?>(json['refSaleId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       deviceId: serializer.fromJson<String?>(json['deviceId']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      version: serializer.fromJson<int>(json['version']),
     );
   }
   @override
@@ -2959,6 +3173,9 @@ class InventoryLogData extends DataClass
       'refSaleId': serializer.toJson<String?>(refSaleId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'deviceId': serializer.toJson<String?>(deviceId),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'version': serializer.toJson<int>(version),
     };
   }
 
@@ -2972,6 +3189,9 @@ class InventoryLogData extends DataClass
     Value<String?> refSaleId = const Value.absent(),
     DateTime? createdAt,
     Value<String?> deviceId = const Value.absent(),
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    int? version,
   }) => InventoryLogData(
     id: id ?? this.id,
     productId: productId ?? this.productId,
@@ -2982,6 +3202,9 @@ class InventoryLogData extends DataClass
     refSaleId: refSaleId.present ? refSaleId.value : this.refSaleId,
     createdAt: createdAt ?? this.createdAt,
     deviceId: deviceId.present ? deviceId.value : this.deviceId,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    version: version ?? this.version,
   );
   InventoryLogData copyWithCompanion(InventoryLogsCompanion data) {
     return InventoryLogData(
@@ -2996,6 +3219,9 @@ class InventoryLogData extends DataClass
       refSaleId: data.refSaleId.present ? data.refSaleId.value : this.refSaleId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      version: data.version.present ? data.version.value : this.version,
     );
   }
 
@@ -3010,7 +3236,10 @@ class InventoryLogData extends DataClass
           ..write('reason: $reason, ')
           ..write('refSaleId: $refSaleId, ')
           ..write('createdAt: $createdAt, ')
-          ..write('deviceId: $deviceId')
+          ..write('deviceId: $deviceId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version')
           ..write(')'))
         .toString();
   }
@@ -3026,6 +3255,9 @@ class InventoryLogData extends DataClass
     refSaleId,
     createdAt,
     deviceId,
+    updatedAt,
+    deletedAt,
+    version,
   );
   @override
   bool operator ==(Object other) =>
@@ -3039,7 +3271,10 @@ class InventoryLogData extends DataClass
           other.reason == this.reason &&
           other.refSaleId == this.refSaleId &&
           other.createdAt == this.createdAt &&
-          other.deviceId == this.deviceId);
+          other.deviceId == this.deviceId &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.version == this.version);
 }
 
 class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
@@ -3052,6 +3287,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
   final Value<String?> refSaleId;
   final Value<DateTime> createdAt;
   final Value<String?> deviceId;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> version;
   final Value<int> rowid;
   const InventoryLogsCompanion({
     this.id = const Value.absent(),
@@ -3063,6 +3301,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
     this.refSaleId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.deviceId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InventoryLogsCompanion.insert({
@@ -3075,6 +3316,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
     this.refSaleId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.deviceId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        productId = Value(productId),
@@ -3091,6 +3335,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
     Expression<String>? refSaleId,
     Expression<DateTime>? createdAt,
     Expression<String>? deviceId,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? version,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3103,6 +3350,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
       if (refSaleId != null) 'ref_sale_id': refSaleId,
       if (createdAt != null) 'created_at': createdAt,
       if (deviceId != null) 'device_id': deviceId,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (version != null) 'version': version,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3117,6 +3367,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
     Value<String?>? refSaleId,
     Value<DateTime>? createdAt,
     Value<String?>? deviceId,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? version,
     Value<int>? rowid,
   }) {
     return InventoryLogsCompanion(
@@ -3129,6 +3382,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
       refSaleId: refSaleId ?? this.refSaleId,
       createdAt: createdAt ?? this.createdAt,
       deviceId: deviceId ?? this.deviceId,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      version: version ?? this.version,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3163,6 +3419,15 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
     if (deviceId.present) {
       map['device_id'] = Variable<String>(deviceId.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3181,6 +3446,9 @@ class InventoryLogsCompanion extends UpdateCompanion<InventoryLogData> {
           ..write('refSaleId: $refSaleId, ')
           ..write('createdAt: $createdAt, ')
           ..write('deviceId: $deviceId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3219,7 +3487,30 @@ class $AppSettingsTable extends AppSettings
     defaultValue: currentDateAndTime,
   );
   @override
-  List<GeneratedColumn> get $columns => [key, value, updatedAt];
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    key,
+    value,
+    updatedAt,
+    version,
+    deviceId,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -3243,6 +3534,14 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      ),
     );
   }
 
@@ -3256,10 +3555,14 @@ class AppSettingData extends DataClass implements Insertable<AppSettingData> {
   final String key;
   final String value;
   final DateTime updatedAt;
+  final int version;
+  final String? deviceId;
   const AppSettingData({
     required this.key,
     required this.value,
     required this.updatedAt,
+    required this.version,
+    this.deviceId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3267,6 +3570,10 @@ class AppSettingData extends DataClass implements Insertable<AppSettingData> {
     map['key'] = Variable<String>(key);
     map['value'] = Variable<String>(value);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['version'] = Variable<int>(version);
+    if (!nullToAbsent || deviceId != null) {
+      map['device_id'] = Variable<String>(deviceId);
+    }
     return map;
   }
 
@@ -3275,6 +3582,10 @@ class AppSettingData extends DataClass implements Insertable<AppSettingData> {
       key: Value(key),
       value: Value(value),
       updatedAt: Value(updatedAt),
+      version: Value(version),
+      deviceId: deviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceId),
     );
   }
 
@@ -3287,6 +3598,8 @@ class AppSettingData extends DataClass implements Insertable<AppSettingData> {
       key: serializer.fromJson<String>(json['key']),
       value: serializer.fromJson<String>(json['value']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      version: serializer.fromJson<int>(json['version']),
+      deviceId: serializer.fromJson<String?>(json['deviceId']),
     );
   }
   @override
@@ -3296,20 +3609,31 @@ class AppSettingData extends DataClass implements Insertable<AppSettingData> {
       'key': serializer.toJson<String>(key),
       'value': serializer.toJson<String>(value),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'version': serializer.toJson<int>(version),
+      'deviceId': serializer.toJson<String?>(deviceId),
     };
   }
 
-  AppSettingData copyWith({String? key, String? value, DateTime? updatedAt}) =>
-      AppSettingData(
-        key: key ?? this.key,
-        value: value ?? this.value,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+  AppSettingData copyWith({
+    String? key,
+    String? value,
+    DateTime? updatedAt,
+    int? version,
+    Value<String?> deviceId = const Value.absent(),
+  }) => AppSettingData(
+    key: key ?? this.key,
+    value: value ?? this.value,
+    updatedAt: updatedAt ?? this.updatedAt,
+    version: version ?? this.version,
+    deviceId: deviceId.present ? deviceId.value : this.deviceId,
+  );
   AppSettingData copyWithCompanion(AppSettingsCompanion data) {
     return AppSettingData(
       key: data.key.present ? data.key.value : this.key,
       value: data.value.present ? data.value.value : this.value,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      version: data.version.present ? data.version.value : this.version,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
     );
   }
 
@@ -3318,37 +3642,47 @@ class AppSettingData extends DataClass implements Insertable<AppSettingData> {
     return (StringBuffer('AppSettingData(')
           ..write('key: $key, ')
           ..write('value: $value, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version, ')
+          ..write('deviceId: $deviceId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(key, value, updatedAt);
+  int get hashCode => Object.hash(key, value, updatedAt, version, deviceId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AppSettingData &&
           other.key == this.key &&
           other.value == this.value &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.version == this.version &&
+          other.deviceId == this.deviceId);
 }
 
 class AppSettingsCompanion extends UpdateCompanion<AppSettingData> {
   final Value<String> key;
   final Value<String> value;
   final Value<DateTime> updatedAt;
+  final Value<int> version;
+  final Value<String?> deviceId;
   final Value<int> rowid;
   const AppSettingsCompanion({
     this.key = const Value.absent(),
     this.value = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.deviceId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AppSettingsCompanion.insert({
     required String key,
     required String value,
     this.updatedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.deviceId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : key = Value(key),
        value = Value(value);
@@ -3356,12 +3690,16 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingData> {
     Expression<String>? key,
     Expression<String>? value,
     Expression<DateTime>? updatedAt,
+    Expression<int>? version,
+    Expression<String>? deviceId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (key != null) 'key': key,
       if (value != null) 'value': value,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (version != null) 'version': version,
+      if (deviceId != null) 'device_id': deviceId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3370,12 +3708,16 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingData> {
     Value<String>? key,
     Value<String>? value,
     Value<DateTime>? updatedAt,
+    Value<int>? version,
+    Value<String?>? deviceId,
     Value<int>? rowid,
   }) {
     return AppSettingsCompanion(
       key: key ?? this.key,
       value: value ?? this.value,
       updatedAt: updatedAt ?? this.updatedAt,
+      version: version ?? this.version,
+      deviceId: deviceId ?? this.deviceId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3392,6 +3734,12 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3404,6 +3752,8 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingData> {
           ..write('key: $key, ')
           ..write('value: $value, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version, ')
+          ..write('deviceId: $deviceId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3496,6 +3846,23 @@ class $DraftCartsTable extends DraftCarts
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     name,
@@ -3506,6 +3873,8 @@ class $DraftCartsTable extends DraftCarts
     updatedAt,
     isArchived,
     deviceId,
+    deletedAt,
+    version,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3554,6 +3923,14 @@ class $DraftCartsTable extends DraftCarts
         DriftSqlType.string,
         data['${effectivePrefix}device_id'],
       ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
     );
   }
 
@@ -3573,6 +3950,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
   final DateTime updatedAt;
   final bool isArchived;
   final String? deviceId;
+  final DateTime? deletedAt;
+  final int version;
   const DraftCartData({
     required this.id,
     this.name,
@@ -3583,6 +3962,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     required this.updatedAt,
     required this.isArchived,
     this.deviceId,
+    this.deletedAt,
+    required this.version,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3606,6 +3987,10 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     if (!nullToAbsent || deviceId != null) {
       map['device_id'] = Variable<String>(deviceId);
     }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['version'] = Variable<int>(version);
     return map;
   }
 
@@ -3626,6 +4011,10 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
       deviceId: deviceId == null && nullToAbsent
           ? const Value.absent()
           : Value(deviceId),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      version: Value(version),
     );
   }
 
@@ -3646,6 +4035,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isArchived: serializer.fromJson<bool>(json['isArchived']),
       deviceId: serializer.fromJson<String?>(json['deviceId']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      version: serializer.fromJson<int>(json['version']),
     );
   }
   @override
@@ -3661,6 +4052,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isArchived': serializer.toJson<bool>(isArchived),
       'deviceId': serializer.toJson<String?>(deviceId),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'version': serializer.toJson<int>(version),
     };
   }
 
@@ -3674,6 +4067,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     DateTime? updatedAt,
     bool? isArchived,
     Value<String?> deviceId = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+    int? version,
   }) => DraftCartData(
     id: id ?? this.id,
     name: name.present ? name.value : this.name,
@@ -3688,6 +4083,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     updatedAt: updatedAt ?? this.updatedAt,
     isArchived: isArchived ?? this.isArchived,
     deviceId: deviceId.present ? deviceId.value : this.deviceId,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    version: version ?? this.version,
   );
   DraftCartData copyWithCompanion(DraftCartsCompanion data) {
     return DraftCartData(
@@ -3706,6 +4103,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
           ? data.isArchived.value
           : this.isArchived,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      version: data.version.present ? data.version.value : this.version,
     );
   }
 
@@ -3720,7 +4119,9 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('isArchived: $isArchived, ')
-          ..write('deviceId: $deviceId')
+          ..write('deviceId: $deviceId, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version')
           ..write(')'))
         .toString();
   }
@@ -3736,6 +4137,8 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
     updatedAt,
     isArchived,
     deviceId,
+    deletedAt,
+    version,
   );
   @override
   bool operator ==(Object other) =>
@@ -3749,7 +4152,9 @@ class DraftCartData extends DataClass implements Insertable<DraftCartData> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.isArchived == this.isArchived &&
-          other.deviceId == this.deviceId);
+          other.deviceId == this.deviceId &&
+          other.deletedAt == this.deletedAt &&
+          other.version == this.version);
 }
 
 class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
@@ -3762,6 +4167,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
   final Value<DateTime> updatedAt;
   final Value<bool> isArchived;
   final Value<String?> deviceId;
+  final Value<DateTime?> deletedAt;
+  final Value<int> version;
   final Value<int> rowid;
   const DraftCartsCompanion({
     this.id = const Value.absent(),
@@ -3773,6 +4180,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     this.updatedAt = const Value.absent(),
     this.isArchived = const Value.absent(),
     this.deviceId = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DraftCartsCompanion.insert({
@@ -3785,6 +4194,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     this.updatedAt = const Value.absent(),
     this.isArchived = const Value.absent(),
     this.deviceId = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id);
   static Insertable<DraftCartData> custom({
@@ -3797,6 +4208,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     Expression<DateTime>? updatedAt,
     Expression<bool>? isArchived,
     Expression<String>? deviceId,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? version,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3809,6 +4222,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isArchived != null) 'is_archived': isArchived,
       if (deviceId != null) 'device_id': deviceId,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (version != null) 'version': version,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3823,6 +4238,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     Value<DateTime>? updatedAt,
     Value<bool>? isArchived,
     Value<String?>? deviceId,
+    Value<DateTime?>? deletedAt,
+    Value<int>? version,
     Value<int>? rowid,
   }) {
     return DraftCartsCompanion(
@@ -3835,6 +4252,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
       updatedAt: updatedAt ?? this.updatedAt,
       isArchived: isArchived ?? this.isArchived,
       deviceId: deviceId ?? this.deviceId,
+      deletedAt: deletedAt ?? this.deletedAt,
+      version: version ?? this.version,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3869,6 +4288,12 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
     if (deviceId.present) {
       map['device_id'] = Variable<String>(deviceId.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3887,6 +4312,8 @@ class DraftCartsCompanion extends UpdateCompanion<DraftCartData> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isArchived: $isArchived, ')
           ..write('deviceId: $deviceId, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3967,6 +4394,40 @@ class $DraftCartItemsTable extends DraftCartItems
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     cartId,
@@ -3976,6 +4437,10 @@ class $DraftCartItemsTable extends DraftCartItems
     qty,
     discountType,
     discountValue,
+    updatedAt,
+    deletedAt,
+    version,
+    deviceId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4020,6 +4485,22 @@ class $DraftCartItemsTable extends DraftCartItems
         DriftSqlType.double,
         data['${effectivePrefix}discount_value'],
       ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      ),
     );
   }
 
@@ -4039,6 +4520,10 @@ class DraftCartItemData extends DataClass
   final int qty;
   final String? discountType;
   final double? discountValue;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final int version;
+  final String? deviceId;
   const DraftCartItemData({
     required this.id,
     required this.cartId,
@@ -4048,6 +4533,10 @@ class DraftCartItemData extends DataClass
     required this.qty,
     this.discountType,
     this.discountValue,
+    required this.updatedAt,
+    this.deletedAt,
+    required this.version,
+    this.deviceId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4063,6 +4552,14 @@ class DraftCartItemData extends DataClass
     }
     if (!nullToAbsent || discountValue != null) {
       map['discount_value'] = Variable<double>(discountValue);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['version'] = Variable<int>(version);
+    if (!nullToAbsent || deviceId != null) {
+      map['device_id'] = Variable<String>(deviceId);
     }
     return map;
   }
@@ -4081,6 +4578,14 @@ class DraftCartItemData extends DataClass
       discountValue: discountValue == null && nullToAbsent
           ? const Value.absent()
           : Value(discountValue),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      version: Value(version),
+      deviceId: deviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceId),
     );
   }
 
@@ -4098,6 +4603,10 @@ class DraftCartItemData extends DataClass
       qty: serializer.fromJson<int>(json['qty']),
       discountType: serializer.fromJson<String?>(json['discountType']),
       discountValue: serializer.fromJson<double?>(json['discountValue']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      version: serializer.fromJson<int>(json['version']),
+      deviceId: serializer.fromJson<String?>(json['deviceId']),
     );
   }
   @override
@@ -4112,6 +4621,10 @@ class DraftCartItemData extends DataClass
       'qty': serializer.toJson<int>(qty),
       'discountType': serializer.toJson<String?>(discountType),
       'discountValue': serializer.toJson<double?>(discountValue),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'version': serializer.toJson<int>(version),
+      'deviceId': serializer.toJson<String?>(deviceId),
     };
   }
 
@@ -4124,6 +4637,10 @@ class DraftCartItemData extends DataClass
     int? qty,
     Value<String?> discountType = const Value.absent(),
     Value<double?> discountValue = const Value.absent(),
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    int? version,
+    Value<String?> deviceId = const Value.absent(),
   }) => DraftCartItemData(
     id: id ?? this.id,
     cartId: cartId ?? this.cartId,
@@ -4135,6 +4652,10 @@ class DraftCartItemData extends DataClass
     discountValue: discountValue.present
         ? discountValue.value
         : this.discountValue,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    version: version ?? this.version,
+    deviceId: deviceId.present ? deviceId.value : this.deviceId,
   );
   DraftCartItemData copyWithCompanion(DraftCartItemsCompanion data) {
     return DraftCartItemData(
@@ -4152,6 +4673,10 @@ class DraftCartItemData extends DataClass
       discountValue: data.discountValue.present
           ? data.discountValue.value
           : this.discountValue,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      version: data.version.present ? data.version.value : this.version,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
     );
   }
 
@@ -4165,7 +4690,11 @@ class DraftCartItemData extends DataClass
           ..write('price: $price, ')
           ..write('qty: $qty, ')
           ..write('discountType: $discountType, ')
-          ..write('discountValue: $discountValue')
+          ..write('discountValue: $discountValue, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version, ')
+          ..write('deviceId: $deviceId')
           ..write(')'))
         .toString();
   }
@@ -4180,6 +4709,10 @@ class DraftCartItemData extends DataClass
     qty,
     discountType,
     discountValue,
+    updatedAt,
+    deletedAt,
+    version,
+    deviceId,
   );
   @override
   bool operator ==(Object other) =>
@@ -4192,7 +4725,11 @@ class DraftCartItemData extends DataClass
           other.price == this.price &&
           other.qty == this.qty &&
           other.discountType == this.discountType &&
-          other.discountValue == this.discountValue);
+          other.discountValue == this.discountValue &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.version == this.version &&
+          other.deviceId == this.deviceId);
 }
 
 class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
@@ -4204,6 +4741,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
   final Value<int> qty;
   final Value<String?> discountType;
   final Value<double?> discountValue;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> version;
+  final Value<String?> deviceId;
   final Value<int> rowid;
   const DraftCartItemsCompanion({
     this.id = const Value.absent(),
@@ -4214,6 +4755,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
     this.qty = const Value.absent(),
     this.discountType = const Value.absent(),
     this.discountValue = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.deviceId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DraftCartItemsCompanion.insert({
@@ -4225,6 +4770,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
     required int qty,
     this.discountType = const Value.absent(),
     this.discountValue = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.deviceId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        cartId = Value(cartId),
@@ -4241,6 +4790,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
     Expression<int>? qty,
     Expression<String>? discountType,
     Expression<double>? discountValue,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? version,
+    Expression<String>? deviceId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4252,6 +4805,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
       if (qty != null) 'qty': qty,
       if (discountType != null) 'discount_type': discountType,
       if (discountValue != null) 'discount_value': discountValue,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (version != null) 'version': version,
+      if (deviceId != null) 'device_id': deviceId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4265,6 +4822,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
     Value<int>? qty,
     Value<String?>? discountType,
     Value<double?>? discountValue,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? version,
+    Value<String?>? deviceId,
     Value<int>? rowid,
   }) {
     return DraftCartItemsCompanion(
@@ -4276,6 +4837,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
       qty: qty ?? this.qty,
       discountType: discountType ?? this.discountType,
       discountValue: discountValue ?? this.discountValue,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      version: version ?? this.version,
+      deviceId: deviceId ?? this.deviceId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4307,6 +4872,18 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
     if (discountValue.present) {
       map['discount_value'] = Variable<double>(discountValue.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4324,6 +4901,10 @@ class DraftCartItemsCompanion extends UpdateCompanion<DraftCartItemData> {
           ..write('qty: $qty, ')
           ..write('discountType: $discountType, ')
           ..write('discountValue: $discountValue, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version, ')
+          ..write('deviceId: $deviceId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4476,6 +5057,32 @@ class $DailyClosesTable extends DailyCloses
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     closeDate,
@@ -4493,6 +5100,9 @@ class $DailyClosesTable extends DailyCloses
     note,
     closedAt,
     deviceId,
+    updatedAt,
+    deletedAt,
+    version,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4569,6 +5179,18 @@ class $DailyClosesTable extends DailyCloses
         DriftSqlType.string,
         data['${effectivePrefix}device_id'],
       ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
     );
   }
 
@@ -4595,6 +5217,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
   final String? note;
   final DateTime? closedAt;
   final String? deviceId;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final int version;
   const DailyCloseData({
     required this.id,
     required this.closeDate,
@@ -4612,6 +5237,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     this.note,
     this.closedAt,
     this.deviceId,
+    required this.updatedAt,
+    this.deletedAt,
+    required this.version,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4638,6 +5266,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     if (!nullToAbsent || deviceId != null) {
       map['device_id'] = Variable<String>(deviceId);
     }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['version'] = Variable<int>(version);
     return map;
   }
 
@@ -4663,6 +5296,11 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
       deviceId: deviceId == null && nullToAbsent
           ? const Value.absent()
           : Value(deviceId),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      version: Value(version),
     );
   }
 
@@ -4688,6 +5326,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
       note: serializer.fromJson<String?>(json['note']),
       closedAt: serializer.fromJson<DateTime?>(json['closedAt']),
       deviceId: serializer.fromJson<String?>(json['deviceId']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      version: serializer.fromJson<int>(json['version']),
     );
   }
   @override
@@ -4710,6 +5351,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
       'note': serializer.toJson<String?>(note),
       'closedAt': serializer.toJson<DateTime?>(closedAt),
       'deviceId': serializer.toJson<String?>(deviceId),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'version': serializer.toJson<int>(version),
     };
   }
 
@@ -4730,6 +5374,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     Value<String?> note = const Value.absent(),
     Value<DateTime?> closedAt = const Value.absent(),
     Value<String?> deviceId = const Value.absent(),
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    int? version,
   }) => DailyCloseData(
     id: id ?? this.id,
     closeDate: closeDate ?? this.closeDate,
@@ -4747,6 +5394,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     note: note.present ? note.value : this.note,
     closedAt: closedAt.present ? closedAt.value : this.closedAt,
     deviceId: deviceId.present ? deviceId.value : this.deviceId,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    version: version ?? this.version,
   );
   DailyCloseData copyWithCompanion(DailyClosesCompanion data) {
     return DailyCloseData(
@@ -4782,6 +5432,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
       note: data.note.present ? data.note.value : this.note,
       closedAt: data.closedAt.present ? data.closedAt.value : this.closedAt,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      version: data.version.present ? data.version.value : this.version,
     );
   }
 
@@ -4803,7 +5456,10 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
           ..write('discountAmount: $discountAmount, ')
           ..write('note: $note, ')
           ..write('closedAt: $closedAt, ')
-          ..write('deviceId: $deviceId')
+          ..write('deviceId: $deviceId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version')
           ..write(')'))
         .toString();
   }
@@ -4826,6 +5482,9 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
     note,
     closedAt,
     deviceId,
+    updatedAt,
+    deletedAt,
+    version,
   );
   @override
   bool operator ==(Object other) =>
@@ -4846,7 +5505,10 @@ class DailyCloseData extends DataClass implements Insertable<DailyCloseData> {
           other.discountAmount == this.discountAmount &&
           other.note == this.note &&
           other.closedAt == this.closedAt &&
-          other.deviceId == this.deviceId);
+          other.deviceId == this.deviceId &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.version == this.version);
 }
 
 class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
@@ -4866,6 +5528,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
   final Value<String?> note;
   final Value<DateTime?> closedAt;
   final Value<String?> deviceId;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> version;
   final Value<int> rowid;
   const DailyClosesCompanion({
     this.id = const Value.absent(),
@@ -4884,6 +5549,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     this.note = const Value.absent(),
     this.closedAt = const Value.absent(),
     this.deviceId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DailyClosesCompanion.insert({
@@ -4903,6 +5571,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     this.note = const Value.absent(),
     this.closedAt = const Value.absent(),
     this.deviceId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.version = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        closeDate = Value(closeDate);
@@ -4923,6 +5594,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     Expression<String>? note,
     Expression<DateTime>? closedAt,
     Expression<String>? deviceId,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? version,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4942,6 +5616,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
       if (note != null) 'note': note,
       if (closedAt != null) 'closed_at': closedAt,
       if (deviceId != null) 'device_id': deviceId,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (version != null) 'version': version,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4963,6 +5640,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     Value<String?>? note,
     Value<DateTime?>? closedAt,
     Value<String?>? deviceId,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? version,
     Value<int>? rowid,
   }) {
     return DailyClosesCompanion(
@@ -4982,6 +5662,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
       note: note ?? this.note,
       closedAt: closedAt ?? this.closedAt,
       deviceId: deviceId ?? this.deviceId,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      version: version ?? this.version,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5037,6 +5720,15 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
     if (deviceId.present) {
       map['device_id'] = Variable<String>(deviceId.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -5062,6 +5754,9 @@ class DailyClosesCompanion extends UpdateCompanion<DailyCloseData> {
           ..write('note: $note, ')
           ..write('closedAt: $closedAt, ')
           ..write('deviceId: $deviceId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('version: $version, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();

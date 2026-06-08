@@ -71,6 +71,10 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             subtotal: i.subtotal,
             discountAmount: i.discountAmount,
             vatAmount: i.vatAmount,
+            updatedAt: i.updatedAt,
+            deletedAt: i.deletedAt,
+            version: i.version,
+            deviceId: i.deviceId,
           ),
         )
         .toList(),
@@ -119,10 +123,8 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     final saleId = IdGenerator.newId();
     late SaleData saleData;
     await _db.transaction(() async {
-      // 1. Generate receipt number (atomic inside tx)
+      // Generate receipt number
       final receiptNumber = await receiptNumberService.nextReceiptNumber();
-
-      // 2. Insert sale
       await _db
           .into(_db.sales)
           .insert(
@@ -147,22 +149,19 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
         _db.sales,
       )..where((s) => s.id.equals(saleId))).getSingle();
 
-      // 3. Validate ALL stock before any writes (skip non-tracked items)
-      final productMap = <String, ProductData>{};
+      // Validate ALL stock before any writes
+      final productIds = items.map((i) => i.product.id).toSet().toList();
+      final productRows = await (_db.select(
+        _db.products,
+      )..where((p) => p.id.isIn(productIds))).get();
+      final productMap = {for (final p in productRows) p.id: p};
       for (final item in items) {
-        if (productMap.containsKey(item.product.id)) continue;
-        final product = await (_db.select(
-          _db.products,
-        )..where((p) => p.id.equals(item.product.id))).getSingleOrNull();
+        final product = productMap[item.product.id];
         if (product == null) {
           throw StateError(
             '"${item.product.name}" no longer exists and cannot be sold.',
           );
         }
-        productMap[item.product.id] = product;
-      }
-      for (final item in items) {
-        final product = productMap[item.product.id]!;
         if (!product.trackStock) continue;
         if (product.stock < item.qty) {
           throw StateError(
@@ -172,7 +171,6 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
         }
       }
 
-      // 4. Insert sale items + deduct stock (trackStock only) + log inventory
       for (final item in items) {
         final double itemVatAmount;
         if (vatMode == 'INCLUSIVE' && r > 0) {
@@ -330,10 +328,16 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
         _db.saleItems,
       )..where((t) => t.saleId.equals(saleId))).get();
 
+      final productIds = items.map((i) => i.productId).toSet().toList();
+      final productRows = productIds.isEmpty
+          ? <ProductData>[]
+          : await (_db.select(
+              _db.products,
+            )..where((p) => p.id.isIn(productIds))).get();
+      final productMap = {for (final p in productRows) p.id: p};
+
       for (final item in items) {
-        final product = await (_db.select(
-          _db.products,
-        )..where((p) => p.id.equals(item.productId))).getSingleOrNull();
+        final product = productMap[item.productId];
 
         if (product == null) {
           // Product deleted — still log reversal but skip stock restore

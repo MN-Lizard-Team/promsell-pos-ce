@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Promsell POS';
 
   @override
+  String get appTagline => 'Smart Retail';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
   String get navSale => 'Sale';
 
   @override
@@ -214,6 +220,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSalesYet => 'No sales yet';
 
   @override
+  String get noDailyClosesYet => 'No daily closes yet';
+
+  @override
   String noteLabel(String note) {
     return 'Note: $note';
   }
@@ -242,6 +251,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTitle => 'Settings';
+
+  @override
+  String get searchSettings => 'Search settings...';
+
+  @override
+  String get pressBackAgainToExit => 'Press back again to exit';
 
   @override
   String get settingsGeneral => 'General';
@@ -1001,6 +1016,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get backupActionSubtitle =>
       'Tap to record that you have backed up your data';
+
+  @override
+  String get backupEncryptionTitle => 'Backup encryption';
+
+  @override
+  String get backupEncryptionLabel => 'Encrypt backups';
+
+  @override
+  String get backupEncryptionDesc =>
+      'Protect backup files with AES-256-GCM encryption (PIN required)';
 
   @override
   String get backupInfoDescription =>

@@ -52,6 +52,7 @@ class AppSettings extends Equatable {
     this.onboardingCompleted = false,
     this.dailyCloseLock = false,
     this.lastClosedDate,
+    this.backupEncryptionEnabled = false,
   });
 
   final Locale locale;
@@ -93,6 +94,7 @@ class AppSettings extends Equatable {
   final bool onboardingCompleted;
   final bool dailyCloseLock;
   final String? lastClosedDate;
+  final bool backupEncryptionEnabled;
 
   DiscountPreset get activeDiscountPreset {
     final match = discountPresets.where((p) => p.id == activeDiscountPresetId);
@@ -139,6 +141,7 @@ class AppSettings extends Equatable {
     bool? onboardingCompleted,
     bool? dailyCloseLock,
     Object? lastClosedDate = _unset,
+    bool? backupEncryptionEnabled,
   }) {
     return AppSettings(
       locale: locale ?? this.locale,
@@ -186,6 +189,8 @@ class AppSettings extends Equatable {
       lastClosedDate: identical(lastClosedDate, _unset)
           ? this.lastClosedDate
           : lastClosedDate as String?,
+      backupEncryptionEnabled:
+          backupEncryptionEnabled ?? this.backupEncryptionEnabled,
     );
   }
 
@@ -230,5 +235,6 @@ class AppSettings extends Equatable {
     onboardingCompleted,
     dailyCloseLock,
     lastClosedDate,
+    backupEncryptionEnabled,
   ];
 }

@@ -24,6 +24,10 @@ class InventoryLogRepositoryImpl implements InventoryLogRepository {
           reason: d.reason,
           refSaleId: d.refSaleId,
           createdAt: d.createdAt,
+          deviceId: d.deviceId,
+          updatedAt: d.updatedAt,
+          deletedAt: d.deletedAt,
+          version: d.version,
         ),
       )
       .toList();

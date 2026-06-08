@@ -58,7 +58,7 @@ void main() {
         refSaleId: 's1',
         createdAt: DateTime(2025),
       );
-      expect(log.props.length, 8);
+      expect(log.props.length, 12);
     });
   });
 }

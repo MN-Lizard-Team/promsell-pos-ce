@@ -75,7 +75,8 @@ class ReceiptPreview extends StatelessWidget {
   String _formatDate(DateTime dt) {
     try {
       return DateFormat(settings.dateFormat).add_Hm().format(dt);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ReceiptPreview._formatDate fallback: $e');
       return DateFormat('dd/MM/yyyy HH:mm').format(dt);
     }
   }

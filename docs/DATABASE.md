@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.7.1
+# Database Handbook — Promsell POS CE v0.7.2
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -27,7 +27,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 6 |
+| **Schema version** | 12 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -667,9 +667,9 @@ onUpgrade: (m, from, to) async {
 },
 ```
 
-### Incremental migrations (v2 → v6)
+### Incremental migrations (v2 → v12)
 
-Schema versions 2 through 6 use incremental `addColumn` migration:
+Schema versions 2 through 12 use incremental migration:
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -686,6 +686,25 @@ onUpgrade: (m, from, to) async {
   if (from < 6) {
     await m.addColumn(products, products.imageThumbnailPath);
     await _seedR45Settings(); // imageMaxWidth, imageQuality
+  }
+  if (from < 7) {
+    await m.addColumn(sales, sales.vatAmount);
+    await m.addColumn(sales, sales.vatRate);
+  }
+  if (from < 8) {
+    // daily_closes table added
+  }
+  if (from < 9) {
+    // payment_breakdown, vat_amount, discount_amount on daily_closes
+  }
+  if (from < 10) {
+    // deviceId, devicePrefix, onboardingCompleted, dailyCloseLock, lastClosedDate, compactCartMode settings
+  }
+  if (from < 11) {
+    // sync columns v1: updatedAt, deletedAt, version, deviceId on 6 core tables (TEXT ISO8601)
+  }
+  if (from < 12) {
+    // sync columns v2: convert DateTime from TEXT ISO8601 to millisecondsSinceEpoch
   }
 },
 ```
@@ -747,16 +766,28 @@ PRAGMA wal_checkpoint(TRUNCATE);
 
 > **Important:** Also copy `promsell_pos.db-wal` and `promsell_pos.db-shm` if WAL checkpoint was not performed.
 
+### Encrypted backups (v0.7.2+)
+
+Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2 key:
+
+1. User sets a PIN in Settings → Backup → Encryption
+2. On export: `BackupEncryptionService.encrypt(plainBytes, pin)` → encrypted file
+3. On import: `BackupEncryptionService.decrypt(encryptedBytes, pin)` → restored DB
+
+> Encrypted backups have `.enc` extension. The PIN is never stored — forgotten PIN = unrecoverable backup.
+
 ### Restore
 
 1. Close the database connection
 2. Replace `promsell_pos.db` with the backup file
-3. Delete any stale `-wal` and `-shm` files
-4. Restart the app
+3. If encrypted: decrypt first using `BackupEncryptionService`
+4. Delete any stale `-wal` and `-shm` files
+5. Restart the app
 
 ### Cautions
 
-- **Version mismatch:** Restoring a pre-v2 backup on v6+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
+- **Version mismatch:** Restoring a pre-v2 backup on v12+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
+- **Encrypted backups:** Restoring an encrypted backup without the PIN is impossible.
 - **CSV export** (v0.6.0): Export sales and products data as CSV via `csv` + `share_plus`.
 
 ---
@@ -863,4 +894,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.7.1 · Schema v6 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.7.2 · Schema v12 · 9 tables · UUIDv4</sub>

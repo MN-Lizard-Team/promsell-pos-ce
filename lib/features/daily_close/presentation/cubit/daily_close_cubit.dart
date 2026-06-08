@@ -55,6 +55,7 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
         ),
       );
     } catch (e) {
+      debugPrint('DailyCloseCubit.load failed: $e');
       emit(
         state.copyWith(
           status: DailyCloseStatus.error,

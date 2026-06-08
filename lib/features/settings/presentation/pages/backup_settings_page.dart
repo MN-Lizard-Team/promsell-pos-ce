@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -32,6 +33,53 @@ class BackupSettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               _buildReminderTile(context, s, cubit, st, l10n),
+              const SizedBox(height: 24),
+              SettingsSectionCard(
+                title: l10n.backupEncryptionTitle,
+                children: [
+                  SwitchListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    secondary: Container(
+                      width: st.iconSize,
+                      height: st.iconSize,
+                      decoration: BoxDecoration(
+                        color: st.iconContainerBackground,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.enhanced_encryption_outlined,
+                        color: st.softAccent,
+                        size: 24,
+                      ),
+                    ),
+                    title: Text(
+                      l10n.backupEncryptionLabel,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.backupEncryptionDesc,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: st.mutedText,
+                        fontSize: 14,
+                      ),
+                    ),
+                    value: s.backupEncryptionEnabled,
+                    activeTrackColor: st.softAccent,
+                    onChanged: (v) {
+                      cubit.updateField(
+                        (settings) =>
+                            settings.copyWith(backupEncryptionEnabled: v),
+                      );
+                    },
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
               SettingsSectionCard(
                 title: l10n.backupActionTitle,
@@ -329,7 +377,7 @@ class _BackupStatusCard extends StatelessWidget {
   (Color, String, IconData) _statusInfo() {
     if (lastBackupAt == null || lastBackupAt!.isEmpty) {
       return (
-        Colors.orange,
+        AppColors.warning,
         l10n.backupStatusOverdue,
         Icons.warning_amber_outlined,
       );
@@ -337,26 +385,30 @@ class _BackupStatusCard extends StatelessWidget {
     final last = DateTime.tryParse(lastBackupAt!);
     if (last == null) {
       return (
-        Colors.orange,
+        AppColors.warning,
         l10n.backupStatusOverdue,
         Icons.warning_amber_outlined,
       );
     }
     final daysSince = DateTime.now().difference(last).inDays;
     if (reminderDays <= 0) {
-      return (Colors.blue, l10n.backupStatusSafe, Icons.shield_outlined);
+      return (AppColors.info, l10n.backupStatusSafe, Icons.shield_outlined);
     }
     if (daysSince > reminderDays) {
-      return (Colors.red, l10n.backupStatusOverdue, Icons.error_outline);
+      return (AppColors.error, l10n.backupStatusOverdue, Icons.error_outline);
     }
     if (daysSince > (reminderDays * 0.75).floor()) {
       return (
-        Colors.orange,
+        AppColors.warning,
         l10n.backupStatusWarning,
         Icons.watch_later_outlined,
       );
     }
-    return (Colors.green, l10n.backupStatusSafe, Icons.check_circle_outline);
+    return (
+      AppColors.success,
+      l10n.backupStatusSafe,
+      Icons.check_circle_outline,
+    );
   }
 
   String _lastBackupText() {

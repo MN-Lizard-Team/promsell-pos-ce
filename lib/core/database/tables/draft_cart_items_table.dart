@@ -12,6 +12,10 @@ class DraftCartItems extends Table {
   IntColumn get qty => integer()();
   TextColumn get discountType => text().nullable()();
   RealColumn get discountValue => real().nullable()();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  TextColumn get deviceId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

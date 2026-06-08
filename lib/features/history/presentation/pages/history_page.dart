@@ -85,7 +85,7 @@ class _HistoryView extends StatelessWidget {
           );
         },
         icon: const Icon(Icons.lock_outline),
-        label: const Text('Close Day'),
+        label: Text(context.l10n.closeDay),
       ),
       body: BlocListener<HistoryBloc, HistoryState>(
         listenWhen: (prev, curr) =>

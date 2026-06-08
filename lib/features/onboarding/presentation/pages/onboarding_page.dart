@@ -2,13 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
-import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:promsell_pos_ce/main.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -46,33 +43,26 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _finish() async {
-    final repo = sl<SettingsRepository>();
-    final current = await repo.load();
-
+    final cubit = context.read<SettingsCubit>();
+    final current = cubit.state.settings;
     final devicePrefix = _generateDevicePrefix();
 
-    final updated = current.copyWith(
-      shopName: _shopNameController.text.trim(),
-      address: _addressController.text.trim(),
-      phone: _phoneController.text.trim(),
-      locale: Locale(_locale),
-      currency: _currency,
-      dateFormat: _dateFormat,
-      vatMode: _vatMode,
-      vatRate: double.tryParse(_vatRateController.text) ?? 7.0,
-      promptpayId: _promptPayController.text.trim(),
-      onboardingCompleted: true,
-      deviceId: IdGenerator.newId(),
-      devicePrefix: devicePrefix,
+    cubit.updateField(
+      (_) => current.copyWith(
+        shopName: _shopNameController.text.trim(),
+        address: _addressController.text.trim(),
+        phone: _phoneController.text.trim(),
+        locale: Locale(_locale),
+        currency: _currency,
+        dateFormat: _dateFormat,
+        vatMode: _vatMode,
+        vatRate: double.tryParse(_vatRateController.text) ?? 7.0,
+        promptpayId: _promptPayController.text.trim(),
+        onboardingCompleted: true,
+        deviceId: IdGenerator.newId(),
+        devicePrefix: devicePrefix,
+      ),
     );
-
-    await repo.save(updated);
-
-    if (mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const PromsellApp()));
-    }
   }
 
   String _generateDevicePrefix() {
@@ -84,28 +74,22 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _skip() async {
-    final repo = sl<SettingsRepository>();
-    final current = await repo.load();
+    final cubit = context.read<SettingsCubit>();
+    final current = cubit.state.settings;
     final devicePrefix = _generateDevicePrefix();
 
-    final updated = current.copyWith(
-      locale: Locale(_locale),
-      currency: _currency,
-      dateFormat: _dateFormat,
-      vatMode: 'NONE',
-      vatRate: 7.0,
-      onboardingCompleted: true,
-      deviceId: IdGenerator.newId(),
-      devicePrefix: devicePrefix,
+    cubit.updateField(
+      (_) => current.copyWith(
+        locale: Locale(_locale),
+        currency: _currency,
+        dateFormat: _dateFormat,
+        vatMode: 'NONE',
+        vatRate: 7.0,
+        onboardingCompleted: true,
+        deviceId: IdGenerator.newId(),
+        devicePrefix: devicePrefix,
+      ),
     );
-
-    await repo.save(updated);
-
-    if (mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const PromsellApp()));
-    }
   }
 
   void _showOnboardingSettingsSheet(

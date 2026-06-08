@@ -11,6 +11,10 @@ class SaleItem extends Equatable {
     required this.subtotal,
     this.discountAmount = 0.0,
     this.vatAmount = 0.0,
+    this.updatedAt,
+    this.deletedAt,
+    this.version = 1,
+    this.deviceId,
   });
 
   final String id;
@@ -22,6 +26,10 @@ class SaleItem extends Equatable {
   final double subtotal;
   final double discountAmount;
   final double vatAmount;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  final int version;
+  final String? deviceId;
 
   @override
   List<Object?> get props => [
@@ -34,6 +42,10 @@ class SaleItem extends Equatable {
     subtotal,
     discountAmount,
     vatAmount,
+    updatedAt,
+    deletedAt,
+    version,
+    deviceId,
   ];
 }
 

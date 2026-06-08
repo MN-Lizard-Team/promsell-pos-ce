@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -38,6 +39,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     on<SaleDraftDeleted>(_onDraftDeleted);
     on<SaleDraftRenamed>(_onDraftRenamed);
     on<SaleCartRestored>(_onCartRestored);
+    on<SaleCartItemRestored>(_onCartItemRestored);
     on<SaleBulkItemsRemoved>(_onBulkItemsRemoved);
     on<SaleBulkItemDiscountsCleared>(_onBulkItemDiscountsCleared);
     on<SaleCartItemsReordered>(_onCartItemsReordered);
@@ -104,7 +106,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         activeDraftName: state.activeDraftName,
       ),
     );
-    _scheduleSave();
+    _immediateSave();
   }
 
   void _onCartRestored(SaleCartRestored event, Emitter<SaleState> emit) {
@@ -115,6 +117,23 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         cartDiscountValue: event.cartDiscountValue,
       ),
     );
+    _immediateSave();
+  }
+
+  void _onCartItemRestored(
+    SaleCartItemRestored event,
+    Emitter<SaleState> emit,
+  ) {
+    final updated = List<CartItem>.from(state.items);
+    final existing = updated.indexWhere(
+      (i) => i.product.id == event.item.product.id,
+    );
+    if (existing >= 0) {
+      updated[existing] = event.item;
+    } else {
+      updated.add(event.item);
+    }
+    emit(state.copyWith(items: updated));
     _scheduleSave();
   }
 
@@ -267,14 +286,18 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       final draftCount = await _draftRepo.countDrafts();
       final newDraftName = 'Bill #${draftCount + 1}';
       final newDraftId = await _draftRepo.createDraft(name: newDraftName);
-      emit(
-        SaleState(
-          status: SaleStatus.success,
-          lastSale: sale,
-          activeDraftId: newDraftId,
-          activeDraftName: newDraftName,
-        ),
+      final newState = SaleState(
+        status: SaleStatus.success,
+        lastSale: sale,
+        activeDraftId: newDraftId,
+        activeDraftName: newDraftName,
       );
+      emit(newState);
+      try {
+        await _draftRepo.saveDraft(newDraftId, newState, name: newDraftName);
+      } catch (e) {
+        debugPrint('SaleBloc._onConfirmed: failed to save new draft: $e');
+      }
     } catch (e) {
       emit(
         state.copyWith(status: SaleStatus.failure, errorMessage: e.toString()),
@@ -286,11 +309,30 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     final draftId = state.activeDraftId;
     if (draftId == null) return;
     _saveTimer?.cancel();
-    _saveTimer = Timer(const Duration(milliseconds: 1500), () {
+    _saveTimer = Timer(const Duration(milliseconds: 500), () async {
       if (!isClosed && state.activeDraftId == draftId) {
-        _draftRepo.saveDraft(draftId, state, name: state.activeDraftName);
+        try {
+          await _draftRepo.saveDraft(
+            draftId,
+            state,
+            name: state.activeDraftName,
+          );
+        } catch (e) {
+          debugPrint('SaleBloc._scheduleSave failed: $e');
+        }
       }
     });
+  }
+
+  Future<void> _immediateSave() async {
+    final draftId = state.activeDraftId;
+    if (draftId == null) return;
+    _saveTimer?.cancel();
+    try {
+      await _draftRepo.saveDraft(draftId, state, name: state.activeDraftName);
+    } catch (e) {
+      debugPrint('SaleBloc._immediateSave failed: $e');
+    }
   }
 
   Future<void> _onDraftInitialized(
@@ -319,7 +361,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
           ),
         );
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('SaleBloc._onDraftInitialized failed: $e');
       final id = await _draftRepo.createDraft();
       emit(state.copyWith(activeDraftId: id));
     }
@@ -338,7 +381,11 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       );
     }
     final draft = await _draftRepo.loadDraft(event.draftId);
-    if (draft == null) return;
+    if (draft == null) {
+      debugPrint('SaleBloc._onDraftSwitched: draft ${event.draftId} not found');
+      emit(state.copyWith(errorMessage: 'Draft not found'));
+      return;
+    }
     emit(
       SaleState(
         activeDraftId: draft.id,
@@ -357,7 +404,14 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   ) async {
     final count = await _draftRepo.countDrafts();
     final settings = await _settingsRepo.load();
-    if (count >= settings.maxDrafts) return;
+    if (count >= settings.maxDrafts) {
+      emit(
+        state.copyWith(
+          errorMessage: 'Max drafts (${settings.maxDrafts}) reached',
+        ),
+      );
+      return;
+    }
     if (state.activeDraftId != null) {
       await _draftRepo.saveDraft(
         state.activeDraftId!,
@@ -407,6 +461,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   @override
   Future<void> close() {
     _saveTimer?.cancel();
+    _immediateSave();
     return super.close();
   }
 }

@@ -502,7 +502,7 @@ class _ItemCard extends StatelessWidget {
   }
 }
 
-class _QtyButton extends StatelessWidget {
+class _QtyButton extends StatefulWidget {
   const _QtyButton({
     required this.icon,
     required this.onPressed,
@@ -514,18 +514,43 @@ class _QtyButton extends StatelessWidget {
   final ThemeData theme;
 
   @override
+  State<_QtyButton> createState() => _QtyButtonState();
+}
+
+class _QtyButtonState extends State<_QtyButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(16),
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        HapticFeedback.selectionClick();
+        widget.onPressed();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.85 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutBack,
         child: Container(
           width: 32,
           height: 32,
           alignment: Alignment.center,
-          child: Icon(icon, size: 18, color: theme.colorScheme.primary),
+          decoration: BoxDecoration(
+            color: _pressed
+                ? widget.theme.colorScheme.primaryContainer
+                : widget.theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.5,
+                  ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(
+            widget.icon,
+            size: 18,
+            color: widget.theme.colorScheme.primary,
+          ),
         ),
       ),
     );

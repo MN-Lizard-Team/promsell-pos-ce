@@ -121,6 +121,7 @@ When working on presentation code:
 - Prefer shared primitives from `lib/core/widgets/` before creating feature-local duplicates
 - Prefer theme tokens from `lib/core/theme/` over ad-hoc colors, radius, or padding
 - Use `colorScheme.*` (e.g., `colorScheme.primary`, `colorScheme.error`) instead of `Colors.*` — never hardcode Material colors in feature code
+- Use `AppColors` tokens from `lib/core/theme/app_colors.dart` for status/warning/success/error colors instead of `Colors.green`, `Colors.red`, etc.
 - Keep primary actions touch-friendly and reachable on compact mobile screens
 - Test constrained layouts such as bottom sheets, cart panels, and forms with the keyboard open
 - Verify light, dark, and system theme modes if colors or surfaces changed
@@ -142,7 +143,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **279 automated tests**. All must pass before submitting a PR.
+The project has **286 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests

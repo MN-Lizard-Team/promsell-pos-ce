@@ -57,8 +57,9 @@ Promsell is an **offline-first local app** with no network access by default:
 3. **App settings table** (Drift-backed) — stores non-sensitive settings (locale, theme, shop name, VAT mode, stock policy); also stores receipt sequence counter and device prefix
 4. **Atomic transactions** — sale creation, void, and stock adjustments run inside Drift DB transactions to prevent partial writes
 5. **Inventory audit trail** — all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) are logged immutably in `inventory_logs` table
-6. **PDF generation** — local only, no upload
-7. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
+6. **Backup encryption** (v0.7.2+) — SQLite exports can be encrypted with AES-256-GCM using a PIN-derived PBKDF2 key; toggle in Settings → Backup
+7. **PDF generation** — local only, no upload
+8. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
 
 ## Security changelog
 

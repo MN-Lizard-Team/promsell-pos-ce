@@ -210,7 +210,8 @@ class SaleExpansionTile extends StatelessWidget {
           cartDiscount: l.receiptCartDiscount,
         ),
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('SaleExpansionTile._printReceipt failed: $e');
       if (context.mounted) {
         AppSnackBar.error(context, context.l10n.errorOccurred);
       }
@@ -249,7 +250,8 @@ class SaleExpansionTile extends StatelessWidget {
           cartDiscount: l.receiptCartDiscount,
         ),
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('SaleExpansionTile._shareReceipt failed: $e');
       if (context.mounted) {
         AppSnackBar.error(context, context.l10n.errorOccurred);
       }

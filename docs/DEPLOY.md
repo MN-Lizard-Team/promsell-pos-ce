@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.7.1+1
+version: 0.7.2+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +121,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 258+ tests pass
+- [ ] `flutter test` — all 286+ tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -145,33 +145,32 @@ Before distributing a build with UI changes:
 3. Add items to cart and adjust quantity.
 3b. **Tap the quantity number** in cart → verify numeric input dialog opens with stock info and clamping.
 4. Long-press a cart item → enter multi-select mode → select multiple items → tap bulk delete or clear discount.
-5. With more than 5 items in cart, verify the search bar appears and filters by product name; toggle between flat list and group-by-category views.
-6. In flat list view, swipe right to delete (with undo snackbar); swipe left to increment quantity; drag the reorder handle to move items.
-7. Tap the density cycle button in the cart header → cycle through Normal → Compact → Ultra-Compact.
-8. Drag the resize handle between catalog and cart to resize the panel; use the size slider for Small/Large presets.
-9. Tap the cart icon with the item-count badge in the app bar → verify `CartReviewPage` opens with interactive cart editing; tap a product image for zoom dialog; tap a row for product detail sheet; adjust quantities and verify total updates live; tap **Back to Sale** and verify the cart reflects changes.
-10. Tap the tag icon on a cart item → apply a 10% discount — verify discount badge and updated subtotal.
-11. Tap **Apply cart discount** → apply a fixed amount — verify breakdown in full-screen `CheckoutPage` (Subtotal → discounts → Total); verify receipt preview pinch-to-zoom works.
-12. Tap the bookmarks icon → create a second draft, switch between drafts — cart content should swap; verify draft count badge (e.g. "Cart · 1/5") and draft search/sort functionality; kill and relaunch app to verify draft restore.
-13. Complete one cash sale using quick cash chips.
-14. Open History, expand the saved sale — verify receipt number; if VAT mode is INCLUSIVE or EXCLUSIVE, verify Subtotal + VAT rows appear; verify discount rows if discount was applied.
-15. Tap **Void Sale** on a sale, enter a reason, confirm — verify VOIDED badge appears and stock is restored.
-16. Open History again — voided sale shows strikethrough amount and red badge.
-17. Open Report and verify net revenue excludes voided sales; voided summary card appears.
-18. Tap **Print Receipt** or **Share Receipt** on any sale.
-19. Open Settings root page — verify gradient dashboard card with 5 summary badges (shop name, language, theme, backup status, PromptPay status); verify categories are grouped into `Store & Business`, `Payments`, `System & Data`; verify colored status chips on every tile; verify real-time search bar filters categories.
-19b. Open **General Settings** — verify gradient summary card with language, theme, and accessibility badges; tap language/theme tiles to open visual dialog pickers with icon-based option cards; verify accessibility mode toggle; verify "Reset to Defaults" tile with confirmation dialog.
-19c. Open **Shop Info** — verify live preview card showing shop name/address/phone; verify inline form with character counters and phone auto-format (`081-234-5678`); verify receipt size dropdown.
-19d. Open **PromptPay Settings** — verify gradient preview card showing configured/not-configured state with QR icon; verify PromptPay ID tile with validation dialog (phone 10 digits / citizen ID 13 digits); verify info card explaining PromptPay usage.
-19e. Open **Backup Settings** — verify gradient status card (Safe/Warning/Overdue); verify backup reminder switch + frequency picker dialog with preset chips (3/7/14/30 days); verify "Backup Now" action tile.
-19f. Open Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); switch theme/locale, and save shop info.
-20. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; delete the product and verify both image files are removed from storage.
-20b. In the Products tab, verify **category autocomplete** — type in the category field and see suggestions from existing categories; enter a new category freely.
-21. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file; tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
-22. In the Products tab, long-press a product image → verify `ImageViewerDialog` opens with pinch zoom and close button.
-23. In Settings, verify **Max drafts** input (default 30, range 5–100), **Compact cart**, and **Ultra-compact cart** toggles appear.
-24. In History tab, verify **search bar** appears — filter by receipt number, payment method, or amount.
-25. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
+5. Verify items display in single-row 3-zone layout (avatar | name+price | stepper+total). Verify discount chip appears inline with price when applied. Swipe right to delete (with undo snackbar); swipe left to increment quantity. Long-press to drag-and-reorder items.
+6. Tap the density toggle button in the cart header → cycle through Normal ↔ Ultra-Compact. Verify layout adapts (padding, avatar size, font size).
+7. Drag the resize handle between catalog and cart to resize the panel; use the size slider for Small/Large presets.
+8. Tap the cart icon with the item-count badge in the app bar → verify `CartReviewPage` opens with interactive cart editing; tap a product image for zoom dialog; tap a row for product detail sheet; adjust quantities and verify total updates live; tap **Back to Sale** and verify the cart reflects changes. Verify stepper buttons have press-scale animation and haptic feedback.
+9. Tap the tag icon on a cart item → apply a 10% discount — verify discount badge and updated subtotal.
+10. Tap **Apply cart discount** → apply a fixed amount — verify breakdown in full-screen `CheckoutPage` (Subtotal → discounts → Total); verify receipt preview pinch-to-zoom works.
+11. Tap the bookmarks icon → create a second draft, switch between drafts — cart content should swap; verify draft count badge (e.g. "Cart · 1/5") and draft search/sort functionality; kill and relaunch app to verify draft restore.
+12. Complete one cash sale using quick cash chips.
+13. Open History, expand the saved sale — verify receipt number; if VAT mode is INCLUSIVE or EXCLUSIVE, verify Subtotal + VAT rows appear; verify discount rows if discount was applied.
+14. Tap **Void Sale** on a sale, enter a reason, confirm — verify VOIDED badge appears and stock is restored.
+15. Open History again — voided sale shows strikethrough amount and red badge.
+16. Open Report and verify net revenue excludes voided sales; voided summary card appears.
+17. Tap **Print Receipt** or **Share Receipt** on any sale.
+18. Open Settings root page — verify 3-level hierarchy: topic groups (General, Store, Payment, System) → sub-topics → individual pages. Verify cross-sub-topic search bar filters all settings. Verify gradient dashboard card with 5 summary badges (shop name, language, theme, backup status, PromptPay status); verify colored status chips on every tile.
+18b. Open **General Settings** — verify gradient summary card with language, theme, and accessibility badges; tap language/theme tiles to open visual dialog pickers with icon-based option cards; verify accessibility mode toggle; verify "Reset to Defaults" tile with confirmation dialog.
+18c. Open **Shop Info** — verify live preview card showing shop name/address/phone; verify inline form with character counters and phone auto-format (`081-234-5678`); verify receipt size dropdown.
+18d. Open **PromptPay Settings** — verify gradient preview card showing configured/not-configured state with QR icon; verify PromptPay ID tile with validation dialog (phone 10 digits / citizen ID 13 digits); verify info card explaining PromptPay usage.
+18e. Open **Backup Settings** — verify gradient status card (Safe/Warning/Overdue); verify backup reminder switch + frequency picker dialog with preset chips (3/7/14/30 days); verify "Backup Now" action tile; verify **Encryption** toggle and PIN setup dialog.
+18f. Open Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); switch theme/locale, and save shop info.
+19. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; delete the product and verify both image files are removed from storage.
+19b. In the Products tab, verify **category autocomplete** — type in the category field and see suggestions from existing categories; enter a new category freely.
+20. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file (or `.db.enc` if encryption is enabled); tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
+21. In the Products tab, long-press a product image → verify `ImageViewerDialog` opens with pinch zoom and close button.
+22. In Settings, verify **Max drafts** input (default 30, range 5–100), **Compact cart**, and **Ultra-compact cart** toggles appear.
+23. In History tab, verify **search bar** appears — filter by receipt number, payment method, or amount.
+24. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
 
 ---
 

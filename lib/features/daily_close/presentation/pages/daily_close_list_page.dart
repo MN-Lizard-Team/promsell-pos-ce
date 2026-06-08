@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_list.dart';
@@ -21,11 +22,19 @@ class DailyCloseListPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text(context.l10n.dailyCloseLoadError(snapshot.error.toString())));
+            return AppEmptyState(
+              icon: Icons.error_outline,
+              title: context.l10n.dailyCloseLoadError(
+                snapshot.error.toString(),
+              ),
+            );
           }
           final list = snapshot.data ?? [];
           if (list.isEmpty) {
-            return Center(child: Text(context.l10n.noSalesYet));
+            return AppEmptyState(
+              icon: Icons.lock_clock_outlined,
+              title: context.l10n.noDailyClosesYet,
+            );
           }
           return ListView.builder(
             itemCount: list.length,

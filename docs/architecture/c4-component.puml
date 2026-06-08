@@ -1,7 +1,7 @@
 @startuml C4_Component
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Promsell POS CE — Component Diagram (Sale Feature) v0.5.0
+title Promsell POS CE — Component Diagram (Sale Feature) v0.7.2
 
 Container_Boundary(sale_feature, "Sale Feature") {
     Component(sale_page, "SalePage", "Flutter Widget", "Product catalog + cart + discount dialog + drafts sheet")
@@ -19,7 +19,7 @@ Container_Boundary(sale_feature, "Sale Feature") {
     Component(draft_ds, "DraftCartLocalDatasource", "Drift DAO", "Upsert / load draft_carts + draft_cart_items")
 }
 
-ContainerDb(db, "SQLite", "Drift", "sales + sale_items + inventory_logs + app_settings + draft_carts + draft_cart_items")
+ContainerDb(db, "SQLite", "Drift", "sales + sale_items + inventory_logs + app_settings + draft_carts + draft_cart_items + daily_closes")
 
 Rel(sale_page, sale_bloc, "add events (cart, discount, draft)")
 Rel(payment_sheet, sale_bloc, "SaleConfirmed (with discount params)")

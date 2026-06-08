@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 
 class DbHealthPage extends StatefulWidget {
   const DbHealthPage({super.key});
@@ -120,7 +121,10 @@ class _DbHealthPageState extends State<DbHealthPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-          ? Center(child: Text(context.l10n.dbHealthError(_error!)))
+          ? AppEmptyState(
+              icon: Icons.error_outline,
+              title: context.l10n.dbHealthError(_error!),
+            )
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [

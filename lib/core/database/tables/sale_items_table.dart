@@ -14,6 +14,10 @@ class SaleItems extends Table {
   RealColumn get discountAmount => real().withDefault(const Constant(0))();
   RealColumn get vatAmount => real().withDefault(const Constant(0))();
   RealColumn get subtotal => real()();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  IntColumn get version => integer().withDefault(const Constant(1))();
+  TextColumn get deviceId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

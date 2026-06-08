@@ -53,6 +53,13 @@ class SaleCartRestored extends SaleEvent {
   List<Object?> get props => [items, cartDiscountType, cartDiscountValue];
 }
 
+class SaleCartItemRestored extends SaleEvent {
+  const SaleCartItemRestored(this.item);
+  final CartItem item;
+  @override
+  List<Object?> get props => [item];
+}
+
 class SaleConfirmed extends SaleEvent {
   const SaleConfirmed({
     required this.paymentMethod,

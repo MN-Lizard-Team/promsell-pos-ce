@@ -38,13 +38,13 @@ void main() {
       expect(find.byType(ListView), findsOneWidget);
     });
 
-    testWidgets('renders at least 6 category tiles', (tester) async {
+    testWidgets('renders 4 topic group tiles', (tester) async {
       await tester.pumpApp(
         const SettingsPage(),
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(SettingsCategoryTile), findsAtLeastNWidgets(6));
+      expect(find.byType(SettingsCategoryTile), findsNWidgets(4));
     });
 
     testWidgets('has no inline text fields or save button', (tester) async {

@@ -8,6 +8,9 @@ import 'package:promsell_pos_ce/features/product/presentation/pages/product_list
 import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page_redesign.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:flutter/services.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/app_splash_wrapper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
@@ -18,13 +21,11 @@ void main() async {
   configureDependencies();
   final settingsCubit = sl<SettingsCubit>();
   await settingsCubit.load();
-  final onboardingCompleted = settingsCubit.state.settings.onboardingCompleted;
-  runApp(PromsellApp(showOnboarding: !onboardingCompleted));
+  runApp(const PromsellApp());
 }
 
 class PromsellApp extends StatelessWidget {
-  const PromsellApp({super.key, this.showOnboarding = false});
-  final bool showOnboarding;
+  const PromsellApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +34,11 @@ class PromsellApp extends StatelessWidget {
       child: BlocBuilder<SettingsCubit, SettingsState>(
         buildWhen: (prev, curr) =>
             prev.settings.locale != curr.settings.locale ||
-            prev.settings.themeMode != curr.settings.themeMode,
+            prev.settings.themeMode != curr.settings.themeMode ||
+            prev.settings.onboardingCompleted !=
+                curr.settings.onboardingCompleted,
         builder: (ctx, state) {
+          final showOnboarding = !state.settings.onboardingCompleted;
           return MaterialApp(
             title: 'Promsell POS',
             debugShowCheckedModeBanner: false,
@@ -49,7 +53,11 @@ class PromsellApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: showOnboarding ? const OnboardingPage() : const _MainShell(),
+            home: AppSplashWrapper(
+              child: showOnboarding
+                  ? const OnboardingPage()
+                  : const _MainShell(),
+            ),
           );
         },
       ),
@@ -66,6 +74,7 @@ class _MainShell extends StatefulWidget {
 
 class _MainShellState extends State<_MainShell> {
   int _index = 0;
+  DateTime? _lastBackPress;
 
   /// Lazy-loaded tabs: only the active tab is built; previously visited
   /// tabs are kept alive so their state (scroll position, BLoC, etc.) is
@@ -84,50 +93,64 @@ class _MainShellState extends State<_MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: [
-          for (int i = 0; i < _pageBuilders.length; i++)
-            i == _index || _cachedPages.containsKey(i)
-                ? _pageFor(i)
-                : const SizedBox.shrink(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) {
-          if (i != _index) {
-            setState(() => _index = i);
-          }
-        },
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.point_of_sale_outlined),
-            selectedIcon: const Icon(Icons.point_of_sale),
-            label: context.l10n.navSale,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.inventory_2_outlined),
-            selectedIcon: const Icon(Icons.inventory_2),
-            label: context.l10n.navProducts,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.receipt_long_outlined),
-            selectedIcon: const Icon(Icons.receipt_long),
-            label: context.l10n.navHistory,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.bar_chart_outlined),
-            selectedIcon: const Icon(Icons.bar_chart),
-            label: context.l10n.navReport,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
-            label: context.l10n.navSettings,
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        final now = DateTime.now();
+        if (_lastBackPress != null &&
+            now.difference(_lastBackPress!) < const Duration(seconds: 2)) {
+          SystemNavigator.pop();
+        } else {
+          _lastBackPress = now;
+          AppSnackBar.info(context, context.l10n.pressBackAgainToExit);
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _index,
+          children: [
+            for (int i = 0; i < _pageBuilders.length; i++)
+              i == _index || _cachedPages.containsKey(i)
+                  ? _pageFor(i)
+                  : const SizedBox.shrink(),
+          ],
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: (i) {
+            if (i != _index) {
+              setState(() => _index = i);
+            }
+          },
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.point_of_sale_outlined),
+              selectedIcon: const Icon(Icons.point_of_sale),
+              label: context.l10n.navSale,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.inventory_2_outlined),
+              selectedIcon: const Icon(Icons.inventory_2),
+              label: context.l10n.navProducts,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.receipt_long_outlined),
+              selectedIcon: const Icon(Icons.receipt_long),
+              label: context.l10n.navHistory,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.bar_chart_outlined),
+              selectedIcon: const Icon(Icons.bar_chart),
+              label: context.l10n.navReport,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: context.l10n.navSettings,
+            ),
+          ],
+        ),
       ),
     );
   }

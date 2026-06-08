@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_av
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_qty_stepper.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/discount_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -44,16 +45,28 @@ class CartItemRow extends StatelessWidget {
         item.product.trackStock &&
         !allowOversell &&
         item.qty >= item.product.stock;
+    final hasDiscount = item.discountAmount > 0;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+    final pad = ultraCompact ? 6.0 : (compact ? 8.0 : 12.0);
+    final avatarSize = ultraCompact ? 28.0 : (compact ? 32.0 : 40.0);
+    final nameStyle = ultraCompact
+        ? theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700)
+        : theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700);
+    final subtitleStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.25),
+        ),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         onTap: isSelecting
             ? onTap
             : (enableItemDiscount
@@ -86,200 +99,125 @@ class CartItemRow extends StatelessWidget {
                   : null),
         onLongPress: isSelecting ? null : onLongPress,
         child: Padding(
-          padding: ultraCompact
-              ? const EdgeInsets.fromLTRB(8, 4, 6, 4)
-              : compact
-              ? const EdgeInsets.fromLTRB(10, 6, 8, 6)
-              : const EdgeInsets.fromLTRB(12, 10, 10, 10),
+          padding: EdgeInsets.all(pad),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Zone A: Product info
               if (isSelecting) ...[
-                Checkbox(
-                  value: isSelected,
-                  onChanged: (_) => onTap?.call(),
-                  shape: const CircleBorder(),
-                ),
-                const SizedBox(width: 4),
+                Checkbox(value: isSelected, onChanged: (_) => onTap?.call()),
+                const SizedBox(width: 8),
               ],
               ProductAvatar(
                 imagePath: item.product.imagePath,
                 imageThumbnailPath: item.product.imageThumbnailPath,
                 imageUrl: item.product.imageUrl,
-                size: ultraCompact ? 28 : (compact ? 32 : 44),
+                size: avatarSize,
               ),
-              SizedBox(width: ultraCompact ? 6 : (compact ? 8 : 12)),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       item.product.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          (ultraCompact
-                                  ? theme.textTheme.labelSmall
-                                  : compact
-                                  ? theme.textTheme.bodySmall
-                                  : theme.textTheme.bodyMedium)
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                      style: nameStyle,
                     ),
                     if (!ultraCompact) ...[
-                      SizedBox(height: compact ? 0 : 2),
-                      Row(
-                        children: [
-                          MoneyText(
-                            value: item.product.price,
-                            currency: currency,
-                            style: compact
-                                ? theme.textTheme.labelSmall
-                                : theme.textTheme.bodySmall,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          if (item.discountAmount > 0) ...[
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.errorContainer,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  '-$currency${item.discountAmount.toStringAsFixed(2)}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onErrorContainer,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                      const SizedBox(height: 2),
+                      Text(
+                        '$currency${item.product.price.toStringAsFixed(2)} x ${item.qty}',
+                        style: subtitleStyle,
                       ),
-                    ] else if (item.discountAmount > 0)
-                      Container(
-                        margin: const EdgeInsets.only(top: 2),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '-$currency${item.discountAmount.toStringAsFixed(2)}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onErrorContainer,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ),
+                    ],
                   ],
                 ),
               ),
-              Row(
+              const SizedBox(width: 8),
+              // Zone B: Stepper
+              CartQtyStepper(
+                qty: item.qty,
+                onDecrement: () {
+                  if (item.qty == 1) {
+                    _confirmRemove(context, item, allowOversell);
+                  } else {
+                    context.read<SaleBloc>().add(
+                      SaleItemQtyChanged(
+                        productId: item.product.id,
+                        qty: item.qty - 1,
+                        allowOversell: allowOversell,
+                      ),
+                    );
+                  }
+                },
+                onIncrement: atStockLimit
+                    ? () {}
+                    : () => context.read<SaleBloc>().add(
+                        SaleItemQtyChanged(
+                          productId: item.product.id,
+                          qty: item.qty + 1,
+                          allowOversell: allowOversell,
+                        ),
+                      ),
+                onQtyTap: () => _showQtyDialog(
+                  context,
+                  item: item,
+                  allowOversell: allowOversell,
+                  atStockLimit: atStockLimit,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Zone C: Price
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _QtyButton(
-                    icon: Icons.remove,
-                    onPressed: () {
-                      if (item.qty == 1) {
-                        _confirmRemove(context, item, allowOversell);
-                      } else {
-                        context.read<SaleBloc>().add(
-                          SaleItemQtyChanged(
-                            productId: item.product.id,
-                            qty: item.qty - 1,
-                            allowOversell: allowOversell,
+                  if (hasDiscount)
+                    Text(
+                      '$currency${(item.product.price * item.qty).toStringAsFixed(2)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (hasDiscount) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
                           ),
-                        );
-                      }
-                    },
-                  ),
-                  GestureDetector(
-                    onTap: () => _showQtyDialog(
-                      context,
-                      item: item,
-                      allowOversell: allowOversell,
-                      atStockLimit: atStockLimit,
-                    ),
-                    child: Container(
-                      constraints: BoxConstraints(
-                        minWidth: ultraCompact ? 24 : 28,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${item.qty}',
-                        style:
-                            (ultraCompact
-                                    ? theme.textTheme.bodySmall
-                                    : compact
-                                    ? theme.textTheme.bodyMedium
-                                    : theme.textTheme.titleMedium)
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                  Tooltip(
-                    message: atStockLimit ? context.l10n.atStockLimit : '',
-                    child: _QtyButton(
-                      icon: Icons.add,
-                      onPressed: atStockLimit
-                          ? null
-                          : () => context.read<SaleBloc>().add(
-                              SaleItemQtyChanged(
-                                productId: item.product.id,
-                                qty: item.qty + 1,
-                                allowOversell: allowOversell,
-                              ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '-$currency${item.discountAmount.toStringAsFixed(2)}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onErrorContainer,
+                              fontWeight: FontWeight.w700,
                             ),
-                    ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      MoneyText(
+                        value: item.subtotal,
+                        currency: currency,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                        color: theme.colorScheme.primary,
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(width: 10),
-              SizedBox(
-                width: ultraCompact ? 56 : (compact ? 68 : 84),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: MoneyText(
-                    value: item.subtotal,
-                    currency: currency,
-                    textAlign: TextAlign.right,
-                    style:
-                        (ultraCompact
-                                ? theme.textTheme.labelSmall
-                                : compact
-                                ? theme.textTheme.bodySmall
-                                : theme.textTheme.bodyMedium)
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              if (dragHandleIndex != null) ...[
-                const SizedBox(width: 6),
-                Tooltip(
-                  message: context.l10n.reorderItem,
-                  child: ReorderableDragStartListener(
-                    index: dragHandleIndex!,
-                    child: Icon(
-                      Icons.drag_indicator,
-                      size: 20,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -380,43 +318,6 @@ class CartItemRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _QtyButton extends StatelessWidget {
-  const _QtyButton({required this.icon, this.onPressed});
-
-  final IconData icon;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onPressed,
-        focusColor: theme.colorScheme.primary.withValues(alpha: 0.12),
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: onPressed == null
-                ? null
-                : theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: onPressed == null
-                ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4)
-                : theme.colorScheme.primary,
-          ),
-        ),
       ),
     );
   }

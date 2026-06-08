@@ -144,8 +144,8 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 1. Use the search bar or category chips to narrow the product catalog
 2. Tap any product card to add it to the cart
 3. Adjust quantity with `+` / `-` controls, or **tap the quantity number** to open a numeric input dialog with stock info and clamping; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
-4. **Cart search & grouping** — When the cart has more than 5 items, a search bar appears to filter by product name. Use the view toggle to switch between **flat list** and **group-by-category** views. In flat list, swipe right to delete (with undo), swipe left to increment quantity, and drag the handle to reorder items
-5. **Compact modes** — Tap the density cycle button in the cart header to switch between Normal → Compact → Ultra-Compact layouts
+4. **Cart layout** — Items display in a single-row 3-zone layout (product info | stepper | price). Swipe right to delete (with undo), swipe left to increment quantity, and long-press to drag-and-reorder items. Discount chips appear inline with the price
+5. **Compact modes** — Tap the density toggle button in the cart header to switch between Normal ↔ Ultra-Compact layouts
 6. **Resizable panel** — Drag the handle between the catalog and cart to resize the panel, or use the size slider in the cart header for Small/Large presets
 7. **Apply discounts** (optional):
    - Tap the 🏷️ tag icon on any cart item → choose **%** or **฿**, enter value, tap Apply
@@ -196,7 +196,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 ### Settings tab
 
-The Settings root page shows a **dashboard card** at the top with 5 at-a-glance badges (shop name, language, theme, backup status, PromptPay status). Categories are grouped into three sections: **Store & Business**, **Payments**, and **System & Data**. Each category tile displays a colored **status chip** showing its current state. A **search bar** filters categories by title or subtitle in real time. See [Settings](#settings) below.
+The Settings root page uses a **3-level hierarchy**: topic groups (General, Store, Payment, System) → sub-topics → individual pages. A **search bar** at the top filters settings across all sub-topics in real time. A **dashboard card** shows 5 at-a-glance badges (shop name, language, theme, backup status, PromptPay status). Each category tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
 
 ---
 
@@ -207,9 +207,9 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 ### Root page
 
 - **Dashboard card** — Gradient card at the top showing current shop name, language, theme, backup status (Safe/Warning/Overdue), and PromptPay status (Active/Not set)
-- **Grouped sections** — Categories organized into `Store & Business`, `Payments`, and `System & Data`
+- **Topic groups** — General, Store, Payment, System — each expands to sub-topics → individual pages
 - **Status chips** — Each tile shows a colored badge: Complete/Incomplete, Active/Not set, Safe/Warning/Overdue, or the current value (language, currency, receipt size)
-- **Search** — Real-time filtering by title or subtitle
+- **Search** — Cross-sub-topic real-time filtering by title or subtitle across all settings pages
 
 ### General Settings
 
@@ -263,8 +263,9 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 
 - **Status card** — Gradient card showing backup status (Safe/Warning/Overdue) with last backup date
 - **Backup reminder** — Switch to enable/disable; tap to open frequency picker dialog with preset chips (3/7/14/30 days) or custom input
+- **Encryption** (v0.7.2+) — Toggle to enable AES-256-GCM encryption with PIN-derived PBKDF2 key; PIN is never stored — forgotten PIN = unrecoverable backup
 - **Backup Now** — Manual backup trigger action tile
-- **Export/Restore** — Export database, sales CSV, products CSV; restore from backup file
+- **Export/Restore** — Export database (`.db` or `.db.enc` if encrypted), sales CSV, products CSV; restore from backup file
 
 ### Image Settings
 
@@ -395,7 +396,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **6** (v0.7.1). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **12** (v0.7.2). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 

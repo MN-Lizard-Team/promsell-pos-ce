@@ -17,6 +17,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.2] - 2026-06-08
+
+Data resilience and cart UX — sync columns, backup encryption, settings hierarchy, and button animations
+
+### Highlights
+
+- **Sync Columns** — Schema v11→v12; all 6 tables carry `updatedAt`, `deletedAt`, `version`, `deviceId`.
+- **Backup Encryption** — AES-256-GCM with PIN-derived PBKDF2 key; toggle in Settings → Backup.
+- **Crash Recovery** — Immediate draft save on critical events; debounce 1500ms → 500ms.
+- **Cart UX Polish** — Full-screen drag, pinned summary, larger touch targets, ultra-compact items, Normal↔Ultra toggle.
+- **Settings Hierarchy** — 3-level navigation: topic groups → sub-topics → individual pages + cross-sub-topic search.
+
+### Added
+
+- `BackupEncryptionService` (AES-256-GCM, PBKDF2) + setting + UI toggle.
+- `AppTextDialog` reusable widget with auto-managed `TextEditingController`.
+- Sync columns on `SaleItem`, `DailyClose`, `InventoryLog`, `DraftCart` + schema v11→v12 migrations.
+- `AppSplashScreen` + `AppSplashWrapper` animated loading with shimmer skeletons.
+- 3-level Settings hierarchy (Root → SubTopic → Page) with flattened search.
+- `PopScope` double-tap back-to-exit on `_MainShell`.
+- `searchSettings`, `appTagline`, `loading` l10n keys.
+
+### Changed
+
+- `SaleBloc` — `_immediateSave()` on cart clear/restore/close; debounce 500ms.
+- `SaleBloc._scheduleSave` / `_immediateSave` — `await` + `try-catch` + `debugPrint` (was fire-and-forget).
+- Settings hierarchy — Flat 12 tiles → 3-level groups (General, Store, Payment, System).
+- Onboarding `_skip()`/`_finish()` — Uses `SettingsCubit.updateField()` instead of direct `repo.save()`.
+- `CartBottomSheet` — `CustomScrollView` → `Column` + `ListView.builder` with sheet `scrollController`; drag-to-expand now works.
+- `CartBottomSheet` summary — Moved out of scroll into pinned bottom `Container` with `bottomInset` padding.
+- `CartItemRow` redesign — Single-row 3-zone layout (info | stepper | price), `surfaceContainerLow` card, inline discount chip, removed top-right delete button & drag handle.
+- `CartQtyStepper` — Height 48→36px, button 32×32px, font titleMedium, tighter container.
+- `CartPanel` — Removed search/filter system (search field, query state, filter method).
+- CartHeader toggle — `cubit.update()` → `cubit.updateField()`; cycles Normal↔Ultra only.
+- `_CompactCartFab` — Added `onLongPress` to exit compact mode; bounce animation on count change, badge pulse, total cross-fade, press scale.
+- `CartQtyStepper` — `_StepperButton`: press scale animation (0.85×), haptic feedback, `primaryContainer` background.
+- `CartBottomSheet` — Background `surface`; summary background `surface` + shadow (matches `CartTotalBar`); discount button `TextButton.icon` (matches normal cart); checkout haptic; delete `IconButton.filledTonal` with `errorContainer`.
+- `CheckoutBody` confirm — haptic feedback on press.
+- `CartReviewPage._QtyButton` — press scale animation + haptic.
+- Theme migration — hardcoded `Colors.xxx` → `AppColors` tokens in Settings module (5 files).
+- All list pages use `AppEmptyState` consistently.
+
+### Fixed
+
+- N+1 queries → batch `IN` in `listDrafts`, `insertSaleWithItems`, `voidSale`.
+- Dialog `TextEditingController` disposal crash — reverted `.whenComplete(() => ctrl.dispose())` (17 files).
+- Silent failures → `debugPrint` in `HistoryBloc`, `DailyCloseCubit`, `AppDatabase`, `ReportCubit`, etc.
+- `DailyCloseRepositoryImpl._toData` — `DateTime?` fallback for `updatedAt`.
+- Unsafe parse crash → `double.tryParse`/`int.tryParse` in `ProductFormPage` and `AdjustStockDialog`.
+- `DraftCart` getters — manual `double.parse` → `MoneyUtils.round()`.
+- `CartBottomSheet` checkout — `ProviderNotFoundException` via `BlocProvider.value` wrapping.
+- Schema v12 — v11 added DateTime as TEXT ISO8601; v12 converts to millisecondsSinceEpoch via `strftime('%s') * 1000`.
+- Locale change — Pops back to `SettingsRootPage` to prevent stale language on sub-pages.
+
+### Tests
+
+- `BackupEncryptionService` — 7 tests (encrypt, decrypt, verify, error cases).
+
+`flutter analyze` → **0 issues** · `flutter test` → **286/286 passing**
+
+---
+
 ## [0.7.1] - 2026-06-05
 
 Business operations — daily close, onboarding, DB health, and compact POS layout
@@ -1037,7 +1099,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.2...v0.6.3

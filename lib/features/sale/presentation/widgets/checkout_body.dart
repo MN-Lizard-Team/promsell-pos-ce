@@ -346,7 +346,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         FilledButton.icon(
                           onPressed: isProcessing || !canConfirm
                               ? null
-                              : _confirm,
+                              : () {
+                                  HapticFeedback.mediumImpact();
+                                  _confirm();
+                                },
                           icon: isProcessing
                               ? const SizedBox(
                                   height: 18,

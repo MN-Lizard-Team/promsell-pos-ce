@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_category_tile.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/general_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/shop_info_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/sales_settings_page.dart';
@@ -20,6 +20,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_sett
 import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_list_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/db_health_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/promptpay_settings_page.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_sub_topic_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -127,20 +128,20 @@ class _SettingsRootViewState extends State<_SettingsRootView>
       return (label: l10n.backupOff, color: context.settingsTheme.mutedText);
     }
     if (s.lastBackupAt == null) {
-      return (label: l10n.backupStatusOverdue, color: Colors.red);
+      return (label: l10n.backupStatusOverdue, color: AppColors.error);
     }
     final last = DateTime.tryParse(s.lastBackupAt!);
     if (last == null) {
-      return (label: l10n.backupStatusOverdue, color: Colors.red);
+      return (label: l10n.backupStatusOverdue, color: AppColors.error);
     }
     final days = DateTime.now().difference(last).inDays;
     if (days <= s.backupReminderDays) {
-      return (label: l10n.backupStatusSafe, color: Colors.green);
+      return (label: l10n.backupStatusSafe, color: AppColors.success);
     }
     if (days <= s.backupReminderDays * 2) {
-      return (label: l10n.backupStatusWarning, color: Colors.orange);
+      return (label: l10n.backupStatusWarning, color: AppColors.warning);
     }
-    return (label: l10n.backupStatusOverdue, color: Colors.red);
+    return (label: l10n.backupStatusOverdue, color: AppColors.error);
   }
 
   void _push(BuildContext context, Widget page) {
@@ -168,15 +169,40 @@ class _SettingsRootViewState extends State<_SettingsRootView>
     final st = context.settingsTheme;
     final s = widget.settings;
 
-    final storeBusiness = _storeBusinessItems(context, s, st, l10n);
-    final payments = _paymentsItems(context, s, st, l10n);
-    final system = _systemItems(context, s, st, l10n);
-    final all = [...storeBusiness, ...payments, ...system];
+    final topics = _topicGroups(context, s, st, l10n);
 
-    final filtered = _query.isEmpty
-        ? all
-        : all.where((c) {
+    final generalSubs = _generalSubTopics(context, s, st, l10n);
+    final storeSubs = _storeSubTopics(context, s, st, l10n);
+    final paymentSubs = _paymentSubTopics(context, s, st, l10n);
+    final systemSubs = _systemSubTopics(context, s, st, l10n);
+
+    final allSubTopics = [
+      ...generalSubs.map(
+        (e) => _SubTopicWithGroup(sub: e, group: l10n.settingsGeneral),
+      ),
+      ...storeSubs.map(
+        (e) => _SubTopicWithGroup(sub: e, group: l10n.settingsStoreBusiness),
+      ),
+      ...paymentSubs.map(
+        (e) => _SubTopicWithGroup(sub: e, group: l10n.settingsPayments),
+      ),
+      ...systemSubs.map(
+        (e) => _SubTopicWithGroup(sub: e, group: l10n.settingsSystemData),
+      ),
+    ];
+
+    final filteredTopics = _query.isEmpty
+        ? topics
+        : topics.where((c) {
             final text = '${c.title} ${c.subtitle ?? ''}'.toLowerCase();
+            return text.contains(_query);
+          }).toList();
+
+    final filteredSubs = _query.isEmpty
+        ? <_SubTopicWithGroup>[]
+        : allSubTopics.where((e) {
+            final text = '${e.sub.title} ${e.sub.subtitle ?? ''} ${e.group}'
+                .toLowerCase();
             return text.contains(_query);
           }).toList();
 
@@ -190,7 +216,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
                 focusNode: _searchFocus,
                 autofocus: true,
                 decoration: InputDecoration(
-                  hintText: 'Search settings...',
+                  hintText: l10n.searchSettings,
                   border: InputBorder.none,
                   hintStyle: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -248,28 +274,24 @@ class _SettingsRootViewState extends State<_SettingsRootView>
             ),
             const SizedBox(height: 24),
           ],
-          if (showGrouped) ...[
-            if (storeBusiness.isNotEmpty)
-              SettingsSectionCard(
-                title: l10n.settingsStoreBusiness,
-                children: storeBusiness.map((c) => _animatedTile(c)).toList(),
-              ),
-            if (storeBusiness.isNotEmpty) const SizedBox(height: 24),
-            if (payments.isNotEmpty)
-              SettingsSectionCard(
-                title: l10n.settingsPayments,
-                children: payments.map((c) => _animatedTile(c)).toList(),
-              ),
-            if (payments.isNotEmpty) const SizedBox(height: 24),
-            if (system.isNotEmpty)
-              SettingsSectionCard(
-                title: l10n.settingsSystemData,
-                children: system.map((c) => _animatedTile(c)).toList(),
-              ),
-          ] else
-            ...filtered.map((c) => _animatedTile(c)),
+          ...filteredTopics.map((c) => _animatedTile(c)),
+          if (filteredSubs.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ...filteredSubs.map((e) => _animatedSubTile(e)),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _animatedSubTile(_SubTopicWithGroup e) {
+    return SettingsCategoryTile(
+      icon: e.sub.icon,
+      title: e.sub.title,
+      subtitle: e.group,
+      accentColor: e.sub.accent,
+      statusChip: e.sub.statusChip,
+      onTap: () => _push(context, e.sub.page),
     );
   }
 
@@ -290,14 +312,13 @@ class _SettingsRootViewState extends State<_SettingsRootView>
           title: cat.title,
           subtitle: cat.subtitle,
           accentColor: cat.accent,
-          statusChip: cat.statusChip,
           onTap: () => _push(context, cat.page),
         ),
       ),
     );
   }
 
-  List<_CategoryItem> _storeBusinessItems(
+  List<SubTopicItem> _storeSubTopics(
     BuildContext context,
     AppSettings s,
     SettingsThemeExtension st,
@@ -305,8 +326,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
   ) {
     final shopComplete = s.shopName.isNotEmpty && s.phone.isNotEmpty;
     return [
-      _CategoryItem(
-        index: 0,
+      SubTopicItem(
         icon: Icons.store_outlined,
         title: l10n.settingsShopInfo,
         accent: st.softAccent,
@@ -315,13 +335,12 @@ class _SettingsRootViewState extends State<_SettingsRootView>
           label: shopComplete
               ? l10n.settingsStatusComplete
               : l10n.settingsStatusIncomplete,
-          color: shopComplete ? Colors.green : Colors.orange,
+          color: shopComplete ? AppColors.success : AppColors.warning,
           st: st,
         ),
         page: const ShopInfoSettingsPage(),
       ),
-      _CategoryItem(
-        index: 1,
+      SubTopicItem(
         icon: Icons.point_of_sale_outlined,
         title: l10n.settingsSales,
         accent: st.softAccent,
@@ -332,8 +351,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         ),
         page: const SalesSettingsPage(),
       ),
-      _CategoryItem(
-        index: 2,
+      SubTopicItem(
         icon: Icons.receipt_long_outlined,
         title: l10n.settingsReceipt,
         accent: st.softAccent,
@@ -344,8 +362,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         ),
         page: const ReceiptSettingsPage(),
       ),
-      _CategoryItem(
-        index: 3,
+      SubTopicItem(
         icon: Icons.local_offer_outlined,
         title: l10n.settingsDiscountPolicy,
         accent: st.softAccent,
@@ -356,8 +373,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         ),
         page: const DiscountPolicySettingsPage(),
       ),
-      _CategoryItem(
-        index: 4,
+      SubTopicItem(
         icon: Icons.discount_outlined,
         title: l10n.discountPresetsTitle,
         accent: st.softAccent,
@@ -368,14 +384,13 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         ),
         page: const DiscountPresetsPage(),
       ),
-      _CategoryItem(
-        index: 5,
+      SubTopicItem(
         icon: Icons.inventory_2_outlined,
         title: l10n.settingsStockPolicy,
         accent: st.softAccent,
         statusChip: _StatusChip(
           label: s.allowOversell ? 'ON' : '${s.lowStockThreshold}',
-          color: s.allowOversell ? Colors.red : st.softAccent,
+          color: s.allowOversell ? AppColors.error : st.softAccent,
           st: st,
         ),
         page: const StockSettingsPage(),
@@ -383,15 +398,14 @@ class _SettingsRootViewState extends State<_SettingsRootView>
     ];
   }
 
-  List<_CategoryItem> _paymentsItems(
+  List<SubTopicItem> _paymentSubTopics(
     BuildContext context,
     AppSettings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
     return [
-      _CategoryItem(
-        index: 6,
+      SubTopicItem(
         icon: Icons.qr_code_2_outlined,
         title: l10n.promptpay,
         accent: st.softAccent,
@@ -400,7 +414,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
           label: s.promptpayId.isNotEmpty
               ? l10n.settingsStatusActive
               : l10n.settingsStatusNotSet,
-          color: s.promptpayId.isNotEmpty ? Colors.green : st.mutedText,
+          color: s.promptpayId.isNotEmpty ? AppColors.success : st.mutedText,
           st: st,
         ),
         page: const PromptpaySettingsPage(),
@@ -408,29 +422,14 @@ class _SettingsRootViewState extends State<_SettingsRootView>
     ];
   }
 
-  List<_CategoryItem> _systemItems(
+  List<SubTopicItem> _generalSubTopics(
     BuildContext context,
     AppSettings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
-    final backup = _backupStatus(context);
     return [
-      _CategoryItem(
-        index: 7,
-        icon: Icons.lock_clock_outlined,
-        title: l10n.settingsDailyCloseTitle,
-        accent: st.softAccent,
-        subtitle: l10n.settingsDailyCloseSubtitle,
-        statusChip: _StatusChip(
-          label: l10n.closeDay,
-          color: st.softAccent,
-          st: st,
-        ),
-        page: const DailyCloseListPage(),
-      ),
-      _CategoryItem(
-        index: 8,
+      SubTopicItem(
         icon: Icons.settings_outlined,
         title: l10n.settingsGeneral,
         accent: st.softAccent,
@@ -442,8 +441,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         ),
         page: const GeneralSettingsPage(),
       ),
-      _CategoryItem(
-        index: 9,
+      SubTopicItem(
         icon: Icons.image_outlined,
         title: l10n.settingsImages,
         accent: st.softAccent,
@@ -455,8 +453,30 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         ),
         page: const ImageSettingsPage(),
       ),
-      _CategoryItem(
-        index: 10,
+    ];
+  }
+
+  List<SubTopicItem> _systemSubTopics(
+    BuildContext context,
+    AppSettings s,
+    SettingsThemeExtension st,
+    AppLocalizations l10n,
+  ) {
+    final backup = _backupStatus(context);
+    return [
+      SubTopicItem(
+        icon: Icons.lock_clock_outlined,
+        title: l10n.settingsDailyCloseTitle,
+        accent: st.softAccent,
+        subtitle: l10n.settingsDailyCloseSubtitle,
+        statusChip: _StatusChip(
+          label: l10n.closeDay,
+          color: st.softAccent,
+          st: st,
+        ),
+        page: const DailyCloseListPage(),
+      ),
+      SubTopicItem(
         icon: Icons.backup_outlined,
         title: l10n.settingsBackup,
         accent: st.softAccent,
@@ -470,8 +490,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         ),
         page: const BackupSettingsPage(),
       ),
-      _CategoryItem(
-        index: 11,
+      SubTopicItem(
         icon: Icons.storage_outlined,
         title: l10n.settingsDbHealthTitle,
         accent: st.softAccent,
@@ -485,6 +504,66 @@ class _SettingsRootViewState extends State<_SettingsRootView>
       ),
     ];
   }
+
+  List<_CategoryItem> _topicGroups(
+    BuildContext context,
+    AppSettings s,
+    SettingsThemeExtension st,
+    AppLocalizations l10n,
+  ) {
+    return [
+      _CategoryItem(
+        index: 0,
+        icon: Icons.tune_outlined,
+        title: l10n.settingsGeneral,
+        accent: st.softAccent,
+        subtitle: '${_localeLabel(context)} · ${_themeLabel(context)}',
+        page: SettingsSubTopicPage(
+          title: l10n.settingsGeneral,
+          subTopics: _generalSubTopics(context, s, st, l10n),
+        ),
+      ),
+      _CategoryItem(
+        index: 1,
+        icon: Icons.store_outlined,
+        title: l10n.settingsStoreBusiness,
+        accent: st.softAccent,
+        subtitle: s.shopName.isNotEmpty ? s.shopName : null,
+        page: SettingsSubTopicPage(
+          title: l10n.settingsStoreBusiness,
+          subTopics: _storeSubTopics(context, s, st, l10n),
+        ),
+      ),
+      _CategoryItem(
+        index: 2,
+        icon: Icons.payment_outlined,
+        title: l10n.settingsPayments,
+        accent: st.softAccent,
+        subtitle: s.promptpayId.isNotEmpty ? s.promptpayId : null,
+        page: SettingsSubTopicPage(
+          title: l10n.settingsPayments,
+          subTopics: _paymentSubTopics(context, s, st, l10n),
+        ),
+      ),
+      _CategoryItem(
+        index: 3,
+        icon: Icons.settings_applications_outlined,
+        title: l10n.settingsSystemData,
+        accent: st.softAccent,
+        subtitle: _backupStatus(context).label,
+        page: SettingsSubTopicPage(
+          title: l10n.settingsSystemData,
+          subTopics: _systemSubTopics(context, s, st, l10n),
+        ),
+      ),
+    ];
+  }
+}
+
+class _SubTopicWithGroup {
+  const _SubTopicWithGroup({required this.sub, required this.group});
+  final SubTopicItem sub;
+  final String group;
 }
 
 class _CategoryItem {
@@ -494,7 +573,6 @@ class _CategoryItem {
     required this.title,
     required this.accent,
     this.subtitle,
-    this.statusChip,
     required this.page,
   });
 
@@ -503,7 +581,6 @@ class _CategoryItem {
   final String title;
   final Color accent;
   final String? subtitle;
-  final Widget? statusChip;
   final Widget page;
 }
 

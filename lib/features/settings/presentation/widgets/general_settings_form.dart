@@ -133,6 +133,7 @@ class GeneralSettingsForm extends StatelessWidget {
                 HapticFeedback.lightImpact();
                 onUpdate(s.copyWith(locale: locale));
                 Navigator.of(ctx).pop();
+                Navigator.of(context).pop();
               },
             );
           }).toList(),
@@ -348,13 +349,23 @@ class GeneralSettingsForm extends StatelessWidget {
           value: s.cartCompactMode,
           onChanged: (v) {
             HapticFeedback.lightImpact();
-            onUpdate(s.copyWith(cartCompactMode: v));
+            final next = s.copyWith(cartCompactMode: v);
+            onUpdate(
+              next.cartCompactMode
+                  ? next.copyWith(ultraCompactMode: false)
+                  : next,
+            );
           },
           activeThumbColor: st.softAccent,
         ),
         onTap: () {
           HapticFeedback.lightImpact();
-          onUpdate(s.copyWith(cartCompactMode: !s.cartCompactMode));
+          final next = s.copyWith(cartCompactMode: !s.cartCompactMode);
+          onUpdate(
+            next.cartCompactMode
+                ? next.copyWith(ultraCompactMode: false)
+                : next,
+          );
         },
       ),
     );

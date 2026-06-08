@@ -53,6 +53,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   static const _keyOnboardingCompleted = 'onboardingCompleted';
   static const _keyDailyCloseLock = 'dailyCloseLock';
   static const _keyLastClosedDate = 'lastClosedDate';
+  static const _keyBackupEncryptionEnabled = 'backupEncryptionEnabled';
 
   @override
   Future<AppSettings> load() async {
@@ -119,6 +120,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
       lastClosedDate: _nullIfEmpty(
         await _datasource.getString(_keyLastClosedDate),
       ),
+      backupEncryptionEnabled:
+          await _datasource.getBool(_keyBackupEncryptionEnabled) ?? false,
     );
   }
 
@@ -210,6 +213,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
     } else {
       await _datasource.setString(_keyLastClosedDate, '');
     }
+    await _datasource.setBool(
+      _keyBackupEncryptionEnabled,
+      settings.backupEncryptionEnabled,
+    );
   }
 
   Future<List<DiscountPreset>> _loadDiscountPresets() async {
@@ -233,8 +240,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
             .where((p) => p.id.isNotEmpty)
             .toList();
         if (presets.isNotEmpty) return presets;
-      } catch (_) {
-        // fall through to migration / default
+      } catch (e) {
+        debugPrint('SettingsRepositoryImpl._loadDiscountPresets failed: $e');
       }
     }
 

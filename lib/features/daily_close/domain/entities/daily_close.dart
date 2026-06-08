@@ -20,6 +20,9 @@ class DailyClose extends Equatable {
     this.note,
     this.closedAt,
     this.deviceId,
+    this.updatedAt,
+    this.deletedAt,
+    this.version = 1,
   });
 
   final String id;
@@ -38,6 +41,9 @@ class DailyClose extends Equatable {
   final String? note;
   final DateTime? closedAt;
   final String? deviceId;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  final int version;
 
   bool get isClosed => closedAt != null;
 
@@ -58,6 +64,9 @@ class DailyClose extends Equatable {
     Object? note = _unset,
     Object? closedAt = _unset,
     Object? deviceId = _unset,
+    Object? updatedAt = _unset,
+    Object? deletedAt = _unset,
+    int? version,
   }) {
     return DailyClose(
       id: id ?? this.id,
@@ -80,6 +89,13 @@ class DailyClose extends Equatable {
       deviceId: identical(deviceId, _unset)
           ? this.deviceId
           : deviceId as String?,
+      updatedAt: identical(updatedAt, _unset)
+          ? this.updatedAt
+          : updatedAt as DateTime?,
+      deletedAt: identical(deletedAt, _unset)
+          ? this.deletedAt
+          : deletedAt as DateTime?,
+      version: version ?? this.version,
     );
   }
 
@@ -101,5 +117,8 @@ class DailyClose extends Equatable {
     note,
     closedAt,
     deviceId,
+    updatedAt,
+    deletedAt,
+    version,
   ];
 }

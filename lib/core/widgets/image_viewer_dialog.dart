@@ -234,10 +234,10 @@ class _ImagePageState extends State<_ImagePage>
     final scale = current.getMaxScaleOnAxis();
 
     if (scale > 1.1) {
-      // Zoomed in → reset
+      // Zoomed in TO reset
       _animateTo(Matrix4.identity());
     } else {
-      // Zoomed out → zoom in to center
+      // Zoomed out TO zoom in to center
       final renderBox = _key.currentContext?.findRenderObject() as RenderBox?;
       if (renderBox == null) return;
       final size = renderBox.size;

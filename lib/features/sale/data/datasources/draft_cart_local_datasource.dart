@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
@@ -97,6 +98,16 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
     )..where((t) => t.id.isIn(productIds))).get();
     final productMap = {for (final p in productRows) p.id: _productFromData(p)};
 
+    final missingProductIds = itemRows
+        .where((r) => !productMap.containsKey(r.productId))
+        .map((r) => r.productId)
+        .toSet();
+    if (missingProductIds.isNotEmpty) {
+      debugPrint(
+        'DraftCartLocalDatasource.loadDraft: skipped items with deleted products: $missingProductIds',
+      );
+    }
+
     final items = itemRows
         .where((r) => productMap.containsKey(r.productId))
         .map(
@@ -117,6 +128,8 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       cartDiscountValue: cart.cartDiscountValue,
       items: items,
       updatedAt: cart.updatedAt,
+      deletedAt: cart.deletedAt,
+      version: cart.version,
     );
   }
 
@@ -128,48 +141,52 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       query.where((t) => t.isArchived.equals(false));
     }
     final carts = await query.get();
+    if (carts.isEmpty) return [];
 
-    final result = <DraftCart>[];
-    for (final cart in carts) {
-      final itemRows = await (_db.select(
-        _db.draftCartItems,
-      )..where((t) => t.cartId.equals(cart.id))).get();
+    final cartIds = carts.map((c) => c.id).toList();
+    final allItemRows = await (_db.select(
+      _db.draftCartItems,
+    )..where((t) => t.cartId.isIn(cartIds))).get();
 
-      final productIds = itemRows.map((r) => r.productId).toSet().toList();
-      final productRows = productIds.isEmpty
-          ? <ProductData>[]
-          : await (_db.select(
-              _db.products,
-            )..where((t) => t.id.isIn(productIds))).get();
-      final productMap = {
-        for (final p in productRows) p.id: _productFromData(p),
-      };
+    final allProductIds = allItemRows.map((r) => r.productId).toSet().toList();
+    final allProductRows = allProductIds.isEmpty
+        ? <ProductData>[]
+        : await (_db.select(
+            _db.products,
+          )..where((t) => t.id.isIn(allProductIds))).get();
+    final productMap = {
+      for (final p in allProductRows) p.id: _productFromData(p),
+    };
 
-      final items = itemRows
-          .where((r) => productMap.containsKey(r.productId))
-          .map(
-            (r) => CartItem(
-              product: productMap[r.productId]!,
-              qty: r.qty,
-              discountType: r.discountType,
-              discountValue: r.discountValue,
-            ),
-          )
-          .toList();
-
-      result.add(
-        DraftCart(
-          id: cart.id,
-          name: cart.name,
-          note: cart.note,
-          cartDiscountType: cart.cartDiscountType,
-          cartDiscountValue: cart.cartDiscountValue,
-          items: items,
-          updatedAt: cart.updatedAt,
+    final itemsByCartId = <String, List<CartItem>>{};
+    for (final row in allItemRows) {
+      final product = productMap[row.productId];
+      if (product == null) continue;
+      (itemsByCartId[row.cartId] ??= []).add(
+        CartItem(
+          product: product,
+          qty: row.qty,
+          discountType: row.discountType,
+          discountValue: row.discountValue,
         ),
       );
     }
-    return result;
+
+    return carts
+        .map(
+          (cart) => DraftCart(
+            id: cart.id,
+            name: cart.name,
+            note: cart.note,
+            cartDiscountType: cart.cartDiscountType,
+            cartDiscountValue: cart.cartDiscountValue,
+            items: itemsByCartId[cart.id] ?? [],
+            updatedAt: cart.updatedAt,
+            deletedAt: cart.deletedAt,
+            version: cart.version,
+          ),
+        )
+        .toList();
   }
 
   @override
