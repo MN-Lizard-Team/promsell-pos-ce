@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_text_field.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_category_autocomplete.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form_avatar.dart';
 
 class ProductFormPage extends StatefulWidget {
@@ -252,7 +253,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       label: context.l10n.productFormSectionDetails,
                     ),
                     const SizedBox(height: 8),
-                    _CategoryAutocomplete(
+                    ProductCategoryAutocomplete(
                       controller: _categoryCtrl,
                       categories: context.select<ProductBloc, List<String>>(
                         (bloc) =>
@@ -401,50 +402,5 @@ class _ProductFormPageState extends State<ProductFormPage> {
         });
       }
     }
-  }
-}
-
-class _CategoryAutocomplete extends StatelessWidget {
-  const _CategoryAutocomplete({
-    required this.controller,
-    required this.categories,
-    this.onSubmitted,
-  });
-
-  final TextEditingController controller;
-  final List<String> categories;
-  final ValueChanged<String>? onSubmitted;
-
-  @override
-  Widget build(BuildContext context) {
-    return Autocomplete<String>(
-      initialValue: TextEditingValue(text: controller.text),
-      optionsBuilder: (textEditingValue) {
-        final query = textEditingValue.text.toLowerCase();
-        if (query.isEmpty) return categories;
-        return categories
-            .where((c) => c.toLowerCase().contains(query))
-            .toList();
-      },
-      fieldViewBuilder: (_, fieldController, focusNode, onFieldSubmitted) {
-        return TextFormField(
-          controller: fieldController,
-          focusNode: focusNode,
-          decoration: InputDecoration(
-            labelText: context.l10n.categoryLabel,
-            prefixIcon: const Icon(Icons.category_outlined),
-          ),
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: (_) {
-            controller.text = fieldController.text;
-            onFieldSubmitted.call();
-          },
-        );
-      },
-      onSelected: (selection) {
-        controller.text = selection;
-        onSubmitted?.call(selection);
-      },
-    );
   }
 }

@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/green_choice_chip.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_hero_section.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_section.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_sheet_option.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -137,7 +141,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _SheetOption(
+                OnboardingSheetOption(
                   icon: Icons.language,
                   label: l10n.onboardingThai,
                   selected: s.locale.languageCode == 'th',
@@ -150,7 +154,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     Navigator.pop(sheetCtx);
                   },
                 ),
-                _SheetOption(
+                OnboardingSheetOption(
                   icon: Icons.language,
                   label: l10n.onboardingEnglish,
                   selected: s.locale.languageCode == 'en',
@@ -178,7 +182,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _SheetOption(
+                OnboardingSheetOption(
                   icon: Icons.wb_sunny,
                   label: l10n.settingsThemeLight,
                   selected: s.themeMode == ThemeMode.light,
@@ -191,7 +195,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     Navigator.pop(sheetCtx);
                   },
                 ),
-                _SheetOption(
+                OnboardingSheetOption(
                   icon: Icons.nights_stay,
                   label: l10n.settingsThemeDark,
                   selected: s.themeMode == ThemeMode.dark,
@@ -204,7 +208,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     Navigator.pop(sheetCtx);
                   },
                 ),
-                _SheetOption(
+                OnboardingSheetOption(
                   icon: Icons.brightness_auto,
                   label: l10n.settingsThemeSystem,
                   selected: s.themeMode == ThemeMode.system,
@@ -287,15 +291,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Hero Section
-                        _HeroSection(
+                        OnboardingHeroSection(
                           isDark: isDark,
-                          title: ctx.l10n.onboardingWelcomeTitle,
                           subtitle: ctx.l10n.onboardingWelcomeSubtitle,
-                          accentColor: accentGreen,
                         ),
                         const SizedBox(height: 24),
                         // Section 2: Shop Profile
-                        _OnboardingSection(
+                        OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.store,
                           iconColor: accentGreen,
@@ -348,7 +350,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         ),
                         const SizedBox(height: 24),
                         // Section 3: Preferences
-                        _OnboardingSection(
+                        OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.settings,
                           iconColor: accentGreen,
@@ -361,7 +363,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               Wrap(
                                 spacing: 8,
                                 children: [
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.onboardingThai),
                                     selected:
                                         settings.locale.languageCode == 'th',
@@ -372,7 +374,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                           ),
                                         ),
                                   ),
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.onboardingEnglish),
                                     selected:
                                         settings.locale.languageCode == 'en',
@@ -391,7 +393,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               Wrap(
                                 spacing: 8,
                                 children: [
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.settingsThemeLight),
                                     selected:
                                         settings.themeMode == ThemeMode.light,
@@ -402,7 +404,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                           ),
                                         ),
                                   ),
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.settingsThemeDark),
                                     selected:
                                         settings.themeMode == ThemeMode.dark,
@@ -413,7 +415,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                           ),
                                         ),
                                   ),
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.settingsThemeSystem),
                                     selected:
                                         settings.themeMode == ThemeMode.system,
@@ -453,7 +455,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         ),
                         const SizedBox(height: 24),
                         // Section 4: Business Setup
-                        _OnboardingSection(
+                        OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.receipt_long,
                           iconColor: accentGreen,
@@ -466,19 +468,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               Wrap(
                                 spacing: 8,
                                 children: [
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.onboardingNone),
                                     selected: _vatMode == 'NONE',
                                     onSelected: (_) =>
                                         setState(() => _vatMode = 'NONE'),
                                   ),
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.onboardingInclusive),
                                     selected: _vatMode == 'INCLUSIVE',
                                     onSelected: (_) =>
                                         setState(() => _vatMode = 'INCLUSIVE'),
                                   ),
-                                  _GreenChoiceChip(
+                                  GreenChoiceChip(
                                     label: Text(ctx.l10n.onboardingExclusive),
                                     selected: _vatMode == 'EXCLUSIVE',
                                     onSelected: (_) =>
@@ -523,7 +525,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         ),
                         const SizedBox(height: 32),
                         // Done section
-                        _OnboardingSection(
+                        OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.check_circle,
                           iconColor: accentGreen,
@@ -570,302 +572,5 @@ class _OnboardingPageState extends State<OnboardingPage> {
     if (_currency.isNotEmpty) filled++;
     if (_vatMode != 'NONE' || _vatRateController.text.isNotEmpty) filled++;
     return filled / 3;
-  }
-}
-
-class _HeroSection extends StatelessWidget {
-  const _HeroSection({
-    required this.isDark,
-    required this.title,
-    required this.subtitle,
-    required this.accentColor,
-  });
-
-  final bool isDark;
-  final String title;
-  final String subtitle;
-  final Color accentColor;
-
-  String get _imageAsset => isDark
-      ? 'assets/images/onboarding/onboarding_dark_preview.png'
-      : 'assets/images/onboarding/onboarding_white_preview.png';
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: () => _showFullImage(context),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            // Hero image
-            Image.asset(
-              _imageAsset,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 220,
-            ),
-            // Gradient overlay
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Title & subtitle at bottom
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Promsell POS',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Zoom hint icon
-            Positioned(
-              top: 12,
-              right: 12,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.fullscreen,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showFullImage(BuildContext context) {
-    showDialog(
-      context: context,
-      useSafeArea: false,
-      barrierDismissible: true,
-      builder: (ctx) {
-        return Stack(
-          children: [
-            GestureDetector(
-              onTap: () => Navigator.of(ctx).pop(),
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.95),
-                child: Center(
-                  child: InteractiveViewer(
-                    minScale: 0.5,
-                    maxScale: 4.0,
-                    child: Image.asset(_imageAsset),
-                  ),
-                ),
-              ),
-            ),
-            // Close button
-            Positioned(
-              top: 24,
-              right: 24,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                onPressed: () => Navigator.of(ctx).pop(),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _GreenChoiceChip extends StatelessWidget {
-  const _GreenChoiceChip({
-    required this.label,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final Widget label;
-  final bool selected;
-  final ValueChanged<bool>? onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return ChoiceChip(
-      label: label,
-      selected: selected,
-      onSelected: onSelected,
-      selectedColor: primary,
-      checkmarkColor: Colors.white,
-      labelStyle: TextStyle(
-        color: selected ? Colors.white : null,
-        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-      ),
-    );
-  }
-}
-
-class _OnboardingSection extends StatelessWidget {
-  const _OnboardingSection({
-    required this.cardBg,
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.child,
-  });
-
-  final Color cardBg;
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-      child: Card(
-        elevation: 0,
-        color: cardBg,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(icon, color: iconColor, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              child,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SheetOption extends StatelessWidget {
-  const _SheetOption({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.accentColor,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final Color accentColor;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: selected
-              ? accentColor.withValues(alpha: 0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: selected
-                  ? accentColor
-                  : isDark
-                  ? Colors.white.withValues(alpha: 0.6)
-                  : Colors.black.withValues(alpha: 0.6),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                  color: selected
-                      ? accentColor
-                      : isDark
-                      ? Colors.white.withValues(alpha: 0.85)
-                      : Colors.black.withValues(alpha: 0.85),
-                ),
-              ),
-            ),
-            if (selected) Icon(Icons.check, size: 20, color: accentColor),
-          ],
-        ),
-      ),
-    );
   }
 }

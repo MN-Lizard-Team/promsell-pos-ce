@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_c
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 class MockCloseDay extends Mock implements CloseDay {}
@@ -19,9 +20,12 @@ class MockSettingsRepository extends Mock implements SettingsRepository {}
 
 class FakeAppSettings extends Fake implements AppSettings {}
 
+class FakeSettings extends Fake implements Settings {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeAppSettings());
+    registerFallbackValue(FakeSettings());
   });
   group('DailyCloseCubit', () {
     late MockCloseDay mockCloseDay;
@@ -38,7 +42,7 @@ void main() {
       when(() => mockGetByDate(any())).thenAnswer((_) async => null);
       when(
         () => mockSettingsRepo.load(),
-      ).thenAnswer((_) async => const AppSettings());
+      ).thenAnswer((_) async => const Settings());
       when(() => mockSettingsRepo.save(any())).thenAnswer((_) async {});
       cubit = DailyCloseCubit(
         mockCloseDay,

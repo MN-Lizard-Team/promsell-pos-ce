@@ -90,7 +90,13 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
       );
       emit(state.copyWith(status: DailyCloseStatus.closed, dailyClose: result));
       final settings = await _settingsRepo.load();
-      await _settingsRepo.save(settings.copyWith(lastClosedDate: state.date));
+      await _settingsRepo.save(
+        settings.copyWith(
+          dailyCloseConfig: settings.dailyCloseConfig.copyWith(
+            lastClosedDate: state.date,
+          ),
+        ),
+      );
     } catch (e) {
       debugPrint('DailyCloseCubit.closeDay failed: $e');
       emit(
@@ -113,7 +119,13 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
         state.copyWith(status: DailyCloseStatus.reopened, dailyClose: result),
       );
       final settings = await _settingsRepo.load();
-      await _settingsRepo.save(settings.copyWith(lastClosedDate: null));
+      await _settingsRepo.save(
+        settings.copyWith(
+          dailyCloseConfig: settings.dailyCloseConfig.copyWith(
+            lastClosedDate: null,
+          ),
+        ),
+      );
     } catch (e) {
       debugPrint('DailyCloseCubit.reopenDay failed: $e');
       emit(

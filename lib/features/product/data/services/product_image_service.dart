@@ -99,8 +99,8 @@ class ProductImageServiceImpl implements ProductImageService {
     }
 
     final settings = await _settingsRepository.load();
-    final maxWidth = settings.imageMaxWidth;
-    final quality = settings.imageQuality;
+    final maxWidth = settings.imageConfig.maxWidth;
+    final quality = settings.imageConfig.quality;
 
     final dir = await _imageDirectory;
     final bytes = await sourceFile.readAsBytes();

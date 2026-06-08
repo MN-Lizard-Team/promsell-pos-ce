@@ -6,7 +6,7 @@ import 'package:image/image.dart' as img_lib;
 import 'package:image_picker/image_picker.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 import '../../../../helpers/mocks.dart';
 
@@ -22,7 +22,7 @@ void main() {
     mockSettingsRepo = MockSettingsRepository();
     when(
       () => mockSettingsRepo.load(),
-    ).thenAnswer((_) async => const AppSettings());
+    ).thenAnswer((_) async => const Settings());
     service = ProductImageServiceImpl(mockSettingsRepo);
   });
 

@@ -15,16 +15,13 @@ void main() {
   setUp(() {
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.loaded,
-        settings: AppSettings(),
-      ),
+      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
     );
     when(() => mockSettingsCubit.update(any())).thenAnswer((_) async {});
   });
 
   setUpAll(() {
-    registerFallbackValue(const AppSettings());
+    registerFallbackValue(AppSettings());
   });
 
   group('SettingsPage', () {

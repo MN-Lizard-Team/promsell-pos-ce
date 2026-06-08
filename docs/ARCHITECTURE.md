@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.7.2
+# Architecture — Promsell POS CE v0.7.3
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -24,6 +24,8 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
   - [ADR-015: Sync-ready columns](#adr-015-sync-ready-columns-on-all-core-tables)
   - [ADR-016: Backup encryption](#adr-016-backup-encryption-with-aes-256-gcm)
   - [ADR-017: Settings hierarchy](#adr-017-3-level-settings-hierarchy)
+  - [ADR-018: Settings aggregate root](#adr-018-settings-aggregate-root-with-typed-group-entities)
+  - [ADR-019: Widget decomposition](#adr-019-widget-decomposition-and-domain-logic-extraction)
 - [PlantUML Source Files](#plantuml-source-files)
 
 ---
@@ -126,8 +128,9 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
           ▼             ▼             ▼
 ┌────────────────────── Domain ────────────────────┐
 │                                                       │
-│  CreateSale   VoidSale   AdjustStock                  │
+│  CreateSale   VoidSale   AdjustStock  GetSales         │
 │  GetProducts  WatchSaleHistory  WatchReport            │
+│  GetSaleById  WatchSales  WatchRecentSales             │
 │                                                       │
 └─────────┬─────────────┬─────────────┬─────────────┘
           │             │             │
@@ -143,8 +146,10 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │       ├───→ ReceiptNumberService                       │
 │       ├───→ InventoryLogService                        │
 │       │                                               │
-│  ProductImageService ──→ SettingsCubit (image settings)│
+│  ProductImageService ──→ SettingsRepository (image)   │
 │  SettingsLocalDatasource (app_settings)                │
+│  SettingsMapper (Settings ↔ Map<String,String>)        │
+│  SettingsPersistenceService (debounce + save)          │
 └───────────────────────┬─────────────────────────────┘
                         │
                         ▼
@@ -338,7 +343,9 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  VoidSale ──→ SaleRepository                              │
 │  AdjustStock ──→ ProductRepository + InventoryLogService  │
 │  GetProducts / Add / Update / Delete ──→ ProductRepository│
+│  GetSales / GetSaleById ──→ SaleRepository               │
 │  WatchSaleHistory ──→ HistoryRepository                   │
+│  WatchSales / WatchRecentSales ──→ SaleRepository        │
 │  WatchReport ──→ HistoryRepository                        │
 │  WatchInventoryLogs ──→ InventoryLogRepository              │
 │                                                           │
@@ -352,7 +359,8 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │                       ──→ ProductImageService              │
 │  HistoryRepository ──→ SaleLocalDatasource                │
 │  InventoryLogRepository ──→ InventoryLogLocalDatasource     │
-│  SettingsRepository ──→ SettingsLocalDatasource         │
+│  SettingsRepository ──→ SettingsMapper                  │
+│                        ──→ SettingsLocalDatasource        │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
@@ -736,6 +744,38 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 
 ---
 
+### ADR-018: Settings aggregate root with typed group entities
+
+**Context:** v0.7.3 refactored Settings from a flat 30-field entity (`AppSettings`) to a typed aggregate root. Previously, settings were read/written as individual primitive fields with manual per-field serialization in `SettingsRepositoryImpl`. This made adding new settings tedious and error-prone.
+
+**Decision:** Introduce `Settings` as an aggregate root with 12 typed group entities (`ShopInfo`, `ReceiptConfig`, `TaxConfig`, `DiscountConfig`, `StockConfig`, `ImageConfig`, `PaymentConfig`, `DeviceConfig`, `UiConfig`, `DailyCloseConfig`, `BackupConfig`, `DraftConfig`). Centralize serialization in `SettingsMapper` (`Settings` ↔ `Map<String,String>`). Extract debounce persistence logic from `SettingsCubit` into `SettingsPersistenceService`.
+
+**Consequences:**
+- ✅ Adding a new setting only requires updating the relevant group entity + mapper key
+- ✅ Type safety — no more raw string access for config values
+- ✅ `SettingsMapper` normalizes legacy values (e.g., integer `themeMode` → string names)
+- ✅ `SettingsPersistenceService` owns debounce Timer — `SettingsCubit` is now pure state management
+- ⚠️ `AppSettings` facade is `@Deprecated` — consumers must migrate to typed accessors
+- ⚠️ All repository tests must mock `getAll()` return values instead of individual getters
+
+---
+
+### ADR-019: Widget decomposition and domain logic extraction
+
+**Context:** 9 presentation pages had grown to 300–900 lines each with deeply nested private widget classes and inline business logic. This made testing, navigation, and hot reload slow.
+
+**Decision:** Extract private `_WidgetName` classes into public widgets in `features/<name>/presentation/widgets/`. Move business logic helper methods (e.g., `_completedSales`, `_netRevenue`, `_topProducts` from `ReportPage`) into domain layer extensions (`ReportCalculator` on `List<Sale>`). Add widget tests for each extracted component.
+
+**Consequences:**
+- ✅ Pages shrink by 50–70% (e.g., `report_page.dart`: 316 → 147 lines)
+- ✅ Widgets are reusable across pages and testable in isolation
+- ✅ Domain extensions are pure Dart — testable without Flutter binding
+- ✅ Hot reload is faster (smaller build units)
+- ⚠️ Extracted widgets may have different constructor signatures than their private predecessors
+- ⚠️ Parent pages need import updates and may require Builder wrappers for context-dependent params
+
+---
+
 ## PlantUML Source Files
 
 Detailed diagrams are available as `.puml` files for rendering with PlantUML tools:
@@ -767,4 +807,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.7.2 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.7.3 · Architecture Document · Deep Technical Reference</sub>

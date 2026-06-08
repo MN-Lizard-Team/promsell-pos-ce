@@ -1,6 +1,6 @@
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 abstract interface class SettingsRepository {
-  Future<AppSettings> load();
-  Future<void> save(AppSettings settings);
+  Future<Settings> load();
+  Future<void> save(Settings settings);
 }

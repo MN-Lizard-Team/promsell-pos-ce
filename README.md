@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.7.2** — Data resilience and cart UX: sync columns (schema v12), backup encryption with AES-256-GCM, 3-level settings hierarchy, cart button animations with haptic feedback, single-row item redesign, and theme color migration.
+> **Latest Release: v0.7.3** — Settings Clean Architecture with 12 typed group entities, widget decomposition of 9 presentation pages (16 extracted widgets + `ReportCalculator` domain extension), and 339 passing tests.
  
 ---
  
@@ -231,6 +231,7 @@ features/<name>/
 - [x] **R6 — Settings UX Overhaul** (v0.7.0): Elderly-friendly redesign, gradient dashboard cards, visual dialog pickers, validation, grouped sections with status chips, accessibility mode toggle
 - [x] **R7 — Operations** (v0.7.1): Daily close, onboarding wizard, DB health, compact cart mode, global theme unification
 - [x] **R8 — Data Resilience & Cart Polish** (v0.7.2): Sync columns (schema v12), backup encryption, 3-level settings hierarchy, cart button animations, single-row item redesign, theme color migration
+- [x] **R9 — Clean Architecture & Widget Decomposition** (v0.7.3): Settings aggregate root with 12 typed groups, `SettingsMapper`, `SettingsPersistenceService`, failure types for all features, missing Sale Use Cases, 9-page widget decomposition (16 widgets + `ReportCalculator` domain extension), 339 tests
 
 ### Future
 
@@ -247,16 +248,16 @@ features/<name>/
 
 ## Testing
 
-**258 tests** covering every application layer:
+**339 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
-| **Domain** | Entity equality, use case delegation, discount math, `InventoryLog` domain | ~35 |
-| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy, `InventoryLogCubit` | ~32 |
-| **Repository** | Impl with mocked datasources | ~18 |
+| **Domain** | Entity equality, use case delegation, discount math, `InventoryLog` domain, `ReportCalculator` extension | ~40 |
+| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy, `InventoryLogCubit`, `ReportCubit` | ~35 |
+| **Repository** | Impl with mocked datasources | ~20 |
 | **Datasource** | Real in-memory SQLite (Drift) | ~12 |
 | **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService | ~15 |
-| **Widget** | ProductList, ProductForm, PaymentSheet, Settings, ReceiptPreview | ~20 |
+| **Widget** | Page tests + 16 extracted widget tests (`CartItemCard`, `OnboardingSection`, `PromptpayPreviewCard`, etc.) | ~50 |
 | **Integration** | Checkout flow, sale integrity (void + adjust) | 13 |
 | **L10n parity** | EN/TH key coverage, non-empty values, params | 8 |
 
@@ -331,6 +332,6 @@ Built by **[MN Lizard Team](https://github.com/MN-Lizard-Team)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.7.2 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.7.3 · AGPL-3.0</sub>
 
 </div>

@@ -453,7 +453,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **258 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **339 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
 
 ### Running tests
 
@@ -473,7 +473,7 @@ flutter test test/integration/checkout_flow_test.dart
 Tests mirror `lib/` structure under `test/`:
 
 - `test/helpers/` — shared mocks (`mocks.dart`), entity fixtures (`fixtures.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`)
-- `test/features/` — per-feature tests: domain, data, presentation (sale, product, history, inventory, settings, report)
+- `test/features/` — per-feature tests: domain (`entities/`, `usecases/`), data (`repositories/`, `datasources/`), presentation (`bloc/`, `pages/`, `widgets/`)
 - `test/integration/` — end-to-end checkout flow + sale integrity (void, adjust stock) with real in-memory SQLite
 - `test/core/` — utility tests (`MoneyUtils`, etc.)
 - `test/l10n/` — EN/TH translation parity test

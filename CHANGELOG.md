@@ -17,6 +17,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.3] - 2026-06-08
+
+Settings Clean Architecture + widget decomposition of 9 largest presentation pages + domain logic extraction.
+
+### Highlights
+
+- **Settings Aggregate Root** — `Settings` with 12 typed group entities; `SettingsMapper` for serialization; `SettingsPersistenceService` owns debounce + save logic.
+- **Domain Scaffolding** — Failure types for all 6 non-settings features; missing Sale Use Cases (`GetSales`, `GetSaleById`, `WatchSales`, `WatchRecentSales`).
+- **Widget Decomposition** — 9 pages refactored, 16 widgets extracted (~3,800 lines moved from pages → widgets/domain).
+- **Report Domain Logic** — `_completedSales`, `_netRevenue`, `_byMethod`, `_topProducts` moved to `ReportCalculator` extension on `List<Sale>`.
+
+### Added
+
+- `Settings` aggregate root + 12 typed group entities + `SettingsMapper` + `SettingsPersistenceService`.
+- Settings Use Cases — `GetSettings`, `UpdateSettings`, `UpdateSettingGroup` with `SettingsFailure` types.
+- Failure types — `SaleFailure`, `ProductFailure`, `DailyCloseFailure`, `InventoryFailure`, `HistoryFailure`, `ReportFailure`.
+- Sale Use Cases — `GetSales`, `GetSaleById`, `WatchSales`, `WatchRecentSales`.
+- Extracted widgets — `OnboardingHeroSection`, `OnboardingSection`, `GreenChoiceChip`, `OnboardingSheetOption`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `CompactCartFab`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `DailyCloseDateCard`, `DailyCloseSummaryCard`, `DailyCloseReconciliationCard`, `DailyCloseSummaryRow`, `DailyCloseReadOnlyRow`, `ProductCategoryAutocomplete`, `PromptpayPreviewCard`, `PromptpayInfoCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`.
+- Domain extension — `ReportCalculator` on `List<Sale>`.
+- Widget tests for all 16 extracted widgets + `ReportCalculatorTest`.
+
+### Changed
+
+- `SettingsRepositoryImpl` — returns `Settings` aggregate via `SettingsMapper`; serialization delegated to mapper.
+- `AppSettings` — marked `@Deprecated` as facade over `Settings`.
+- `SettingsCubit` → delegates persistence to `SettingsPersistenceService`.
+- `DailyCloseCubit`, `ProductImageService`, `SaleBloc` — updated to typed group accessors.
+- 9 pages decomposed — `onboarding`, `cart_review`, `image_settings`, `backup_settings`, `daily_close`, `sale_page` (renamed from `sale_page_redesign`), `product_form`, `promptpay_settings`, `report_page`.
+
+### Fixed
+
+- Updated all consumers to typed group accessors or `@Deprecated` facade pattern.
+- Removed dead code (old private widget classes) from 8 refactored pages.
+- `SettingsRepositoryImplTest` — mocks `getAll()` instead of individual getters.
+
+`flutter analyze` → **0 issues** · `flutter test` → **337/337 passing**
+
+---
+
 ## [0.7.2] - 2026-06-08
 
 Data resilience and cart UX — sync columns, backup encryption, settings hierarchy, and button animations
@@ -1030,7 +1069,7 @@ Stability and UX hardening for the offline POS workflow: safer sales writes, cle
   - `AppEmptyState` for consistent empty/error states with compact-height handling
   - `MoneyText` for consistent currency display
   - `SectionCard` for grouped settings and dashboard surfaces
-- **Sale tab redesign** via `sale_page_redesign.dart`:
+- **Sale tab redesign** via `sale_page.dart`:
   - Search-first product catalog
   - Category chips
   - Responsive product grid
@@ -1099,7 +1138,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.6.3...v0.7.0

@@ -291,7 +291,7 @@ These were identified in the Round-2 bug analysis but are small UX improvements,
 - On tap → `showDialog` with a `TextField` (numeric, pre-filled with current qty)
 - On confirm → dispatch `SaleItemQtyChanged(productId: ..., qty: parsed)` (clamped to stock)
 
-**Files:** `sale_page_redesign.dart` (`_CartItemRow`)
+**Files:** `sale_page.dart` (`_CartItemRow`)
 
 ---
 

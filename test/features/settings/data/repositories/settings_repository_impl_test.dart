@@ -1,9 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/payment_config.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/receipt_config.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/shop_info.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/tax_config.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/ui_config.dart';
 
 class MockSettingsLocalDatasource extends Mock
     implements SettingsLocalDatasource {}
@@ -19,108 +23,82 @@ void main() {
     });
 
     test('load returns defaults when datasource is empty', () async {
-      when(() => mockDatasource.getString(any())).thenAnswer((_) async => null);
-      when(() => mockDatasource.getInt(any())).thenAnswer((_) async => null);
-      when(() => mockDatasource.getBool(any())).thenAnswer((_) async => null);
-      when(() => mockDatasource.getDouble(any())).thenAnswer((_) async => null);
+      when(() => mockDatasource.getAll()).thenAnswer((_) async => {});
 
       final settings = await repo.load();
 
-      expect(settings.locale, const Locale('th'));
-      expect(settings.themeMode, ThemeMode.system);
-      expect(settings.shopName, '');
-      expect(settings.currency, '฿');
-      expect(settings.showShopInfoOnReceipt, isTrue);
-      expect(settings.autoPrintPrompt, isTrue);
-      expect(settings.vatRate, 7.0);
-      expect(settings.vatMode, 'NONE');
-      expect(settings.receiptPreviewStyle, 'thermal');
-      expect(settings.showPreSalePreview, isTrue);
-      expect(settings.showPostSalePreview, isTrue);
+      expect(settings.uiConfig.locale, 'th');
+      expect(settings.uiConfig.themeMode, 'system');
+      expect(settings.shopInfo.name, '');
+      expect(settings.paymentConfig.currency, '฿');
+      expect(settings.receiptConfig.showShopInfo, isTrue);
+      expect(settings.receiptConfig.autoPrintPrompt, isTrue);
+      expect(settings.taxConfig.vatRate, 7.0);
+      expect(settings.taxConfig.vatMode, 'NONE');
+      expect(settings.receiptConfig.receiptPreviewStyle, 'thermal');
+      expect(settings.receiptConfig.showPreSalePreview, isTrue);
+      expect(settings.receiptConfig.showPostSalePreview, isTrue);
     });
 
     test('load returns saved values from datasource', () async {
-      when(
-        () => mockDatasource.getString('locale'),
-      ).thenAnswer((_) async => 'en');
-      when(
-        () => mockDatasource.getInt('theme'),
-      ).thenAnswer((_) async => ThemeMode.dark.index);
-      when(
-        () => mockDatasource.getString('shopName'),
-      ).thenAnswer((_) async => 'My Shop');
-      when(
-        () => mockDatasource.getString('currency'),
-      ).thenAnswer((_) async => '\$');
-      when(
-        () => mockDatasource.getBool('showShopInfo'),
-      ).thenAnswer((_) async => false);
-      when(
-        () => mockDatasource.getString(
-          any(
-            that: isNot(
-              isIn(['locale', 'theme', 'shopName', 'currency', 'showShopInfo']),
-            ),
-          ),
-        ),
-      ).thenAnswer((_) async => null);
-      when(
-        () => mockDatasource.getInt(any(that: isNot(equals('theme')))),
-      ).thenAnswer((_) async => null);
-      when(
-        () => mockDatasource.getBool(any(that: isNot(equals('showShopInfo')))),
-      ).thenAnswer((_) async => null);
-      when(() => mockDatasource.getDouble(any())).thenAnswer((_) async => null);
+      when(() => mockDatasource.getAll()).thenAnswer(
+        (_) async => {
+          'locale': 'en',
+          'theme': 'dark',
+          'shopName': 'My Shop',
+          'currency': '\$',
+          'showShopInfo': 'false',
+        },
+      );
 
       final settings = await repo.load();
 
-      expect(settings.locale, const Locale('en'));
-      expect(settings.themeMode, ThemeMode.dark);
-      expect(settings.shopName, 'My Shop');
-      expect(settings.currency, '\$');
-      expect(settings.showShopInfoOnReceipt, isFalse);
-      expect(settings.autoPrintPrompt, isTrue);
-      expect(settings.vatRate, 7.0);
-      expect(settings.vatMode, 'NONE');
-      expect(settings.receiptPreviewStyle, 'thermal');
-      expect(settings.showPreSalePreview, isTrue);
-      expect(settings.showPostSalePreview, isTrue);
+      expect(settings.uiConfig.locale, 'en');
+      expect(settings.uiConfig.themeMode, 'dark');
+      expect(settings.shopInfo.name, 'My Shop');
+      expect(settings.paymentConfig.currency, '\$');
+      expect(settings.receiptConfig.showShopInfo, isFalse);
+      expect(settings.receiptConfig.autoPrintPrompt, isTrue);
+      expect(settings.taxConfig.vatRate, 7.0);
+      expect(settings.taxConfig.vatMode, 'NONE');
+      expect(settings.receiptConfig.receiptPreviewStyle, 'thermal');
+      expect(settings.receiptConfig.showPreSalePreview, isTrue);
+      expect(settings.receiptConfig.showPostSalePreview, isTrue);
     });
 
     test('save persists all settings to datasource', () async {
       when(
         () => mockDatasource.setString(any(), any()),
       ).thenAnswer((_) async {});
-      when(() => mockDatasource.setInt(any(), any())).thenAnswer((_) async {});
-      when(() => mockDatasource.setBool(any(), any())).thenAnswer((_) async {});
-      when(
-        () => mockDatasource.setDouble(any(), any()),
-      ).thenAnswer((_) async {});
 
-      const settings = AppSettings(
-        locale: Locale('en'),
-        themeMode: ThemeMode.light,
-        shopName: 'Test Shop',
-        address: '123 Street',
-        phone: '0812345678',
-        currency: '\$',
-        dateFormat: 'yyyy-MM-dd',
-        receiptNote: 'Thank you!',
-        showShopInfoOnReceipt: false,
-        autoPrintPrompt: false,
-        vatRate: 10.0,
-        vatMode: 'INCLUSIVE',
-        receiptPreviewStyle: 'card',
-        showPreSalePreview: false,
-        showPostSalePreview: false,
+      final settings = const Settings(
+        shopInfo: ShopInfo(
+          name: 'Test Shop',
+          address: '123 Street',
+          phone: '0812345678',
+        ),
+        receiptConfig: ReceiptConfig(
+          receiptSize: '80mm',
+          receiptPreviewStyle: 'card',
+          receiptNote: 'Thank you!',
+          showShopInfo: false,
+          autoPrintPrompt: false,
+          showPreSalePreview: false,
+          showPostSalePreview: false,
+        ),
+        taxConfig: TaxConfig(vatRate: 10.0, vatMode: 'INCLUSIVE'),
+        paymentConfig: PaymentConfig(currency: '\$'),
+        uiConfig: UiConfig(
+          locale: 'en',
+          themeMode: 'light',
+          dateFormat: 'yyyy-MM-dd',
+        ),
       );
 
       await repo.save(settings);
 
       verify(() => mockDatasource.setString('locale', 'en')).called(1);
-      verify(
-        () => mockDatasource.setInt('theme', ThemeMode.light.index),
-      ).called(1);
+      verify(() => mockDatasource.setString('theme', 'light')).called(1);
       verify(() => mockDatasource.setString('shopName', 'Test Shop')).called(1);
       verify(() => mockDatasource.setString('address', '123 Street')).called(1);
       verify(() => mockDatasource.setString('phone', '0812345678')).called(1);
@@ -131,33 +109,51 @@ void main() {
       verify(
         () => mockDatasource.setString('receiptNote', 'Thank you!'),
       ).called(1);
-      verify(() => mockDatasource.setBool('showShopInfo', false)).called(1);
-      verify(() => mockDatasource.setBool('autoPrintPrompt', false)).called(1);
-      verify(() => mockDatasource.setDouble('vatRate', 10.0)).called(1);
+      verify(() => mockDatasource.setString('showShopInfo', 'false')).called(1);
+      verify(
+        () => mockDatasource.setString('autoPrintPrompt', 'false'),
+      ).called(1);
+      verify(() => mockDatasource.setString('vatRate', '10.0')).called(1);
       verify(() => mockDatasource.setString('vatMode', 'INCLUSIVE')).called(1);
       verify(
         () => mockDatasource.setString('receiptPreviewStyle', 'card'),
       ).called(1);
       verify(
-        () => mockDatasource.setBool('showPreSalePreview', false),
+        () => mockDatasource.setString('showPreSalePreview', 'false'),
       ).called(1);
       verify(
-        () => mockDatasource.setBool('showPostSalePreview', false),
+        () => mockDatasource.setString('showPostSalePreview', 'false'),
       ).called(1);
     });
 
-    test('load handles invalid theme index gracefully', () async {
-      when(() => mockDatasource.getString(any())).thenAnswer((_) async => null);
-      when(() => mockDatasource.getInt('theme')).thenAnswer((_) async => 999);
+    test('load normalizes invalid theme string to system', () async {
       when(
-        () => mockDatasource.getInt(any(that: isNot(equals('theme')))),
-      ).thenAnswer((_) async => null);
-      when(() => mockDatasource.getBool(any())).thenAnswer((_) async => null);
-      when(() => mockDatasource.getDouble(any())).thenAnswer((_) async => null);
+        () => mockDatasource.getAll(),
+      ).thenAnswer((_) async => {'theme': 'invalid'});
 
       final settings = await repo.load();
 
-      expect(settings.themeMode, ThemeMode.system);
+      expect(settings.uiConfig.themeMode, 'system');
+    });
+
+    test('load converts legacy theme index 2 to system', () async {
+      when(
+        () => mockDatasource.getAll(),
+      ).thenAnswer((_) async => {'theme': '2'});
+
+      final settings = await repo.load();
+
+      expect(settings.uiConfig.themeMode, 'system');
+    });
+
+    test('load converts legacy theme index 0 to light', () async {
+      when(
+        () => mockDatasource.getAll(),
+      ).thenAnswer((_) async => {'theme': '0'});
+
+      final settings = await repo.load();
+
+      expect(settings.uiConfig.themeMode, 'light');
     });
   });
 }

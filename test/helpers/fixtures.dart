@@ -101,7 +101,7 @@ final tSale = Sale(
   items: const [tSaleItem],
 );
 
-const tAppSettings = AppSettings();
+final tAppSettings = AppSettings();
 
 final tInventoryLog = InventoryLog(
   id: 'invlog-0001-0001-0001-000000000001',

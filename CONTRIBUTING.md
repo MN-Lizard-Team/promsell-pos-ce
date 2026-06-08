@@ -143,7 +143,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **286 automated tests**. All must pass before submitting a PR.
+The project has **339 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests

@@ -1,26 +1,31 @@
-import 'dart:async';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/services/settings_persistence_service.dart';
 
 part 'settings_state.dart';
 
 @lazySingleton
 class SettingsCubit extends Cubit<SettingsState> {
-  SettingsCubit(this._repository) : super(const SettingsState());
+  SettingsCubit(this._repository, this._persistenceService)
+    : super(SettingsState());
 
   final SettingsRepository _repository;
-  Timer? _saveTimer;
+  final SettingsPersistenceService _persistenceService;
 
   Future<void> load() async {
     emit(state.copyWith(status: SettingsStatus.loading, errorMessage: null));
     try {
       final settings = await _repository.load();
-      emit(state.copyWith(status: SettingsStatus.loaded, settings: settings));
+      emit(
+        state.copyWith(
+          status: SettingsStatus.loaded,
+          settings: AppSettings.fromSettings(settings),
+        ),
+      );
     } catch (e) {
       debugPrint('SettingsCubit.load failed: $e');
       emit(
@@ -41,17 +46,10 @@ class SettingsCubit extends Cubit<SettingsState> {
         errorMessage: null,
       ),
     );
-    _debounceSave(updated);
+    _persistenceService.scheduleSave(updated);
   }
 
-  void _debounceSave(AppSettings settings) {
-    _saveTimer?.cancel();
-    _saveTimer = Timer(const Duration(milliseconds: 800), () {
-      _save(settings);
-    });
-  }
-
-  Future<void> _save(AppSettings settings) async {
+  Future<void> update(AppSettings settings) async {
     final previous = state.settings;
     emit(
       state.copyWith(
@@ -61,7 +59,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       ),
     );
     try {
-      await _repository.save(settings);
+      await _persistenceService.saveImmediately(settings);
       emit(state.copyWith(status: SettingsStatus.saved));
     } catch (e) {
       emit(
@@ -74,14 +72,9 @@ class SettingsCubit extends Cubit<SettingsState> {
     }
   }
 
-  Future<void> update(AppSettings settings) async {
-    _saveTimer?.cancel();
-    await _save(settings);
-  }
-
   @override
   Future<void> close() {
-    _saveTimer?.cancel();
+    _persistenceService.dispose();
     return super.close();
   }
 }

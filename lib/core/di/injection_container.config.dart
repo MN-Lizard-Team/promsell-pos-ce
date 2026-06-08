@@ -16,6 +16,8 @@ import 'package:promsell_pos_ce/core/database/app_database.dart' as _i422;
 import 'package:promsell_pos_ce/core/di/bloc_module.dart' as _i1055;
 import 'package:promsell_pos_ce/core/di/database_module.dart' as _i205;
 import 'package:promsell_pos_ce/core/di/image_picker_module.dart' as _i714;
+import 'package:promsell_pos_ce/core/services/backup_encryption_service.dart'
+    as _i177;
 import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart'
     as _i622;
 import 'package:promsell_pos_ce/features/daily_close/data/repositories/daily_close_repository_impl.dart'
@@ -92,8 +94,16 @@ import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repositor
     as _i771;
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart'
     as _i648;
+import 'package:promsell_pos_ce/features/sale/domain/usecases/get_sale_by_id.dart'
+    as _i444;
+import 'package:promsell_pos_ce/features/sale/domain/usecases/get_sales.dart'
+    as _i705;
 import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart'
     as _i233;
+import 'package:promsell_pos_ce/features/sale/domain/usecases/watch_recent_sales.dart'
+    as _i192;
+import 'package:promsell_pos_ce/features/sale/domain/usecases/watch_sales.dart'
+    as _i594;
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart'
     as _i648;
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart'
@@ -102,8 +112,16 @@ import 'package:promsell_pos_ce/features/settings/data/repositories/settings_rep
     as _i173;
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart'
     as _i243;
+import 'package:promsell_pos_ce/features/settings/domain/usecases/get_settings.dart'
+    as _i83;
+import 'package:promsell_pos_ce/features/settings/domain/usecases/update_setting_group.dart'
+    as _i669;
+import 'package:promsell_pos_ce/features/settings/domain/usecases/update_settings.dart'
+    as _i261;
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart'
     as _i425;
+import 'package:promsell_pos_ce/features/settings/presentation/services/settings_persistence_service.dart'
+    as _i307;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -117,6 +135,9 @@ extension GetItInjectableX on _i174.GetIt {
     final blocModule = _$BlocModule();
     gh.lazySingleton<_i422.AppDatabase>(() => databaseModule.appDatabase);
     gh.lazySingleton<_i183.ImagePicker>(() => imagePickerModule.imagePicker);
+    gh.lazySingleton<_i177.BackupEncryptionService>(
+      () => _i177.BackupEncryptionService(),
+    );
     gh.lazySingleton<_i734.ReceiptPdfService>(() => _i734.ReceiptPdfService());
     gh.lazySingleton<_i409.ProductLocalDatasource>(
       () => _i409.ProductLocalDatasourceImpl(gh<_i422.AppDatabase>()),
@@ -180,8 +201,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i771.SaleRepository>(
       () => _i679.SaleRepositoryImpl(gh<_i942.SaleLocalDatasource>()),
     );
-    gh.lazySingleton<_i425.SettingsCubit>(
-      () => _i425.SettingsCubit(gh<_i243.SettingsRepository>()),
+    gh.factory<_i83.GetSettings>(
+      () => _i83.GetSettings(gh<_i243.SettingsRepository>()),
+    );
+    gh.factory<_i669.UpdateSettingGroup>(
+      () => _i669.UpdateSettingGroup(gh<_i243.SettingsRepository>()),
+    );
+    gh.factory<_i261.UpdateSettings>(
+      () => _i261.UpdateSettings(gh<_i243.SettingsRepository>()),
+    );
+    gh.factory<_i307.SettingsPersistenceService>(
+      () => _i307.SettingsPersistenceService(gh<_i243.SettingsRepository>()),
     );
     gh.factory<_i696.GetDailyCloseByDate>(
       () => _i696.GetDailyCloseByDate(gh<_i819.DailyCloseRepository>()),
@@ -206,8 +236,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i648.CreateSale>(
       () => _i648.CreateSale(gh<_i771.SaleRepository>()),
     );
+    gh.factory<_i444.GetSaleById>(
+      () => _i444.GetSaleById(gh<_i771.SaleRepository>()),
+    );
+    gh.factory<_i705.GetSales>(
+      () => _i705.GetSales(gh<_i771.SaleRepository>()),
+    );
     gh.factory<_i233.VoidSale>(
       () => _i233.VoidSale(gh<_i771.SaleRepository>()),
+    );
+    gh.factory<_i192.WatchRecentSales>(
+      () => _i192.WatchRecentSales(gh<_i771.SaleRepository>()),
+    );
+    gh.factory<_i594.WatchSales>(
+      () => _i594.WatchSales(gh<_i771.SaleRepository>()),
     );
     gh.factory<_i648.SaleBloc>(
       () => _i648.SaleBloc(
@@ -229,6 +271,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i502.ProductImageServiceImpl(
         gh<_i243.SettingsRepository>(),
         picker: gh<_i183.ImagePicker>(),
+      ),
+    );
+    gh.lazySingleton<_i425.SettingsCubit>(
+      () => _i425.SettingsCubit(
+        gh<_i243.SettingsRepository>(),
+        gh<_i307.SettingsPersistenceService>(),
       ),
     );
     gh.factory<_i21.InventoryLogCubit>(

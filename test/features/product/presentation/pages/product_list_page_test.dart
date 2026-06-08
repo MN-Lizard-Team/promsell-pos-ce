@@ -21,10 +21,7 @@ void main() {
     mockProductBloc = MockProductBloc();
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.loaded,
-        settings: AppSettings(),
-      ),
+      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
     );
     sl.registerSingleton<ProductBloc>(mockProductBloc);
   });

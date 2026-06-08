@@ -8,6 +8,8 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.d
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_category_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_dashboard_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_status_chip.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/general_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/shop_info_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/sales_settings_page.dart';
@@ -246,7 +248,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         padding: const EdgeInsets.symmetric(vertical: 12),
         children: [
           if (showGrouped) ...[
-            _SettingsDashboardCard(
+            SettingsDashboardCard(
               settings: s,
               localeLabel: _localeLabel(context),
               themeLabel: _themeLabel(context),
@@ -254,7 +256,6 @@ class _SettingsRootViewState extends State<_SettingsRootView>
               themeColor: _themeColor(),
               backupStatus: _backupStatus(context),
               st: st,
-              l10n: l10n,
               onLocaleToggle: () {
                 final cubit = context.read<SettingsCubit>();
                 final next = s.locale.languageCode == 'th'
@@ -331,7 +332,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         title: l10n.settingsShopInfo,
         accent: st.softAccent,
         subtitle: s.shopName.isNotEmpty ? s.shopName : null,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: shopComplete
               ? l10n.settingsStatusComplete
               : l10n.settingsStatusIncomplete,
@@ -344,7 +345,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         icon: Icons.point_of_sale_outlined,
         title: l10n.settingsSales,
         accent: st.softAccent,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: s.currency,
           color: st.softAccent,
           st: st,
@@ -355,7 +356,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         icon: Icons.receipt_long_outlined,
         title: l10n.settingsReceipt,
         accent: st.softAccent,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: s.receiptSize,
           color: st.softAccent,
           st: st,
@@ -366,7 +367,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         icon: Icons.local_offer_outlined,
         title: l10n.settingsDiscountPolicy,
         accent: st.softAccent,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: s.activeDiscountPreset.name,
           color: st.softAccent,
           st: st,
@@ -377,7 +378,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         icon: Icons.discount_outlined,
         title: l10n.discountPresetsTitle,
         accent: st.softAccent,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: '${s.discountPresets.length}',
           color: st.softAccent,
           st: st,
@@ -388,7 +389,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         icon: Icons.inventory_2_outlined,
         title: l10n.settingsStockPolicy,
         accent: st.softAccent,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: s.allowOversell ? 'ON' : '${s.lowStockThreshold}',
           color: s.allowOversell ? AppColors.error : st.softAccent,
           st: st,
@@ -410,7 +411,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         title: l10n.promptpay,
         accent: st.softAccent,
         subtitle: s.promptpayId.isNotEmpty ? s.promptpayId : null,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: s.promptpayId.isNotEmpty
               ? l10n.settingsStatusActive
               : l10n.settingsStatusNotSet,
@@ -434,7 +435,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         title: l10n.settingsGeneral,
         accent: st.softAccent,
         subtitle: '${_localeLabel(context)} · ${_themeLabel(context)}',
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: s.locale.languageCode.toUpperCase(),
           color: st.softAccent,
           st: st,
@@ -446,7 +447,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         title: l10n.settingsImages,
         accent: st.softAccent,
         subtitle: '${s.imageMaxWidth}px · ${s.imageQuality}%',
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: '${s.imageMaxWidth}px',
           color: st.softAccent,
           st: st,
@@ -469,7 +470,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         title: l10n.settingsDailyCloseTitle,
         accent: st.softAccent,
         subtitle: l10n.settingsDailyCloseSubtitle,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: l10n.closeDay,
           color: st.softAccent,
           st: st,
@@ -483,7 +484,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         subtitle: s.backupReminderDays == 0
             ? l10n.backupOff
             : l10n.backupEveryNDays(s.backupReminderDays),
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: backup.label,
           color: backup.color,
           st: st,
@@ -495,7 +496,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
         title: l10n.settingsDbHealthTitle,
         accent: st.softAccent,
         subtitle: l10n.settingsDbHealthSubtitle,
-        statusChip: _StatusChip(
+        statusChip: SettingsStatusChip(
           label: l10n.dbHealthTitle,
           color: st.softAccent,
           st: st,
@@ -582,216 +583,4 @@ class _CategoryItem {
   final Color accent;
   final String? subtitle;
   final Widget page;
-}
-
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({
-    required this.label,
-    required this.color,
-    required this.st,
-  });
-
-  final String label;
-  final Color color;
-  final SettingsThemeExtension st;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.35), width: 1),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingsDashboardCard extends StatelessWidget {
-  const _SettingsDashboardCard({
-    required this.settings,
-    required this.localeLabel,
-    required this.themeLabel,
-    required this.themeIcon,
-    required this.themeColor,
-    required this.backupStatus,
-    required this.st,
-    required this.l10n,
-    this.onLocaleToggle,
-    this.onThemeToggle,
-  });
-
-  final AppSettings settings;
-  final String localeLabel;
-  final String themeLabel;
-  final IconData themeIcon;
-  final Color themeColor;
-  final ({String label, Color color}) backupStatus;
-  final SettingsThemeExtension st;
-  final AppLocalizations l10n;
-  final VoidCallback? onLocaleToggle;
-  final VoidCallback? onThemeToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final shopName = settings.shopName.isNotEmpty ? settings.shopName : '—';
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            st.softAccent.withValues(alpha: 0.35),
-            st.softAccent.withValues(alpha: 0.10),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(st.cardRadius),
-        border: Border.all(
-          color: st.softAccent.withValues(alpha: 0.50),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: st.iconContainerBackground,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.settings_outlined,
-              color: st.softAccent,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            l10n.settingsTitle,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _DashboardBadge(
-                icon: Icons.store_outlined,
-                label: shopName,
-                color: settings.shopName.isNotEmpty
-                    ? st.softAccent
-                    : st.mutedText,
-                st: st,
-              ),
-              _DashboardBadge(
-                icon: Icons.language_outlined,
-                label: localeLabel,
-                color: st.softAccent,
-                st: st,
-                onTap: onLocaleToggle,
-              ),
-              _DashboardBadge(
-                icon: themeIcon,
-                label: themeLabel,
-                color: themeColor,
-                st: st,
-                onTap: onThemeToggle,
-              ),
-              _DashboardBadge(
-                icon: Icons.backup_outlined,
-                label: backupStatus.label,
-                color: backupStatus.color,
-                st: st,
-              ),
-              _DashboardBadge(
-                icon: Icons.qr_code_2,
-                label: settings.promptpayId.isNotEmpty
-                    ? l10n.settingsStatusActive
-                    : l10n.settingsStatusNotSet,
-                color: settings.promptpayId.isNotEmpty
-                    ? st.softAccent
-                    : st.mutedText,
-                st: st,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DashboardBadge extends StatelessWidget {
-  const _DashboardBadge({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.st,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final SettingsThemeExtension st;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final badge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.20),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.50), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (onTap == null) return badge;
-
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: badge,
-      ),
-    );
-  }
 }

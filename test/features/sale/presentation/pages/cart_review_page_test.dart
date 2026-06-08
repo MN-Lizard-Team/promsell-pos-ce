@@ -41,10 +41,7 @@ void main() {
     mockSaleBloc = MockSaleBloc();
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.loaded,
-        settings: AppSettings(),
-      ),
+      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
     );
   });
 

@@ -5,12 +5,15 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/image_viewer_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_detail_row.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_dotted_line_row.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_item_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 
 class CartReviewPage extends StatelessWidget {
   const CartReviewPage({super.key});
@@ -82,8 +85,11 @@ class CartReviewPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _DetailRow('Price', '฿${item.product.price.toStringAsFixed(2)}'),
-              _DetailRow('Stock', '${item.product.stock}'),
+              CartDetailRow(
+                'Price',
+                '฿${item.product.price.toStringAsFixed(2)}',
+              ),
+              CartDetailRow('Stock', '${item.product.stock}'),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -156,10 +162,9 @@ class CartReviewPage extends StatelessWidget {
                   separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (_, index) {
                     final item = items[index];
-                    return _ItemCard(
+                    return CartItemCard(
                       item: item,
                       currency: currency,
-                      theme: theme,
                       onImageTap: () => _showImageDialog(context, item),
                       onRowTap: () => _showProductDetailSheet(context, item),
                       onDecrement: () => _changeQty(context, item, -1),
@@ -185,29 +190,26 @@ class CartReviewPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _DottedLineRow(
+                        CartDottedLineRow(
                           label: context.l10n.receiptLabelSubtotal,
                           value: state.itemsSubtotal,
                           currency: currency,
-                          theme: theme,
                         ),
                         if (itemDiscountTotal > 0) ...[
                           const SizedBox(height: 8),
-                          _DottedLineRow(
+                          CartDottedLineRow(
                             label: context.l10n.receiptItemDiscounts,
                             value: -itemDiscountTotal,
                             currency: currency,
-                            theme: theme,
                             valueColor: theme.colorScheme.error,
                           ),
                         ],
                         if (state.hasCartDiscount) ...[
                           const SizedBox(height: 8),
-                          _DottedLineRow(
+                          CartDottedLineRow(
                             label: context.l10n.cartDiscount,
                             value: -state.cartDiscountAmount,
                             currency: currency,
-                            theme: theme,
                             valueColor: theme.colorScheme.error,
                           ),
                         ],
@@ -256,366 +258,6 @@ class CartReviewPage extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow(this.label, this.value);
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ItemCard extends StatelessWidget {
-  const _ItemCard({
-    required this.item,
-    required this.currency,
-    required this.theme,
-    required this.onImageTap,
-    required this.onRowTap,
-    required this.onDecrement,
-    required this.onIncrement,
-    required this.onDelete,
-  });
-
-  final CartItem item;
-  final String currency;
-  final ThemeData theme;
-  final VoidCallback onImageTap;
-  final VoidCallback onRowTap;
-  final VoidCallback onDecrement;
-  final VoidCallback onIncrement;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 1,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onRowTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: onImageTap,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: theme.colorScheme.primaryContainer,
-                      width: 2,
-                    ),
-                  ),
-                  child: ProductAvatar(
-                    imagePath: item.product.imagePath,
-                    imageThumbnailPath: item.product.imageThumbnailPath,
-                    imageUrl: item.product.imageUrl,
-                    size: 48,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      item.product.name,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${item.qty} x $currency${item.product.price.toStringAsFixed(2)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    if (item.discountAmount > 0) ...[
-                      const SizedBox(height: 6),
-                      Chip(
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                        backgroundColor: theme.colorScheme.errorContainer,
-                        side: BorderSide.none,
-                        avatar: Icon(
-                          Icons.local_offer_outlined,
-                          size: 14,
-                          color: theme.colorScheme.error,
-                        ),
-                        label: Text(
-                          '-$currency${item.discountAmount.toStringAsFixed(2)}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.error,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        _QtyButton(
-                          icon: Icons.remove,
-                          onPressed: onDecrement,
-                          theme: theme,
-                        ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => _showQtyDialog(context, item: item),
-                          child: Text(
-                            '${item.qty}',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _QtyButton(
-                          icon: Icons.add,
-                          onPressed: onIncrement,
-                          theme: theme,
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          color: theme.colorScheme.error,
-                          tooltip: 'Remove item',
-                          onPressed: onDelete,
-                          iconSize: 20,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  MoneyText(
-                    value: item.subtotal,
-                    currency: currency,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                    color: theme.colorScheme.primary,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showQtyDialog(BuildContext context, {required CartItem item}) {
-    final allowOversell = context
-        .read<SettingsCubit>()
-        .state
-        .settings
-        .allowOversell;
-    final ctrl = TextEditingController(text: '${item.qty}');
-    final l10n = context.l10n;
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(item.product.name),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(signed: true),
-          decoration: InputDecoration(
-            labelText: l10n.quantityLabel,
-            suffixText: item.product.trackStock
-                ? l10n.stockLabel(item.product.stock)
-                : null,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final qty = int.tryParse(ctrl.text);
-              if (qty == null || qty < 0) return;
-              var clamped = qty;
-              if (item.product.trackStock && !allowOversell) {
-                clamped = qty.clamp(0, item.product.stock);
-              }
-              Navigator.pop(context);
-              if (clamped != item.qty) {
-                context.read<SaleBloc>().add(
-                  SaleItemQtyChanged(
-                    productId: item.product.id,
-                    qty: clamped,
-                    allowOversell: allowOversell,
-                  ),
-                );
-              }
-            },
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QtyButton extends StatefulWidget {
-  const _QtyButton({
-    required this.icon,
-    required this.onPressed,
-    required this.theme,
-  });
-
-  final IconData icon;
-  final VoidCallback onPressed;
-  final ThemeData theme;
-
-  @override
-  State<_QtyButton> createState() => _QtyButtonState();
-}
-
-class _QtyButtonState extends State<_QtyButton> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) {
-        setState(() => _pressed = false);
-        HapticFeedback.selectionClick();
-        widget.onPressed();
-      },
-      onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedScale(
-        scale: _pressed ? 0.85 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutBack,
-        child: Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: _pressed
-                ? widget.theme.colorScheme.primaryContainer
-                : widget.theme.colorScheme.primaryContainer.withValues(
-                    alpha: 0.5,
-                  ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(
-            widget.icon,
-            size: 18,
-            color: widget.theme.colorScheme.primary,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DottedLineRow extends StatelessWidget {
-  const _DottedLineRow({
-    required this.label,
-    required this.value,
-    required this.currency,
-    required this.theme,
-    this.valueColor,
-  });
-
-  final String label;
-  final double value;
-  final String currency;
-  final ThemeData theme;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final textStyle = theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.outlineVariant,
-                letterSpacing: 1.5,
-              );
-              final textSpan = TextSpan(text: '.', style: textStyle);
-              final painter = TextPainter(
-                text: textSpan,
-                textDirection: TextDirection.ltr,
-              )..layout();
-              final dotWidth = painter.width;
-              final count = (constraints.maxWidth / dotWidth).floor();
-              return Text(
-                '.' * count.clamp(0, 100),
-                style: textStyle,
-                maxLines: 1,
-                overflow: TextOverflow.clip,
-              );
-            },
-          ),
-        ),
-        const SizedBox(width: 8),
-        MoneyText(
-          value: value,
-          currency: currency,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-          color: valueColor ?? theme.colorScheme.onSurface,
-        ),
-      ],
     );
   }
 }

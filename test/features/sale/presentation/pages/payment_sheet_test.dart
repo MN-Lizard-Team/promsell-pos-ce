@@ -34,10 +34,7 @@ void main() {
     mockSaleBloc = MockSaleBloc();
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.loaded,
-        settings: AppSettings(),
-      ),
+      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
     );
     if (!GetIt.I.isRegistered<ReceiptPdfService>()) {
       GetIt.I.registerSingleton<ReceiptPdfService>(ReceiptPdfService());

@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.7.2
+# CODEBASE.md — Promsell POS CE v0.7.3
 
 ## System overview
 
@@ -89,6 +89,9 @@ features/<name>/
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
 | `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; `deleteImages`, `renameImages`; accepts `SettingsRepository`; `@LazySingleton` |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
+| `ReportCalculator` | `lib/features/report/domain/extensions/` | Domain extension on `List<Sale>`: `completedSales`, `voidedSales`, `netRevenue`, `voidedTotal`, `byPaymentMethod`, `topProducts` |
+| `SettingsMapper` | `lib/features/settings/data/mappers/` | `Settings` ↔ `Map<String,String>` serialization; handles legacy themeMode integer migration (0→light, 1→dark, 2→system) |
+| `SettingsPersistenceService` | `lib/features/settings/domain/services/` | Debounce Timer + persistence logic; extracted from `SettingsCubit` |
 | `BackupEncryptionService` | `lib/features/settings/data/services/` | AES-256-GCM encryption/decryption for SQLite backups with PIN-derived PBKDF2 key |
 | `DraftCartLocalDatasource` | `lib/features/sale/data/datasources/` | Persist/load `DraftCarts` + `DraftCartItems`; used by `DraftCartRepository` |
 | `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
@@ -104,16 +107,16 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page_redesign.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog` |
-| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`; services: `ProductImageService` |
+| Sale | `SaleBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow` |
+| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`, `ProductCategoryAutocomplete`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
-| Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard` |
-| Settings | `SettingsCubit` | Pages: 3-level hierarchy — `settings_root_page.dart` (topic groups), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `backup_settings_page.dart` (encryption toggle), `promptpay_settings_page.dart`, `db_health_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog` |
+| Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
+| Settings | `SettingsCubit` | Pages: 3-level hierarchy — `settings_root_page.dart`, `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 12 typed group entities |
 | Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
-| Daily Close | `DailyCloseCubit` | `daily_close_page.dart`, `daily_close_list_page.dart`; domain: `DailyClose`, `CloseDay`, `ReopenDay`, `GetDailyCloseByDate`, `GetDailyCloseList` |
-| Onboarding | (stateless wizard) | `onboarding_page.dart` — 6-step first-launch flow with `deviceId`/`devicePrefix` generation |
+| Daily Close | `DailyCloseCubit` | `daily_close_page.dart`, `daily_close_list_page.dart`; widgets: `DailyCloseDateCard`, `DailyCloseSummaryCard`, `DailyCloseReconciliationCard`, `DailyCloseSummaryRow`, `DailyCloseReadOnlyRow`; domain: `DailyClose`, `CloseDay`, `ReopenDay`, `GetDailyCloseByDate`, `GetDailyCloseList` |
+| Onboarding | (stateless wizard) | `onboarding_page.dart` — 6-step first-launch flow; widgets: `OnboardingHeroSection`, `OnboardingSection`, `GreenChoiceChip`, `OnboardingSheetOption` |
 | DB Health | (stateful page) | `db_health_page.dart` — file size, row counts, vacuum |
 
 ---
@@ -200,44 +203,42 @@ All state classes extend `Equatable` for efficient rebuilds.
 
 ## Settings persistence
 
-`SettingsRepositoryImpl` reads and writes `AppSettings` via `SettingsLocalDatasource` (Drift-backed typed key-value store).
+`SettingsRepositoryImpl` reads and writes a `Settings` aggregate root via `SettingsLocalDatasource`. `SettingsMapper` handles serialization to/from `Map<String,String>`.
 
-| Key | Type | Default |
-|-----|------|---------|
-| `locale` | String | `th` |
-| `themeMode` | String | `system` |
-| `shopName` | String | `''` |
-| `shopAddress` | String | `''` |
-| `shopPhone` | String | `''` |
-| `currency` | String | `฿` |
-| `dateFormat` | String | `dd/MM/yyyy` |
-| `receiptNote` | String | `''` |
-| `showShopInfo` | bool | `true` |
-| `autoPrintPrompt` | bool | `true` |
-| `vatRate` | double | `7.0` |
-| `vatMode` | String | `NONE` |
-| `receiptPreviewStyle` | String | `thermal` |
-| `showPreSalePreview` | bool | `true` |
-| `showPostSalePreview` | bool | `true` |
-| `allowOversell` | bool | `false` |
-| `lowStockThreshold` | int | `5` |
-| `enableItemDiscount` | bool | `false` |
-| `enableCartDiscount` | bool | `false` |
-| `maxDiscountPercent` | double | `0` |
-| `maxDiscountAmount` | double | `0` |
-| `defaultDiscountType` | String | `PERCENT` |
-| `discountPresets` | String (JSON) | `[]` |
-| `activeDiscountPresetId` | String | `''` |
-| `promptpayId` | String | `''` |
-| `receiptSize` | String | `80mm` |
-| `backupReminderDays` | int | `7` |
-| `lastBackupAt` | String | `null` |
-| `imageMaxWidth` | int | `800` |
-| `imageQuality` | int | `80` |
-| `maxDrafts` | int | `30` |
-| `cartCompactMode` | bool | `false` |
-| `ultraCompactMode` | bool | `false` |
-| `accessibilityMode` | bool | `false` |
+### Architecture
+
+```
+SettingsCubit
+  └── SettingsPersistenceService (debounce + save)
+        └── SettingsRepositoryImpl
+              ├── SettingsMapper (Settings ↔ Map<String,String>)
+              └── SettingsLocalDatasource (Drift key-value store)
+```
+
+### `Settings` aggregate root — 12 typed group entities
+
+| Group | Entity | Key fields |
+|-------|--------|-----------|
+| Shop | `ShopInfo` | name, address, phone |
+| Receipt | `ReceiptConfig` | receiptSize, receiptPreviewStyle, receiptNote, showShopInfo, autoPrintPrompt, showPreSalePreview, showPostSalePreview |
+| Tax | `TaxConfig` | vatRate, vatMode |
+| Discount | `DiscountConfig` | enableItemDiscount, enableCartDiscount, maxDiscountPercent, maxDiscountAmount, defaultDiscountType, discountPresets, activeDiscountPresetId |
+| Stock | `StockConfig` | allowOversell, lowStockThreshold |
+| Image | `ImageConfig` | maxWidth, quality |
+| Payment | `PaymentConfig` | currency, promptpayId |
+| Device | `DeviceConfig` | deviceId, devicePrefix |
+| UI | `UiConfig` | locale, themeMode, dateFormat, cartCompactMode, ultraCompactMode, accessibilityMode |
+| Daily Close | `DailyCloseConfig` | dailyCloseLock, lastClosedDate |
+| Backup | `BackupConfig` | reminderDays, lastBackupAt, encryptionEnabled |
+| Draft | `DraftConfig` | maxDrafts |
+
+### `@Deprecated` facade
+
+`AppSettings` is a temporary facade over `Settings` for backward compatibility during migration. Use `AppSettings.fromSettings()` / `toSettings()` at presentation layer boundaries.
+
+### Legacy migration
+
+`SettingsMapper` normalizes legacy integer `themeMode` values (`0`→`light`, `1`→`dark`, `2`→`system`) and falls back invalid values to `system`.
 
 ---
 
@@ -304,6 +305,10 @@ Two generators must be run after changes:
 | Feature UI strings | Both ARB files + generated localization files |
 | Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |
 | Feature `widgets/` folder | Corresponding page file import + widget tests |
+| `Settings` aggregate root (12 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all `AppSettings` consumers |
+| `SettingsMapper` | `SettingsRepositoryImpl` tests (mock `getAll()` return values); legacy migration handling |
+| Extracted widget (e.g. `CartItemCard`) | Parent page import update + widget test under `test/features/<name>/presentation/widgets/` |
+| Domain extension (e.g. `ReportCalculator`) | Pure Dart test under `test/features/<name>/domain/extensions/` |
 | BLoC / Cubit class | Update mock in `test/helpers/mocks.dart` |
 | Domain entity | Update `test/helpers/fixtures.dart` + corresponding `_test.dart` files |
 | `Sale` entity (new fields) | Update `sale_test.dart` props count, `_buildSale` in datasource |
@@ -322,7 +327,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-286 automated tests across 8 layers. Run with `flutter test`.
+339 automated tests across 8 layers. Run with `flutter test`.
 
 ### Test directory structure
 
@@ -337,11 +342,19 @@ test/
 │   └── utils/                  # Core utility tests (MoneyUtils, etc.)
 ├── features/
 │   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
+│   │   └── presentation/widgets/  # CartItemCard, CartDetailRow, CartQtyButton, CartDottedLineRow, CompactCartFab
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
+│   │   └── presentation/widgets/  # ProductCategoryAutocomplete
 │   ├── history/                # Use case, BLoC, repo tests
 │   ├── inventory/              # InventoryLog entity, use case, cubit, repo tests
-│   ├── report/                 # ReportCubit tests
-│   └── settings/               # Cubit, repo, widget tests
+│   ├── report/                 # ReportCubit tests + ReportCalculator domain tests
+│   │   └── domain/extensions/   # ReportCalculator_test.dart
+│   ├── settings/               # Cubit, repo, widget tests
+│   │   └── presentation/widgets/  # ImagePreviewCard, DemoImagePreview, BackupStatusCard, BackupInfoCard, PromptpayPreviewCard, PromptpayInfoCard, image_settings_labels
+│   ├── daily_close/            # Cubit, repo, widget tests
+│   │   └── presentation/widgets/  # DailyCloseDateCard, DailyCloseSummaryCard, DailyCloseReconciliationCard, DailyCloseSummaryRow, DailyCloseReadOnlyRow
+│   └── onboarding/             # Widget tests
+│       └── presentation/widgets/  # OnboardingHeroSection, OnboardingSection, GreenChoiceChip, OnboardingSheetOption
 ├── integration/
 │   ├── checkout_flow_test.dart  # End-to-end data layer checkout
 │   └── sale_integrity_test.dart # Void sale, adjust stock, full audit trail

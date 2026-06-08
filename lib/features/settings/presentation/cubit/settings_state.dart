@@ -3,11 +3,13 @@ part of 'settings_cubit.dart';
 enum SettingsStatus { initial, loading, loaded, saving, saved, failure }
 
 class SettingsState extends Equatable {
-  const SettingsState({
+  SettingsState({
     this.status = SettingsStatus.initial,
-    this.settings = const AppSettings(),
+    AppSettings? settings,
     this.errorMessage,
-  });
+  }) : settings = settings ?? AppSettings();
+
+  factory SettingsState.initial() => SettingsState();
 
   final SettingsStatus status;
   final AppSettings settings;

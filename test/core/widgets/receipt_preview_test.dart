@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.d
 
 void main() {
   group('ReceiptPreview', () {
-    const settings = AppSettings(
+    final settings = AppSettings(
       shopName: 'Test Shop',
       address: '123 Street',
       phone: '0812345678',
@@ -107,7 +107,7 @@ void main() {
     testWidgets('hides shop info when showShopInfoOnReceipt is false', (
       tester,
     ) async {
-      const hiddenSettings = AppSettings(
+      final hiddenSettings = AppSettings(
         shopName: 'Test Shop',
         address: '123 Street',
         showShopInfoOnReceipt: false,

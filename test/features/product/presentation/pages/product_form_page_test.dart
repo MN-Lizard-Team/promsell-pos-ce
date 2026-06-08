@@ -31,10 +31,7 @@ void main() {
       () => mockProductBloc.state,
     ).thenReturn(const ProductState(status: ProductStatus.success));
     when(() => mockSettingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.loaded,
-        settings: AppSettings(),
-      ),
+      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
     );
   });
 

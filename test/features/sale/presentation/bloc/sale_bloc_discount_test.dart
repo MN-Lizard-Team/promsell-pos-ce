@@ -5,7 +5,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
@@ -30,7 +30,7 @@ void main() {
     when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
     when(
       () => mockSettingsRepo.load(),
-    ).thenAnswer((_) async => const AppSettings(maxDrafts: 30));
+    ).thenAnswer((_) async => const Settings());
   });
 
   setUpAll(() {

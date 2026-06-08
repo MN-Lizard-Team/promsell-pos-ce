@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
-import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:intl/intl.dart';
+import 'package:promsell_pos_ce/features/report/domain/extensions/report_calculator.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/report_date_range_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/report_payment_method_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/report_top_products_card.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/summary_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -72,168 +73,43 @@ class _ReportView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Card(
-                    color: theme.colorScheme.primaryContainer.withValues(
-                      alpha: 0.3,
-                    ),
-                    child: InkWell(
-                      onTap: () => _pickRange(context, cubit, from, to),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.date_range,
-                              color: theme.colorScheme.primary,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                '${fmt.format(from)} – ${fmt.format(to)}',
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.edit_outlined,
-                              size: 18,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  ReportDateRangeCard(
+                    from: from,
+                    to: to,
+                    fmt: fmt,
+                    onTap: () => _pickRange(context, cubit, from, to),
                   ),
                   const SizedBox(height: 12),
                   SummaryCard(
                     title: context.l10n.netRevenue,
-                    value: _netRevenue(sales),
+                    value: sales.netRevenue,
                     currency: settings.currency,
                     subtitle: context.l10n.salesCount(
-                      _completedSales(sales).length,
+                      sales.completedSales.length,
                     ),
                     icon: Icons.attach_money,
                     color: theme.colorScheme.primary,
                   ),
-                  if (_voidedSales(sales).isNotEmpty) ...[
+                  if (sales.voidedSales.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     SummaryCard(
                       title: context.l10n.voidedTotal,
-                      value: _voidedTotal(sales),
+                      value: sales.voidedTotal,
                       currency: settings.currency,
                       subtitle: context.l10n.voidedSalesCount(
-                        _voidedSales(sales).length,
+                        sales.voidedSales.length,
                       ),
                       icon: Icons.block,
                       color: theme.colorScheme.error,
                     ),
                   ],
                   const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.byPaymentMethod,
-                            style: theme.textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 12),
-                          if (_byMethod(sales).isEmpty)
-                            AppEmptyState(
-                              icon: Icons.payments_outlined,
-                              title: context.l10n.noSalesYet,
-                            )
-                          else
-                            ..._byMethod(sales).entries.map(
-                              (e) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(localizePaymentMethod(context, e.key)),
-                                    MoneyText(
-                                      value: e.value,
-                                      currency: settings.currency,
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
+                  ReportPaymentMethodCard(
+                    byMethod: sales.byPaymentMethod(),
+                    currency: settings.currency,
                   ),
                   const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.l10n.topProducts,
-                            style: theme.textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 12),
-                          if (_topProducts(sales).isEmpty)
-                            AppEmptyState(
-                              icon: Icons.leaderboard_outlined,
-                              title: context.l10n.noSalesYet,
-                            )
-                          else
-                            ..._topProducts(
-                              sales,
-                            ).entries.toList().asMap().entries.map((entry) {
-                              final rank = entry.key + 1;
-                              final e = entry.value;
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 14,
-                                      backgroundColor:
-                                          theme.colorScheme.primaryContainer,
-                                      child: Text(
-                                        '$rank',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(
-                                              color: theme.colorScheme.primary,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(child: Text(e.key)),
-                                    Text(
-                                      context.l10n.units(e.value),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
-                        ],
-                      ),
-                    ),
-                  ),
+                  ReportTopProductsCard(topProducts: sales.topProducts()),
                 ],
               ),
             ),
@@ -253,43 +129,6 @@ class _ReportView extends StatelessWidget {
           body: body,
         );
       },
-    );
-  }
-
-  List<Sale> _completedSales(List<Sale> sales) =>
-      sales.where((s) => !s.isVoided).toList();
-
-  List<Sale> _voidedSales(List<Sale> sales) =>
-      sales.where((s) => s.isVoided).toList();
-
-  double _netRevenue(List<Sale> sales) =>
-      _completedSales(sales).fold(0.0, (sum, s) => sum + s.totalAmount);
-
-  double _voidedTotal(List<Sale> sales) =>
-      _voidedSales(sales).fold(0.0, (sum, s) => sum + s.totalAmount);
-
-  Map<String, double> _byMethod(List<Sale> sales) {
-    final map = <String, double>{};
-    for (final s in _completedSales(sales)) {
-      final key = normalizePaymentMethod(s.paymentMethod);
-      map[key] = (map[key] ?? 0) + s.totalAmount;
-    }
-    return map;
-  }
-
-  Map<String, int> _topProducts(List<Sale> sales) {
-    final qtyById = <String, int>{};
-    final nameById = <String, String>{};
-    for (final s in _completedSales(sales)) {
-      for (final item in s.items) {
-        nameById[item.productId] = item.productName;
-        qtyById[item.productId] = (qtyById[item.productId] ?? 0) + item.qty;
-      }
-    }
-    final sorted = qtyById.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    return Map.fromEntries(
-      sorted.take(5).map((e) => MapEntry(nameById[e.key] ?? e.key, e.value)),
     );
   }
 

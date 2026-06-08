@@ -52,7 +52,7 @@ void main() {
     });
 
     test('document builds without error', () {
-      const settings = AppSettings();
+      final settings = AppSettings();
       final doc = service.buildDocumentForTest(
         sale: sale,
         settings: settings,
@@ -62,7 +62,7 @@ void main() {
     });
 
     test('shop info hidden when showShopInfoOnReceipt is false', () {
-      const settings = AppSettings(
+      final settings = AppSettings(
         shopName: 'Test Shop',
         address: '123 Street',
         phone: '0812345678',
@@ -77,7 +77,7 @@ void main() {
     });
 
     test('receiptNote used as footer when not empty', () {
-      const settings = AppSettings(receiptNote: 'Come again!');
+      final settings = AppSettings(receiptNote: 'Come again!');
       final doc = service.buildDocumentForTest(
         sale: sale,
         settings: settings,

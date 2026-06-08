@@ -5,7 +5,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.d
 void main() {
   group('AppSettings', () {
     test('has correct defaults', () {
-      const settings = AppSettings();
+      final settings = AppSettings();
       expect(settings.locale, const Locale('th'));
       expect(settings.themeMode, ThemeMode.system);
       expect(settings.shopName, '');
@@ -37,13 +37,13 @@ void main() {
     });
 
     test('supports value equality', () {
-      const a = AppSettings();
-      const b = AppSettings();
+      final a = AppSettings();
+      final b = AppSettings();
       expect(a, equals(b));
     });
 
     test('copyWith updates selected fields', () {
-      const settings = AppSettings();
+      final settings = AppSettings();
       final updated = settings.copyWith(
         shopName: 'My Shop',
         currency: '\$',
@@ -55,9 +55,9 @@ void main() {
       expect(updated.locale, const Locale('th'));
     });
 
-    test('props contains all fields', () {
-      const settings = AppSettings();
-      expect(settings.props.length, 40);
+    test('props contains aggregate Settings', () {
+      final settings = AppSettings();
+      expect(settings.props.length, 1);
     });
   });
 }

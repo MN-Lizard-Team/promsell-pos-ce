@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page_redesign.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -25,10 +25,7 @@ void main() {
     mockProductBloc = MockProductBloc();
     when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
     when(() => mockSettingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.loaded,
-        settings: AppSettings(),
-      ),
+      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
     );
     when(() => mockProductBloc.state).thenReturn(
       const ProductState(status: ProductStatus.success, products: []),

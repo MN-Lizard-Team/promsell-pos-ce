@@ -404,10 +404,11 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   ) async {
     final count = await _draftRepo.countDrafts();
     final settings = await _settingsRepo.load();
-    if (count >= settings.maxDrafts) {
+    if (count >= settings.draftConfig.maxDrafts) {
       emit(
         state.copyWith(
-          errorMessage: 'Max drafts (${settings.maxDrafts}) reached',
+          errorMessage:
+              'Max drafts (${settings.draftConfig.maxDrafts}) reached',
         ),
       );
       return;
