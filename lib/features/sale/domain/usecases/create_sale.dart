@@ -20,6 +20,8 @@ class CreateSale {
     double? amountReceived,
     double? changeAmount,
     String? note,
+    String? paymentReference,
+    String? sendingBankCode,
   }) {
     Validators.nonEmptyCart(items);
     for (final item in items) {
@@ -37,6 +39,8 @@ class CreateSale {
       amountReceived: amountReceived,
       changeAmount: changeAmount,
       note: note,
+      paymentReference: paymentReference,
+      sendingBankCode: sendingBankCode,
     );
   }
 }

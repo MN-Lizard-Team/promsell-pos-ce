@@ -5,7 +5,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 
 const Object _unset = Object();
 
-enum SaleStatus { idle, processing, success, failure }
+enum SaleStatus { idle, processing, waitingPayment, success, failure }
 
 class SaleState extends Equatable {
   const SaleState({

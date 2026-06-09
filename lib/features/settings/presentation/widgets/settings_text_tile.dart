@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class SettingsTextTile extends StatelessWidget {
@@ -63,7 +64,7 @@ class SettingsTextTile extends StatelessWidget {
               ),
             )
           : Text(
-              'Tap to set',
+              context.l10n.tapToSet,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: st.mutedText,
                 fontSize: 14,

@@ -18,6 +18,7 @@ void main() {
   setUp(() {
     mockRepo = MockSettingsRepository();
     mockPersistence = MockSettingsPersistenceService();
+    when(() => mockPersistence.dispose()).thenAnswer((_) async {});
   });
 
   setUpAll(() {

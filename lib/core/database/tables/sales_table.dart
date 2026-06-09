@@ -17,6 +17,8 @@ class Sales extends Table {
   RealColumn get amountReceived => real().nullable()();
   RealColumn get changeAmount => real().nullable()();
   TextColumn get note => text().nullable()();
+  TextColumn get paymentReference => text().nullable()();
+  TextColumn get sendingBankCode => text().nullable()();
   DateTimeColumn get voidedAt => dateTime().nullable()();
   TextColumn get voidReason => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();

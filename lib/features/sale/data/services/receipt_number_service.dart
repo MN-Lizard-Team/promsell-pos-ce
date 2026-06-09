@@ -13,6 +13,8 @@ class ReceiptNumberService {
   static const _keySequenceDate = 'receiptSequenceDate';
   static const _keyDevicePrefix = 'devicePrefix';
 
+  /// Cached device prefix for performance. Not safe for multi-isolate
+  /// or concurrent access; acceptable for single-device POS.
   String? _cachedPrefix;
 
   /// Generate the next receipt number.

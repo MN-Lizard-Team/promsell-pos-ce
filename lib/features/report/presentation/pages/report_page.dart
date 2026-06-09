@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/report_date_range_card.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/report_payment_method_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/report_promptpay_card.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/report_top_products_card.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/summary_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -107,6 +108,12 @@ class _ReportView extends StatelessWidget {
                   ReportPaymentMethodCard(
                     byMethod: sales.byPaymentMethod(),
                     currency: settings.currency,
+                  ),
+                  const SizedBox(height: 16),
+                  ReportPromptPayCard(
+                    sales: sales,
+                    currency: settings.currency,
+                    fmt: fmt,
                   ),
                   const SizedBox(height: 16),
                   ReportTopProductsCard(topProducts: sales.topProducts()),

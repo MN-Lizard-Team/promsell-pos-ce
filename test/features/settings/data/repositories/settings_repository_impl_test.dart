@@ -66,10 +66,8 @@ void main() {
       expect(settings.receiptConfig.showPostSalePreview, isTrue);
     });
 
-    test('save persists all settings to datasource', () async {
-      when(
-        () => mockDatasource.setString(any(), any()),
-      ).thenAnswer((_) async {});
+    test('save persists all settings to datasource via setAll', () async {
+      when(() => mockDatasource.setAll(any())).thenAnswer((_) async {});
 
       final settings = const Settings(
         shopInfo: ShopInfo(
@@ -97,33 +95,24 @@ void main() {
 
       await repo.save(settings);
 
-      verify(() => mockDatasource.setString('locale', 'en')).called(1);
-      verify(() => mockDatasource.setString('theme', 'light')).called(1);
-      verify(() => mockDatasource.setString('shopName', 'Test Shop')).called(1);
-      verify(() => mockDatasource.setString('address', '123 Street')).called(1);
-      verify(() => mockDatasource.setString('phone', '0812345678')).called(1);
-      verify(() => mockDatasource.setString('currency', '\$')).called(1);
-      verify(
-        () => mockDatasource.setString('dateFormat', 'yyyy-MM-dd'),
-      ).called(1);
-      verify(
-        () => mockDatasource.setString('receiptNote', 'Thank you!'),
-      ).called(1);
-      verify(() => mockDatasource.setString('showShopInfo', 'false')).called(1);
-      verify(
-        () => mockDatasource.setString('autoPrintPrompt', 'false'),
-      ).called(1);
-      verify(() => mockDatasource.setString('vatRate', '10.0')).called(1);
-      verify(() => mockDatasource.setString('vatMode', 'INCLUSIVE')).called(1);
-      verify(
-        () => mockDatasource.setString('receiptPreviewStyle', 'card'),
-      ).called(1);
-      verify(
-        () => mockDatasource.setString('showPreSalePreview', 'false'),
-      ).called(1);
-      verify(
-        () => mockDatasource.setString('showPostSalePreview', 'false'),
-      ).called(1);
+      final captured =
+          verify(() => mockDatasource.setAll(captureAny())).captured.single
+              as Map<String, String>;
+      expect(captured['locale'], 'en');
+      expect(captured['theme'], 'light');
+      expect(captured['shopName'], 'Test Shop');
+      expect(captured['address'], '123 Street');
+      expect(captured['phone'], '0812345678');
+      expect(captured['currency'], '\$');
+      expect(captured['dateFormat'], 'yyyy-MM-dd');
+      expect(captured['receiptNote'], 'Thank you!');
+      expect(captured['showShopInfo'], 'false');
+      expect(captured['autoPrintPrompt'], 'false');
+      expect(captured['vatRate'], '10.0');
+      expect(captured['vatMode'], 'INCLUSIVE');
+      expect(captured['receiptPreviewStyle'], 'card');
+      expect(captured['showPreSalePreview'], 'false');
+      expect(captured['showPostSalePreview'], 'false');
     });
 
     test('load normalizes invalid theme string to system', () async {

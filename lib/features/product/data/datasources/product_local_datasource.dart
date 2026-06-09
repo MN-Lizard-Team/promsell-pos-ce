@@ -20,7 +20,10 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   Product _fromData(ProductData d) => Product(
     id: d.id,
     name: d.name,
+    sku: d.sku,
+    barcode: d.barcode,
     price: d.price,
+    cost: d.cost ?? 0.0,
     stock: d.stock,
     category: d.categoryId,
     imageUrl: d.imageUrl,

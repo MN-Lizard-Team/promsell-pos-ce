@@ -57,6 +57,12 @@ class AppSettings extends Equatable {
     ],
     String activeDiscountPresetId = 'default',
     String promptpayId = '',
+    String billerId = '',
+    int promptPayTimeout = 180,
+    bool promptPaySoundEnabled = true,
+    String defaultQrType = 'transfer',
+    bool autoConfirmAfterSlip = false,
+    String qrOverlayIcon = '',
     String receiptSize = '80mm',
     int backupReminderDays = 7,
     String? lastBackupAt,
@@ -106,6 +112,12 @@ class AppSettings extends Equatable {
         paymentConfig: PaymentConfig(
           currency: currency,
           promptpayId: promptpayId,
+          billerId: billerId,
+          promptPayTimeout: promptPayTimeout,
+          promptPaySoundEnabled: promptPaySoundEnabled,
+          defaultQrType: defaultQrType,
+          autoConfirmAfterSlip: autoConfirmAfterSlip,
+          qrOverlayIcon: qrOverlayIcon,
         ),
         deviceConfig: DeviceConfig(
           deviceId: deviceId,
@@ -178,6 +190,13 @@ class AppSettings extends Equatable {
   DiscountPreset get activeDiscountPreset =>
       _settings.discountConfig.activeDiscountPreset;
   String get promptpayId => _settings.paymentConfig.promptpayId;
+  String get billerId => _settings.paymentConfig.billerId;
+  int get promptPayTimeout => _settings.paymentConfig.promptPayTimeout;
+  bool get promptPaySoundEnabled =>
+      _settings.paymentConfig.promptPaySoundEnabled;
+  String get defaultQrType => _settings.paymentConfig.defaultQrType;
+  bool get autoConfirmAfterSlip => _settings.paymentConfig.autoConfirmAfterSlip;
+  String get qrOverlayIcon => _settings.paymentConfig.qrOverlayIcon;
   String get receiptSize => _settings.receiptConfig.receiptSize;
   int get backupReminderDays => _settings.backupConfig.reminderDays;
   String? get lastBackupAt => _settings.backupConfig.lastBackupAt;
@@ -220,6 +239,12 @@ class AppSettings extends Equatable {
     List<DiscountPreset>? discountPresets,
     String? activeDiscountPresetId,
     String? promptpayId,
+    String? billerId,
+    int? promptPayTimeout,
+    bool? promptPaySoundEnabled,
+    String? defaultQrType,
+    bool? autoConfirmAfterSlip,
+    String? qrOverlayIcon,
     String? receiptSize,
     int? backupReminderDays,
     Object? lastBackupAt = _unset,
@@ -244,7 +269,7 @@ class AppSettings extends Equatable {
           phone: phone,
         ),
         receiptConfig: _settings.receiptConfig.copyWith(
-          receiptSize: receiptPreviewStyle != null ? null : receiptSize,
+          receiptSize: receiptSize,
           receiptPreviewStyle: receiptPreviewStyle,
           receiptNote: receiptNote,
           showShopInfo: showShopInfoOnReceipt,
@@ -276,6 +301,12 @@ class AppSettings extends Equatable {
         paymentConfig: _settings.paymentConfig.copyWith(
           currency: currency,
           promptpayId: promptpayId,
+          billerId: billerId,
+          promptPayTimeout: promptPayTimeout,
+          promptPaySoundEnabled: promptPaySoundEnabled,
+          defaultQrType: defaultQrType,
+          autoConfirmAfterSlip: autoConfirmAfterSlip,
+          qrOverlayIcon: qrOverlayIcon,
         ),
         deviceConfig: _settings.deviceConfig.copyWith(
           deviceId: deviceId,

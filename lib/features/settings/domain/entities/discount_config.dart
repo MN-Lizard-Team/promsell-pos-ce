@@ -28,6 +28,14 @@ class DiscountConfig extends Equatable {
   final String activeDiscountPresetId;
 
   DiscountPreset get activeDiscountPreset {
+    if (discountPresets.isEmpty) {
+      return const DiscountPreset(
+        id: 'default',
+        name: 'Default',
+        type: 'PERCENT',
+        values: [5.0, 10.0, 20.0, 50.0],
+      );
+    }
     final match = discountPresets.where((p) => p.id == activeDiscountPresetId);
     return match.isNotEmpty ? match.first : discountPresets.first;
   }

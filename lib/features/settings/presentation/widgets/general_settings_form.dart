@@ -212,11 +212,12 @@ class GeneralSettingsForm extends StatelessWidget {
       };
     }
 
+    final scheme = Theme.of(context).colorScheme;
     Color themeColor(ThemeMode mode) {
       return switch (mode) {
-        ThemeMode.light => Colors.amber,
-        ThemeMode.dark => Colors.indigo,
-        ThemeMode.system => Colors.teal,
+        ThemeMode.light => scheme.primary,
+        ThemeMode.dark => scheme.primaryContainer,
+        ThemeMode.system => scheme.secondary,
       };
     }
 

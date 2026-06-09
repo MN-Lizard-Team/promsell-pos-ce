@@ -6,7 +6,10 @@ abstract class ProductRepository {
   Future<Product?> getProductById(String id);
   Future<String> addProduct({
     required String name,
+    String? sku,
+    String? barcode,
     required double price,
+    double? cost,
     required int stock,
     String? category,
     String? imageUrl,

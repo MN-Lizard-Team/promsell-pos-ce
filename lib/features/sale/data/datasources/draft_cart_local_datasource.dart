@@ -190,8 +190,12 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   }
 
   @override
-  Future<void> deleteDraft(String cartId) =>
-      (_db.delete(_db.draftCarts)..where((t) => t.id.equals(cartId))).go();
+  Future<void> deleteDraft(String cartId) async {
+    await (_db.delete(
+      _db.draftCartItems,
+    )..where((t) => t.cartId.equals(cartId))).go();
+    await (_db.delete(_db.draftCarts)..where((t) => t.id.equals(cartId))).go();
+  }
 
   @override
   Future<void> renameDraft(String cartId, String name) =>

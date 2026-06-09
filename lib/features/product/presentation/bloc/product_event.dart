@@ -14,7 +14,10 @@ class ProductsSubscribed extends ProductEvent {
 class ProductAdded extends ProductEvent {
   const ProductAdded({
     required this.name,
+    this.sku,
+    this.barcode,
     required this.price,
+    this.cost,
     required this.stock,
     this.category,
     this.imageUrl,
@@ -23,7 +26,10 @@ class ProductAdded extends ProductEvent {
     this.trackStock = true,
   });
   final String name;
+  final String? sku;
+  final String? barcode;
   final double price;
+  final double? cost;
   final int stock;
   final String? category;
   final String? imageUrl;
@@ -34,7 +40,10 @@ class ProductAdded extends ProductEvent {
   @override
   List<Object?> get props => [
     name,
+    sku,
+    barcode,
     price,
+    cost,
     stock,
     category,
     imageUrl,

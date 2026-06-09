@@ -17,6 +17,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.4] - 2026-06-09
+
+PromptPay system overhaul, data loss prevention, settings atomicity, and UI polish.
+
+### Highlights
+
+- **Data Loss Prevention** — `SaleBloc.close()` and `SettingsPersistenceService.dispose()` await pending saves.
+- **Settings Atomicity** — `save()` wrapped in Drift transaction.
+- **PromptPay System** — EMVCo QR generation, slip verification, auto-confirm, configurable timeout/sound/QR-type.
+- **PromptPayPaymentPage v2** — Responsive split-screen, timer progress bar, cart summary, status card, sticky footer.
+- **SlipScannerDialog** — Camera lifecycle management, debounce, error overlays, colored borders.
+
+### Added
+
+- `SettingsLocalDatasource.setAll()` — atomic multi-key batch write.
+- `Product` fields — `sku`, `barcode`, `cost`.
+- `PromptPayQrCode` — EMVCo payload via `thai_promptpay` library.
+- `PromptPayPaymentPage` — fullscreen payment page (replaces `AlertDialog`).
+- `SlipScannerDialog` — QR camera scanner with slip verification.
+- `SlipVerifier` + `SlipErrorType` — bank slip Mini-QR decoding.
+- `SoundPlayer` — confirmation audio feedback.
+- `PaymentConfig` settings — `defaultQrType`, `autoConfirmAfterSlip`, `qrOverlayIcon`.
+- `Sale` fields — `paymentReference`, `sendingBankCode`.
+- `ReportPromptPayCard` — Thai bank name chip.
+- `Validators.promptpayId()` — mod-11 + mobile prefix validation.
+- Tap QR → fullscreen view (320px, dark overlay).
+- Customizable QR overlay icon — 8 choices, default none, 12% size for scannability.
+
+### Changed
+
+- `SaleBloc.close()` — awaits `_immediateSave()`.
+- `SaleBloc._scheduleSave` — debounce 500ms → 1500ms.
+- `SettingsRepositoryImpl.save()` — uses `setAll()` for atomic writes.
+- `SettingsPersistenceService.dispose()` — `Future<void>`, saves before close.
+- `DiscountConfig.activeDiscountPreset` — returns default on empty list.
+- `voidSale` — `balanceAfter: -1` for deleted products.
+- `CheckoutBody` — PromptPay pushes `PromptPayPaymentPage`; records `amountReceived` for non-cash.
+- Theme colors — hardcoded `Colors.xxx` → `colorScheme`.
+- All user-facing strings → l10n ARB keys.
+
+### Fixed
+
+- `sendingBankCode` missing from `Sales` Drift table.
+- `sendingBankCode` not wired through `SalePaymentConfirmed` → DB.
+- `PromptPayConfirmationDialog` `LayoutBuilder` crash → replaced with page.
+- `buildPromptPayQrPayload` unhandled `FormatException` in `build()`.
+- Duplicate QR in checkout (inline + dialog).
+- `SlipScannerDialog` no camera permission error handling.
+- Draft data loss on `SaleBloc.close()`.
+- Settings partial write / data loss on `dispose()`.
+- `AppSettings.copyWith` reset `receiptSize`.
+- `ReportCalculator.topProducts()` merged duplicate names.
+- `activeDiscountPreset` crash on empty list.
+- Product form defaults to 0 on parse failure.
+- `querySales` unnecessary transaction.
+- `deleteDraft` orphaned items.
+- Cart qty accepts `0` without feedback.
+- PromptPay missing from checkout / QR not generated / ID unused.
+- PromptPay ID validation (no mod-11, no prefix checks).
+- Onboarding accepted invalid PromptPay ID.
+- `SaleReceiptDialog` stale `context` after async print/share.
+- Timer progress bar no animation (`_lastProgress`).
+- Status card showed raw bank code → Thai bank name.
+- Sticky footer overlapped keyboard.
+- QR pulse `ScaleTransition` clip.
+- Missing accessibility labels.
+- AppBar redundant spacing.
+- Status didn't reset on reference clear.
+- Cart "Show more" with exactly 5 items.
+
+`flutter analyze` → **0 issues** · `flutter test` → **339/339 passing**
+
+---
+
 ## [0.7.3] - 2026-06-08
 
 Settings Clean Architecture + widget decomposition of 9 largest presentation pages + domain logic extraction.
@@ -1138,7 +1212,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.0...v0.7.1

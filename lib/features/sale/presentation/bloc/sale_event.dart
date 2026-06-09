@@ -71,6 +71,7 @@ class SaleConfirmed extends SaleEvent {
     this.amountReceived,
     this.changeAmount,
     this.note,
+    this.paymentReference,
   });
   final String paymentMethod;
   final String vatMode;
@@ -81,6 +82,7 @@ class SaleConfirmed extends SaleEvent {
   final double? amountReceived;
   final double? changeAmount;
   final String? note;
+  final String? paymentReference;
   @override
   List<Object?> get props => [
     paymentMethod,
@@ -92,7 +94,20 @@ class SaleConfirmed extends SaleEvent {
     amountReceived,
     changeAmount,
     note,
+    paymentReference,
   ];
+}
+
+class SalePaymentConfirmed extends SaleEvent {
+  const SalePaymentConfirmed({this.paymentReference, this.sendingBankCode});
+  final String? paymentReference;
+  final String? sendingBankCode;
+  @override
+  List<Object?> get props => [paymentReference, sendingBankCode];
+}
+
+class SalePaymentCancelled extends SaleEvent {
+  const SalePaymentCancelled();
 }
 
 class SaleItemDiscountChanged extends SaleEvent {

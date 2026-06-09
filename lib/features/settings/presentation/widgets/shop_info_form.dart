@@ -123,9 +123,9 @@ class ShopInfoForm extends StatelessWidget {
               maxLength: 50,
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
-                hintText: 'Enter shop name',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.shopNameHint,
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
               validator: (v) {
@@ -218,9 +218,9 @@ class ShopInfoForm extends StatelessWidget {
               minLines: 2,
               maxLength: 200,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
-                hintText: 'Enter address',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.addressHint,
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
               validator: (v) {
@@ -312,9 +312,9 @@ class ShopInfoForm extends StatelessWidget {
               keyboardType: TextInputType.phone,
               maxLength: 12,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
-                hintText: '081-234-5678',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.phoneHint,
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
               validator: (v) {

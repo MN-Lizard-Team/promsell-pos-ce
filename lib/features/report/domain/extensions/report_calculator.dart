@@ -34,8 +34,21 @@ extension ReportCalculator on List<Sale> {
     }
     final sorted = qtyById.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
+    final topEntries = sorted.take(5).toList();
+    final nameCounts = <String, int>{};
+    for (final e in topEntries) {
+      final name = nameById[e.key] ?? e.key;
+      nameCounts[name] = (nameCounts[name] ?? 0) + 1;
+    }
     return Map.fromEntries(
-      sorted.take(5).map((e) => MapEntry(nameById[e.key] ?? e.key, e.value)),
+      topEntries.map((e) {
+        final name = nameById[e.key] ?? e.key;
+        final disambiguate = (nameCounts[name] ?? 0) > 1;
+        final key = disambiguate
+            ? '$name (${e.key.substring(0, e.key.length.clamp(0, 4))})'
+            : name;
+        return MapEntry(key, e.value);
+      }),
     );
   }
 }

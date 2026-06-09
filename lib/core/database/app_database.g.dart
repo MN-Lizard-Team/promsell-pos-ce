@@ -969,6 +969,22 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumn<String> paymentReference = GeneratedColumn<String>(
+    'payment_reference',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumn<String> sendingBankCode = GeneratedColumn<String>(
+    'sending_bank_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
   late final GeneratedColumn<DateTime> voidedAt = GeneratedColumn<DateTime>(
     'voided_at',
     aliasedName,
@@ -1044,6 +1060,8 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
     amountReceived,
     changeAmount,
     note,
+    paymentReference,
+    sendingBankCode,
     voidedAt,
     voidReason,
     createdAt,
@@ -1123,6 +1141,14 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, SaleData> {
         DriftSqlType.string,
         data['${effectivePrefix}note'],
       ),
+      paymentReference: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_reference'],
+      ),
+      sendingBankCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sending_bank_code'],
+      ),
       voidedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}voided_at'],
@@ -1176,6 +1202,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
   final double? amountReceived;
   final double? changeAmount;
   final String? note;
+  final String? paymentReference;
+  final String? sendingBankCode;
   final DateTime? voidedAt;
   final String? voidReason;
   final DateTime createdAt;
@@ -1199,6 +1227,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
     this.amountReceived,
     this.changeAmount,
     this.note,
+    this.paymentReference,
+    this.sendingBankCode,
     this.voidedAt,
     this.voidReason,
     required this.createdAt,
@@ -1236,6 +1266,12 @@ class SaleData extends DataClass implements Insertable<SaleData> {
     }
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || paymentReference != null) {
+      map['payment_reference'] = Variable<String>(paymentReference);
+    }
+    if (!nullToAbsent || sendingBankCode != null) {
+      map['sending_bank_code'] = Variable<String>(sendingBankCode);
     }
     if (!nullToAbsent || voidedAt != null) {
       map['voided_at'] = Variable<DateTime>(voidedAt);
@@ -1282,6 +1318,12 @@ class SaleData extends DataClass implements Insertable<SaleData> {
           ? const Value.absent()
           : Value(changeAmount),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      paymentReference: paymentReference == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentReference),
+      sendingBankCode: sendingBankCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sendingBankCode),
       voidedAt: voidedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(voidedAt),
@@ -1321,6 +1363,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
       amountReceived: serializer.fromJson<double?>(json['amountReceived']),
       changeAmount: serializer.fromJson<double?>(json['changeAmount']),
       note: serializer.fromJson<String?>(json['note']),
+      paymentReference: serializer.fromJson<String?>(json['paymentReference']),
+      sendingBankCode: serializer.fromJson<String?>(json['sendingBankCode']),
       voidedAt: serializer.fromJson<DateTime?>(json['voidedAt']),
       voidReason: serializer.fromJson<String?>(json['voidReason']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -1349,6 +1393,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
       'amountReceived': serializer.toJson<double?>(amountReceived),
       'changeAmount': serializer.toJson<double?>(changeAmount),
       'note': serializer.toJson<String?>(note),
+      'paymentReference': serializer.toJson<String?>(paymentReference),
+      'sendingBankCode': serializer.toJson<String?>(sendingBankCode),
       'voidedAt': serializer.toJson<DateTime?>(voidedAt),
       'voidReason': serializer.toJson<String?>(voidReason),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1375,6 +1421,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
     Value<double?> amountReceived = const Value.absent(),
     Value<double?> changeAmount = const Value.absent(),
     Value<String?> note = const Value.absent(),
+    Value<String?> paymentReference = const Value.absent(),
+    Value<String?> sendingBankCode = const Value.absent(),
     Value<DateTime?> voidedAt = const Value.absent(),
     Value<String?> voidReason = const Value.absent(),
     DateTime? createdAt,
@@ -1404,6 +1452,12 @@ class SaleData extends DataClass implements Insertable<SaleData> {
         : this.amountReceived,
     changeAmount: changeAmount.present ? changeAmount.value : this.changeAmount,
     note: note.present ? note.value : this.note,
+    paymentReference: paymentReference.present
+        ? paymentReference.value
+        : this.paymentReference,
+    sendingBankCode: sendingBankCode.present
+        ? sendingBankCode.value
+        : this.sendingBankCode,
     voidedAt: voidedAt.present ? voidedAt.value : this.voidedAt,
     voidReason: voidReason.present ? voidReason.value : this.voidReason,
     createdAt: createdAt ?? this.createdAt,
@@ -1447,6 +1501,12 @@ class SaleData extends DataClass implements Insertable<SaleData> {
           ? data.changeAmount.value
           : this.changeAmount,
       note: data.note.present ? data.note.value : this.note,
+      paymentReference: data.paymentReference.present
+          ? data.paymentReference.value
+          : this.paymentReference,
+      sendingBankCode: data.sendingBankCode.present
+          ? data.sendingBankCode.value
+          : this.sendingBankCode,
       voidedAt: data.voidedAt.present ? data.voidedAt.value : this.voidedAt,
       voidReason: data.voidReason.present
           ? data.voidReason.value
@@ -1477,6 +1537,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
           ..write('amountReceived: $amountReceived, ')
           ..write('changeAmount: $changeAmount, ')
           ..write('note: $note, ')
+          ..write('paymentReference: $paymentReference, ')
+          ..write('sendingBankCode: $sendingBankCode, ')
           ..write('voidedAt: $voidedAt, ')
           ..write('voidReason: $voidReason, ')
           ..write('createdAt: $createdAt, ')
@@ -1505,6 +1567,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
     amountReceived,
     changeAmount,
     note,
+    paymentReference,
+    sendingBankCode,
     voidedAt,
     voidReason,
     createdAt,
@@ -1532,6 +1596,8 @@ class SaleData extends DataClass implements Insertable<SaleData> {
           other.amountReceived == this.amountReceived &&
           other.changeAmount == this.changeAmount &&
           other.note == this.note &&
+          other.paymentReference == this.paymentReference &&
+          other.sendingBankCode == this.sendingBankCode &&
           other.voidedAt == this.voidedAt &&
           other.voidReason == this.voidReason &&
           other.createdAt == this.createdAt &&
@@ -1557,6 +1623,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
   final Value<double?> amountReceived;
   final Value<double?> changeAmount;
   final Value<String?> note;
+  final Value<String?> paymentReference;
+  final Value<String?> sendingBankCode;
   final Value<DateTime?> voidedAt;
   final Value<String?> voidReason;
   final Value<DateTime> createdAt;
@@ -1581,6 +1649,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
     this.amountReceived = const Value.absent(),
     this.changeAmount = const Value.absent(),
     this.note = const Value.absent(),
+    this.paymentReference = const Value.absent(),
+    this.sendingBankCode = const Value.absent(),
     this.voidedAt = const Value.absent(),
     this.voidReason = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1606,6 +1676,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
     this.amountReceived = const Value.absent(),
     this.changeAmount = const Value.absent(),
     this.note = const Value.absent(),
+    this.paymentReference = const Value.absent(),
+    this.sendingBankCode = const Value.absent(),
     this.voidedAt = const Value.absent(),
     this.voidReason = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1633,6 +1705,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
     Expression<double>? amountReceived,
     Expression<double>? changeAmount,
     Expression<String>? note,
+    Expression<String>? paymentReference,
+    Expression<String>? sendingBankCode,
     Expression<DateTime>? voidedAt,
     Expression<String>? voidReason,
     Expression<DateTime>? createdAt,
@@ -1658,6 +1732,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
       if (amountReceived != null) 'amount_received': amountReceived,
       if (changeAmount != null) 'change_amount': changeAmount,
       if (note != null) 'note': note,
+      if (paymentReference != null) 'payment_reference': paymentReference,
+      if (sendingBankCode != null) 'sending_bank_code': sendingBankCode,
       if (voidedAt != null) 'voided_at': voidedAt,
       if (voidReason != null) 'void_reason': voidReason,
       if (createdAt != null) 'created_at': createdAt,
@@ -1685,6 +1761,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
     Value<double?>? amountReceived,
     Value<double?>? changeAmount,
     Value<String?>? note,
+    Value<String?>? paymentReference,
+    Value<String?>? sendingBankCode,
     Value<DateTime?>? voidedAt,
     Value<String?>? voidReason,
     Value<DateTime>? createdAt,
@@ -1710,6 +1788,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
       amountReceived: amountReceived ?? this.amountReceived,
       changeAmount: changeAmount ?? this.changeAmount,
       note: note ?? this.note,
+      paymentReference: paymentReference ?? this.paymentReference,
+      sendingBankCode: sendingBankCode ?? this.sendingBankCode,
       voidedAt: voidedAt ?? this.voidedAt,
       voidReason: voidReason ?? this.voidReason,
       createdAt: createdAt ?? this.createdAt,
@@ -1769,6 +1849,12 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
+    if (paymentReference.present) {
+      map['payment_reference'] = Variable<String>(paymentReference.value);
+    }
+    if (sendingBankCode.present) {
+      map['sending_bank_code'] = Variable<String>(sendingBankCode.value);
+    }
     if (voidedAt.present) {
       map['voided_at'] = Variable<DateTime>(voidedAt.value);
     }
@@ -1814,6 +1900,8 @@ class SalesCompanion extends UpdateCompanion<SaleData> {
           ..write('amountReceived: $amountReceived, ')
           ..write('changeAmount: $changeAmount, ')
           ..write('note: $note, ')
+          ..write('paymentReference: $paymentReference, ')
+          ..write('sendingBankCode: $sendingBankCode, ')
           ..write('voidedAt: $voidedAt, ')
           ..write('voidReason: $voidReason, ')
           ..write('createdAt: $createdAt, ')

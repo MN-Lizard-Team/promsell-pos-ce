@@ -21,6 +21,8 @@ class SaleRepositoryImpl implements SaleRepository {
     double? amountReceived,
     double? changeAmount,
     String? note,
+    String? paymentReference,
+    String? sendingBankCode,
   }) => _datasource.insertSaleWithItems(
     items: items,
     paymentMethod: paymentMethod,
@@ -32,6 +34,8 @@ class SaleRepositoryImpl implements SaleRepository {
     amountReceived: amountReceived,
     changeAmount: changeAmount,
     note: note,
+    paymentReference: paymentReference,
+    sendingBankCode: sendingBankCode,
   );
 
   @override

@@ -68,4 +68,51 @@ class Validators {
     }
     return value;
   }
+
+  /// Validates a Thai PromptPay ID.
+  /// Accepts:
+  /// - Mobile: 10 digits starting with 06, 08, or 09.
+  /// - Citizen ID: 13 digits with valid mod-11 checksum.
+  /// Returns the cleaned (digits-only) ID on success.
+  /// Throws [ArgumentError] with a descriptive message on violation.
+  static String? promptpayId(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final raw = value.replaceAll(RegExp(r'[^0-9]'), '');
+    if (raw.isEmpty) return null;
+
+    // Mobile: 10 digits starting with 06, 08, 09
+    if (raw.startsWith('0')) {
+      if (raw.length != 10) {
+        throw ArgumentError(
+          'Mobile number must be 10 digits (got ${raw.length}).',
+        );
+      }
+      final validPrefixes = RegExp(r'^0[689]');
+      if (!validPrefixes.hasMatch(raw)) {
+        throw ArgumentError(
+          'Mobile number must start with 06, 08, or 09 (got $raw).',
+        );
+      }
+      return raw;
+    }
+
+    // Citizen ID: 13 digits
+    if (raw.length != 13) {
+      throw ArgumentError(
+        'ID must be 10 digits (mobile) or 13 digits (citizen ID) (got ${raw.length}).',
+      );
+    }
+
+    // Thai citizen ID checksum (mod 11)
+    var sum = 0;
+    for (var i = 0; i < 12; i++) {
+      sum += int.parse(raw[i]) * (13 - i);
+    }
+    final remainder = sum % 11;
+    final checksum = (11 - remainder) % 10;
+    if (checksum != int.parse(raw[12])) {
+      throw ArgumentError('Invalid citizen ID checksum.');
+    }
+    return raw;
+  }
 }

@@ -90,8 +90,8 @@ class SaleReceiptDialog {
                 ),
                 labels: labels,
               );
-              if (context.mounted) {
-                context.read<SaleBloc>().add(const SaleReset());
+              if (dialogCtx.mounted) {
+                dialogCtx.read<SaleBloc>().add(const SaleReset());
               }
             },
           ),
@@ -108,15 +108,15 @@ class SaleReceiptDialog {
                 ),
                 labels: labels,
               );
-              if (context.mounted) {
-                context.read<SaleBloc>().add(const SaleReset());
+              if (dialogCtx.mounted) {
+                dialogCtx.read<SaleBloc>().add(const SaleReset());
               }
             },
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(dialogCtx);
-              context.read<SaleBloc>().add(const SaleReset());
+              dialogCtx.read<SaleBloc>().add(const SaleReset());
             },
             child: Text(l.cancel),
           ),

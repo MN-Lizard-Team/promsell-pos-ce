@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.7.3
+# CODEBASE.md — Promsell POS CE v0.7.4
 
 ## System overview
 
@@ -86,6 +86,9 @@ features/<name>/
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `MoneyUtils` | `lib/core/utils/` | Centralized monetary rounding (`round(double)`) for VAT, discount, and total calculations |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
+| `SlipVerifier` | `lib/core/utils/` | Decodes Thai bank transfer slip Mini-QR; returns `SlipVerifyResult` with `SlipErrorType` categorization |
+| `SoundPlayer` | `lib/core/utils/` | Lightweight audio player for confirmation feedback |
+| `PromptPayQrCode` | `lib/features/settings/presentation/widgets/` | EMVCo-compliant QR payload generator via `thai_promptpay`; optional customizable icon overlay |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
 | `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; `deleteImages`, `renameImages`; accepts `SettingsRepository`; `@LazySingleton` |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
@@ -107,7 +110,7 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow` |
+| Sale | `SaleBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
 | Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar`, `ProductSectionLabel`, `ProductCategoryAutocomplete`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
@@ -143,7 +146,7 @@ Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All 
 | Table | Key fields |
 |-------|--------|
 | `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, imagePath, imageThumbnailPath, trackStock, isActive, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
-| `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, note, voidedAt, voidReason, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
+| `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, paymentReference, sendingBankCode, note, voidedAt, voidReason, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
 | `SaleItems` | id, saleId, productId, productName, price, qty, subtotal, discountAmount, vatAmount |
 | `Categories` | id, name, sortOrder, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
 | `InventoryLogs` | id, productId, type, qtyChange, balanceAfter, reason, refSaleId, createdAt, **deviceId** |
@@ -225,7 +228,7 @@ SettingsCubit
 | Discount | `DiscountConfig` | enableItemDiscount, enableCartDiscount, maxDiscountPercent, maxDiscountAmount, defaultDiscountType, discountPresets, activeDiscountPresetId |
 | Stock | `StockConfig` | allowOversell, lowStockThreshold |
 | Image | `ImageConfig` | maxWidth, quality |
-| Payment | `PaymentConfig` | currency, promptpayId |
+| Payment | `PaymentConfig` | currency, promptpayId, billerId, promptPayTimeout, promptPaySoundEnabled, defaultQrType, autoConfirmAfterSlip, qrOverlayIcon |
 | Device | `DeviceConfig` | deviceId, devicePrefix |
 | UI | `UiConfig` | locale, themeMode, dateFormat, cartCompactMode, ultraCompactMode, accessibilityMode |
 | Daily Close | `DailyCloseConfig` | dailyCloseLock, lastClosedDate |

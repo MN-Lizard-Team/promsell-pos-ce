@@ -11,6 +11,7 @@ abstract interface class SettingsLocalDatasource {
   Future<void> setBool(String key, bool value);
   Future<void> setDouble(String key, double value);
   Future<Map<String, String>> getAll();
+  Future<void> setAll(Map<String, String> values);
 }
 
 @LazySingleton(as: SettingsLocalDatasource)
@@ -70,5 +71,18 @@ class SettingsLocalDatasourceImpl implements SettingsLocalDatasource {
   Future<Map<String, String>> getAll() async {
     final rows = await _db.select(_db.appSettings).get();
     return {for (final r in rows) r.key: r.value};
+  }
+
+  @override
+  Future<void> setAll(Map<String, String> values) async {
+    await _db.transaction(() async {
+      for (final entry in values.entries) {
+        await _db
+            .into(_db.appSettings)
+            .insertOnConflictUpdate(
+              AppSettingsCompanion.insert(key: entry.key, value: entry.value),
+            );
+      }
+    });
   }
 }

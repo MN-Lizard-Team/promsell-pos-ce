@@ -25,7 +25,10 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<String> addProduct({
     required String name,
+    String? sku,
+    String? barcode,
     required double price,
+    double? cost,
     required int stock,
     String? category,
     String? imageUrl,
@@ -50,7 +53,10 @@ class ProductRepositoryImpl implements ProductRepository {
       ProductsCompanion.insert(
         id: id,
         name: name,
+        sku: Value(sku),
+        barcode: Value(barcode),
         price: price,
+        cost: Value(cost),
         stock: Value(stock),
         categoryId: Value(category),
         imageUrl: Value(imageUrl),
@@ -88,7 +94,10 @@ class ProductRepositoryImpl implements ProductRepository {
       ProductsCompanion(
         id: Value(product.id),
         name: Value(product.name),
+        sku: Value(product.sku),
+        barcode: Value(product.barcode),
         price: Value(product.price),
+        cost: Value(product.cost),
         stock: Value(product.stock),
         categoryId: Value(product.category),
         imageUrl: Value(product.imageUrl),

@@ -84,7 +84,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     try {
       await _addProduct(
         name: event.name,
+        sku: event.sku,
+        barcode: event.barcode,
         price: event.price,
+        cost: event.cost,
         stock: event.stock,
         category: event.category,
         imageUrl: event.imageUrl,

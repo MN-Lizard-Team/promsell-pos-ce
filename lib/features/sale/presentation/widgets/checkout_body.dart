@@ -15,6 +15,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/pages/promptpay_payment_page.dart';
 
 class CheckoutBody extends StatefulWidget {
   const CheckoutBody({super.key});
@@ -29,6 +30,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
   final _noteCtrl = TextEditingController();
   final _referenceCtrl = TextEditingController();
   bool _submitted = false;
+  bool _inPaymentFlow = false;
   double _effectiveTotal = 0;
 
   double get _received => double.tryParse(_receivedCtrl.text) ?? 0;
@@ -78,8 +80,8 @@ class _CheckoutBodyState extends State<CheckoutBody> {
         cartDiscountAmount: cartState.hasCartDiscount
             ? cartState.cartDiscountAmount
             : null,
-        amountReceived: _method == 'cash' ? _received : null,
-        changeAmount: _method == 'cash' && _change >= 0 ? _change : null,
+        amountReceived: _method == 'cash' ? _received : _effectiveTotal,
+        changeAmount: _method == 'cash' && _change >= 0 ? _change : 0,
         note: effectiveNote.isEmpty ? null : effectiveNote,
       ),
     );
@@ -114,15 +116,43 @@ class _CheckoutBodyState extends State<CheckoutBody> {
         return BlocListener<SaleBloc, SaleState>(
           listenWhen: (_, curr) =>
               curr.status == SaleStatus.failure ||
-              curr.status == SaleStatus.success,
+              curr.status == SaleStatus.success ||
+              curr.status == SaleStatus.waitingPayment ||
+              curr.status == SaleStatus.idle,
           listener: (ctx, state) {
+            if (state.status == SaleStatus.waitingPayment) {
+              _inPaymentFlow = true;
+              Navigator.of(ctx).push(
+                MaterialPageRoute(
+                  builder: (_) => PromptPayPaymentPage(
+                    total: _effectiveTotal,
+                    currency: currency,
+                    promptpayId: settings.promptpayId,
+                    settings: settings,
+                    bloc: ctx.read<SaleBloc>(),
+                    items: state.items,
+                  ),
+                ),
+              );
+              return;
+            }
             if (state.status == SaleStatus.success) {
+              _inPaymentFlow = false;
               _submitted = false;
               Navigator.of(ctx).pop();
               return;
             }
-            _submitted = false;
-            AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
+            if (state.status == SaleStatus.idle && _inPaymentFlow) {
+              _inPaymentFlow = false;
+              _submitted = false;
+              Navigator.of(ctx).pop();
+              return;
+            }
+            if (state.status == SaleStatus.failure) {
+              _inPaymentFlow = false;
+              _submitted = false;
+              AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
+            }
           },
           child: SingleChildScrollView(
             padding: EdgeInsets.only(
@@ -250,6 +280,20 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         },
                       ),
                     ),
+                    if (settings.promptpayId.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: PaymentMethodCard(
+                          icon: Icons.account_balance_wallet_outlined,
+                          label: context.l10n.promptpay,
+                          selected: _method == 'promptpay',
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(() => _method = 'promptpay');
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 if (_method == 'cash') ...[
@@ -299,6 +343,35 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                     change: _change,
                     currency: currency,
                     visible: _received > 0,
+                  ),
+                ] else if (_method == 'promptpay') ...[
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.qr_code_scanner,
+                          size: 48,
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          context.l10n.promptpay,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          settings.promptpayId,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ] else ...[
                   const SizedBox(height: 16),
@@ -498,6 +571,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
   }) {
     showDialog(
       context: context,
+      // TODO: migrate to Theme.of(context).colorScheme.scrim when available
       barrierColor: Colors.black.withValues(alpha: 0.92),
       builder: (_) => GestureDetector(
         onTap: () => Navigator.of(context).pop(),

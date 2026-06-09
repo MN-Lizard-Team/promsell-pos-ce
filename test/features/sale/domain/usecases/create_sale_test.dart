@@ -17,6 +17,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(<CartItem>[]);
+    registerFallbackValue('');
   });
 
   test('delegates to repository.createSale', () async {
@@ -29,6 +30,7 @@ void main() {
         amountReceived: any(named: 'amountReceived'),
         changeAmount: any(named: 'changeAmount'),
         note: any(named: 'note'),
+        paymentReference: any(named: 'paymentReference'),
       ),
     ).thenAnswer((_) async => tSale);
 
@@ -50,6 +52,7 @@ void main() {
         vatRate: 0,
         amountReceived: 500.0,
         changeAmount: 300.0,
+        paymentReference: null,
       ),
     ).called(1);
   });

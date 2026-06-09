@@ -6,7 +6,10 @@ class Product extends Equatable {
   const Product({
     required this.id,
     required this.name,
+    this.sku,
+    this.barcode,
     required this.price,
+    this.cost = 0.0,
     required this.stock,
     this.category,
     this.imageUrl,
@@ -20,7 +23,10 @@ class Product extends Equatable {
 
   final String id;
   final String name;
+  final String? sku;
+  final String? barcode;
   final double price;
+  final double cost;
   final int stock;
   final String? category;
   final String? imageUrl;
@@ -36,7 +42,10 @@ class Product extends Equatable {
   Product copyWith({
     String? id,
     String? name,
+    Object? sku = _unset,
+    Object? barcode = _unset,
     double? price,
+    double? cost,
     int? stock,
     Object? category = _unset,
     Object? imageUrl = _unset,
@@ -50,7 +59,10 @@ class Product extends Equatable {
     return Product(
       id: id ?? this.id,
       name: name ?? this.name,
+      sku: identical(sku, _unset) ? this.sku : sku as String?,
+      barcode: identical(barcode, _unset) ? this.barcode : barcode as String?,
       price: price ?? this.price,
+      cost: cost ?? this.cost,
       stock: stock ?? this.stock,
       category: identical(category, _unset)
           ? this.category
@@ -75,7 +87,10 @@ class Product extends Equatable {
   List<Object?> get props => [
     id,
     name,
+    sku,
+    barcode,
     price,
+    cost,
     stock,
     category,
     imageUrl,

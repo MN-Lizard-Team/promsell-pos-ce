@@ -9,7 +9,10 @@ class AddProduct {
 
   Future<String> call({
     required String name,
+    String? sku,
+    String? barcode,
     required double price,
+    double? cost,
     required int stock,
     String? category,
     String? imageUrl,
@@ -25,7 +28,10 @@ class AddProduct {
     }
     return _repository.addProduct(
       name: name.trim(),
+      sku: sku,
+      barcode: barcode,
       price: price,
+      cost: cost,
       stock: stock,
       category: category,
       imageUrl: imageUrl,

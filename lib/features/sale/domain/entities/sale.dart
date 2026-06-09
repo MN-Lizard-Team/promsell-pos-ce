@@ -66,6 +66,8 @@ class Sale extends Equatable {
     this.amountReceived,
     this.changeAmount,
     this.note,
+    this.paymentReference,
+    this.sendingBankCode,
     this.voidedAt,
     this.voidReason,
     required this.createdAt,
@@ -87,6 +89,8 @@ class Sale extends Equatable {
   final double? amountReceived;
   final double? changeAmount;
   final String? note;
+  final String? paymentReference;
+  final String? sendingBankCode;
   final DateTime? voidedAt;
   final String? voidReason;
   final DateTime createdAt;
@@ -111,6 +115,8 @@ class Sale extends Equatable {
     amountReceived,
     changeAmount,
     note,
+    paymentReference,
+    sendingBankCode,
     voidedAt,
     voidReason,
     createdAt,

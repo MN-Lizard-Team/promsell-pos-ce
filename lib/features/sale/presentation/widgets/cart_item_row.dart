@@ -256,7 +256,7 @@ class CartItemRow extends StatelessWidget {
           FilledButton(
             onPressed: () {
               final qty = int.tryParse(ctrl.text);
-              if (qty == null || qty < 0) return;
+              if (qty == null || qty <= 0) return;
               var clamped = qty;
               if (item.product.trackStock && !allowOversell) {
                 clamped = qty.clamp(0, item.product.stock);

@@ -10,8 +10,10 @@ class SettingsPersistenceService {
 
   final SettingsRepository _repository;
   Timer? _saveTimer;
+  AppSettings? _lastSettings;
 
   void scheduleSave(AppSettings settings) {
+    _lastSettings = settings;
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 800), () {
       _save(settings);
@@ -19,6 +21,7 @@ class SettingsPersistenceService {
   }
 
   Future<void> saveImmediately(AppSettings settings) async {
+    _lastSettings = settings;
     _saveTimer?.cancel();
     await _save(settings);
   }
@@ -27,7 +30,10 @@ class SettingsPersistenceService {
     await _repository.save(settings.toSettings());
   }
 
-  void dispose() {
+  Future<void> dispose() async {
     _saveTimer?.cancel();
+    if (_lastSettings != null) {
+      await _save(_lastSettings!);
+    }
   }
 }

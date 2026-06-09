@@ -1652,6 +1652,228 @@ abstract class AppLocalizations {
   /// **'กรุณากรอกเบอร์โทรหรือเลขบัตรประชาชนที่ถูกต้อง'**
   String get promptpayInvalidId;
 
+  /// No description provided for @promptpayWaitingForPayment.
+  ///
+  /// In th, this message translates to:
+  /// **'รอลูกค้าชำระเงิน...'**
+  String get promptpayWaitingForPayment;
+
+  /// No description provided for @promptpayPaymentTimeout.
+  ///
+  /// In th, this message translates to:
+  /// **'หมดเวลาชำระเงิน ยกเลิกการขาย'**
+  String get promptpayPaymentTimeout;
+
+  /// No description provided for @promptpayExtendTime.
+  ///
+  /// In th, this message translates to:
+  /// **'ขยายเวลา +1 นาที'**
+  String get promptpayExtendTime;
+
+  /// No description provided for @promptpayCancelPayment.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิกการชำระ'**
+  String get promptpayCancelPayment;
+
+  /// No description provided for @promptpayTransactionReference.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขอ้างอิง (ถ้ามี)'**
+  String get promptpayTransactionReference;
+
+  /// No description provided for @promptpayQrSaved.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึก QR ลงแกลเลอรีแล้ว'**
+  String get promptpayQrSaved;
+
+  /// No description provided for @promptpayQrShared.
+  ///
+  /// In th, this message translates to:
+  /// **'แชร์ QR แล้ว'**
+  String get promptpayQrShared;
+
+  /// No description provided for @promptpaySaveQr.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึก QR'**
+  String get promptpaySaveQr;
+
+  /// No description provided for @promptpayShareQr.
+  ///
+  /// In th, this message translates to:
+  /// **'แชร์ QR'**
+  String get promptpayShareQr;
+
+  /// No description provided for @promptpaySoundEnabled.
+  ///
+  /// In th, this message translates to:
+  /// **'เสียงตอนยืนยัน'**
+  String get promptpaySoundEnabled;
+
+  /// No description provided for @promptpayTimeoutSetting.
+  ///
+  /// In th, this message translates to:
+  /// **'เวลานับถอยหลัง (นาที)'**
+  String get promptpayTimeoutSetting;
+
+  /// No description provided for @minutes.
+  ///
+  /// In th, this message translates to:
+  /// **'นาที'**
+  String get minutes;
+
+  /// No description provided for @slipScanTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนสลิปธนาคาร'**
+  String get slipScanTitle;
+
+  /// No description provided for @slipScanHint.
+  ///
+  /// In th, this message translates to:
+  /// **'จัด QR code บนสลิปให้อยู่ในกรอบ'**
+  String get slipScanHint;
+
+  /// No description provided for @slipScanSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'ตรวจสอบสลิปสำเร็จ'**
+  String get slipScanSuccess;
+
+  /// No description provided for @slipScanInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'สลิปไม่ถูกต้อง'**
+  String get slipScanInvalid;
+
+  /// No description provided for @slipErrorEmpty.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบข้อมูลใน QR code'**
+  String get slipErrorEmpty;
+
+  /// No description provided for @slipErrorNotASlip.
+  ///
+  /// In th, this message translates to:
+  /// **'นี่คือ QR ชำระเงิน ไม่ใช่สลิปธนาคาร กรุณาสแกน QR บนสลิปโอนเงิน'**
+  String get slipErrorNotASlip;
+
+  /// No description provided for @slipErrorUnreadable.
+  ///
+  /// In th, this message translates to:
+  /// **'อ่านสลิปไม่ได้ กรุณาลองใหม่'**
+  String get slipErrorUnreadable;
+
+  /// No description provided for @promptpayInvalidQr.
+  ///
+  /// In th, this message translates to:
+  /// **'QR code ไม่ถูกต้อง'**
+  String get promptpayInvalidQr;
+
+  /// No description provided for @settingsBillerId.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสผู้เรียกเก็บเงิน'**
+  String get settingsBillerId;
+
+  /// No description provided for @settingsBillerIdHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขประจำตัวผู้เสียภาษีสำหรับ QR ใบแจ้งหนี้'**
+  String get settingsBillerIdHint;
+
+  /// No description provided for @settingsDefaultQrType.
+  ///
+  /// In th, this message translates to:
+  /// **'QR เริ่มต้น'**
+  String get settingsDefaultQrType;
+
+  /// No description provided for @settingsDefaultQrTypeTransfer.
+  ///
+  /// In th, this message translates to:
+  /// **'โอนเงิน'**
+  String get settingsDefaultQrTypeTransfer;
+
+  /// No description provided for @settingsDefaultQrTypeBill.
+  ///
+  /// In th, this message translates to:
+  /// **'จ่ายบิล'**
+  String get settingsDefaultQrTypeBill;
+
+  /// No description provided for @settingsAutoConfirmAfterSlip.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันอัตโนมัติหลังสแกนสลิป'**
+  String get settingsAutoConfirmAfterSlip;
+
+  /// No description provided for @settingsAutoConfirmAfterSlipHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันการชำระเงินอัตโนมัติ 2 วินาทีหลังตรวจสอบสลิปสำเร็จ'**
+  String get settingsAutoConfirmAfterSlipHint;
+
+  /// No description provided for @settingsQrOverlayIcon.
+  ///
+  /// In th, this message translates to:
+  /// **'ไอคอน QR'**
+  String get settingsQrOverlayIcon;
+
+  /// No description provided for @cart.
+  ///
+  /// In th, this message translates to:
+  /// **'ตะกร้า'**
+  String get cart;
+
+  /// No description provided for @moreItems.
+  ///
+  /// In th, this message translates to:
+  /// **'รายการอื่น'**
+  String get moreItems;
+
+  /// No description provided for @total.
+  ///
+  /// In th, this message translates to:
+  /// **'รวม'**
+  String get total;
+
+  /// No description provided for @waitingForPayment.
+  ///
+  /// In th, this message translates to:
+  /// **'รอการชำระเงิน...'**
+  String get waitingForPayment;
+
+  /// No description provided for @copyPromptpayId.
+  ///
+  /// In th, this message translates to:
+  /// **'คัดลอกแล้ว'**
+  String get copyPromptpayId;
+
+  /// No description provided for @paymentVerified.
+  ///
+  /// In th, this message translates to:
+  /// **'ชำระเงินยืนยันแล้ว'**
+  String get paymentVerified;
+
+  /// No description provided for @showMore.
+  ///
+  /// In th, this message translates to:
+  /// **'แสดงเพิ่ม'**
+  String get showMore;
+
+  /// No description provided for @showLess.
+  ///
+  /// In th, this message translates to:
+  /// **'แสดงน้อยลง'**
+  String get showLess;
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In th, this message translates to:
+  /// **'{count} รายการ'**
+  String itemsCount(Object count);
+
   /// No description provided for @settingsReceiptSize.
   ///
   /// In th, this message translates to:
@@ -2473,6 +2695,30 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'วันนี้ปิดยอดแล้ว กรุณาเปิดยอดใหม่เพื่อขายต่อ'**
   String get dayClosedMessage;
+
+  /// No description provided for @tapToSet.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อตั้งค่า'**
+  String get tapToSet;
+
+  /// No description provided for @shopNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อร้านค้า'**
+  String get shopNameHint;
+
+  /// No description provided for @addressHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ที่อยู่ร้านค้า'**
+  String get addressHint;
+
+  /// No description provided for @phoneHint.
+  ///
+  /// In th, this message translates to:
+  /// **'081-234-5678'**
+  String get phoneHint;
 }
 
 class _AppLocalizationsDelegate

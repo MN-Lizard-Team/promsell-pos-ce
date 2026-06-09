@@ -73,8 +73,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   @override
-  Future<void> close() {
-    _persistenceService.dispose();
+  Future<void> close() async {
+    await _persistenceService.dispose();
     return super.close();
   }
 }

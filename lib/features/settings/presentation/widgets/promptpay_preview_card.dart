@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/promptpay_qr_code.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 class PromptpayPreviewCard extends StatelessWidget {
@@ -9,11 +10,13 @@ class PromptpayPreviewCard extends StatelessWidget {
     required this.promptpayId,
     required this.st,
     required this.l10n,
+    this.overlayIcon,
   });
 
   final String promptpayId;
   final SettingsThemeExtension st;
   final AppLocalizations l10n;
+  final String? overlayIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -38,19 +41,27 @@ class PromptpayPreviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
+          if (hasId)
+            PromptPayQrCode(
+              promptpayId: promptpayId,
+              amount: 100.0,
+              size: 160,
+              overlayIcon: overlayIcon,
+            )
+          else
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                Icons.qr_code_scanner_outlined,
+                color: accentColor,
+                size: 28,
+              ),
             ),
-            child: Icon(
-              hasId ? Icons.qr_code_2 : Icons.qr_code_scanner_outlined,
-              color: accentColor,
-              size: 28,
-            ),
-          ),
           const SizedBox(height: 12),
           Text(
             hasId ? l10n.promptpayQrPreview : l10n.promptpayNotConfigured,

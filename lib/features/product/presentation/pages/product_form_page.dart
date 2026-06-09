@@ -70,12 +70,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _submitted = true;
     final bloc = context.read<ProductBloc>();
     if (_isEditing) {
+      final price = double.tryParse(_priceCtrl.text);
+      final stock = int.tryParse(_stockCtrl.text);
+      if (price == null || stock == null) return;
       bloc.add(
         ProductUpdated(
           widget.product!.copyWith(
             name: _nameCtrl.text.trim(),
-            price: double.tryParse(_priceCtrl.text) ?? 0.0,
-            stock: int.tryParse(_stockCtrl.text) ?? 0,
+            price: price,
+            stock: stock,
             category: _categoryCtrl.text.trim().isEmpty
                 ? null
                 : _categoryCtrl.text.trim(),
@@ -88,11 +91,14 @@ class _ProductFormPageState extends State<ProductFormPage> {
         ),
       );
     } else {
+      final price = double.tryParse(_priceCtrl.text);
+      final stock = int.tryParse(_stockCtrl.text);
+      if (price == null || stock == null) return;
       bloc.add(
         ProductAdded(
           name: _nameCtrl.text.trim(),
-          price: double.tryParse(_priceCtrl.text) ?? 0.0,
-          stock: int.tryParse(_stockCtrl.text) ?? 0,
+          price: price,
+          stock: stock,
           category: _categoryCtrl.text.trim().isEmpty
               ? null
               : _categoryCtrl.text.trim(),

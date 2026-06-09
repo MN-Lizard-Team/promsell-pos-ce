@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.7.3
+# Database Handbook — Promsell POS CE v0.7.4
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -235,6 +235,8 @@ Source: `lib/core/database/tables/sales_table.dart`
 | `paymentMethod` | TEXT | No | — | `cash` \| `transfer` \| `card` \| `promptpay` |
 | `amountReceived` | REAL | Yes | — | |
 | `changeAmount` | REAL | Yes | — | |
+| `paymentReference` | TEXT | Yes | — | PromptPay transaction ID |
+| `sendingBankCode` | TEXT | Yes | — | Bank code from slip verification |
 | `note` | TEXT | Yes | — | |
 | `voidedAt` | DATETIME | Yes | — | |
 | `voidReason` | TEXT | Yes | — | |
@@ -894,4 +896,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.7.2 · Schema v12 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.7.4 · Schema v12 · 9 tables · UUIDv4</sub>

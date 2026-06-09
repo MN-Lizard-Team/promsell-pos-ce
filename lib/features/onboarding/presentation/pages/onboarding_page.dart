@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
+import 'package:promsell_pos_ce/core/utils/validators.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/green_choice_chip.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_hero_section.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_section.dart';
@@ -27,6 +28,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   // Locale & Currency
   final String _locale = 'th';
   String _currency = '฿';
+  final _currencyCtrl = TextEditingController(text: '฿');
   String _dateFormat = 'dd/MM/yyyy';
 
   // Step 4: Tax
@@ -41,6 +43,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _shopNameController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
+    _currencyCtrl.dispose();
     _vatRateController.dispose();
     _promptPayController.dispose();
     super.dispose();
@@ -61,7 +64,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
         dateFormat: _dateFormat,
         vatMode: _vatMode,
         vatRate: double.tryParse(_vatRateController.text) ?? 7.0,
-        promptpayId: _promptPayController.text.trim(),
+        promptpayId:
+            Validators.promptpayId(_promptPayController.text.trim()) ?? '',
         onboardingCompleted: true,
         deviceId: IdGenerator.newId(),
         devicePrefix: devicePrefix,
@@ -336,9 +340,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               const SizedBox(height: 12),
                               TextField(
                                 onChanged: (v) => _currency = v,
-                                controller: TextEditingController(
-                                  text: _currency,
-                                ),
+                                controller: _currencyCtrl,
                                 decoration: InputDecoration(
                                   labelText: ctx.l10n.onboardingCurrency,
                                   hintText: '฿',

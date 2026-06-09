@@ -44,6 +44,8 @@ void main() {
         amountReceived: 500.0,
         changeAmount: 300.0,
         note: null,
+        paymentReference: null,
+        sendingBankCode: null,
         createdAt: tNow,
         items: const [tSaleItem],
       );
@@ -61,7 +63,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tSale.props.length, 19);
+      expect(tSale.props.length, 21);
     });
   });
 }

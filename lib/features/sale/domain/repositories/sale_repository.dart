@@ -13,6 +13,8 @@ abstract class SaleRepository {
     double? amountReceived,
     double? changeAmount,
     String? note,
+    String? paymentReference,
+    String? sendingBankCode,
   });
 
   Future<List<Sale>> getSales({DateTime? from, DateTime? to});

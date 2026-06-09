@@ -41,6 +41,12 @@ class SettingsMapper {
   static const _keyMaxDiscountAmount = 'maxDiscountAmount';
   static const _keyActiveDiscountPresetId = 'activeDiscountPresetId';
   static const _keyPromptpayId = 'promptpayId';
+  static const _keyBillerId = 'billerId';
+  static const _keyPromptPayTimeout = 'promptPayTimeout';
+  static const _keyPromptPaySoundEnabled = 'promptPaySoundEnabled';
+  static const _keyDefaultQrType = 'defaultQrType';
+  static const _keyAutoConfirmAfterSlip = 'autoConfirmAfterSlip';
+  static const _keyQrOverlayIcon = 'qrOverlayIcon';
   static const _keyReceiptSize = 'receiptSize';
   static const _keyBackupReminderDays = 'backupReminderDays';
   static const _keyLastBackupAt = 'lastBackupAt';
@@ -93,6 +99,14 @@ class SettingsMapper {
       _keyActiveDiscountPresetId:
           settings.discountConfig.activeDiscountPresetId,
       _keyPromptpayId: settings.paymentConfig.promptpayId,
+      _keyBillerId: settings.paymentConfig.billerId,
+      _keyPromptPayTimeout: settings.paymentConfig.promptPayTimeout.toString(),
+      _keyPromptPaySoundEnabled: settings.paymentConfig.promptPaySoundEnabled
+          .toString(),
+      _keyDefaultQrType: settings.paymentConfig.defaultQrType,
+      _keyAutoConfirmAfterSlip: settings.paymentConfig.autoConfirmAfterSlip
+          .toString(),
+      _keyQrOverlayIcon: settings.paymentConfig.qrOverlayIcon,
       _keyReceiptSize: settings.receiptConfig.receiptSize,
       _keyBackupReminderDays: settings.backupConfig.reminderDays.toString(),
       _keyLastBackupAt: settings.backupConfig.lastBackupAt ?? '',
@@ -152,6 +166,12 @@ class SettingsMapper {
       paymentConfig: PaymentConfig(
         currency: map[_keyCurrency] ?? '฿',
         promptpayId: map[_keyPromptpayId] ?? '',
+        billerId: map[_keyBillerId] ?? '',
+        promptPayTimeout: _parseInt(map[_keyPromptPayTimeout], 180),
+        promptPaySoundEnabled: _parseBool(map[_keyPromptPaySoundEnabled], true),
+        defaultQrType: map[_keyDefaultQrType] ?? 'transfer',
+        autoConfirmAfterSlip: _parseBool(map[_keyAutoConfirmAfterSlip], false),
+        qrOverlayIcon: map[_keyQrOverlayIcon] ?? '',
       ),
       deviceConfig: DeviceConfig(
         deviceId: map[_keyDeviceId] ?? '',

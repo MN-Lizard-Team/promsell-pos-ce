@@ -834,6 +834,122 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please enter a valid phone number or citizen ID';
 
   @override
+  String get promptpayWaitingForPayment => 'Waiting for customer to pay...';
+
+  @override
+  String get promptpayPaymentTimeout => 'Payment timed out. Sale cancelled.';
+
+  @override
+  String get promptpayExtendTime => 'Extend +1 min';
+
+  @override
+  String get promptpayCancelPayment => 'Cancel Payment';
+
+  @override
+  String get promptpayTransactionReference =>
+      'Transaction Reference (optional)';
+
+  @override
+  String get promptpayQrSaved => 'QR saved to gallery';
+
+  @override
+  String get promptpayQrShared => 'QR shared';
+
+  @override
+  String get promptpaySaveQr => 'Save QR';
+
+  @override
+  String get promptpayShareQr => 'Share QR';
+
+  @override
+  String get promptpaySoundEnabled => 'Sound on confirmation';
+
+  @override
+  String get promptpayTimeoutSetting => 'Payment timeout (minutes)';
+
+  @override
+  String get minutes => 'minutes';
+
+  @override
+  String get slipScanTitle => 'Scan Bank Slip';
+
+  @override
+  String get slipScanHint => 'Align the QR code on the slip within the frame';
+
+  @override
+  String get slipScanSuccess => 'Slip verified';
+
+  @override
+  String get slipScanInvalid => 'Invalid slip QR';
+
+  @override
+  String get slipErrorEmpty => 'Empty QR code detected';
+
+  @override
+  String get slipErrorNotASlip =>
+      'This is a payment QR, not a bank slip. Please scan the QR on the bank transfer slip.';
+
+  @override
+  String get slipErrorUnreadable => 'Unable to read slip QR. Please try again.';
+
+  @override
+  String get promptpayInvalidQr => 'Invalid QR code';
+
+  @override
+  String get settingsBillerId => 'Biller ID';
+
+  @override
+  String get settingsBillerIdHint => 'Tax ID for Bill Payment QR';
+
+  @override
+  String get settingsDefaultQrType => 'Default QR Type';
+
+  @override
+  String get settingsDefaultQrTypeTransfer => 'Transfer';
+
+  @override
+  String get settingsDefaultQrTypeBill => 'Bill Payment';
+
+  @override
+  String get settingsAutoConfirmAfterSlip => 'Auto-confirm after slip scan';
+
+  @override
+  String get settingsAutoConfirmAfterSlipHint =>
+      'Automatically confirm payment 2 seconds after successful slip verification';
+
+  @override
+  String get settingsQrOverlayIcon => 'QR Icon';
+
+  @override
+  String get cart => 'Cart';
+
+  @override
+  String get moreItems => 'more items';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get waitingForPayment => 'Waiting for payment...';
+
+  @override
+  String get copyPromptpayId => 'Copied to clipboard';
+
+  @override
+  String get paymentVerified => 'Payment verified';
+
+  @override
+  String get showMore => 'Show more';
+
+  @override
+  String get showLess => 'Show less';
+
+  @override
+  String itemsCount(Object count) {
+    return '$count items';
+  }
+
+  @override
   String get settingsReceiptSize => 'Receipt Size';
 
   @override
@@ -1276,4 +1392,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dayClosedMessage => 'Day closed. Reopen to continue.';
+
+  @override
+  String get tapToSet => 'Tap to set';
+
+  @override
+  String get shopNameHint => 'Enter shop name';
+
+  @override
+  String get addressHint => 'Enter address';
+
+  @override
+  String get phoneHint => '081-234-5678';
 }

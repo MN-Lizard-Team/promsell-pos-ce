@@ -20,8 +20,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> save(Settings settings) async {
     final map = _mapper.toMap(settings);
-    for (final entry in map.entries) {
-      await _datasource.setString(entry.key, entry.value);
-    }
+    await _datasource.setAll(map);
   }
 }

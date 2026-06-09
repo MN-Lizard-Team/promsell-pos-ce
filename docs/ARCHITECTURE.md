@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.7.3
+# Architecture — Promsell POS CE v0.7.4
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -87,7 +87,9 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │  Data Layer                                        │
 │  Repo impls + Datasources + Services               │
 │  ReceiptPdfService (80mm thermal PDF)               │
-│  PromptpayQrService (EMVCo QR)                      │
+│  PromptPayQrCode (EMVCo QR widget)                  │
+│  SlipVerifier (bank slip Mini-QR decoding)        │
+│  SlipScannerDialog (QR camera scanner)              │
 │  BackupService (export/import/CSV)                   │
 │  ProductImageService (pure Dart compression)         │
 └────────────────────────┬───────────────────────────┘
@@ -375,7 +377,8 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  ProductImageService ──→ SettingsCubit (imageMaxWidth/Quality)│
 │  SettingsLocalDatasource ──→ AppDatabase                  │
 │  ReceiptPdfService (stateless)                            │
-│  PromptpayQrService (stateless)                           │
+│  PromptPayQrCode (stateless)                              │
+│  SlipVerifier (stateless)                                 │
 │  BackupService (stateless)                                │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
@@ -807,4 +810,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.7.3 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.7.4 · Architecture Document · Deep Technical Reference</sub>

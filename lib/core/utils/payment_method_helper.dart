@@ -12,6 +12,8 @@ String normalizePaymentMethod(String method) {
     case 'บัตร':
     case 'card':
       return 'card';
+    case 'promptpay':
+      return 'promptpay';
     default:
       return method;
   }
@@ -26,6 +28,8 @@ String localizePaymentMethod(BuildContext context, String method) {
       return l10n.transfer;
     case 'card':
       return l10n.card;
+    case 'promptpay':
+      return l10n.promptpay;
     default:
       return method;
   }

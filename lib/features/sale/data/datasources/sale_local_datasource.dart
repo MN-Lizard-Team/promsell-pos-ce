@@ -20,6 +20,8 @@ abstract class SaleLocalDatasource {
     double? amountReceived,
     double? changeAmount,
     String? note,
+    String? paymentReference,
+    String? sendingBankCode,
   });
 
   Future<List<Sale>> querySales({DateTime? from, DateTime? to});
@@ -56,6 +58,8 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     amountReceived: s.amountReceived,
     changeAmount: s.changeAmount,
     note: s.note,
+    paymentReference: s.paymentReference,
+    sendingBankCode: s.sendingBankCode,
     voidedAt: s.voidedAt,
     voidReason: s.voidReason,
     createdAt: s.createdAt,
@@ -95,6 +99,8 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     double? amountReceived,
     double? changeAmount,
     String? note,
+    String? paymentReference,
+    String? sendingBankCode,
   }) async {
     final itemsSubtotal = MoneyUtils.round(
       items.fold(0.0, (sum, i) => sum + i.subtotal),
@@ -143,6 +149,8 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
               amountReceived: Value(amountReceived),
               changeAmount: Value(changeAmount),
               note: Value(note),
+              paymentReference: Value(paymentReference),
+              sendingBankCode: Value(sendingBankCode),
             ),
           );
       saleData = await (_db.select(
@@ -219,29 +227,27 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
 
   @override
   Future<List<Sale>> querySales({DateTime? from, DateTime? to}) async {
-    return await _db.transaction(() async {
-      final query = _db.select(_db.sales);
-      if (from != null) {
-        query.where((s) => s.createdAt.isBiggerOrEqualValue(from));
-      }
-      if (to != null) {
-        query.where((s) => s.createdAt.isSmallerOrEqualValue(to));
-      }
-      query.orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
-      final salesData = await query.get();
-      if (salesData.isEmpty) return [];
-      final saleIds = salesData.map((s) => s.id).toList();
-      final allItems = await (_db.select(
-        _db.saleItems,
-      )..where((t) => t.saleId.isIn(saleIds))).get();
-      final itemsBySaleId = <String, List<SaleItemData>>{};
-      for (final item in allItems) {
-        (itemsBySaleId[item.saleId] ??= []).add(item);
-      }
-      return salesData
-          .map((s) => _buildSale(s, itemsBySaleId[s.id] ?? []))
-          .toList();
-    });
+    final query = _db.select(_db.sales);
+    if (from != null) {
+      query.where((s) => s.createdAt.isBiggerOrEqualValue(from));
+    }
+    if (to != null) {
+      query.where((s) => s.createdAt.isSmallerOrEqualValue(to));
+    }
+    query.orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
+    final salesData = await query.get();
+    if (salesData.isEmpty) return [];
+    final saleIds = salesData.map((s) => s.id).toList();
+    final allItems = await (_db.select(
+      _db.saleItems,
+    )..where((t) => t.saleId.isIn(saleIds))).get();
+    final itemsBySaleId = <String, List<SaleItemData>>{};
+    for (final item in allItems) {
+      (itemsBySaleId[item.saleId] ??= []).add(item);
+    }
+    return salesData
+        .map((s) => _buildSale(s, itemsBySaleId[s.id] ?? []))
+        .toList();
   }
 
   @override
@@ -345,7 +351,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             productId: item.productId,
             qty: item.qty,
             saleId: saleId,
-            balanceAfter: 0,
+            balanceAfter: -1,
             reason: 'Product deleted since sale',
           );
           continue;

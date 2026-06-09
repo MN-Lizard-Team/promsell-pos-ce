@@ -43,12 +43,15 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     on<SaleBulkItemsRemoved>(_onBulkItemsRemoved);
     on<SaleBulkItemDiscountsCleared>(_onBulkItemDiscountsCleared);
     on<SaleCartItemsReordered>(_onCartItemsReordered);
+    on<SalePaymentConfirmed>(_onPaymentConfirmed);
+    on<SalePaymentCancelled>(_onPaymentCancelled);
   }
 
   final CreateSale _createSale;
   final DraftCartRepository _draftRepo;
   final SettingsRepository _settingsRepo;
   Timer? _saveTimer;
+  SaleConfirmed? _pendingSaleEvent;
 
   void _onProductAdded(SaleProductAdded event, Emitter<SaleState> emit) {
     final p = event.product;
@@ -265,6 +268,16 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     Emitter<SaleState> emit,
   ) async {
     if (state.items.isEmpty) return;
+
+    // For PromptPay, enter waiting state instead of immediately creating sale
+    if (event.paymentMethod == 'promptpay') {
+      _pendingSaleEvent = event;
+      emit(
+        state.copyWith(status: SaleStatus.waitingPayment, errorMessage: null),
+      );
+      return;
+    }
+
     emit(state.copyWith(status: SaleStatus.processing, errorMessage: null));
     try {
       final sale = await _createSale(
@@ -278,6 +291,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         amountReceived: event.amountReceived,
         changeAmount: event.changeAmount,
         note: event.note,
+        paymentReference: event.paymentReference,
       );
       final prevDraftId = state.activeDraftId;
       if (prevDraftId != null) {
@@ -305,11 +319,70 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     }
   }
 
+  Future<void> _onPaymentConfirmed(
+    SalePaymentConfirmed event,
+    Emitter<SaleState> emit,
+  ) async {
+    final pending = _pendingSaleEvent;
+    if (pending == null) return;
+    _pendingSaleEvent = null;
+    emit(state.copyWith(status: SaleStatus.processing, errorMessage: null));
+    try {
+      final sale = await _createSale(
+        items: state.items,
+        paymentMethod: pending.paymentMethod,
+        vatMode: pending.vatMode,
+        vatRate: pending.vatRate,
+        cartDiscountType: pending.cartDiscountType,
+        cartDiscountValue: pending.cartDiscountValue,
+        cartDiscountAmount: pending.cartDiscountAmount,
+        amountReceived: pending.amountReceived,
+        changeAmount: pending.changeAmount,
+        note: pending.note,
+        paymentReference: event.paymentReference ?? pending.paymentReference,
+        sendingBankCode: event.sendingBankCode,
+      );
+      final prevDraftId = state.activeDraftId;
+      if (prevDraftId != null) {
+        await _draftRepo.deleteDraft(prevDraftId);
+      }
+      final draftCount = await _draftRepo.countDrafts();
+      final newDraftName = 'Bill #${draftCount + 1}';
+      final newDraftId = await _draftRepo.createDraft(name: newDraftName);
+      final newState = SaleState(
+        status: SaleStatus.success,
+        lastSale: sale,
+        activeDraftId: newDraftId,
+        activeDraftName: newDraftName,
+      );
+      emit(newState);
+      try {
+        await _draftRepo.saveDraft(newDraftId, newState, name: newDraftName);
+      } catch (e) {
+        debugPrint(
+          'SaleBloc._onPaymentConfirmed: failed to save new draft: $e',
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(status: SaleStatus.failure, errorMessage: e.toString()),
+      );
+    }
+  }
+
+  void _onPaymentCancelled(
+    SalePaymentCancelled event,
+    Emitter<SaleState> emit,
+  ) {
+    _pendingSaleEvent = null;
+    emit(state.copyWith(status: SaleStatus.idle, errorMessage: null));
+  }
+
   void _scheduleSave() {
     final draftId = state.activeDraftId;
     if (draftId == null) return;
     _saveTimer?.cancel();
-    _saveTimer = Timer(const Duration(milliseconds: 500), () async {
+    _saveTimer = Timer(const Duration(milliseconds: 1500), () async {
       if (!isClosed && state.activeDraftId == draftId) {
         try {
           await _draftRepo.saveDraft(
@@ -462,7 +535,6 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   @override
   Future<void> close() {
     _saveTimer?.cancel();
-    _immediateSave();
-    return super.close();
+    return _immediateSave().then((_) => super.close());
   }
 }

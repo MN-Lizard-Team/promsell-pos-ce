@@ -830,6 +830,122 @@ class AppLocalizationsTh extends AppLocalizations {
       'กรุณากรอกเบอร์โทรหรือเลขบัตรประชาชนที่ถูกต้อง';
 
   @override
+  String get promptpayWaitingForPayment => 'รอลูกค้าชำระเงิน...';
+
+  @override
+  String get promptpayPaymentTimeout => 'หมดเวลาชำระเงิน ยกเลิกการขาย';
+
+  @override
+  String get promptpayExtendTime => 'ขยายเวลา +1 นาที';
+
+  @override
+  String get promptpayCancelPayment => 'ยกเลิกการชำระ';
+
+  @override
+  String get promptpayTransactionReference => 'เลขอ้างอิง (ถ้ามี)';
+
+  @override
+  String get promptpayQrSaved => 'บันทึก QR ลงแกลเลอรีแล้ว';
+
+  @override
+  String get promptpayQrShared => 'แชร์ QR แล้ว';
+
+  @override
+  String get promptpaySaveQr => 'บันทึก QR';
+
+  @override
+  String get promptpayShareQr => 'แชร์ QR';
+
+  @override
+  String get promptpaySoundEnabled => 'เสียงตอนยืนยัน';
+
+  @override
+  String get promptpayTimeoutSetting => 'เวลานับถอยหลัง (นาที)';
+
+  @override
+  String get minutes => 'นาที';
+
+  @override
+  String get slipScanTitle => 'สแกนสลิปธนาคาร';
+
+  @override
+  String get slipScanHint => 'จัด QR code บนสลิปให้อยู่ในกรอบ';
+
+  @override
+  String get slipScanSuccess => 'ตรวจสอบสลิปสำเร็จ';
+
+  @override
+  String get slipScanInvalid => 'สลิปไม่ถูกต้อง';
+
+  @override
+  String get slipErrorEmpty => 'ไม่พบข้อมูลใน QR code';
+
+  @override
+  String get slipErrorNotASlip =>
+      'นี่คือ QR ชำระเงิน ไม่ใช่สลิปธนาคาร กรุณาสแกน QR บนสลิปโอนเงิน';
+
+  @override
+  String get slipErrorUnreadable => 'อ่านสลิปไม่ได้ กรุณาลองใหม่';
+
+  @override
+  String get promptpayInvalidQr => 'QR code ไม่ถูกต้อง';
+
+  @override
+  String get settingsBillerId => 'รหัสผู้เรียกเก็บเงิน';
+
+  @override
+  String get settingsBillerIdHint =>
+      'เลขประจำตัวผู้เสียภาษีสำหรับ QR ใบแจ้งหนี้';
+
+  @override
+  String get settingsDefaultQrType => 'QR เริ่มต้น';
+
+  @override
+  String get settingsDefaultQrTypeTransfer => 'โอนเงิน';
+
+  @override
+  String get settingsDefaultQrTypeBill => 'จ่ายบิล';
+
+  @override
+  String get settingsAutoConfirmAfterSlip => 'ยืนยันอัตโนมัติหลังสแกนสลิป';
+
+  @override
+  String get settingsAutoConfirmAfterSlipHint =>
+      'ยืนยันการชำระเงินอัตโนมัติ 2 วินาทีหลังตรวจสอบสลิปสำเร็จ';
+
+  @override
+  String get settingsQrOverlayIcon => 'ไอคอน QR';
+
+  @override
+  String get cart => 'ตะกร้า';
+
+  @override
+  String get moreItems => 'รายการอื่น';
+
+  @override
+  String get total => 'รวม';
+
+  @override
+  String get waitingForPayment => 'รอการชำระเงิน...';
+
+  @override
+  String get copyPromptpayId => 'คัดลอกแล้ว';
+
+  @override
+  String get paymentVerified => 'ชำระเงินยืนยันแล้ว';
+
+  @override
+  String get showMore => 'แสดงเพิ่ม';
+
+  @override
+  String get showLess => 'แสดงน้อยลง';
+
+  @override
+  String itemsCount(Object count) {
+    return '$count รายการ';
+  }
+
+  @override
   String get settingsReceiptSize => 'ขนาดใบเสร็จ';
 
   @override
@@ -1269,4 +1385,16 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get dayClosedMessage => 'วันนี้ปิดยอดแล้ว กรุณาเปิดยอดใหม่เพื่อขายต่อ';
+
+  @override
+  String get tapToSet => 'แตะเพื่อตั้งค่า';
+
+  @override
+  String get shopNameHint => 'ชื่อร้านค้า';
+
+  @override
+  String get addressHint => 'ที่อยู่ร้านค้า';
+
+  @override
+  String get phoneHint => '081-234-5678';
 }
