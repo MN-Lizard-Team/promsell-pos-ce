@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/backup_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/daily_close_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/device_config.dart';
@@ -268,7 +269,13 @@ class SettingsMapper {
             .where((p) => p.id.isNotEmpty)
             .toList();
         if (presets.isNotEmpty) return presets;
-      } catch (_) {}
+      } catch (e, stack) {
+        AppLogger.warning(
+          'SettingsMapper: discount presets parse failed',
+          error: e,
+          stack: stack,
+        );
+      }
     }
     return const [
       DiscountPreset(

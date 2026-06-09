@@ -16,41 +16,53 @@ class ChangePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!visible) return const SizedBox.shrink();
-
     final theme = Theme.of(context);
     final isEnough = change >= 0;
     final color = isEnough
         ? theme.colorScheme.primary
         : theme.colorScheme.error;
 
-    return DecoratedBox(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      height: visible ? null : 0,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: visible ? color.withValues(alpha: 0.08) : Colors.transparent,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Icon(
-              isEnough ? Icons.price_check : Icons.warning_amber_rounded,
-              color: color,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                context.l10n.change,
-                style: theme.textTheme.bodyMedium,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 250),
+        opacity: visible ? 1.0 : 0.0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Icon(
+                isEnough ? Icons.price_check : Icons.warning_amber_rounded,
+                color: color,
+                size: 28,
               ),
-            ),
-            MoneyText(
-              value: isEnough ? change : 0,
-              currency: currency,
-              style: theme.textTheme.titleMedium,
-              color: color,
-            ),
-          ],
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  context.l10n.change,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'NotoSansThai',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              MoneyText(
+                value: isEnough ? change : 0,
+                currency: currency,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontFamily: 'NotoSansThai',
+                  fontWeight: FontWeight.w700,
+                ),
+                color: color,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -74,47 +86,53 @@ class PaymentMethodCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: selected ? 2 : 0,
-      color: selected
-          ? theme.colorScheme.primaryContainer
-          : theme.colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: selected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.outlineVariant,
-          width: selected ? 1.5 : 1,
+    final colorScheme = theme.colorScheme;
+    return AnimatedScale(
+      scale: selected ? 1.05 : 1.0,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutBack,
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: selected ? 4 : 0,
+        color: selected
+            ? colorScheme.primary
+            : colorScheme.surfaceContainerHighest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(
+            color: selected ? colorScheme.primary : colorScheme.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
         ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: selected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurfaceVariant,
-                size: 28,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: theme.textTheme.labelLarge?.copyWith(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
                   color: selected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurfaceVariant,
-                  fontWeight: selected ? FontWeight.w700 : null,
+                      ? colorScheme.onPrimary
+                      : colorScheme.onSurfaceVariant,
+                  size: 32,
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontFamily: 'NotoSansThai',
+                    color: selected
+                        ? colorScheme.onPrimary
+                        : colorScheme.onSurfaceVariant,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -138,14 +156,15 @@ class PaymentTotalRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final finalStyle = style?.copyWith(fontFamily: 'NotoSansThai');
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: style)),
+          Expanded(child: Text(label, style: finalStyle)),
           Text(
             '${value < 0 ? '-' : ''}$currency${value.abs().toStringAsFixed(2)}',
-            style: style,
+            style: finalStyle,
           ),
         ],
       ),

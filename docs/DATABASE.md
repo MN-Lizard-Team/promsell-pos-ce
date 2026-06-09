@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.7.4
+# Database Handbook — Promsell POS CE v0.7.5
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -27,7 +27,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 12 |
+| **Schema version** | 13 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -409,7 +409,7 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 | `lastBackupAt` | `null` | v0.6.0 |
 | `imageMaxWidth` | `"800"` | v0.6.0 |
 | `imageQuality` | `"80"` | v0.6.0 |
-| `deviceId` | generated UUID | R5 |
+| `deviceId` | generated UUID | R5; backfilled on all existing rows in v13 |
 | `onboardingCompleted` | `false` | R5 |
 | `dailyCloseLock` | `false` | R5 |
 
@@ -417,7 +417,7 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 
 ## Sync-Ready Columns
 
-These columns exist on most tables but are **not used yet** — they prepare the schema for Phase 4 (multi-device sync).
+These columns exist on all tables and are **actively populated** since v0.7.5 (schema v13) for Phase 4 (multi-device sync) readiness.
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -708,6 +708,10 @@ onUpgrade: (m, from, to) async {
   if (from < 12) {
     // sync columns v2: convert DateTime from TEXT ISO8601 to millisecondsSinceEpoch
   }
+  if (from < 13) {
+    // Backfill deviceId on all sync-enabled tables for existing rows
+    // Tables: sales, sale_items, draft_carts, draft_cart_items, inventory_logs, daily_closes
+  }
 },
 ```
 
@@ -770,7 +774,7 @@ PRAGMA wal_checkpoint(TRUNCATE);
 
 ### Encrypted backups (v0.7.2+)
 
-Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2 key:
+Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2-HMAC-SHA256 key (100,000 iterations since v0.7.5):
 
 1. User sets a PIN in Settings → Backup → Encryption
 2. On export: `BackupEncryptionService.encrypt(plainBytes, pin)` → encrypted file

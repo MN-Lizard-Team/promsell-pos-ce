@@ -230,24 +230,41 @@ class CartReviewPage extends StatelessWidget {
                               value: state.total,
                               currency: currency,
                               style: theme.textTheme.headlineSmall?.copyWith(
+                                fontFamily: 'NotoSansThai',
                                 fontWeight: FontWeight.w800,
                               ),
-                              color: theme.colorScheme.primary,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        FilledButton.tonalIcon(
+                        FilledButton.icon(
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.arrow_back),
-                          label: const Text('Back to Payment'),
+                          icon: const Icon(Icons.arrow_back, size: 22),
+                          label: const Text(
+                            'Back to Payment',
+                            style: TextStyle(
+                              fontFamily: 'NotoSansThai',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 52),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextButton.icon(
                           onPressed: () =>
                               Navigator.of(context).popUntil((r) => r.isFirst),
-                          icon: const Icon(Icons.storefront_outlined),
-                          label: const Text('Back to Sale'),
+                          icon: const Icon(Icons.storefront_outlined, size: 20),
+                          label: const Text(
+                            'Back to Sale',
+                            style: TextStyle(
+                              fontFamily: 'NotoSansThai',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ],
                     ),

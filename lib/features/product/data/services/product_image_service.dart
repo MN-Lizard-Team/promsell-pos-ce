@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:promsell_pos_ce/core/image/image_cache_service.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
@@ -30,39 +31,45 @@ class ProductImageServiceImpl implements ProductImageService {
 
   final ImagePicker _picker;
   final SettingsRepository _settingsRepository;
+  final ImageCacheService _cacheService;
 
-  ProductImageServiceImpl(this._settingsRepository, {ImagePicker? picker})
-    : _picker = picker ?? ImagePicker();
+  ProductImageServiceImpl(
+    this._settingsRepository, {
+    ImagePicker? picker,
+    ImageCacheService? cacheService,
+  }) : _picker = picker ?? ImagePicker(),
+       _cacheService = cacheService ?? ImageCacheService();
 
   @override
   Future<String?> pickFromGallery(String productId) async {
     final xFile = await _picker.pickImage(source: ImageSource.gallery);
     if (xFile == null) return null;
+    if (!_isValidImage(xFile.path)) return null;
     final effectiveId = _resolveProductId(productId);
-    return _compressAndSave(xFile.path, effectiveId);
+    final result = await _compressAndSave(xFile.path, effectiveId);
+    await _cacheService.evictIfNeeded();
+    return result;
   }
 
   @override
   Future<String?> pickFromCamera(String productId) async {
     final xFile = await _picker.pickImage(source: ImageSource.camera);
     if (xFile == null) return null;
+    if (!_isValidImage(xFile.path)) return null;
     final effectiveId = _resolveProductId(productId);
-    return _compressAndSave(xFile.path, effectiveId);
+    final result = await _compressAndSave(xFile.path, effectiveId);
+    await _cacheService.evictIfNeeded();
+    return result;
   }
 
   @override
   Future<void> deleteImage(String? imagePath) async {
-    if (imagePath == null || imagePath.isEmpty) return;
-    final file = File(imagePath);
-    if (await file.exists()) {
-      await file.delete();
-    }
+    await _cacheService.deleteImage(imagePath, null);
   }
 
   @override
   Future<void> deleteImages(String? imagePath, String? thumbnailPath) async {
-    await deleteImage(imagePath);
-    await deleteImage(thumbnailPath);
+    await _cacheService.deleteImage(imagePath, thumbnailPath);
   }
 
   @override
@@ -90,6 +97,20 @@ class ProductImageServiceImpl implements ProductImageService {
       return IdGenerator.newId();
     }
     return productId;
+  }
+
+  /// Validates that the file is a supported image format.
+  bool _isValidImage(String path) {
+    final ext = p.extension(path).toLowerCase();
+    return const [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      '.gif',
+      '.bmp',
+      '.heic',
+    ].contains(ext);
   }
 
   Future<String> _compressAndSave(String sourcePath, String productId) async {

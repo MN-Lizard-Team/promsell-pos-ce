@@ -50,13 +50,22 @@ class CartItemRow extends StatelessWidget {
     final pad = ultraCompact ? 6.0 : (compact ? 8.0 : 12.0);
     final avatarSize = ultraCompact ? 28.0 : (compact ? 32.0 : 40.0);
     final nameStyle = ultraCompact
-        ? theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700)
-        : theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700);
+        ? theme.textTheme.bodySmall?.copyWith(
+            fontFamily: 'NotoSansThai',
+            fontWeight: FontWeight.w700,
+          )
+        : theme.textTheme.bodyMedium?.copyWith(
+            fontFamily: 'NotoSansThai',
+            fontWeight: FontWeight.w700,
+          );
     final subtitleStyle = theme.textTheme.bodySmall?.copyWith(
+      fontFamily: 'NotoSansThai',
+      fontWeight: FontWeight.w500,
       color: theme.colorScheme.onSurfaceVariant,
     );
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLowest,
@@ -189,19 +198,31 @@ class CartItemRow extends StatelessWidget {
                       if (hasDiscount) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 1,
+                            horizontal: 8,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.errorContainer,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            '-$currency${item.discountAmount.toStringAsFixed(2)}',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onErrorContainer,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.local_offer_outlined,
+                                size: 12,
+                                color: theme.colorScheme.error,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                '-$currency${item.discountAmount.toStringAsFixed(2)}',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontFamily: 'NotoSansThai',
+                                  color: theme.colorScheme.error,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -210,6 +231,7 @@ class CartItemRow extends StatelessWidget {
                         value: item.subtotal,
                         currency: currency,
                         style: theme.textTheme.titleMedium?.copyWith(
+                          fontFamily: 'NotoSansThai',
                           fontWeight: FontWeight.w800,
                         ),
                         color: theme.colorScheme.primary,

@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_s
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 abstract class SaleLocalDatasource {
   Future<Sale> insertSaleWithItems({
@@ -33,14 +34,22 @@ abstract class SaleLocalDatasource {
 
 @LazySingleton(as: SaleLocalDatasource)
 class SaleLocalDatasourceImpl implements SaleLocalDatasource {
-  const SaleLocalDatasourceImpl(
+  SaleLocalDatasourceImpl(
     this._db, {
     required this.receiptNumberService,
     required this.inventoryLogService,
+    required this.settingsRepo,
   });
   final AppDatabase _db;
   final ReceiptNumberService receiptNumberService;
   final InventoryLogService inventoryLogService;
+  final SettingsRepository settingsRepo;
+
+  String? _cachedDeviceId;
+  Future<String> _getDeviceId() async {
+    return _cachedDeviceId ??=
+        (await settingsRepo.load()).deviceConfig.deviceId;
+  }
 
   Sale _buildSale(SaleData s, List<SaleItemData> items) => Sale(
     id: s.id,
@@ -127,6 +136,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
       finalTotal = preTaxTotal;
     }
     final saleId = IdGenerator.newId();
+    final deviceId = await _getDeviceId();
     late SaleData saleData;
     await _db.transaction(() async {
       // Generate receipt number
@@ -151,6 +161,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
               note: Value(note),
               paymentReference: Value(paymentReference),
               sendingBankCode: Value(sendingBankCode),
+              deviceId: Value(deviceId),
             ),
           );
       saleData = await (_db.select(
@@ -201,6 +212,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
                 subtotal: item.subtotal,
                 discountAmount: Value(item.discountAmount),
                 vatAmount: Value(itemVatAmount),
+                deviceId: Value(deviceId),
               ),
             );
         if (!productMap[item.product.id]!.trackStock) continue;
@@ -327,6 +339,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
           voidedAt: Value(now),
           voidReason: Value(reason),
           updatedAt: Value(now),
+          version: Value(sale.version + 1),
         ),
       );
 

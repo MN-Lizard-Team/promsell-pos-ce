@@ -78,6 +78,8 @@ class _CartPanelState extends State<CartPanel> {
         final settings = ctx.read<SettingsCubit>().state.settings;
         if (settings.autoPrintPrompt && state.lastSale != null) {
           final sale = state.lastSale!;
+          // ADR-009: Defer dialog push to next frame so the modal/page
+          // listener can pop first, avoiding route stack corruption.
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (ctx.mounted) SaleReceiptDialog.show(ctx, sale, settings);
           });

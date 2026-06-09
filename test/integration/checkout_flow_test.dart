@@ -12,6 +12,7 @@ import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_servi
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 import '../helpers/fake_database.dart';
+import '../helpers/fake_settings_repository.dart';
 
 class _NoOpImageService implements ProductImageService {
   @override
@@ -37,14 +38,20 @@ void main() {
   late SaleLocalDatasourceImpl saleDs;
   late ProductRepositoryImpl productRepo;
   late SaleRepositoryImpl saleRepo;
+  late FakeSettingsRepository fakeSettingsRepo;
 
   setUp(() {
     db = createInMemoryDatabase();
+    fakeSettingsRepo = FakeSettingsRepository();
     productDs = ProductLocalDatasourceImpl(db);
     saleDs = SaleLocalDatasourceImpl(
       db,
       receiptNumberService: ReceiptNumberService(db),
-      inventoryLogService: InventoryLogService(db),
+      inventoryLogService: InventoryLogService(
+        db,
+        settingsRepo: fakeSettingsRepo,
+      ),
+      settingsRepo: fakeSettingsRepo,
     );
     productRepo = ProductRepositoryImpl(productDs, _NoOpImageService());
     saleRepo = SaleRepositoryImpl(saleDs);

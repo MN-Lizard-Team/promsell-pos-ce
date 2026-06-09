@@ -172,13 +172,17 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                     );
                     return DecoratedBox(
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer.withValues(
-                          alpha: 0.55,
-                        ),
+                        color: theme.colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.3,
+                          ),
+                          width: 1.5,
+                        ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(20),
                         child: Column(
                           children: [
                             if (hasItemDiscounts || cartState.hasCartDiscount)
@@ -222,14 +226,32 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                                 Expanded(
                                   child: Text(
                                     context.l10n.totalAmount,
-                                    style: theme.textTheme.bodyLarge,
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontFamily: 'NotoSansThai',
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
-                                MoneyText(
-                                  value: _effectiveTotal,
-                                  currency: currency,
-                                  style: theme.textTheme.headlineSmall,
-                                  color: theme.colorScheme.primary,
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder: (child, animation) {
+                                    return ScaleTransition(
+                                      scale: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: MoneyText(
+                                    key: ValueKey<double>(_effectiveTotal),
+                                    value: _effectiveTotal,
+                                    currency: currency,
+                                    style: theme.textTheme.headlineMedium
+                                        ?.copyWith(
+                                          fontFamily: 'NotoSansThai',
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 24,
+                                        ),
+                                    color: theme.colorScheme.primary,
+                                  ),
                                 ),
                               ],
                             ),
@@ -305,17 +327,24 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         .asMap()
                         .entries
                         .map(
-                          (entry) => ActionChip(
-                            avatar: const Icon(
-                              Icons.add_circle_outline,
-                              size: 18,
+                          (entry) => FilledButton(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 48),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              textStyle: const TextStyle(
+                                fontFamily: 'NotoSansThai',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                            label: Text(
+                            onPressed: () => _setReceived(entry.value),
+                            child: Text(
                               entry.key == 0
                                   ? context.l10n.quickCashExact
                                   : '$currency${entry.value.toStringAsFixed(2)}',
                             ),
-                            onPressed: () => _setReceived(entry.value),
                           ),
                         )
                         .toList(),
@@ -417,6 +446,14 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                             ),
                           ),
                         FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 56),
+                            textStyle: const TextStyle(
+                              fontFamily: 'NotoSansThai',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                           onPressed: isProcessing || !canConfirm
                               ? null
                               : () {
@@ -425,13 +462,16 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                                 },
                           icon: isProcessing
                               ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
+                                  height: 20,
+                                  width: 20,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                    strokeWidth: 2.5,
                                   ),
                                 )
-                              : const Icon(Icons.check_circle_outline),
+                              : const Icon(
+                                  Icons.check_circle_outline,
+                                  size: 24,
+                                ),
                           label: Text(
                             context.l10n.confirmPaymentAmount(
                               currency,
@@ -497,6 +537,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                                       qty: i.qty,
                                       price: i.product.price,
                                       subtotal: i.subtotal,
+                                      imagePath: i.product.imagePath,
+                                      imageThumbnailPath:
+                                          i.product.imageThumbnailPath,
+                                      imageUrl: i.product.imageUrl,
                                     ),
                                   )
                                   .toList(),
@@ -524,6 +568,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                                       qty: i.qty,
                                       price: i.product.price,
                                       subtotal: i.subtotal,
+                                      imagePath: i.product.imagePath,
+                                      imageThumbnailPath:
+                                          i.product.imageThumbnailPath,
+                                      imageUrl: i.product.imageUrl,
                                     ),
                                   )
                                   .toList(),

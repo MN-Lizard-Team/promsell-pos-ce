@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -9,6 +8,7 @@ import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_rep
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 @injectable
@@ -309,8 +309,12 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       emit(newState);
       try {
         await _draftRepo.saveDraft(newDraftId, newState, name: newDraftName);
-      } catch (e) {
-        debugPrint('SaleBloc._onConfirmed: failed to save new draft: $e');
+      } catch (e, stack) {
+        AppLogger.error(
+          'SaleBloc._onConfirmed: failed to save new draft',
+          error: e,
+          stack: stack,
+        );
       }
     } catch (e) {
       emit(
@@ -358,9 +362,11 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       emit(newState);
       try {
         await _draftRepo.saveDraft(newDraftId, newState, name: newDraftName);
-      } catch (e) {
-        debugPrint(
-          'SaleBloc._onPaymentConfirmed: failed to save new draft: $e',
+      } catch (e, stack) {
+        AppLogger.error(
+          'SaleBloc._onPaymentConfirmed: failed to save new draft',
+          error: e,
+          stack: stack,
         );
       }
     } catch (e) {
@@ -383,15 +389,21 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     if (draftId == null) return;
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 1500), () async {
-      if (!isClosed && state.activeDraftId == draftId) {
+      if (isClosed) return;
+      final currentState = state;
+      if (currentState.activeDraftId == draftId) {
         try {
           await _draftRepo.saveDraft(
             draftId,
-            state,
-            name: state.activeDraftName,
+            currentState,
+            name: currentState.activeDraftName,
           );
-        } catch (e) {
-          debugPrint('SaleBloc._scheduleSave failed: $e');
+        } catch (e, stack) {
+          AppLogger.error(
+            'SaleBloc._scheduleSave failed',
+            error: e,
+            stack: stack,
+          );
         }
       }
     });
@@ -403,8 +415,8 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     _saveTimer?.cancel();
     try {
       await _draftRepo.saveDraft(draftId, state, name: state.activeDraftName);
-    } catch (e) {
-      debugPrint('SaleBloc._immediateSave failed: $e');
+    } catch (e, stack) {
+      AppLogger.error('SaleBloc._immediateSave failed', error: e, stack: stack);
     }
   }
 
@@ -434,8 +446,12 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
           ),
         );
       }
-    } catch (e) {
-      debugPrint('SaleBloc._onDraftInitialized failed: $e');
+    } catch (e, stack) {
+      AppLogger.error(
+        'SaleBloc._onDraftInitialized failed',
+        error: e,
+        stack: stack,
+      );
       final id = await _draftRepo.createDraft();
       emit(state.copyWith(activeDraftId: id));
     }
@@ -455,7 +471,9 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     }
     final draft = await _draftRepo.loadDraft(event.draftId);
     if (draft == null) {
-      debugPrint('SaleBloc._onDraftSwitched: draft ${event.draftId} not found');
+      AppLogger.warning(
+        'SaleBloc._onDraftSwitched: draft ${event.draftId} not found',
+      );
       emit(state.copyWith(errorMessage: 'Draft not found'));
       return;
     }

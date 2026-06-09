@@ -57,9 +57,11 @@ Promsell is an **offline-first local app** with no network access by default:
 3. **App settings table** (Drift-backed) — stores non-sensitive settings (locale, theme, shop name, VAT mode, stock policy); also stores receipt sequence counter and device prefix
 4. **Atomic transactions** — sale creation, void, and stock adjustments run inside Drift DB transactions to prevent partial writes
 5. **Inventory audit trail** — all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) are logged immutably in `inventory_logs` table
-6. **Backup encryption** (v0.7.2+) — SQLite exports can be encrypted with AES-256-GCM using a PIN-derived PBKDF2 key; toggle in Settings → Backup
-7. **PDF generation** — local only, no upload
-8. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
+6. **Backup encryption v2** (v0.7.5+) — AES-256-GCM with PIN-derived PBKDF2-HMAC-SHA256 at 100,000 iterations (RFC 2898). v1 format (weak ~3 HMAC rounds) still decrypts for backward compatibility but new backups use v2. Toggle in Settings → Backup
+7. **Image format validation** (v0.7.5+) — `ProductImageService._isValidImage()` rejects non-image files (`.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.bmp`, `.heic` only); prevents malicious file upload via picker
+8. **Image cache eviction** (v0.7.5+) — `ImageCacheService` enforces 50MB LRU limit on `/images/` directory; prevents disk space exhaustion from uncompressed product photos
+9. **PDF generation** — local only, no upload
+10. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
 
 ## Security changelog
 

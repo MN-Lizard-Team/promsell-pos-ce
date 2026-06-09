@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -26,8 +26,8 @@ class SettingsCubit extends Cubit<SettingsState> {
           settings: AppSettings.fromSettings(settings),
         ),
       );
-    } catch (e) {
-      debugPrint('SettingsCubit.load failed: $e');
+    } catch (e, stack) {
+      AppLogger.error('SettingsCubit.load failed', error: e, stack: stack);
       emit(
         state.copyWith(
           status: SettingsStatus.failure,

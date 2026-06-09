@@ -3,14 +3,17 @@ import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 
 import '../../../../helpers/fake_database.dart';
+import '../../../../helpers/fake_settings_repository.dart';
 
 void main() {
   late AppDatabase db;
   late InventoryLogService service;
+  late FakeSettingsRepository fakeSettingsRepo;
 
   setUp(() {
     db = createInMemoryDatabase();
-    service = InventoryLogService(db);
+    fakeSettingsRepo = FakeSettingsRepository();
+    service = InventoryLogService(db, settingsRepo: fakeSettingsRepo);
   });
 
   tearDown(() => db.close());

@@ -119,6 +119,7 @@ Never hardcode Thai or English strings in widget code.
 When working on presentation code:
 
 - Prefer shared primitives from `lib/core/widgets/` before creating feature-local duplicates
+- Prefer image widgets from `lib/core/image/` (`UnifiedImageWidget`, `ImageSkeleton`, `ImageErrorPlaceholder`) for all product/user image display
 - Prefer theme tokens from `lib/core/theme/` over ad-hoc colors, radius, or padding
 - Use `colorScheme.*` (e.g., `colorScheme.primary`, `colorScheme.error`) instead of `Colors.*` — never hardcode Material colors in feature code
 - Use `AppColors` tokens from `lib/core/theme/app_colors.dart` for status/warning/success/error colors instead of `Colors.green`, `Colors.red`, etc.
@@ -143,7 +144,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **339 automated tests**. All must pass before submitting a PR.
+The project has **343 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests
@@ -231,7 +232,8 @@ Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)
 - `lib/core/extensions/l10n_extension.dart` — `context.l10n` helper
 - `lib/core/utils/payment_method_helper.dart` — payment method normalization
-- `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints)
+- `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints, `ImageViewerDialog`)
+- `lib/core/image/` — unified image system (`UnifiedImageWidget`, `ImageSkeleton`, `ImageErrorPlaceholder`, `ImageCacheService`)
 - `lib/core/database/app_database.dart` — Drift schema and DAOs
 - `lib/main.dart` — app entry, `SettingsCubit` provider, 5-tab shell
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 
@@ -11,12 +13,18 @@ class ReceiptPreviewItem {
     required this.qty,
     required this.price,
     required this.subtotal,
+    this.imagePath,
+    this.imageThumbnailPath,
+    this.imageUrl,
   });
 
   final String name;
   final int qty;
   final double price;
   final double subtotal;
+  final String? imagePath;
+  final String? imageThumbnailPath;
+  final String? imageUrl;
 }
 
 enum ReceiptPreviewStyle { thermal, card, none }
@@ -76,7 +84,7 @@ class ReceiptPreview extends StatelessWidget {
     try {
       return DateFormat(settings.dateFormat).add_Hm().format(dt);
     } catch (e) {
-      debugPrint('ReceiptPreview._formatDate fallback: $e');
+      AppLogger.warning('ReceiptPreview._formatDate fallback', error: e);
       return DateFormat('dd/MM/yyyy HH:mm').format(dt);
     }
   }
@@ -89,20 +97,27 @@ class _ThermalPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final s = _parent.settings;
     final l = _parent.labels;
     final vat = _parent.vatInfo;
 
     return Container(
-      color: Colors.white,
       constraints: const BoxConstraints(maxWidth: 280),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
+      ),
       child: DefaultTextStyle(
-        style: const TextStyle(
-          color: Colors.black,
+        style: TextStyle(
+          color: theme.colorScheme.onSurface,
           fontSize: 11,
           height: 1.3,
-          fontFamily: 'monospace',
+          fontFamily: 'NotoSansThai',
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -124,7 +139,7 @@ class _ThermalPreview extends StatelessWidget {
                 _center(s.phone, style: const TextStyle(fontSize: 9)),
             ],
             const SizedBox(height: 4),
-            _divider(),
+            _divider(theme),
             const SizedBox(height: 4),
             // Receipt number + date
             Row(
@@ -146,13 +161,25 @@ class _ThermalPreview extends StatelessWidget {
             if (_parent.paymentMethod != null)
               Text('${l.payment}: ${_parent.paymentMethod}'),
             const SizedBox(height: 6),
-            _divider(),
+            _divider(theme),
             // Items
             ..._parent.items.map(
               (item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
+                padding: const EdgeInsets.symmetric(vertical: 3),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    if (item.imagePath != null ||
+                        item.imageThumbnailPath != null ||
+                        item.imageUrl != null) ...[
+                      ProductAvatar(
+                        imagePath: item.imagePath,
+                        imageThumbnailPath: item.imageThumbnailPath,
+                        imageUrl: item.imageUrl,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     Expanded(
                       child: Text(
                         '${item.name} x${item.qty}',
@@ -167,7 +194,7 @@ class _ThermalPreview extends StatelessWidget {
                 ),
               ),
             ),
-            _divider(),
+            _divider(theme),
             // VAT
             if (vat != null) ...[
               _row(
@@ -220,8 +247,11 @@ class _ThermalPreview extends StatelessWidget {
     child: Text(text, style: style, textAlign: TextAlign.center),
   );
 
-  Widget _divider() =>
-      const Divider(color: Colors.black, height: 1, thickness: 0.5);
+  Widget _divider(ThemeData theme) => Divider(
+    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+    height: 1,
+    thickness: 0.5,
+  );
 
   Widget _row(String left, String right, {bool bold = false}) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 1),
@@ -321,7 +351,19 @@ class _CardPreview extends StatelessWidget {
                 (item) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      if (item.imagePath != null ||
+                          item.imageThumbnailPath != null ||
+                          item.imageUrl != null) ...[
+                        ProductAvatar(
+                          imagePath: item.imagePath,
+                          imageThumbnailPath: item.imageThumbnailPath,
+                          imageUrl: item.imageUrl,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
                       Expanded(child: Text('${item.name} x${item.qty}')),
                       Text('${s.currency}${item.subtotal.toStringAsFixed(2)}'),
                     ],
@@ -350,8 +392,9 @@ class _CardPreview extends StatelessWidget {
                   horizontal: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withValues(
-                    alpha: 0.3,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),

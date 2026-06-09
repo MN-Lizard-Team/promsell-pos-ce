@@ -141,4 +141,27 @@ void main() {
       expect(result, isNull);
     });
   });
+
+  group('compression benchmark', () {
+    test('800x600 resize + encodeJpg under 500ms', () {
+      final image = img_lib.Image(width: 800, height: 600);
+      for (var y = 0; y < image.height; y++) {
+        for (var x = 0; x < image.width; x++) {
+          image.setPixel(
+            x,
+            y,
+            img_lib.ColorRgb8(x % 255, y % 255, (x + y) % 255),
+          );
+        }
+      }
+
+      final sw = Stopwatch()..start();
+      final resized = img_lib.copyResize(image, width: 800);
+      final jpg = img_lib.encodeJpg(resized, quality: 80);
+      sw.stop();
+
+      expect(jpg, isNotEmpty);
+      expect(sw.elapsedMilliseconds, lessThan(500));
+    });
+  });
 }

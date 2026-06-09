@@ -17,6 +17,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.5] - 2026-06-09
+
+Unified image system, sync-ready schema, PBKDF2 encryption, and dark-mode UI overhaul.
+
+### Highlights
+
+- **Sync Readiness** — `deviceId` populated on all datasource writes (`Sales`, `SaleItems`, `DraftCarts`, `InventoryLogs`); soft-delete drafts; schema v13 backfill migration.
+- **Security Fix** — `BackupEncryptionService` replaces weak key derivation with PBKDF2-HMAC-SHA256 (100K iterations); v2 format with backward-compatible v1 decryption.
+- **Image System** — Unified `UnifiedImageWidget` with skeleton loading and dark-mode-safe placeholders; `ImageCacheService` with LRU eviction; `ImageViewerDialog` with share/info overlays.
+- **UI/UX Overhaul** — Forest green theme, iOS-style `AnimatedNavBar` with active indicators, larger payment/cart touch targets, `NotoSansThai` everywhere, dark mode fixes across payment, cart, and receipt preview.
+
+### Added
+
+- `deviceId` population on all `Companion.insert()` writes across sync-enabled tables.
+- `deleteDraft` soft delete (`deletedAt` + `isArchived`) with cascade to items.
+- `BackupEncryptionService` v2 format (version byte `0x02`) + PBKDF2-HMAC-SHA256.
+- `ImageCacheService` — LRU cache eviction, `clearCache()`, paired image/thumbnail delete.
+- `UnifiedImageWidget` + `ImageSkeleton` + `ImageErrorPlaceholder` in `core/image/`.
+- `ImageViewerDialog` share button and info bottom sheet.
+- `AnimatedNavBar` — frosted glass, active pill, bounce animation, swipe navigation, double-tap scroll-to-top, keyboard shortcuts (`1`–`5`/`F1`–`F5`), tablet `NavigationRail`.
+- `AppLogger` — structured logging utility replacing `debugPrint` in catch blocks.
+- `FakeSettingsRepository` test helper; onboarding → first sale integration test.
+- Schema v13 migration — backfills `device_id` on all sync tables.
+- `image_cropper` dependency `^8.0.0`.
+
+### Changed
+
+- **Theme** — primary `#00C853` → `#2E7D32`; light background `#F0EDE4` → `#F5F5F5`; dark `#0D1117` → `#121212`; surfaces pure white/neutral; added `darkSurfaceContainerHighest`.
+- **Navbar** — height 56dp → 64dp, icon 24dp → 28dp, touch target `HitTestBehavior.opaque`, active tab rounded rect background, label active `w700`/inactive `w600`.
+- **Payment** — `PaymentMethodCard` selected → `primary` background with `onPrimary` text; quick-amount `ActionChip` → `FilledButton`; confirm button 56dp; total section bordered with `surfaceContainerHighest` background; `AnimatedScale`/`AnimatedSwitcher` animations.
+- **Cart** — stepper height 36dp → 44dp, button 24dp → 32dp with primary tint; item row `AnimatedContainer` + pill discount badge; checkout button 56dp.
+- **Cart review** — MoneyText `primary` → `onSurface`; qty button `primaryContainer` → `surfaceContainerHighest`; buttons `FilledButton` + `NotoSansThai`.
+- **Receipt preview** — thermal style `Colors.white`/`black` → `surface`/`onSurface` with border; card total `primaryContainer` → `primary` 0.08 alpha + border; product images via `ProductAvatar` inline.
+- `ProductAvatar` / `ProductFormAvatar` — thin wrappers around `UnifiedImageWidget`.
+- `ProductImageService` — integrated `ImageCacheService`, format validation, auto-evict on save.
+- `SaleLocalDatasourceImpl`, `DraftCartLocalDatasourceImpl`, `InventoryLogService` — inject `SettingsRepository` for `deviceId`.
+
+### Fixed
+
+- Weak `BackupEncryptionService` key derivation (~3 HMAC rounds → 100K PBKDF2).
+- `deleteDraft` orphaned `draft_cart_items` rows.
+- Silent error swallowing — 20 `debugPrint` catch blocks → `AppLogger` across 11 files.
+- `catch (_) {}` anti-pattern in `SettingsMapper`, `SoundPlayer`, `ReceiptPdfService`, `DailyCloseRepository`.
+- `SaleBloc._scheduleSave` race condition — stale state read after async gap.
+- Missing `labelSmall`/`labelMedium` causing navbar Roboto fallback.
+- Receipt preview dark mode — hardcoded white/black colors unreadable in dark theme.
+
+`flutter analyze` → **0 issues** · `flutter test` → **343/343 passing**
+
+---
+
 ## [0.7.4] - 2026-06-09
 
 PromptPay system overhaul, data loss prevention, settings atomicity, and UI polish.
@@ -1212,7 +1263,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.5...HEAD
+[0.7.5]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.1...v0.7.2

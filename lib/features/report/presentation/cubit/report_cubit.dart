@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
@@ -41,7 +41,7 @@ class ReportCubit extends Cubit<ReportState> {
       (sales) =>
           emit(state.copyWith(status: ReportStatus.success, sales: sales)),
       onError: (e) {
-        debugPrint('ReportCubit.load failed: $e');
+        AppLogger.error('ReportCubit.load failed', error: e);
         emit(state.copyWith(status: ReportStatus.failure));
       },
     );
@@ -54,7 +54,7 @@ class ReportCubit extends Cubit<ReportState> {
       (sales) =>
           emit(state.copyWith(status: ReportStatus.success, sales: sales)),
       onError: (e) {
-        debugPrint('ReportCubit.changeDateRange failed: $e');
+        AppLogger.error('ReportCubit.changeDateRange failed', error: e);
         emit(state.copyWith(status: ReportStatus.failure));
       },
     );

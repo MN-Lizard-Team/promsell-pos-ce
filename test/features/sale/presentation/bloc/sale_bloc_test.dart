@@ -299,5 +299,12 @@ void main() {
         SaleState(items: [tCartItem2, tCartItem]),
       ],
     );
+
+    test('close cancels pending save timer and completes', () async {
+      final bloc = buildBloc();
+      bloc.add(SaleProductAdded(tProduct));
+      await bloc.stream.first;
+      await expectLater(bloc.close(), completes);
+    });
   });
 }

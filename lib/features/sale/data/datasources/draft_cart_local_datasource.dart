@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 abstract class DraftCartLocalDatasource {
   Future<String> createDraft({String? name});
@@ -21,12 +22,20 @@ abstract class DraftCartLocalDatasource {
 
 @LazySingleton(as: DraftCartLocalDatasource)
 class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
-  const DraftCartLocalDatasourceImpl(this._db);
+  DraftCartLocalDatasourceImpl(this._db, {required this.settingsRepo});
   final AppDatabase _db;
+  final SettingsRepository settingsRepo;
+
+  String? _cachedDeviceId;
+  Future<String> _getDeviceId() async {
+    return _cachedDeviceId ??=
+        (await settingsRepo.load()).deviceConfig.deviceId;
+  }
 
   @override
   Future<String> createDraft({String? name}) async {
     final id = IdGenerator.newId();
+    final deviceId = await _getDeviceId();
     await _db
         .into(_db.draftCarts)
         .insert(
@@ -34,6 +43,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             id: id,
             name: Value(name),
             updatedAt: Value(DateTime.now()),
+            deviceId: Value(deviceId),
           ),
         );
     return id;
@@ -45,6 +55,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
     SaleState state, {
     String? name,
   }) async {
+    final deviceId = await _getDeviceId();
     await _db.transaction(() async {
       await (_db.update(
         _db.draftCarts,
@@ -55,6 +66,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           cartDiscountType: Value(state.cartDiscountType),
           cartDiscountValue: Value(state.cartDiscountValue),
           updatedAt: Value(DateTime.now()),
+          deviceId: Value(deviceId),
         ),
       );
 
@@ -75,6 +87,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
                 qty: item.qty,
                 discountType: Value(item.discountType),
                 discountValue: Value(item.discountValue),
+                deviceId: Value(deviceId),
               ),
             );
       }
@@ -90,7 +103,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
 
     final itemRows = await (_db.select(
       _db.draftCartItems,
-    )..where((t) => t.cartId.equals(cartId))).get();
+    )..where((t) => t.cartId.equals(cartId) & t.deletedAt.isNull())).get();
 
     final productIds = itemRows.map((r) => r.productId).toSet().toList();
     final productRows = await (_db.select(
@@ -103,7 +116,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
         .map((r) => r.productId)
         .toSet();
     if (missingProductIds.isNotEmpty) {
-      debugPrint(
+      AppLogger.warning(
         'DraftCartLocalDatasource.loadDraft: skipped items with deleted products: $missingProductIds',
       );
     }
@@ -136,6 +149,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   @override
   Future<List<DraftCart>> listDrafts({bool includeArchived = false}) async {
     final query = _db.select(_db.draftCarts)
+      ..where((t) => t.deletedAt.isNull())
       ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]);
     if (!includeArchived) {
       query.where((t) => t.isArchived.equals(false));
@@ -146,7 +160,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
     final cartIds = carts.map((c) => c.id).toList();
     final allItemRows = await (_db.select(
       _db.draftCartItems,
-    )..where((t) => t.cartId.isIn(cartIds))).get();
+    )..where((t) => t.cartId.isIn(cartIds) & t.deletedAt.isNull())).get();
 
     final allProductIds = allItemRows.map((r) => r.productId).toSet().toList();
     final allProductRows = allProductIds.isEmpty
@@ -191,10 +205,13 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
 
   @override
   Future<void> deleteDraft(String cartId) async {
-    await (_db.delete(
-      _db.draftCartItems,
-    )..where((t) => t.cartId.equals(cartId))).go();
-    await (_db.delete(_db.draftCarts)..where((t) => t.id.equals(cartId))).go();
+    final now = DateTime.now();
+    await (_db.update(_db.draftCartItems)
+          ..where((t) => t.cartId.equals(cartId)))
+        .write(DraftCartItemsCompanion(deletedAt: Value(now)));
+    await (_db.update(_db.draftCarts)..where((t) => t.id.equals(cartId))).write(
+      DraftCartsCompanion(deletedAt: Value(now), isArchived: const Value(true)),
+    );
   }
 
   @override
@@ -207,7 +224,10 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   Future<int> countDrafts() async {
     final countExpr = _db.draftCarts.id.count();
     final query = _db.selectOnly(_db.draftCarts)
-      ..where(_db.draftCarts.isArchived.equals(false))
+      ..where(
+        _db.draftCarts.isArchived.equals(false) &
+            _db.draftCarts.deletedAt.isNull(),
+      )
       ..addColumns([countExpr]);
     final row = await query.getSingle();
     return row.read(countExpr) ?? 0;
@@ -218,7 +238,9 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
     final query = _db.update(_db.draftCarts)
       ..where(
         (t) =>
-            t.isArchived.equals(false) & t.updatedAt.isSmallerThanValue(cutoff),
+            t.isArchived.equals(false) &
+            t.deletedAt.isNull() &
+            t.updatedAt.isSmallerThanValue(cutoff),
       );
     final rows = await query.write(
       const DraftCartsCompanion(isArchived: Value(true)),

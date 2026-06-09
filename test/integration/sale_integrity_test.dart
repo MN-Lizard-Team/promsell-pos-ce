@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_servi
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 import '../helpers/fake_database.dart';
+import '../helpers/fake_settings_repository.dart';
 
 void main() {
   late AppDatabase db;
@@ -16,15 +17,21 @@ void main() {
   late SaleLocalDatasourceImpl saleDs;
   late InventoryLogService inventoryLogService;
   late AdjustStock adjustStock;
+  late FakeSettingsRepository fakeSettingsRepo;
 
   setUp(() {
     db = createInMemoryDatabase();
+    fakeSettingsRepo = FakeSettingsRepository();
     productDs = ProductLocalDatasourceImpl(db);
-    inventoryLogService = InventoryLogService(db);
+    inventoryLogService = InventoryLogService(
+      db,
+      settingsRepo: fakeSettingsRepo,
+    );
     saleDs = SaleLocalDatasourceImpl(
       db,
       receiptNumberService: ReceiptNumberService(db),
       inventoryLogService: inventoryLogService,
+      settingsRepo: fakeSettingsRepo,
     );
     adjustStock = AdjustStock(db, inventoryLogService);
   });

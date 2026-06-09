@@ -146,9 +146,10 @@ class CartItemCard extends StatelessWidget {
                     value: item.subtotal,
                     currency: currency,
                     style: theme.textTheme.titleSmall?.copyWith(
+                      fontFamily: 'NotoSansThai',
                       fontWeight: FontWeight.w700,
                     ),
-                    color: theme.colorScheme.primary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ],
               ),

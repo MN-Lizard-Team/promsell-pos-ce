@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
@@ -310,7 +310,7 @@ class ReceiptPdfService {
     try {
       return DateFormat(format).add_Hm().format(dt);
     } catch (e) {
-      debugPrint('ReceiptPdfService._formatDate fallback: $e');
+      AppLogger.warning('ReceiptPdfService._formatDate fallback', error: e);
       return DateFormat('dd/MM/yyyy HH:mm').format(dt);
     }
   }

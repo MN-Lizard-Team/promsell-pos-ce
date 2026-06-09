@@ -51,6 +51,16 @@ class AppTheme {
       fontSize: 14,
       fontWeight: FontWeight.w600,
     ),
+    labelMedium: TextStyle(
+      fontFamily: _fontFamily,
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+    ),
+    labelSmall: TextStyle(
+      fontFamily: _fontFamily,
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+    ),
   );
 
   static ThemeData get light => ThemeData(
@@ -201,6 +211,7 @@ class AppTheme {
       onErrorContainer: AppColors.darkOnErrorContainer,
       inverseSurface: AppColors.onInverseSurface,
       onInverseSurface: AppColors.inverseSurface,
+      surfaceContainerHighest: AppColors.darkSurfaceContainerHighest,
       outline: AppColors.darkOutline,
       outlineVariant: AppColors.darkBorder,
     ),

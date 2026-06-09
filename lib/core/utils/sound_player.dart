@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 
 /// Lightweight sound player for UI feedback.
 class SoundPlayer {
@@ -10,8 +11,8 @@ class SoundPlayer {
     try {
       // Use a short system sound if available, or asset
       await _player.play(AssetSource('sounds/confirmation_ching.mp3'));
-    } catch (_) {
-      // Silently fail if sound asset not available
+    } catch (e) {
+      AppLogger.warning('SoundPlayer.playConfirmation failed', error: e);
     }
   }
 

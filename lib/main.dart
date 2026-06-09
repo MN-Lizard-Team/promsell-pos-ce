@@ -14,6 +14,7 @@ import 'package:promsell_pos_ce/core/widgets/app_splash_wrapper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
+import 'package:promsell_pos_ce/core/widgets/animated_nav_bar.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 void main() async {
@@ -91,8 +92,93 @@ class _MainShellState extends State<_MainShell> {
 
   Widget _pageFor(int i) => _cachedPages.putIfAbsent(i, _pageBuilders[i]);
 
+  void _handleTabTap(int i) {
+    if (i != _index) {
+      setState(() => _index = i);
+    } else {
+      _scrollToTop();
+    }
+  }
+
+  void _scrollToTop() {
+    final controller = PrimaryScrollController.maybeOf(context);
+    if (controller != null && controller.hasClients) {
+      controller.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  void _handleSwipe(DragEndDetails details) {
+    if (details.velocity.pixelsPerSecond.dx.abs() < 300) return;
+    if (details.velocity.pixelsPerSecond.dx > 0) {
+      // Swipe right → previous tab
+      if (_index > 0) _handleTabTap(_index - 1);
+    } else {
+      // Swipe left → next tab
+      if (_index < _pageBuilders.length - 1) _handleTabTap(_index + 1);
+    }
+  }
+
+  static final _shortcutMap = <LogicalKeySet, Intent>{
+    LogicalKeySet(LogicalKeyboardKey.digit1): const _SwitchTabIntent(0),
+    LogicalKeySet(LogicalKeyboardKey.digit2): const _SwitchTabIntent(1),
+    LogicalKeySet(LogicalKeyboardKey.digit3): const _SwitchTabIntent(2),
+    LogicalKeySet(LogicalKeyboardKey.digit4): const _SwitchTabIntent(3),
+    LogicalKeySet(LogicalKeyboardKey.digit5): const _SwitchTabIntent(4),
+    LogicalKeySet(LogicalKeyboardKey.f1): const _SwitchTabIntent(0),
+    LogicalKeySet(LogicalKeyboardKey.f2): const _SwitchTabIntent(1),
+    LogicalKeySet(LogicalKeyboardKey.f3): const _SwitchTabIntent(2),
+    LogicalKeySet(LogicalKeyboardKey.f4): const _SwitchTabIntent(3),
+    LogicalKeySet(LogicalKeyboardKey.f5): const _SwitchTabIntent(4),
+  };
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final navItems = [
+      NavItem(
+        icon: Icons.point_of_sale_outlined,
+        activeIcon: Icons.point_of_sale,
+        label: l10n.navSale,
+      ),
+      NavItem(
+        icon: Icons.inventory_2_outlined,
+        activeIcon: Icons.inventory_2,
+        label: l10n.navProducts,
+      ),
+      NavItem(
+        icon: Icons.receipt_long_outlined,
+        activeIcon: Icons.receipt_long,
+        label: l10n.navHistory,
+      ),
+      NavItem(
+        icon: Icons.bar_chart_outlined,
+        activeIcon: Icons.bar_chart,
+        label: l10n.navReport,
+      ),
+      NavItem(
+        icon: Icons.settings_outlined,
+        activeIcon: Icons.settings,
+        label: l10n.navSettings,
+      ),
+    ];
+
+    final body = GestureDetector(
+      onHorizontalDragEnd: _handleSwipe,
+      child: IndexedStack(
+        index: _index,
+        children: [
+          for (int i = 0; i < _pageBuilders.length; i++)
+            i == _index || _cachedPages.containsKey(i)
+                ? _pageFor(i)
+                : const SizedBox.shrink(),
+        ],
+      ),
+    );
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -103,55 +189,64 @@ class _MainShellState extends State<_MainShell> {
           SystemNavigator.pop();
         } else {
           _lastBackPress = now;
-          AppSnackBar.info(context, context.l10n.pressBackAgainToExit);
+          AppSnackBar.info(context, l10n.pressBackAgainToExit);
         }
       },
-      child: Scaffold(
-        body: IndexedStack(
-          index: _index,
-          children: [
-            for (int i = 0; i < _pageBuilders.length; i++)
-              i == _index || _cachedPages.containsKey(i)
-                  ? _pageFor(i)
-                  : const SizedBox.shrink(),
-          ],
-        ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _index,
-          onDestinationSelected: (i) {
-            if (i != _index) {
-              setState(() => _index = i);
-            }
+      child: Shortcuts(
+        shortcuts: _shortcutMap,
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            _SwitchTabIntent: CallbackAction<_SwitchTabIntent>(
+              onInvoke: (intent) => _handleTabTap(intent.index),
+            ),
           },
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.point_of_sale_outlined),
-              selectedIcon: const Icon(Icons.point_of_sale),
-              label: context.l10n.navSale,
+          child: Focus(
+            autofocus: true,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth >= 600;
+                if (isTablet) {
+                  return Scaffold(
+                    body: Row(
+                      children: [
+                        NavigationRail(
+                          selectedIndex: _index,
+                          onDestinationSelected: _handleTabTap,
+                          labelType: NavigationRailLabelType.selected,
+                          destinations: navItems
+                              .map(
+                                (item) => NavigationRailDestination(
+                                  icon: Icon(item.icon),
+                                  selectedIcon: Icon(item.activeIcon),
+                                  label: Text(item.label),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const VerticalDivider(thickness: 1, width: 1),
+                        Expanded(child: body),
+                      ],
+                    ),
+                  );
+                }
+                return Scaffold(
+                  body: body,
+                  bottomNavigationBar: AnimatedNavBar(
+                    selectedIndex: _index,
+                    onTap: _handleTabTap,
+                    items: navItems,
+                  ),
+                );
+              },
             ),
-            NavigationDestination(
-              icon: const Icon(Icons.inventory_2_outlined),
-              selectedIcon: const Icon(Icons.inventory_2),
-              label: context.l10n.navProducts,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.receipt_long_outlined),
-              selectedIcon: const Icon(Icons.receipt_long),
-              label: context.l10n.navHistory,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.bar_chart_outlined),
-              selectedIcon: const Icon(Icons.bar_chart),
-              label: context.l10n.navReport,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.settings_outlined),
-              selectedIcon: const Icon(Icons.settings),
-              label: context.l10n.navSettings,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _SwitchTabIntent extends Intent {
+  const _SwitchTabIntent(this.index);
+  final int index;
 }

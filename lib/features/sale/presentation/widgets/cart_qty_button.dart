@@ -35,8 +35,10 @@ class _CartQtyButtonState extends State<CartQtyButton> {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: _pressed
-                ? theme.colorScheme.primaryContainer
-                : theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                ? theme.colorScheme.surfaceContainerHighest
+                : theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.7,
+                  ),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(widget.icon, size: 18, color: theme.colorScheme.primary),

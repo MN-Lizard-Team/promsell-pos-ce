@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.7.4** — PromptPay system overhaul (EMVCo QR, slip verification, customizable icon overlay), data loss prevention, settings atomicity, 35 bug fixes, and 339 passing tests.
+> **Latest Release: v0.7.5** — Unified image system with skeleton loading and dark-mode-safe placeholders, sync-ready schema v13 with deviceId backfill, PBKDF2 encryption hardening, and complete UI/UX dark-mode overhaul across payment, cart, and receipt preview. 343 passing tests.
  
 ---
  
@@ -233,6 +233,7 @@ features/<name>/
 - [x] **R8 — Data Resilience & Cart Polish** (v0.7.2): Sync columns (schema v12), backup encryption, 3-level settings hierarchy, cart button animations, single-row item redesign, theme color migration
 - [x] **R9 — Clean Architecture & Widget Decomposition** (v0.7.3): Settings aggregate root with 12 typed groups, `SettingsMapper`, `SettingsPersistenceService`, failure types for all features, missing Sale Use Cases, 9-page widget decomposition (16 widgets + `ReportCalculator` domain extension), 339 tests
 - [x] **R10 — PromptPay System Overhaul** (v0.7.4): EMVCo QR generation, slip verification with `SlipScannerDialog`, `SlipVerifier`, `SlipErrorType`, auto-confirm after slip, configurable timeout/sound/QR-type/overlay-icon, fullscreen `PromptPayPaymentPage` with responsive layout, timer progress bar, cart summary, customizable QR overlay icon (8 choices, default none)
+- [x] **R11 — Image System & Dark Mode** (v0.7.5): `UnifiedImageWidget` with skeleton loading and `ImageErrorPlaceholder`; `ImageCacheService` with LRU eviction; `ImageViewerDialog` share/info overlays; receipt preview product images; dark-mode fixes across payment, cart, cart review, and receipt preview; forest green theme migration; `AnimatedNavBar` iOS-style with swipe/keyboard shortcuts; `NotoSansThai` everywhere
 
 ### Future
 
@@ -249,7 +250,7 @@ features/<name>/
 
 ## Testing
 
-**339 tests** covering every application layer:
+**343 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|

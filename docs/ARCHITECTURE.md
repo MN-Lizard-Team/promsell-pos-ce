@@ -91,13 +91,14 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │  SlipVerifier (bank slip Mini-QR decoding)        │
 │  SlipScannerDialog (QR camera scanner)              │
 │  BackupService (export/import/CSV)                   │
-│  ProductImageService (pure Dart compression)         │
+│  ProductImageService (compression + format validation) │
+│  ImageCacheService (LRU cache eviction)              │
 └────────────────────────┬───────────────────────────┘
                 Drift │ queries + transactions
                          ▼
 ┌────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                │
-│  9 tables • WAL • FK ON • UUIDv4 PKs                │
+│  9 tables • schema v13 • WAL • FK ON • UUIDv4 PKs   │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -149,6 +150,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │       ├───→ InventoryLogService                        │
 │       │                                               │
 │  ProductImageService ──→ SettingsRepository (image)   │
+│  ImageCacheService ──→ image directory (LRU eviction)    │
 │  SettingsLocalDatasource (app_settings)                │
 │  SettingsMapper (Settings ↔ Map<String,String>)        │
 │  SettingsPersistenceService (debounce + save)          │
@@ -374,7 +376,8 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │       └──→ InventoryLogService ──→ AppDatabase            │
 │  ProductLocalDatasource ──→ AppDatabase                   │
 │  InventoryLogLocalDatasource ──→ AppDatabase                │
-│  ProductImageService ──→ SettingsCubit (imageMaxWidth/Quality)│
+│  ProductImageService ──→ SettingsRepository (image config)│
+│  ImageCacheService ──→ image directory (size tracking)    │
 │  SettingsLocalDatasource ──→ AppDatabase                  │
 │  ReceiptPdfService (stateless)                            │
 │  PromptPayQrCode (stateless)                              │
@@ -776,6 +779,21 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 - ✅ Hot reload is faster (smaller build units)
 - ⚠️ Extracted widgets may have different constructor signatures than their private predecessors
 - ⚠️ Parent pages need import updates and may require Builder wrappers for context-dependent params
+
+---
+
+### ADR-020: Generated code size (app_database.g.dart)
+
+**Context:** `lib/core/database/app_database.g.dart` is ~195 KB — a large generated file produced by `drift_dev` and `injectable_generator`. This raised concerns about build time, IDE navigation performance, and repository bloat.
+
+**Decision:** Accept the generated code size as inherent to Drift's code-generation approach. No action taken to split the database or reduce generated output. The file is dev-dependency only (not shipped to end users) and has no runtime performance impact. WAL mode + index optimization (already in place) provides the actual runtime performance wins.
+
+**Consequences:**
+- ✅ No additional complexity from splitting tables into multiple database files
+- ✅ Full type safety and reactive streams from Drift remain intact
+- ✅ No regression in build time beyond current `build_runner` baseline
+- ⚠️ `app_database.g.dart` continues to be a large file in the repository
+- ⚠️ IDE "go to definition" on generated Drift classes may be slower
 
 ---
 

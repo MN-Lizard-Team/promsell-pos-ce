@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/close_day.dart';
@@ -54,8 +54,8 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
           openingCash: existing?.openingCash ?? 0,
         ),
       );
-    } catch (e) {
-      debugPrint('DailyCloseCubit.load failed: $e');
+    } catch (e, stack) {
+      AppLogger.error('DailyCloseCubit.load failed', error: e, stack: stack);
       emit(
         state.copyWith(
           status: DailyCloseStatus.error,
@@ -97,8 +97,12 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
           ),
         ),
       );
-    } catch (e) {
-      debugPrint('DailyCloseCubit.closeDay failed: $e');
+    } catch (e, stack) {
+      AppLogger.error(
+        'DailyCloseCubit.closeDay failed',
+        error: e,
+        stack: stack,
+      );
       emit(
         state.copyWith(
           status: DailyCloseStatus.error,
@@ -126,8 +130,12 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
           ),
         ),
       );
-    } catch (e) {
-      debugPrint('DailyCloseCubit.reopenDay failed: $e');
+    } catch (e, stack) {
+      AppLogger.error(
+        'DailyCloseCubit.reopenDay failed',
+        error: e,
+        stack: stack,
+      );
       emit(
         state.copyWith(
           status: DailyCloseStatus.error,

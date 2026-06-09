@@ -158,7 +158,7 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 12. Optionally add a sale note
 13. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
 
-> **Review cart before checkout:** Tap the 🛒 cart icon with the item-count badge in the app bar to open `CartReviewPage` — tap a product image for zoom, tap a row for product detail, use +/- to adjust quantities, or delete items with undo. The total updates live on every change.
+> **Review cart before checkout:** Tap the 🛒 cart icon with the item-count badge in the app bar to open `CartReviewPage` — tap a product image for zoom (with share and info buttons in the viewer toolbar), tap a row for product detail, use +/- to adjust quantities, or delete items with undo. The total updates live on every change.
 
 On compact phones, the cart appears as a bottom command panel. On tablet or expanded width layouts, the cart remains visible beside the product grid.
 
@@ -166,9 +166,9 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 - Toggle between **List** and **Grid** view with the icon pair in the app bar
 - Use category **filter chips** to narrow the catalog; combined with the search bar
-- Each product shows an image avatar (local file from gallery/camera with thumbnail for small sizes, or `CachedNetworkImage` for network URLs with icon fallback), a traffic-light **stock badge** (green > 5 / orange 1–5 / red 0), and inactive products appear dimmed with strikethrough
+- Each product shows an image avatar via `UnifiedImageWidget` — skeleton shimmer loading while fetching, consistent error placeholder with neutral dark-mode-safe colors, local file with thumbnail for small sizes, or `CachedNetworkImage` for network URLs; traffic-light **stock badge** (green > 5 / orange 1–5 / red 0); inactive products appear dimmed with strikethrough
 - Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; or paste an image URL for future online sync; fill name, price, quantity; the **category field** has autocomplete — type to see suggestions from existing categories or enter a new one freely; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
+- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; or paste an image URL for future online sync; `ImageCacheService` enforces 50MB LRU cache eviction automatically; fill name, price, quantity; the **category field** has autocomplete — type to see suggestions from existing categories or enter a new one freely; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
 - Search filters by name and category in real time
 
@@ -396,7 +396,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **12** (v0.7.2). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **13** (v0.7.5). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 

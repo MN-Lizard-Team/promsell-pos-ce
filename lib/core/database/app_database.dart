@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:flutter/foundation.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/database/tables/app_settings_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/categories_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/daily_closes_table.dart';
@@ -31,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -203,9 +203,15 @@ class AppDatabase extends _$AppDatabase {
               "UPDATE $table SET $column = CAST(strftime('%s', $column) AS INTEGER) * 1000 WHERE typeof($column) = 'text'",
             );
           } catch (e) {
-            debugPrint('Schema v12 migration failed for $table.$column: $e');
+            AppLogger.warning(
+              'Schema v12 migration failed for $table.$column',
+              error: e,
+            );
           }
         }
+      }
+      if (from < 13) {
+        await _backfillDeviceId();
       }
     },
     beforeOpen: (details) async {
@@ -298,10 +304,40 @@ class AppDatabase extends _$AppDatabase {
     } catch (e) {
       // Column may already exist; ignore
       if (!e.toString().contains('duplicate column')) {
-        // ignore: avoid_print
-        print('Migration ALTER failed for $table.$column: $e');
+        AppLogger.error('Migration ALTER failed for $table.$column', error: e);
         rethrow;
       }
+    }
+  }
+
+  Future<void> _backfillDeviceId() async {
+    try {
+      final result = await customSelect(
+        "SELECT value FROM app_settings WHERE key = 'deviceId'",
+      ).getSingleOrNull();
+      final deviceId = result?.read<String>('value') ?? '';
+      if (deviceId.isEmpty) return;
+
+      const tables = [
+        'sales',
+        'sale_items',
+        'draft_carts',
+        'draft_cart_items',
+        'daily_closes',
+        'inventory_logs',
+      ];
+      for (final table in tables) {
+        try {
+          await customStatement(
+            "UPDATE $table SET device_id = ? WHERE device_id IS NULL OR device_id = ''",
+            [deviceId],
+          );
+        } catch (e) {
+          AppLogger.warning('Schema v13 backfill failed for $table', error: e);
+        }
+      }
+    } catch (e) {
+      AppLogger.warning('Schema v13 deviceId backfill failed', error: e);
     }
   }
 

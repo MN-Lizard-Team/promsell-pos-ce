@@ -34,9 +34,9 @@ class CartTotalBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow,
-            blurRadius: 12,
-            offset: const Offset(0, -4),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
@@ -77,6 +77,7 @@ class CartTotalBar extends StatelessWidget {
                 Text(
                   context.l10n.totalAmount,
                   style: theme.textTheme.titleMedium?.copyWith(
+                    fontFamily: 'NotoSansThai',
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -85,6 +86,7 @@ class CartTotalBar extends StatelessWidget {
                   value: state.total,
                   currency: currency,
                   style: theme.textTheme.headlineSmall?.copyWith(
+                    fontFamily: 'NotoSansThai',
                     fontWeight: FontWeight.w800,
                   ),
                   color: theme.colorScheme.primary,
@@ -135,11 +137,18 @@ class CartTotalBar extends StatelessWidget {
             const SizedBox(height: 4),
             FilledButton.icon(
               onPressed: () => _showPayment(context, state),
-              icon: const Icon(Icons.payment, size: 18),
-              label: Text(context.l10n.checkout(state.itemCount)),
+              icon: const Icon(Icons.payment, size: 22),
+              label: Text(
+                context.l10n.checkout(state.itemCount),
+                style: const TextStyle(
+                  fontFamily: 'NotoSansThai',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               style: theme.filledButtonTheme.style?.copyWith(
                 minimumSize: const WidgetStatePropertyAll(
-                  Size(double.infinity, 44),
+                  Size(double.infinity, 56),
                 ),
               ),
             ),
@@ -195,6 +204,8 @@ class _SummaryLine extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.bodyMedium?.copyWith(
+              fontFamily: 'NotoSansThai',
+              fontWeight: FontWeight.w500,
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
@@ -203,6 +214,7 @@ class _SummaryLine extends StatelessWidget {
             value: value,
             currency: currency,
             style: theme.textTheme.bodyMedium?.copyWith(
+              fontFamily: 'NotoSansThai',
               fontWeight: FontWeight.w700,
             ),
             color: valueColor ?? theme.colorScheme.onSurface,
