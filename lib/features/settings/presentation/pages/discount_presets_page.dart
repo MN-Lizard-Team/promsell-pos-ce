@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/discount_preset_edit_page.dart';
@@ -51,7 +52,7 @@ class DiscountPresetsPage extends StatelessWidget {
     final cubit = context.read<SettingsCubit>();
     cubit.updateField((s) {
       final preset = DiscountPreset(
-        id: 'preset-${DateTime.now().millisecondsSinceEpoch}',
+        id: 'preset-${IdGenerator.newId()}',
         name: name,
         type: 'PERCENT',
         values: const [5.0, 10.0],

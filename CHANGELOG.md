@@ -17,6 +17,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.6] - 2026-06-11
+
+Category system overhaul with color/icon picker, drag-drop reordering, and 22 system-wide bug fixes.
+
+### Highlights
+
+- **Category Management Overhaul** — `CategoryManagementPage` with drag & drop reordering, color + icon picker, product count badges, search, and bulk delete. Schema v15 adds `color`/`iconName` columns. `CategoryFormDialog` offers 10 preset colors and 21 Material icons.
+- **Product Page Category Support** — `SaleProductCard`, `SaleCatalog` chips, `ProductEditTabView`, and `CategoryPickerListView` all display category-specific colors and icons instead of generic folder icons.
+- **Product UI Redesign** — unified card family (`ProductCardShell`, `ProductImageContainer`, `ProductInfoBlock`), tab-based editor (`ProductEditTabView`), inline quick edit, search with highlighting, and dual-mode sale search (grid ↔ list).
+- **System-Wide Bug Fixes (22 issues)** — fixed stream subscription races, stale context crashes, silent timer deadlocks, oversell clamp, empty-list guards, and search debounce lag across `SaleBloc`, `ProductBloc`, `HistoryBloc`, `ReportCubit`, `CategoryFilterBar`, `DiscountPresetsPage`, `SettingsPersistenceService`, and `AppSearchBar`.
+- **App Icon** — replaced launcher icon with new logo via `flutter_launcher_icons`.
+
+### Added
+
+- `Category` entity with `color`, `iconName`; schema v15 migration.
+- `CategoriesReordered` event + `CategoryBloc._onReordered` handler for batch sortOrder updates.
+- `CategoryManagementPage` — `ReorderableListView`, search, bulk delete, drag handle (`ReorderableDragStartListener`).
+- `CategoryFormDialog` — color circle picker + icon grid picker.
+- `AddProductPage` with `AddProductDraftCubit` (save/restore/discard on back press).
+- `CategoryPickerBottomSheet`, `CategoryPickerPage`, `CategoryPickerListView`.
+- `ProductCardShell`, `ProductImageContainer`, `ProductInfoBlock`, `ProductActionSheet`.
+- `ModernProductTile`, `ModernProductGridCard` with stock indicators, SKU display, and swipe-to-delete.
+- `AppSearchBar`, `SearchResultTile`, `SearchHighlightText`, `SearchEmptyState`, `SearchHistoryCubit`.
+- `ProductHeroImage`, `FormSectionCard`, `StockStepper`, `ModernToggleCard`, `StickyActionBar`, `DangerZoneCard`.
+- `QuickEditSheet` for inline name/price/stock editing from product list.
+- L10n: `categoryColor`, `categoryIcon`, `categoryManagementTitle`, `noCategoriesYet`, `addCategory`, `editCategory`, `deleteCategoryConfirm`, `categoryName`, `chooseCategory`, `manageCategories`, `sortOrder`, `addProductTitle`, `noCategorySelected`, `saveDraft`, `discardDraft`, `restoreDraft`, `draftSaved`, `unsavedChangesMessage`, `restore`.
+
+### Changed
+
+- **Navigation** — Add Product moved from bottom sheet to full-page `AddProductPage`; Edit Product converted to `Navigator.push`.
+- **Product List** — FAB now adds product directly; "Manage Categories" moved to AppBar overflow.
+- **Category Bloc** — auto-subscribes in constructor; removed manual `CategoriesSubscribed` event from all pages.
+- **Category ID storage** — `products.category_id` stores UUID (was name string); schema v14 migration backfills via name lookup. Added FK constraint to `categories.id`.
+- **Theme** — removed hardcoded `Colors.black/white/grey/orange` across product widgets; all use `theme.colorScheme` tokens.
+
+### Fixed
+
+- `SaleBloc.close()` deadlock — await timer cancellation before save.
+- `SaleProductCard` stale context — capture `SaleBloc` before `showDialog`.
+- `CategoryPickerPage` `StateError` — guard empty list before `cats.first`.
+- `ProductBloc`/`ReportCubit`/`HistoryBloc` double subscription — await `_sub?.cancel()` before new stream.
+- `DraftsBottomSheet` not refreshing after create.
+- `CategoryFilterBar` empty-string `selectedId` not treated as `null`.
+- `SaleBloc` oversell clamp ceiling 99 999 → 999 999.
+- `StockStepper` no visual feedback — `GestureDetector` → `InkWell`.
+- `SaleCatalog` stale search query on return.
+- `DiscountPresetsPage` timestamp ID collision → `IdGenerator.newId()`.
+- `SettingsPersistenceService` timer race after disposal.
+- `AppSearchBar` per-keystroke lag — 300 ms debounce.
+- `DeleteCategory` orphaned inactive products — checks all products, not just active.
+- `UpdateCategory` duplicate name — validates uniqueness (skips self).
+- `ProviderNotFoundException` — `ProductFormPage` receives `CategoryBloc` via `MultiBlocProvider`.
+- `UnifiedImageWidget` infinity crash — guard `cacheWidth` with `isFinite`.
+- `ModernProductGridCard` bottom overflow — aspect ratio 1.0 → 1.1.
+
+`flutter analyze` → **0 issues** · `flutter test` → **340 passing**
+
+---
+
 ## [0.7.5] - 2026-06-09
 
 Unified image system, sync-ready schema, PBKDF2 encryption, and dark-mode UI overhaul.
@@ -1263,7 +1322,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.5...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.6...HEAD
+[0.7.6]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.2...v0.7.3

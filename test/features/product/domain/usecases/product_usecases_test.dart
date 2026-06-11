@@ -29,7 +29,7 @@ void main() {
           name: any(named: 'name'),
           price: any(named: 'price'),
           stock: any(named: 'stock'),
-          category: any(named: 'category'),
+          categoryId: any(named: 'categoryId'),
           imageUrl: any(named: 'imageUrl'),
           imagePath: any(named: 'imagePath'),
         ),

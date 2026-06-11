@@ -11,7 +11,7 @@ abstract class ProductRepository {
     required double price,
     double? cost,
     required int stock,
-    String? category,
+    String? categoryId,
     String? imageUrl,
     String? imagePath,
     String? imageThumbnailPath,

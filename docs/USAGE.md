@@ -170,6 +170,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - Tap **Add Product** (➕ icon, app bar) to open the product form
 - Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; or paste an image URL for future online sync; `ImageCacheService` enforces 50MB LRU cache eviction automatically; fill name, price, quantity; the **category field** has autocomplete — type to see suggestions from existing categories or enter a new one freely; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
+- Tap **Manage Categories** (overflow menu ⋮) to open **Category Management** — drag & drop reordering, color + icon picker (10 colors / 21 icons), product count badges, search, and bulk delete
 - Search filters by name and category in real time
 
 ### History tab
@@ -366,7 +367,7 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart       # Database class, schema v6, migration, indexes, seed
+├── app_database.dart       # Database class, schema v15, migration, indexes, seed
 ├── app_database.g.dart     # GENERATED — do not edit
 └── tables/
     ├── products_table.dart
@@ -396,7 +397,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **13** (v0.7.5). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **15** (v0.7.6). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 
@@ -453,7 +454,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **339 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **340 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
 
 ### Running tests
 

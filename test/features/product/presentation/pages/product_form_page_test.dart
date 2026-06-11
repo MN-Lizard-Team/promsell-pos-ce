@@ -6,6 +6,9 @@ import 'package:promsell_pos_ce/features/product/data/services/product_image_ser
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
+import 'package:promsell_pos_ce/core/widgets/modern_toggle_card.dart';
+import 'package:promsell_pos_ce/core/widgets/stock_stepper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -17,13 +20,18 @@ class MockProductImageService extends Mock implements ProductImageService {}
 
 void main() {
   late MockProductBloc mockProductBloc;
+  late MockCategoryBloc mockCategoryBloc;
   late MockSettingsCubit mockSettingsCubit;
   late MockProductImageService mockImageService;
 
   setUp(() {
     mockProductBloc = MockProductBloc();
+    mockCategoryBloc = MockCategoryBloc();
     mockSettingsCubit = MockSettingsCubit();
     mockImageService = MockProductImageService();
+    when(() => mockCategoryBloc.state).thenReturn(
+      const CategoryState(status: CategoryStatus.success, categories: []),
+    );
     if (!GetIt.I.isRegistered<ProductImageService>()) {
       GetIt.I.registerSingleton<ProductImageService>(mockImageService);
     }
@@ -56,14 +64,18 @@ void main() {
   });
 
   group('ProductFormPage (add mode)', () {
-    testWidgets('renders form fields for new product', (tester) async {
+    testWidgets('renders tab-based editor', (tester) async {
       await tester.pumpApp(
         const ProductFormPage(),
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(TextFormField), findsNWidgets(4));
+      expect(find.byType(TabBar), findsOneWidget);
+      expect(find.byType(Tab), findsNWidgets(4));
+      // Info tab active by default → 3 TextFormFields (name, sku, barcode)
+      expect(find.byType(TextFormField), findsNWidgets(3));
       expect(find.byType(FilledButton), findsOneWidget);
     });
 
@@ -71,13 +83,15 @@ void main() {
       await tester.pumpApp(
         const ProductFormPage(),
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
-      expect(find.byType(TextFormField), findsNWidgets(4));
+      // Info tab still has 3 fields; validation marks name field
+      expect(find.byType(TextFormField), findsNWidgets(3));
     });
 
     testWidgets('dispatches ProductAdded on valid submit', (tester) async {
@@ -86,18 +100,23 @@ void main() {
       await tester.pumpApp(
         const ProductFormPage(),
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 
+      // Info tab: enter name
       final nameField = find.byType(TextFormField).at(0);
       await tester.enterText(nameField, 'Water');
 
-      final priceField = find.byType(TextFormField).at(1);
+      // Switch to Price tab
+      await tester.tap(find.text('Price'));
+      await tester.pumpAndSettle();
+
+      // Price tab: enter price
+      final priceField = find.byType(TextFormField).at(0);
       await tester.enterText(priceField, '10.00');
 
-      final stockField = find.byType(TextFormField).at(2);
-      await tester.enterText(stockField, '100');
-
+      // Tap Save in StickyActionBar
       await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
 
@@ -113,7 +132,7 @@ void main() {
       name: 'Water',
       price: 10.0,
       stock: 100,
-      category: 'Drinks',
+      categoryId: 'drinks-001',
       imageThumbnailPath: null,
       isActive: true,
       createdAt: DateTime(2024),
@@ -124,14 +143,29 @@ void main() {
       await tester.pumpApp(
         ProductFormPage(product: existingProduct),
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 
+      // Info tab
       expect(find.text('Water'), findsOneWidget);
+      expect(find.byType(TextFormField), findsNWidgets(3));
+
+      // Price tab
+      await tester.tap(find.text('Price'));
+      await tester.pumpAndSettle();
       expect(find.text('10.00'), findsOneWidget);
-      expect(find.text('100'), findsOneWidget);
-      expect(find.text('Drinks'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsNWidgets(2));
+
+      // Stock tab
+      await tester.tap(find.text('Stock'));
+      await tester.pumpAndSettle();
+      expect(find.byType(StockStepper), findsOneWidget);
+      expect(find.byType(ModernToggleCard), findsOneWidget);
+
+      // Settings tab
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ModernToggleCard), findsOneWidget);
     });
 
     testWidgets('dispatches ProductUpdated on edit submit', (tester) async {
@@ -140,6 +174,7 @@ void main() {
       await tester.pumpApp(
         ProductFormPage(product: existingProduct),
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -153,34 +188,18 @@ void main() {
   });
 
   group('UI-BUG-11 regression: stock=0 warning', () {
-    testWidgets('shows stock zero warning when stock field is 0', (
-      tester,
-    ) async {
+    testWidgets('shows stock stepper on Stock tab', (tester) async {
       await tester.pumpApp(
         const ProductFormPage(),
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 
-      final stockField = find.byType(TextFormField).at(2);
-      await tester.enterText(stockField, '0');
+      await tester.tap(find.text('Stock'));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining("won't appear"), findsOneWidget);
-    });
-
-    testWidgets('no warning when stock > 0', (tester) async {
-      await tester.pumpApp(
-        const ProductFormPage(),
-        productBloc: mockProductBloc,
-        settingsCubit: mockSettingsCubit,
-      );
-
-      final stockField = find.byType(TextFormField).at(2);
-      await tester.enterText(stockField, '10');
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining("won't appear"), findsNothing);
+      expect(find.byType(StockStepper), findsOneWidget);
     });
   });
 }

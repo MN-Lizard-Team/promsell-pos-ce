@@ -64,7 +64,7 @@ void main() {
             name: any(named: 'name'),
             price: any(named: 'price'),
             stock: any(named: 'stock'),
-            category: any(named: 'category'),
+            categoryId: any(named: 'categoryId'),
             imageUrl: any(named: 'imageUrl'),
             imagePath: any(named: 'imagePath'),
           ),
@@ -113,10 +113,10 @@ void main() {
       expect: () => [const ProductState(searchQuery: 'drink')],
     );
 
-    test('ProductState.filtered filters by name and category', () {
+    test('ProductState.filtered filters by name, SKU, and barcode', () {
       final state = ProductState(
         products: [tProduct, tProduct2, tInactiveProduct],
-        searchQuery: 'drink',
+        searchQuery: 'Test',
       );
       expect(state.filtered, [tProduct]);
     });

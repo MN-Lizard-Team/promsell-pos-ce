@@ -2,15 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/app_search_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/search_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/search_result_tile.dart';
+import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_grid_card.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/add_product_draft_cubit.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/add_product_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/category_management_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/modern_product_tile.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/modern_product_grid_card.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category_filter_bar.dart';
 
 enum _ViewMode { list, grid }
 
@@ -19,8 +28,17 @@ class ProductListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: sl<ProductBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: sl<ProductBloc>()),
+        BlocProvider.value(value: sl<CategoryBloc>()),
+        BlocProvider(
+          create: (_) => SearchHistoryCubit(
+            sl<SettingsLocalDatasource>(),
+            'product_search_history',
+          )..load(),
+        ),
+      ],
       child: const _ProductListView(),
     );
   }
@@ -35,11 +53,22 @@ class _ProductListView extends StatefulWidget {
 
 class _ProductListViewState extends State<_ProductListView> {
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
   _ViewMode _viewMode = _ViewMode.list;
+  bool _searchFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocus.addListener(() {
+      setState(() => _searchFocused = _searchFocus.hasFocus);
+    });
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -83,108 +112,88 @@ class _ProductListViewState extends State<_ProductListView> {
                     : null,
                 onPressed: () => setState(() => _viewMode = _ViewMode.grid),
               ),
-              const SizedBox(width: 4),
-              IconButton.filled(
-                tooltip: context.l10n.addProduct,
-                icon: const Icon(Icons.add),
-                onPressed: () => _showProductForm(context, null),
+              IconButton(
+                icon: const Icon(Icons.folder_outlined),
+                tooltip: context.l10n.manageCategories,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CategoryManagementPage(),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 4),
             ],
           ),
           body: SafeArea(
             child: BlocBuilder<ProductBloc, ProductState>(
               builder: (context, state) {
-                final categories =
-                    state.products
-                        .map((p) => p.category)
-                        .whereType<String>()
-                        .toSet()
-                        .toList()
-                      ..sort();
-                final selectedCategory =
-                    categories.contains(state.categoryFilter)
-                    ? state.categoryFilter
-                    : null;
-                final products = selectedCategory == null
+                final categoryState = context.watch<CategoryBloc>().state;
+                final categories = categoryState.categories;
+                final selectedCategoryId = state.categoryFilter;
+                final products = selectedCategoryId == null
                     ? state.filtered
                     : state.filtered
-                          .where((p) => p.category == selectedCategory)
+                          .where((p) => p.categoryId == selectedCategoryId)
                           .toList();
 
                 return Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                      child: SearchBar(
-                        controller: _searchController,
-                        hintText: context.l10n.searchProducts,
-                        leading: const Icon(Icons.search),
-                        trailing: [
-                          ValueListenableBuilder<TextEditingValue>(
-                            valueListenable: _searchController,
-                            builder: (context, value, child) {
-                              if (value.text.isEmpty) {
-                                return const SizedBox.shrink();
-                              }
-                              return IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  context.read<ProductBloc>().add(
-                                    const ProductSearchChanged(''),
-                                  );
+                      child:
+                          BlocBuilder<SearchHistoryCubit, SearchHistoryState>(
+                            builder: (ctx, historyState) {
+                              return AppSearchBar(
+                                controller: _searchController,
+                                focusNode: _searchFocus,
+                                hintText: context.l10n.searchProducts,
+                                isFocused: _searchFocused,
+                                recentSearches: historyState.searches,
+                                onChanged: (q) => context
+                                    .read<ProductBloc>()
+                                    .add(ProductSearchChanged(q)),
+                                onSubmitted: (q) {
+                                  context.read<SearchHistoryCubit>().add(q);
                                 },
+                                onRecentTap: (q) {
+                                  _searchController.text = q;
+                                  context.read<ProductBloc>().add(
+                                    ProductSearchChanged(q),
+                                  );
+                                  _searchFocus.unfocus();
+                                },
+                                onRecentDismiss: (q) => context
+                                    .read<SearchHistoryCubit>()
+                                    .remove(q),
                               );
                             },
                           ),
-                        ],
-                        onChanged: (q) => context.read<ProductBloc>().add(
-                          ProductSearchChanged(q),
-                        ),
-                      ),
                     ),
                     if (categories.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 40,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          scrollDirection: Axis.horizontal,
-                          itemCount: categories.length + 1,
-                          separatorBuilder: (_, _) => const SizedBox(width: 6),
-                          itemBuilder: (_, i) {
-                            if (i == 0) {
-                              return FilterChip(
-                                label: Text(context.l10n.allCategories),
-                                selected: selectedCategory == null,
-                                onSelected: (_) =>
-                                    context.read<ProductBloc>().add(
-                                      const ProductCategoryFilterChanged(null),
-                                    ),
-                              );
-                            }
-                            final cat = categories[i - 1];
-                            return FilterChip(
-                              label: Text(cat),
-                              selected: selectedCategory == cat,
-                              onSelected: (_) =>
-                                  context.read<ProductBloc>().add(
-                                    ProductCategoryFilterChanged(
-                                      selectedCategory == cat ? null : cat,
-                                    ),
-                                  ),
-                            );
-                          },
+                      const SizedBox(height: 10),
+                      CategoryFilterBar(
+                        categories: categories,
+                        selectedId: selectedCategoryId,
+                        onSelected: (id) => context.read<ProductBloc>().add(
+                          ProductCategoryFilterChanged(id),
                         ),
                       ),
                     ],
+                    const SizedBox(height: 10),
+                    _ProductStatsBar(products: products),
                     const SizedBox(height: 8),
                     Expanded(child: _buildContent(context, state, products)),
                   ],
                 );
               },
             ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _showAddProductPage(context),
+            child: const Icon(Icons.add),
           ),
         ),
       ),
@@ -207,15 +216,33 @@ class _ProductListViewState extends State<_ProductListView> {
       );
     }
     if (products.isEmpty) {
-      return state.products.isEmpty
-          ? AppEmptyState(
-              icon: Icons.inventory_2_outlined,
-              title: context.l10n.noProductsYet,
-            )
-          : AppEmptyState(
-              icon: Icons.search_off,
-              title: context.l10n.noMatchingProducts,
-            );
+      if (state.products.isEmpty) {
+        return AppEmptyState(
+          icon: Icons.inventory_2_outlined,
+          title: context.l10n.noProductsYet,
+        );
+      }
+      if (state.searchQuery.isNotEmpty) {
+        return SearchEmptyState(
+          query: state.searchQuery,
+          onClear: () {
+            _searchController.clear();
+            context.read<ProductBloc>().add(const ProductSearchChanged(''));
+          },
+        );
+      }
+      return AppEmptyState(
+        icon: Icons.filter_list_off,
+        title: context.l10n.noProductsInCategory,
+        actionLabel: context.l10n.clearFilters,
+        onAction: () {
+          _searchController.clear();
+          context.read<ProductBloc>().add(const ProductSearchChanged(''));
+          context.read<ProductBloc>().add(
+            const ProductCategoryFilterChanged(null),
+          );
+        },
+      );
     }
     return RefreshIndicator(
       onRefresh: () async {
@@ -227,40 +254,160 @@ class _ProductListViewState extends State<_ProductListView> {
               s.status == ProductStatus.failure,
         );
       },
-      child: _viewMode == _ViewMode.list
+      child: state.searchQuery.isNotEmpty
           ? ListView.separated(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
               itemCount: products.length,
               separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (_, i) => ProductTile(product: products[i]),
+              itemBuilder: (_, i) => SearchResultTile(
+                product: products[i],
+                query: state.searchQuery,
+                onTap: () {},
+              ),
+            )
+          : _viewMode == _ViewMode.list
+          ? ListView.separated(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+              itemCount: products.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              itemBuilder: (_, i) => ModernProductTile(product: products[i]),
             )
           : GridView.builder(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.76,
+                childAspectRatio: 0.72,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
               itemCount: products.length,
-              itemBuilder: (_, i) => ProductGridCard(product: products[i]),
+              itemBuilder: (_, i) =>
+                  ModernProductGridCard(product: products[i]),
             ),
     );
   }
 
-  void _showProductForm(BuildContext context, Product? product) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      useRootNavigator: true,
-      builder: (_) => BlocProvider.value(
-        value: context.read<ProductBloc>(),
-        child: ProductFormPage(product: product),
+  void _showAddProductPage(BuildContext context) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<ProductBloc>()),
+            BlocProvider(
+              create: (_) =>
+                  AddProductDraftCubit(sl<SettingsLocalDatasource>()),
+            ),
+          ],
+          child: const AddProductPage(),
+        ),
       ),
     );
     if (result == true && context.mounted) {
       AppSnackBar.success(context, context.l10n.productSaved);
     }
+  }
+}
+
+class _ProductStatsBar extends StatelessWidget {
+  const _ProductStatsBar({required this.products});
+  final List<Product> products;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final active = products.where((p) => p.isActive).length;
+    final lowStock = products
+        .where((p) => p.trackStock && p.stock > 0 && p.stock <= 5)
+        .length;
+    final outOfStock = products
+        .where((p) => p.trackStock && p.stock == 0)
+        .length;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          _StatChip(
+            icon: Icons.inventory_2,
+            label: '$active',
+            subtitle: context.l10n.productsCount,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 8),
+          if (lowStock > 0)
+            _StatChip(
+              icon: Icons.warning,
+              label: '$lowStock',
+              subtitle: context.l10n.lowStock,
+              color: Theme.of(context).colorScheme.tertiary,
+            ),
+          if (outOfStock > 0) ...[
+            const SizedBox(width: 8),
+            _StatChip(
+              icon: Icons.error,
+              label: '$outOfStock',
+              subtitle: context.l10n.outOfStock,
+              color: theme.colorScheme.error,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

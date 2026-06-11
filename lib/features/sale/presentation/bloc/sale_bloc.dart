@@ -55,15 +55,20 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
 
   void _onProductAdded(SaleProductAdded event, Emitter<SaleState> emit) {
     final p = event.product;
+    final qtyToAdd = event.qty;
     final existing = state.items.indexWhere((i) => i.product.id == p.id);
     final updated = List<CartItem>.from(state.items);
+    final stockLimited = p.trackStock && !event.allowOversell;
     if (existing >= 0) {
       final currentQty = updated[existing].qty;
-      final stockLimited = p.trackStock && !event.allowOversell;
+      final newQty = currentQty + qtyToAdd;
       if (stockLimited && currentQty >= p.stock) return;
-      updated[existing] = updated[existing].copyWith(qty: currentQty + 1);
+      updated[existing] = updated[existing].copyWith(
+        qty: stockLimited ? newQty.clamp(0, p.stock) : newQty,
+      );
     } else {
-      updated.add(CartItem(product: p, qty: 1));
+      final clampedQty = stockLimited ? qtyToAdd.clamp(1, p.stock) : qtyToAdd;
+      updated.add(CartItem(product: p, qty: clampedQty));
     }
     emit(
       state.copyWith(
@@ -93,7 +98,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
         final stockLimited = i.product.trackStock && !event.allowOversell;
         final clamped = stockLimited
             ? event.qty.clamp(1, i.product.stock)
-            : event.qty.clamp(1, 99999);
+            : event.qty.clamp(1, 999999);
         return i.copyWith(qty: clamped);
       }
       return i;
@@ -551,8 +556,9 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   }
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
     _saveTimer?.cancel();
-    return _immediateSave().then((_) => super.close());
+    await _immediateSave();
+    return super.close();
   }
 }

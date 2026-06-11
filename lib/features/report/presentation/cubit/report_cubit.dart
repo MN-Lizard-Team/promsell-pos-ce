@@ -26,7 +26,7 @@ class ReportCubit extends Cubit<ReportState> {
   final WatchReport _watchReport;
   StreamSubscription? _sub;
 
-  void load() {
+  Future<void> load() async {
     final now = DateTime.now();
     final to =
         state.to?.day != now.day ||
@@ -36,7 +36,7 @@ class ReportCubit extends Cubit<ReportState> {
         : state.to;
 
     emit(state.copyWith(status: ReportStatus.loading, to: to));
-    _sub?.cancel();
+    await _sub?.cancel();
     _sub = _watchReport(from: state.from, to: to).listen(
       (sales) =>
           emit(state.copyWith(status: ReportStatus.success, sales: sales)),
@@ -47,9 +47,9 @@ class ReportCubit extends Cubit<ReportState> {
     );
   }
 
-  void changeDateRange(DateTime from, DateTime to) {
+  Future<void> changeDateRange(DateTime from, DateTime to) async {
     emit(state.copyWith(from: from, to: to, status: ReportStatus.loading));
-    _sub?.cancel();
+    await _sub?.cancel();
     _sub = _watchReport(from: from, to: to).listen(
       (sales) =>
           emit(state.copyWith(status: ReportStatus.success, sales: sales)),

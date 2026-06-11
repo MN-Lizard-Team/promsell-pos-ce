@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/adaptive_breakpoints.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
@@ -13,6 +14,8 @@ import 'package:promsell_pos_ce/features/sale/presentation/widgets/compact_cart_
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/sale_catalog.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 class SalePage extends StatelessWidget {
   const SalePage({super.key});
@@ -22,8 +25,15 @@ class SalePage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: sl<ProductBloc>()),
+        BlocProvider.value(value: sl<CategoryBloc>()),
         BlocProvider(
           create: (_) => sl<SaleBloc>()..add(const SaleDraftInitialized()),
+        ),
+        BlocProvider(
+          create: (_) => SearchHistoryCubit(
+            sl<SettingsLocalDatasource>(),
+            'sale_search_history',
+          )..load(),
         ),
       ],
       child: const _SaleView(),

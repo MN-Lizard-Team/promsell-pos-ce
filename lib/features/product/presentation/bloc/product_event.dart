@@ -19,7 +19,7 @@ class ProductAdded extends ProductEvent {
     required this.price,
     this.cost,
     required this.stock,
-    this.category,
+    this.categoryId,
     this.imageUrl,
     this.imagePath,
     this.imageThumbnailPath,
@@ -31,7 +31,7 @@ class ProductAdded extends ProductEvent {
   final double price;
   final double? cost;
   final int stock;
-  final String? category;
+  final String? categoryId;
   final String? imageUrl;
   final String? imagePath;
   final String? imageThumbnailPath;
@@ -45,7 +45,7 @@ class ProductAdded extends ProductEvent {
     price,
     cost,
     stock,
-    category,
+    categoryId,
     imageUrl,
     imagePath,
     imageThumbnailPath,

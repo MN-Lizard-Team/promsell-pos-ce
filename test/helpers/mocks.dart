@@ -21,6 +21,10 @@ import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_rep
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/category_repository.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_event.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
@@ -35,6 +39,7 @@ import 'package:promsell_pos_ce/features/inventory/domain/repositories/inventory
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
+import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
 
 // ── Repositories ──
 class MockSaleRepository extends Mock implements SaleRepository {}
@@ -42,6 +47,8 @@ class MockSaleRepository extends Mock implements SaleRepository {}
 class MockDraftCartRepository extends Mock implements DraftCartRepository {}
 
 class MockProductRepository extends Mock implements ProductRepository {}
+
+class MockCategoryRepository extends Mock implements CategoryRepository {}
 
 class MockHistoryRepository extends Mock implements HistoryRepository {}
 
@@ -83,6 +90,9 @@ class MockSaleBloc extends MockBloc<SaleEvent, SaleState> implements SaleBloc {}
 class MockProductBloc extends MockBloc<ProductEvent, ProductState>
     implements ProductBloc {}
 
+class MockCategoryBloc extends MockBloc<CategoryEvent, CategoryState>
+    implements CategoryBloc {}
+
 class MockHistoryBloc extends MockBloc<HistoryEvent, HistoryState>
     implements HistoryBloc {}
 
@@ -99,6 +109,9 @@ class MockWatchInventoryLogs extends Mock implements WatchInventoryLogs {}
 
 class MockInventoryLogCubit extends MockCubit<InventoryLogState>
     implements InventoryLogCubit {}
+
+class MockSearchHistoryCubit extends MockCubit<SearchHistoryState>
+    implements SearchHistoryCubit {}
 
 // ── Services ──
 class MockProductImageService extends Mock implements ProductImageService {}

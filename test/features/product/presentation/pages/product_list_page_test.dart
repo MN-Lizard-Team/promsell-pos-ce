@@ -5,25 +5,48 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
+import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
 
 void main() {
   late MockProductBloc mockProductBloc;
+  late MockCategoryBloc mockCategoryBloc;
   late MockSettingsCubit mockSettingsCubit;
+  late MockSearchHistoryCubit mockSearchHistoryCubit;
   final sl = GetIt.instance;
 
   setUp(() {
     mockProductBloc = MockProductBloc();
+    mockCategoryBloc = MockCategoryBloc();
     mockSettingsCubit = MockSettingsCubit();
+    mockSearchHistoryCubit = MockSearchHistoryCubit();
     when(() => mockSettingsCubit.state).thenReturn(
       SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
     );
+    when(() => mockCategoryBloc.state).thenReturn(
+      const CategoryState(status: CategoryStatus.success, categories: []),
+    );
+    when(
+      () => mockSearchHistoryCubit.state,
+    ).thenReturn(const SearchHistoryState());
     sl.registerSingleton<ProductBloc>(mockProductBloc);
+    sl.registerSingleton<CategoryBloc>(mockCategoryBloc);
+    if (sl.isRegistered<SettingsLocalDatasource>()) {
+      sl.unregister<SettingsLocalDatasource>();
+    }
+    final mockSettingsLocal = MockSettingsLocalDatasource();
+    when(
+      () => mockSettingsLocal.getString(any()),
+    ).thenAnswer((_) async => null);
+    sl.registerSingleton<SettingsLocalDatasource>(mockSettingsLocal);
   });
 
   tearDown(() => sl.reset());
@@ -39,6 +62,7 @@ void main() {
       await tester.pumpApp(
         const ProductListPage(),
         settingsCubit: mockSettingsCubit,
+        searchHistoryCubit: mockSearchHistoryCubit,
       );
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -75,6 +99,7 @@ void main() {
       await tester.pumpApp(
         const ProductListPage(),
         settingsCubit: mockSettingsCubit,
+        searchHistoryCubit: mockSearchHistoryCubit,
       );
 
       expect(find.text('Water'), findsOneWidget);
@@ -89,6 +114,7 @@ void main() {
       await tester.pumpApp(
         const ProductListPage(),
         settingsCubit: mockSettingsCubit,
+        searchHistoryCubit: mockSearchHistoryCubit,
       );
 
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -105,6 +131,7 @@ void main() {
       await tester.pumpApp(
         const ProductListPage(),
         settingsCubit: mockSettingsCubit,
+        searchHistoryCubit: mockSearchHistoryCubit,
       );
 
       expect(find.byType(CircularProgressIndicator), findsNothing);

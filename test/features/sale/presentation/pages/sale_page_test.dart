@@ -5,6 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
@@ -18,11 +20,13 @@ void main() {
   late MockSaleBloc mockSaleBloc;
   late MockSettingsCubit mockSettingsCubit;
   late MockProductBloc mockProductBloc;
+  late MockCategoryBloc mockCategoryBloc;
 
   setUp(() {
     mockSaleBloc = MockSaleBloc();
     mockSettingsCubit = MockSettingsCubit();
     mockProductBloc = MockProductBloc();
+    mockCategoryBloc = MockCategoryBloc();
     when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
     when(() => mockSettingsCubit.state).thenReturn(
       SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
@@ -30,11 +34,18 @@ void main() {
     when(() => mockProductBloc.state).thenReturn(
       const ProductState(status: ProductStatus.success, products: []),
     );
+    when(() => mockCategoryBloc.state).thenReturn(
+      const CategoryState(status: CategoryStatus.success, categories: []),
+    );
 
     if (GetIt.I.isRegistered<ProductBloc>()) {
       GetIt.I.unregister<ProductBloc>();
     }
     GetIt.I.registerSingleton<ProductBloc>(mockProductBloc);
+    if (GetIt.I.isRegistered<CategoryBloc>()) {
+      GetIt.I.unregister<CategoryBloc>();
+    }
+    GetIt.I.registerSingleton<CategoryBloc>(mockCategoryBloc);
 
     if (GetIt.I.isRegistered<SaleBloc>()) {
       GetIt.I.unregister<SaleBloc>();
@@ -56,6 +67,9 @@ void main() {
     if (GetIt.I.isRegistered<SaleBloc>()) {
       GetIt.I.unregister<SaleBloc>();
     }
+    if (GetIt.I.isRegistered<CategoryBloc>()) {
+      GetIt.I.unregister<CategoryBloc>();
+    }
     if (GetIt.I.isRegistered<DraftCartRepository>()) {
       GetIt.I.unregister<DraftCartRepository>();
     }
@@ -74,6 +88,7 @@ void main() {
         const SalePage(),
         saleBloc: mockSaleBloc,
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -96,6 +111,7 @@ void main() {
         const SalePage(),
         saleBloc: mockSaleBloc,
         productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
       );
 

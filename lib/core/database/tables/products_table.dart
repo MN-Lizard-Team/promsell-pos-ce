@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:promsell_pos_ce/core/database/tables/categories_table.dart';
 
 @DataClassName('ProductData')
 class Products extends Table {
@@ -9,7 +10,7 @@ class Products extends Table {
   RealColumn get price => real()();
   RealColumn get cost => real().nullable()();
   IntColumn get stock => integer().withDefault(const Constant(0))();
-  TextColumn get categoryId => text().nullable()();
+  TextColumn get categoryId => text().nullable().references(Categories, #id)();
   TextColumn get imageUrl => text().nullable()();
   TextColumn get imagePath => text().nullable()();
   TextColumn get imageThumbnailPath => text().nullable()();

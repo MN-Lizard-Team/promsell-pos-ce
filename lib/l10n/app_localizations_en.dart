@@ -532,6 +532,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productFormSectionBasicInfo => 'Basic info';
 
   @override
+  String get tabInfo => 'Info';
+
+  @override
+  String get tabPrice => 'Price';
+
+  @override
+  String get tabStock => 'Stock';
+
+  @override
   String get productFormSectionDetails => 'Details';
 
   @override
@@ -1404,4 +1413,124 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneHint => '081-234-5678';
+
+  @override
+  String get categoryManagementTitle => 'Manage Categories';
+
+  @override
+  String get noCategoriesYet => 'No categories yet';
+
+  @override
+  String get uncategorized => 'Uncategorized';
+
+  @override
+  String get searchCategories => 'Search categories...';
+
+  @override
+  String get addCategory => 'Add Category';
+
+  @override
+  String get editCategory => 'Edit Category';
+
+  @override
+  String get deleteCategoryConfirm => 'Confirm delete category?';
+
+  @override
+  String get categoryName => 'Category name';
+
+  @override
+  String get categoryNameRequired => 'Please enter category name';
+
+  @override
+  String get categoryNameExists => 'Category name already exists';
+
+  @override
+  String get categoryInUse => 'Cannot delete category that has products';
+
+  @override
+  String get chooseCategory => 'Choose Category';
+
+  @override
+  String get manageCategories => 'Manage Categories';
+
+  @override
+  String get sortOrder => 'Sort order';
+
+  @override
+  String get sortOrderRequired => 'Please enter sort order';
+
+  @override
+  String get categoryColor => 'Color';
+
+  @override
+  String get categoryIcon => 'Icon';
+
+  @override
+  String get invalidNumber => 'Invalid number';
+
+  @override
+  String get addProductTitle => 'Add Product';
+
+  @override
+  String get noCategorySelected => 'No category selected';
+
+  @override
+  String get noProductsInCategory => 'No products in this category';
+
+  @override
+  String get clearFilters => 'Clear filters';
+
+  @override
+  String get startTypingToSearch => 'Start typing to search';
+
+  @override
+  String get searchByNameSkuBarcode => 'Search by name, SKU, or barcode';
+
+  @override
+  String get tryDifferentKeyword => 'Try a different keyword';
+
+  @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get inactive => 'Inactive';
+
+  @override
+  String get na => 'N/A';
+
+  @override
+  String get skuLabel => 'SKU';
+
+  @override
+  String get barcodeLabel => 'Barcode';
+
+  @override
+  String get outOfStockShort => 'Out';
+
+  @override
+  String get productsCount => 'Products';
+
+  @override
+  String get lowStock => 'Low stock';
+
+  @override
+  String get outOfStock => 'Out of stock';
+
+  @override
+  String get saveDraft => 'Save Draft';
+
+  @override
+  String get discardDraft => 'Discard Draft';
+
+  @override
+  String get restoreDraft => 'Restore draft?';
+
+  @override
+  String get draftSaved => 'Draft saved';
+
+  @override
+  String get unsavedChangesMessage => 'You have unsaved changes';
+
+  @override
+  String get restore => 'Restore';
 }

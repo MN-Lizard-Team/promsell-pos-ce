@@ -14,7 +14,7 @@ class AddProduct {
     required double price,
     double? cost,
     required int stock,
-    String? category,
+    String? categoryId,
     String? imageUrl,
     String? imagePath,
     String? imageThumbnailPath,
@@ -23,9 +23,6 @@ class AddProduct {
     Validators.productName(name);
     Validators.price(price);
     Validators.stock(stock);
-    if (category != null && category.isNotEmpty) {
-      Validators.productName(category);
-    }
     return _repository.addProduct(
       name: name.trim(),
       sku: sku,
@@ -33,7 +30,7 @@ class AddProduct {
       price: price,
       cost: cost,
       stock: stock,
-      category: category,
+      categoryId: categoryId,
       imageUrl: imageUrl,
       imagePath: imagePath,
       imageThumbnailPath: imageThumbnailPath,

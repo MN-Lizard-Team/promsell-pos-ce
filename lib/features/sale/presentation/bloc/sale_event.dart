@@ -9,11 +9,16 @@ abstract class SaleEvent extends Equatable {
 }
 
 class SaleProductAdded extends SaleEvent {
-  const SaleProductAdded(this.product, {this.allowOversell = false});
+  const SaleProductAdded(
+    this.product, {
+    this.qty = 1,
+    this.allowOversell = false,
+  });
   final Product product;
+  final int qty;
   final bool allowOversell;
   @override
-  List<Object?> get props => [product, allowOversell];
+  List<Object?> get props => [product, qty, allowOversell];
 }
 
 class SaleProductRemoved extends SaleEvent {

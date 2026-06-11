@@ -58,7 +58,7 @@ void main() {
         name: 'Test',
         price: 100.0,
         stock: 10,
-        category: 'Drinks',
+        categoryId: 'drinks-001',
       );
 
       expect(result, isA<String>());
@@ -68,7 +68,7 @@ void main() {
       expect(captured.name.value, 'Test');
       expect(captured.price.value, 100.0);
       expect(captured.stock.value, 10);
-      expect(captured.categoryId.value, 'Drinks');
+      expect(captured.categoryId.value, 'drinks-001');
     });
 
     test('updateProduct builds companion and delegates', () async {

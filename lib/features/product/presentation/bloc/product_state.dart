@@ -32,12 +32,13 @@ class ProductState extends Equatable {
           .where(
             (p) =>
                 p.name.toLowerCase().contains(q) ||
-                (p.category?.toLowerCase().contains(q) ?? false),
+                (p.sku?.toLowerCase().contains(q) ?? false) ||
+                (p.barcode?.toLowerCase().contains(q) ?? false),
           )
           .toList();
     }
     if (categoryFilter != null) {
-      result = result.where((p) => p.category == categoryFilter).toList();
+      result = result.where((p) => p.categoryId == categoryFilter).toList();
     }
     return result;
   }

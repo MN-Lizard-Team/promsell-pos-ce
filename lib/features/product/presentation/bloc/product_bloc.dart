@@ -50,9 +50,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final DeleteProduct _deleteProduct;
   StreamSubscription<List<Product>>? _sub;
 
-  void _onSubscribed(ProductsSubscribed event, Emitter<ProductState> emit) {
+  Future<void> _onSubscribed(
+    ProductsSubscribed event,
+    Emitter<ProductState> emit,
+  ) async {
     emit(state.copyWith(status: ProductStatus.loading));
-    _sub?.cancel();
+    await _sub?.cancel();
     _sub = _getProducts().listen(
       (products) => add(_ProductsUpdated(products)),
       onError: (Object e) => add(_ProductsError(e.toString())),
@@ -89,7 +92,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         price: event.price,
         cost: event.cost,
         stock: event.stock,
-        category: event.category,
+        categoryId: event.categoryId,
         imageUrl: event.imageUrl,
         imagePath: event.imagePath,
         imageThumbnailPath: event.imageThumbnailPath,

@@ -13,6 +13,7 @@ import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dar
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
@@ -75,6 +76,7 @@ void main() {
 
     test('all BLoCs / Cubits resolve', () {
       expect(() => GetIt.instance<ProductBloc>(), returnsNormally);
+      expect(() => GetIt.instance<CategoryBloc>(), returnsNormally);
       expect(() => GetIt.instance<SettingsCubit>(), returnsNormally);
       expect(() => GetIt.instance<ReportCubit>(), returnsNormally);
       expect(() => GetIt.instance<DraftCartRepository>(), returnsNormally);

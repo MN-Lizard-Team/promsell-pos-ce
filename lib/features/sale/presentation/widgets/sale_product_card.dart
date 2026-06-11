@@ -5,6 +5,10 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
+    show parseCategoryColor, parseCategoryIcon;
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
@@ -51,6 +55,7 @@ class SaleProductCard extends StatelessWidget {
             );
           }
         },
+        onLongPress: () => _showQtyDialog(context, product, cartQty),
         child: Stack(
           children: [
             Padding(
@@ -67,14 +72,9 @@ class SaleProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    product.category ?? context.l10n.noCategory,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                  _CategoryNameText(
+                    categoryId: product.categoryId,
+                    noCategory: context.l10n.noCategory,
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -127,6 +127,117 @@ class SaleProductCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showQtyDialog(BuildContext context, Product product, int currentQty) {
+    final ctrl = TextEditingController(text: '1');
+    final l10n = context.l10n;
+    final settings = context.read<SettingsCubit>().state.settings;
+    final allowOversell = settings.allowOversell;
+    final saleBloc = context.read<SaleBloc>();
+    final snackCtx = context;
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(product.name),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(signed: true),
+          decoration: InputDecoration(
+            labelText: l10n.quantityLabel,
+            suffixText: product.trackStock
+                ? l10n.stockLabel(product.stock)
+                : null,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final qty = int.tryParse(ctrl.text);
+              if (qty == null || qty <= 0) {
+                Navigator.pop(dialogCtx);
+                return;
+              }
+              var clamped = qty;
+              if (product.trackStock && !allowOversell) {
+                clamped = qty.clamp(1, product.stock);
+              }
+              Navigator.pop(dialogCtx);
+              saleBloc.add(
+                SaleProductAdded(
+                  product,
+                  qty: clamped,
+                  allowOversell: allowOversell,
+                ),
+              );
+              AppSnackBar.info(snackCtx, l10n.productAddedToCart(product.name));
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryNameText extends StatelessWidget {
+  const _CategoryNameText({this.categoryId, required this.noCategory});
+  final String? categoryId;
+  final String noCategory;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (categoryId == null || categoryId!.isEmpty) {
+      return Text(
+        noCategory,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+    return BlocBuilder<CategoryBloc, CategoryState>(
+      builder: (_, state) {
+        final cat = state.categories
+            .where((c) => c.id == categoryId)
+            .firstOrNull;
+        final name = cat?.name ?? categoryId!;
+        final catColor = parseCategoryColor(cat?.color);
+        final catIcon = parseCategoryIcon(cat?.iconName);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: catColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(catIcon, size: 10, color: catColor),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

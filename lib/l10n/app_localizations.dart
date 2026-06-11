@@ -1088,6 +1088,24 @@ abstract class AppLocalizations {
   /// **'ข้อมูลพื้นฐาน'**
   String get productFormSectionBasicInfo;
 
+  /// No description provided for @tabInfo.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูล'**
+  String get tabInfo;
+
+  /// No description provided for @tabPrice.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคา'**
+  String get tabPrice;
+
+  /// No description provided for @tabStock.
+  ///
+  /// In th, this message translates to:
+  /// **'สต็อก'**
+  String get tabStock;
+
   /// No description provided for @productFormSectionDetails.
   ///
   /// In th, this message translates to:
@@ -2719,6 +2737,246 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'081-234-5678'**
   String get phoneHint;
+
+  /// No description provided for @categoryManagementTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'จัดการหมวดหมู่'**
+  String get categoryManagementTitle;
+
+  /// No description provided for @noCategoriesYet.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีหมวดหมู่'**
+  String get noCategoriesYet;
+
+  /// No description provided for @uncategorized.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีหมวดหมู่'**
+  String get uncategorized;
+
+  /// No description provided for @searchCategories.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาหมวดหมู่...'**
+  String get searchCategories;
+
+  /// No description provided for @addCategory.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มหมวดหมู่'**
+  String get addCategory;
+
+  /// No description provided for @editCategory.
+  ///
+  /// In th, this message translates to:
+  /// **'แก้ไขหมวดหมู่'**
+  String get editCategory;
+
+  /// No description provided for @deleteCategoryConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันการลบหมวดหมู่?'**
+  String get deleteCategoryConfirm;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อหมวดหมู่'**
+  String get categoryName;
+
+  /// No description provided for @categoryNameRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณาใส่ชื่อหมวดหมู่'**
+  String get categoryNameRequired;
+
+  /// No description provided for @categoryNameExists.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อหมวดหมู่นี้มีอยู่แล้ว'**
+  String get categoryNameExists;
+
+  /// No description provided for @categoryInUse.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถลบหมวดหมู่ที่มีสินค้าได้'**
+  String get categoryInUse;
+
+  /// No description provided for @chooseCategory.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกหมวดหมู่'**
+  String get chooseCategory;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In th, this message translates to:
+  /// **'จัดการหมวดหมู่'**
+  String get manageCategories;
+
+  /// No description provided for @sortOrder.
+  ///
+  /// In th, this message translates to:
+  /// **'ลำดับ'**
+  String get sortOrder;
+
+  /// No description provided for @sortOrderRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณาใส่ลำดับ'**
+  String get sortOrderRequired;
+
+  /// No description provided for @categoryColor.
+  ///
+  /// In th, this message translates to:
+  /// **'สี'**
+  String get categoryColor;
+
+  /// No description provided for @categoryIcon.
+  ///
+  /// In th, this message translates to:
+  /// **'ไอคอน'**
+  String get categoryIcon;
+
+  /// No description provided for @invalidNumber.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวเลขไม่ถูกต้อง'**
+  String get invalidNumber;
+
+  /// No description provided for @addProductTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มสินค้า'**
+  String get addProductTitle;
+
+  /// No description provided for @noCategorySelected.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่เลือกหมวดหมู่'**
+  String get noCategorySelected;
+
+  /// No description provided for @noProductsInCategory.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีสินค้าในหมวดหมู่นี้'**
+  String get noProductsInCategory;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้างตัวกรอง'**
+  String get clearFilters;
+
+  /// No description provided for @startTypingToSearch.
+  ///
+  /// In th, this message translates to:
+  /// **'เริ่มพิมพ์เพื่อค้นหา'**
+  String get startTypingToSearch;
+
+  /// No description provided for @searchByNameSkuBarcode.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาด้วยชื่อ, SKU, หรือบาร์โค้ด'**
+  String get searchByNameSkuBarcode;
+
+  /// No description provided for @tryDifferentKeyword.
+  ///
+  /// In th, this message translates to:
+  /// **'ลองคำค้นหาอื่น'**
+  String get tryDifferentKeyword;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้างการค้นหา'**
+  String get clearSearch;
+
+  /// No description provided for @inactive.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ใช้งาน'**
+  String get inactive;
+
+  /// No description provided for @na.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ระบุ'**
+  String get na;
+
+  /// No description provided for @skuLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'SKU'**
+  String get skuLabel;
+
+  /// No description provided for @barcodeLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'บาร์โค้ด'**
+  String get barcodeLabel;
+
+  /// No description provided for @outOfStockShort.
+  ///
+  /// In th, this message translates to:
+  /// **'หมด'**
+  String get outOfStockShort;
+
+  /// No description provided for @productsCount.
+  ///
+  /// In th, this message translates to:
+  /// **'สินค้า'**
+  String get productsCount;
+
+  /// No description provided for @lowStock.
+  ///
+  /// In th, this message translates to:
+  /// **'เหลือน้อย'**
+  String get lowStock;
+
+  /// No description provided for @outOfStock.
+  ///
+  /// In th, this message translates to:
+  /// **'หมดสต็อก'**
+  String get outOfStock;
+
+  /// No description provided for @saveDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกร่าง'**
+  String get saveDraft;
+
+  /// No description provided for @discardDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'ทิ้งร่าง'**
+  String get discardDraft;
+
+  /// No description provided for @restoreDraft.
+  ///
+  /// In th, this message translates to:
+  /// **'กู้คืนร่าง?'**
+  String get restoreDraft;
+
+  /// No description provided for @draftSaved.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกร่างแล้ว'**
+  String get draftSaved;
+
+  /// No description provided for @unsavedChangesMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'มีการเปลี่ยนแปลงที่ยังไม่บันทึก'**
+  String get unsavedChangesMessage;
+
+  /// No description provided for @restore.
+  ///
+  /// In th, this message translates to:
+  /// **'กู้คืน'**
+  String get restore;
 }
 
 class _AppLocalizationsDelegate

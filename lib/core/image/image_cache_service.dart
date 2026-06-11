@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 /// Lightweight image cache manager.
 ///
 /// Tracks cache directory size and evicts oldest files when limit is exceeded.
+@LazySingleton()
 class ImageCacheService {
   static const _defaultMaxSizeMB = 50;
 

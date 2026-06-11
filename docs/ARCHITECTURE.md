@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.7.4
+# Architecture — Promsell POS CE v0.7.6
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -98,7 +98,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
                          ▼
 ┌────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                │
-│  9 tables • schema v13 • WAL • FK ON • UUIDv4 PKs   │
+│  9 tables • schema v15 • WAL • FK ON • UUIDv4 PKs   │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -828,4 +828,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.7.4 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.7.6 · Architecture Document · Deep Technical Reference</sub>

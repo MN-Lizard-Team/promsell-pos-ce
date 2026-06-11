@@ -530,6 +530,15 @@ class AppLocalizationsTh extends AppLocalizations {
   String get productFormSectionBasicInfo => 'ข้อมูลพื้นฐาน';
 
   @override
+  String get tabInfo => 'ข้อมูล';
+
+  @override
+  String get tabPrice => 'ราคา';
+
+  @override
+  String get tabStock => 'สต็อก';
+
+  @override
   String get productFormSectionDetails => 'รายละเอียด';
 
   @override
@@ -1397,4 +1406,124 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get phoneHint => '081-234-5678';
+
+  @override
+  String get categoryManagementTitle => 'จัดการหมวดหมู่';
+
+  @override
+  String get noCategoriesYet => 'ยังไม่มีหมวดหมู่';
+
+  @override
+  String get uncategorized => 'ไม่มีหมวดหมู่';
+
+  @override
+  String get searchCategories => 'ค้นหาหมวดหมู่...';
+
+  @override
+  String get addCategory => 'เพิ่มหมวดหมู่';
+
+  @override
+  String get editCategory => 'แก้ไขหมวดหมู่';
+
+  @override
+  String get deleteCategoryConfirm => 'ยืนยันการลบหมวดหมู่?';
+
+  @override
+  String get categoryName => 'ชื่อหมวดหมู่';
+
+  @override
+  String get categoryNameRequired => 'กรุณาใส่ชื่อหมวดหมู่';
+
+  @override
+  String get categoryNameExists => 'ชื่อหมวดหมู่นี้มีอยู่แล้ว';
+
+  @override
+  String get categoryInUse => 'ไม่สามารถลบหมวดหมู่ที่มีสินค้าได้';
+
+  @override
+  String get chooseCategory => 'เลือกหมวดหมู่';
+
+  @override
+  String get manageCategories => 'จัดการหมวดหมู่';
+
+  @override
+  String get sortOrder => 'ลำดับ';
+
+  @override
+  String get sortOrderRequired => 'กรุณาใส่ลำดับ';
+
+  @override
+  String get categoryColor => 'สี';
+
+  @override
+  String get categoryIcon => 'ไอคอน';
+
+  @override
+  String get invalidNumber => 'ตัวเลขไม่ถูกต้อง';
+
+  @override
+  String get addProductTitle => 'เพิ่มสินค้า';
+
+  @override
+  String get noCategorySelected => 'ยังไม่เลือกหมวดหมู่';
+
+  @override
+  String get noProductsInCategory => 'ไม่มีสินค้าในหมวดหมู่นี้';
+
+  @override
+  String get clearFilters => 'ล้างตัวกรอง';
+
+  @override
+  String get startTypingToSearch => 'เริ่มพิมพ์เพื่อค้นหา';
+
+  @override
+  String get searchByNameSkuBarcode => 'ค้นหาด้วยชื่อ, SKU, หรือบาร์โค้ด';
+
+  @override
+  String get tryDifferentKeyword => 'ลองคำค้นหาอื่น';
+
+  @override
+  String get clearSearch => 'ล้างการค้นหา';
+
+  @override
+  String get inactive => 'ไม่ใช้งาน';
+
+  @override
+  String get na => 'ไม่ระบุ';
+
+  @override
+  String get skuLabel => 'SKU';
+
+  @override
+  String get barcodeLabel => 'บาร์โค้ด';
+
+  @override
+  String get outOfStockShort => 'หมด';
+
+  @override
+  String get productsCount => 'สินค้า';
+
+  @override
+  String get lowStock => 'เหลือน้อย';
+
+  @override
+  String get outOfStock => 'หมดสต็อก';
+
+  @override
+  String get saveDraft => 'บันทึกร่าง';
+
+  @override
+  String get discardDraft => 'ทิ้งร่าง';
+
+  @override
+  String get restoreDraft => 'กู้คืนร่าง?';
+
+  @override
+  String get draftSaved => 'บันทึกร่างแล้ว';
+
+  @override
+  String get unsavedChangesMessage => 'มีการเปลี่ยนแปลงที่ยังไม่บันทึก';
+
+  @override
+  String get restore => 'กู้คืน';
 }

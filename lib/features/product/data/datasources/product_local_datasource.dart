@@ -25,7 +25,7 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
     price: d.price,
     cost: d.cost ?? 0.0,
     stock: d.stock,
-    category: d.categoryId,
+    categoryId: d.categoryId,
     imageUrl: d.imageUrl,
     imagePath: d.imagePath,
     imageThumbnailPath: d.imageThumbnailPath,

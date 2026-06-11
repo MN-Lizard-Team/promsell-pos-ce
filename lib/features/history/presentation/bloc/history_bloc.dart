@@ -41,23 +41,26 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   final VoidSale _voidSale;
   StreamSubscription<List<Sale>>? _sub;
 
-  void _startListening(DateTime? from, DateTime? to) {
-    _sub?.cancel();
+  Future<void> _startListening(DateTime? from, DateTime? to) async {
+    await _sub?.cancel();
     _sub = _watchSaleHistory(from: from, to: to).listen(
       (sales) => add(_HistorySalesUpdated(sales)),
       onError: (Object e) => add(_HistoryError(e.toString())),
     );
   }
 
-  void _onSubscribed(HistorySubscribed event, Emitter<HistoryState> emit) {
+  Future<void> _onSubscribed(
+    HistorySubscribed event,
+    Emitter<HistoryState> emit,
+  ) async {
     emit(state.copyWith(status: HistoryStatus.loading, errorMessage: null));
-    _startListening(state.from, state.to);
+    await _startListening(state.from, state.to);
   }
 
-  void _onDateRangeChanged(
+  Future<void> _onDateRangeChanged(
     HistoryDateRangeChanged event,
     Emitter<HistoryState> emit,
-  ) {
+  ) async {
     emit(
       state.copyWith(
         status: HistoryStatus.loading,
@@ -66,7 +69,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
         errorMessage: null,
       ),
     );
-    _startListening(event.from, event.to);
+    await _startListening(event.from, event.to);
   }
 
   void _onSearchChanged(

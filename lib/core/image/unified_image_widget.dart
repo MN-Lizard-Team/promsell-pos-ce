@@ -261,17 +261,20 @@ class _LocalImageState extends State<_LocalImage> {
     }
 
     if (_exists == true) {
+      final cacheWidth = widget.size.isFinite
+          ? (widget.size * 2).toInt()
+          : null;
       return Image.file(
         File(widget.path),
-        width: widget.size,
-        height: widget.size,
+        width: widget.size.isFinite ? widget.size : null,
+        height: widget.size.isFinite ? widget.size : null,
         fit: widget.fit,
-        cacheWidth: (widget.size * 2).toInt(),
+        cacheWidth: cacheWidth,
         errorBuilder: (ctx, err, st) => widget.fallback(ctx),
         frameBuilder: (ctx, child, frame, wasSync) {
           if (frame != null) return child;
           return ImageSkeleton(
-            size: widget.size,
+            size: widget.size.isFinite ? widget.size : 56,
             borderRadius: widget.borderRadius,
           );
         },

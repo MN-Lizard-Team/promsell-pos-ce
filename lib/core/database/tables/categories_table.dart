@@ -8,6 +8,8 @@ class Categories extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get deletedAt => dateTime().nullable()();
+  TextColumn get color => text().nullable()();
+  TextColumn get iconName => text().nullable()();
   IntColumn get version => integer().withDefault(const Constant(1))();
   TextColumn get deviceId => text().nullable()();
 

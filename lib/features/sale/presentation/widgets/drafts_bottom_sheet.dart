@@ -92,6 +92,7 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
               final name = ctrl.text.trim().isEmpty ? null : ctrl.text.trim();
               context.read<SaleBloc>().add(SaleDraftCreated(name: name));
               Navigator.pop(context);
+              Future.delayed(const Duration(milliseconds: 300), _reload);
             },
             child: Text(l10n.save),
           ),

@@ -12,8 +12,8 @@ class UpdateProduct {
     Validators.productName(product.name);
     Validators.price(product.price);
     Validators.stock(product.stock);
-    if (product.category != null && product.category!.isNotEmpty) {
-      Validators.productName(product.category!);
+    if (product.categoryId != null && product.categoryId!.isNotEmpty) {
+      Validators.productName(product.categoryId!);
     }
     return _repository.updateProduct(product);
   }

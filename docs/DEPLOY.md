@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.7.5+1
+version: 0.7.6+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +121,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 343 tests pass
+- [ ] `flutter test` — all 340 tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -166,6 +166,7 @@ Before distributing a build with UI changes:
 18f. Open Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); switch theme/locale, and save shop info.
 19. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify skeleton loading shimmer appears briefly before image fades in; verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; verify dark-mode placeholder uses neutral gray (not green); delete the product and verify both image files are removed from storage.
 19b. In the Products tab, verify **category autocomplete** — type in the category field and see suggestions from existing categories; enter a new category freely.
+19c. Open **Category Management** (overflow menu on Product List AppBar) — verify drag & drop reordering works; add a category with color + icon picker (10 colors / 21 icons); verify product count badge on each category; verify search filters categories; verify bulk delete mode (select multiple → delete all).
 20. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file (or `.db.enc` if encryption is enabled); tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
 21. In the Products tab, long-press a product image → verify `ImageViewerDialog` opens with pinch zoom; tap **share** button (file/URL) and **info** button (source, path, size bottom sheet).
 22. In Settings, verify **Max drafts** input (default 30, range 5–100), **Compact cart**, and **Ultra-compact cart** toggles appear.

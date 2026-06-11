@@ -3,10 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/core/widgets/app_search_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/search_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/search_result_tile.dart';
+import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
+    show parseCategoryColor, parseCategoryIcon;
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/sale_product_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -19,10 +25,27 @@ class SaleCatalog extends StatefulWidget {
 
 class _SaleCatalogState extends State<SaleCatalog> {
   final _searchController = TextEditingController();
+  final _searchFocus = FocusNode();
+  bool _searchFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocus.addListener(() {
+      setState(() => _searchFocused = _searchFocus.hasFocus);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_searchController.text.isNotEmpty) {
+        _searchController.clear();
+        context.read<ProductBloc>().add(const ProductSearchChanged(''));
+      }
+    });
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -55,14 +78,15 @@ class _SaleCatalogState extends State<SaleCatalog> {
           final activeProducts = state.filtered
               .where((product) => product.isActive && product.isInStock)
               .toList();
-          final categories = _categoriesOf(activeProducts);
-          final selectedCategory = categories.contains(state.categoryFilter)
-              ? state.categoryFilter
-              : null;
-          final products = selectedCategory == null
+          final categoryState = ctx.watch<CategoryBloc>().state;
+          final categories = categoryState.categories;
+          final selectedCategoryId = state.categoryFilter;
+          final products = selectedCategoryId == null
               ? activeProducts
               : activeProducts
-                    .where((product) => product.category == selectedCategory)
+                    .where(
+                      (product) => product.categoryId == selectedCategoryId,
+                    )
                     .toList();
 
           if (activeProducts.isEmpty) {
@@ -78,28 +102,31 @@ class _SaleCatalogState extends State<SaleCatalog> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: SearchBar(
-                    controller: _searchController,
-                    hintText: context.l10n.saleSearchProducts,
-                    leading: const Icon(Icons.search),
-                    elevation: const WidgetStatePropertyAll(0),
-                    backgroundColor: WidgetStatePropertyAll(
-                      Theme.of(context).colorScheme.surfaceContainerHighest,
-                    ),
-                    side: WidgetStatePropertyAll(
-                      BorderSide(color: Theme.of(context).colorScheme.outline),
-                    ),
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    padding: const WidgetStatePropertyAll(
-                      EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    onChanged: (query) => context.read<ProductBloc>().add(
-                      ProductSearchChanged(query),
-                    ),
+                  child: BlocBuilder<SearchHistoryCubit, SearchHistoryState>(
+                    builder: (ctx, historyState) {
+                      return AppSearchBar(
+                        controller: _searchController,
+                        focusNode: _searchFocus,
+                        hintText: context.l10n.saleSearchProducts,
+                        isFocused: _searchFocused,
+                        recentSearches: historyState.searches,
+                        onChanged: (q) => context.read<ProductBloc>().add(
+                          ProductSearchChanged(q),
+                        ),
+                        onSubmitted: (q) {
+                          context.read<SearchHistoryCubit>().add(q);
+                        },
+                        onRecentTap: (q) {
+                          _searchController.text = q;
+                          context.read<ProductBloc>().add(
+                            ProductSearchChanged(q),
+                          );
+                          _searchFocus.unfocus();
+                        },
+                        onRecentDismiss: (q) =>
+                            context.read<SearchHistoryCubit>().remove(q),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -131,11 +158,26 @@ class _SaleCatalogState extends State<SaleCatalog> {
                             final category = isAll
                                 ? null
                                 : categories[index - 1];
-                            final selected = selectedCategory == category;
+                            final selected = selectedCategoryId == category?.id;
 
+                            final catColor = isAll
+                                ? null
+                                : parseCategoryColor(category!.color);
+                            final catIcon = isAll
+                                ? null
+                                : parseCategoryIcon(category!.iconName);
                             return ChoiceChip(
+                              avatar: isAll || catColor == null
+                                  ? null
+                                  : Icon(
+                                      catIcon,
+                                      size: 16,
+                                      color: selected
+                                          ? theme.colorScheme.onPrimaryContainer
+                                          : catColor,
+                                    ),
                               label: Text(
-                                isAll ? ctx.l10n.allCategories : category!,
+                                isAll ? ctx.l10n.allCategories : category!.name,
                               ),
                               selected: selected,
                               selectedColor: theme.colorScheme.primaryContainer,
@@ -151,7 +193,7 @@ class _SaleCatalogState extends State<SaleCatalog> {
                               onSelected: (_) {
                                 HapticFeedback.selectionClick();
                                 ctx.read<ProductBloc>().add(
-                                  ProductCategoryFilterChanged(category),
+                                  ProductCategoryFilterChanged(category?.id),
                                 );
                               },
                             );
@@ -176,9 +218,33 @@ class _SaleCatalogState extends State<SaleCatalog> {
               if (products.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: AppEmptyState(
-                    icon: Icons.search_off,
-                    title: ctx.l10n.noMatchingProducts,
+                  child: state.searchQuery.isNotEmpty
+                      ? SearchEmptyState(
+                          query: state.searchQuery,
+                          onClear: () {
+                            _searchController.clear();
+                            context.read<ProductBloc>().add(
+                              const ProductSearchChanged(''),
+                            );
+                          },
+                        )
+                      : AppEmptyState(
+                          icon: Icons.inventory_2_outlined,
+                          title: ctx.l10n.noProducts,
+                          message: ctx.l10n.tapProductToAdd,
+                        ),
+                )
+              else if (state.searchQuery.isNotEmpty)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                  sliver: SliverList.separated(
+                    itemCount: products.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) => SearchResultTile(
+                      product: products[i],
+                      query: state.searchQuery,
+                      onTap: () {},
+                    ),
                   ),
                 )
               else
@@ -207,18 +273,5 @@ class _SaleCatalogState extends State<SaleCatalog> {
         },
       ),
     );
-  }
-
-  List<String> _categoriesOf(List<Product> products) {
-    final categories =
-        products
-            .map((product) => product.category?.trim())
-            .whereType<String>()
-            .where((category) => category.isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
-
-    return categories;
   }
 }

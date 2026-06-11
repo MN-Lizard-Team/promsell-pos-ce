@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
-import 'package:flutter/services.dart';
+import 'package:promsell_pos_ce/core/widgets/sticky_action_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_text_field.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_category_autocomplete.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form_avatar.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_edit_tab_view.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key, this.product});
@@ -31,9 +30,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
   late final _stockCtrl = TextEditingController(
     text: widget.product?.stock.toString() ?? '0',
   );
-  late final _categoryCtrl = TextEditingController(
-    text: widget.product?.category ?? '',
+  late final _skuCtrl = TextEditingController(text: widget.product?.sku ?? '');
+  late final _barcodeCtrl = TextEditingController(
+    text: widget.product?.barcode ?? '',
   );
+  Category? _selectedCategory;
   String? _imagePath;
   String? _imageUrl;
   String? _imageThumbnailPath;
@@ -51,6 +52,28 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _imagePath = widget.product?.imagePath;
     _imageUrl = widget.product?.imageUrl;
     _imageThumbnailPath = widget.product?.imageThumbnailPath;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _lookupCategory());
+  }
+
+  void _lookupCategory() {
+    if (!mounted) return;
+    if (_selectedCategory != null) return;
+    final catId = widget.product?.categoryId;
+    if (catId == null || catId.isEmpty) return;
+    try {
+      final cats = context.read<CategoryBloc>().state.categories;
+      _selectedCategory = cats.firstWhere(
+        (c) => c.id == catId,
+        orElse: () => Category(
+          id: catId,
+          name: context.l10n.uncategorized,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
+    } catch (_) {
+      // CategoryBloc not available in this scope; picker will handle it
+    }
   }
 
   @override
@@ -58,7 +81,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _nameCtrl.dispose();
     _priceCtrl.dispose();
     _stockCtrl.dispose();
-    _categoryCtrl.dispose();
+    _skuCtrl.dispose();
+    _barcodeCtrl.dispose();
     super.dispose();
   }
 
@@ -79,9 +103,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
             name: _nameCtrl.text.trim(),
             price: price,
             stock: stock,
-            category: _categoryCtrl.text.trim().isEmpty
+            sku: _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
+            barcode: _barcodeCtrl.text.trim().isEmpty
                 ? null
-                : _categoryCtrl.text.trim(),
+                : _barcodeCtrl.text.trim(),
+            categoryId: _selectedCategory?.id,
             imagePath: _imagePath,
             imageUrl: _imageUrl,
             imageThumbnailPath: _imageThumbnailPath,
@@ -99,9 +125,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
           name: _nameCtrl.text.trim(),
           price: price,
           stock: stock,
-          category: _categoryCtrl.text.trim().isEmpty
+          sku: _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
+          barcode: _barcodeCtrl.text.trim().isEmpty
               ? null
-              : _categoryCtrl.text.trim(),
+              : _barcodeCtrl.text.trim(),
+          categoryId: _selectedCategory?.id,
           imagePath: _imagePath,
           imageUrl: _imageUrl,
           imageThumbnailPath: _imageThumbnailPath,
@@ -113,9 +141,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final currency = context.watch<SettingsCubit>().state.settings.currency;
-
     return BlocListener<ProductBloc, ProductState>(
       listenWhen: (prev, curr) =>
           _submitted && prev.saveStatus != curr.saveStatus,
@@ -127,200 +152,72 @@ class _ProductFormPageState extends State<ProductFormPage> {
           AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.errorOccurred);
         }
       },
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 12,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Form(
-            key: _formKey,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final useTwoColumns = constraints.maxWidth >= 420;
-                final priceField = ProductTextField(
-                  controller: _priceCtrl,
-                  labelText: context.l10n.priceLabel(currency),
-                  icon: Icons.sell_outlined,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                      RegExp(r'^\d+\.?\d{0,2}'),
-                    ),
-                  ],
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return context.l10n.priceRequired;
-                    }
-                    final parsed = double.tryParse(value);
-                    if (parsed == null || parsed <= 0) {
-                      return context.l10n.invalidPrice;
-                    }
-                    return null;
-                  },
-                );
-                final stockField = ProductTextField(
-                  controller: _stockCtrl,
-                  labelText: context.l10n.quantityLabel,
-                  icon: Icons.inventory_outlined,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  helperText: (int.tryParse(_stockCtrl.text) ?? -1) == 0
-                      ? context.l10n.stockZeroWarning
-                      : null,
-                  onChanged: (_) => setState(() {}),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return context.l10n.quantityRequired;
-                    }
-                    if (int.tryParse(value) == null) {
-                      return context.l10n.invalidQuantity;
-                    }
-                    return null;
-                  },
-                );
-
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 44,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        ProductFormAvatar(
-                          imagePath: _imagePath,
-                          imageUrl: _imageUrl,
-                          isLoading: _isPickingImage,
-                          onTap: () => _showImageSourceSheet(context),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _isEditing
-                                    ? context.l10n.editProductTitle
-                                    : context.l10n.addProduct,
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    ProductSectionLabel(
-                      label: context.l10n.productFormSectionBasicInfo,
-                    ),
-                    const SizedBox(height: 8),
-                    ProductTextField(
-                      controller: _nameCtrl,
-                      labelText: context.l10n.productNameLabel,
-                      icon: Icons.badge_outlined,
-                      validator: (value) =>
-                          (value == null || value.trim().isEmpty)
-                          ? context.l10n.productNameRequired
-                          : null,
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(height: 10),
-                    if (useTwoColumns)
-                      Row(
-                        children: [
-                          Expanded(child: priceField),
-                          const SizedBox(width: 12),
-                          Expanded(child: stockField),
-                        ],
-                      )
-                    else ...[
-                      priceField,
-                      const SizedBox(height: 10),
-                      stockField,
-                    ],
-                    const SizedBox(height: 20),
-                    ProductSectionLabel(
-                      label: context.l10n.productFormSectionDetails,
-                    ),
-                    const SizedBox(height: 8),
-                    ProductCategoryAutocomplete(
-                      controller: _categoryCtrl,
-                      categories: context.select<ProductBloc, List<String>>(
-                        (bloc) =>
-                            bloc.state.products
-                                .map((p) => p.category)
-                                .whereType<String>()
-                                .toSet()
-                                .toList()
-                              ..sort(),
-                      ),
-                      onSubmitted: (_) => _submit(),
-                    ),
-                    const SizedBox(height: 4),
-                    SwitchListTile(
-                      value: _trackStock,
-                      onChanged: (value) => setState(() => _trackStock = value),
-                      title: Text(context.l10n.trackStock),
-                      subtitle: Text(context.l10n.trackStockHint),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    if (_isEditing) ...[
-                      const SizedBox(height: 4),
-                      SwitchListTile(
-                        value: _isActive,
-                        onChanged: (value) => setState(() => _isActive = value),
-                        title: Text(context.l10n.showProduct),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    BlocBuilder<ProductBloc, ProductState>(
-                      builder: (_, state) {
-                        final isSaving =
-                            state.saveStatus == ProductSaveStatus.saving;
-                        return FilledButton.icon(
-                          onPressed: isSaving ? null : _submit,
-                          icon: isSaving
-                              ? const SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Icon(
-                                  _isEditing ? Icons.save_outlined : Icons.add,
-                                ),
-                          label: Text(
-                            _isEditing
-                                ? context.l10n.save
-                                : context.l10n.addProduct,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
+          builder: (_, state) {
+            final isSaving = state.saveStatus == ProductSaveStatus.saving;
+            return StickyActionBar(
+              primaryLabel: _isEditing
+                  ? context.l10n.save
+                  : context.l10n.addProduct,
+              onPrimary: _submit,
+              dangerLabel: _isEditing ? context.l10n.delete : null,
+              onDanger: _isEditing ? () => _confirmDelete(context) : null,
+              isLoading: isSaving,
+            );
+          },
         ),
+        body: ProductEditTabView(
+          product: widget.product,
+          formKey: _formKey,
+          nameCtrl: _nameCtrl,
+          priceCtrl: _priceCtrl,
+          stockCtrl: _stockCtrl,
+          skuCtrl: _skuCtrl,
+          barcodeCtrl: _barcodeCtrl,
+          selectedCategory: _selectedCategory,
+          imagePath: _imagePath,
+          imageUrl: _imageUrl,
+          isActive: _isActive,
+          trackStock: _trackStock,
+          isPickingImage: _isPickingImage,
+          onCategoryChanged: (cat) => setState(() => _selectedCategory = cat),
+          onImageTap: () => _showImageSourceSheet(context),
+          onActiveChanged: (v) => setState(() => _isActive = v),
+          onTrackStockChanged: (v) => setState(() => _trackStock = v),
+          onStockChanged: (v) => setState(() => _stockCtrl.text = v.toString()),
+          onDelete: () => _confirmDelete(context),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteProduct),
+        content: Text(
+          '${l10n.deleteCategoryConfirm} "${widget.product!.name}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              context.read<ProductBloc>().add(
+                ProductDeleted(widget.product!.id),
+              );
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: Text(l10n.delete),
+          ),
+        ],
       ),
     );
   }

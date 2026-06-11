@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.7.5
+# Database Handbook — Promsell POS CE v0.7.6
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -27,7 +27,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 13 |
+| **Schema version** | 15 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -45,6 +45,8 @@ erDiagram
         text id PK
         text name
         int sortOrder
+        text color
+        text iconName
         datetime createdAt
         datetime updatedAt
         datetime deletedAt
@@ -273,6 +275,8 @@ Source: `lib/core/database/tables/categories_table.dart`
 | `id` | TEXT | No | — | **PK**, UUIDv4 |
 | `name` | TEXT | No | — | length 1–100 |
 | `sortOrder` | INTEGER | No | `0` | |
+| `color` | TEXT | Yes | — | Hex color (e.g. "E53935") |
+| `iconName` | TEXT | Yes | — | Material icon identifier |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | |
 | `deletedAt` | DATETIME | Yes | — | Soft delete |
@@ -712,6 +716,14 @@ onUpgrade: (m, from, to) async {
     // Backfill deviceId on all sync-enabled tables for existing rows
     // Tables: sales, sale_items, draft_carts, draft_cart_items, inventory_logs, daily_closes
   }
+  if (from < 14) {
+    // Add categoryId FK constraint to products table (products.category_id → categories.id)
+    // Backfill: convert existing category name strings to UUID references
+  }
+  if (from < 15) {
+    // Add color and iconName columns to categories table
+    // Preset colors: 10 choices; preset icons: 21 Material icons
+  }
 },
 ```
 
@@ -900,4 +912,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.7.4 · Schema v12 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.7.6 · Schema v15 · 9 tables · UUIDv4</sub>

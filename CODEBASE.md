@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.7.5
+# CODEBASE.md — Promsell POS CE v0.7.6
 
 ## System overview
 
@@ -77,7 +77,7 @@ features/<name>/
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#00C853` primary, `#0D1117` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v13, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId` on existing rows |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v15, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories` |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -95,7 +95,7 @@ features/<name>/
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
 | `ReportCalculator` | `lib/features/report/domain/extensions/` | Domain extension on `List<Sale>`: `completedSales`, `voidedSales`, `netRevenue`, `voidedTotal`, `byPaymentMethod`, `topProducts` |
 | `SettingsMapper` | `lib/features/settings/data/mappers/` | `Settings` ↔ `Map<String,String>` serialization; handles legacy themeMode integer migration (0→light, 1→dark, 2→system) |
-| `SettingsPersistenceService` | `lib/features/settings/domain/services/` | Debounce Timer + persistence logic; extracted from `SettingsCubit` |
+| `SettingsPersistenceService` | `lib/features/settings/domain/services/` | Debounce Timer + persistence logic; `_isDisposed` guard prevents timer races after disposal |
 | `BackupEncryptionService` | `lib/features/settings/data/services/` | AES-256-GCM encryption/decryption for SQLite backups with PIN-derived PBKDF2 key |
 | `DraftCartLocalDatasource` | `lib/features/sale/data/datasources/` | Persist/load `DraftCarts` + `DraftCartItems`; used by `DraftCartRepository` |
 | `SettingsLocalDatasource` | `lib/features/settings/data/datasources/` | Drift-backed typed key-value store for app_settings table |
@@ -112,7 +112,7 @@ features/<name>/
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
 | Sale | `SaleBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
-| Product | `ProductBloc` | `product_list_page.dart`, `product_form_page.dart`; widgets: `ProductAvatar` (wrapper around `UnifiedImageWidget`), `StockBadge`, `ProductTile`, `ProductGridCard`, `ProductTextField`, `ProductFormAvatar` (wrapper with edit badge), `ProductSectionLabel`, `ProductCategoryAutocomplete`; services: `ProductImageService` |
+| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `QuickEditSheet`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet`, `CategoryFilterBar`; services: `ProductImageService` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
 | Settings | `SettingsCubit` | Pages: 3-level hierarchy — `settings_root_page.dart`, `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 12 typed group entities |
@@ -140,7 +140,7 @@ features/<name>/
 
 ---
 
-## Database schema (v13)
+## Database schema (v15)
 
 Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
@@ -149,7 +149,7 @@ Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All 
 | `Products` | id, name, sku, barcode, price, cost, stock, categoryId, imageUrl, imagePath, imageThumbnailPath, trackStock, isActive, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
 | `Sales` | id, receiptNumber, status, totalAmount, subtotalAmount, discountType/Value/Amount, vatMode/Rate/Amount, paymentMethod, amountReceived, changeAmount, paymentReference, sendingBankCode, note, voidedAt, voidReason, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
 | `SaleItems` | id, saleId, productId, productName, price, qty, subtotal, discountAmount, vatAmount |
-| `Categories` | id, name, sortOrder, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
+| `Categories` | id, name, sortOrder, **color**, **iconName**, createdAt, **updatedAt**, **deletedAt**, **version**, **deviceId** |
 | `InventoryLogs` | id, productId, type, qtyChange, balanceAfter, reason, refSaleId, createdAt, **deviceId** |
 | `AppSettings` | key (PK), value, updatedAt |
 | `DraftCarts` | id, name, note, cartDiscountType, cartDiscountValue, createdAt, **updatedAt**, **deviceId** |
@@ -322,6 +322,9 @@ Two generators must be run after changes:
 | `DraftCart` entity (new fields) | Update `draft_cart.dart` + `DraftCartLocalDatasource` + `SaleBloc` draft event handlers + `sale_bloc_test.dart` |
 | `DraftCarts` table schema | Run `build_runner build`; bump schema version + add migration in `app_database.dart` |
 | `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductRepositoryImpl` constructor if services added |
+| `Category` entity (new fields: color, iconName) | Update `category_test.dart` props count + fixtures + `CategoryRepositoryImpl` mapping + run `build_runner build`; bump schema version |
+| `CategoryRepositoryImpl` constructor | Update tests to inject mock datasource; regenerate with `build_runner` |
+| `CategoryBloc` constructor / events | Update mock in `test/helpers/mocks.dart`; add `CategoriesReordered` event handler tests |
 | `ProductRepositoryImpl` constructor | Update `product_repository_impl_test.dart` to inject `MockProductImageService` |
 | `InventoryLog` entity | Update `inventory_log_test.dart` props count + `InventoryLogRepositoryImpl` mapping |
 | `InventoryLogCubit` constructor | Update mock in `test/helpers/mocks.dart` + inject `MockWatchInventoryLogs` in tests |
@@ -331,7 +334,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-343 automated tests across 8 layers. Run with `flutter test`.
+340 automated tests across 8 layers. Run with `flutter test`.
 
 ### Test directory structure
 

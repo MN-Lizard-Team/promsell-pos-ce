@@ -31,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -213,6 +213,13 @@ class AppDatabase extends _$AppDatabase {
       if (from < 13) {
         await _backfillDeviceId();
       }
+      if (from < 14) {
+        await _backfillCategoryIds();
+      }
+      if (from < 15) {
+        await _addColumnIfNotExists('categories', 'color', 'TEXT');
+        await _addColumnIfNotExists('categories', 'icon_name', 'TEXT');
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA journal_mode=WAL');
@@ -307,6 +314,20 @@ class AppDatabase extends _$AppDatabase {
         AppLogger.error('Migration ALTER failed for $table.$column', error: e);
         rethrow;
       }
+    }
+  }
+
+  Future<void> _backfillCategoryIds() async {
+    try {
+      await customStatement('''
+        UPDATE products
+        SET category_id = (
+          SELECT id FROM categories WHERE categories.name = products.category_id
+        )
+        WHERE category_id IS NOT NULL
+      ''');
+    } catch (e) {
+      AppLogger.warning('Schema v14 categoryId backfill failed', error: e);
     }
   }
 

@@ -120,6 +120,12 @@ class CartBottomSheet {
                                       _changeQty(listCtx, bloc, item, 1),
                                   onDecrement: () =>
                                       _changeQty(listCtx, bloc, item, -1),
+                                  onQtyTap: () => _showQtyDialog(
+                                    listCtx,
+                                    bloc: bloc,
+                                    item: item,
+                                    settings: settings,
+                                  ),
                                   onDelete: () =>
                                       _removeItem(listCtx, bloc, item),
                                 ),
@@ -349,6 +355,65 @@ class CartBottomSheet {
       },
     );
   }
+
+  static void _showQtyDialog(
+    BuildContext context, {
+    required SaleBloc bloc,
+    required CartItem item,
+    required AppSettings settings,
+  }) {
+    final ctrl = TextEditingController(text: '${item.qty}');
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(item.product.name),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(signed: true),
+          decoration: InputDecoration(
+            labelText: l10n.quantityLabel,
+            suffixText: item.product.trackStock
+                ? l10n.stockLabel(item.product.stock)
+                : null,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final qty = int.tryParse(ctrl.text);
+              if (qty == null || qty <= 0) {
+                Navigator.pop(context);
+                _removeItem(context, bloc, item);
+                return;
+              }
+              final allowOversell = settings.allowOversell;
+              var clamped = qty;
+              if (item.product.trackStock && !allowOversell) {
+                clamped = qty.clamp(1, item.product.stock);
+              }
+              Navigator.pop(context);
+              if (clamped != item.qty) {
+                bloc.add(
+                  SaleItemQtyChanged(
+                    productId: item.product.id,
+                    qty: clamped,
+                    allowOversell: allowOversell,
+                  ),
+                );
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _CartItemTile extends StatelessWidget {
@@ -358,6 +423,7 @@ class _CartItemTile extends StatelessWidget {
     required this.settings,
     required this.onIncrement,
     required this.onDecrement,
+    required this.onQtyTap,
     required this.onDelete,
   });
 
@@ -366,6 +432,7 @@ class _CartItemTile extends StatelessWidget {
   final AppSettings settings;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
+  final VoidCallback onQtyTap;
   final VoidCallback onDelete;
 
   @override
@@ -509,7 +576,7 @@ class _CartItemTile extends StatelessWidget {
                   qty: item.qty,
                   onDecrement: onDecrement,
                   onIncrement: onIncrement,
-                  onQtyTap: () {},
+                  onQtyTap: onQtyTap,
                 ),
               ],
             ),

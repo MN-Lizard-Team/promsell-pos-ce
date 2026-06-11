@@ -16,6 +16,7 @@ import 'package:promsell_pos_ce/core/database/app_database.dart' as _i422;
 import 'package:promsell_pos_ce/core/di/bloc_module.dart' as _i1055;
 import 'package:promsell_pos_ce/core/di/database_module.dart' as _i205;
 import 'package:promsell_pos_ce/core/di/image_picker_module.dart' as _i714;
+import 'package:promsell_pos_ce/core/image/image_cache_service.dart' as _i710;
 import 'package:promsell_pos_ce/core/services/backup_encryption_service.dart'
     as _i177;
 import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart'
@@ -54,22 +55,38 @@ import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_invento
     as _i1073;
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart'
     as _i21;
+import 'package:promsell_pos_ce/features/product/data/datasources/category_local_datasource.dart'
+    as _i487;
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart'
     as _i409;
+import 'package:promsell_pos_ce/features/product/data/repositories/category_repository_impl.dart'
+    as _i721;
 import 'package:promsell_pos_ce/features/product/data/repositories/product_repository_impl.dart'
     as _i23;
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart'
     as _i502;
+import 'package:promsell_pos_ce/features/product/domain/repositories/category_repository.dart'
+    as _i1059;
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart'
     as _i126;
+import 'package:promsell_pos_ce/features/product/domain/usecases/add_category.dart'
+    as _i982;
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart'
     as _i747;
+import 'package:promsell_pos_ce/features/product/domain/usecases/delete_category.dart'
+    as _i910;
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart'
     as _i447;
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart'
     as _i440;
+import 'package:promsell_pos_ce/features/product/domain/usecases/update_category.dart'
+    as _i661;
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart'
     as _i107;
+import 'package:promsell_pos_ce/features/product/domain/usecases/watch_categories.dart'
+    as _i10;
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart'
+    as _i613;
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart'
     as _i372;
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart'
@@ -135,6 +152,7 @@ extension GetItInjectableX on _i174.GetIt {
     final blocModule = _$BlocModule();
     gh.lazySingleton<_i422.AppDatabase>(() => databaseModule.appDatabase);
     gh.lazySingleton<_i183.ImagePicker>(() => imagePickerModule.imagePicker);
+    gh.lazySingleton<_i710.ImageCacheService>(() => _i710.ImageCacheService());
     gh.lazySingleton<_i177.BackupEncryptionService>(
       () => _i177.BackupEncryptionService(),
     );
@@ -151,6 +169,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i790.ReceiptNumberService>(
       () => _i790.ReceiptNumberService(gh<_i422.AppDatabase>()),
     );
+    gh.lazySingleton<_i487.CategoryLocalDatasource>(
+      () => _i487.CategoryLocalDatasourceImpl(gh<_i422.AppDatabase>()),
+    );
     gh.lazySingleton<_i622.DailyCloseLocalDatasource>(
       () => _i622.DailyCloseLocalDatasourceImpl(gh<_i422.AppDatabase>()),
     );
@@ -165,6 +186,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i243.SettingsRepository>(
       () => _i173.SettingsRepositoryImpl(gh<_i440.SettingsLocalDatasource>()),
+    );
+    gh.lazySingleton<_i1059.CategoryRepository>(
+      () => _i721.CategoryRepositoryImpl(gh<_i487.CategoryLocalDatasource>()),
     );
     gh.factory<_i83.GetSettings>(
       () => _i83.GetSettings(gh<_i243.SettingsRepository>()),
@@ -187,8 +211,30 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i858.ReopenDay>(
       () => _i858.ReopenDay(gh<_i819.DailyCloseRepository>()),
     );
+    gh.factory<_i982.AddCategory>(
+      () => _i982.AddCategory(gh<_i1059.CategoryRepository>()),
+    );
+    gh.factory<_i661.UpdateCategory>(
+      () => _i661.UpdateCategory(gh<_i1059.CategoryRepository>()),
+    );
+    gh.factory<_i10.WatchCategories>(
+      () => _i10.WatchCategories(gh<_i1059.CategoryRepository>()),
+    );
     gh.factory<_i1073.WatchInventoryLogs>(
       () => _i1073.WatchInventoryLogs(gh<_i551.InventoryLogRepository>()),
+    );
+    gh.lazySingleton<_i502.ProductImageService>(
+      () => _i502.ProductImageServiceImpl(
+        gh<_i243.SettingsRepository>(),
+        picker: gh<_i183.ImagePicker>(),
+        cacheService: gh<_i710.ImageCacheService>(),
+      ),
+    );
+    gh.lazySingleton<_i126.ProductRepository>(
+      () => _i23.ProductRepositoryImpl(
+        gh<_i409.ProductLocalDatasource>(),
+        gh<_i502.ProductImageService>(),
+      ),
     );
     gh.lazySingleton<_i925.DraftCartLocalDatasource>(
       () => _i925.DraftCartLocalDatasourceImpl(
@@ -206,17 +252,29 @@ extension GetItInjectableX on _i174.GetIt {
         settingsRepo: gh<_i243.SettingsRepository>(),
       ),
     );
-    gh.lazySingleton<_i502.ProductImageService>(
-      () => _i502.ProductImageServiceImpl(
-        gh<_i243.SettingsRepository>(),
-        picker: gh<_i183.ImagePicker>(),
-      ),
-    );
     gh.lazySingleton<_i425.SettingsCubit>(
       () => _i425.SettingsCubit(
         gh<_i243.SettingsRepository>(),
         gh<_i307.SettingsPersistenceService>(),
       ),
+    );
+    gh.factory<_i910.DeleteCategory>(
+      () => _i910.DeleteCategory(
+        gh<_i1059.CategoryRepository>(),
+        gh<_i126.ProductRepository>(),
+      ),
+    );
+    gh.factory<_i747.AddProduct>(
+      () => _i747.AddProduct(gh<_i126.ProductRepository>()),
+    );
+    gh.factory<_i447.DeleteProduct>(
+      () => _i447.DeleteProduct(gh<_i126.ProductRepository>()),
+    );
+    gh.factory<_i440.GetProducts>(
+      () => _i440.GetProducts(gh<_i126.ProductRepository>()),
+    );
+    gh.factory<_i107.UpdateProduct>(
+      () => _i107.UpdateProduct(gh<_i126.ProductRepository>()),
     );
     gh.lazySingleton<_i942.SaleLocalDatasource>(
       () => _i942.SaleLocalDatasourceImpl(
@@ -224,6 +282,14 @@ extension GetItInjectableX on _i174.GetIt {
         receiptNumberService: gh<_i790.ReceiptNumberService>(),
         inventoryLogService: gh<_i216.InventoryLogService>(),
         settingsRepo: gh<_i243.SettingsRepository>(),
+      ),
+    );
+    gh.lazySingleton<_i372.ProductBloc>(
+      () => blocModule.productBloc(
+        gh<_i440.GetProducts>(),
+        gh<_i747.AddProduct>(),
+        gh<_i107.UpdateProduct>(),
+        gh<_i447.DeleteProduct>(),
       ),
     );
     gh.factory<_i21.InventoryLogCubit>(
@@ -237,10 +303,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i216.InventoryLogService>(),
       ),
     );
-    gh.lazySingleton<_i126.ProductRepository>(
-      () => _i23.ProductRepositoryImpl(
-        gh<_i409.ProductLocalDatasource>(),
-        gh<_i502.ProductImageService>(),
+    gh.lazySingleton<_i613.CategoryBloc>(
+      () => _i613.CategoryBloc(
+        watchCategories: gh<_i10.WatchCategories>(),
+        addCategory: gh<_i982.AddCategory>(),
+        updateCategory: gh<_i661.UpdateCategory>(),
+        deleteCategory: gh<_i910.DeleteCategory>(),
       ),
     );
     gh.lazySingleton<_i26.HistoryRepository>(
@@ -255,32 +323,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i771.SaleRepository>(
       () => _i679.SaleRepositoryImpl(gh<_i942.SaleLocalDatasource>()),
     );
-    gh.factory<_i747.AddProduct>(
-      () => _i747.AddProduct(gh<_i126.ProductRepository>()),
-    );
-    gh.factory<_i447.DeleteProduct>(
-      () => _i447.DeleteProduct(gh<_i126.ProductRepository>()),
-    );
-    gh.factory<_i440.GetProducts>(
-      () => _i440.GetProducts(gh<_i126.ProductRepository>()),
-    );
-    gh.factory<_i107.UpdateProduct>(
-      () => _i107.UpdateProduct(gh<_i126.ProductRepository>()),
-    );
     gh.factory<_i983.DailyCloseCubit>(
       () => _i983.DailyCloseCubit(
         gh<_i320.CloseDay>(),
         gh<_i858.ReopenDay>(),
         gh<_i696.GetDailyCloseByDate>(),
         gh<_i243.SettingsRepository>(),
-      ),
-    );
-    gh.lazySingleton<_i372.ProductBloc>(
-      () => blocModule.productBloc(
-        gh<_i440.GetProducts>(),
-        gh<_i747.AddProduct>(),
-        gh<_i107.UpdateProduct>(),
-        gh<_i447.DeleteProduct>(),
       ),
     );
     gh.factory<_i744.WatchReport>(
