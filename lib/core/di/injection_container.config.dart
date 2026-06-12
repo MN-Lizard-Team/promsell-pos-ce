@@ -73,6 +73,8 @@ import 'package:promsell_pos_ce/features/product/domain/usecases/add_category.da
     as _i982;
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart'
     as _i747;
+import 'package:promsell_pos_ce/features/product/domain/usecases/clear_orphaned_images.dart'
+    as _i707;
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_category.dart'
     as _i910;
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart'
@@ -284,6 +286,12 @@ extension GetItInjectableX on _i174.GetIt {
         settingsRepo: gh<_i243.SettingsRepository>(),
       ),
     );
+    gh.factory<_i707.ClearOrphanedImages>(
+      () => _i707.ClearOrphanedImages(
+        gh<_i126.ProductRepository>(),
+        gh<_i502.ProductImageService>(),
+      ),
+    );
     gh.lazySingleton<_i372.ProductBloc>(
       () => blocModule.productBloc(
         gh<_i440.GetProducts>(),
@@ -357,6 +365,7 @@ extension GetItInjectableX on _i174.GetIt {
         createSale: gh<_i648.CreateSale>(),
         draftRepo: gh<_i564.DraftCartRepository>(),
         settingsRepo: gh<_i243.SettingsRepository>(),
+        productRepo: gh<_i126.ProductRepository>(),
       ),
     );
     gh.lazySingleton<_i593.ReportCubit>(

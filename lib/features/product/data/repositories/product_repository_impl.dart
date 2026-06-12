@@ -23,6 +23,20 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Product?> getProductById(String id) => _datasource.getProductById(id);
 
   @override
+  Future<Product?> getProductByBarcode(String barcode) async {
+    final product = await _datasource.getProductByBarcode(barcode);
+    return (product != null && product.isActive) ? product : null;
+  }
+
+  @override
+  Future<bool> barcodeExists(String barcode, {String? excludeId}) async {
+    final product = await _datasource.getProductByBarcode(barcode);
+    if (product == null) return false;
+    if (excludeId != null && product.id == excludeId) return false;
+    return true;
+  }
+
+  @override
   Future<String> addProduct({
     required String name,
     String? sku,

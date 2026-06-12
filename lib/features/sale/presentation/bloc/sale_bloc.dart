@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 @injectable
@@ -17,9 +18,11 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     required CreateSale createSale,
     required DraftCartRepository draftRepo,
     required SettingsRepository settingsRepo,
+    required ProductRepository productRepo,
   }) : _createSale = createSale,
        _draftRepo = draftRepo,
        _settingsRepo = settingsRepo,
+       _productRepo = productRepo,
        super(const SaleState()) {
     on<SaleProductAdded>(_onProductAdded);
     on<SaleProductRemoved>(_onProductRemoved);
@@ -28,6 +31,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     on<SaleConfirmed>(_onConfirmed);
     on<SaleNoteChanged>(_onNoteChanged);
     on<SaleCartProductsRefreshed>(_onProductsRefreshed);
+    on<SaleBarcodeScanned>(_onBarcodeScanned);
     on<SaleReset>(_onReset);
     on<SaleItemDiscountChanged>(_onItemDiscountChanged);
     on<SaleItemDiscountCleared>(_onItemDiscountCleared);
@@ -50,6 +54,7 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   final CreateSale _createSale;
   final DraftCartRepository _draftRepo;
   final SettingsRepository _settingsRepo;
+  final ProductRepository _productRepo;
   Timer? _saveTimer;
   SaleConfirmed? _pendingSaleEvent;
 
@@ -552,6 +557,28 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     await _draftRepo.renameDraft(event.draftId, event.name);
     if (event.draftId == state.activeDraftId) {
       emit(state.copyWith(activeDraftName: event.name));
+    }
+  }
+
+  Future<void> _onBarcodeScanned(
+    SaleBarcodeScanned event,
+    Emitter<SaleState> emit,
+  ) async {
+    try {
+      final product = await _productRepo.getProductByBarcode(event.barcode);
+      if (product != null) {
+        add(SaleProductAdded(product, qty: 1));
+      } else {
+        emit(
+          state.copyWith(
+            status: SaleStatus.idle,
+            errorMessage: 'barcodeNotFound',
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('SaleBloc._onBarcodeScanned failed', error: e);
+      emit(state.copyWith(status: SaleStatus.idle, errorMessage: e.toString()));
     }
   }
 

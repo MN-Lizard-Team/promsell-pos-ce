@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.7.6
+# Architecture — Promsell POS CE v0.8.0
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -90,6 +90,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │  PromptPayQrCode (EMVCo QR widget)                  │
 │  SlipVerifier (bank slip Mini-QR decoding)        │
 │  SlipScannerDialog (QR camera scanner)              │
+│  BarcodeScannerDialog (product barcode scanner)     │
 │  BackupService (export/import/CSV)                   │
 │  ProductImageService (compression + format validation) │
 │  ImageCacheService (LRU cache eviction)              │
@@ -98,7 +99,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
                          ▼
 ┌────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                │
-│  9 tables • schema v15 • WAL • FK ON • UUIDv4 PKs   │
+│  9 tables • schema v16 • WAL • FK ON • UUIDv4 PKs   │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -754,7 +755,7 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 
 **Context:** v0.7.3 refactored Settings from a flat 30-field entity (`AppSettings`) to a typed aggregate root. Previously, settings were read/written as individual primitive fields with manual per-field serialization in `SettingsRepositoryImpl`. This made adding new settings tedious and error-prone.
 
-**Decision:** Introduce `Settings` as an aggregate root with 12 typed group entities (`ShopInfo`, `ReceiptConfig`, `TaxConfig`, `DiscountConfig`, `StockConfig`, `ImageConfig`, `PaymentConfig`, `DeviceConfig`, `UiConfig`, `DailyCloseConfig`, `BackupConfig`, `DraftConfig`). Centralize serialization in `SettingsMapper` (`Settings` ↔ `Map<String,String>`). Extract debounce persistence logic from `SettingsCubit` into `SettingsPersistenceService`.
+**Decision:** Introduce `Settings` as an aggregate root with 13 typed group entities (`ShopInfo`, `ReceiptConfig`, `TaxConfig`, `DiscountConfig`, `StockConfig`, `ImageConfig`, `BarcodeConfig`, `PaymentConfig`, `DeviceConfig`, `UiConfig`, `DailyCloseConfig`, `BackupConfig`, `DraftConfig`). Centralize serialization in `SettingsMapper` (`Settings` ↔ `Map<String,String>`). Extract debounce persistence logic from `SettingsCubit` into `SettingsPersistenceService`.
 
 **Consequences:**
 - ✅ Adding a new setting only requires updating the relevant group entity + mapper key
@@ -828,4 +829,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.7.6 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.8.0 · Architecture Document · Deep Technical Reference</sub>

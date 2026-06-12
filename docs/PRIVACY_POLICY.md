@@ -15,7 +15,7 @@ Your data remains on your device. You can export or delete it at any time via th
 Starting with v0.7.2, Promsell offers optional AES-256-GCM encryption for database backups. If enabled, backups are encrypted with a key derived from a user-supplied PIN via PBKDF2. The PIN is never stored on the device or transmitted anywhere. Forgetting the PIN makes the backup unrecoverable — we cannot reset or recover it.
 
 ## 5. Permissions
-- **Camera**: Used only for taking product photos.
+- **Camera**: Used for taking product photos and scanning product barcodes. No photos or scans are transmitted off-device.
 - **Storage**: Used only for saving backups and receipts.
 - **Internet**: Optional, used only for loading product images if URLs are provided. When sharing product images, URLs are sent to the platform's native share sheet (local device only, not to our servers).
 

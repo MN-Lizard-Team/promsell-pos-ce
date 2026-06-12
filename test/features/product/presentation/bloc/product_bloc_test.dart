@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
@@ -140,6 +141,49 @@ void main() {
       verify: (bloc) {
         expect(bloc.state.filtered, [tProduct, tProduct2]);
       },
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'ProductAdded emits error on DuplicateBarcodeException',
+      setUp: () {
+        when(
+          () => mockAddProduct(
+            name: any(named: 'name'),
+            price: any(named: 'price'),
+            stock: any(named: 'stock'),
+            barcode: any(named: 'barcode'),
+          ),
+        ).thenThrow(const DuplicateBarcodeException('123'));
+      },
+      build: buildBloc,
+      act: (b) => b.add(
+        const ProductAdded(name: 'New', price: 50, stock: 10, barcode: '123'),
+      ),
+      expect: () => [
+        const ProductState(saveStatus: ProductSaveStatus.saving),
+        const ProductState(
+          saveStatus: ProductSaveStatus.error,
+          errorMessage: 'duplicateBarcode',
+        ),
+      ],
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'ProductUpdated emits error on DuplicateBarcodeException',
+      setUp: () {
+        when(
+          () => mockUpdateProduct(any()),
+        ).thenThrow(const DuplicateBarcodeException('123'));
+      },
+      build: buildBloc,
+      act: (b) => b.add(ProductUpdated(tProductWithBarcode)),
+      expect: () => [
+        const ProductState(saveStatus: ProductSaveStatus.saving),
+        const ProductState(
+          saveStatus: ProductSaveStatus.error,
+          errorMessage: 'duplicateBarcode',
+        ),
+      ],
     );
   });
 }

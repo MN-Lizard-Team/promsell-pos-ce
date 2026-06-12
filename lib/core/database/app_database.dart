@@ -31,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -220,6 +220,9 @@ class AppDatabase extends _$AppDatabase {
         await _addColumnIfNotExists('categories', 'color', 'TEXT');
         await _addColumnIfNotExists('categories', 'icon_name', 'TEXT');
       }
+      if (from < 16) {
+        await _createBarcodeUniqueIndex();
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA journal_mode=WAL');
@@ -235,7 +238,7 @@ class AppDatabase extends _$AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_products_is_active ON products (is_active)',
     );
     await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode)',
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique ON products (barcode)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales (created_at)',
@@ -328,6 +331,33 @@ class AppDatabase extends _$AppDatabase {
       ''');
     } catch (e) {
       AppLogger.warning('Schema v14 categoryId backfill failed', error: e);
+    }
+  }
+
+  Future<void> _createBarcodeUniqueIndex() async {
+    try {
+      final duplicates = await customSelect('''
+        SELECT barcode, COUNT(*) as cnt FROM products
+        WHERE barcode IS NOT NULL AND barcode != ''
+        GROUP BY barcode HAVING cnt > 1
+      ''').get();
+
+      if (duplicates.isNotEmpty) {
+        AppLogger.warning(
+          'Schema v16: found ${duplicates.length} duplicate barcodes. '
+          'Skipping unique index creation. Clean duplicates manually.',
+        );
+        return;
+      }
+
+      await customStatement(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique ON products (barcode)',
+      );
+    } catch (e) {
+      AppLogger.error(
+        'Schema v16: barcode unique index creation failed',
+        error: e,
+      );
     }
   }
 

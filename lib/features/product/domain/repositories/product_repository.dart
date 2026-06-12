@@ -4,6 +4,8 @@ abstract class ProductRepository {
   Stream<List<Product>> watchAllProducts();
   Future<List<Product>> getActiveProducts();
   Future<Product?> getProductById(String id);
+  Future<Product?> getProductByBarcode(String barcode);
+  Future<bool> barcodeExists(String barcode, {String? excludeId});
   Future<String> addProduct({
     required String name,
     String? sku,

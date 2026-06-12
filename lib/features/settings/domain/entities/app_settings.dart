@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/payment_config
 import 'package:promsell_pos_ce/features/settings/domain/entities/receipt_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/shop_info.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/barcode_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/stock_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/tax_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/ui_config.dart';
@@ -78,6 +79,9 @@ class AppSettings extends Equatable {
     bool dailyCloseLock = false,
     String? lastClosedDate,
     bool backupEncryptionEnabled = false,
+    bool barcodeScanEnabled = true,
+    String barcodeAutoGeneratePrefix = 'P',
+    bool barcodeBeepOnScan = true,
   }) {
     return AppSettings._(
       Settings(
@@ -141,6 +145,11 @@ class AppSettings extends Equatable {
           encryptionEnabled: backupEncryptionEnabled,
         ),
         draftConfig: DraftConfig(maxDrafts: maxDrafts),
+        barcodeConfig: BarcodeConfig(
+          scanEnabled: barcodeScanEnabled,
+          autoGeneratePrefix: barcodeAutoGeneratePrefix,
+          beepOnScan: barcodeBeepOnScan,
+        ),
         onboardingCompleted: onboardingCompleted,
       ),
     );
@@ -212,6 +221,10 @@ class AppSettings extends Equatable {
   bool get dailyCloseLock => _settings.dailyCloseConfig.dailyCloseLock;
   String? get lastClosedDate => _settings.dailyCloseConfig.lastClosedDate;
   bool get backupEncryptionEnabled => _settings.backupConfig.encryptionEnabled;
+  bool get barcodeScanEnabled => _settings.barcodeConfig.scanEnabled;
+  String get barcodeAutoGeneratePrefix =>
+      _settings.barcodeConfig.autoGeneratePrefix;
+  bool get barcodeBeepOnScan => _settings.barcodeConfig.beepOnScan;
 
   AppSettings copyWith({
     Locale? locale,
@@ -260,6 +273,9 @@ class AppSettings extends Equatable {
     bool? dailyCloseLock,
     Object? lastClosedDate = _unset,
     bool? backupEncryptionEnabled,
+    bool? barcodeScanEnabled,
+    String? barcodeAutoGeneratePrefix,
+    bool? barcodeBeepOnScan,
   }) {
     return AppSettings._(
       _settings.copyWith(
@@ -334,6 +350,11 @@ class AppSettings extends Equatable {
           encryptionEnabled: backupEncryptionEnabled,
         ),
         draftConfig: _settings.draftConfig.copyWith(maxDrafts: maxDrafts),
+        barcodeConfig: _settings.barcodeConfig.copyWith(
+          scanEnabled: barcodeScanEnabled,
+          autoGeneratePrefix: barcodeAutoGeneratePrefix,
+          beepOnScan: barcodeBeepOnScan,
+        ),
         onboardingCompleted: onboardingCompleted,
       ),
     );

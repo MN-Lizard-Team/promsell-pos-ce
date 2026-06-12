@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.7.6
+# Database Handbook — Promsell POS CE v0.8.0
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -27,7 +27,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 15 |
+| **Schema version** | 16 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -201,7 +201,7 @@ Source: `lib/core/database/tables/products_table.dart`
 | `id` | TEXT | No | — | **PK**, UUIDv4 |
 | `name` | TEXT | No | — | length 1–200 |
 | `sku` | TEXT | Yes | — | |
-| `barcode` | TEXT | Yes | — | |
+| `barcode` | TEXT | Yes | — | **UNIQUE** (schema v16) |
 | `price` | REAL | No | — | |
 | `cost` | REAL | Yes | — | |
 | `stock` | INTEGER | No | `0` | |
@@ -371,7 +371,8 @@ Created in `_createIndexes()` during `onCreate` and `onUpgrade`.
 |-------|-------|-----------|---------|
 | `idx_products_category_id` | products | `category_id` | Filter products by category |
 | `idx_products_is_active` | products | `is_active` | Filter active products for sale catalog |
-| `idx_products_barcode` | products | `barcode` | Barcode lookup (future scanner feature) |
+| `idx_products_barcode` | products | `barcode` | Barcode lookup for scan/generate |
+| `idx_products_barcode_unique` | products | `barcode` | **UNIQUE** constraint preventing duplicate barcodes (schema v16) |
 | `idx_sales_created_at` | sales | `created_at` | Date-range queries in history/reports |
 | `idx_sales_status` | sales | `status` | Filter completed vs voided sales |
 | `idx_sale_items_sale_id` | sale_items | `sale_id` | Fetch items for a specific sale |
@@ -723,6 +724,11 @@ onUpgrade: (m, from, to) async {
   if (from < 15) {
     // Add color and iconName columns to categories table
     // Preset colors: 10 choices; preset icons: 21 Material icons
+  }
+  if (from < 16) {
+    // Add UNIQUE INDEX on products.barcode
+    // Duplicate-safe: logs warning and skips if legacy data has duplicates
+    // Prevents migration crash while enforcing uniqueness going forward
   }
 },
 ```

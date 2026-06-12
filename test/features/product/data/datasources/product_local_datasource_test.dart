@@ -96,5 +96,27 @@ void main() {
       final product = await datasource.getProductById(id);
       expect(product, isNull);
     });
+
+    test('getProductByBarcode returns matching product', () async {
+      final id = IdGenerator.newId();
+      await datasource.insertProduct(
+        companion(
+          id: id,
+          name: 'Cola',
+        ).copyWith(barcode: const Value('1234567890123')),
+      );
+
+      final product = await datasource.getProductByBarcode('1234567890123');
+      expect(product, isNotNull);
+      expect(product!.name, 'Cola');
+      expect(product.barcode, '1234567890123');
+    });
+
+    test('getProductByBarcode returns null when no match', () async {
+      await datasource.insertProduct(companion(name: 'NoBarcode'));
+
+      final product = await datasource.getProductByBarcode('9999999999999');
+      expect(product, isNull);
+    });
   });
 }

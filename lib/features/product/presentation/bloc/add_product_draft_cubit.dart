@@ -27,7 +27,7 @@ class AddProductDraftCubit extends Cubit<AddProductDraftState> {
   }
 
   final SettingsLocalDatasource _storage;
-  static const _key = 'add_product_draft';
+  static const _key = 'add_product_draft_v2';
 
   Future<void> _loadFromStorage() async {
     final raw = await _storage.getString(_key);

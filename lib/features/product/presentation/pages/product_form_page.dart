@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/image_source_sheet.dart';
 import 'package:promsell_pos_ce/core/widgets/sticky_action_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -62,7 +64,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     if (catId == null || catId.isEmpty) return;
     try {
       final cats = context.read<CategoryBloc>().state.categories;
-      _selectedCategory = cats.firstWhere(
+      final found = cats.firstWhere(
         (c) => c.id == catId,
         orElse: () => Category(
           id: catId,
@@ -71,8 +73,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
           updatedAt: DateTime.now(),
         ),
       );
-    } catch (_) {
+      setState(() => _selectedCategory = found);
+    } on ProviderNotFoundException {
       // CategoryBloc not available in this scope; picker will handle it
+    } catch (e, stack) {
+      AppLogger.warning(
+        'ProductFormPage._lookupCategory failed',
+        error: e,
+        stack: stack,
+      );
     }
   }
 
@@ -149,7 +158,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
           Navigator.pop(ctx, true);
         } else if (state.saveStatus == ProductSaveStatus.error) {
           _submitted = false;
-          AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.errorOccurred);
+          final msg = state.errorMessage == 'duplicateBarcode'
+              ? ctx.l10n.duplicateBarcode
+              : state.errorMessage ?? ctx.l10n.errorOccurred;
+          AppSnackBar.error(ctx, msg);
         }
       },
       child: Scaffold(
@@ -183,7 +195,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
           trackStock: _trackStock,
           isPickingImage: _isPickingImage,
           onCategoryChanged: (cat) => setState(() => _selectedCategory = cat),
-          onImageTap: () => _showImageSourceSheet(context),
+          onImageTap: () => _showImageSourceSheet(),
           onActiveChanged: (v) => setState(() => _isActive = v),
           onTrackStockChanged: (v) => setState(() => _trackStock = v),
           onStockChanged: (v) => setState(() => _stockCtrl.text = v.toString()),
@@ -222,88 +234,71 @@ class _ProductFormPageState extends State<ProductFormPage> {
     );
   }
 
-  Future<void> _showImageSourceSheet(BuildContext context) async {
+  Future<void> _showImageSourceSheet() async {
     final l10n = context.l10n;
-    final result = await showModalBottomSheet<String>(
-      context: context,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Theme.of(ctx).colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined),
-                title: Text(l10n.pickImageGallery),
-                onTap: () => Navigator.pop(ctx, 'gallery'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.camera_alt_outlined),
-                title: Text(l10n.pickImageCamera),
-                onTap: () => Navigator.pop(ctx, 'camera'),
-              ),
-              if (_imagePath != null || _imageUrl != null)
-                ListTile(
-                  leading: const Icon(Icons.delete_outline),
-                  title: Text(l10n.removeImage),
-                  onTap: () => Navigator.pop(ctx, 'remove'),
-                ),
-            ],
-          ),
-        ),
-      ),
+    final action = await showImageSourceSheet(
+      context,
+      hasImage: _imagePath != null || _imageUrl != null,
     );
-    if (result == null || !mounted) return;
+    if (action == null) return;
+    if (!mounted) return;
+
+    if (action == ImageSourceAction.remove) {
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.removeImage),
+          content: Text(l10n.removeImageConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.delete),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      if (!mounted) return;
+      setState(() {
+        _imagePath = null;
+        _imageUrl = null;
+        _imageThumbnailPath = null;
+      });
+      return;
+    }
 
     final imageService = GetIt.I<ProductImageService>();
     final productId = _isEditing ? widget.product!.id : 'new';
 
-    if (result == 'gallery') {
-      setState(() => _isPickingImage = true);
-      final path = await imageService.pickFromGallery(productId);
-      if (path != null && mounted) {
-        final thumbPath = await imageService.generateThumbnail(path);
-        setState(() {
-          _imagePath = path;
-          _imageThumbnailPath = thumbPath;
-          _isPickingImage = false;
-        });
-      } else if (mounted) {
+    setState(() => _isPickingImage = true);
+    try {
+      final path = action == ImageSourceAction.gallery
+          ? await imageService.pickFromGallery(productId)
+          : await imageService.pickFromCamera(productId);
+      if (path == null) {
         setState(() => _isPickingImage = false);
+        return;
       }
-    } else if (result == 'camera') {
-      setState(() => _isPickingImage = true);
-      final path = await imageService.pickFromCamera(productId);
-      if (path != null && mounted) {
-        final thumbPath = await imageService.generateThumbnail(path);
-        setState(() {
-          _imagePath = path;
-          _imageThumbnailPath = thumbPath;
-          _isPickingImage = false;
-        });
-      } else if (mounted) {
-        setState(() => _isPickingImage = false);
-      }
-    } else if (result == 'remove') {
-      if (mounted) {
-        setState(() {
-          _imagePath = null;
-          _imageUrl = null;
-          _imageThumbnailPath = null;
-        });
-      }
+      final thumbPath = await imageService.generateThumbnail(path);
+      if (!mounted) return;
+      setState(() {
+        _imagePath = path;
+        _imageThumbnailPath = thumbPath;
+        _isPickingImage = false;
+      });
+      if (!mounted) return;
+      AppSnackBar.success(context, l10n.imagePicked);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isPickingImage = false);
+      if (!mounted) return;
+      AppSnackBar.error(context, l10n.imagePickFailed);
+      AppLogger.error('ProductFormPage image pick failed', error: e);
     }
   }
 }

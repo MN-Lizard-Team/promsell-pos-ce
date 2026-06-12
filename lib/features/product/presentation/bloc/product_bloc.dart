@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
@@ -99,6 +100,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         trackStock: event.trackStock,
       );
       emit(state.copyWith(saveStatus: ProductSaveStatus.saved));
+    } on DuplicateBarcodeException catch (_) {
+      emit(
+        state.copyWith(
+          saveStatus: ProductSaveStatus.error,
+          errorMessage: 'duplicateBarcode',
+        ),
+      );
     } catch (e) {
       emit(
         state.copyWith(
@@ -117,6 +125,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     try {
       await _updateProduct(event.product);
       emit(state.copyWith(saveStatus: ProductSaveStatus.saved));
+    } on DuplicateBarcodeException catch (_) {
+      emit(
+        state.copyWith(
+          saveStatus: ProductSaveStatus.error,
+          errorMessage: 'duplicateBarcode',
+        ),
+      );
     } catch (e) {
       emit(
         state.copyWith(

@@ -28,47 +28,34 @@ class _CategoryPickerPageState extends State<CategoryPickerPage> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: sl<CategoryBloc>(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.chooseCategory),
-          actions: [
-            TextButton(
-              onPressed: _selectedId == null
-                  ? null
-                  : () {
-                      final cats = context
-                          .read<CategoryBloc>()
-                          .state
-                          .categories;
-                      if (cats.isEmpty) {
-                        Navigator.pop(context);
-                        return;
-                      }
-                      final selected = cats.firstWhere(
-                        (c) => c.id == _selectedId,
-                        orElse: () => cats.first,
-                      );
-                      Navigator.pop(context, selected);
-                    },
-              child: Text(context.l10n.save),
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: CategoryPickerListView(
-            selectedId: _selectedId,
-            useListTile: true,
-            onSelected: (Category cat) => setState(() => _selectedId = cat.id),
-            emptyAction: () => _goToManagement(context),
+      child: Builder(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(context.l10n.chooseCategory),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(context.l10n.cancel),
+              ),
+            ],
           ),
-        ),
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: OutlinedButton.icon(
-              onPressed: () => _goToManagement(context),
-              icon: const Icon(Icons.settings_outlined),
-              label: Text(context.l10n.manageCategories),
+          body: SafeArea(
+            child: CategoryPickerListView(
+              selectedId: _selectedId,
+              useListTile: true,
+              showNoneOption: true,
+              onSelected: (Category cat) => Navigator.pop(context, cat),
+              emptyAction: () => _goToManagement(context),
+            ),
+          ),
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: OutlinedButton.icon(
+                onPressed: () => _goToManagement(context),
+                icon: const Icon(Icons.settings_outlined),
+                label: Text(context.l10n.manageCategories),
+              ),
             ),
           ),
         ),

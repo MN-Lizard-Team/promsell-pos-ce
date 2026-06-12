@@ -14,6 +14,7 @@ class ProductTextField extends StatelessWidget {
     this.onFieldSubmitted,
     this.helperText,
     this.onChanged,
+    this.suffix,
   });
 
   final TextEditingController controller;
@@ -26,6 +27,7 @@ class ProductTextField extends StatelessWidget {
   final ValueChanged<String>? onFieldSubmitted;
   final String? helperText;
   final ValueChanged<String>? onChanged;
+  final Widget? suffix;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class ProductTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(icon),
+        suffixIcon: suffix,
         helperText: helperText,
         helperMaxLines: 2,
       ),

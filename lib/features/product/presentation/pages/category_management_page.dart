@@ -94,6 +94,7 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
                     padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
                     itemCount: cats.length,
                     buildDefaultDragHandles: false,
+                    // ignore: deprecated_member_use
                     onReorder: (oldIndex, newIndex) =>
                         _onReorder(context, cats, oldIndex, newIndex),
                     itemBuilder: (_, i) {

@@ -1505,6 +1505,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get barcodeLabel => 'Barcode';
 
   @override
+  String costLabel(String currency) {
+    return 'Cost ($currency)';
+  }
+
+  @override
   String get outOfStockShort => 'Out';
 
   @override
@@ -1533,4 +1538,118 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restore => 'Restore';
+
+  @override
+  String get scanBarcode => 'Scan Barcode';
+
+  @override
+  String get barcodeScannerHint => 'Align barcode within the frame';
+
+  @override
+  String get barcodeNotFound => 'No product found with this barcode';
+
+  @override
+  String get duplicateBarcode =>
+      'This barcode already exists on another product';
+
+  @override
+  String get enterManually => 'Enter Manually';
+
+  @override
+  String get enterBarcodeManually => 'Enter barcode manually';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get generateBarcode => 'Generate Barcode';
+
+  @override
+  String get barcodeGenerated => 'Barcode generated';
+
+  @override
+  String get barcodeSettings => 'Barcode Settings';
+
+  @override
+  String get enableBarcodeScan => 'Enable barcode scan in sale';
+
+  @override
+  String get enableBarcodeScanHint =>
+      'Show camera scan button on the sale page';
+
+  @override
+  String get playBeepOnScan => 'Play sound on scan';
+
+  @override
+  String get playBeepOnScanHint =>
+      'Beep feedback when barcode is scanned successfully';
+
+  @override
+  String get barcodePrefix => 'Auto-generate prefix';
+
+  @override
+  String get barcodePrefixHint => 'e.g. P, PROD';
+
+  @override
+  String get barcodeHelpTitle => 'How to use barcodes';
+
+  @override
+  String get barcodeHelpWhatIsTitle => 'What is a barcode?';
+
+  @override
+  String get barcodeHelpWhatIsBody =>
+      'A barcode is a machine-readable code (usually lines or numbers) printed on product packaging. You can scan it with the camera to quickly add products to the cart.';
+
+  @override
+  String get barcodeHelpHowToScanTitle => 'How to scan';
+
+  @override
+  String get barcodeHelpHowToScanBody =>
+      'Point the camera at the barcode on the product. Make sure there is good lighting and hold the phone steady. If scanning fails, tap Enter Manually and type the barcode number.';
+
+  @override
+  String get barcodeHelpNoBarcodeTitle => 'Product has no barcode?';
+
+  @override
+  String get barcodeHelpNoBarcodeBody =>
+      'If the product doesn\'t have a barcode, you can generate one automatically in the product form (Advanced tab). This lets you scan it later at the checkout.';
+
+  @override
+  String get barcodeHelper =>
+      'Scan or type the barcode on the product packaging. If none, tap Generate Barcode.';
+
+  @override
+  String get skuHelper =>
+      'Internal product code (optional). Example: SHIRT-RED-L';
+
+  @override
+  String get imagePicked => 'Image added';
+
+  @override
+  String get imagePickFailed => 'Could not add image. Please try again.';
+
+  @override
+  String get removeImageConfirm => 'Remove this image?';
+
+  @override
+  String get imageHelper => 'Tap to change, long-press to preview';
+
+  @override
+  String get imageNotFound => 'Saved image was removed. Please pick again.';
+
+  @override
+  String get clearImageCache => 'Clear image cache';
+
+  @override
+  String get clearImageCacheConfirm =>
+      'This will delete all unused product images to free up storage. Continue?';
+
+  @override
+  String get imageCacheCleared => 'Image cache cleared';
+
+  @override
+  String get basic => 'Basic';
+
+  @override
+  String get advanced => 'Advanced';
 }

@@ -16,6 +16,8 @@ abstract class ProductImageService {
   Future<void> deleteImages(String? imagePath, String? thumbnailPath);
   Future<String?> generateThumbnail(String imagePath);
   Future<ImagePaths?> renameImages(String? oldPath, String newProductId);
+  Future<int> clearOrphanedImages(List<String> validPaths);
+  Future<int> getCacheSizeBytes();
 }
 
 class ImagePaths {
@@ -179,5 +181,37 @@ class ProductImageServiceImpl implements ProductImageService {
       await imageDir.create(recursive: true);
     }
     return imageDir;
+  }
+
+  @override
+  Future<int> clearOrphanedImages(List<String> validPaths) async {
+    final dir = await _imageDirectory;
+    final validSet = validPaths.toSet();
+    int deleted = 0;
+    try {
+      await for (final entity in dir.list()) {
+        if (entity is File) {
+          if (!validSet.contains(entity.path)) {
+            await entity.delete();
+            deleted++;
+          }
+        }
+      }
+    } catch (_) {}
+    return deleted;
+  }
+
+  @override
+  Future<int> getCacheSizeBytes() async {
+    final dir = await _imageDirectory;
+    int total = 0;
+    try {
+      await for (final entity in dir.list()) {
+        if (entity is File) {
+          total += await entity.length();
+        }
+      }
+    } catch (_) {}
+    return total;
   }
 }

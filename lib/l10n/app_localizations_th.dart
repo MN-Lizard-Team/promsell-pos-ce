@@ -1498,6 +1498,11 @@ class AppLocalizationsTh extends AppLocalizations {
   String get barcodeLabel => 'บาร์โค้ด';
 
   @override
+  String costLabel(String currency) {
+    return 'ต้นทุน ($currency)';
+  }
+
+  @override
   String get outOfStockShort => 'หมด';
 
   @override
@@ -1526,4 +1531,114 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get restore => 'กู้คืน';
+
+  @override
+  String get scanBarcode => 'สแกนบาร์โค้ด';
+
+  @override
+  String get barcodeScannerHint => 'จัดบาร์โค้ดให้อยู่ในกรอบ';
+
+  @override
+  String get barcodeNotFound => 'ไม่พบสินค้าที่มีบาร์โค้ดนี้';
+
+  @override
+  String get duplicateBarcode => 'บาร์โค้ดนี้มีอยู่แล้วในสินค้าอื่น';
+
+  @override
+  String get enterManually => 'ป้อนด้วยตนเอง';
+
+  @override
+  String get enterBarcodeManually => 'ป้อนบาร์โค้ดด้วยตนเอง';
+
+  @override
+  String get submit => 'ยืนยัน';
+
+  @override
+  String get generateBarcode => 'สร้างบาร์โค้ด';
+
+  @override
+  String get barcodeGenerated => 'สร้างบาร์โค้ดแล้ว';
+
+  @override
+  String get barcodeSettings => 'ตั้งค่าบาร์โค้ด';
+
+  @override
+  String get enableBarcodeScan => 'เปิดใช้งานสแกนบาร์โค้ด';
+
+  @override
+  String get enableBarcodeScanHint => 'แสดงปุ่มสแกนกล้องในหน้าขาย';
+
+  @override
+  String get playBeepOnScan => 'เล่นเสียงเมื่อสแกนสำเร็จ';
+
+  @override
+  String get playBeepOnScanHint => 'แจ้งเตือนด้วยเสียงเมื่อสแกนบาร์โค้ดสำเร็จ';
+
+  @override
+  String get barcodePrefix => 'คำนำหน้าสร้างอัตโนมัติ';
+
+  @override
+  String get barcodePrefixHint => 'เช่น P, PROD';
+
+  @override
+  String get barcodeHelpTitle => 'วิธีใช้บาร์โค้ด';
+
+  @override
+  String get barcodeHelpWhatIsTitle => 'บาร์โค้ดคืออะไร?';
+
+  @override
+  String get barcodeHelpWhatIsBody =>
+      'บาร์โค้ดคือรหัสที่อ่านได้ด้วยเครื่อง (มักเป็นเส้นหรือตัวเลข) ที่พิมพ์บนบรรจุภัณฑ์สินค้า คุณสามารถสแกนด้วยกล้องเพื่อเพิ่มสินค้าใส่ตะกร้าได้อย่างรวดเร็ว';
+
+  @override
+  String get barcodeHelpHowToScanTitle => 'วิธีสแกน';
+
+  @override
+  String get barcodeHelpHowToScanBody =>
+      'จัดกล้องให้ตรงกับบาร์โค้ดบนสินค้า ตรวจสอบให้มีแสงสว่างเพียงพอและถือโทรศัพท์ให้นิ่ง ถ้าสแกนไม่สำเร็จ ให้แตะ ป้อนด้วยตนเอง แล้วพิมพ์ตัวเลขบาร์โค้ด';
+
+  @override
+  String get barcodeHelpNoBarcodeTitle => 'สินค้าไม่มีบาร์โค้ด?';
+
+  @override
+  String get barcodeHelpNoBarcodeBody =>
+      'ถ้าสินค้าไม่มีบาร์โค้ด คุณสามารถสร้างบาร์โค้ดอัตโนมัติได้ในหน้าข้อมูลสินค้า (แท็บขั้นสูง) เพื่อให้สามารถสแกนได้ในภายหลังที่หน้าขาย';
+
+  @override
+  String get barcodeHelper =>
+      'สแกนหรือพิมพ์บาร์โค้ดบนบรรจุภัณฑ์สินค้า ถ้าไม่มี ให้แตะ สร้างบาร์โค้ด';
+
+  @override
+  String get skuHelper => 'รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SHIRT-RED-L';
+
+  @override
+  String get imagePicked => 'เพิ่มรูปภาพแล้ว';
+
+  @override
+  String get imagePickFailed => 'ไม่สามารถเพิ่มรูปภาพได้ โปรดลองอีกครั้ง';
+
+  @override
+  String get removeImageConfirm => 'ต้องการลบรูปภาพนี้?';
+
+  @override
+  String get imageHelper => 'แตะเพื่อเปลี่ยนรูป กดค้างเพื่อดูตัวอย่าง';
+
+  @override
+  String get imageNotFound => 'รูปภาพที่บันทึกไว้ถูกลบแล้ว โปรดเลือกใหม่';
+
+  @override
+  String get clearImageCache => 'ล้างแคชรูปภาพ';
+
+  @override
+  String get clearImageCacheConfirm =>
+      'จะลบรูปภาพสินค้าที่ไม่ได้ใช้งานเพื่อเพิ่มพื้นที่จัดเก็บ ต้องการดำเนินการต่อ?';
+
+  @override
+  String get imageCacheCleared => 'ล้างแคชรูปภาพแล้ว';
+
+  @override
+  String get basic => 'พื้นฐาน';
+
+  @override
+  String get advanced => 'ขั้นสูง';
 }

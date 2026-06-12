@@ -157,6 +157,40 @@ void main() {
       verifyNever(() => mockImageService.deleteImages(any(), any()));
     });
 
+    test('getProductByBarcode returns active product', () async {
+      when(
+        () => mockDs.getProductByBarcode('123'),
+      ).thenAnswer((_) async => tProductWithBarcode);
+
+      final result = await repo.getProductByBarcode('123');
+
+      expect(result, tProductWithBarcode);
+    });
+
+    test('getProductByBarcode returns null for inactive product', () async {
+      when(
+        () => mockDs.getProductByBarcode('123'),
+      ).thenAnswer((_) async => tInactiveProduct);
+
+      final result = await repo.getProductByBarcode('123');
+
+      expect(result, isNull);
+    });
+
+    test('barcodeExists respects excludeId', () async {
+      final existing = tProduct.copyWith(barcode: 'dup');
+      when(
+        () => mockDs.getProductByBarcode('dup'),
+      ).thenAnswer((_) async => existing);
+      when(
+        () => mockDs.getProductByBarcode('new'),
+      ).thenAnswer((_) async => null);
+
+      expect(await repo.barcodeExists('dup', excludeId: existing.id), false);
+      expect(await repo.barcodeExists('dup', excludeId: 'other-id'), true);
+      expect(await repo.barcodeExists('new'), false);
+    });
+
     test('deleteProduct deletes images then delegates', () async {
       when(
         () => mockDs.getProductById(any()),

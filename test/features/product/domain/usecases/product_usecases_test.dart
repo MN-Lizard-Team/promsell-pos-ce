@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
@@ -42,6 +43,23 @@ void main() {
         () => mockRepo.addProduct(name: 'Test', price: 100.0, stock: 10),
       ).called(1);
     });
+
+    test('throws DuplicateBarcodeException when barcode exists', () async {
+      when(() => mockRepo.barcodeExists('dup')).thenAnswer((_) async => true);
+
+      expect(
+        () => useCase(name: 'Test', price: 100.0, stock: 10, barcode: 'dup'),
+        throwsA(isA<DuplicateBarcodeException>()),
+      );
+      verify(() => mockRepo.barcodeExists('dup')).called(1);
+      verifyNever(
+        () => mockRepo.addProduct(
+          name: any(named: 'name'),
+          price: any(named: 'price'),
+          stock: any(named: 'stock'),
+        ),
+      );
+    });
   });
 
   group('UpdateProduct', () {
@@ -55,6 +73,26 @@ void main() {
 
       verify(() => mockRepo.updateProduct(tProduct)).called(1);
     });
+
+    test(
+      'throws DuplicateBarcodeException when barcode exists on another product',
+      () async {
+        when(
+          () =>
+              mockRepo.barcodeExists('dup', excludeId: tProductWithBarcode.id),
+        ).thenAnswer((_) async => true);
+
+        expect(
+          () => useCase(tProductWithBarcode.copyWith(barcode: 'dup')),
+          throwsA(isA<DuplicateBarcodeException>()),
+        );
+        verify(
+          () =>
+              mockRepo.barcodeExists('dup', excludeId: tProductWithBarcode.id),
+        ).called(1);
+        verifyNever(() => mockRepo.updateProduct(any()));
+      },
+    );
   });
 
   group('DeleteProduct', () {

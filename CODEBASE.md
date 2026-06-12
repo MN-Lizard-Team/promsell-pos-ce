@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.7.6
+# CODEBASE.md — Promsell POS CE v0.8.0
 
 ## System overview
 
@@ -21,7 +21,7 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 ┌──────────────────────────────────────────────────┐
 │   lib/features/ — Feature modules               │
 │   sale/       — Cart, checkout, draft, discount  │
-│   product/    — CRUD inventory, ProductBloc, image service │
+│   product/    — CRUD inventory, ProductBloc, image service, barcode scanning │
 │   history/    — Sale history viewer              │
 │   report/     — Analytics dashboard             │
 │   settings/   — Locale, theme, shop info        │
@@ -77,7 +77,7 @@ features/<name>/
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#00C853` primary, `#0D1117` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v15, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories` |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v16, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories`; v16 adds `UNIQUE INDEX` on `barcode` with duplicate-safe migration |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -88,6 +88,10 @@ features/<name>/
 | `MoneyUtils` | `lib/core/utils/` | Centralized monetary rounding (`round(double)`) for VAT, discount, and total calculations |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `SlipVerifier` | `lib/core/utils/` | Decodes Thai bank transfer slip Mini-QR; returns `SlipVerifyResult` with `SlipErrorType` categorization |
+| `BarcodeScannerDialog` | `lib/core/widgets/` | Fullscreen barcode scanner supporting EAN-13/8, UPC-A/E, Code 128/39, ITF; haptic feedback, 800ms debounce, manual entry fallback, error overlay. Shared `ScanOverlayPainter` |
+| `showProductBarcodeScanner()` | `lib/core/widgets/barcode_scanner_dialog.dart` | Shared helper that opens `BarcodeScannerDialog` with predefined product barcode formats |
+| `showImageSourceSheet()` | `lib/core/widgets/image_source_sheet.dart` | Shared bottom-sheet helper for gallery/camera/remove image actions; used by AddProductPage and ProductFormPage |
+| `DuplicateBarcodeException` | `lib/core/exceptions/` | Thrown when barcode already exists on another product |
 | `SoundPlayer` | `lib/core/utils/` | Lightweight audio player for confirmation feedback |
 | `PromptPayQrCode` | `lib/features/settings/presentation/widgets/` | EMVCo-compliant QR payload generator via `thai_promptpay`; optional customizable icon overlay |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
@@ -112,10 +116,10 @@ features/<name>/
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
 | Sale | `SaleBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
-| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `QuickEditSheet`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet`, `CategoryFilterBar`; services: `ProductImageService` |
+| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `QuickEditSheet`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet`, `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
-| Settings | `SettingsCubit` | Pages: 3-level hierarchy — `settings_root_page.dart`, `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 12 typed group entities |
+| Settings | `SettingsCubit` | Pages: 3-level hierarchy — `settings_root_page.dart`, `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `barcode_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 13 typed group entities |
 | Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
@@ -140,7 +144,7 @@ features/<name>/
 
 ---
 
-## Database schema (v15)
+## Database schema (v16)
 
 Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
@@ -156,7 +160,7 @@ Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All 
 | `DraftCartItems` | id, cartId, productId, productName, price, qty, discountType, discountValue |
 | `DailyCloses` | id, closeDate, openingCash, expectedCash, countedCash, overShortAmount, totalRevenue, totalVoid, salesCount, voidCount, paymentBreakdown, vatAmount, discountAmount, note, closedAt, **deviceId** |
 
-**Indexes:** `idx_products_category_id`, `idx_products_is_active`, `idx_products_barcode`, `idx_sales_created_at`, `idx_sales_status`, `idx_sale_items_sale_id`, `idx_inventory_logs_product_id`, `idx_draft_cart_items_cart_id`, `idx_daily_closes_close_date`
+**Indexes:** `idx_products_category_id`, `idx_products_is_active`, `idx_products_barcode`, **`idx_products_barcode_unique`** (schema v16), `idx_sales_created_at`, `idx_sales_status`, `idx_sale_items_sale_id`, `idx_inventory_logs_product_id`, `idx_draft_cart_items_cart_id`, `idx_daily_closes_close_date`
 
 **Pragmas:** WAL journal mode + `foreign_keys=ON` via `beforeOpen`
 
@@ -219,7 +223,7 @@ SettingsCubit
               └── SettingsLocalDatasource (Drift key-value store)
 ```
 
-### `Settings` aggregate root — 12 typed group entities
+### `Settings` aggregate root — 13 typed group entities
 
 | Group | Entity | Key fields |
 |-------|--------|-----------|
@@ -229,6 +233,7 @@ SettingsCubit
 | Discount | `DiscountConfig` | enableItemDiscount, enableCartDiscount, maxDiscountPercent, maxDiscountAmount, defaultDiscountType, discountPresets, activeDiscountPresetId |
 | Stock | `StockConfig` | allowOversell, lowStockThreshold |
 | Image | `ImageConfig` | maxWidth, quality |
+| Barcode | `BarcodeConfig` | scanEnabled, beepOnScan, autoGeneratePrefix |
 | Payment | `PaymentConfig` | currency, promptpayId, billerId, promptPayTimeout, promptPaySoundEnabled, defaultQrType, autoConfirmAfterSlip, qrOverlayIcon |
 | Device | `DeviceConfig` | deviceId, devicePrefix |
 | UI | `UiConfig` | locale, themeMode, dateFormat, cartCompactMode, ultraCompactMode, accessibilityMode |

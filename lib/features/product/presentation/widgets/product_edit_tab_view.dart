@@ -12,6 +12,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
     show parseCategoryColor, parseCategoryIcon;
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_picker_bottom_sheet.dart';
+import 'package:promsell_pos_ce/core/widgets/barcode_scanner_dialog.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_hero_image.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_text_field.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -173,6 +174,13 @@ class _InfoTab extends StatelessWidget {
             isLoading: isPickingImage,
             onTap: onImageTap,
           ),
+          const SizedBox(height: 4),
+          Text(
+            context.l10n.imageHelper,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 20),
           FormSectionCard(
             icon: Icons.badge_outlined,
@@ -198,6 +206,7 @@ class _InfoTab extends StatelessWidget {
                 ProductTextField(
                   controller: skuCtrl,
                   labelText: context.l10n.skuLabel,
+                  helperText: context.l10n.skuHelper,
                   icon: Icons.qr_code,
                   textInputAction: TextInputAction.next,
                 ),
@@ -205,7 +214,25 @@ class _InfoTab extends StatelessWidget {
                 ProductTextField(
                   controller: barcodeCtrl,
                   labelText: context.l10n.barcodeLabel,
+                  helperText: context.l10n.barcodeHelper,
                   icon: Icons.qr_code_scanner,
+                  suffix: IconButton(
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    tooltip: context.l10n.scanBarcode,
+                    onPressed: () async {
+                      final result = await showProductBarcodeScanner(
+                        context,
+                        beepOnScan: context
+                            .read<SettingsCubit>()
+                            .state
+                            .settings
+                            .barcodeBeepOnScan,
+                      );
+                      if (result != null && result.isNotEmpty) {
+                        barcodeCtrl.text = result;
+                      }
+                    },
+                  ),
                 ),
               ],
             ),

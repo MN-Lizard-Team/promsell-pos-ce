@@ -17,6 +17,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0] - 2026-06-12
+
+Full barcode system (scan, manual entry, generation, settings) + image UX cleanup and orphaned file fixes.
+
+### Highlights
+
+- **Barcode Scanning** — `BarcodeScannerDialog` supports EAN-13/8, UPC-A/E, Code 128/39, ITF. Sale page scan auto-adds to cart; product form scan auto-fills barcode field. Manual entry fallback for slow cameras.
+- **Barcode Settings** — `BarcodeSettingsPage` with scan toggle, haptic feedback toggle, auto-generate prefix, and expandable help section for non-technical staff.
+- **Duplicate Barcode Prevention** — Schema v16 `UNIQUE INDEX`; app-level `DuplicateBarcodeException` with localized error; case-insensitive lookup via `lower()`.
+- **AddProductPage Redesign** — 2-tab layout (Basic + Advanced) with category bottom sheet, barcode scan/generate, SKU, cost, and draft save/restore.
+- **Image System Fixes** — shared `showImageSourceSheet()`, temp file lifecycle tracking, draft path validation, error handling with feedback, remove confirmation, orphaned image cleanup in Settings.
+- **Category Picker UX** — bottom sheet with auto-pop selection, "None" clear option, and no more separate Save tap.
+
+### Added
+
+- `BarcodeScannerDialog`, `ScanOverlayPainter`, `showProductBarcodeScanner()` helper.
+- `DuplicateBarcodeException`, schema v16 migration (duplicate-safe index).
+- `SaleBarcodeScanned` event + `SaleBloc._onBarcodeScanned` handler.
+- `BarcodeConfig` entity + `BarcodeSettingsPage` (scan toggle, beep toggle, prefix input, help section).
+- `showImageSourceSheet()` shared bottom-sheet helper + `ImageSourceAction` enum.
+- `ClearOrphanedImages` usecase + cache clear button in `ImageSettingsPage`.
+- `ProductLocalDatasource.getProductByBarcode()`, `ProductRepository.barcodeExists()`.
+- `ProductTextField.suffix` parameter.
+- `AddProductPage` 2-tab layout + `AddProductDraftCubit` (save/restore/discard).
+- `CategoryPickerBottomSheet` with auto-pop and `showNoneOption`.
+- L10n: barcode scan/generate/settings/help keys + image pick/remove/cache keys (TH/EN).
+
+### Changed
+
+- `AddProductPage` — single form → 2-tab (Basic/Advanced); category picker → bottom sheet.
+- `SlipScannerDialog` — uses shared `ScanOverlayPainter`.
+- `SaleBloc` — added `ProductRepository` dependency; `BlocListener` for error toasts.
+- `AddProduct` / `UpdateProduct` — async with `barcodeExists()` pre-check + `Validators.barcode()`.
+- `ProductFormPage` / `AddProductPage` — image source sheet uses shared helper with try/catch + feedback.
+- `getProductByBarcode` — case-insensitive via `p.barcode.lower().equals(lowerBarcode)`.
+
+### Fixed
+
+- `BarcodeScannerDialog` unused `_showError` removed.
+- `CategoryPickerPage` `ProviderNotFoundException` — wrapped with `Builder` for descendant context.
+- `_lookupCategory` missing `setState` — category field showed wrong initial value.
+- Quick Edit rejected price `0` — clamp changed to `price >= 0`.
+- `_lookupCategory` swallowed errors — narrowed catch to `ProviderNotFoundException` + logging.
+- `CategoryPickerPage` required double Save tap — auto-pop on selection.
+- `CategoryPickerBottomSheet` layout crash — removed conflicting `mainAxisSize: min`.
+- `Validators.barcode()` dead code — now called before duplicate check.
+- Barcode lookup case-sensitive — explicit `lower()` match.
+- Duplicate barcode scanner code — extracted `showProductBarcodeScanner()`.
+- Image temp files orphaned — `_tempImagePaths` tracked and cleaned on dispose/discard.
+- Image draft paths stale — `File.existsSync()` validation on restore.
+- Image pick silent failures — try/catch + `AppSnackBar.error()`.
+- Image remove no confirmation — added AlertDialog before clearing.
+
+`flutter analyze` → **0 issues** · `flutter test` → **351 passing**
+
+---
+
 ## [0.7.6] - 2026-06-11
 
 Category system overhaul with color/icon picker, drag-drop reordering, and 22 system-wide bug fixes.
@@ -1322,7 +1379,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.6...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.6...v0.8.0
 [0.7.6]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.3...v0.7.4

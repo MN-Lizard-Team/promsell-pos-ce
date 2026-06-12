@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/slip_verifier.dart';
+import 'package:promsell_pos_ce/core/widgets/scan_overlay_painter.dart';
 
 class SlipScannerDialog extends StatefulWidget {
   const SlipScannerDialog({super.key});
@@ -115,7 +116,10 @@ class _SlipScannerDialogState extends State<SlipScannerDialog> {
           // Dark overlay outside scan area
           CustomPaint(
             size: MediaQuery.of(context).size,
-            painter: _ScanOverlayPainter(cutoutSize: 260, borderRadius: 20),
+            painter: const ScanOverlayPainter(
+              cutoutSize: 260,
+              borderRadius: 20,
+            ),
           ),
           // Scan frame
           Center(
@@ -205,67 +209,4 @@ class _SlipScannerDialogState extends State<SlipScannerDialog> {
       ),
     );
   }
-}
-
-/// Darkens the screen outside the scan cutout area.
-class _ScanOverlayPainter extends CustomPainter {
-  _ScanOverlayPainter({required this.cutoutSize, required this.borderRadius});
-
-  final double cutoutSize;
-  final double borderRadius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black.withValues(alpha: 0.55);
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final center = Offset(size.width / 2, size.height / 2);
-    final cutout = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: center, width: cutoutSize, height: cutoutSize),
-      Radius.circular(borderRadius),
-    );
-    final path = Path()..addRect(rect);
-    path.addRRect(cutout);
-    canvas.drawPath(path..fillType = PathFillType.evenOdd, paint);
-
-    // Corner markers
-    final markerPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.8)
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke;
-
-    const markerLength = 24.0;
-    final cornerRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: center, width: cutoutSize, height: cutoutSize),
-      Radius.circular(borderRadius),
-    );
-
-    // Top-left
-    _drawCorner(canvas, cornerRect, markerPaint, markerLength, true, true);
-    // Top-right
-    _drawCorner(canvas, cornerRect, markerPaint, markerLength, false, true);
-    // Bottom-left
-    _drawCorner(canvas, cornerRect, markerPaint, markerLength, true, false);
-    // Bottom-right
-    _drawCorner(canvas, cornerRect, markerPaint, markerLength, false, false);
-  }
-
-  void _drawCorner(
-    Canvas canvas,
-    RRect rect,
-    Paint paint,
-    double length,
-    bool left,
-    bool top,
-  ) {
-    final x = left ? rect.left : rect.right;
-    final y = top ? rect.top : rect.bottom;
-    final dx = left ? length : -length;
-    final dy = top ? length : -length;
-
-    canvas.drawLine(Offset(x, y), Offset(x + dx, y), paint);
-    canvas.drawLine(Offset(x, y), Offset(x, y + dy), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ScanOverlayPainter oldDelegate) => false;
 }

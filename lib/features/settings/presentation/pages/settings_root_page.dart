@@ -17,6 +17,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/pages/receipt_set
 import 'package:promsell_pos_ce/features/settings/presentation/pages/discount_policy_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/discount_presets_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/stock_settings_page.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/pages/barcode_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/image_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_settings_page.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_list_page.dart';
@@ -395,6 +396,19 @@ class _SettingsRootViewState extends State<_SettingsRootView>
           st: st,
         ),
         page: const StockSettingsPage(),
+      ),
+      SubTopicItem(
+        icon: Icons.qr_code_scanner_outlined,
+        title: l10n.barcodeSettings,
+        accent: st.softAccent,
+        statusChip: SettingsStatusChip(
+          label: s.barcodeScanEnabled
+              ? l10n.settingsStatusActive
+              : l10n.settingsStatusNotSet,
+          color: s.barcodeScanEnabled ? AppColors.success : st.mutedText,
+          st: st,
+        ),
+        page: const BarcodeSettingsPage(),
       ),
     ];
   }

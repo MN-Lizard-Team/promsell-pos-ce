@@ -168,7 +168,11 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - Use category **filter chips** to narrow the catalog; combined with the search bar
 - Each product shows an image avatar via `UnifiedImageWidget` — skeleton shimmer loading while fetching, consistent error placeholder with neutral dark-mode-safe colors, local file with thumbnail for small sizes, or `CachedNetworkImage` for network URLs; traffic-light **stock badge** (green > 5 / orange 1–5 / red 0); inactive products appear dimmed with strikethrough
 - Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form: tap the image avatar to pick from **Gallery** or **Camera** — image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; or paste an image URL for future online sync; `ImageCacheService` enforces 50MB LRU cache eviction automatically; fill name, price, quantity; the **category field** has autocomplete — type to see suggestions from existing categories or enter a new one freely; toggle **Track stock** (off = service item, shows ∞ in sale catalog, no stock deduction); **BASIC INFO** and **DETAILS** section labels guide the layout
+- Product form uses a **2-tab layout** (Basic + Advanced) with sticky save button:
+  - **Basic tab** — image (tap to pick from Gallery/Camera, long-press to preview, remove with confirmation), name, price, stock, category picker (bottom sheet with auto-pop selection and "None" clear option)
+  - **Advanced tab** — barcode (scan with camera or enter manually), generate barcode from timestamp with custom prefix, SKU, cost, track stock toggle
+  - Image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; `ImageCacheService` enforces 50MB LRU cache eviction automatically
+  - Draft save/restore — unsaved changes prompt to save draft on back press; drafts validate image paths on restore
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
 - Tap **Manage Categories** (overflow menu ⋮) to open **Category Management** — drag & drop reordering, color + icon picker (10 colors / 21 icons), product count badges, search, and bulk delete
 - Search filters by name and category in real time
@@ -197,7 +201,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 ### Settings tab
 
-The Settings root page uses a **3-level hierarchy**: topic groups (General, Store, Payment, System) → sub-topics → individual pages. A **search bar** at the top filters settings across all sub-topics in real time. A **dashboard card** shows 5 at-a-glance badges (shop name, language, theme, backup status, PromptPay status). Each category tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
+The Settings root page uses a **3-level hierarchy**: topic groups (General, Store, Payment, System) → sub-topics → individual pages. A **search bar** at the top filters settings across all sub-topics in real time. A **dashboard card** shows at-a-glance badges (shop name, language, theme, backup status, PromptPay status, barcode scan status). Each category tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
 
 ---
 
@@ -274,6 +278,16 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 |---------|-------------|
 | **Image max width** | Maximum width for product image compression in pixels (default `800`) |
 | **Image quality** | JPEG quality for product images 1–100 (default `80`) |
+| **Clear image cache** | Removes orphaned/unused product images to free disk space |
+
+### Barcode Settings
+
+| Setting | Description |
+|---------|-------------|
+| **Enable barcode scan** | Show/hide camera scan button on Sale page |
+| **Play beep on scan** | Haptic feedback when barcode is detected |
+| **Auto-generate prefix** | Prefix for auto-generated barcodes (default `P`) |
+| **Help section** | Expandable guide for non-technical staff on how to use barcodes |
 
 ### Draft Settings
 
@@ -397,7 +411,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **15** (v0.7.6). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **16** (v0.8.0). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 

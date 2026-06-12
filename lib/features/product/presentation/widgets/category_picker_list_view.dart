@@ -13,12 +13,14 @@ class CategoryPickerListView extends StatefulWidget {
     this.selectedId,
     required this.onSelected,
     this.useListTile = false,
+    this.showNoneOption = false,
     this.emptyAction,
   });
 
   final String? selectedId;
   final ValueChanged<Category> onSelected;
   final bool useListTile;
+  final bool showNoneOption;
   final VoidCallback? emptyAction;
 
   @override
@@ -89,12 +91,56 @@ class _CategoryPickerListViewState extends State<CategoryPickerListView> {
                 );
               }
 
+              final noneSelected =
+                  widget.selectedId == null || widget.selectedId!.isEmpty;
+              final itemCount =
+                  filtered.length + (widget.showNoneOption ? 1 : 0);
+
               return ListView.separated(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
-                itemCount: filtered.length,
+                itemCount: itemCount,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (_, i) {
-                  final cat = filtered[i];
+                  if (widget.showNoneOption && i == 0) {
+                    return ListTile(
+                      leading: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.outlineVariant.withValues(
+                            alpha: 0.3,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.block_outlined,
+                          size: 20,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      title: Text(context.l10n.noCategory),
+                      trailing: noneSelected
+                          ? Icon(
+                              Icons.check_circle,
+                              color: theme.colorScheme.primary,
+                            )
+                          : null,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      onTap: () => widget.onSelected(
+                        Category(
+                          id: '',
+                          name: context.l10n.noCategory,
+                          createdAt: DateTime.now(),
+                          updatedAt: DateTime.now(),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final catIndex = widget.showNoneOption ? i - 1 : i;
+                  final cat = filtered[catIndex];
                   final selected = widget.selectedId == cat.id;
 
                   if (widget.useListTile) {

@@ -66,6 +66,22 @@ final tServiceProduct = Product(
   updatedAt: tNow,
 );
 
+final tProductWithBarcode = Product(
+  id: 'prod-0005-0005-0005-000000000005',
+  name: 'Barcoded Product',
+  barcode: '1234567890123',
+  price: 150.0,
+  stock: 20,
+  category: null,
+  imageUrl: null,
+  imagePath: null,
+  imageThumbnailPath: null,
+  isActive: true,
+  trackStock: true,
+  createdAt: tNow,
+  updatedAt: tNow,
+);
+
 final tCartItem = CartItem(product: tProduct, qty: 2);
 
 final tCartItem2 = CartItem(product: tProduct2, qty: 1);

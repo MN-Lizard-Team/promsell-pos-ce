@@ -164,6 +164,13 @@ class SaleCartProductsRefreshed extends SaleEvent {
   List<Object?> get props => [products];
 }
 
+class SaleBarcodeScanned extends SaleEvent {
+  const SaleBarcodeScanned(this.barcode);
+  final String barcode;
+  @override
+  List<Object?> get props => [barcode];
+}
+
 class SaleReset extends SaleEvent {
   const SaleReset();
 }

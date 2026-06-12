@@ -1,21 +1,21 @@
 # Store Submission Checklist
 
-Last updated: 2026-06-11 | Version: 0.7.6+1
+Last updated: 2026-06-12 | Version: 0.8.0+1
 
 ---
 
 ## Pre-Flight (Code — DONE)
 
-- [x] Version bumped to `0.7.6+1` in `pubspec.yaml`
+- [x] Version bumped to `0.8.0+1` in `pubspec.yaml`
 - [x] Android app label = "Promsell"
 - [x] iOS display name = "Promsell"
 - [x] iOS bundle name = "Promsell"
-- [x] Android permissions (INTERNET, CAMERA, storage)
+- [x] Android permissions (INTERNET, CAMERA, storage) — CAMERA used for product photos + barcode scanning
 - [x] iOS privacy strings + ATS + encryption compliance
 - [x] Release signing config with keystore fallback
 - [x] `.gitignore` excludes keystore files
 - [x] `flutter analyze` → 0 issues
-- [x] `flutter test` → 340 passing
+- [x] `flutter test` → 351 passing
 
 ---
 
@@ -140,7 +140,7 @@ flutter build ipa
 | Item | Value |
 |------|-------|
 | App name | Promsell |
-| Version | 0.7.6+1 |
+| Version | 0.8.0+1 |
 | Contact | teepakorn.official@gmail.com |
 | Privacy URL | https://github.com/teepakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
 | Bundle ID (Android) | com.promsell.promsell_pos_ce |

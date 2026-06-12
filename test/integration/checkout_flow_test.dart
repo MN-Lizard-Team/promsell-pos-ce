@@ -30,6 +30,10 @@ class _NoOpImageService implements ProductImageService {
     String? oldPath,
     String newProductId,
   ) async => null;
+  @override
+  Future<int> clearOrphanedImages(List<String> validPaths) async => 0;
+  @override
+  Future<int> getCacheSizeBytes() async => 0;
 }
 
 void main() {

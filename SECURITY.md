@@ -4,8 +4,9 @@
 
 | Version | Supported |
 |---------|-----------|
-| 0.7.x   | Active |
-| 0.6.x   | Security fixes only |
+| 0.8.x   | Active |
+| 0.7.x   | Security fixes only |
+| 0.6.x   | No longer supported |
 | < 0.6   | No longer supported |
 
 ## Reporting a vulnerability
@@ -61,7 +62,8 @@ Promsell is an **offline-first local app** with no network access by default:
 7. **Image format validation** (v0.7.5+) — `ProductImageService._isValidImage()` rejects non-image files (`.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.bmp`, `.heic` only); prevents malicious file upload via picker
 8. **Image cache eviction** (v0.7.5+) — `ImageCacheService` enforces 50MB LRU limit on `/images/` directory; prevents disk space exhaustion from uncompressed product photos
 9. **PDF generation** — local only, no upload
-10. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
+10. **Orphaned image cleanup** (v0.8.0+) — `AddProductPage` tracks temp image paths and deletes orphaned files on dispose/discard; `ClearOrphanedImages` usecase removes unused images from `/images/` directory. Prevents disk space exhaustion from abandoned temp files
+11. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
 
 ## Security changelog
 

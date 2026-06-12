@@ -2918,6 +2918,12 @@ abstract class AppLocalizations {
   /// **'บาร์โค้ด'**
   String get barcodeLabel;
 
+  /// No description provided for @costLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้นทุน ({currency})'**
+  String costLabel(String currency);
+
   /// No description provided for @outOfStockShort.
   ///
   /// In th, this message translates to:
@@ -2977,6 +2983,216 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'กู้คืน'**
   String get restore;
+
+  /// No description provided for @scanBarcode.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนบาร์โค้ด'**
+  String get scanBarcode;
+
+  /// No description provided for @barcodeScannerHint.
+  ///
+  /// In th, this message translates to:
+  /// **'จัดบาร์โค้ดให้อยู่ในกรอบ'**
+  String get barcodeScannerHint;
+
+  /// No description provided for @barcodeNotFound.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบสินค้าที่มีบาร์โค้ดนี้'**
+  String get barcodeNotFound;
+
+  /// No description provided for @duplicateBarcode.
+  ///
+  /// In th, this message translates to:
+  /// **'บาร์โค้ดนี้มีอยู่แล้วในสินค้าอื่น'**
+  String get duplicateBarcode;
+
+  /// No description provided for @enterManually.
+  ///
+  /// In th, this message translates to:
+  /// **'ป้อนด้วยตนเอง'**
+  String get enterManually;
+
+  /// No description provided for @enterBarcodeManually.
+  ///
+  /// In th, this message translates to:
+  /// **'ป้อนบาร์โค้ดด้วยตนเอง'**
+  String get enterBarcodeManually;
+
+  /// No description provided for @submit.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยัน'**
+  String get submit;
+
+  /// No description provided for @generateBarcode.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ด'**
+  String get generateBarcode;
+
+  /// No description provided for @barcodeGenerated.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ดแล้ว'**
+  String get barcodeGenerated;
+
+  /// No description provided for @barcodeSettings.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งค่าบาร์โค้ด'**
+  String get barcodeSettings;
+
+  /// No description provided for @enableBarcodeScan.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดใช้งานสแกนบาร์โค้ด'**
+  String get enableBarcodeScan;
+
+  /// No description provided for @enableBarcodeScanHint.
+  ///
+  /// In th, this message translates to:
+  /// **'แสดงปุ่มสแกนกล้องในหน้าขาย'**
+  String get enableBarcodeScanHint;
+
+  /// No description provided for @playBeepOnScan.
+  ///
+  /// In th, this message translates to:
+  /// **'เล่นเสียงเมื่อสแกนสำเร็จ'**
+  String get playBeepOnScan;
+
+  /// No description provided for @playBeepOnScanHint.
+  ///
+  /// In th, this message translates to:
+  /// **'แจ้งเตือนด้วยเสียงเมื่อสแกนบาร์โค้ดสำเร็จ'**
+  String get playBeepOnScanHint;
+
+  /// No description provided for @barcodePrefix.
+  ///
+  /// In th, this message translates to:
+  /// **'คำนำหน้าสร้างอัตโนมัติ'**
+  String get barcodePrefix;
+
+  /// No description provided for @barcodePrefixHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น P, PROD'**
+  String get barcodePrefixHint;
+
+  /// No description provided for @barcodeHelpTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'วิธีใช้บาร์โค้ด'**
+  String get barcodeHelpTitle;
+
+  /// No description provided for @barcodeHelpWhatIsTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'บาร์โค้ดคืออะไร?'**
+  String get barcodeHelpWhatIsTitle;
+
+  /// No description provided for @barcodeHelpWhatIsBody.
+  ///
+  /// In th, this message translates to:
+  /// **'บาร์โค้ดคือรหัสที่อ่านได้ด้วยเครื่อง (มักเป็นเส้นหรือตัวเลข) ที่พิมพ์บนบรรจุภัณฑ์สินค้า คุณสามารถสแกนด้วยกล้องเพื่อเพิ่มสินค้าใส่ตะกร้าได้อย่างรวดเร็ว'**
+  String get barcodeHelpWhatIsBody;
+
+  /// No description provided for @barcodeHelpHowToScanTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'วิธีสแกน'**
+  String get barcodeHelpHowToScanTitle;
+
+  /// No description provided for @barcodeHelpHowToScanBody.
+  ///
+  /// In th, this message translates to:
+  /// **'จัดกล้องให้ตรงกับบาร์โค้ดบนสินค้า ตรวจสอบให้มีแสงสว่างเพียงพอและถือโทรศัพท์ให้นิ่ง ถ้าสแกนไม่สำเร็จ ให้แตะ ป้อนด้วยตนเอง แล้วพิมพ์ตัวเลขบาร์โค้ด'**
+  String get barcodeHelpHowToScanBody;
+
+  /// No description provided for @barcodeHelpNoBarcodeTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สินค้าไม่มีบาร์โค้ด?'**
+  String get barcodeHelpNoBarcodeTitle;
+
+  /// No description provided for @barcodeHelpNoBarcodeBody.
+  ///
+  /// In th, this message translates to:
+  /// **'ถ้าสินค้าไม่มีบาร์โค้ด คุณสามารถสร้างบาร์โค้ดอัตโนมัติได้ในหน้าข้อมูลสินค้า (แท็บขั้นสูง) เพื่อให้สามารถสแกนได้ในภายหลังที่หน้าขาย'**
+  String get barcodeHelpNoBarcodeBody;
+
+  /// No description provided for @barcodeHelper.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนหรือพิมพ์บาร์โค้ดบนบรรจุภัณฑ์สินค้า ถ้าไม่มี ให้แตะ สร้างบาร์โค้ด'**
+  String get barcodeHelper;
+
+  /// No description provided for @skuHelper.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SHIRT-RED-L'**
+  String get skuHelper;
+
+  /// No description provided for @imagePicked.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มรูปภาพแล้ว'**
+  String get imagePicked;
+
+  /// No description provided for @imagePickFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถเพิ่มรูปภาพได้ โปรดลองอีกครั้ง'**
+  String get imagePickFailed;
+
+  /// No description provided for @removeImageConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องการลบรูปภาพนี้?'**
+  String get removeImageConfirm;
+
+  /// No description provided for @imageHelper.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อเปลี่ยนรูป กดค้างเพื่อดูตัวอย่าง'**
+  String get imageHelper;
+
+  /// No description provided for @imageNotFound.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปภาพที่บันทึกไว้ถูกลบแล้ว โปรดเลือกใหม่'**
+  String get imageNotFound;
+
+  /// No description provided for @clearImageCache.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้างแคชรูปภาพ'**
+  String get clearImageCache;
+
+  /// No description provided for @clearImageCacheConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'จะลบรูปภาพสินค้าที่ไม่ได้ใช้งานเพื่อเพิ่มพื้นที่จัดเก็บ ต้องการดำเนินการต่อ?'**
+  String get clearImageCacheConfirm;
+
+  /// No description provided for @imageCacheCleared.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้างแคชรูปภาพแล้ว'**
+  String get imageCacheCleared;
+
+  /// No description provided for @basic.
+  ///
+  /// In th, this message translates to:
+  /// **'พื้นฐาน'**
+  String get basic;
+
+  /// No description provided for @advanced.
+  ///
+  /// In th, this message translates to:
+  /// **'ขั้นสูง'**
+  String get advanced;
 }
 
 class _AppLocalizationsDelegate

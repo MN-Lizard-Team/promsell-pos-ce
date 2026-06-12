@@ -144,7 +144,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **340 automated tests**. All must pass before submitting a PR.
+The project has **351 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests
@@ -232,7 +232,7 @@ Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)
 - `lib/core/extensions/l10n_extension.dart` — `context.l10n` helper
 - `lib/core/utils/payment_method_helper.dart` — payment method normalization
-- `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints, `ImageViewerDialog`)
+- `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints, `ImageViewerDialog`, `BarcodeScannerDialog`, `showImageSourceSheet`)
 - `lib/core/image/` — unified image system (`UnifiedImageWidget`, `ImageSkeleton`, `ImageErrorPlaceholder`, `ImageCacheService`)
 - `lib/core/database/app_database.dart` — Drift schema and DAOs
 - `lib/main.dart` — app entry, `SettingsCubit` provider, 5-tab shell

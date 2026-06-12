@@ -14,11 +14,13 @@ void main() {
   late MockCreateSale mockCreateSale;
   late MockDraftCartRepository mockDraftRepo;
   late MockSettingsRepository mockSettingsRepo;
+  late MockProductRepository mockProductRepo;
 
   setUp(() {
     mockCreateSale = MockCreateSale();
     mockDraftRepo = MockDraftCartRepository();
     mockSettingsRepo = MockSettingsRepository();
+    mockProductRepo = MockProductRepository();
     when(
       () => mockDraftRepo.createDraft(name: any(named: 'name')),
     ).thenAnswer((_) async => 'draft-1');
@@ -42,6 +44,7 @@ void main() {
     createSale: mockCreateSale,
     draftRepo: mockDraftRepo,
     settingsRepo: mockSettingsRepo,
+    productRepo: mockProductRepo,
   );
 
   group('SaleBloc — item discount', () {

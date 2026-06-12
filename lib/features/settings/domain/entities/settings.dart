@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/image_config.d
 import 'package:promsell_pos_ce/features/settings/domain/entities/payment_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/receipt_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/shop_info.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/barcode_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/stock_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/tax_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/ui_config.dart';
@@ -26,6 +27,7 @@ class Settings extends Equatable {
     this.dailyCloseConfig = const DailyCloseConfig(),
     this.backupConfig = const BackupConfig(),
     this.draftConfig = const DraftConfig(),
+    this.barcodeConfig = const BarcodeConfig(),
     this.onboardingCompleted = false,
   });
 
@@ -41,6 +43,7 @@ class Settings extends Equatable {
   final DailyCloseConfig dailyCloseConfig;
   final BackupConfig backupConfig;
   final DraftConfig draftConfig;
+  final BarcodeConfig barcodeConfig;
   final bool onboardingCompleted;
 
   Settings copyWith({
@@ -56,6 +59,7 @@ class Settings extends Equatable {
     DailyCloseConfig? dailyCloseConfig,
     BackupConfig? backupConfig,
     DraftConfig? draftConfig,
+    BarcodeConfig? barcodeConfig,
     bool? onboardingCompleted,
   }) {
     return Settings(
@@ -71,6 +75,7 @@ class Settings extends Equatable {
       dailyCloseConfig: dailyCloseConfig ?? this.dailyCloseConfig,
       backupConfig: backupConfig ?? this.backupConfig,
       draftConfig: draftConfig ?? this.draftConfig,
+      barcodeConfig: barcodeConfig ?? this.barcodeConfig,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
     );
   }
@@ -89,6 +94,7 @@ class Settings extends Equatable {
     dailyCloseConfig,
     backupConfig,
     draftConfig,
+    barcodeConfig,
     onboardingCompleted,
   ];
 }

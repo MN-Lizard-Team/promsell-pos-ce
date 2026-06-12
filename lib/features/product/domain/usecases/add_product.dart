@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/core/utils/validators.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 
@@ -19,10 +20,15 @@ class AddProduct {
     String? imagePath,
     String? imageThumbnailPath,
     bool trackStock = true,
-  }) {
+  }) async {
     Validators.productName(name);
     Validators.price(price);
     Validators.stock(stock);
+    Validators.barcode(barcode);
+    if (barcode != null && barcode.isNotEmpty) {
+      final exists = await _repository.barcodeExists(barcode);
+      if (exists) throw DuplicateBarcodeException(barcode);
+    }
     return _repository.addProduct(
       name: name.trim(),
       sku: sku,

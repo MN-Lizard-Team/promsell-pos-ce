@@ -150,7 +150,7 @@ class _ModernProductTileState extends State<ModernProductTile> {
     );
     if (!context.mounted) return;
     final price = double.tryParse(result ?? '');
-    if (price != null && price > 0 && price != widget.product.price) {
+    if (price != null && price >= 0 && price != widget.product.price) {
       context.read<ProductBloc>().add(
         ProductUpdated(widget.product.copyWith(price: price)),
       );
