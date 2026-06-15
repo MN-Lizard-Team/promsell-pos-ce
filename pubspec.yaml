@@ -47,7 +47,7 @@ dependencies:
   csv: ^6.0.0
   qr_flutter: ^4.1.0
   thai_promptpay: ^0.3.0
-  mobile_scanner: ^6.0.0
+  mobile_scanner: ^7.2.0
   audioplayers: ^6.2.0
 
   # Backup Encryption
