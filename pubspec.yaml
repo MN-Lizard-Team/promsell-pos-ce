@@ -50,7 +50,7 @@ dependencies:
   thai_promptpay: ^0.3.0
   mobile_scanner: ^6.0.0
   audioplayers: ^6.2.0
-  permission_handler: ^11.3.0
+  permission_handler: ^12.0.3
 
   # Backup Encryption
   encrypt: ^5.0.3
