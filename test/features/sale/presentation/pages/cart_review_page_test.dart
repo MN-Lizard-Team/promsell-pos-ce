@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
@@ -12,7 +12,7 @@ import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
 
 void main() {
-  late MockSaleBloc mockSaleBloc;
+  late MockCartBloc mockCartBloc;
   late MockSettingsCubit mockSettingsCubit;
 
   final testProduct = Product(
@@ -38,7 +38,7 @@ void main() {
   );
 
   setUp(() {
-    mockSaleBloc = MockSaleBloc();
+    mockCartBloc = MockCartBloc();
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
       const SettingsState(status: SettingsStatus.loaded, settings: Settings()),
@@ -51,11 +51,11 @@ void main() {
 
   group('CartReviewPage', () {
     testWidgets('renders empty cart state', (tester) async {
-      when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
+      when(() => mockCartBloc.state).thenReturn(const CartState(items: []));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -67,11 +67,11 @@ void main() {
         CartItem(product: testProduct, qty: 2),
         CartItem(product: testProduct2, qty: 1),
       ];
-      when(() => mockSaleBloc.state).thenReturn(SaleState(items: items));
+      when(() => mockCartBloc.state).thenReturn(CartState(items: items));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
         settingsCubit: mockSettingsCubit,
       );
       await tester.pumpAndSettle();
@@ -84,11 +84,11 @@ void main() {
 
     testWidgets('displays total and back button', (tester) async {
       final items = [CartItem(product: testProduct, qty: 1)];
-      when(() => mockSaleBloc.state).thenReturn(SaleState(items: items));
+      when(() => mockCartBloc.state).thenReturn(CartState(items: items));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
         settingsCubit: mockSettingsCubit,
       );
       await tester.pumpAndSettle();
@@ -103,11 +103,11 @@ void main() {
 
     testWidgets('back button pops navigator', (tester) async {
       final items = [CartItem(product: testProduct, qty: 1)];
-      when(() => mockSaleBloc.state).thenReturn(SaleState(items: items));
+      when(() => mockCartBloc.state).thenReturn(CartState(items: items));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
         settingsCubit: mockSettingsCubit,
       );
       await tester.pumpAndSettle();
@@ -120,11 +120,11 @@ void main() {
 
     testWidgets('calculates correct subtotals', (tester) async {
       final items = [CartItem(product: testProduct, qty: 3)];
-      when(() => mockSaleBloc.state).thenReturn(SaleState(items: items));
+      when(() => mockCartBloc.state).thenReturn(CartState(items: items));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
         settingsCubit: mockSettingsCubit,
       );
       await tester.pumpAndSettle();

@@ -3020,6 +3020,18 @@ abstract class AppLocalizations {
   /// **'ป้อนบาร์โค้ดด้วยตนเอง'**
   String get enterBarcodeManually;
 
+  /// No description provided for @cameraPermissionDenied.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องอนุญาตใช้กล้องเพื่อสแกนบาร์โค้ด กรุณาเปิดสิทธิ์การเข้าถึงกล้องในการตั้งค่า'**
+  String get cameraPermissionDenied;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดการตั้งค่า'**
+  String get openSettings;
+
   /// No description provided for @submit.
   ///
   /// In th, this message translates to:

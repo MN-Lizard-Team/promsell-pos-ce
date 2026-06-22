@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:injectable/injectable.dart';
@@ -29,6 +31,7 @@ class ReceiptPdfService {
     required Sale sale,
     required Settings settings,
     required ReceiptLabels labels,
+    Map<String, Uint8List>? productImages,
   }) async {
     await _ensureFonts();
     final doc = _buildDocument(
@@ -37,6 +40,7 @@ class ReceiptPdfService {
       labels: labels,
       baseFont: _baseFont,
       boldFont: _boldFont,
+      productImages: productImages,
     );
     await Printing.layoutPdf(onLayout: (_) async => doc.save());
   }
@@ -45,6 +49,7 @@ class ReceiptPdfService {
     required Sale sale,
     required Settings settings,
     required ReceiptLabels labels,
+    Map<String, Uint8List>? productImages,
   }) async {
     await _ensureFonts();
     final doc = _buildDocument(
@@ -53,6 +58,7 @@ class ReceiptPdfService {
       labels: labels,
       baseFont: _baseFont,
       boldFont: _boldFont,
+      productImages: productImages,
     );
     final number = sale.receiptNumber ?? sale.id;
     await Printing.sharePdf(
@@ -67,6 +73,7 @@ class ReceiptPdfService {
     required ReceiptLabels labels,
     pw.Font? baseFont,
     pw.Font? boldFont,
+    Map<String, Uint8List>? productImages,
   }) {
     final doc = pw.Document(
       theme: pw.ThemeData.withFont(base: baseFont, bold: boldFont),
@@ -137,11 +144,25 @@ class ReceiptPdfService {
             ),
             pw.SizedBox(height: 6),
             pw.Divider(),
-            ...sale.items.map(
-              (item) => pw.Padding(
+            ...sale.items.map((item) {
+              final imgBytes = productImages?[item.productId];
+              return pw.Padding(
                 padding: const pw.EdgeInsets.symmetric(vertical: 2),
                 child: pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
+                    if (imgBytes != null) ...[
+                      pw.Container(
+                        width: 28,
+                        height: 28,
+                        margin: const pw.EdgeInsets.only(right: 6),
+                        child: pw.Image(
+                          pw.MemoryImage(imgBytes),
+                          width: 28,
+                          height: 28,
+                        ),
+                      ),
+                    ],
                     pw.Expanded(
                       child: pw.Text(
                         '${item.productName} x${item.qty}',
@@ -154,8 +175,8 @@ class ReceiptPdfService {
                     ),
                   ],
                 ),
-              ),
-            ),
+              );
+            }),
             pw.Divider(),
             if (sale.items.any((i) => i.discountAmount > 0)) ...[
               pw.Row(
@@ -258,12 +279,14 @@ class ReceiptPdfService {
     required Sale sale,
     required Settings settings,
     required ReceiptLabels labels,
+    Map<String, Uint8List>? productImages,
   }) => _buildDocument(
     sale: sale,
     settings: settings,
     labels: labels,
     baseFont: null,
     boldFont: null,
+    productImages: productImages,
   );
 
   ({double subtotal, double vatAmount, double totalWithVat, bool isInclusive})?

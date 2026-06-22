@@ -6,9 +6,10 @@ import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_qty_stepper.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/discount_dialog.dart';
@@ -20,7 +21,7 @@ class CartBottomSheet {
     final theme = Theme.of(context);
     final settings = context.read<SettingsCubit>().state.settings;
     final currency = settings.currency;
-    final saleBloc = context.read<SaleBloc>();
+    final cartBloc = context.read<CartBloc>();
 
     final mediaQuery = MediaQuery.of(context);
 
@@ -38,7 +39,7 @@ class CartBottomSheet {
       builder: (ctx) {
         final draggableController = DraggableScrollableController();
         return BlocProvider.value(
-          value: saleBloc,
+          value: cartBloc,
           child: DraggableScrollableSheet(
             controller: draggableController,
             expand: false,
@@ -80,7 +81,7 @@ class CartBottomSheet {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: BlocBuilder<SaleBloc, SaleState>(
+                      child: BlocBuilder<CartBloc, CartState>(
                         builder: (_, state) {
                           if (state.isEmpty) {
                             return Center(
@@ -109,7 +110,7 @@ class CartBottomSheet {
                             itemCount: state.items.length,
                             itemBuilder: (listCtx, index) {
                               final item = state.items[index];
-                              final bloc = listCtx.read<SaleBloc>();
+                              final bloc = listCtx.read<CartBloc>();
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: _CartItemTile(
@@ -137,7 +138,7 @@ class CartBottomSheet {
                     ),
                   ),
                   // Pinned summary at bottom
-                  BlocBuilder<SaleBloc, SaleState>(
+                  BlocBuilder<CartBloc, CartState>(
                     builder: (_, state) {
                       if (state.isEmpty) {
                         return SizedBox(height: bottomInset + 16);
@@ -234,16 +235,16 @@ class CartBottomSheet {
                                           settings.defaultDiscountType,
                                       initialValue: state.cartDiscountValue,
                                       onApply: (type, value) {
-                                        context.read<SaleBloc>().add(
-                                          SaleCartDiscountChanged(
+                                        context.read<CartBloc>().add(
+                                          CartDiscountChanged(
                                             discountType: type,
                                             discountValue: value,
                                           ),
                                         );
                                       },
                                       onClear: state.hasCartDiscount
-                                          ? () => context.read<SaleBloc>().add(
-                                              const SaleCartDiscountCleared(),
+                                          ? () => context.read<CartBloc>().add(
+                                              const CartDiscountCleared(),
                                             )
                                           : null,
                                       maxPercent: settings.maxDiscountPercent,
@@ -271,7 +272,8 @@ class CartBottomSheet {
                               onPressed: () {
                                 HapticFeedback.mediumImpact();
                                 Navigator.of(ctx).pop();
-                                final saleBloc = context.read<SaleBloc>();
+                                final checkoutBloc = context
+                                    .read<CheckoutBloc>();
                                 final settingsCubit = context
                                     .read<SettingsCubit>();
                                 final s = settingsCubit.state.settings;
@@ -291,7 +293,8 @@ class CartBottomSheet {
                                   MaterialPageRoute(
                                     builder: (_) => MultiBlocProvider(
                                       providers: [
-                                        BlocProvider.value(value: saleBloc),
+                                        BlocProvider.value(value: cartBloc),
+                                        BlocProvider.value(value: checkoutBloc),
                                         BlocProvider.value(
                                           value: settingsCubit,
                                         ),
@@ -328,7 +331,7 @@ class CartBottomSheet {
 
   static void _changeQty(
     BuildContext context,
-    SaleBloc bloc,
+    CartBloc bloc,
     CartItem item,
     int delta,
   ) {
@@ -339,26 +342,26 @@ class CartBottomSheet {
     final newQty = (item.qty + delta).clamp(1, 9999);
     if (newQty != item.qty) {
       HapticFeedback.selectionClick();
-      bloc.add(SaleItemQtyChanged(productId: item.product.id, qty: newQty));
+      bloc.add(CartItemQtyChanged(productId: item.product.id, qty: newQty));
     }
   }
 
-  static void _removeItem(BuildContext context, SaleBloc bloc, CartItem item) {
+  static void _removeItem(BuildContext context, CartBloc bloc, CartItem item) {
     HapticFeedback.mediumImpact();
-    bloc.add(SaleProductRemoved(item.product.id));
+    bloc.add(CartProductRemoved(item.product.id));
     AppSnackBar.withAction(
       context,
       context.l10n.itemRemoved,
       actionLabel: context.l10n.undo,
       onAction: () {
-        bloc.add(SaleCartItemRestored(item));
+        bloc.add(CartItemRestored(item));
       },
     );
   }
 
   static void _showQtyDialog(
     BuildContext context, {
-    required SaleBloc bloc,
+    required CartBloc bloc,
     required CartItem item,
     required Settings settings,
   }) {
@@ -400,7 +403,7 @@ class CartBottomSheet {
               Navigator.pop(context);
               if (clamped != item.qty) {
                 bloc.add(
-                  SaleItemQtyChanged(
+                  CartItemQtyChanged(
                     productId: item.product.id,
                     qty: clamped,
                     allowOversell: allowOversell,
@@ -464,8 +467,8 @@ class _CartItemTile extends StatelessWidget {
                     presetValues: settings.activeDiscountPreset.values,
                     presetType: settings.activeDiscountPreset.type,
                     onApply: (type, value) {
-                      context.read<SaleBloc>().add(
-                        SaleItemDiscountChanged(
+                      context.read<CartBloc>().add(
+                        CartItemDiscountChanged(
                           productId: item.product.id,
                           discountType: type,
                           discountValue: value,
@@ -473,8 +476,8 @@ class _CartItemTile extends StatelessWidget {
                       );
                     },
                     onClear: item.discountAmount > 0
-                        ? () => context.read<SaleBloc>().add(
-                            SaleItemDiscountCleared(item.product.id),
+                        ? () => context.read<CartBloc>().add(
+                            CartItemDiscountCleared(item.product.id),
                           )
                         : null,
                   )
@@ -506,8 +509,8 @@ class _CartItemTile extends StatelessWidget {
                           presetValues: settings.activeDiscountPreset.values,
                           presetType: settings.activeDiscountPreset.type,
                           onApply: (type, value) {
-                            context.read<SaleBloc>().add(
-                              SaleItemDiscountChanged(
+                            context.read<CartBloc>().add(
+                              CartItemDiscountChanged(
                                 productId: item.product.id,
                                 discountType: type,
                                 discountValue: value,
@@ -515,8 +518,8 @@ class _CartItemTile extends StatelessWidget {
                             );
                           },
                           onClear: item.discountAmount > 0
-                              ? () => context.read<SaleBloc>().add(
-                                  SaleItemDiscountCleared(item.product.id),
+                              ? () => context.read<CartBloc>().add(
+                                  CartItemDiscountCleared(item.product.id),
                                 )
                               : null,
                         )

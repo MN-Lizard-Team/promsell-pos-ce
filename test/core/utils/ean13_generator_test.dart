@@ -90,5 +90,40 @@ void main() {
       Ean13Generator.generate();
       expect(Ean13Generator.currentCounter, 1);
     });
+
+    group('prefix validation (Issue 5)', () {
+      test('throws ArgumentError for non-numeric prefix', () {
+        expect(
+          () => Ean13Generator.generate(prefix: 'abc'),
+          throwsArgumentError,
+        );
+      });
+
+      test('throws ArgumentError for prefix longer than 3 digits', () {
+        expect(
+          () => Ean13Generator.generate(prefix: '1234'),
+          throwsArgumentError,
+        );
+      });
+
+      test('throws ArgumentError for prefix with special characters', () {
+        expect(
+          () => Ean13Generator.generate(prefix: '2#0'),
+          throwsArgumentError,
+        );
+      });
+
+      test('accepts valid 1-digit prefix', () {
+        final barcode = Ean13Generator.generate(prefix: '5');
+        expect(barcode.length, 13);
+        expect(barcode.startsWith('005'), isTrue);
+      });
+
+      test('accepts valid 2-digit prefix', () {
+        final barcode = Ean13Generator.generate(prefix: '99');
+        expect(barcode.length, 13);
+        expect(barcode.startsWith('099'), isTrue);
+      });
+    });
   });
 }

@@ -3,8 +3,8 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_qty_button.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -198,8 +198,8 @@ class CartItemCard extends StatelessWidget {
               }
               Navigator.pop(context);
               if (clamped != item.qty) {
-                context.read<SaleBloc>().add(
-                  SaleItemQtyChanged(
+                context.read<CartBloc>().add(
+                  CartItemQtyChanged(
                     productId: item.product.id,
                     qty: clamped,
                     allowOversell: allowOversell,

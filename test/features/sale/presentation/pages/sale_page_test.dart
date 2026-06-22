@@ -3,11 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -19,17 +23,23 @@ import '../../../../helpers/pump_app.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 
 void main() {
-  late MockSaleBloc mockSaleBloc;
+  late MockCartBloc mockCartBloc;
+  late MockCheckoutBloc mockCheckoutBloc;
+  late MockDraftBloc mockDraftBloc;
   late MockSettingsCubit mockSettingsCubit;
   late MockProductBloc mockProductBloc;
   late MockCategoryBloc mockCategoryBloc;
 
   setUp(() {
-    mockSaleBloc = MockSaleBloc();
+    mockCartBloc = MockCartBloc();
+    mockCheckoutBloc = MockCheckoutBloc();
+    mockDraftBloc = MockDraftBloc();
     mockSettingsCubit = MockSettingsCubit();
     mockProductBloc = MockProductBloc();
     mockCategoryBloc = MockCategoryBloc();
-    when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
+    when(() => mockCartBloc.state).thenReturn(const CartState(items: []));
+    when(() => mockCheckoutBloc.state).thenReturn(const CheckoutState());
+    when(() => mockDraftBloc.state).thenReturn(const DraftState());
     when(() => mockSettingsCubit.state).thenReturn(
       const SettingsState(status: SettingsStatus.loaded, settings: Settings()),
     );
@@ -49,10 +59,18 @@ void main() {
     }
     GetIt.I.registerSingleton<CategoryBloc>(mockCategoryBloc);
 
-    if (GetIt.I.isRegistered<SaleBloc>()) {
-      GetIt.I.unregister<SaleBloc>();
+    if (GetIt.I.isRegistered<CartBloc>()) {
+      GetIt.I.unregister<CartBloc>();
     }
-    GetIt.I.registerSingleton<SaleBloc>(mockSaleBloc);
+    GetIt.I.registerSingleton<CartBloc>(mockCartBloc);
+    if (GetIt.I.isRegistered<CheckoutBloc>()) {
+      GetIt.I.unregister<CheckoutBloc>();
+    }
+    GetIt.I.registerSingleton<CheckoutBloc>(mockCheckoutBloc);
+    if (GetIt.I.isRegistered<DraftBloc>()) {
+      GetIt.I.unregister<DraftBloc>();
+    }
+    GetIt.I.registerSingleton<DraftBloc>(mockDraftBloc);
 
     final mockDraftRepo = MockDraftCartRepository();
     when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
@@ -74,8 +92,14 @@ void main() {
     if (GetIt.I.isRegistered<ProductBloc>()) {
       GetIt.I.unregister<ProductBloc>();
     }
-    if (GetIt.I.isRegistered<SaleBloc>()) {
-      GetIt.I.unregister<SaleBloc>();
+    if (GetIt.I.isRegistered<CartBloc>()) {
+      GetIt.I.unregister<CartBloc>();
+    }
+    if (GetIt.I.isRegistered<CheckoutBloc>()) {
+      GetIt.I.unregister<CheckoutBloc>();
+    }
+    if (GetIt.I.isRegistered<DraftBloc>()) {
+      GetIt.I.unregister<DraftBloc>();
     }
     if (GetIt.I.isRegistered<CategoryBloc>()) {
       GetIt.I.unregister<CategoryBloc>();
@@ -99,7 +123,9 @@ void main() {
 
       await tester.pumpApp(
         const SalePage(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
+        draftBloc: mockDraftBloc,
         productBloc: mockProductBloc,
         categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,
@@ -122,7 +148,9 @@ void main() {
 
       await tester.pumpApp(
         const SalePage(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
+        draftBloc: mockDraftBloc,
         productBloc: mockProductBloc,
         categoryBloc: mockCategoryBloc,
         settingsCubit: mockSettingsCubit,

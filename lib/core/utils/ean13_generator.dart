@@ -13,6 +13,9 @@ class Ean13Generator {
   /// The remaining digits are derived from timestamp + counter to ensure uniqueness.
   static String generate({String? prefix}) {
     final raw = (prefix == null || prefix.isEmpty) ? defaultPrefix : prefix;
+    if (!RegExp(r'^[0-9]{1,3}$').hasMatch(raw)) {
+      throw ArgumentError('Prefix must be 1–3 numeric digits, got: "$raw"');
+    }
     final p = raw.padLeft(3, '0');
     final now = DateTime.now();
     final timePart = (now.millisecondsSinceEpoch % 10000).toString().padLeft(

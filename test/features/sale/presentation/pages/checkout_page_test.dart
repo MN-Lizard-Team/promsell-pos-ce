@@ -4,7 +4,8 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -15,7 +16,8 @@ import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
 
 void main() {
-  late MockSaleBloc mockSaleBloc;
+  late MockCartBloc mockCartBloc;
+  late MockCheckoutBloc mockCheckoutBloc;
   late MockSettingsCubit mockSettingsCubit;
 
   final testProduct = Product(
@@ -30,7 +32,9 @@ void main() {
   );
 
   setUp(() {
-    mockSaleBloc = MockSaleBloc();
+    mockCartBloc = MockCartBloc();
+    mockCheckoutBloc = MockCheckoutBloc();
+    when(() => mockCheckoutBloc.state).thenReturn(const CheckoutState());
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
       SettingsState(
@@ -49,11 +53,12 @@ void main() {
 
   group('CheckoutPage', () {
     testWidgets('renders with cart action button', (tester) async {
-      when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
+      when(() => mockCartBloc.state).thenReturn(const CartState(items: []));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -62,11 +67,12 @@ void main() {
 
     testWidgets('shows item count badge on cart button', (tester) async {
       final items = [CartItem(product: testProduct, qty: 2)];
-      when(() => mockSaleBloc.state).thenReturn(SaleState(items: items));
+      when(() => mockCartBloc.state).thenReturn(CartState(items: items));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -76,11 +82,12 @@ void main() {
     testWidgets('navigates to CartReviewPage when cart button tapped', (
       tester,
     ) async {
-      when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
+      when(() => mockCartBloc.state).thenReturn(const CartState(items: []));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -91,11 +98,12 @@ void main() {
     });
 
     testWidgets('hides badge when cart is empty', (tester) async {
-      when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
+      when(() => mockCartBloc.state).thenReturn(const CartState(items: []));
 
       await tester.pumpApp(
         buildSubject(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 

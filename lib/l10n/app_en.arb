@@ -604,6 +604,8 @@
   "duplicateBarcode": "This barcode already exists on another product",
   "enterManually": "Enter Manually",
   "enterBarcodeManually": "Enter barcode manually",
+  "cameraPermissionDenied": "Camera permission is required to scan barcodes. Please grant camera access in settings.",
+  "openSettings": "Open Settings",
   "submit": "Submit",
   "generateBarcode": "Generate Barcode",
   "barcodeGenerated": "Barcode generated",

@@ -5,8 +5,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment_widgets.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -16,7 +17,8 @@ import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
 
 void main() {
-  late MockSaleBloc mockSaleBloc;
+  late MockCartBloc mockCartBloc;
+  late MockCheckoutBloc mockCheckoutBloc;
   late MockSettingsCubit mockSettingsCubit;
 
   final testProduct = Product(
@@ -31,7 +33,9 @@ void main() {
   );
 
   setUp(() {
-    mockSaleBloc = MockSaleBloc();
+    mockCartBloc = MockCartBloc();
+    mockCheckoutBloc = MockCheckoutBloc();
+    when(() => mockCheckoutBloc.state).thenReturn(const CheckoutState());
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
       const SettingsState(status: SettingsStatus.loaded, settings: Settings()),
@@ -43,7 +47,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      const SaleConfirmed(
+      const CheckoutConfirmed(
         paymentMethod: 'cash',
         vatMode: 'NONE',
         vatRate: 0,
@@ -56,12 +60,13 @@ void main() {
   group('PaymentSheet', () {
     testWidgets('renders with cart total', (tester) async {
       when(
-        () => mockSaleBloc.state,
-      ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 3)]));
+        () => mockCartBloc.state,
+      ).thenReturn(CartState(items: [CartItem(product: testProduct, qty: 3)]));
 
       await tester.pumpApp(
         const PaymentSheet(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -70,12 +75,13 @@ void main() {
 
     testWidgets('shows payment method chips', (tester) async {
       when(
-        () => mockSaleBloc.state,
-      ).thenReturn(SaleState(items: [CartItem(product: testProduct, qty: 1)]));
+        () => mockCartBloc.state,
+      ).thenReturn(CartState(items: [CartItem(product: testProduct, qty: 1)]));
 
       await tester.pumpApp(
         const PaymentSheet(),
-        saleBloc: mockSaleBloc,
+        cartBloc: mockCartBloc,
+        checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
@@ -85,13 +91,14 @@ void main() {
     testWidgets(
       'UI-BUG-8 regression: shows insufficient cash message when amount < total',
       (tester) async {
-        when(() => mockSaleBloc.state).thenReturn(
-          SaleState(items: [CartItem(product: testProduct, qty: 3)]),
+        when(() => mockCartBloc.state).thenReturn(
+          CartState(items: [CartItem(product: testProduct, qty: 3)]),
         );
 
         await tester.pumpApp(
           const PaymentSheet(),
-          saleBloc: mockSaleBloc,
+          cartBloc: mockCartBloc,
+          checkoutBloc: mockCheckoutBloc,
           settingsCubit: mockSettingsCubit,
         );
 

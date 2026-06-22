@@ -129,8 +129,12 @@ import 'package:promsell_pos_ce/features/sale/domain/usecases/watch_recent_sales
     as _i192;
 import 'package:promsell_pos_ce/features/sale/domain/usecases/watch_sales.dart'
     as _i594;
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart'
-    as _i648;
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart'
+    as _i401;
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart'
+    as _i1038;
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart'
+    as _i67;
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart'
     as _i440;
 import 'package:promsell_pos_ce/features/settings/data/repositories/settings_repository_impl.dart'
@@ -263,6 +267,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i752.ReorderCategories>(
       () => _i752.ReorderCategories(gh<_i1059.CategoryRepository>()),
     );
+    gh.factory<_i67.DraftBloc>(
+      () => _i67.DraftBloc(
+        draftRepo: gh<_i564.DraftCartRepository>(),
+        settingsRepo: gh<_i243.SettingsRepository>(),
+      ),
+    );
     gh.lazySingleton<_i425.SettingsCubit>(
       () => _i425.SettingsCubit(
         gh<_i243.SettingsRepository>(),
@@ -279,7 +289,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i747.AddProduct(gh<_i126.ProductRepository>()),
     );
     gh.factory<_i475.BatchGenerateBarcodes>(
-      () => _i475.BatchGenerateBarcodes(gh<_i126.ProductRepository>()),
+      () => _i475.BatchGenerateBarcodes(
+        gh<_i126.ProductRepository>(),
+        gh<_i243.SettingsRepository>(),
+      ),
     );
     gh.factory<_i447.DeleteProduct>(
       () => _i447.DeleteProduct(gh<_i126.ProductRepository>()),
@@ -289,6 +302,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i107.UpdateProduct>(
       () => _i107.UpdateProduct(gh<_i126.ProductRepository>()),
+    );
+    gh.factory<_i401.CartBloc>(
+      () => _i401.CartBloc(
+        productRepo: gh<_i126.ProductRepository>(),
+        settingsRepo: gh<_i243.SettingsRepository>(),
+      ),
     );
     gh.lazySingleton<_i942.SaleLocalDatasource>(
       () => _i942.SaleLocalDatasourceImpl(
@@ -380,19 +399,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i594.WatchSales>(
       () => _i594.WatchSales(gh<_i771.SaleRepository>()),
     );
-    gh.factory<_i648.SaleBloc>(
-      () => _i648.SaleBloc(
-        createSale: gh<_i648.CreateSale>(),
-        draftRepo: gh<_i564.DraftCartRepository>(),
-        settingsRepo: gh<_i243.SettingsRepository>(),
-        productRepo: gh<_i126.ProductRepository>(),
-      ),
-    );
     gh.lazySingleton<_i593.ReportCubit>(
       () => _i593.ReportCubit(watchReport: gh<_i744.WatchReport>()),
     );
     gh.factory<_i426.WatchSaleHistory>(
       () => _i426.WatchSaleHistory(gh<_i26.HistoryRepository>()),
+    );
+    gh.factory<_i1038.CheckoutBloc>(
+      () => _i1038.CheckoutBloc(
+        createSale: gh<_i648.CreateSale>(),
+        cartBloc: gh<_i401.CartBloc>(),
+        draftBloc: gh<_i67.DraftBloc>(),
+      ),
     );
     return this;
   }

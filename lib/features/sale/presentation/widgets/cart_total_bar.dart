@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/discount_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -13,7 +14,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 class CartTotalBar extends StatelessWidget {
   const CartTotalBar({super.key, required this.state, required this.currency});
 
-  final SaleState state;
+  final CartState state;
   final String currency;
 
   @override
@@ -104,16 +105,16 @@ class CartTotalBar extends StatelessWidget {
                       state.cartDiscountType ?? settings.defaultDiscountType,
                   initialValue: state.cartDiscountValue,
                   onApply: (type, value) {
-                    context.read<SaleBloc>().add(
-                      SaleCartDiscountChanged(
+                    context.read<CartBloc>().add(
+                      CartDiscountChanged(
                         discountType: type,
                         discountValue: value,
                       ),
                     );
                   },
                   onClear: state.hasCartDiscount
-                      ? () => context.read<SaleBloc>().add(
-                          const SaleCartDiscountCleared(),
+                      ? () => context.read<CartBloc>().add(
+                          const CartDiscountCleared(),
                         )
                       : null,
                   maxPercent: settings.maxDiscountPercent,
@@ -158,7 +159,7 @@ class CartTotalBar extends StatelessWidget {
     );
   }
 
-  void _showPayment(BuildContext context, SaleState state) {
+  void _showPayment(BuildContext context, CartState state) {
     final settings = context.read<SettingsCubit>().state.settings;
     final today = DateTime.now().toIso8601String().split('T').first;
     if (settings.dailyCloseLock && settings.lastClosedDate == today) {
@@ -168,12 +169,13 @@ class CartTotalBar extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: context.read<SaleBloc>(),
-          child: BlocProvider.value(
-            value: context.read<SettingsCubit>(),
-            child: const CheckoutPage(),
-          ),
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<CartBloc>()),
+            BlocProvider.value(value: context.read<CheckoutBloc>()),
+            BlocProvider.value(value: context.read<SettingsCubit>()),
+          ],
+          child: const CheckoutPage(),
         ),
       ),
     );

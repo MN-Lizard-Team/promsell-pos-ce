@@ -80,9 +80,9 @@ void main() {
     });
   });
 
-  group('SaleState cart discount', () {
+  group('CartState cart discount', () {
     test('no cart discount — total equals itemsSubtotal', () {
-      // Tested implicitly via SaleState.total getter with no cart discount
+      // Tested implicitly via CartState.total getter with no cart discount
       final item = CartItem(product: tProduct, qty: 2);
       expect(item.subtotal, 200.0);
     });

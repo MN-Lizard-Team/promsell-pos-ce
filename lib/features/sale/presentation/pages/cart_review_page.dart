@@ -6,9 +6,9 @@ import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/image_viewer_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_detail_row.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_dotted_line_row.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_item_card.dart';
@@ -110,21 +110,21 @@ class CartReviewPage extends StatelessWidget {
     final newQty = (item.qty + delta).clamp(1, 9999);
     if (newQty != item.qty) {
       HapticFeedback.selectionClick();
-      context.read<SaleBloc>().add(
-        SaleItemQtyChanged(productId: item.product.id, qty: newQty),
+      context.read<CartBloc>().add(
+        CartItemQtyChanged(productId: item.product.id, qty: newQty),
       );
     }
   }
 
   void _removeItem(BuildContext context, CartItem item) {
     HapticFeedback.mediumImpact();
-    context.read<SaleBloc>().add(SaleProductRemoved(item.product.id));
+    context.read<CartBloc>().add(CartProductRemoved(item.product.id));
     AppSnackBar.withAction(
       context,
       '${item.product.name} removed',
       actionLabel: 'Undo',
       onAction: () {
-        context.read<SaleBloc>().add(SaleProductAdded(item.product));
+        context.read<CartBloc>().add(CartProductAdded(item.product));
       },
     );
   }
@@ -145,7 +145,7 @@ class CartReviewPage extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocBuilder<SaleBloc, SaleState>(
+      body: BlocBuilder<CartBloc, CartState>(
         builder: (_, state) {
           final items = state.items;
           final itemDiscountTotal = items.fold(

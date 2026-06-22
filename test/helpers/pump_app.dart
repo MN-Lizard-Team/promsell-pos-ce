@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
@@ -13,7 +15,9 @@ import 'package:flutter_test/flutter_test.dart';
 extension PumpApp on WidgetTester {
   Future<void> pumpApp(
     Widget widget, {
-    SaleBloc? saleBloc,
+    CartBloc? cartBloc,
+    CheckoutBloc? checkoutBloc,
+    DraftBloc? draftBloc,
     ProductBloc? productBloc,
     CategoryBloc? categoryBloc,
     HistoryBloc? historyBloc,
@@ -22,7 +26,10 @@ extension PumpApp on WidgetTester {
     Locale locale = const Locale('en'),
   }) async {
     final providers = <BlocProvider>[
-      if (saleBloc != null) BlocProvider<SaleBloc>.value(value: saleBloc),
+      if (cartBloc != null) BlocProvider<CartBloc>.value(value: cartBloc),
+      if (checkoutBloc != null)
+        BlocProvider<CheckoutBloc>.value(value: checkoutBloc),
+      if (draftBloc != null) BlocProvider<DraftBloc>.value(value: draftBloc),
       if (productBloc != null)
         BlocProvider<ProductBloc>.value(value: productBloc),
       if (categoryBloc != null)

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
@@ -82,6 +84,27 @@ void main() {
         sale: sale,
         settings: settings,
         labels: labels,
+      );
+      expect(doc, isNotNull);
+    });
+
+    test('document builds with product images without error', () {
+      final settings = const Settings();
+      final pngBytes = Uint8List.fromList([
+        0x89,
+        0x50,
+        0x4E,
+        0x47,
+        0x0D,
+        0x0A,
+        0x1A,
+        0x0A,
+      ]);
+      final doc = service.buildDocumentForTest(
+        sale: sale,
+        settings: settings,
+        labels: labels,
+        productImages: {'p1': pngBytes},
       );
       expect(doc, isNotNull);
     });

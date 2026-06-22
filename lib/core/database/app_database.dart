@@ -322,10 +322,24 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> _backfillCategoryIds() async {
     try {
+      final dupes = await customSelect(
+        'SELECT name, COUNT(*) as cnt FROM categories '
+        'GROUP BY name HAVING cnt > 1',
+      ).get();
+
+      if (dupes.isNotEmpty) {
+        AppLogger.warning(
+          'Schema v14: found ${dupes.length} duplicate category names. '
+          'Using first match for backfill.',
+        );
+      }
+
       await customStatement('''
         UPDATE products
         SET category_id = (
-          SELECT id FROM categories WHERE categories.name = products.category_id
+          SELECT id FROM categories
+          WHERE categories.name = products.category_id
+          LIMIT 1
         )
         WHERE category_id IS NOT NULL
       ''');

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/scan_overlay_painter.dart';
 
@@ -33,7 +34,7 @@ Future<String?> showProductBarcodeScanner(
           BarcodeFormat.aztec,
           BarcodeFormat.codabar,
         ],
-    onScan: (value) => Navigator.of(dialogContext).pop(value),
+    onScan: (_) {},
     beepOnScan: beepOnScan,
     autoOpenManualDelay: autoOpenManualDelay,
   ),
@@ -107,6 +108,8 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
   final _manualCtrl = TextEditingController();
   bool _scanned = false;
   bool _showManualEntry = false;
+  bool _permissionGranted = false;
+  bool _permissionChecked = false;
   String? _errorText;
   Timer? _errorClearTimer;
   Timer? _autoOpenTimer;
@@ -139,12 +142,19 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
         }
       });
     }
+    _requestCameraPermission();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _controller.start();
+  Future<void> _requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    if (!mounted) return;
+    setState(() {
+      _permissionGranted = status.isGranted;
+      _permissionChecked = true;
+    });
+    if (_permissionGranted) {
+      _controller.start();
+    }
   }
 
   @override
@@ -182,7 +192,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
       return;
     }
     widget.onScan(value);
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(value);
   }
 
   void _onDetect(BarcodeCapture capture) {
@@ -190,7 +200,12 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
     final barcodes = capture.barcodes;
     if (barcodes.isEmpty) return;
 
-    final raw = barcodes.first.rawValue;
+    final raw = barcodes
+        .firstWhere(
+          (b) => b.rawValue != null && b.rawValue!.isNotEmpty,
+          orElse: () => barcodes.first,
+        )
+        .rawValue;
     if (raw == null || raw.isEmpty) return;
 
     setState(() => _scanned = true);
@@ -199,7 +214,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
     _controller.stop().then((_) {
       if (!mounted) return;
       widget.onScan(raw);
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(raw);
     });
   }
 
@@ -219,212 +234,273 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          MobileScanner(
-            controller: _controller,
-            onDetect: _onDetect,
-            errorBuilder: (context, error, child) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.no_photography,
-                        size: 64,
-                        color: theme.colorScheme.error,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        error.toString(),
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-          AnimatedBuilder(
-            animation: _laserCurve,
-            builder: (context, child) {
-              final laserY = _scanned ? 0.5 : _laserCurve.value;
-              return CustomPaint(
-                size: MediaQuery.of(context).size,
-                painter: ScanOverlayPainter(
-                  cutoutWidth: _cutoutWidth,
-                  cutoutHeight: _cutoutHeight,
-                  borderRadius: _cutoutRadius,
-                  borderColor: _errorText != null
-                      ? theme.colorScheme.error
-                      : _scanned
-                      ? theme.colorScheme.primary
-                      : null,
-                  laserY: laserY,
-                  laserColor: _errorText != null
-                      ? theme.colorScheme.error.withValues(alpha: 0.5)
-                      : _scanned
-                      ? theme.colorScheme.primary.withValues(alpha: 0.5)
-                      : theme.colorScheme.primary,
-                ),
-              );
-            },
-          ),
-          Center(
-            child: SizedBox(
-              width: _cutoutWidth,
-              height: _cutoutHeight,
-              child: _scanned
-                  ? const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
-                    )
-                  : null,
-            ),
-          ),
-          if (_errorText != null)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + kToolbarHeight + 24,
-              left: 24,
-              right: 24,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.error_outline, color: theme.colorScheme.error),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _errorText!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onErrorContainer,
+      body: !_permissionChecked
+          ? const Center(child: CircularProgressIndicator(color: Colors.white))
+          : !_permissionGranted
+          ? _buildPermissionDenied(context, l10n, theme)
+          : Stack(
+              fit: StackFit.expand,
+              children: [
+                MobileScanner(
+                  controller: _controller,
+                  onDetect: _onDetect,
+                  errorBuilder: (context, error, child) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.no_photography,
+                              size: 64,
+                              color: theme.colorScheme.error,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              error.toString(),
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              ),
-            ),
-          Positioned(
-            bottom: 48,
-            left: 24,
-            right: 24,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _showManualEntry
-                  ? Container(
-                      key: const ValueKey('manual'),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(16),
+                AnimatedBuilder(
+                  animation: _laserCurve,
+                  builder: (context, child) {
+                    final laserY = _scanned ? 0.5 : _laserCurve.value;
+                    return CustomPaint(
+                      size: MediaQuery.of(context).size,
+                      painter: ScanOverlayPainter(
+                        cutoutWidth: _cutoutWidth,
+                        cutoutHeight: _cutoutHeight,
+                        borderRadius: _cutoutRadius,
+                        borderColor: _errorText != null
+                            ? theme.colorScheme.error
+                            : _scanned
+                            ? theme.colorScheme.primary
+                            : null,
+                        laserY: laserY,
+                        laserColor: _errorText != null
+                            ? theme.colorScheme.error.withValues(alpha: 0.5)
+                            : _scanned
+                            ? theme.colorScheme.primary.withValues(alpha: 0.5)
+                            : theme.colorScheme.primary,
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                    );
+                  },
+                ),
+                Center(
+                  child: SizedBox(
+                    width: _cutoutWidth,
+                    height: _cutoutHeight,
+                    child: _scanned
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+                if (_errorText != null)
+                  Positioned(
+                    top:
+                        MediaQuery.of(context).padding.top +
+                        kToolbarHeight +
+                        24,
+                    left: 24,
+                    right: 24,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
                         children: [
-                          TextField(
-                            controller: _manualCtrl,
-                            keyboardType: TextInputType.number,
-                            textInputAction: TextInputAction.done,
-                            onSubmitted: (_) => _submitManual(),
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              hintText: l10n.enterBarcodeManually,
-                              hintStyle: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white.withValues(alpha: 0.1),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
+                          Icon(
+                            Icons.error_outline,
+                            color: theme.colorScheme.error,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorText!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onErrorContainer,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () =>
-                                      setState(() => _showManualEntry = false),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    side: BorderSide(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.4,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Text(l10n.cancel),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: FilledButton(
-                                  onPressed: _submitManual,
-                                  child: Text(l10n.submit),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
-                    )
-                  : Column(
-                      key: const ValueKey('scanner'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.document_scanner,
-                          size: 32,
-                          color: Colors.white.withValues(alpha: 0.7),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.hint ?? l10n.barcodeScannerHint,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            shadows: const [
-                              Shadow(blurRadius: 6, color: Colors.black),
+                    ),
+                  ),
+                Positioned(
+                  bottom: 48,
+                  left: 24,
+                  right: 24,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _showManualEntry
+                        ? Container(
+                            key: const ValueKey('manual'),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  controller: _manualCtrl,
+                                  keyboardType: TextInputType.number,
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (_) => _submitManual(),
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    hintText: l10n.enterBarcodeManually,
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton(
+                                        onPressed: () => setState(
+                                          () => _showManualEntry = false,
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          side: BorderSide(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.4,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Text(l10n.cancel),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: FilledButton(
+                                        onPressed: _submitManual,
+                                        child: Text(l10n.submit),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        : Column(
+                            key: const ValueKey('scanner'),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.document_scanner,
+                                size: 32,
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                widget.hint ?? l10n.barcodeScannerHint,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  shadows: const [
+                                    Shadow(blurRadius: 6, color: Colors.black),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton.icon(
+                                onPressed: () =>
+                                    setState(() => _showManualEntry = true),
+                                icon: const Icon(
+                                  Icons.keyboard,
+                                  color: Colors.white70,
+                                ),
+                                label: Text(
+                                  l10n.enterManually,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextButton.icon(
-                          onPressed: () =>
-                              setState(() => _showManualEntry = true),
-                          icon: const Icon(
-                            Icons.keyboard,
-                            color: Colors.white70,
-                          ),
-                          label: Text(
-                            l10n.enterManually,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ),
-                      ],
-                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+    );
+  }
+
+  Widget _buildPermissionDenied(
+    BuildContext context,
+    dynamic l10n,
+    ThemeData theme,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.no_photography,
+              size: 64,
+              color: theme.colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.cameraPermissionDenied,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              icon: const Icon(Icons.settings),
+              label: Text(l10n.openSettings),
+              onPressed: () async {
+                await openAppSettings();
+              },
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                l10n.cancel,
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

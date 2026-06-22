@@ -1,21 +1,31 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 class SaleReceiptDialog {
   SaleReceiptDialog._();
 
-  static void show(BuildContext context, Sale sale, Settings settings) {
+  static Future<void> show(
+    BuildContext context,
+    Sale sale,
+    Settings settings,
+  ) async {
     final l = context.l10n;
+    final productRepo = sl<ProductRepository>();
     final labels = ReceiptLabels(
       receipt: l.receiptLabelReceipt,
       payment: l.receiptLabelPayment,
@@ -43,6 +53,17 @@ class SaleReceiptDialog {
     };
     final showPreview =
         settings.showPostSalePreview && settings.receiptPreviewStyle != 'none';
+
+    final productMap = <String, Product>{};
+    for (final item in sale.items) {
+      if (!productMap.containsKey(item.productId)) {
+        final product = await productRepo.getProductById(item.productId);
+        if (product != null) productMap[item.productId] = product;
+      }
+    }
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -62,6 +83,10 @@ class SaleReceiptDialog {
                           qty: i.qty,
                           price: i.price,
                           subtotal: i.subtotal,
+                          imagePath: productMap[i.productId]?.imagePath,
+                          imageThumbnailPath:
+                              productMap[i.productId]?.imageThumbnailPath,
+                          imageUrl: productMap[i.productId]?.imageUrl,
                         ),
                       )
                       .toList(),
@@ -81,7 +106,9 @@ class SaleReceiptDialog {
             icon: const Icon(Icons.print_outlined),
             label: Text(l.printReceipt),
             onPressed: () async {
+              final checkoutBloc = dialogCtx.read<CheckoutBloc>();
               Navigator.pop(dialogCtx);
+              final productImages = await _loadProductImages(sale, productMap);
               await sl<ReceiptPdfService>().printReceipt(
                 sale: sale,
                 settings: settings.copyWith(
@@ -89,17 +116,18 @@ class SaleReceiptDialog {
                   vatMode: sale.vatMode,
                 ),
                 labels: labels,
+                productImages: productImages,
               );
-              if (dialogCtx.mounted) {
-                dialogCtx.read<SaleBloc>().add(const SaleReset());
-              }
+              checkoutBloc.add(const CheckoutReset());
             },
           ),
           TextButton.icon(
             icon: const Icon(Icons.share_outlined),
             label: Text(l.shareReceipt),
             onPressed: () async {
+              final checkoutBloc = dialogCtx.read<CheckoutBloc>();
               Navigator.pop(dialogCtx);
+              final productImages = await _loadProductImages(sale, productMap);
               await sl<ReceiptPdfService>().shareReceipt(
                 sale: sale,
                 settings: settings.copyWith(
@@ -107,21 +135,41 @@ class SaleReceiptDialog {
                   vatMode: sale.vatMode,
                 ),
                 labels: labels,
+                productImages: productImages,
               );
-              if (dialogCtx.mounted) {
-                dialogCtx.read<SaleBloc>().add(const SaleReset());
-              }
+              checkoutBloc.add(const CheckoutReset());
             },
           ),
           TextButton(
             onPressed: () {
+              final checkoutBloc = dialogCtx.read<CheckoutBloc>();
               Navigator.pop(dialogCtx);
-              dialogCtx.read<SaleBloc>().add(const SaleReset());
+              checkoutBloc.add(const CheckoutReset());
             },
             child: Text(l.cancel),
           ),
         ],
       ),
     );
+  }
+
+  static Future<Map<String, Uint8List>> _loadProductImages(
+    Sale sale,
+    Map<String, Product> productMap,
+  ) async {
+    final images = <String, Uint8List>{};
+    for (final item in sale.items) {
+      if (images.containsKey(item.productId)) continue;
+      final product = productMap[item.productId];
+      if (product?.imagePath != null) {
+        try {
+          final file = File(product!.imagePath!);
+          if (await file.exists()) {
+            images[item.productId] = await file.readAsBytes();
+          }
+        } catch (_) {}
+      }
+    }
+    return images;
   }
 }

@@ -4,9 +4,13 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_header.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_item_row.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_total_bar.dart';
@@ -44,8 +48,8 @@ class _CartPanelState extends State<CartPanel> {
         final reordered = List<CartItem>.from(items);
         final moved = reordered.removeAt(oldIndex);
         reordered.insert(newIndex, moved);
-        context.read<SaleBloc>().add(
-          SaleCartItemsReordered(reordered.map((i) => i.product.id).toList()),
+        context.read<CartBloc>().add(
+          CartItemsReordered(reordered.map((i) => i.product.id).toList()),
         );
       },
       itemBuilder: (_, index) {
@@ -72,8 +76,8 @@ class _CartPanelState extends State<CartPanel> {
   Widget build(BuildContext context) {
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
-    return BlocListener<SaleBloc, SaleState>(
-      listenWhen: (prev, curr) => curr.status == SaleStatus.success,
+    return BlocListener<CheckoutBloc, CheckoutState>(
+      listenWhen: (prev, curr) => curr.status == CheckoutStatus.success,
       listener: (ctx, state) {
         final settings = ctx.read<SettingsCubit>().state.settings;
         if (settings.autoPrintPrompt && state.lastSale != null) {
@@ -85,13 +89,14 @@ class _CartPanelState extends State<CartPanel> {
           });
         } else {
           AppSnackBar.success(ctx, ctx.l10n.saleSavedSuccess);
-          ctx.read<SaleBloc>().add(const SaleReset());
+          ctx.read<CheckoutBloc>().add(const CheckoutReset());
         }
       },
-      child: BlocBuilder<SaleBloc, SaleState>(
+      child: BlocBuilder<CartBloc, CartState>(
         builder: (ctx, state) {
           final theme = Theme.of(ctx);
           final items = state.items;
+          final draftState = ctx.watch<DraftBloc>().state;
 
           final content = Container(
             decoration: BoxDecoration(
@@ -105,7 +110,8 @@ class _CartPanelState extends State<CartPanel> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 CartHeader(
-                  state: state,
+                  cartState: state,
+                  draftState: draftState,
                   expanded: widget.expanded,
                   sizePreset: widget.sizePreset,
                   onSizePresetChanged: widget.onSizePresetChanged,

@@ -42,7 +42,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.8.1** — Barcode system overhaul, category/settings UX fixes, AppSettings facade removal, PromptPay static QR, About App page, and critical sale/product bug fixes (cart data loss, UI disappearing, batch performance, barcode scan crash, draft name race, out-of-stock UX). 405 passing tests.
+> **Latest Release: v0.8.2** — SaleBloc decomposition (CartBloc, DraftBloc, CheckoutBloc), bug hunt fixes (receipt dialog reset, draft auto-save flush, stock guard, error handling), barcode system fixes (scanner double-pop, batch counter persistence, barcode selection, prefix validation), camera permission handling for barcode scanner, receipt preview & PDF product images. 425 passing tests.
  
 ---
  
@@ -236,6 +236,7 @@ features/<name>/
 - [x] **R11 — Image System & Dark Mode** (v0.7.5): `UnifiedImageWidget` with skeleton loading and `ImageErrorPlaceholder`; `ImageCacheService` with LRU eviction; `ImageViewerDialog` share/info overlays; receipt preview product images; dark-mode fixes across payment, cart, cart review, and receipt preview; forest green theme migration; `AnimatedNavBar` iOS-style with swipe/keyboard shortcuts; `NotoSansThai` everywhere
 - [x] **R12 — Category System Overhaul** (v0.7.6): Category color/icon picker (schema v15), drag-drop reordering, product count badges, search, bulk delete; product page category support (sale cards, catalog chips, editor); 22 system-wide bug fixes; new app icon
 - [x] **R13 — Barcode System** (v0.8.0): Camera barcode scanning (EAN/UPC/Code128/Code39/ITF), manual entry fallback, auto-generation with custom prefix, duplicate prevention (schema v16), BarcodeSettingsPage with scan/beep/prefix toggles + help section for non-technical staff. Image system UX fixes: shared `showImageSourceSheet()`, temp file lifecycle, draft path validation, error handling, remove confirmation, orphaned image cleanup
+- [x] **R14 — SaleBloc Decomposition & Bug Hunt** (v0.8.2): Split monolithic `SaleBloc` into `CartBloc`, `DraftBloc`, `CheckoutBloc`; receipt dialog `CheckoutReset` fix, draft auto-save flush, stock=0 guard, deleted product warning, barcode scanner double-pop fix, batch counter persistence, EAN-13 prefix validation, runtime camera permission for barcode scanner, receipt preview & PDF product images
 
 ### Future
 
@@ -251,7 +252,7 @@ features/<name>/
 
 ## Testing
 
-**405 tests** covering every application layer:
+**425 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -342,6 +343,6 @@ Built by **[MN Lizard Team](https://github.com/MN-Lizard-Team)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.8.1 · 405 tests · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.2 · 425 tests · AGPL-3.0</sub>
 
 </div>

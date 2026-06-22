@@ -6,9 +6,9 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class DraftsBottomSheet extends StatefulWidget {
@@ -26,7 +26,7 @@ class DraftsBottomSheet extends StatefulWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => BlocProvider.value(
-        value: context.read<SaleBloc>(),
+        value: context.read<DraftBloc>(),
         child: const DraftsBottomSheet(),
       ),
     );
@@ -90,7 +90,7 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
           FilledButton(
             onPressed: () {
               final name = ctrl.text.trim().isEmpty ? null : ctrl.text.trim();
-              context.read<SaleBloc>().add(SaleDraftCreated(name: name));
+              context.read<DraftBloc>().add(DraftCreated(name: name));
               Navigator.pop(context);
               Future.delayed(const Duration(milliseconds: 300), _reload);
             },
@@ -107,7 +107,7 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
     final theme = Theme.of(context);
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
-    return BlocListener<SaleBloc, SaleState>(
+    return BlocListener<DraftBloc, DraftState>(
       listenWhen: (prev, curr) => prev.activeDraftId != curr.activeDraftId,
       listener: (ctx, st) => _reload(),
       child: DraggableScrollableSheet(
@@ -177,7 +177,7 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                     }
                     final allDrafts = snap.data ?? [];
                     final activeDraftId = context
-                        .read<SaleBloc>()
+                        .read<DraftBloc>()
                         .state
                         .activeDraftId;
                     final drafts = _filterAndSort(allDrafts, activeDraftId);
@@ -206,15 +206,15 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                           onSwitch: isActive
                               ? null
                               : () {
-                                  context.read<SaleBloc>().add(
-                                    SaleDraftSwitched(draft.id),
+                                  context.read<DraftBloc>().add(
+                                    DraftSwitched(draft.id),
                                   );
                                   Navigator.pop(context);
                                 },
                           onDelete: drafts.length > 1
                               ? () {
-                                  context.read<SaleBloc>().add(
-                                    SaleDraftDeleted(draft.id),
+                                  context.read<DraftBloc>().add(
+                                    DraftDeleted(draft.id),
                                   );
                                   Future.delayed(
                                     const Duration(milliseconds: 300),
@@ -223,8 +223,8 @@ class _DraftsBottomSheetState extends State<DraftsBottomSheet> {
                                 }
                               : null,
                           onRename: (name) {
-                            context.read<SaleBloc>().add(
-                              SaleDraftRenamed(draftId: draft.id, name: name),
+                            context.read<DraftBloc>().add(
+                              DraftRenamed(draftId: draft.id, name: name),
                             );
                             Future.delayed(
                               const Duration(milliseconds: 300),

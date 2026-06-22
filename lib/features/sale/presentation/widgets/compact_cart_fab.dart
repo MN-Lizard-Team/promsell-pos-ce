@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -39,7 +39,7 @@ class _CompactCartFabState extends State<CompactCartFab>
     return Positioned(
       bottom: 16 + MediaQuery.paddingOf(context).bottom,
       right: 16,
-      child: BlocBuilder<SaleBloc, SaleState>(
+      child: BlocBuilder<CartBloc, CartState>(
         builder: (ctx, state) {
           final count = state.itemCount;
           final total = state.total;

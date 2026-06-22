@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/history/presentation/pages/history_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
@@ -19,6 +21,19 @@ import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (details) {
+    AppLogger.error(
+      'FlutterError',
+      error: details.exception,
+      stack: details.stack,
+    );
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    AppLogger.error('PlatformError', error: error, stack: stack);
+    return true;
+  };
+
   configureDependencies();
   final settingsCubit = sl<SettingsCubit>();
   await settingsCubit.load();

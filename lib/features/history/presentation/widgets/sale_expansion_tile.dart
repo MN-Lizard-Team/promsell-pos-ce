@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
@@ -5,6 +8,7 @@ import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
@@ -179,6 +183,24 @@ class SaleExpansionTile extends StatelessWidget {
     );
   }
 
+  static Future<Map<String, Uint8List>> _loadProductImages(Sale sale) async {
+    final productRepo = sl<ProductRepository>();
+    final images = <String, Uint8List>{};
+    for (final item in sale.items) {
+      if (images.containsKey(item.productId)) continue;
+      try {
+        final product = await productRepo.getProductById(item.productId);
+        if (product?.imagePath != null) {
+          final file = File(product!.imagePath!);
+          if (await file.exists()) {
+            images[item.productId] = await file.readAsBytes();
+          }
+        }
+      } catch (_) {}
+    }
+    return images;
+  }
+
   static void _printReceipt(
     BuildContext context,
     Sale sale,
@@ -186,20 +208,23 @@ class SaleExpansionTile extends StatelessWidget {
   ) async {
     try {
       final l = context.l10n;
+      final paymentMethodLabel = localizePaymentMethod(
+        context,
+        sale.paymentMethod,
+      );
       final saleSettings = settings.copyWith(
         vatRate: sale.vatRate,
         vatMode: sale.vatMode,
       );
+      final productImages = await _loadProductImages(sale);
       await sl<ReceiptPdfService>().printReceipt(
         sale: sale,
         settings: saleSettings,
+        productImages: productImages,
         labels: ReceiptLabels(
           receipt: l.receiptLabelReceipt,
           payment: l.receiptLabelPayment,
-          paymentMethodLabel: localizePaymentMethod(
-            context,
-            sale.paymentMethod,
-          ),
+          paymentMethodLabel: paymentMethodLabel,
           total: l.receiptLabelTotal,
           received: l.receiptLabelReceived,
           change: l.receiptLabelChange,
@@ -226,20 +251,23 @@ class SaleExpansionTile extends StatelessWidget {
   ) async {
     try {
       final l = context.l10n;
+      final paymentMethodLabel = localizePaymentMethod(
+        context,
+        sale.paymentMethod,
+      );
       final saleSettings = settings.copyWith(
         vatRate: sale.vatRate,
         vatMode: sale.vatMode,
       );
+      final productImages = await _loadProductImages(sale);
       await sl<ReceiptPdfService>().shareReceipt(
         sale: sale,
         settings: saleSettings,
+        productImages: productImages,
         labels: ReceiptLabels(
           receipt: l.receiptLabelReceipt,
           payment: l.receiptLabelPayment,
-          paymentMethodLabel: localizePaymentMethod(
-            context,
-            sale.paymentMethod,
-          ),
+          paymentMethodLabel: paymentMethodLabel,
           total: l.receiptLabelTotal,
           received: l.receiptLabelReceived,
           change: l.receiptLabelChange,

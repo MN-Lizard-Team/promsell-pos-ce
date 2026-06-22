@@ -601,6 +601,8 @@
   "duplicateBarcode": "บาร์โค้ดนี้มีอยู่แล้วในสินค้าอื่น",
   "enterManually": "ป้อนด้วยตนเอง",
   "enterBarcodeManually": "ป้อนบาร์โค้ดด้วยตนเอง",
+  "cameraPermissionDenied": "ต้องอนุญาตใช้กล้องเพื่อสแกนบาร์โค้ด กรุณาเปิดสิทธิ์การเข้าถึงกล้องในการตั้งค่า",
+  "openSettings": "เปิดการตั้งค่า",
   "submit": "ยืนยัน",
   "generateBarcode": "สร้างบาร์โค้ด",
   "barcodeGenerated": "สร้างบาร์โค้ดแล้ว",

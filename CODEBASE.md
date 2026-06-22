@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.1
+# CODEBASE.md — Promsell POS CE v0.8.2
 
 ## System overview
 
@@ -119,14 +119,14 @@ features/<name>/
 
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
-| Sale | `SaleBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
+| Sale | `CartBloc`, `DraftBloc`, `CheckoutBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
 | Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `QuickEditSheet`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet` (with `showCategoryPicker` helper), `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages`, `ReorderCategories` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
 | Settings | `SettingsCubit` | Pages: 2-level hierarchy — `settings_root_page.dart` (flat section list), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart` (merged with presets), `stock_settings_page.dart`, `image_settings_page.dart`, `barcode_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`, `about_page.dart`, `privacy_policy_page.dart`, `license_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 13 typed group entities |
 | Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
-| Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
+| Draft Cart | `DraftBloc` | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
 | Daily Close | `DailyCloseCubit` | `daily_close_page.dart`, `daily_close_list_page.dart`; widgets: `DailyCloseDateCard`, `DailyCloseSummaryCard`, `DailyCloseReconciliationCard`, `DailyCloseSummaryRow`, `DailyCloseReadOnlyRow`; domain: `DailyClose`, `CloseDay`, `ReopenDay`, `GetDailyCloseByDate`, `GetDailyCloseList` |
 | Onboarding | (stateless wizard) | `onboarding_page.dart` — 6-step first-launch flow; widgets: `OnboardingHeroSection`, `OnboardingSection`, `GreenChoiceChip`, `OnboardingSheetOption` |
 | DB Health | (stateful page) | `db_health_page.dart` — file size, row counts, vacuum |
@@ -345,7 +345,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-405 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
+425 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
 
 ### Test directory structure
 

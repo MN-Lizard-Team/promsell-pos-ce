@@ -5,8 +5,8 @@ import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_qty_stepper.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/discount_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -91,8 +91,8 @@ class CartItemRow extends StatelessWidget {
                       presetValues: settings.activeDiscountPreset.values,
                       presetType: settings.activeDiscountPreset.type,
                       onApply: (type, value) {
-                        context.read<SaleBloc>().add(
-                          SaleItemDiscountChanged(
+                        context.read<CartBloc>().add(
+                          CartItemDiscountChanged(
                             productId: item.product.id,
                             discountType: type,
                             discountValue: value,
@@ -100,8 +100,8 @@ class CartItemRow extends StatelessWidget {
                         );
                       },
                       onClear: item.discountAmount > 0
-                          ? () => context.read<SaleBloc>().add(
-                              SaleItemDiscountCleared(item.product.id),
+                          ? () => context.read<CartBloc>().add(
+                              CartItemDiscountCleared(item.product.id),
                             )
                           : null,
                     )
@@ -153,8 +153,8 @@ class CartItemRow extends StatelessWidget {
                   if (item.qty == 1) {
                     _confirmRemove(context, item, allowOversell);
                   } else {
-                    context.read<SaleBloc>().add(
-                      SaleItemQtyChanged(
+                    context.read<CartBloc>().add(
+                      CartItemQtyChanged(
                         productId: item.product.id,
                         qty: item.qty - 1,
                         allowOversell: allowOversell,
@@ -164,8 +164,8 @@ class CartItemRow extends StatelessWidget {
                 },
                 onIncrement: atStockLimit
                     ? () {}
-                    : () => context.read<SaleBloc>().add(
-                        SaleItemQtyChanged(
+                    : () => context.read<CartBloc>().add(
+                        CartItemQtyChanged(
                           productId: item.product.id,
                           qty: item.qty + 1,
                           allowOversell: allowOversell,
@@ -285,8 +285,8 @@ class CartItemRow extends StatelessWidget {
               }
               Navigator.pop(context);
               if (clamped != item.qty) {
-                context.read<SaleBloc>().add(
-                  SaleItemQtyChanged(
+                context.read<CartBloc>().add(
+                  CartItemQtyChanged(
                     productId: item.product.id,
                     qty: clamped,
                     allowOversell: allowOversell,
@@ -316,9 +316,9 @@ class CartItemRow extends StatelessWidget {
           TextButton(
             onPressed: () {
               final prevItem = item;
-              final bloc = context.read<SaleBloc>();
+              final bloc = context.read<CartBloc>();
               bloc.add(
-                SaleItemQtyChanged(
+                CartItemQtyChanged(
                   productId: item.product.id,
                   qty: 0,
                   allowOversell: allowOversell,
@@ -330,7 +330,7 @@ class CartItemRow extends StatelessWidget {
                 l10n.itemRemoved,
                 actionLabel: l10n.undo,
                 onAction: () => bloc.add(
-                  SaleCartRestored(items: [...bloc.state.items, prevItem]),
+                  CartRestored(items: [...bloc.state.items, prevItem]),
                 ),
               );
             },

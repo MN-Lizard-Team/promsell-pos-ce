@@ -8,8 +8,8 @@ import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/core/utils/sound_player.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/slip_scanner_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/promptpay_qr_code.dart';
@@ -30,7 +30,7 @@ class PromptPayPaymentPage extends StatefulWidget {
   final String currency;
   final String promptpayId;
   final Settings settings;
-  final SaleBloc bloc;
+  final CheckoutBloc bloc;
   final List<CartItem> items;
 
   @override
@@ -59,7 +59,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
       if (_remainingSeconds <= 0) {
         _timer?.cancel();
         if (mounted) {
-          widget.bloc.add(const SalePaymentCancelled());
+          widget.bloc.add(const CheckoutPaymentCancelled());
           Navigator.of(context).pop();
         }
         return;
@@ -97,7 +97,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
     }
     _timer?.cancel();
     widget.bloc.add(
-      SalePaymentConfirmed(
+      CheckoutPaymentConfirmed(
         paymentReference: _referenceCtrl.text.trim(),
         sendingBankCode: _sendingBankCode,
       ),
@@ -108,7 +108,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
   void _cancel() {
     HapticFeedback.mediumImpact();
     _timer?.cancel();
-    widget.bloc.add(const SalePaymentCancelled());
+    widget.bloc.add(const CheckoutPaymentCancelled());
     Navigator.of(context).pop();
   }
 

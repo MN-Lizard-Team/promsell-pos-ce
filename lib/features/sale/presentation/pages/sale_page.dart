@@ -8,11 +8,15 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_panel.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/compact_cart_fab.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts_bottom_sheet.dart';
@@ -29,8 +33,10 @@ class SalePage extends StatelessWidget {
       providers: [
         BlocProvider.value(value: sl<ProductBloc>()),
         BlocProvider.value(value: sl<CategoryBloc>()),
+        BlocProvider(create: (_) => sl<CartBloc>()),
+        BlocProvider(create: (_) => sl<CheckoutBloc>()),
         BlocProvider(
-          create: (_) => sl<SaleBloc>()..add(const SaleDraftInitialized()),
+          create: (_) => sl<DraftBloc>()..add(const DraftInitialized()),
         ),
         BlocProvider(
           create: (_) => SearchHistoryCubit(
@@ -205,15 +211,15 @@ class _SaleViewState extends State<_SaleView> {
           prev.products != curr.products &&
           _hasStockOrPriceChange(prev.products, curr.products),
       listener: (context, state) {
-        context.read<SaleBloc>().add(SaleCartProductsRefreshed(state.products));
+        context.read<CartBloc>().add(CartProductsRefreshed(state.products));
       },
-      child: BlocListener<SaleBloc, SaleState>(
+      child: BlocListener<CartBloc, CartState>(
         listenWhen: (prev, curr) =>
             prev.stockWarning != curr.stockWarning && curr.stockWarning != null,
         listener: (context, state) {
           AppSnackBar.info(context, state.stockWarning!);
         },
-        child: BlocListener<SaleBloc, SaleState>(
+        child: BlocListener<CartBloc, CartState>(
           listenWhen: (prev, curr) =>
               prev.errorMessage != curr.errorMessage &&
               curr.errorMessage != null,
@@ -224,63 +230,69 @@ class _SaleViewState extends State<_SaleView> {
                 : state.errorMessage!;
             AppSnackBar.error(context, msg);
           },
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(context.l10n.salePageTitle),
-              actions: [
-                BlocBuilder<SettingsCubit, SettingsState>(
-                  builder: (ctx, settingsState) {
-                    if (!settingsState.settings.barcodeScanEnabled) {
-                      return const SizedBox.shrink();
-                    }
-                    return IconButton(
-                      icon: const Icon(Icons.camera_alt_outlined),
-                      tooltip: context.l10n.scanBarcode,
-                      onPressed: () async {
-                        final bloc = context.read<SaleBloc>();
-                        final settings = settingsState.settings;
-                        final barcode = await showProductBarcodeScanner(
-                          context,
-                          beepOnScan: settings.barcodeBeepOnScan,
-                          formats: barcodeFormatsFromNames(
-                            settings.barcodeEnabledFormats,
-                          ),
-                          autoOpenManualDelay:
-                              settings.barcodeAutoOpenManualDelay,
-                        );
-                        if (barcode != null && barcode.isNotEmpty) {
-                          bloc.add(SaleBarcodeScanned(barcode));
-                        }
-                      },
-                    );
-                  },
-                ),
-                BlocBuilder<SaleBloc, SaleState>(
-                  builder: (ctx, state) => IconButton(
-                    icon: Badge(
-                      isLabelVisible: state.activeDraftId != null,
-                      child: const Icon(Icons.bookmarks_outlined),
-                    ),
-                    tooltip: ctx.l10n.draftsTitle,
-                    onPressed: () => DraftsBottomSheet.show(ctx),
+          child: BlocListener<CartBloc, CartState>(
+            listenWhen: (prev, curr) => prev.items != curr.items,
+            listener: (context, state) {
+              context.read<DraftBloc>().add(DraftAutoSaveRequested(state));
+            },
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(context.l10n.salePageTitle),
+                actions: [
+                  BlocBuilder<SettingsCubit, SettingsState>(
+                    builder: (ctx, settingsState) {
+                      if (!settingsState.settings.barcodeScanEnabled) {
+                        return const SizedBox.shrink();
+                      }
+                      return IconButton(
+                        icon: const Icon(Icons.camera_alt_outlined),
+                        tooltip: context.l10n.scanBarcode,
+                        onPressed: () async {
+                          final bloc = context.read<CartBloc>();
+                          final settings = settingsState.settings;
+                          final barcode = await showProductBarcodeScanner(
+                            context,
+                            beepOnScan: settings.barcodeBeepOnScan,
+                            formats: barcodeFormatsFromNames(
+                              settings.barcodeEnabledFormats,
+                            ),
+                            autoOpenManualDelay:
+                                settings.barcodeAutoOpenManualDelay,
+                          );
+                          if (barcode != null && barcode.isNotEmpty) {
+                            bloc.add(CartBarcodeScanned(barcode));
+                          }
+                        },
+                      );
+                    },
                   ),
-                ),
-              ],
-            ),
-            body: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: compactCart
-                          ? const SaleCatalog()
-                          : (isExpanded
-                                ? _buildExpandedLayout()
-                                : _buildCompactLayout()),
+                  BlocBuilder<DraftBloc, DraftState>(
+                    builder: (ctx, state) => IconButton(
+                      icon: Badge(
+                        isLabelVisible: state.activeDraftId != null,
+                        child: const Icon(Icons.bookmarks_outlined),
+                      ),
+                      tooltip: ctx.l10n.draftsTitle,
+                      onPressed: () => DraftsBottomSheet.show(ctx),
                     ),
-                    if (compactCart) const CompactCartFab(),
-                  ],
+                  ),
+                ],
+              ),
+              body: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: compactCart
+                            ? const SaleCatalog()
+                            : (isExpanded
+                                  ? _buildExpandedLayout()
+                                  : _buildCompactLayout()),
+                      ),
+                      if (compactCart) const CompactCartFab(),
+                    ],
+                  ),
                 ),
               ),
             ),

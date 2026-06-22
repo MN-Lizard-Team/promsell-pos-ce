@@ -10,8 +10,8 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/category_stat
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
     show parseCategoryColor, parseCategoryIcon;
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SaleProductCard extends StatelessWidget {
@@ -27,7 +27,7 @@ class SaleProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cartQty = context.select<SaleBloc, int>(
+    final cartQty = context.select<CartBloc, int>(
       (bloc) => bloc.state.items
           .where((item) => item.product.id == product.id)
           .fold(0, (sum, item) => sum + item.qty),
@@ -50,8 +50,8 @@ class SaleProductCard extends StatelessWidget {
           onTap: canTap
               ? () {
                   HapticFeedback.selectionClick();
-                  context.read<SaleBloc>().add(
-                    SaleProductAdded(product, allowOversell: allowOversell),
+                  context.read<CartBloc>().add(
+                    CartProductAdded(product, allowOversell: allowOversell),
                   );
                   if (cartQty == 0) {
                     AppSnackBar.info(
@@ -148,7 +148,7 @@ class SaleProductCard extends StatelessWidget {
     final l10n = context.l10n;
     final settings = context.read<SettingsCubit>().state.settings;
     final allowOversell = settings.allowOversell;
-    final saleBloc = context.read<SaleBloc>();
+    final saleBloc = context.read<CartBloc>();
     final snackCtx = context;
     showDialog(
       context: context,
@@ -183,7 +183,7 @@ class SaleProductCard extends StatelessWidget {
               }
               Navigator.pop(dialogCtx);
               saleBloc.add(
-                SaleProductAdded(
+                CartProductAdded(
                   product,
                   qty: clamped,
                   allowOversell: allowOversell,

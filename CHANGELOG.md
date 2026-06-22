@@ -17,6 +17,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.2] - 2026-06-22
+
+SaleBloc decomposition into focused BLoCs (CartBloc, DraftBloc, CheckoutBloc), critical checkout/draft bug-hunt fixes, and barcode/receipt image fixes.
+
+### Highlights
+
+- **SaleBloc Decomposition** — Split into `CartBloc`, `DraftBloc`, and `CheckoutBloc`; 17 widgets/pages, DI, and test infrastructure migrated.
+- **Checkout Stuck After Receipt (critical)** — `CheckoutReset` now dispatches correctly after print/share/close; cart no longer stuck in `success` state.
+- **Draft Auto-Save Data Loss (high)** — Pending cart state is now actually flushed on switch/create/delete instead of being discarded.
+- **Scanner Black Screen on Android 6+ (critical)** — Runtime camera permission now requested before scanning.
+- **Receipt Images Missing** — Product images now embedded in receipt preview, PDF, print, and share.
+- 37 new BLoC tests + 8 barcode/receipt tests added.
+
+### Added
+
+- `MockCartBloc`, `MockCheckoutBloc`, `MockDraftBloc`, and `pumpApp` test helper.
+- `permission_handler` package for camera permission requests.
+- L10n strings: `cameraPermissionDenied`, `openSettings` (TH/EN).
+
+### Changed
+
+- `SaleBloc` split into `CartBloc` (cart), `DraftBloc` (draft persistence), and `CheckoutBloc` (checkout/payment).
+- Obsolete `sale_bloc_test.dart`, `sale_bloc_discount_test.dart`, `sale_bloc_barcode_test.dart` removed.
+- `ReceiptPdfService.printReceipt`/`shareReceipt` now accept an optional `productImages` map.
+- `SaleReceiptDialog.show()` is now async and fetches product images before rendering.
+
+### Fixed
+
+- **Receipt dialog leaves checkout stuck (critical)** — `CheckoutBloc` reference was captured after `Navigator.pop`, so `CheckoutReset` never fired; now captured before pop in all 3 receipt actions.
+- **Draft auto-save discarded on switch/delete (high)** — `_flushPendingSave` now saves the pending state instead of just cancelling the timer.
+- **Cart stock=0 guard missing (high)** — Added `stock <= 0` check in `CartBloc._onProductAdded`, matching the barcode-scan path.
+- **DraftBloc unhandled repository errors (medium)** — Added try-catch to switch/create/delete/rename handlers.
+- **Deleted products silently dropped from cart (medium)** — Now surfaced in the `stockWarning` message instead of disappearing silently.
+- **Scanner double-pop (critical)** — Dialog popped twice (via callback + directly), closing the page behind it; now pops once.
+- **Batch barcode counter not persisted (high)** — Counter now persisted via `SettingsRepository` after batch generation.
+- **Scanner black screen on Android 6+ (critical)** — Camera permission was never requested; added permission flow + denied-state UI.
+- **Receipt preview/PDF/print/share missing product images (high)** — Image fields now passed through and embedded as 28×28 thumbnails.
+- **CheckoutBody test crash** — `BlocBuilder` replaces `context.select` inside `Builder` to fix a Flutter framework assertion during tests.
+- Multi-barcode frame could select a `null` barcode value; EAN-13 prefix accepted invalid input without validation.
+
+`flutter analyze` → **0 issues** · `flutter test` → **425 passing**
+
+---
+
 ## [0.8.1] - 2026-06-22
 
 PromptPay static QR support, AppSettings facade removal, full barcode system overhaul, and category/settings UX fixes.
@@ -1433,7 +1477,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.6...v0.8.0
 [0.7.6]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.5...v0.7.6

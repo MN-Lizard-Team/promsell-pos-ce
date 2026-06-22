@@ -10,9 +10,11 @@ import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment_widgets.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/promptpay_payment_page.dart';
@@ -69,9 +71,9 @@ class _CheckoutBodyState extends State<CheckoutBody> {
       _submitted = false;
       return;
     }
-    final cartState = context.read<SaleBloc>().state;
-    context.read<SaleBloc>().add(
-      SaleConfirmed(
+    final cartState = context.read<CartBloc>().state;
+    context.read<CheckoutBloc>().add(
+      CheckoutConfirmed(
         paymentMethod: _method,
         vatMode: settings.vatMode,
         vatRate: settings.vatRate,
@@ -102,7 +104,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocBuilder<SaleBloc, SaleState>(
+    return BlocBuilder<CartBloc, CartState>(
       builder: (_, cartState) {
         final settings = context.watch<SettingsCubit>().state.settings;
         final currency = settings.currency;
@@ -113,14 +115,14 @@ class _CheckoutBodyState extends State<CheckoutBody> {
         );
         _effectiveTotal = vatInfo?.totalWithVat ?? cartState.total;
 
-        return BlocListener<SaleBloc, SaleState>(
+        return BlocListener<CheckoutBloc, CheckoutState>(
           listenWhen: (_, curr) =>
-              curr.status == SaleStatus.failure ||
-              curr.status == SaleStatus.success ||
-              curr.status == SaleStatus.waitingPayment ||
-              curr.status == SaleStatus.idle,
+              curr.status == CheckoutStatus.failure ||
+              curr.status == CheckoutStatus.success ||
+              curr.status == CheckoutStatus.waitingPayment ||
+              curr.status == CheckoutStatus.idle,
           listener: (ctx, state) {
-            if (state.status == SaleStatus.waitingPayment) {
+            if (state.status == CheckoutStatus.waitingPayment) {
               _inPaymentFlow = true;
               Navigator.of(ctx).push(
                 MaterialPageRoute(
@@ -129,26 +131,26 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                     currency: currency,
                     promptpayId: settings.promptpayId,
                     settings: settings,
-                    bloc: ctx.read<SaleBloc>(),
-                    items: state.items,
+                    bloc: ctx.read<CheckoutBloc>(),
+                    items: cartState.items,
                   ),
                 ),
               );
               return;
             }
-            if (state.status == SaleStatus.success) {
+            if (state.status == CheckoutStatus.success) {
               _inPaymentFlow = false;
               _submitted = false;
               Navigator.of(ctx).pop();
               return;
             }
-            if (state.status == SaleStatus.idle && _inPaymentFlow) {
+            if (state.status == CheckoutStatus.idle && _inPaymentFlow) {
               _inPaymentFlow = false;
               _submitted = false;
               Navigator.of(ctx).pop();
               return;
             }
-            if (state.status == SaleStatus.failure) {
+            if (state.status == CheckoutStatus.failure) {
               _inPaymentFlow = false;
               _submitted = false;
               AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
@@ -424,10 +426,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                   maxLines: 1,
                 ),
                 const SizedBox(height: 20),
-                Builder(
-                  builder: (_) {
+                BlocBuilder<CheckoutBloc, CheckoutState>(
+                  builder: (_, checkoutState) {
                     final isProcessing =
-                        cartState.status == SaleStatus.processing;
+                        checkoutState.status == CheckoutStatus.processing;
                     final canConfirm =
                         _method != 'cash' || _received >= _effectiveTotal;
 

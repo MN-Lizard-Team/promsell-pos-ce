@@ -1551,6 +1551,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get enterBarcodeManually => 'ป้อนบาร์โค้ดด้วยตนเอง';
 
   @override
+  String get cameraPermissionDenied =>
+      'ต้องอนุญาตใช้กล้องเพื่อสแกนบาร์โค้ด กรุณาเปิดสิทธิ์การเข้าถึงกล้องในการตั้งค่า';
+
+  @override
+  String get openSettings => 'เปิดการตั้งค่า';
+
+  @override
   String get submit => 'ยืนยัน';
 
   @override

@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.8.1
+# Architecture — Promsell POS CE v0.8.2
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 

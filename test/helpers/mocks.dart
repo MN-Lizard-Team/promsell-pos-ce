@@ -19,9 +19,15 @@ import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dar
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/category_repository.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_event.dart';
@@ -88,7 +94,13 @@ class MockGetReport extends Mock implements GetReport {}
 class MockWatchReport extends Mock implements WatchReport {}
 
 // ── BLoCs / Cubits (for widget tests) ──
-class MockSaleBloc extends MockBloc<SaleEvent, SaleState> implements SaleBloc {}
+class MockCartBloc extends MockBloc<CartEvent, CartState> implements CartBloc {}
+
+class MockCheckoutBloc extends MockBloc<CheckoutEvent, CheckoutState>
+    implements CheckoutBloc {}
+
+class MockDraftBloc extends MockBloc<DraftEvent, DraftState>
+    implements DraftBloc {}
 
 class MockProductBloc extends MockBloc<ProductEvent, ProductState>
     implements ProductBloc {}

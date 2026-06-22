@@ -5,15 +5,19 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CartHeader extends StatefulWidget {
   const CartHeader({
     super.key,
-    required this.state,
+    required this.cartState,
+    required this.draftState,
     this.expanded = false,
     this.sizePreset,
     this.onSizePresetChanged,
@@ -21,7 +25,8 @@ class CartHeader extends StatefulWidget {
     this.onWidthPresetChanged,
   });
 
-  final SaleState state;
+  final CartState cartState;
+  final DraftState draftState;
   final bool expanded;
   final double? sizePreset;
   final ValueChanged<double>? onSizePresetChanged;
@@ -44,8 +49,8 @@ class _CartHeaderState extends State<CartHeader> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final draftName = widget.state.activeDraftName?.isNotEmpty == true
-        ? widget.state.activeDraftName!
+    final draftName = widget.draftState.activeDraftName?.isNotEmpty == true
+        ? widget.draftState.activeDraftName!
         : null;
 
     return Column(
@@ -73,7 +78,7 @@ class _CartHeaderState extends State<CartHeader> {
                       builder: (_, snap) {
                         final count = snap.hasError ? null : snap.data;
                         final draftIndex =
-                            widget.state.activeDraftId != null &&
+                            widget.draftState.activeDraftId != null &&
                                 count != null &&
                                 count > 0
                             ? ' · 1/${count.clamp(1, 999)}'
@@ -181,7 +186,7 @@ class _CartHeaderState extends State<CartHeader> {
                       ],
                     ),
                   ),
-                  if (!widget.state.isEmpty)
+                  if (!widget.cartState.isEmpty)
                     PopupMenuItem(
                       value: 'clear_cart',
                       child: Row(
@@ -223,7 +228,7 @@ class _CartHeaderState extends State<CartHeader> {
   }
 
   void _showCreateDialog(BuildContext context) {
-    final bloc = context.read<SaleBloc>();
+    final bloc = context.read<DraftBloc>();
     final ctrl = TextEditingController();
     showDialog(
       context: context,
@@ -242,7 +247,7 @@ class _CartHeaderState extends State<CartHeader> {
           FilledButton(
             onPressed: () {
               final name = ctrl.text.trim().isEmpty ? null : ctrl.text.trim();
-              bloc.add(SaleDraftCreated(name: name));
+              bloc.add(DraftCreated(name: name));
               Navigator.pop(context);
             },
             child: Text(context.l10n.save),
@@ -253,7 +258,7 @@ class _CartHeaderState extends State<CartHeader> {
   }
 
   void _confirmClearCart(BuildContext context) {
-    final bloc = context.read<SaleBloc>();
+    final bloc = context.read<CartBloc>();
     final prevItems = List<CartItem>.from(bloc.state.items);
     final prevDiscountType = bloc.state.cartDiscountType;
     final prevDiscountValue = bloc.state.cartDiscountValue;
@@ -270,14 +275,14 @@ class _CartHeaderState extends State<CartHeader> {
           TextButton(
             onPressed: () {
               final l10n = context.l10n;
-              bloc.add(const SaleCartCleared());
+              bloc.add(const CartCleared());
               Navigator.pop(dialogCtx);
               AppSnackBar.withAction(
                 context,
                 l10n.cartCleared,
                 actionLabel: l10n.undo,
                 onAction: () => bloc.add(
-                  SaleCartRestored(
+                  CartRestored(
                     items: prevItems,
                     cartDiscountType: prevDiscountType,
                     cartDiscountValue: prevDiscountValue,

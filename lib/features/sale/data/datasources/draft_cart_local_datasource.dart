@@ -6,12 +6,12 @@ import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 abstract class DraftCartLocalDatasource {
   Future<String> createDraft({String? name});
-  Future<void> upsertDraft(String cartId, SaleState state, {String? name});
+  Future<void> upsertDraft(String cartId, CartState state, {String? name});
   Future<DraftCart?> loadDraft(String cartId);
   Future<List<DraftCart>> listDrafts({bool includeArchived = false});
   Future<void> deleteDraft(String cartId);
@@ -52,7 +52,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   @override
   Future<void> upsertDraft(
     String cartId,
-    SaleState state, {
+    CartState state, {
     String? name,
   }) async {
     final deviceId = await _getDeviceId();

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout_body.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -16,7 +17,7 @@ class CheckoutPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(context.l10n.paymentTitle),
         actions: [
-          BlocBuilder<SaleBloc, SaleState>(
+          BlocBuilder<CartBloc, CartState>(
             builder: (_, state) {
               return IconButton(
                 icon: Badge(
@@ -31,7 +32,7 @@ class CheckoutPage extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => MultiBlocProvider(
                         providers: [
-                          BlocProvider.value(value: context.read<SaleBloc>()),
+                          BlocProvider.value(value: context.read<CartBloc>()),
                           BlocProvider.value(
                             value: context.read<SettingsCubit>(),
                           ),
@@ -46,12 +47,13 @@ class CheckoutPage extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocProvider.value(
-        value: context.read<SaleBloc>(),
-        child: BlocProvider.value(
-          value: context.read<SettingsCubit>(),
-          child: const CheckoutBody(),
-        ),
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<CartBloc>()),
+          BlocProvider.value(value: context.read<CheckoutBloc>()),
+          BlocProvider.value(value: context.read<SettingsCubit>()),
+        ],
+        child: const CheckoutBody(),
       ),
     );
   }
