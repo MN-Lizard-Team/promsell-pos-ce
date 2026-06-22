@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
+import 'package:get_it/get_it.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/barcode_config.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
@@ -28,6 +34,7 @@ class BarcodeSettingsPage extends StatelessWidget {
               _BarcodePreviewCard(
                 scanEnabled: s.barcodeScanEnabled,
                 prefix: s.barcodeAutoGeneratePrefix,
+                vibrateOnScan: s.barcodeBeepOnScan,
               ),
               const SizedBox(height: 24),
               SettingsSectionCard(
@@ -61,6 +68,21 @@ class BarcodeSettingsPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
+              SettingsSectionCard(
+                title: l10n.barcodeFormats,
+                children: [_buildFormatsTile(context, s, cubit, st)],
+              ),
+              const SizedBox(height: 24),
+              SettingsSectionCard(
+                title: l10n.barcodeAutoOpenManual,
+                children: [_buildAutoOpenTile(context, s, cubit, st)],
+              ),
+              const SizedBox(height: 24),
+              SettingsSectionCard(
+                title: l10n.batchGenerateBarcodes,
+                children: [_buildBatchGenerateTile(context, s, st)],
+              ),
+              const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _BarcodeHelpSection(st: st),
@@ -72,9 +94,294 @@ class BarcodeSettingsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildFormatsTile(
+    BuildContext context,
+    Settings s,
+    SettingsCubit cubit,
+    SettingsThemeExtension st,
+  ) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final allFormats = BarcodeConfig.defaultAllFormats;
+    final selected = s.barcodeEnabledFormats;
+
+    String labelFor(String name) {
+      switch (name) {
+        case 'ean13':
+          return l10n.barcodeFormatEan13;
+        case 'ean8':
+          return l10n.barcodeFormatEan8;
+        case 'upcA':
+          return l10n.barcodeFormatUpcA;
+        case 'upcE':
+          return l10n.barcodeFormatUpcE;
+        case 'code128':
+          return l10n.barcodeFormatCode128;
+        case 'code39':
+          return l10n.barcodeFormatCode39;
+        case 'itf':
+          return l10n.barcodeFormatItf;
+        case 'qrCode':
+          return l10n.barcodeFormatQrCode;
+        case 'dataMatrix':
+          return l10n.barcodeFormatDataMatrix;
+        case 'pdf417':
+          return l10n.barcodeFormatPdf417;
+        case 'aztec':
+          return l10n.barcodeFormatAztec;
+        case 'codabar':
+          return l10n.barcodeFormatCodabar;
+        default:
+          return name;
+      }
+    }
+
+    return ListTile(
+      leading: Container(
+        width: st.iconSize,
+        height: st.iconSize,
+        decoration: BoxDecoration(
+          color: st.iconContainerBackground,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(Icons.filter_list_outlined, color: st.softAccent, size: 24),
+      ),
+      title: Text(
+        l10n.barcodeFormats,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+      ),
+      subtitle: Text(
+        '${selected.length}/${allFormats.length}',
+        style: TextStyle(fontSize: 13, color: st.softTextSecondary),
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: st.softTextSecondary,
+        size: 24,
+      ),
+      onTap: () =>
+          _showFormatsDialog(context, s, cubit, allFormats, selected, labelFor),
+    );
+  }
+
+  void _showFormatsDialog(
+    BuildContext context,
+    Settings s,
+    SettingsCubit cubit,
+    List<String> allFormats,
+    List<String> selected,
+    String Function(String) labelFor,
+  ) {
+    final l10n = context.l10n;
+    var tempSelected = List<String>.from(selected);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Text(l10n.barcodeFormats),
+          content: SizedBox(
+            width: 320,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          setState(() => tempSelected = List.from(allFormats));
+                        },
+                        child: Text(l10n.selectAll),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() => tempSelected = []);
+                        },
+                        child: Text(l10n.deselectAll),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: allFormats.map((name) {
+                      final isSelected = tempSelected.contains(name);
+                      return CheckboxListTile(
+                        value: isSelected,
+                        title: Text(labelFor(name)),
+                        dense: true,
+                        onChanged: (v) {
+                          setState(() {
+                            if (v == true) {
+                              tempSelected.add(name);
+                            } else {
+                              tempSelected.remove(name);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: tempSelected.isEmpty
+                  ? null
+                  : () {
+                      cubit.updateField(
+                        (s) => s.copyWith(barcodeEnabledFormats: tempSelected),
+                      );
+                      Navigator.of(ctx).pop();
+                    },
+              child: Text(l10n.save),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAutoOpenTile(
+    BuildContext context,
+    Settings s,
+    SettingsCubit cubit,
+    SettingsThemeExtension st,
+  ) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final delay = s.barcodeAutoOpenManualDelay;
+    final delayOptions = [0, 5, 10, 15, 20, 30];
+    String delayLabel(int v) =>
+        v == 0 ? l10n.disabled : '$v${l10n.secondsSuffix}';
+
+    return ListTile(
+      leading: Container(
+        width: st.iconSize,
+        height: st.iconSize,
+        decoration: BoxDecoration(
+          color: st.iconContainerBackground,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(Icons.timer_outlined, color: st.softAccent, size: 24),
+      ),
+      title: Text(
+        l10n.barcodeAutoOpenManual,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+      ),
+      subtitle: Text(
+        delay == 0 ? l10n.disabled : '$delay${l10n.secondsSuffix}',
+        style: TextStyle(fontSize: 13, color: st.softTextSecondary),
+      ),
+      trailing: DropdownButton<int>(
+        value: delay,
+        underline: const SizedBox(),
+        items: delayOptions
+            .map((v) => DropdownMenuItem(value: v, child: Text(delayLabel(v))))
+            .toList(),
+        onChanged: (v) {
+          if (v != null) {
+            cubit.updateField((s) => s.copyWith(barcodeAutoOpenManualDelay: v));
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildBatchGenerateTile(
+    BuildContext context,
+    Settings s,
+    SettingsThemeExtension st,
+  ) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+
+    final productBloc = GetIt.I<ProductBloc>();
+    final withoutBarcode = productBloc.state.products
+        .where((p) => p.barcode == null || p.barcode!.isEmpty)
+        .length;
+
+    return ListTile(
+      leading: Container(
+        width: st.iconSize,
+        height: st.iconSize,
+        decoration: BoxDecoration(
+          color: st.iconContainerBackground,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(Icons.barcode_reader, color: st.softAccent, size: 24),
+      ),
+      title: Text(
+        l10n.batchGenerateBarcodes,
+        style: theme.textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+      ),
+      subtitle: Text(
+        withoutBarcode > 0
+            ? l10n.productsWithoutBarcode(withoutBarcode)
+            : l10n.batchGenerateNone,
+        style: TextStyle(fontSize: 13, color: st.softTextSecondary),
+      ),
+      trailing: FilledButton.tonal(
+        onPressed: withoutBarcode == 0
+            ? null
+            : () => _showBatchConfirmDialog(
+                context,
+                withoutBarcode,
+                s.barcodeAutoGeneratePrefix,
+              ),
+        child: Text(l10n.generateBarcode),
+      ),
+    );
+  }
+
+  void _showBatchConfirmDialog(BuildContext context, int count, String prefix) {
+    final l10n = context.l10n;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.batchGenerateConfirmTitle),
+        content: Text(l10n.batchGenerateConfirmBody(count)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              GetIt.I<ProductBloc>().add(
+                BarcodesBatchGenerated(prefix: prefix),
+              );
+            },
+            child: Text(l10n.generateBarcode),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPrefixTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
   ) {
     final st = context.settingsTheme;
@@ -123,54 +430,132 @@ class BarcodeSettingsPage extends StatelessWidget {
 
   void _showPrefixDialog(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
   ) {
     final ctrl = TextEditingController(text: s.barcodeAutoGeneratePrefix);
+    final l10n = context.l10n;
+    final st = context.settingsTheme;
+    String? errorText;
+    String? previewBarcode;
+
+    void updatePreview(String value) {
+      final trimmed = value.trim();
+      if (trimmed.isNotEmpty &&
+          trimmed.length <= 3 &&
+          RegExp(r'^[0-9]+$').hasMatch(trimmed)) {
+        try {
+          previewBarcode = Ean13Generator.generate(prefix: trimmed);
+        } catch (_) {
+          previewBarcode = null;
+        }
+      } else {
+        previewBarcode = null;
+      }
+    }
+
+    updatePreview(ctrl.text);
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.barcodePrefix),
-        content: SizedBox(
-          width: 280,
-          child: TextField(
-            controller: ctrl,
-            maxLength: 10,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: context.l10n.barcodePrefixHint,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Text(l10n.barcodePrefix),
+          content: SizedBox(
+            width: 280,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: ctrl,
+                  maxLength: 3,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText: l10n.barcodePrefixHint,
+                    errorText: errorText,
+                  ),
+                  autofocus: true,
+                  onChanged: (value) {
+                    setState(() {
+                      errorText = null;
+                      updatePreview(value);
+                    });
+                  },
+                ),
+                if (previewBarcode != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: st.cardBackground,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: st.cardBorderColor),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.qr_code_2, size: 16, color: st.softAccent),
+                        const SizedBox(width: 8),
+                        Text(
+                          previewBarcode!,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            letterSpacing: 1.2,
+                            color: st.softTextPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
-            autofocus: true,
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final value = ctrl.text.trim();
-              if (value.isNotEmpty) {
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final value = ctrl.text.trim();
+                if (value.isEmpty ||
+                    value.length > 3 ||
+                    !RegExp(r'^[0-9]+$').hasMatch(value)) {
+                  setState(() {
+                    errorText = l10n.barcodePrefixError;
+                  });
+                  return;
+                }
                 cubit.updateField(
                   (s) => s.copyWith(barcodeAutoGeneratePrefix: value),
                 );
-              }
-              Navigator.of(ctx).pop();
-            },
-            child: Text(context.l10n.save),
-          ),
-        ],
+                Navigator.of(ctx).pop();
+              },
+              child: Text(l10n.save),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _BarcodePreviewCard extends StatelessWidget {
-  const _BarcodePreviewCard({required this.scanEnabled, required this.prefix});
+  const _BarcodePreviewCard({
+    required this.scanEnabled,
+    required this.prefix,
+    required this.vibrateOnScan,
+  });
 
   final bool scanEnabled;
   final String prefix;
+  final bool vibrateOnScan;
 
   @override
   Widget build(BuildContext context) {
@@ -228,6 +613,16 @@ class _BarcodePreviewCard extends StatelessWidget {
             icon: Icons.text_fields_outlined,
             label: l10n.barcodePrefix,
             value: prefix,
+            st: st,
+          ),
+          _buildRow(
+            icon: vibrateOnScan
+                ? Icons.vibration
+                : Icons.do_not_disturb_on_outlined,
+            label: l10n.playBeepOnScan,
+            value: vibrateOnScan
+                ? l10n.settingsStatusActive
+                : l10n.settingsStatusNotSet,
             st: st,
           ),
         ],

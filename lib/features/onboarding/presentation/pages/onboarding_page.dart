@@ -9,7 +9,7 @@ import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/green_c
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_hero_section.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_section.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_sheet_option.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -102,7 +102,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _showOnboardingSettingsSheet(
     BuildContext ctx,
-    AppSettings s,
+    Settings s,
     Color accent,
   ) {
     final cubit = ctx.read<SettingsCubit>();

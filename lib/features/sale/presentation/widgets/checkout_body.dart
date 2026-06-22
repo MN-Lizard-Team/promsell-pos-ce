@@ -13,7 +13,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment_widge
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/promptpay_payment_page.dart';
 
@@ -606,7 +606,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
 
   void _showReceiptDialog(
     BuildContext context, {
-    required AppSettings settings,
+    required Settings settings,
     required ReceiptLabels labels,
     required ReceiptPreviewStyle style,
     required List<ReceiptPreviewItem> items,
@@ -619,8 +619,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
   }) {
     showDialog(
       context: context,
-      // TODO: migrate to Theme.of(context).colorScheme.scrim when available
-      barrierColor: Colors.black.withValues(alpha: 0.92),
+      barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.92),
       builder: (_) => GestureDetector(
         onTap: () => Navigator.of(context).pop(),
         child: Scaffold(

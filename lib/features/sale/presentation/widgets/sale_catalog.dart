@@ -63,8 +63,7 @@ class _SaleCatalogState extends State<SaleCatalog> {
       },
       child: BlocBuilder<ProductBloc, ProductState>(
         builder: (ctx, state) {
-          if (state.status == ProductStatus.loading ||
-              state.status == ProductStatus.initial) {
+          if (state.status == ProductStatus.initial) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -76,26 +75,12 @@ class _SaleCatalogState extends State<SaleCatalog> {
           }
 
           final activeProducts = state.filtered
-              .where((product) => product.isActive && product.isInStock)
+              .where((product) => product.isActive)
               .toList();
           final categoryState = ctx.watch<CategoryBloc>().state;
           final categories = categoryState.categories;
           final selectedCategoryId = state.categoryFilter;
-          final products = selectedCategoryId == null
-              ? activeProducts
-              : activeProducts
-                    .where(
-                      (product) => product.categoryId == selectedCategoryId,
-                    )
-                    .toList();
-
-          if (activeProducts.isEmpty) {
-            return AppEmptyState(
-              icon: Icons.inventory_2_outlined,
-              title: ctx.l10n.noProducts,
-              message: ctx.l10n.tapProductToAdd,
-            );
-          }
+          final products = activeProducts;
 
           return CustomScrollView(
             slivers: [
@@ -142,32 +127,35 @@ class _SaleCatalogState extends State<SaleCatalog> {
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                           colors: [
-                            Colors.white,
-                            Colors.white,
-                            Colors.white.withValues(alpha: 0),
+                            theme.colorScheme.surface,
+                            theme.colorScheme.surface,
+                            theme.colorScheme.surface.withValues(alpha: 0),
                           ],
                           stops: const [0, 0.85, 1],
                         ).createShader(bounds),
                         blendMode: BlendMode.dstIn,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
-                          itemCount: categories.length + 1,
+                          itemCount: categories.length + 2,
                           separatorBuilder: (_, _) => const SizedBox(width: 8),
                           itemBuilder: (_, index) {
                             final isAll = index == 0;
-                            final category = isAll
+                            final isNone = index == categories.length + 1;
+                            final category = isAll || isNone
                                 ? null
                                 : categories[index - 1];
-                            final selected = selectedCategoryId == category?.id;
+                            final selected = isNone
+                                ? selectedCategoryId == kNoCategoryFilter
+                                : selectedCategoryId == category?.id;
 
-                            final catColor = isAll
+                            final catColor = isAll || isNone
                                 ? null
                                 : parseCategoryColor(category!.color);
-                            final catIcon = isAll
+                            final catIcon = isAll || isNone
                                 ? null
                                 : parseCategoryIcon(category!.iconName);
                             return ChoiceChip(
-                              avatar: isAll || catColor == null
+                              avatar: isAll || isNone || catColor == null
                                   ? null
                                   : Icon(
                                       catIcon,
@@ -177,7 +165,11 @@ class _SaleCatalogState extends State<SaleCatalog> {
                                           : catColor,
                                     ),
                               label: Text(
-                                isAll ? ctx.l10n.allCategories : category!.name,
+                                isAll
+                                    ? ctx.l10n.allCategories
+                                    : isNone
+                                    ? ctx.l10n.noCategory
+                                    : category!.name,
                               ),
                               selected: selected,
                               selectedColor: theme.colorScheme.primaryContainer,
@@ -193,7 +185,9 @@ class _SaleCatalogState extends State<SaleCatalog> {
                               onSelected: (_) {
                                 HapticFeedback.selectionClick();
                                 ctx.read<ProductBloc>().add(
-                                  ProductCategoryFilterChanged(category?.id),
+                                  ProductCategoryFilterChanged(
+                                    isNone ? kNoCategoryFilter : category?.id,
+                                  ),
                                 );
                               },
                             );
@@ -216,23 +210,36 @@ class _SaleCatalogState extends State<SaleCatalog> {
                 ),
               ),
               if (products.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: state.searchQuery.isNotEmpty
-                      ? SearchEmptyState(
-                          query: state.searchQuery,
-                          onClear: () {
-                            _searchController.clear();
-                            context.read<ProductBloc>().add(
-                              const ProductSearchChanged(''),
-                            );
-                          },
-                        )
-                      : AppEmptyState(
-                          icon: Icons.inventory_2_outlined,
-                          title: ctx.l10n.noProducts,
-                          message: ctx.l10n.tapProductToAdd,
-                        ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 400,
+                    child: state.searchQuery.isNotEmpty
+                        ? SearchEmptyState(
+                            query: state.searchQuery,
+                            onClear: () {
+                              _searchController.clear();
+                              context.read<ProductBloc>().add(
+                                const ProductSearchChanged(''),
+                              );
+                            },
+                          )
+                        : state.categoryFilter != null
+                        ? AppEmptyState(
+                            icon: Icons.filter_list_off,
+                            title: ctx.l10n.noProductsInCategory,
+                            actionLabel: ctx.l10n.clearFilters,
+                            onAction: () {
+                              context.read<ProductBloc>().add(
+                                const ProductCategoryFilterChanged(null),
+                              );
+                            },
+                          )
+                        : AppEmptyState(
+                            icon: Icons.inventory_2_outlined,
+                            title: ctx.l10n.noProducts,
+                            message: ctx.l10n.tapProductToAdd,
+                          ),
+                  ),
                 )
               else if (state.searchQuery.isNotEmpty)
                 SliverPadding(

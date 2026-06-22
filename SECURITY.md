@@ -64,6 +64,8 @@ Promsell is an **offline-first local app** with no network access by default:
 9. **PDF generation** — local only, no upload
 10. **Orphaned image cleanup** (v0.8.0+) — `AddProductPage` tracks temp image paths and deletes orphaned files on dispose/discard; `ClearOrphanedImages` usecase removes unused images from `/images/` directory. Prevents disk space exhaustion from abandoned temp files
 11. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
+12. **Barcode case normalization** (v0.8.1+) — barcodes normalized to uppercase on save and lookup; prevents case-mismatch bypass of duplicate detection and lookup
+13. **Barcode manual entry validation** (v0.8.1+) — inline alphanumeric validation before submission; prevents unhandled `ArgumentError` from reaching downstream use cases
 
 ## Security changelog
 

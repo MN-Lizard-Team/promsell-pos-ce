@@ -8,7 +8,6 @@ import 'package:promsell_pos_ce/core/widgets/modern_toggle_card.dart';
 import 'package:promsell_pos_ce/core/widgets/stock_stepper.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
     show parseCategoryColor, parseCategoryIcon;
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_picker_bottom_sheet.dart';
@@ -220,13 +219,18 @@ class _InfoTab extends StatelessWidget {
                     icon: const Icon(Icons.camera_alt_outlined),
                     tooltip: context.l10n.scanBarcode,
                     onPressed: () async {
+                      final settings = context
+                          .read<SettingsCubit>()
+                          .state
+                          .settings;
                       final result = await showProductBarcodeScanner(
                         context,
-                        beepOnScan: context
-                            .read<SettingsCubit>()
-                            .state
-                            .settings
-                            .barcodeBeepOnScan,
+                        beepOnScan: settings.barcodeBeepOnScan,
+                        formats: barcodeFormatsFromNames(
+                          settings.barcodeEnabledFormats,
+                        ),
+                        autoOpenManualDelay:
+                            settings.barcodeAutoOpenManualDelay,
                       );
                       if (result != null && result.isNotEmpty) {
                         barcodeCtrl.text = result;
@@ -303,16 +307,12 @@ class _CategoryField extends StatelessWidget {
   }
 
   void _pickCategory(BuildContext context) async {
-    final bloc = context.read<CategoryBloc>();
-    final result = await showModalBottomSheet<Category>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => BlocProvider.value(
-        value: bloc,
-        child: CategoryPickerBottomSheet(selectedId: selectedCategory?.id),
-      ),
+    final result = await showCategoryPicker(
+      context,
+      selectedId: selectedCategory?.id,
+      showNoneOption: true,
     );
-    if (result != null) {
+    if (result != null || selectedCategory != null) {
       onChanged(result);
     }
   }

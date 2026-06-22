@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_barcodes.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
@@ -14,10 +15,12 @@ abstract class BlocModule {
     AddProduct addProduct,
     UpdateProduct updateProduct,
     DeleteProduct deleteProduct,
+    BatchGenerateBarcodes batchGenerateBarcodes,
   ) => ProductBloc(
     getProducts: getProducts,
     addProduct: addProduct,
     updateProduct: updateProduct,
     deleteProduct: deleteProduct,
+    batchGenerateBarcodes: batchGenerateBarcodes,
   )..add(const ProductsSubscribed());
 }

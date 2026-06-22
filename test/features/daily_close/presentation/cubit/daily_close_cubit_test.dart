@@ -6,7 +6,6 @@ import 'package:promsell_pos_ce/features/daily_close/domain/usecases/close_day.d
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_by_date.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
@@ -18,13 +17,10 @@ class MockGetDailyCloseByDate extends Mock implements GetDailyCloseByDate {}
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
-class FakeAppSettings extends Fake implements AppSettings {}
-
 class FakeSettings extends Fake implements Settings {}
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(FakeAppSettings());
     registerFallbackValue(FakeSettings());
   });
   group('DailyCloseCubit', () {

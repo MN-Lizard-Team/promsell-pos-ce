@@ -9,12 +9,12 @@ import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 class SaleReceiptDialog {
   SaleReceiptDialog._();
 
-  static void show(BuildContext context, Sale sale, AppSettings settings) {
+  static void show(BuildContext context, Sale sale, Settings settings) {
     final l = context.l10n;
     final labels = ReceiptLabels(
       receipt: l.receiptLabelReceipt,

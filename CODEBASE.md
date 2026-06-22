@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.0
+# CODEBASE.md — Promsell POS CE v0.8.1
 
 ## System overview
 
@@ -12,32 +12,33 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────┐
-│   main.dart — App entry point                    │
-│   MaterialApp wrapped in BlocBuilder<SettingsCubit>│
-│   5-tab NavigationBar shell with lazy-loaded tabs │
-└────────────────────┬─────────────────────────────┘
-                     ▼
-┌──────────────────────────────────────────────────┐
-│   lib/features/ — Feature modules               │
-│   sale/       — Cart, checkout, draft, discount  │
+┌──────────────────────────────────────────────────────┐
+│             main.dart — App entry point              │
+│   MaterialApp wrapped in BlocBuilder<SettingsCubit>  │
+│   5-tab NavigationBar shell with lazy-loaded tabs    │
+└────────────────────────┬─────────────────────────────┘  
+                         ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   lib/features/ — Feature modules                                            │
+│   sale/       — Cart, checkout, draft, discount                              │        
 │   product/    — CRUD inventory, ProductBloc, image service, barcode scanning │
-│   history/    — Sale history viewer              │
-│   report/     — Analytics dashboard             │
-│   settings/   — Locale, theme, shop info        │
-└────────────────────┬─────────────────────────────┘
-                     ▼
-┌──────────────────────────────────────────────────┐
-│   lib/core/ — Cross-cutting infrastructure      │
-│   database/   — Drift schema, tables, DAOs       │
-│   di/         — injectable + get_it DI             │
-│   extensions/ — context.l10n helper             │
-│   image/      — Unified image system (UnifiedImageWidget, ImageSkeleton, ImageErrorPlaceholder, ImageCacheService) │
-│   services/   — (empty — services moved to features) │
-│   utils/      — IdGenerator, payment_method      │
-│   widgets/    — shared UI primitives             │
-└────────────────────┬─────────────────────────────┘
-                     ▼
+│   history/    — Sale history viewer                                          │
+│   report/     — Analytics dashboard                                          │
+│   settings/   — Locale, theme, shop info                                     │
+└────────────────────────┬─────────────────────────────────────────────────────┘
+                         ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   lib/core/ — Cross-cutting infrastructure                                   │
+│   database/   — Drift schema, tables, DAOs                                   │
+│   di/         — injectable + get_it DI                                       │
+│   extensions/ — context.l10n helper                                          │
+│   image/      — Unified image system (UnifiedImageWidget,                    │
+│                 ImageSkeleton, ImageErrorPlaceholder, ImageCacheService)     │
+│   services/   — (deprecated — services moved to features)                    │
+│   utils/      — IdGenerator, payment_method                                  │
+│   widgets/    — shared UI primitives                                         │
+└───────────────────────┬──────────────────────────────────────────────────────┘
+                        ▼
 ┌──────────────────────────────────────────────────┐
 │   lib/l10n/ — Localization                       │
 │   app_th.arb  — Thai (template)                  │
@@ -88,11 +89,14 @@ features/<name>/
 | `MoneyUtils` | `lib/core/utils/` | Centralized monetary rounding (`round(double)`) for VAT, discount, and total calculations |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `SlipVerifier` | `lib/core/utils/` | Decodes Thai bank transfer slip Mini-QR; returns `SlipVerifyResult` with `SlipErrorType` categorization |
-| `BarcodeScannerDialog` | `lib/core/widgets/` | Fullscreen barcode scanner supporting EAN-13/8, UPC-A/E, Code 128/39, ITF; haptic feedback, 800ms debounce, manual entry fallback, error overlay. Shared `ScanOverlayPainter` |
+| `BarcodeScannerDialog` | `lib/core/widgets/` | Fullscreen barcode scanner supporting EAN-13/8, UPC-A/E, Code 128/39, ITF, QR Code, DataMatrix, PDF417, Aztec, Codabar; haptic feedback, first-detect lock, manual entry fallback with inline validation, auto-clearing error overlay, auto-open manual entry timer. Shared `ScanOverlayPainter` |
 | `showProductBarcodeScanner()` | `lib/core/widgets/barcode_scanner_dialog.dart` | Shared helper that opens `BarcodeScannerDialog` with predefined product barcode formats |
 | `showImageSourceSheet()` | `lib/core/widgets/image_source_sheet.dart` | Shared bottom-sheet helper for gallery/camera/remove image actions; used by AddProductPage and ProductFormPage |
 | `DuplicateBarcodeException` | `lib/core/exceptions/` | Thrown when barcode already exists on another product |
-| `SoundPlayer` | `lib/core/utils/` | Lightweight audio player for confirmation feedback |
+| `SoundPlayer` | `lib/core/utils/` | Lightweight audio player for PromptPay confirmation feedback (`audioplayers`) |
+| `Ean13Generator` | `lib/core/utils/` | EAN-13 compliant barcode generator with Luhn check digit; default prefix `200` (GS1 internal use range); pads 1-2 digit prefixes to 3 digits; counter persisted via `initCounter()`/`currentCounter` |
+| `GenerateBarcode` | `lib/features/product/domain/usecases/` | Injectable use case wrapping `Ean13Generator.generate()` with DB collision check (`barcodeExists`) + retry (max 10) + counter persistence to Settings |
+| `BatchGenerateBarcodes` | `lib/features/product/domain/usecases/` | Injectable use case that finds all active products without barcodes, generates unique EAN-13 for each, and updates them in a single `bulkUpdateBarcodes()` call (Drift batch) for single stream event |
 | `PromptPayQrCode` | `lib/features/settings/presentation/widgets/` | EMVCo-compliant QR payload generator via `thai_promptpay`; optional customizable icon overlay |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
 | `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; delegates delete to `ImageCacheService`; format validation (`.jpg`, `.png`, `.webp`, etc.); auto LRU cache eviction on save; `@LazySingleton` |
@@ -116,10 +120,10 @@ features/<name>/
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
 | Sale | `SaleBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
-| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `QuickEditSheet`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet`, `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages` |
+| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `QuickEditSheet`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet` (with `showCategoryPicker` helper), `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages`, `ReorderCategories` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
-| Settings | `SettingsCubit` | Pages: 3-level hierarchy — `settings_root_page.dart`, `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart`, `stock_policy_settings_page.dart`, `image_settings_page.dart`, `barcode_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 13 typed group entities |
+| Settings | `SettingsCubit` | Pages: 2-level hierarchy — `settings_root_page.dart` (flat section list), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart` (merged with presets), `stock_settings_page.dart`, `image_settings_page.dart`, `barcode_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`, `about_page.dart`, `privacy_policy_page.dart`, `license_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 13 typed group entities |
 | Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
 | Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
 | Draft Cart | (via `SaleBloc`) | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
@@ -178,7 +182,7 @@ dart run build_runner build --delete-conflicting-outputs
 
 ## Phase 4 Sync Readiness Audit
 
-**Date:** 2026-06-05 | **Schema:** v10
+**Date:** 2026-06-22 | **Schema:** v16
 
 All tables require 4 sync columns: `updatedAt`, `deletedAt`, `version`, `deviceId`.
 
@@ -186,15 +190,15 @@ All tables require 4 sync columns: `updatedAt`, `deletedAt`, `version`, `deviceI
 |---|---|---|---|---|---|
 | `Products` | ✅ | ✅ | ✅ | ✅ | Ready |
 | `Sales` | ✅ | ✅ | ✅ | ✅ | Ready |
-| `SaleItems` | ❌ | ❌ | ❌ | ❌ | **Gap** |
+| `SaleItems` | ✅ | ✅ | ✅ | ✅ | Ready (added v11) |
 | `Categories` | ✅ | ✅ | ✅ | ✅ | Ready |
-| `InventoryLogs` | ❌ | ❌ | ❌ | ✅ | Partial |
-| `DraftCarts` | ✅ | ❌ | ❌ | ✅ | Partial |
-| `DraftCartItems` | ❌ | ❌ | ❌ | ❌ | **Gap** |
-| `DailyCloses` | ❌ | ❌ | ❌ | ✅ | Partial |
-| `AppSettings` | ✅ | ❌ | ❌ | ❌ | Partial (K/V store) |
+| `InventoryLogs` | ✅ | ✅ | ✅ | ✅ | Ready (added v11) |
+| `DraftCarts` | ✅ | ✅ | ✅ | ✅ | Ready (completed v11) |
+| `DraftCartItems` | ✅ | ✅ | ✅ | ✅ | Ready (added v11) |
+| `DailyCloses` | ✅ | ✅ | ✅ | ✅ | Ready (completed v11) |
+| `AppSettings` | ✅ | — | ✅ | ✅ | By-design (K/V store, no soft-delete) |
 
-**Gap mitigation:** SaleItems, DraftCartItems, and DailyCloses need migration to add missing sync columns. Tracked as `phase-4-prep` issues. AppSettings as key-value store may use a different sync strategy.
+**Result:** All 8 data tables have full sync columns as of schema v11 migration. `AppSettings` omits `deletedAt` by design (key-value store uses explicit key deletion, not soft delete). Schema v12 converted TEXT ISO8601 timestamps to INTEGER milliseconds for sync columns. Schema v13 backfilled `deviceId` on all tables.
 
 ---
 
@@ -233,7 +237,7 @@ SettingsCubit
 | Discount | `DiscountConfig` | enableItemDiscount, enableCartDiscount, maxDiscountPercent, maxDiscountAmount, defaultDiscountType, discountPresets, activeDiscountPresetId |
 | Stock | `StockConfig` | allowOversell, lowStockThreshold |
 | Image | `ImageConfig` | maxWidth, quality |
-| Barcode | `BarcodeConfig` | scanEnabled, beepOnScan, autoGeneratePrefix |
+| Barcode | `Barcode` | `BarcodeConfig` | scanEnabled, beepOnScan (haptic), autoGeneratePrefix (default `200`, EAN-13 numeric), enabledFormats (List<String>, default = all 12), autoOpenManualDelay (int seconds, 0=disabled) |
 | Payment | `PaymentConfig` | currency, promptpayId, billerId, promptPayTimeout, promptPaySoundEnabled, defaultQrType, autoConfirmAfterSlip, qrOverlayIcon |
 | Device | `DeviceConfig` | deviceId, devicePrefix |
 | UI | `UiConfig` | locale, themeMode, dateFormat, cartCompactMode, ultraCompactMode, accessibilityMode |
@@ -241,9 +245,9 @@ SettingsCubit
 | Backup | `BackupConfig` | reminderDays, lastBackupAt, encryptionEnabled |
 | Draft | `DraftConfig` | maxDrafts |
 
-### `@Deprecated` facade
+### Flat getters + flat `copyWith`
 
-`AppSettings` is a temporary facade over `Settings` for backward compatibility during migration. Use `AppSettings.fromSettings()` / `toSettings()` at presentation layer boundaries.
+`Settings` exposes flat convenience getters (e.g. `shopName`, `vatRate`, `promptpayId`) and a flat `copyWith` method mirroring the former `AppSettings` facade interface. This allows presentation-layer consumers to access fields directly without navigating sub-entities. Use `copyWithEntities()` for sub-entity-level updates.
 
 ### Legacy migration
 
@@ -307,14 +311,14 @@ Two generators must be run after changes:
 |----------------|-------------|
 | Drift table definition (`lib/core/database/tables/`) | Run `build_runner build` |
 | `app_th.arb` | `app_en.arb` (add matching key) + `flutter gen-l10n` |
-| `AppSettings` entity | `SettingsRepositoryImpl`, `SettingsCubit`, `SettingsPage` |
+| `Settings` aggregate root | `SettingsRepositoryImpl`, `SettingsCubit`, `SettingsMapper`, all settings pages & widgets |
 | `injection_container.dart` / DI annotations | Run `build_runner build` |
 | Payment method values in DB | `payment_method_helper.dart` normalization map |
 | Shared UI behavior | `lib/core/widgets/` tests under `test/core/widgets/` |
 | Feature UI strings | Both ARB files + generated localization files |
 | Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |
 | Feature `widgets/` folder | Corresponding page file import + widget tests |
-| `Settings` aggregate root (12 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all `AppSettings` consumers |
+| `Settings` aggregate root (13 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all settings pages & widgets |
 | `SettingsMapper` | `SettingsRepositoryImpl` tests (mock `getAll()` return values); legacy migration handling |
 | Extracted widget (e.g. `CartItemCard`) | Parent page import update + widget test under `test/features/<name>/presentation/widgets/` |
 | Domain extension (e.g. `ReportCalculator`) | Pure Dart test under `test/features/<name>/domain/extensions/` |
@@ -324,13 +328,15 @@ Two generators must be run after changes:
 | `SaleLocalDatasource` | Update `ReceiptNumberService`/`InventoryLogService` injection in tests |
 | `CartItem` entity | Update `cart_item_test.dart` props count + discount test fixtures |
 | `SaleBloc` constructor | Update `sale_bloc_test.dart` to inject `MockDraftCartRepository` |
+| `SaleState` new field (e.g. `stockWarning`) | Update `sale_state.dart` props count + `sale_bloc_test.dart` expectations + any `copyWith` usage |
 | `DraftCart` entity (new fields) | Update `draft_cart.dart` + `DraftCartLocalDatasource` + `SaleBloc` draft event handlers + `sale_bloc_test.dart` |
 | `DraftCarts` table schema | Run `build_runner build`; bump schema version + add migration in `app_database.dart` |
 | `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductRepositoryImpl` constructor if services added |
 | `Category` entity (new fields: color, iconName) | Update `category_test.dart` props count + fixtures + `CategoryRepositoryImpl` mapping + run `build_runner build`; bump schema version |
 | `CategoryRepositoryImpl` constructor | Update tests to inject mock datasource; regenerate with `build_runner` |
-| `CategoryBloc` constructor / events | Update mock in `test/helpers/mocks.dart`; add `CategoriesReordered` event handler tests |
+| `CategoryBloc` constructor / events | Update mock in `test/helpers/mocks.dart`; add `CategoriesReordered` event handler tests; inject `ReorderCategories` use case |
 | `ProductRepositoryImpl` constructor | Update `product_repository_impl_test.dart` to inject `MockProductImageService` |
+| `ProductLocalDatasource` / `ProductRepository` new method (e.g. `bulkUpdateBarcodes`) | Update interface + impl + mock in `mocks.dart` + `batch_generate_barcodes_test.dart` |
 | `InventoryLog` entity | Update `inventory_log_test.dart` props count + `InventoryLogRepositoryImpl` mapping |
 | `InventoryLogCubit` constructor | Update mock in `test/helpers/mocks.dart` + inject `MockWatchInventoryLogs` in tests |
 | `InventoryLogLocalDatasource` | Update `InventoryLogRepositoryImpl` tests to inject mock datasource |
@@ -339,7 +345,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-340 automated tests across 8 layers. Run with `flutter test`.
+405 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
 
 ### Test directory structure
 
@@ -351,12 +357,12 @@ test/
 │   ├── pump_app.dart           # pumpApp extension for widget tests
 │   └── fake_database.dart      # In-memory Drift DB factory
 ├── core/
-│   └── utils/                  # Core utility tests (MoneyUtils, etc.)
+│   └── utils/                  # Core utility tests (MoneyUtils, Ean13Generator, Validators)
 ├── features/
 │   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
 │   │   └── presentation/widgets/  # CartItemCard, CartDetailRow, CartQtyButton, CartDottedLineRow, CompactCartFab
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
-│   │   └── presentation/widgets/  # ProductCategoryAutocomplete
+│   │   └── presentation/widgets/  # CategoryPicker, CategoryFilterBar
 │   ├── history/                # Use case, BLoC, repo tests
 │   ├── inventory/              # InventoryLog entity, use case, cubit, repo tests
 │   ├── report/                 # ReportCubit tests + ReportCalculator domain tests
@@ -369,7 +375,10 @@ test/
 │       └── presentation/widgets/  # OnboardingHeroSection, OnboardingSection, GreenChoiceChip, OnboardingSheetOption
 ├── integration/
 │   ├── checkout_flow_test.dart  # End-to-end data layer checkout
-│   └── sale_integrity_test.dart # Void sale, adjust stock, full audit trail
+│   ├── sale_integrity_test.dart # Void sale, adjust stock, full audit trail
+│   └── onboarding_first_sale_test.dart # Onboarding → sale → settings persist
+├── tool/
+│   └── seed_integration_test.dart  # Stress test (10k products, 50k sales) — @Tags(['stress'])
 └── l10n/
     └── l10n_parity_test.dart   # EN/TH key parity and non-empty validation
 ```
@@ -384,4 +393,5 @@ test/
 | Datasource | In-memory Drift DB | `sqlite3_flutter_libs` (FFI) |
 | Widget | `pumpApp` + `MockBloc` | Mocked BLoC states |
 | Integration | In-memory DB end-to-end | Real repos + datasources |
+| Stress | `@Tags(['stress'])` — excluded from CI | In-memory Drift DB, 10k+ rows |
 | L10n | Direct class instantiation | None |

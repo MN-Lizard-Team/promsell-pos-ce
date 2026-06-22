@@ -214,7 +214,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHistoryHint => 'Search receipt, payment, amount…';
 
   @override
-  String get noSearchResults => 'No matching sales found';
+  String get noSearchResults => 'No settings found';
 
   @override
   String get noSalesYet => 'No sales yet';
@@ -1143,7 +1143,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap to record that you have backed up your data';
 
   @override
-  String get backupEncryptionTitle => 'Backup encryption';
+  String get backupEncryptionTitle => 'Backup Encryption (Optional)';
 
   @override
   String get backupEncryptionLabel => 'Encrypt backups';
@@ -1568,6 +1568,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get barcodeGenerated => 'Barcode generated';
 
   @override
+  String get batchGenerateBarcodes => 'Generate Missing Barcodes';
+
+  @override
+  String get batchGenerateBarcodesHint =>
+      'Generate barcodes for all products without one';
+
+  @override
+  String get batchGenerateConfirmTitle => 'Generate Barcodes';
+
+  @override
+  String batchGenerateConfirmBody(Object count) {
+    return 'Generate EAN-13 barcodes for $count product(s) without barcodes?';
+  }
+
+  @override
+  String batchGenerateSuccess(Object count) {
+    return 'Generated barcodes for $count product(s)';
+  }
+
+  @override
+  String get batchGenerateNone => 'All products already have barcodes';
+
+  @override
+  String get batchGenerateFailed => 'Failed to generate barcodes';
+
+  @override
+  String productsWithoutBarcode(Object count) {
+    return '$count product(s) without barcode';
+  }
+
+  @override
   String get barcodeSettings => 'Barcode Settings';
 
   @override
@@ -1578,17 +1609,82 @@ class AppLocalizationsEn extends AppLocalizations {
       'Show camera scan button on the sale page';
 
   @override
-  String get playBeepOnScan => 'Play sound on scan';
+  String get playBeepOnScan => 'Vibrate on scan';
 
   @override
   String get playBeepOnScanHint =>
-      'Beep feedback when barcode is scanned successfully';
+      'Haptic vibration feedback when barcode is scanned successfully';
 
   @override
   String get barcodePrefix => 'Auto-generate prefix';
 
   @override
-  String get barcodePrefixHint => 'e.g. P, PROD';
+  String get barcodePrefixHint => 'e.g. 200, 201 (1-3 digit number for EAN-13)';
+
+  @override
+  String get barcodePrefixError => 'Must be 1-3 numeric digits only';
+
+  @override
+  String get barcodeFormats => 'Scan formats';
+
+  @override
+  String get barcodeFormatsHint =>
+      'Select which barcode formats to scan (reduces false positives)';
+
+  @override
+  String get barcodeFormatEan13 => 'EAN-13';
+
+  @override
+  String get barcodeFormatEan8 => 'EAN-8';
+
+  @override
+  String get barcodeFormatUpcA => 'UPC-A';
+
+  @override
+  String get barcodeFormatUpcE => 'UPC-E';
+
+  @override
+  String get barcodeFormatCode128 => 'Code 128';
+
+  @override
+  String get barcodeFormatCode39 => 'Code 39';
+
+  @override
+  String get barcodeFormatItf => 'ITF';
+
+  @override
+  String get barcodeFormatQrCode => 'QR Code';
+
+  @override
+  String get barcodeFormatDataMatrix => 'Data Matrix';
+
+  @override
+  String get barcodeFormatPdf417 => 'PDF417';
+
+  @override
+  String get barcodeFormatAztec => 'Aztec';
+
+  @override
+  String get barcodeFormatCodabar => 'Codabar';
+
+  @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get deselectAll => 'Deselect all';
+
+  @override
+  String get barcodeAutoOpenManual => 'Auto-open manual entry';
+
+  @override
+  String get barcodeAutoOpenManualHint =>
+      'Open manual barcode entry if scan fails within the set time';
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
+  String get secondsSuffix => 's';
 
   @override
   String get barcodeHelpTitle => 'How to use barcodes';
@@ -1652,4 +1748,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get advanced => 'Advanced';
+
+  @override
+  String get settingsStoreSales => 'Store & Sales';
+
+  @override
+  String get settingsDiscounts => 'Discounts';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get aboutApp => 'About App';
+
+  @override
+  String get appVersion => 'Version';
+
+  @override
+  String get appBuild => 'Build';
+
+  @override
+  String get appDescription => 'Offline-first mobile POS for small businesses';
+
+  @override
+  String get builtWith => 'Built with';
+
+  @override
+  String get techStackFlutter => 'Flutter';
+
+  @override
+  String get techStackDrift => 'Drift SQLite';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get openSourceLicense => 'Open Source License';
+
+  @override
+  String get contactUs => 'Contact';
+
+  @override
+  String get agplLicense => 'GNU Affero General Public License v3.0';
+
+  @override
+  String get agplShort => 'AGPL-3.0';
+
+  @override
+  String get copyrightNotice => '© 2026 Promsell POS CE · AGPL-3.0';
+
+  @override
+  String get dataCollection => 'Data Collection';
+
+  @override
+  String get dataCollectionBody =>
+      'Promsell does not collect any personal data. All sales, inventory, and settings are stored locally on your device using SQLite. No data is transmitted to our servers.';
+
+  @override
+  String get thirdPartyServices => 'Third-Party Services';
+
+  @override
+  String get thirdPartyServicesBody =>
+      'We do not use analytics, advertising, or cloud services. The app works entirely offline.';
+
+  @override
+  String get dataStorage => 'Data Storage';
+
+  @override
+  String get dataStorageBody =>
+      'Your data remains on your device. You can export or delete it at any time via the Backup/Restore feature. Product images are stored locally in the app\'s private directory and are subject to automatic LRU cache eviction (50MB limit) to prevent excessive disk usage.';
+
+  @override
+  String get backupEncryptionBody =>
+      'Promsell offers optional AES-256-GCM encryption for database backups. If enabled, backups are encrypted with a key derived from a user-supplied PIN via PBKDF2. The PIN is never stored on the device or transmitted anywhere. Forgetting the PIN makes the backup unrecoverable — we cannot reset or recover it.';
+
+  @override
+  String get permissionsTitle => 'Permissions';
+
+  @override
+  String get permissionsCamera =>
+      'Camera: Used for taking product photos and scanning product barcodes. No photos or scans are transmitted off-device.';
+
+  @override
+  String get permissionsStorage =>
+      'Storage: Used only for saving backups and receipts.';
+
+  @override
+  String get permissionsInternet =>
+      'Internet: Optional, used only for loading product images if URLs are provided. When sharing product images, URLs are sent to the platform\'s native share sheet (local device only, not to our servers).';
+
+  @override
+  String get contactTitle => 'Contact';
+
+  @override
+  String get contactBody => 'For questions: mnlizard.official@gmail.com';
 }

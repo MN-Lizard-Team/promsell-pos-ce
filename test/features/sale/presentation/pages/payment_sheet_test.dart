@@ -10,7 +10,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart'
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
@@ -34,7 +34,7 @@ void main() {
     mockSaleBloc = MockSaleBloc();
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
-      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
+      const SettingsState(status: SettingsStatus.loaded, settings: Settings()),
     );
     if (!GetIt.I.isRegistered<ReceiptPdfService>()) {
       GetIt.I.registerSingleton<ReceiptPdfService>(ReceiptPdfService());

@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.8.0
+# Architecture — Promsell POS CE v0.8.1
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -23,7 +23,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
   - [ADR-015: Sync-ready columns](#adr-015-sync-ready-columns-on-all-core-tables)
   - [ADR-016: Backup encryption](#adr-016-backup-encryption-with-aes-256-gcm)
-  - [ADR-017: Settings hierarchy](#adr-017-3-level-settings-hierarchy)
+  - [ADR-017: Settings hierarchy (revised)](#adr-017-settings-hierarchy-revised-in-v081)
   - [ADR-018: Settings aggregate root](#adr-018-settings-aggregate-root-with-typed-group-entities)
   - [ADR-019: Widget decomposition](#adr-019-widget-decomposition-and-domain-logic-extraction)
 - [PlantUML Source Files](#plantuml-source-files)
@@ -37,22 +37,22 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 ```
 ┌─────────────────────────┐
 │   👤 Merchant          │
-│   Small shop owner    │
-│   / cashier            │
+│   Small shop owner      │
+│   / cashier             │
 └────────────┬────────────┘
              │ Manages sales, products,
              │ inventory, reports
              ▼
 ┌────────────────────────────────────────────────┐
-│   Promsell POS CE                                │
-│   Offline-first mobile POS — Flutter + SQLite     │
+│   Promsell POS CE                              │
+│   Offline-first mobile POS — Flutter + SQLite  │
 └────────────┬──────────────────────┬────────────┘
              │                      │
              ▼                      ▼
-┌─────────────────┐   ┌───────────────────────┐
+┌─────────────────┐   ┌─────────────────────────┐
 │ OS Share Sheet  │   │ Thermal Printer (future)│
 │ PDF export      │   │ Bluetooth / USB         │
-└─────────────────┘   └───────────────────────┘
+└─────────────────┘   └─────────────────────────┘
 ```
 
 **Key characteristics:**
@@ -68,39 +68,39 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 
 ```
 ┌────────────────────────────────────────────────────┐
-│   👤 Merchant → Touch interactions              │
+│   👤 Merchant → Touch interactions                │
 └────────────────────────┬───────────────────────────┘
                          ▼
 ┌────────────────────────────────────────────────────┐
 │  Presentation Layer                                │
 │  Flutter Widgets + BLoC/Cubit  (5-tab shell UI)    │
 └────────────────────────┬───────────────────────────┘
-                   events │ method calls
+                  events │ method calls
                          ▼
 ┌────────────────────────────────────────────────────┐
 │  Domain Layer                                      │
-│  Pure Dart: Entities + UseCases + Repo interfaces   │
+│  Pure Dart: Entities + UseCases + Repo interfaces  │
 └────────────────────────┬───────────────────────────┘
-              injected │ implementations
+                injected │ implementations
                          ▼
-┌────────────────────────────────────────────────────┐
-│  Data Layer                                        │
-│  Repo impls + Datasources + Services               │
-│  ReceiptPdfService (80mm thermal PDF)               │
-│  PromptPayQrCode (EMVCo QR widget)                  │
-│  SlipVerifier (bank slip Mini-QR decoding)        │
-│  SlipScannerDialog (QR camera scanner)              │
-│  BarcodeScannerDialog (product barcode scanner)     │
-│  BackupService (export/import/CSV)                   │
+┌────────────────────────────────────────────────────────┐
+│  Data Layer                                            │
+│  Repo impls + Datasources + Services                   │
+│  ReceiptPdfService (80mm thermal PDF)                  │
+│  PromptPayQrCode (EMVCo QR widget)                     │
+│  SlipVerifier (bank slip Mini-QR decoding)             │
+│  SlipScannerDialog (QR camera scanner)                 │
+│  BarcodeScannerDialog (product barcode scanner)        │
+│  BackupService (export/import/CSV)                     │
 │  ProductImageService (compression + format validation) │
-│  ImageCacheService (LRU cache eviction)              │
-└────────────────────────┬───────────────────────────┘
-                Drift │ queries + transactions
+│  ImageCacheService (LRU cache eviction)                │
+└────────────────────────┬───────────────────────────────┘
+                   Drift │ queries + transactions
                          ▼
-┌────────────────────────────────────────────────────┐
-│  SQLite (Drift ORM)                                │
+┌─────────────────────────────────────────────────────┐
+│  SQLite (Drift ORM)                                 │
 │  9 tables • schema v16 • WAL • FK ON • UUIDv4 PKs   │
-└────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────┘
 ```
 
 ### Layer rules
@@ -119,50 +119,50 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 
 ```
 ┌──────────────────── Presentation ───────────────────────┐
-│                                                       │
-│  SalePage ──┐   HistoryPage ──┐   ReportPage          │
-│  CheckoutPage  │   VoidDialog   │                       │
-│  PaymentSheet  │                │                       │
-│  CheckoutBody  │                │                       │
-│              ▼                ▼              │        │
-│         SaleBloc        HistoryBloc   ReportCubit    │
-│         ProductBloc                                   │
-└─────────┬─────────────┬─────────────┬─────────────┘
+│                                                         │
+│     SalePage ──┐  HistoryPage ──┐   ReportPage─┐        │
+│  CheckoutPage  │   VoidDialog   │              │        │
+│  PaymentSheet  │                │              │        │
+│  CheckoutBody  │                │              │        │
+│                ▼                ▼              ▼        │
+│         SaleBloc        HistoryBloc   ReportCubit       │
+│         ProductBloc                                     │
+└─────────┬─────────────┬─────────────┬───────────────────┘
           │             │             │
           ▼             ▼             ▼
-┌────────────────────── Domain ────────────────────┐
-│                                                       │
-│  CreateSale   VoidSale   AdjustStock  GetSales         │
-│  GetProducts  WatchSaleHistory  WatchReport            │
-│  GetSaleById  WatchSales  WatchRecentSales             │
-│                                                       │
-└─────────┬─────────────┬─────────────┬─────────────┘
+┌────────────────────── Domain ───────────────────────────┐
+│                                                         │
+│  CreateSale   VoidSale   AdjustStock  GetSales          │
+│  GetProducts  WatchSaleHistory  WatchReport             │
+│  GetSaleById  WatchSales  WatchRecentSales              │
+│                                                         │
+└─────────┬─────────────┬─────────────┬───────────────────┘
           │             │             │
           ▼             ▼             ▼
-┌─────────────────────── Data ─────────────────────┐
-│                                                       │
-│  SaleRepositoryImpl   ProductRepositoryImpl           │
-│  HistoryRepositoryImpl                                │
-│       │                      │                        │
-│       ▼                      ▼                        │
-│  SaleLocalDatasource   ProductLocalDatasource          │
-│       │                                               │
-│       ├───→ ReceiptNumberService                       │
-│       ├───→ InventoryLogService                        │
-│       │                                               │
-│  ProductImageService ──→ SettingsRepository (image)   │
-│  ImageCacheService ──→ image directory (LRU eviction)    │
-│  SettingsLocalDatasource (app_settings)                │
-│  SettingsMapper (Settings ↔ Map<String,String>)        │
-│  SettingsPersistenceService (debounce + save)          │
-└───────────────────────┬─────────────────────────────┘
+┌─────────────────────── Data ────────────────────────────┐
+│                                                         │
+│  SaleRepositoryImpl       ProductRepositoryImpl         │
+│  HistoryRepositoryImpl       │                          │
+│       │                      │                          │
+│       ▼                      ▼                          │
+│  SaleLocalDatasource   ProductLocalDatasource           │
+│       │                                                 │
+│       ├───→ ReceiptNumberService                        │
+│       ├───→ InventoryLogService                         │
+│       │                                                 │
+│  ProductImageService ──→ SettingsRepository (image)     │
+│  ImageCacheService ──→ image directory (LRU eviction)   │
+│  SettingsLocalDatasource (app_settings)                 │
+│  SettingsMapper (Settings ↔ Map<String,String>)         │
+│  SettingsPersistenceService (debounce + save)           │
+└───────────────────────┬─────────────────────────────────┘
                         │
                         ▼
-┌───────────────────── Storage ────────────────────┐
-│                                                       │
-│  SQLite (Drift)                                       │
-│  9 tables • WAL • FK ON • UUIDv4 PKs                  │
-└─────────────────────────────────────────────────────┘
+┌───────────────────── Storage ───────────────────────────┐
+│                                                         │
+│  SQLite (Drift)                                         │
+│  9 tables • WAL • FK ON • UUIDv4 PKs                    │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -174,7 +174,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 ```
 Merchant → SalePage → SaleBloc → CreateSale → SaleLocalDatasource
                                                     │
-                ┌───────────────────────────────────────────┘
+                ┌───────────────────────────────────┘
                 │  TRANSACTION BEGIN
                 │
                 ├──→ ReceiptNumberService.next()
@@ -218,7 +218,7 @@ Merchant → HistoryPage [Tap "Void Sale"]
              └─→ VoidSale.call(saleId, reason)
                     │
                     └─→ SaleLocalDatasource.voidSale()
-                            │
+                             │
                 ┌────────────┘
                 │  TRANSACTION BEGIN
                 │
@@ -235,7 +235,7 @@ Merchant → HistoryPage [Tap "Void Sale"]
                 │            INSERT inventory_logs (type=VOID_REVERSAL, qty=+N)
                 │
                 │  TRANSACTION COMMIT
-                └────────────────────────────────┘
+                └───────────┬────────────────────────────┘
                             │
             HistoryPage ← success
             Merchant ← "Sale voided" snackbar + VOIDED badge
@@ -331,69 +331,74 @@ Drift's `watch()` queries use SQLite update hooks — no polling, no manual refr
 Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it` (generated config in `injection_container.config.dart`).
 
 ```
-┌─────────────────── BLoCs / Cubits ───────────────────────┐
+┌─────────────────── BLoCs / Cubits ────────────────────────┐
 │                                                           │
 │  ProductBloc ──→ GetProducts, AddProduct,                 │
-│                  UpdateProduct, DeleteProduct              │
+│                  UpdateProduct, DeleteProduct             │
+│  CategoryBloc ──→ WatchCategories, AddCategory,           │
+│                  UpdateCategory, DeleteCategory,          │
+│                  ReorderCategories                        │
 │  SettingsCubit ──→ SettingsRepository                     │
-│  ReportCubit (lazySingleton) ──→ WatchReport               │
-│  InventoryLogCubit ──→ WatchInventoryLogs                   │
+│  ReportCubit (lazySingleton) ──→ WatchReport              │
+│  InventoryLogCubit ──→ WatchInventoryLogs                 │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
            ▼
-┌─────────────────── Use Cases ────────────────────────────┐
-│                                                           │
-│  CreateSale ──→ SaleRepository                            │
-│  VoidSale ──→ SaleRepository                              │
-│  AdjustStock ──→ ProductRepository + InventoryLogService  │
-│  GetProducts / Add / Update / Delete ──→ ProductRepository│
-│  GetSales / GetSaleById ──→ SaleRepository               │
-│  WatchSaleHistory ──→ HistoryRepository                   │
-│  WatchSales / WatchRecentSales ──→ SaleRepository        │
-│  WatchReport ──→ HistoryRepository                        │
-│  WatchInventoryLogs ──→ InventoryLogRepository              │
-│                                                           │
-└──────────┬────────────────────────────────────────────────┘
+┌─────────────────── Use Cases ───────────────────────────────────────────────┐
+│                                                                             │
+│  CreateSale ──→ SaleRepository                                              │
+│  VoidSale ──→ SaleRepository                                                │
+│  AdjustStock ──→ ProductRepository + InventoryLogService                    │
+│  GetProducts / Add / Update / Delete ──→ ProductRepository                  │
+│  WatchCategories / Add / Update / Delete / Reorder ──→ CategoryRepository   │
+│  GetSales / GetSaleById ──→ SaleRepository                                  │
+│  WatchSaleHistory ──→ HistoryRepository                                     │
+│  WatchSales / WatchRecentSales ──→ SaleRepository                           │
+│  WatchReport ──→ HistoryRepository                                          │
+│  WatchInventoryLogs ──→ InventoryLogRepository                              │
+│                                                                             │
+└──────────┬──────────────────────────────────────────────────────────────────┘
            │
            ▼
-┌─────────────────── Repositories ─────────────────────────┐
-│                                                           │
-│  SaleRepository ──→ SaleLocalDatasource                   │
-│  ProductRepository ──→ ProductLocalDatasource             │
-│                       ──→ ProductImageService              │
-│  HistoryRepository ──→ SaleLocalDatasource                │
+┌─────────────────── Repositories ────────────────────────────┐
+│                                                             │
+│  SaleRepository ──→ SaleLocalDatasource                     │
+│  ProductRepository ──→ ProductLocalDatasource               │
+│                       ──→ ProductImageService               │
+│  CategoryRepository ──→ CategoryLocalDatasource             │
+│  HistoryRepository ──→ SaleLocalDatasource                  │
 │  InventoryLogRepository ──→ InventoryLogLocalDatasource     │
-│  SettingsRepository ──→ SettingsMapper                  │
-│                        ──→ SettingsLocalDatasource        │
-│                                                           │
-└──────────┬────────────────────────────────────────────────┘
+│  SettingsRepository ──→ SettingsMapper                      │
+│                        ──→ SettingsLocalDatasource          │
+│                                                             │
+└──────────┬──────────────────────────────────────────────────┘
            │
            ▼
-┌─────────────────── Datasources & Services ───────────────┐
-│                                                           │
-│  SaleLocalDatasource ──→ AppDatabase                      │
-│       ├──→ ReceiptNumberService ──→ AppDatabase           │
-│       └──→ InventoryLogService ──→ AppDatabase            │
-│  ProductLocalDatasource ──→ AppDatabase                   │
+┌─────────────────── Datasources & Services ──────────────────┐
+│                                                             │
+│  SaleLocalDatasource ──→ AppDatabase                        │
+│       ├──→ ReceiptNumberService ──→ AppDatabase             │
+│       └──→ InventoryLogService ──→ AppDatabase              │
+│  ProductLocalDatasource ──→ AppDatabase                     │
 │  InventoryLogLocalDatasource ──→ AppDatabase                │
-│  ProductImageService ──→ SettingsRepository (image config)│
-│  ImageCacheService ──→ image directory (size tracking)    │
-│  SettingsLocalDatasource ──→ AppDatabase                  │
-│  ReceiptPdfService (stateless)                            │
-│  PromptPayQrCode (stateless)                              │
-│  SlipVerifier (stateless)                                 │
-│  BackupService (stateless)                                │
-│                                                           │
-└──────────┬────────────────────────────────────────────────┘
+│  ProductImageService ──→ SettingsRepository (image config)  │
+│  ImageCacheService ──→ image directory (size tracking)      │
+│  SettingsLocalDatasource ──→ AppDatabase                    │
+│  ReceiptPdfService (stateless)                              │
+│  PromptPayQrCode (stateless)                                │
+│  SlipVerifier (stateless)                                   │
+│  BackupService (stateless)                                  │
+│                                                             │
+└──────────┬──────────────────────────────────────────────────┘
            │
            ▼
-┌─────────────────── Database ─────────────────────────────┐
-│                                                           │
-│  AppDatabase (singleton)                                  │
-│  SQLite • Drift ORM • 9 tables • WAL • FK ON             │
-│                                                           │
-└───────────────────────────────────────────────────────────┘
+┌─────────────────── Database ────────────────────────────────┐
+│                                                             │
+│  AppDatabase (singleton)                                    │
+│  SQLite • Drift ORM • 9 tables • WAL • FK ON                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Registration order
@@ -633,7 +638,7 @@ try {
 
 **Context:** Product image compression previously used `flutter_image_compress` (native platform channels). This added a native dependency, complicated the build, and couldn't be configured at runtime.
 
-**Decision:** Replace with the `image` package (pure Dart). Compression settings (`imageMaxWidth`, `imageQuality`) are stored in `AppSettings` and read via `SettingsCubit`, allowing merchant configuration without app rebuild.
+**Decision:** Replace with the `image` package (pure Dart). Compression settings (`imageMaxWidth`, `imageQuality`) are stored in `Settings` and read via `SettingsCubit`, allowing merchant configuration without app rebuild.
 
 **Consequences:**
 - ✅ No native dependency — simpler build, no platform channel issues
@@ -736,18 +741,21 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 
 ---
 
-### ADR-017: 3-level settings hierarchy
+### ADR-017: Settings hierarchy (revised in v0.8.1)
 
-**Context:** The Settings page grew from 5 tiles (v0.5.x) to 12 tiles (v0.6.x) to 20+ individual settings (v0.7.0). Flat list became unwieldy. Merchants struggled to find specific settings.
+**Context:** The Settings page grew from 5 tiles (v0.5.x) to 12 tiles (v0.6.x) to 20+ individual settings (v0.7.0). Flat list became unwieldy. Merchants struggled to find specific settings. Initially solved with 3-level navigation (v0.7.0), but user testing revealed 3 taps to reach any setting was excessive — especially for Payments (1 sub-topic) and General (2 sub-topics).
 
-**Decision:** Restructure into 3-level navigation: topic groups (General, Store, Payment, System) → sub-topics (e.g., Store → Shop Info, Stock Policy) → individual pages. Add cross-sub-topic search on root page.
+**Decision (v0.7.0):** Restructure into 3-level navigation: topic groups → sub-topics → individual pages.
+
+**Revision (v0.8.1):** Flattened to 2-level hierarchy: section headers (General, Store & Sales, Discounts, Payments, System & Data, About) → individual pages. Removed `SettingsSubTopicPage` intermediary. Merged Discount Presets into Discount Policy page. Moved Barcode to General section. Added About section with in-app Privacy Policy and License pages.
 
 **Consequences:**
-- ✅ Scales to 50+ settings without cognitive overload
-- ✅ Search finds settings across any sub-topic
-- ✅ Consistent navigation pattern (back arrow always returns to parent)
-- ⚠️ More navigation depth for single-setting changes
-- ⚠️ All settings pages must follow sub-topic grouping convention
+- ✅ Every setting page is 1 tap from root — no intermediary navigation
+- ✅ Search finds settings across all sections with grouped results
+- ✅ Balanced sections (3-4 tiles each) — no overloaded or single-item groups
+- ✅ About page provides version, privacy policy, and license info in-app (offline-first)
+- ⚠️ Root page is longer — mitigated by section headers and search
+- ⚠️ `SettingsSubTopicPage` and `DiscountPresetsPage` are now dead code (kept in repo for reference)
 
 ---
 
@@ -762,7 +770,7 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 - ✅ Type safety — no more raw string access for config values
 - ✅ `SettingsMapper` normalizes legacy values (e.g., integer `themeMode` → string names)
 - ✅ `SettingsPersistenceService` owns debounce Timer — `SettingsCubit` is now pure state management
-- ⚠️ `AppSettings` facade is `@Deprecated` — consumers must migrate to typed accessors
+- ⚠️ `AppSettings` facade removed in v0.8.1 — all consumers now use `Settings` aggregate root directly with flat getters + flat `copyWith`
 - ⚠️ All repository tests must mock `getAll()` return values instead of individual getters
 
 ---
@@ -829,4 +837,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.8.0 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.8.1 · Architecture Document · Deep Technical Reference</sub>

@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_edit_tab_view.dart';
@@ -54,34 +55,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _imagePath = widget.product?.imagePath;
     _imageUrl = widget.product?.imageUrl;
     _imageThumbnailPath = widget.product?.imageThumbnailPath;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _lookupCategory());
   }
 
-  void _lookupCategory() {
-    if (!mounted) return;
+  void _tryLookupCategory(List<Category> categories) {
     if (_selectedCategory != null) return;
     final catId = widget.product?.categoryId;
     if (catId == null || catId.isEmpty) return;
-    try {
-      final cats = context.read<CategoryBloc>().state.categories;
-      final found = cats.firstWhere(
-        (c) => c.id == catId,
-        orElse: () => Category(
-          id: catId,
-          name: context.l10n.uncategorized,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
+    final found = categories.where((c) => c.id == catId).firstOrNull;
+    if (found != null) {
       setState(() => _selectedCategory = found);
-    } on ProviderNotFoundException {
-      // CategoryBloc not available in this scope; picker will handle it
-    } catch (e, stack) {
-      AppLogger.warning(
-        'ProductFormPage._lookupCategory failed',
-        error: e,
-        stack: stack,
-      );
     }
   }
 
@@ -150,56 +132,64 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ProductBloc, ProductState>(
+    return BlocListener<CategoryBloc, CategoryState>(
       listenWhen: (prev, curr) =>
-          _submitted && prev.saveStatus != curr.saveStatus,
-      listener: (ctx, state) {
-        if (state.saveStatus == ProductSaveStatus.saved) {
-          Navigator.pop(ctx, true);
-        } else if (state.saveStatus == ProductSaveStatus.error) {
-          _submitted = false;
-          final msg = state.errorMessage == 'duplicateBarcode'
-              ? ctx.l10n.duplicateBarcode
-              : state.errorMessage ?? ctx.l10n.errorOccurred;
-          AppSnackBar.error(ctx, msg);
-        }
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
-          builder: (_, state) {
-            final isSaving = state.saveStatus == ProductSaveStatus.saving;
-            return StickyActionBar(
-              primaryLabel: _isEditing
-                  ? context.l10n.save
-                  : context.l10n.addProduct,
-              onPrimary: _submit,
-              dangerLabel: _isEditing ? context.l10n.delete : null,
-              onDanger: _isEditing ? () => _confirmDelete(context) : null,
-              isLoading: isSaving,
-            );
-          },
-        ),
-        body: ProductEditTabView(
-          product: widget.product,
-          formKey: _formKey,
-          nameCtrl: _nameCtrl,
-          priceCtrl: _priceCtrl,
-          stockCtrl: _stockCtrl,
-          skuCtrl: _skuCtrl,
-          barcodeCtrl: _barcodeCtrl,
-          selectedCategory: _selectedCategory,
-          imagePath: _imagePath,
-          imageUrl: _imageUrl,
-          isActive: _isActive,
-          trackStock: _trackStock,
-          isPickingImage: _isPickingImage,
-          onCategoryChanged: (cat) => setState(() => _selectedCategory = cat),
-          onImageTap: () => _showImageSourceSheet(),
-          onActiveChanged: (v) => setState(() => _isActive = v),
-          onTrackStockChanged: (v) => setState(() => _trackStock = v),
-          onStockChanged: (v) => setState(() => _stockCtrl.text = v.toString()),
-          onDelete: () => _confirmDelete(context),
+          prev.categories != curr.categories &&
+          curr.categories.isNotEmpty &&
+          _selectedCategory == null,
+      listener: (ctx, state) => _tryLookupCategory(state.categories),
+      child: BlocListener<ProductBloc, ProductState>(
+        listenWhen: (prev, curr) =>
+            _submitted && prev.saveStatus != curr.saveStatus,
+        listener: (ctx, state) {
+          if (state.saveStatus == ProductSaveStatus.saved) {
+            Navigator.pop(ctx, true);
+          } else if (state.saveStatus == ProductSaveStatus.error) {
+            _submitted = false;
+            final msg = state.errorMessage == 'duplicateBarcode'
+                ? ctx.l10n.duplicateBarcode
+                : state.errorMessage ?? ctx.l10n.errorOccurred;
+            AppSnackBar.error(ctx, msg);
+          }
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
+            builder: (_, state) {
+              final isSaving = state.saveStatus == ProductSaveStatus.saving;
+              return StickyActionBar(
+                primaryLabel: _isEditing
+                    ? context.l10n.save
+                    : context.l10n.addProduct,
+                onPrimary: _submit,
+                dangerLabel: _isEditing ? context.l10n.delete : null,
+                onDanger: _isEditing ? () => _confirmDelete(context) : null,
+                isLoading: isSaving,
+              );
+            },
+          ),
+          body: ProductEditTabView(
+            product: widget.product,
+            formKey: _formKey,
+            nameCtrl: _nameCtrl,
+            priceCtrl: _priceCtrl,
+            stockCtrl: _stockCtrl,
+            skuCtrl: _skuCtrl,
+            barcodeCtrl: _barcodeCtrl,
+            selectedCategory: _selectedCategory,
+            imagePath: _imagePath,
+            imageUrl: _imageUrl,
+            isActive: _isActive,
+            trackStock: _trackStock,
+            isPickingImage: _isPickingImage,
+            onCategoryChanged: (cat) => setState(() => _selectedCategory = cat),
+            onImageTap: () => _showImageSourceSheet(),
+            onActiveChanged: (v) => setState(() => _isActive = v),
+            onTrackStockChanged: (v) => setState(() => _trackStock = v),
+            onStockChanged: (v) =>
+                setState(() => _stockCtrl.text = v.toString()),
+            onDelete: () => _confirmDelete(context),
+          ),
         ),
       ),
     );

@@ -32,99 +32,112 @@ class SaleProductCard extends StatelessWidget {
           .where((item) => item.product.id == product.id)
           .fold(0, (sum, item) => sum + item.qty),
     );
+    final outOfStock = product.trackStock && product.stock == 0;
+    final allowOversell = context
+        .read<SettingsCubit>()
+        .state
+        .settings
+        .allowOversell;
+    final canTap = !outOfStock || allowOversell;
 
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       elevation: cartQty > 0 ? 2 : 0,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          final allowOversell = context
-              .read<SettingsCubit>()
-              .state
-              .settings
-              .allowOversell;
-          context.read<SaleBloc>().add(
-            SaleProductAdded(product, allowOversell: allowOversell),
-          );
-          if (cartQty == 0) {
-            AppSnackBar.info(
-              context,
-              context.l10n.productAddedToCart(product.name),
-            );
-          }
-        },
-        onLongPress: () => _showQtyDialog(context, product, cartQty),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: ProductAvatar(
-                      imagePath: product.imagePath,
-                      imageThumbnailPath: product.imageThumbnailPath,
-                      imageUrl: product.imageUrl,
-                      size: 52,
+      child: Opacity(
+        opacity: outOfStock && !allowOversell ? 0.4 : 1.0,
+        child: InkWell(
+          onTap: canTap
+              ? () {
+                  HapticFeedback.selectionClick();
+                  context.read<SaleBloc>().add(
+                    SaleProductAdded(product, allowOversell: allowOversell),
+                  );
+                  if (cartQty == 0) {
+                    AppSnackBar.info(
+                      context,
+                      context.l10n.productAddedToCart(product.name),
+                    );
+                  }
+                }
+              : null,
+          onLongPress: canTap
+              ? () => _showQtyDialog(context, product, cartQty)
+              : null,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: ProductAvatar(
+                        imagePath: product.imagePath,
+                        imageThumbnailPath: product.imageThumbnailPath,
+                        imageUrl: product.imageUrl,
+                        size: 52,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  _CategoryNameText(
-                    categoryId: product.categoryId,
-                    noCategory: context.l10n.noCategory,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+                    const SizedBox(height: 8),
+                    _CategoryNameText(
+                      categoryId: product.categoryId,
+                      noCategory: context.l10n.noCategory,
                     ),
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: MoneyText(
-                          value: product.price,
-                          currency: currency,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
+                    const SizedBox(height: 2),
+                    Text(
+                      product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: MoneyText(
+                            value: product.price,
+                            currency: currency,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                            color: theme.colorScheme.primary,
                           ),
-                          color: theme.colorScheme.primary,
                         ),
-                      ),
-                      Text(
-                        product.trackStock
-                            ? context.l10n.stockLabel(product.stock)
-                            : '\u221e',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: product.trackStock && product.stock <= 5
-                              ? theme.colorScheme.error
-                              : theme.colorScheme.onSurfaceVariant,
+                        Text(
+                          product.trackStock
+                              ? product.stock == 0
+                                    ? context.l10n.outOfStock
+                                    : context.l10n.stockLabel(product.stock)
+                              : '\u221e',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: product.trackStock && product.stock == 0
+                                ? theme.colorScheme.error
+                                : product.trackStock && product.stock <= 5
+                                ? theme.colorScheme.error
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (cartQty > 0)
-              Positioned(
-                top: 6,
-                right: 6,
-                child: Badge(
-                  label: Text('$cartQty'),
-                  backgroundColor: theme.colorScheme.primary,
-                  textColor: theme.colorScheme.onPrimary,
+                      ],
+                    ),
+                  ],
                 ),
               ),
-          ],
+              if (cartQty > 0)
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Badge(
+                    label: Text('$cartQty'),
+                    backgroundColor: theme.colorScheme.primary,
+                    textColor: theme.colorScheme.onPrimary,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

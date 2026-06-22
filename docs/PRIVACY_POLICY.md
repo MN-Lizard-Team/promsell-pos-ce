@@ -20,4 +20,4 @@ Starting with v0.7.2, Promsell offers optional AES-256-GCM encryption for databa
 - **Internet**: Optional, used only for loading product images if URLs are provided. When sharing product images, URLs are sent to the platform's native share sheet (local device only, not to our servers).
 
 ## 6. Contact
-For questions: teepakorn.official@gmail.com
+For questions: mnlizard.official@gmail.com

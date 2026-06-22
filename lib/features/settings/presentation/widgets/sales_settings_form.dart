@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class SalesSettingsForm extends StatelessWidget {
@@ -11,8 +11,8 @@ class SalesSettingsForm extends StatelessWidget {
     super.key,
   });
 
-  final AppSettings settings;
-  final ValueChanged<AppSettings> onUpdate;
+  final Settings settings;
+  final ValueChanged<Settings> onUpdate;
 
   @override
   Widget build(BuildContext context) {

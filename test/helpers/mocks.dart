@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/features/product/domain/repositories/product_rep
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_barcodes.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/history/domain/repositories/history_repository.dart';
@@ -73,6 +74,8 @@ class MockAddProduct extends Mock implements AddProduct {}
 class MockUpdateProduct extends Mock implements UpdateProduct {}
 
 class MockDeleteProduct extends Mock implements DeleteProduct {}
+
+class MockBatchGenerateBarcodes extends Mock implements BatchGenerateBarcodes {}
 
 class MockGetProducts extends Mock implements GetProducts {}
 

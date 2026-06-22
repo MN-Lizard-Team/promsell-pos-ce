@@ -9,8 +9,10 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
@@ -29,7 +31,7 @@ void main() {
     mockCategoryBloc = MockCategoryBloc();
     when(() => mockSaleBloc.state).thenReturn(const SaleState(items: []));
     when(() => mockSettingsCubit.state).thenReturn(
-      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
+      const SettingsState(status: SettingsStatus.loaded, settings: Settings()),
     );
     when(() => mockProductBloc.state).thenReturn(
       const ProductState(status: ProductStatus.success, products: []),
@@ -58,6 +60,14 @@ void main() {
       GetIt.I.unregister<DraftCartRepository>();
     }
     GetIt.I.registerSingleton<DraftCartRepository>(mockDraftRepo);
+
+    final mockSettingsDs = MockSettingsLocalDatasource();
+    when(() => mockSettingsDs.getString(any())).thenAnswer((_) async => null);
+    when(() => mockSettingsDs.setString(any(), any())).thenAnswer((_) async {});
+    if (GetIt.I.isRegistered<SettingsLocalDatasource>()) {
+      GetIt.I.unregister<SettingsLocalDatasource>();
+    }
+    GetIt.I.registerSingleton<SettingsLocalDatasource>(mockSettingsDs);
   });
 
   tearDown(() {
@@ -72,6 +82,9 @@ void main() {
     }
     if (GetIt.I.isRegistered<DraftCartRepository>()) {
       GetIt.I.unregister<DraftCartRepository>();
+    }
+    if (GetIt.I.isRegistered<SettingsLocalDatasource>()) {
+      GetIt.I.unregister<SettingsLocalDatasource>();
     }
   });
 

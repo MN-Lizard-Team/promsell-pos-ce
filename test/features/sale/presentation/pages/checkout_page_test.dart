@@ -8,7 +8,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 import '../../../../helpers/mocks.dart';
@@ -35,7 +35,7 @@ void main() {
     when(() => mockSettingsCubit.state).thenReturn(
       SettingsState(
         status: SettingsStatus.loaded,
-        settings: AppSettings(showPreSalePreview: false),
+        settings: const Settings().copyWith(showPreSalePreview: false),
       ),
     );
     if (!GetIt.I.isRegistered<ReceiptPdfService>()) {

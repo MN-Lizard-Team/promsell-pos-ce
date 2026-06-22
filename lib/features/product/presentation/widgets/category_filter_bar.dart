@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/utils/category_style_resolver.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
+    show parseCategoryColor, parseCategoryIcon;
 
 class CategoryFilterBar extends StatelessWidget {
   const CategoryFilterBar({
@@ -25,7 +28,7 @@ class CategoryFilterBar extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         scrollDirection: Axis.horizontal,
-        itemCount: categories.length + 1,
+        itemCount: categories.length + 2,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
           if (i == 0) {
@@ -38,16 +41,38 @@ class CategoryFilterBar extends StatelessWidget {
               onTap: () => onSelected?.call(null),
             );
           }
+          if (i == categories.length + 1) {
+            final selected = selectedId == kNoCategoryFilter;
+            return _FilterChip(
+              icon: Icons.folder_off_outlined,
+              label: context.l10n.noCategory,
+              selected: selected,
+              color: theme.colorScheme.outline,
+              onTap: () =>
+                  onSelected?.call(selected ? null : kNoCategoryFilter),
+            );
+          }
           final cat = categories[i - 1];
           final selected = selectedId == cat.id;
-          final style = CategoryStyleResolver.resolve(cat.name);
+          final dbColor = parseCategoryColor(cat.color);
+          final dbIcon = parseCategoryIcon(cat.iconName);
+          final hasDbColor = cat.color != null && cat.color!.isNotEmpty;
+          final style = !hasDbColor
+              ? CategoryStyleResolver.resolve(cat.name)
+              : null;
+          final color = hasDbColor
+              ? dbColor
+              : (style?.color == Colors.transparent
+                    ? theme.colorScheme.primary
+                    : style?.color ?? theme.colorScheme.primary);
+          final icon = cat.iconName != null && cat.iconName!.isNotEmpty
+              ? dbIcon
+              : (style?.icon ?? Icons.folder_outlined);
           return _FilterChip(
-            icon: style.icon,
+            icon: icon,
             label: cat.name,
             selected: selected,
-            color: style.color == Colors.transparent
-                ? theme.colorScheme.primary
-                : style.color,
+            color: color,
             onTap: () => onSelected?.call(selected ? null : cat.id),
           );
         },

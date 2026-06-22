@@ -10,6 +10,7 @@ abstract class ProductLocalDatasource {
   Future<Product?> getProductByBarcode(String barcode);
   Future<void> insertProduct(ProductsCompanion companion);
   Future<void> updateProduct(ProductsCompanion companion);
+  Future<void> bulkUpdateBarcodes(List<({String id, String barcode})> updates);
   Future<void> deleteProduct(String id);
 }
 
@@ -76,6 +77,25 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   Future<void> updateProduct(ProductsCompanion companion) => (_db.update(
     _db.products,
   )..where((p) => p.id.equals(companion.id.value))).write(companion);
+
+  @override
+  Future<void> bulkUpdateBarcodes(
+    List<({String id, String barcode})> updates,
+  ) async {
+    await _db.batch((b) {
+      final now = DateTime.now();
+      for (final u in updates) {
+        b.update(
+          _db.products,
+          ProductsCompanion(
+            barcode: Value(u.barcode.toUpperCase()),
+            updatedAt: Value(now),
+          ),
+          where: (p) => p.id.equals(u.id),
+        );
+      }
+    });
+  }
 
   @override
   Future<void> deleteProduct(String id) =>

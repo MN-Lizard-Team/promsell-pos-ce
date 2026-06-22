@@ -84,3 +84,11 @@ class ProductCategoryFilterChanged extends ProductEvent {
   @override
   List<Object?> get props => [category];
 }
+
+class BarcodesBatchGenerated extends ProductEvent {
+  const BarcodesBatchGenerated({required this.prefix});
+  final String prefix;
+
+  @override
+  List<Object?> get props => [prefix];
+}

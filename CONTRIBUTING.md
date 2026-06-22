@@ -144,11 +144,17 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **351 automated tests**. All must pass before submitting a PR.
+The project has **405 automated tests**. All must pass before submitting a PR.
 
 ```bash
-# Run all tests
+# Run all tests (includes stress tests)
 flutter test
+
+# Run without stress tests (faster — use for regular development)
+flutter test --exclude-tags stress
+
+# Run stress tests only (10k products, 50k sales — may take several minutes)
+flutter test --tags stress --timeout 600s
 
 # Run with coverage
 flutter test --coverage
@@ -174,6 +180,7 @@ dart format --output=none --set-exit-if-changed lib test
 | **Widget** | `pumpApp` helper + `MockBloc` | `test/features/*/presentation/pages/` |
 | **Services** | Unit test (real DB) | `test/features/*/data/services/` |
 | **Integration** | End-to-end data layer | `test/integration/` |
+| **Stress** | `@Tags(['stress'])` — excluded from default run | `test/tool/` |
 | **L10n parity** | Direct class instantiation | `test/l10n/` |
 
 ### Writing tests
@@ -199,7 +206,10 @@ test/
 │   └── settings/
 ├── integration/
 │   ├── checkout_flow_test.dart
-│   └── sale_integrity_test.dart
+│   ├── sale_integrity_test.dart
+│   └── onboarding_first_sale_test.dart
+├── tool/
+│   └── seed_integration_test.dart  # Stress (@Tags(['stress']))
 ├── l10n/
 │   └── l10n_parity_test.dart
 └── core/

@@ -1,7 +1,7 @@
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/entities/inventory_log.dart';
 
 final tNow = DateTime(2025, 1, 15, 10, 30);
@@ -11,7 +11,7 @@ final tProduct = Product(
   name: 'Test Product',
   price: 100.0,
   stock: 50,
-  category: 'Drinks',
+  categoryId: 'Drinks',
   imageUrl: null,
   imagePath: null,
   imageThumbnailPath: null,
@@ -26,7 +26,7 @@ final tProduct2 = Product(
   name: 'Another Product',
   price: 250.5,
   stock: 10,
-  category: 'Food',
+  categoryId: 'Food',
   imageUrl: null,
   imagePath: null,
   imageThumbnailPath: null,
@@ -41,7 +41,7 @@ final tInactiveProduct = Product(
   name: 'Inactive Product',
   price: 50.0,
   stock: 0,
-  category: null,
+  categoryId: null,
   imageUrl: null,
   imagePath: null,
   imageThumbnailPath: null,
@@ -56,7 +56,7 @@ final tServiceProduct = Product(
   name: 'Service Item',
   price: 200.0,
   stock: 0,
-  category: null,
+  categoryId: null,
   imageUrl: null,
   imagePath: null,
   imageThumbnailPath: null,
@@ -72,7 +72,7 @@ final tProductWithBarcode = Product(
   barcode: '1234567890123',
   price: 150.0,
   stock: 20,
-  category: null,
+  categoryId: null,
   imageUrl: null,
   imagePath: null,
   imageThumbnailPath: null,
@@ -117,7 +117,7 @@ final tSale = Sale(
   items: const [tSaleItem],
 );
 
-final tAppSettings = AppSettings();
+final tAppSettings = const Settings();
 
 final tInventoryLog = InventoryLog(
   id: 'invlog-0001-0001-0001-000000000001',

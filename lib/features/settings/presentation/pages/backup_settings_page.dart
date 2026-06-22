@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
@@ -144,7 +144,7 @@ class BackupSettingsPage extends StatelessWidget {
 
   Widget _buildReminderTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
     SettingsThemeExtension st,
     AppLocalizations l10n,
@@ -226,7 +226,7 @@ class BackupSettingsPage extends StatelessWidget {
 
   void _showReminderDialog(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
     SettingsThemeExtension st,
     AppLocalizations l10n,

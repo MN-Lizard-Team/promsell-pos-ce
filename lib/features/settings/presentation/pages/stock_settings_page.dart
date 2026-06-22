@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
@@ -54,7 +54,7 @@ class StockSettingsPage extends StatelessWidget {
 
   Widget _buildThresholdTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
   ) {
     final st = context.settingsTheme;
@@ -103,7 +103,7 @@ class StockSettingsPage extends StatelessWidget {
 
   void _showThresholdDialog(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
   ) {
     final st = context.settingsTheme;

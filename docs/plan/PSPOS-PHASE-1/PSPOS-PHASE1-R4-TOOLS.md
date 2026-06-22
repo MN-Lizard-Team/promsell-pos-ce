@@ -246,7 +246,8 @@ Settings → Receipt section:
 - ✅ **E2** Cart Item Direct Qty Input — tap qty → numeric dialog with stock clamping, shipped v0.6.3
 - ✅ **E3** `InventoryLogPage` Clean Architecture refactor — `InventoryLogCubit` + repository + entity, shipped v0.6.3
 - ✅ **E4** History Search / Filter Bar — `SearchBar` + `filteredSales` getter, shipped v0.6.3
-- ❌ Manual PromptPay QR scan verified with real banking app (pre-flight item still open — manual verification required)
+- ✅ PromptPay QR automated tests (CRC16, structure, phone/citizenID) — added v0.8.1
+- ⬜ Manual PromptPay QR scan verified with real banking app (still recommended for production)
 
 > **Note:** v0.6.0 shipped core R4 (PDF, PromptPay, Backup). v0.6.1 added Cart UX Redesign. v0.6.2 added UX Polish & Performance. v0.6.3 cleared the entire R4 UX enhancement backlog (E1–E4).
 
@@ -340,7 +341,8 @@ These were identified in the Round-2 bug analysis but are small UX improvements,
 ✅ Print + Share actions after sale + from history
 ✅ PromptPay payload generator + CRC16
 ✅ PromptPay QR display in payment sheet
-❌ Manual scan verified with real banking app  ← still pending
+✅ Automated CRC16 + structure tests (v0.8.1)
+⬜ Manual scan verified with real banking app  ← still recommended for production
 ✅ Backup export (SQLite full)
 ✅ Backup import with confirmation + version check
 ✅ CSV export (sales + products)

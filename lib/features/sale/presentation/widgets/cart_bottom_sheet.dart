@@ -12,7 +12,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_state.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_qty_stepper.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/discount_dialog.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CartBottomSheet {
@@ -360,7 +360,7 @@ class CartBottomSheet {
     BuildContext context, {
     required SaleBloc bloc,
     required CartItem item,
-    required AppSettings settings,
+    required Settings settings,
   }) {
     final ctrl = TextEditingController(text: '${item.qty}');
     final l10n = context.l10n;
@@ -429,7 +429,7 @@ class _CartItemTile extends StatelessWidget {
 
   final CartItem item;
   final String currency;
-  final AppSettings settings;
+  final Settings settings;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
   final VoidCallback onQtyTap;

@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 void main() {
   group('ReceiptPdfService VAT calculation', () {
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('document builds without error', () {
-      final settings = AppSettings();
+      final settings = const Settings();
       final doc = service.buildDocumentForTest(
         sale: sale,
         settings: settings,
@@ -62,7 +62,7 @@ void main() {
     });
 
     test('shop info hidden when showShopInfoOnReceipt is false', () {
-      final settings = AppSettings(
+      final settings = const Settings().copyWith(
         shopName: 'Test Shop',
         address: '123 Street',
         phone: '0812345678',
@@ -77,7 +77,7 @@ void main() {
     });
 
     test('receiptNote used as footer when not empty', () {
-      final settings = AppSettings(receiptNote: 'Come again!');
+      final settings = const Settings().copyWith(receiptNote: 'Come again!');
       final doc = service.buildDocumentForTest(
         sale: sale,
         settings: settings,

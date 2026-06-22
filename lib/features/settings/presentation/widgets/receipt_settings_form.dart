@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class ReceiptSettingsForm extends StatelessWidget {
@@ -11,8 +11,8 @@ class ReceiptSettingsForm extends StatelessWidget {
     super.key,
   });
 
-  final AppSettings settings;
-  final ValueChanged<AppSettings> onUpdate;
+  final Settings settings;
+  final ValueChanged<Settings> onUpdate;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +133,7 @@ class ReceiptSettingsForm extends StatelessWidget {
     );
   }
 
-  Widget _buildNoteTile(BuildContext context, AppSettings s) {
+  Widget _buildNoteTile(BuildContext context, Settings s) {
     final st = context.settingsTheme;
     final theme = Theme.of(context);
     final l10n = context.l10n;
@@ -174,7 +174,7 @@ class ReceiptSettingsForm extends StatelessWidget {
     );
   }
 
-  void _showNoteDialog(BuildContext context, AppSettings s) {
+  void _showNoteDialog(BuildContext context, Settings s) {
     final l10n = context.l10n;
     final st = context.settingsTheme;
     final ctrl = TextEditingController(text: s.receiptNote);
@@ -212,7 +212,7 @@ class ReceiptSettingsForm extends StatelessWidget {
     );
   }
 
-  Widget _buildVatRateTile(BuildContext context, AppSettings s) {
+  Widget _buildVatRateTile(BuildContext context, Settings s) {
     final st = context.settingsTheme;
     final theme = Theme.of(context);
 
@@ -244,7 +244,7 @@ class ReceiptSettingsForm extends StatelessWidget {
     );
   }
 
-  void _showVatRateDialog(BuildContext context, AppSettings s) {
+  void _showVatRateDialog(BuildContext context, Settings s) {
     final st = context.settingsTheme;
     final ctrl = TextEditingController(text: s.vatRate.toStringAsFixed(1));
     showDialog(

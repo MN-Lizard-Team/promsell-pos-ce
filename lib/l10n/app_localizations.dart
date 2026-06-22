@@ -485,7 +485,7 @@ abstract class AppLocalizations {
   /// No description provided for @noSearchResults.
   ///
   /// In th, this message translates to:
-  /// **'ไม่พบรายการขายที่ตรงกัน'**
+  /// **'ไม่พบการตั้งค่า'**
   String get noSearchResults;
 
   /// No description provided for @noSalesYet.
@@ -2243,7 +2243,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupEncryptionTitle.
   ///
   /// In th, this message translates to:
-  /// **'การเข้ารหัสสำรองข้อมูล'**
+  /// **'การเข้ารหัสสำรองข้อมูล (ไม่บังคับ)'**
   String get backupEncryptionTitle;
 
   /// No description provided for @backupEncryptionLabel.
@@ -3038,6 +3038,54 @@ abstract class AppLocalizations {
   /// **'สร้างบาร์โค้ดแล้ว'**
   String get barcodeGenerated;
 
+  /// No description provided for @batchGenerateBarcodes.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ดให้สินค้าที่ยังไม่มี'**
+  String get batchGenerateBarcodes;
+
+  /// No description provided for @batchGenerateBarcodesHint.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ดให้สินค้าทุกชิ้นที่ยังไม่มีบาร์โค้ด'**
+  String get batchGenerateBarcodesHint;
+
+  /// No description provided for @batchGenerateConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ด'**
+  String get batchGenerateConfirmTitle;
+
+  /// No description provided for @batchGenerateConfirmBody.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ด EAN-13 ให้สินค้า {count} ชิ้นที่ยังไม่มีบาร์โค้ด?'**
+  String batchGenerateConfirmBody(Object count);
+
+  /// No description provided for @batchGenerateSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ดให้สินค้า {count} ชิ้นแล้ว'**
+  String batchGenerateSuccess(Object count);
+
+  /// No description provided for @batchGenerateNone.
+  ///
+  /// In th, this message translates to:
+  /// **'สินค้าทุกชิ้นมีบาร์โค้ดแล้ว'**
+  String get batchGenerateNone;
+
+  /// No description provided for @batchGenerateFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ดไม่สำเร็จ'**
+  String get batchGenerateFailed;
+
+  /// No description provided for @productsWithoutBarcode.
+  ///
+  /// In th, this message translates to:
+  /// **'มีสินค้า {count} ชิ้นที่ยังไม่มีบาร์โค้ด'**
+  String productsWithoutBarcode(Object count);
+
   /// No description provided for @barcodeSettings.
   ///
   /// In th, this message translates to:
@@ -3059,13 +3107,13 @@ abstract class AppLocalizations {
   /// No description provided for @playBeepOnScan.
   ///
   /// In th, this message translates to:
-  /// **'เล่นเสียงเมื่อสแกนสำเร็จ'**
+  /// **'สั่นเตือนเมื่อสแกนสำเร็จ'**
   String get playBeepOnScan;
 
   /// No description provided for @playBeepOnScanHint.
   ///
   /// In th, this message translates to:
-  /// **'แจ้งเตือนด้วยเสียงเมื่อสแกนบาร์โค้ดสำเร็จ'**
+  /// **'สั่นเตือนด้วยการสั่นสะเทือนเมื่อสแกนบาร์โค้ดสำเร็จ'**
   String get playBeepOnScanHint;
 
   /// No description provided for @barcodePrefix.
@@ -3077,8 +3125,134 @@ abstract class AppLocalizations {
   /// No description provided for @barcodePrefixHint.
   ///
   /// In th, this message translates to:
-  /// **'เช่น P, PROD'**
+  /// **'เช่น 200, 201 (ตัวเลข 1-3 หลัก สำหรับ EAN-13)'**
   String get barcodePrefixHint;
+
+  /// No description provided for @barcodePrefixError.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องเป็นตัวเลข 1-3 หลักเท่านั้น'**
+  String get barcodePrefixError;
+
+  /// No description provided for @barcodeFormats.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปแบบบาร์โค้ดที่สแกน'**
+  String get barcodeFormats;
+
+  /// No description provided for @barcodeFormatsHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกรูปแบบที่ต้องการสแกน (ลดการสแกนผิด)'**
+  String get barcodeFormatsHint;
+
+  /// No description provided for @barcodeFormatEan13.
+  ///
+  /// In th, this message translates to:
+  /// **'EAN-13'**
+  String get barcodeFormatEan13;
+
+  /// No description provided for @barcodeFormatEan8.
+  ///
+  /// In th, this message translates to:
+  /// **'EAN-8'**
+  String get barcodeFormatEan8;
+
+  /// No description provided for @barcodeFormatUpcA.
+  ///
+  /// In th, this message translates to:
+  /// **'UPC-A'**
+  String get barcodeFormatUpcA;
+
+  /// No description provided for @barcodeFormatUpcE.
+  ///
+  /// In th, this message translates to:
+  /// **'UPC-E'**
+  String get barcodeFormatUpcE;
+
+  /// No description provided for @barcodeFormatCode128.
+  ///
+  /// In th, this message translates to:
+  /// **'Code 128'**
+  String get barcodeFormatCode128;
+
+  /// No description provided for @barcodeFormatCode39.
+  ///
+  /// In th, this message translates to:
+  /// **'Code 39'**
+  String get barcodeFormatCode39;
+
+  /// No description provided for @barcodeFormatItf.
+  ///
+  /// In th, this message translates to:
+  /// **'ITF'**
+  String get barcodeFormatItf;
+
+  /// No description provided for @barcodeFormatQrCode.
+  ///
+  /// In th, this message translates to:
+  /// **'QR Code'**
+  String get barcodeFormatQrCode;
+
+  /// No description provided for @barcodeFormatDataMatrix.
+  ///
+  /// In th, this message translates to:
+  /// **'Data Matrix'**
+  String get barcodeFormatDataMatrix;
+
+  /// No description provided for @barcodeFormatPdf417.
+  ///
+  /// In th, this message translates to:
+  /// **'PDF417'**
+  String get barcodeFormatPdf417;
+
+  /// No description provided for @barcodeFormatAztec.
+  ///
+  /// In th, this message translates to:
+  /// **'Aztec'**
+  String get barcodeFormatAztec;
+
+  /// No description provided for @barcodeFormatCodabar.
+  ///
+  /// In th, this message translates to:
+  /// **'Codabar'**
+  String get barcodeFormatCodabar;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกทั้งหมด'**
+  String get selectAll;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In th, this message translates to:
+  /// **'ยกเลิกเลือกทั้งหมด'**
+  String get deselectAll;
+
+  /// No description provided for @barcodeAutoOpenManual.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดป้อนด้วยตนเองอัตโนมัติ'**
+  String get barcodeAutoOpenManual;
+
+  /// No description provided for @barcodeAutoOpenManualHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดช่องป้อนบาร์โค้ดด้วยตนเองถ้าสแกนไม่สำเร็จภายในเวลาที่กำหนด'**
+  String get barcodeAutoOpenManualHint;
+
+  /// No description provided for @disabled.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดใช้งาน'**
+  String get disabled;
+
+  /// No description provided for @secondsSuffix.
+  ///
+  /// In th, this message translates to:
+  /// **' วิ'**
+  String get secondsSuffix;
 
   /// No description provided for @barcodeHelpTitle.
   ///
@@ -3193,6 +3367,180 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ขั้นสูง'**
   String get advanced;
+
+  /// No description provided for @settingsStoreSales.
+  ///
+  /// In th, this message translates to:
+  /// **'ร้านค้าและการขาย'**
+  String get settingsStoreSales;
+
+  /// No description provided for @settingsDiscounts.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลด'**
+  String get settingsDiscounts;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In th, this message translates to:
+  /// **'เกี่ยวกับ'**
+  String get settingsAbout;
+
+  /// No description provided for @aboutApp.
+  ///
+  /// In th, this message translates to:
+  /// **'เกี่ยวกับแอป'**
+  String get aboutApp;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In th, this message translates to:
+  /// **'เวอร์ชัน'**
+  String get appVersion;
+
+  /// No description provided for @appBuild.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลด์'**
+  String get appBuild;
+
+  /// No description provided for @appDescription.
+  ///
+  /// In th, this message translates to:
+  /// **'แอป POS ออฟไลน์สำหรับร้านค้าเล็กๆ'**
+  String get appDescription;
+
+  /// No description provided for @builtWith.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างด้วย'**
+  String get builtWith;
+
+  /// No description provided for @techStackFlutter.
+  ///
+  /// In th, this message translates to:
+  /// **'Flutter'**
+  String get techStackFlutter;
+
+  /// No description provided for @techStackDrift.
+  ///
+  /// In th, this message translates to:
+  /// **'Drift SQLite'**
+  String get techStackDrift;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In th, this message translates to:
+  /// **'นโยบายความเป็นส่วนตัว'**
+  String get privacyPolicy;
+
+  /// No description provided for @openSourceLicense.
+  ///
+  /// In th, this message translates to:
+  /// **'ลิขสิทธิ์โอเพนซอร์ส'**
+  String get openSourceLicense;
+
+  /// No description provided for @contactUs.
+  ///
+  /// In th, this message translates to:
+  /// **'ติดต่อ'**
+  String get contactUs;
+
+  /// No description provided for @agplLicense.
+  ///
+  /// In th, this message translates to:
+  /// **'สัญญาอนุญาต GNU Affero General Public License v3.0'**
+  String get agplLicense;
+
+  /// No description provided for @agplShort.
+  ///
+  /// In th, this message translates to:
+  /// **'AGPL-3.0'**
+  String get agplShort;
+
+  /// No description provided for @copyrightNotice.
+  ///
+  /// In th, this message translates to:
+  /// **'© 2026 Promsell POS CE · AGPL-3.0'**
+  String get copyrightNotice;
+
+  /// No description provided for @dataCollection.
+  ///
+  /// In th, this message translates to:
+  /// **'การเก็บข้อมูล'**
+  String get dataCollection;
+
+  /// No description provided for @dataCollectionBody.
+  ///
+  /// In th, this message translates to:
+  /// **'Promsell ไม่เก็บข้อมูลส่วนบุคคลใดๆ ข้อมูลการขาย สินค้าคงคลัง และการตั้งค่าทั้งหมดจัดเก็บไว้ในเครื่องของคุณด้วย SQLite ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์ของเรา'**
+  String get dataCollectionBody;
+
+  /// No description provided for @thirdPartyServices.
+  ///
+  /// In th, this message translates to:
+  /// **'บริการภายนอก'**
+  String get thirdPartyServices;
+
+  /// No description provided for @thirdPartyServicesBody.
+  ///
+  /// In th, this message translates to:
+  /// **'เราไม่ใช้บริการวิเคราะห์ข้อมูล โฆษณา หรือคลาวด์ แอปทำงานแบบออฟไลน์ทั้งหมด'**
+  String get thirdPartyServicesBody;
+
+  /// No description provided for @dataStorage.
+  ///
+  /// In th, this message translates to:
+  /// **'การจัดเก็บข้อมูล'**
+  String get dataStorage;
+
+  /// No description provided for @dataStorageBody.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลของคุณอยู่ในเครื่อง คุณสามารถส่งออกหรือลบได้ตลอดเวลาผ่านฟีเจอร์สำรอง/กู้คืน รูปภาพสินค้าจัดเก็บในไดเรกทอรีส่วนตัวของแอปและมีการล้างแคชอัตโนมัติ (จำกัด 50MB) เพื่อป้องกันการใช้พื้นที่มากเกินไป'**
+  String get dataStorageBody;
+
+  /// No description provided for @backupEncryptionBody.
+  ///
+  /// In th, this message translates to:
+  /// **'Promsell มีการเข้ารหัส AES-256-GCM สำหรับสำรองข้อมูล หากเปิดใช้งาน ข้อมูลสำรองจะถูกเข้ารหัสด้วยคีย์ที่ได้จาก PIN ที่ผู้ใช้กำหนดผ่าน PBKDF2 PIN ไม่ถูกจัดเก็บในเครื่องหรือส่งไปยังที่ใด หากลืม PIN จะไม่สามารถกู้คืนข้อมูลสำรองได้ — เราไม่สามารถรีเซ็ตหรือกู้คืนได้'**
+  String get backupEncryptionBody;
+
+  /// No description provided for @permissionsTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สิทธิ์การเข้าถึง'**
+  String get permissionsTitle;
+
+  /// No description provided for @permissionsCamera.
+  ///
+  /// In th, this message translates to:
+  /// **'กล้อง: ใช้สำหรับถ่ายรูปสินค้าและสแกนบาร์โค้ด ไม่มีการส่งรูปภาพหรือข้อมูลสแกนออกจากเครื่อง'**
+  String get permissionsCamera;
+
+  /// No description provided for @permissionsStorage.
+  ///
+  /// In th, this message translates to:
+  /// **'คลังข้อมูล: ใช้สำหรับบันทึกข้อมูลสำรองและใบเสร็จเท่านั้น'**
+  String get permissionsStorage;
+
+  /// No description provided for @permissionsInternet.
+  ///
+  /// In th, this message translates to:
+  /// **'อินเทอร์เน็ต: ไม่บังคับ ใช้สำหรับโหลดรูปภาพสินค้าจาก URL เท่านั้น เมื่อแชร์รูปภาพสินค้า URL จะถูกส่งไปยังชีตแชร์ของระบบ (ในเครื่องเท่านั้น ไม่ส่งไปเซิร์ฟเวอร์ของเรา)'**
+  String get permissionsInternet;
+
+  /// No description provided for @contactTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ติดต่อ'**
+  String get contactTitle;
+
+  /// No description provided for @contactBody.
+  ///
+  /// In th, this message translates to:
+  /// **'สอบถามเพิ่มเติม: mnlizard.official@gmail.com'**
+  String get contactBody;
 }
 
 class _AppLocalizationsDelegate

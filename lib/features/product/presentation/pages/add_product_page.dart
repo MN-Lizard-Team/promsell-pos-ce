@@ -11,12 +11,12 @@ import 'package:promsell_pos_ce/core/widgets/barcode_scanner_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/image_source_sheet.dart';
 import 'package:promsell_pos_ce/core/widgets/sticky_action_bar.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/add_product_draft_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_picker_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form_avatar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_text_field.dart';
@@ -495,9 +495,12 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   Future<void> _scanBarcode(BuildContext context) async {
+    final settings = GetIt.I<SettingsCubit>().state.settings;
     final barcode = await showProductBarcodeScanner(
       context,
-      beepOnScan: GetIt.I<SettingsCubit>().state.settings.barcodeBeepOnScan,
+      beepOnScan: settings.barcodeBeepOnScan,
+      formats: barcodeFormatsFromNames(settings.barcodeEnabledFormats),
+      autoOpenManualDelay: settings.barcodeAutoOpenManualDelay,
     );
     if (barcode != null && barcode.isNotEmpty) {
       setState(() => _barcodeCtrl.text = barcode);
@@ -505,15 +508,19 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
-  void _generateBarcode(BuildContext context) {
+  Future<void> _generateBarcode(BuildContext context) async {
+    final l10n = context.l10n;
     final prefix =
         GetIt.I<SettingsCubit>().state.settings.barcodeAutoGeneratePrefix;
-    final now = DateTime.now();
-    final base = now.millisecondsSinceEpoch % 10000000000;
-    final barcode = base.toString().padLeft(10, '0');
-    setState(() => _barcodeCtrl.text = '$prefix$barcode');
-    _markDirty();
-    AppSnackBar.success(context, context.l10n.barcodeGenerated);
+    try {
+      final barcode = await GetIt.I<GenerateBarcode>()(prefix: prefix);
+      if (!context.mounted) return;
+      setState(() => _barcodeCtrl.text = barcode);
+      _markDirty();
+      AppSnackBar.success(context, l10n.barcodeGenerated);
+    } catch (_) {
+      if (context.mounted) AppSnackBar.error(context, l10n.errorOccurred);
+    }
   }
 
   Widget _buildCategoryField(BuildContext context) {
@@ -556,18 +563,14 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   void _pickCategory(BuildContext context) async {
-    final bloc = GetIt.I<CategoryBloc>();
-    final result = await showModalBottomSheet<Category>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => BlocProvider.value(
-        value: bloc,
-        child: CategoryPickerBottomSheet(selectedId: _selectedCategory?.id),
-      ),
+    final result = await showCategoryPicker(
+      context,
+      selectedId: _selectedCategory?.id,
+      showNoneOption: true,
     );
-    if (result != null) {
+    if (result != null || _selectedCategory != null) {
       setState(() {
-        _selectedCategory = result.id.isEmpty ? null : result;
+        _selectedCategory = result;
         _markDirty();
       });
     }

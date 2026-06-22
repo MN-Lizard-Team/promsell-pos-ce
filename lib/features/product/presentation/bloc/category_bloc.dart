@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_category.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/reorder_categories.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/watch_categories.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_event.dart';
@@ -31,10 +32,12 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     required AddCategory addCategory,
     required UpdateCategory updateCategory,
     required DeleteCategory deleteCategory,
+    required ReorderCategories reorderCategories,
   }) : _watchCategories = watchCategories,
        _addCategory = addCategory,
        _updateCategory = updateCategory,
        _deleteCategory = deleteCategory,
+       _reorderCategories = reorderCategories,
        super(const CategoryState()) {
     _startWatching();
     on<_CategoriesUpdated>(_onUpdated);
@@ -49,6 +52,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   final AddCategory _addCategory;
   final UpdateCategory _updateCategory;
   final DeleteCategory _deleteCategory;
+  final ReorderCategories _reorderCategories;
   StreamSubscription<List<Category>>? _sub;
 
   void _startWatching() {
@@ -144,11 +148,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   ) async {
     emit(state.copyWith(saveStatus: CategorySaveStatus.saving));
     try {
-      final cats = state.categories;
-      for (var i = 0; i < event.orderedIds.length; i++) {
-        final cat = cats.firstWhere((c) => c.id == event.orderedIds[i]);
-        await _updateCategory(cat.copyWith(sortOrder: i));
-      }
+      await _reorderCategories(event.orderedIds);
       emit(state.copyWith(saveStatus: CategorySaveStatus.saved));
     } catch (e) {
       emit(

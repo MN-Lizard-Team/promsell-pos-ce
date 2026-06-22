@@ -167,6 +167,17 @@ void main() {
       expect(result, tProductWithBarcode);
     });
 
+    test('getProductByBarcode normalizes to uppercase', () async {
+      when(
+        () => mockDs.getProductByBarcode('ABC123'),
+      ).thenAnswer((_) async => tProductWithBarcode);
+
+      final result = await repo.getProductByBarcode('abc123');
+
+      expect(result, tProductWithBarcode);
+      verify(() => mockDs.getProductByBarcode('ABC123')).called(1);
+    });
+
     test('getProductByBarcode returns null for inactive product', () async {
       when(
         () => mockDs.getProductByBarcode('123'),
@@ -180,10 +191,10 @@ void main() {
     test('barcodeExists respects excludeId', () async {
       final existing = tProduct.copyWith(barcode: 'dup');
       when(
-        () => mockDs.getProductByBarcode('dup'),
+        () => mockDs.getProductByBarcode('DUP'),
       ).thenAnswer((_) async => existing);
       when(
-        () => mockDs.getProductByBarcode('new'),
+        () => mockDs.getProductByBarcode('NEW'),
       ).thenAnswer((_) async => null);
 
       expect(await repo.barcodeExists('dup', excludeId: existing.id), false);

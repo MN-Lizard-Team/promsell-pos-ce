@@ -11,7 +11,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/slip_scanner_dialog.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/promptpay_qr_code.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -29,7 +29,7 @@ class PromptPayPaymentPage extends StatefulWidget {
   final double total;
   final String currency;
   final String promptpayId;
-  final AppSettings settings;
+  final Settings settings;
   final SaleBloc bloc;
   final List<CartItem> items;
 

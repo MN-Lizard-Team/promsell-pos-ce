@@ -73,14 +73,20 @@ import 'package:promsell_pos_ce/features/product/domain/usecases/add_category.da
     as _i982;
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart'
     as _i747;
+import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_barcodes.dart'
+    as _i475;
 import 'package:promsell_pos_ce/features/product/domain/usecases/clear_orphaned_images.dart'
     as _i707;
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_category.dart'
     as _i910;
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart'
     as _i447;
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart'
+    as _i10;
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart'
     as _i440;
+import 'package:promsell_pos_ce/features/product/domain/usecases/reorder_categories.dart'
+    as _i752;
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_category.dart'
     as _i661;
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart'
@@ -254,6 +260,9 @@ extension GetItInjectableX on _i174.GetIt {
         settingsRepo: gh<_i243.SettingsRepository>(),
       ),
     );
+    gh.factory<_i752.ReorderCategories>(
+      () => _i752.ReorderCategories(gh<_i1059.CategoryRepository>()),
+    );
     gh.lazySingleton<_i425.SettingsCubit>(
       () => _i425.SettingsCubit(
         gh<_i243.SettingsRepository>(),
@@ -268,6 +277,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i747.AddProduct>(
       () => _i747.AddProduct(gh<_i126.ProductRepository>()),
+    );
+    gh.factory<_i475.BatchGenerateBarcodes>(
+      () => _i475.BatchGenerateBarcodes(gh<_i126.ProductRepository>()),
     );
     gh.factory<_i447.DeleteProduct>(
       () => _i447.DeleteProduct(gh<_i126.ProductRepository>()),
@@ -286,18 +298,16 @@ extension GetItInjectableX on _i174.GetIt {
         settingsRepo: gh<_i243.SettingsRepository>(),
       ),
     );
+    gh.factory<_i10.GenerateBarcode>(
+      () => _i10.GenerateBarcode(
+        gh<_i126.ProductRepository>(),
+        gh<_i243.SettingsRepository>(),
+      ),
+    );
     gh.factory<_i707.ClearOrphanedImages>(
       () => _i707.ClearOrphanedImages(
         gh<_i126.ProductRepository>(),
         gh<_i502.ProductImageService>(),
-      ),
-    );
-    gh.lazySingleton<_i372.ProductBloc>(
-      () => blocModule.productBloc(
-        gh<_i440.GetProducts>(),
-        gh<_i747.AddProduct>(),
-        gh<_i107.UpdateProduct>(),
-        gh<_i447.DeleteProduct>(),
       ),
     );
     gh.factory<_i21.InventoryLogCubit>(
@@ -311,12 +321,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i216.InventoryLogService>(),
       ),
     );
-    gh.lazySingleton<_i613.CategoryBloc>(
-      () => _i613.CategoryBloc(
-        watchCategories: gh<_i10.WatchCategories>(),
-        addCategory: gh<_i982.AddCategory>(),
-        updateCategory: gh<_i661.UpdateCategory>(),
-        deleteCategory: gh<_i910.DeleteCategory>(),
+    gh.lazySingleton<_i372.ProductBloc>(
+      () => blocModule.productBloc(
+        gh<_i440.GetProducts>(),
+        gh<_i747.AddProduct>(),
+        gh<_i107.UpdateProduct>(),
+        gh<_i447.DeleteProduct>(),
+        gh<_i475.BatchGenerateBarcodes>(),
       ),
     );
     gh.lazySingleton<_i26.HistoryRepository>(
@@ -326,6 +337,15 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i320.CloseDay(
         gh<_i819.DailyCloseRepository>(),
         gh<_i942.SaleLocalDatasource>(),
+      ),
+    );
+    gh.lazySingleton<_i613.CategoryBloc>(
+      () => _i613.CategoryBloc(
+        watchCategories: gh<_i10.WatchCategories>(),
+        addCategory: gh<_i982.AddCategory>(),
+        updateCategory: gh<_i661.UpdateCategory>(),
+        deleteCategory: gh<_i910.DeleteCategory>(),
+        reorderCategories: gh<_i752.ReorderCategories>(),
       ),
     );
     gh.lazySingleton<_i771.SaleRepository>(

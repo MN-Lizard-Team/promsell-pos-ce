@@ -56,5 +56,6 @@ app.*.map.json
 /android/app/keystore.properties
 
 # Aiyu MultiAgent
-.agent/usage.json
-.windsurf/.version
+.agent
+.windsurf
+.windsurfrules

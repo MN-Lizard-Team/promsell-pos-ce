@@ -99,7 +99,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.8.0+1
+version: 0.8.1+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +121,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 340 tests pass
+- [ ] `flutter test` — all 405 tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -158,20 +158,21 @@ Before distributing a build with UI changes:
 15. Open History again — voided sale shows strikethrough amount and red badge.
 16. Open Report and verify net revenue excludes voided sales; voided summary card appears.
 17. Tap **Print Receipt** or **Share Receipt** on any sale.
-18. Open Settings root page — verify 3-level hierarchy: topic groups (General, Store, Payment, System) → sub-topics → individual pages. Verify cross-sub-topic search bar filters all settings. Verify gradient dashboard card with 5 summary badges (shop name, language, theme, backup status, PromptPay status); verify colored status chips on every tile.
+18. Open Settings root page — verify 2-level hierarchy: section headers (General, Store & Sales, Discounts, Payments, System & Data, About) → individual pages (1 tap to reach any page). Verify cross-section search bar filters all settings. Verify gradient dashboard card with 5 summary badges (shop name, language, theme, backup status, PromptPay status); verify colored status chips on every tile.
 18b. Open **General Settings** — verify gradient summary card with language, theme, and accessibility badges; tap language/theme tiles to open visual dialog pickers with icon-based option cards; verify accessibility mode toggle; verify "Reset to Defaults" tile with confirmation dialog.
 18c. Open **Shop Info** — verify live preview card showing shop name/address/phone; verify inline form with character counters and phone auto-format (`081-234-5678`); verify receipt size dropdown.
 18d. Open **PromptPay Settings** — verify gradient preview card showing configured/not-configured state with QR icon; verify PromptPay ID tile with validation dialog (phone 10 digits / citizen ID 13 digits); verify info card explaining PromptPay usage.
 18e. Open **Backup Settings** — verify gradient status card (Safe/Warning/Overdue); verify backup reminder switch + frequency picker dialog with preset chips (3/7/14/30 days); verify "Backup Now" action tile; verify **Encryption** toggle and PIN setup dialog.
 18f. Open Stock Policy section (Allow oversell + Low stock threshold) and Discount Policy section (presets, max limits, toggles); switch theme/locale, and save shop info.
 19. Open Products, tap Add Product, tap the image avatar — verify Gallery / Camera / Remove bottom sheet; pick an image and verify skeleton loading shimmer appears briefly before image fades in; verify it displays in the form and list/grid; verify thumbnail is used for small avatar sizes and full image for larger views; verify dark-mode placeholder uses neutral gray (not green); delete the product and verify both image files are removed from storage.
-19b. In the Products tab, verify **category autocomplete** — type in the category field and see suggestions from existing categories; enter a new category freely.
+19b. In the Products tab, verify **category picker** — tap the category field to open a bottom sheet with searchable category list and "No category" option; selecting a category assigns it to the product.
 19c. Open **Category Management** (overflow menu on Product List AppBar) — verify drag & drop reordering works; add a category with color + icon picker (10 colors / 21 icons); verify product count badge on each category; verify search filters categories; verify bulk delete mode (select multiple → delete all).
 20. In Settings, verify **Image max width** and **Image quality** settings appear with correct defaults (800 / 80); tap **Export Database** — verify share sheet appears with `.db` file (or `.db.enc` if encryption is enabled); tap **Export Sales CSV** and **Export Products CSV** — verify CSV files are generated and shareable.
 21. In the Products tab, long-press a product image → verify `ImageViewerDialog` opens with pinch zoom; tap **share** button (file/URL) and **info** button (source, path, size bottom sheet).
 22. In Settings, verify **Max drafts** input (default 30, range 5–100), **Compact cart**, and **Ultra-compact cart** toggles appear.
 23. In History tab, verify **search bar** appears — filter by receipt number, payment method, or amount.
 24. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
+25. In Settings → **About** section, tap **About App** — verify app icon, name "Promsell POS CE", version + build number, description, tech stack, and contact email. Tap **Privacy Policy** — verify in-app page renders 6 sections (Data Collection, Third-Party Services, Data Storage, Backup Encryption, Permissions, Contact). Tap **Open Source License** — verify full AGPL-3.0 license text is displayed and selectable. Verify footer "© 2026 Promsell POS CE · AGPL-3.0".
 
 ---
 

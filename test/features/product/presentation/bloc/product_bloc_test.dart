@@ -14,12 +14,14 @@ void main() {
   late MockAddProduct mockAddProduct;
   late MockUpdateProduct mockUpdateProduct;
   late MockDeleteProduct mockDeleteProduct;
+  late MockBatchGenerateBarcodes mockBatchGenerateBarcodes;
 
   setUp(() {
     mockGetProducts = MockGetProducts();
     mockAddProduct = MockAddProduct();
     mockUpdateProduct = MockUpdateProduct();
     mockDeleteProduct = MockDeleteProduct();
+    mockBatchGenerateBarcodes = MockBatchGenerateBarcodes();
   });
 
   setUpAll(() {
@@ -31,6 +33,7 @@ void main() {
     addProduct: mockAddProduct,
     updateProduct: mockUpdateProduct,
     deleteProduct: mockDeleteProduct,
+    batchGenerateBarcodes: mockBatchGenerateBarcodes,
   );
 
   group('ProductBloc', () {

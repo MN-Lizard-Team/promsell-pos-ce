@@ -11,7 +11,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SaleExpansionTile extends StatelessWidget {
@@ -182,7 +182,7 @@ class SaleExpansionTile extends StatelessWidget {
   static void _printReceipt(
     BuildContext context,
     Sale sale,
-    AppSettings settings,
+    Settings settings,
   ) async {
     try {
       final l = context.l10n;
@@ -222,7 +222,7 @@ class SaleExpansionTile extends StatelessWidget {
   static void _shareReceipt(
     BuildContext context,
     Sale sale,
-    AppSettings settings,
+    Settings settings,
   ) async {
     try {
       final l = context.l10n;

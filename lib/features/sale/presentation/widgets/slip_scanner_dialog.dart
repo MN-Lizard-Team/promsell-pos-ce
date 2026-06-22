@@ -13,7 +13,8 @@ class SlipScannerDialog extends StatefulWidget {
   State<SlipScannerDialog> createState() => _SlipScannerDialogState();
 }
 
-class _SlipScannerDialogState extends State<SlipScannerDialog> {
+class _SlipScannerDialogState extends State<SlipScannerDialog>
+    with SingleTickerProviderStateMixin {
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
     facing: CameraFacing.back,
@@ -24,8 +25,26 @@ class _SlipScannerDialogState extends State<SlipScannerDialog> {
   Timer? _debounceTimer;
   Timer? _errorClearTimer;
 
+  late final AnimationController _laserAnim;
+  late final Animation<double> _laserCurve;
+
+  static const _cutoutWidth = 300.0;
+  static const _cutoutHeight = 180.0;
+  static const _cutoutRadius = 16.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _laserAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _laserCurve = CurvedAnimation(parent: _laserAnim, curve: Curves.easeInOut);
+  }
+
   @override
   void dispose() {
+    _laserAnim.dispose();
     _debounceTimer?.cancel();
     _errorClearTimer?.cancel();
     _controller.dispose();
@@ -113,38 +132,42 @@ class _SlipScannerDialogState extends State<SlipScannerDialog> {
               );
             },
           ),
-          // Dark overlay outside scan area
-          CustomPaint(
-            size: MediaQuery.of(context).size,
-            painter: const ScanOverlayPainter(
-              cutoutSize: 260,
-              borderRadius: 20,
-            ),
+          // Dark overlay with laser line animation
+          AnimatedBuilder(
+            animation: _laserCurve,
+            builder: (context, child) {
+              final laserY = _scanned ? 0.5 : _laserCurve.value;
+              return CustomPaint(
+                size: MediaQuery.of(context).size,
+                painter: ScanOverlayPainter(
+                  cutoutWidth: _cutoutWidth,
+                  cutoutHeight: _cutoutHeight,
+                  borderRadius: _cutoutRadius,
+                  borderColor: _errorText != null
+                      ? theme.colorScheme.error
+                      : _scanned
+                      ? theme.colorScheme.primary
+                      : null,
+                  laserY: laserY,
+                  laserColor: _errorText != null
+                      ? theme.colorScheme.error.withValues(alpha: 0.5)
+                      : _scanned
+                      ? theme.colorScheme.primary.withValues(alpha: 0.5)
+                      : theme.colorScheme.primary,
+                ),
+              );
+            },
           ),
           // Scan frame
           Center(
             child: SizedBox(
-              width: 260,
-              height: 260,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: _errorText != null
-                        ? theme.colorScheme.error
-                        : _scanned
-                        ? theme.colorScheme.primary
-                        : Colors.white,
-                    width: 3,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: _scanned
-                    ? const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    : null,
-              ),
+              width: _cutoutWidth,
+              height: _cutoutHeight,
+              child: _scanned
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    )
+                  : null,
             ),
           ),
           // Error overlay

@@ -20,5 +20,6 @@ abstract class ProductRepository {
     bool trackStock = true,
   });
   Future<void> updateProduct(Product product);
+  Future<void> bulkUpdateBarcodes(List<({String id, String barcode})> updates);
   Future<void> deleteProduct(String id);
 }

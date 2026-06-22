@@ -7,6 +7,8 @@ enum ProductStatus { initial, loading, success, failure }
 
 enum ProductSaveStatus { idle, saving, saved, error }
 
+const String kNoCategoryFilter = '__none__';
+
 class ProductState extends Equatable {
   const ProductState({
     this.status = ProductStatus.initial,
@@ -15,6 +17,7 @@ class ProductState extends Equatable {
     this.categoryFilter,
     this.errorMessage,
     this.saveStatus = ProductSaveStatus.idle,
+    this.batchResultMessage,
   });
 
   final ProductStatus status;
@@ -23,6 +26,7 @@ class ProductState extends Equatable {
   final String? categoryFilter;
   final String? errorMessage;
   final ProductSaveStatus saveStatus;
+  final String? batchResultMessage;
 
   List<Product> get filtered {
     var result = products;
@@ -38,7 +42,11 @@ class ProductState extends Equatable {
           .toList();
     }
     if (categoryFilter != null) {
-      result = result.where((p) => p.categoryId == categoryFilter).toList();
+      if (categoryFilter == kNoCategoryFilter) {
+        result = result.where((p) => p.categoryId == null).toList();
+      } else {
+        result = result.where((p) => p.categoryId == categoryFilter).toList();
+      }
     }
     return result;
   }
@@ -50,6 +58,7 @@ class ProductState extends Equatable {
     Object? categoryFilter = _unset,
     Object? errorMessage = _unset,
     ProductSaveStatus? saveStatus,
+    Object? batchResultMessage = _unset,
   }) {
     return ProductState(
       status: status ?? this.status,
@@ -62,6 +71,9 @@ class ProductState extends Equatable {
           ? this.errorMessage
           : errorMessage as String?,
       saveStatus: saveStatus ?? this.saveStatus,
+      batchResultMessage: identical(batchResultMessage, _unset)
+          ? this.batchResultMessage
+          : batchResultMessage as String?,
     );
   }
 
@@ -73,5 +85,6 @@ class ProductState extends Equatable {
     categoryFilter,
     errorMessage,
     saveStatus,
+    batchResultMessage,
   ];
 }

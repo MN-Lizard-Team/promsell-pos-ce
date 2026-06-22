@@ -11,8 +11,7 @@ class Product extends Equatable {
     required this.price,
     this.cost = 0.0,
     required this.stock,
-    String? categoryId,
-    String? category,
+    this.categoryId,
     this.imageUrl,
     this.imagePath,
     this.imageThumbnailPath,
@@ -20,7 +19,7 @@ class Product extends Equatable {
     this.trackStock = true,
     required this.createdAt,
     required this.updatedAt,
-  }) : categoryId = categoryId ?? category;
+  });
 
   final String id;
   final String name;
@@ -40,7 +39,7 @@ class Product extends Equatable {
 
   bool get isInStock => !trackStock || stock > 0;
 
-  /// Backward-compatible alias. Now stores category ID, not name.
+  /// Deprecated alias for [categoryId].
   String? get category => categoryId;
 
   Product copyWith({
@@ -52,7 +51,6 @@ class Product extends Equatable {
     double? cost,
     int? stock,
     Object? categoryId = _unset,
-    Object? category = _unset,
     Object? imageUrl = _unset,
     Object? imagePath = _unset,
     Object? imageThumbnailPath = _unset,
@@ -70,9 +68,7 @@ class Product extends Equatable {
       cost: cost ?? this.cost,
       stock: stock ?? this.stock,
       categoryId: identical(categoryId, _unset)
-          ? (identical(category, _unset)
-                ? this.categoryId
-                : category as String?)
+          ? this.categoryId
           : categoryId as String?,
       imageUrl: identical(imageUrl, _unset)
           ? this.imageUrl

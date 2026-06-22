@@ -9,7 +9,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 import '../../../../helpers/mocks.dart';
@@ -29,7 +29,7 @@ void main() {
     mockSettingsCubit = MockSettingsCubit();
     mockSearchHistoryCubit = MockSearchHistoryCubit();
     when(() => mockSettingsCubit.state).thenReturn(
-      SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
+      const SettingsState(status: SettingsStatus.loaded, settings: Settings()),
     );
     when(() => mockCategoryBloc.state).thenReturn(
       const CategoryState(status: CategoryStatus.success, categories: []),

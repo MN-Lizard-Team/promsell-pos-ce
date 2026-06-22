@@ -1,12 +1,12 @@
 # Store Submission Checklist
 
-Last updated: 2026-06-12 | Version: 0.8.0+1
+Last updated: 2026-06-22 | Version: 0.8.1+1
 
 ---
 
 ## Pre-Flight (Code — DONE)
 
-- [x] Version bumped to `0.8.0+1` in `pubspec.yaml`
+- [x] Version bumped to `0.8.1+1` in `pubspec.yaml`
 - [x] Android app label = "Promsell"
 - [x] iOS display name = "Promsell"
 - [x] iOS bundle name = "Promsell"
@@ -15,7 +15,7 @@ Last updated: 2026-06-12 | Version: 0.8.0+1
 - [x] Release signing config with keystore fallback
 - [x] `.gitignore` excludes keystore files
 - [x] `flutter analyze` → 0 issues
-- [x] `flutter test` → 351 passing
+- [x] `flutter test` → 405 passing
 
 ---
 
@@ -106,7 +106,7 @@ flutter build ipa
 7. Upload AAB + screenshots + feature graphic + descriptions
 8. Set pricing: **Free**
 9. Set countries: **Thailand** (+ others if desired)
-10. Contact email: `teepakorn.official@gmail.com`
+10. Contact email: `mnlizard.official@gmail.com`
 
 ### 6. App Store Connect Setup
 
@@ -122,7 +122,7 @@ flutter build ipa
 7. Upload IPA via Transporter or Xcode
 8. Add screenshots for iPhone + iPad
 9. Privacy policy URL: same as above
-10. Contact info: `teepakorn.official@gmail.com`
+10. Contact info: `mnlizard.official@gmail.com`
 
 ---
 
@@ -140,8 +140,8 @@ flutter build ipa
 | Item | Value |
 |------|-------|
 | App name | Promsell |
-| Version | 0.8.0+1 |
-| Contact | teepakorn.official@gmail.com |
+| Version | 0.8.1+1 |
+| Contact | mnlizard.official@gmail.com |
 | Privacy URL | https://github.com/teepakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
 | Bundle ID (Android) | com.promsell.promsell_pos_ce |
 | Bundle ID (iOS) | com.promsell.promsellPosCe |

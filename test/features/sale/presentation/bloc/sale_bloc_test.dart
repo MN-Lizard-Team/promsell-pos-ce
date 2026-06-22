@@ -26,6 +26,9 @@ void main() {
       () => mockDraftRepo.createDraft(name: any(named: 'name')),
     ).thenAnswer((_) async => 'draft-id-1');
     when(
+      () => mockDraftRepo.createDraft(),
+    ).thenAnswer((_) async => 'draft-id-1');
+    when(
       () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
     ).thenAnswer((_) async {});
     when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
@@ -136,12 +139,15 @@ void main() {
       ),
       expect: () => [
         SaleState(items: [tCartItem], status: SaleStatus.processing),
-        SaleState(
-          status: SaleStatus.success,
-          lastSale: tSale,
-          activeDraftId: 'draft-id-1',
-          activeDraftName: 'Bill #1',
-        ),
+        isA<SaleState>()
+            .having((s) => s.status, 'status', SaleStatus.success)
+            .having((s) => s.lastSale, 'lastSale', tSale)
+            .having((s) => s.activeDraftId, 'activeDraftId', 'draft-id-1')
+            .having(
+              (s) => s.activeDraftName,
+              'activeDraftName',
+              startsWith('Bill #'),
+            ),
       ],
     );
 
@@ -309,5 +315,66 @@ void main() {
       await bloc.stream.first;
       await expectLater(bloc.close(), completes);
     });
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleCartProductsRefreshed keeps out-of-stock items and sets stockWarning',
+      build: buildBloc,
+      seed: () => SaleState(items: [tCartItem]),
+      act: (b) =>
+          b.add(SaleCartProductsRefreshed([tProduct.copyWith(stock: 0)])),
+      expect: () => [
+        SaleState(
+          items: [CartItem(product: tProduct.copyWith(stock: 0), qty: 2)],
+          stockWarning: tProduct.name,
+        ),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleCartProductsRefreshed clamps qty when stock is lower than cart qty',
+      build: buildBloc,
+      seed: () => SaleState(items: [CartItem(product: tProduct, qty: 5)]),
+      act: (b) =>
+          b.add(SaleCartProductsRefreshed([tProduct.copyWith(stock: 2)])),
+      expect: () => [
+        SaleState(
+          items: [CartItem(product: tProduct.copyWith(stock: 2), qty: 2)],
+        ),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleBarcodeScanned adds product to cart directly via emit',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockProductRepo.getProductByBarcode('1234567890123'),
+        ).thenAnswer((_) async => tProduct);
+      },
+      act: (b) => b.add(const SaleBarcodeScanned('1234567890123')),
+      expect: () => [
+        SaleState(
+          items: [CartItem(product: tProduct, qty: 1)],
+          status: SaleStatus.idle,
+        ),
+      ],
+    );
+
+    blocTest<SaleBloc, SaleState>(
+      'SaleBarcodeScanned emits error when barcode not found',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockProductRepo.getProductByBarcode('0000000000000'),
+        ).thenAnswer((_) async => null);
+      },
+      act: (b) => b.add(const SaleBarcodeScanned('0000000000000')),
+      expect: () => [
+        const SaleState(
+          status: SaleStatus.idle,
+          errorMessage: 'barcodeNotFound',
+        ),
+      ],
+    );
   });
 }

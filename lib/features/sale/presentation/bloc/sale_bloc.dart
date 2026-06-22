@@ -252,16 +252,28 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
   ) {
     if (state.isEmpty) return;
     final productMap = {for (final Product p in event.products) p.id: p};
-    final updated = state.items
-        .where((i) => productMap.containsKey(i.product.id))
-        .map((i) => i.copyWith(product: productMap[i.product.id]!))
-        .where((i) => !i.product.trackStock || i.product.stock > 0)
-        .map((i) {
-          if (!i.product.trackStock) return i;
-          return i.copyWith(qty: i.qty.clamp(1, i.product.stock));
-        })
-        .toList();
-    emit(state.copyWith(items: updated));
+    final updated = <CartItem>[];
+    final outOfStockNames = <String>[];
+
+    for (final item in state.items) {
+      final p = productMap[item.product.id];
+      if (p == null) continue;
+      if (p.trackStock && p.stock == 0) {
+        outOfStockNames.add(p.name);
+        updated.add(item.copyWith(product: p, qty: item.qty));
+      } else if (p.trackStock && item.qty > p.stock) {
+        updated.add(item.copyWith(product: p, qty: p.stock));
+      } else {
+        updated.add(item.copyWith(product: p));
+      }
+    }
+
+    final warning = outOfStockNames.isNotEmpty
+        ? outOfStockNames.join(', ')
+        : null;
+
+    emit(state.copyWith(items: updated, stockWarning: warning));
+    _scheduleSave();
   }
 
   void _onReset(SaleReset event, Emitter<SaleState> emit) {
@@ -307,9 +319,9 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       if (prevDraftId != null) {
         await _draftRepo.deleteDraft(prevDraftId);
       }
-      final draftCount = await _draftRepo.countDrafts();
-      final newDraftName = 'Bill #${draftCount + 1}';
-      final newDraftId = await _draftRepo.createDraft(name: newDraftName);
+      final newDraftId = await _draftRepo.createDraft();
+      final newDraftName =
+          'Bill #${DateTime.now().millisecondsSinceEpoch % 100000}';
       final newState = SaleState(
         status: SaleStatus.success,
         lastSale: sale,
@@ -360,9 +372,9 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
       if (prevDraftId != null) {
         await _draftRepo.deleteDraft(prevDraftId);
       }
-      final draftCount = await _draftRepo.countDrafts();
-      final newDraftName = 'Bill #${draftCount + 1}';
-      final newDraftId = await _draftRepo.createDraft(name: newDraftName);
+      final newDraftId = await _draftRepo.createDraft();
+      final newDraftName =
+          'Bill #${DateTime.now().millisecondsSinceEpoch % 100000}';
       final newState = SaleState(
         status: SaleStatus.success,
         lastSale: sale,
@@ -567,7 +579,24 @@ class SaleBloc extends Bloc<SaleEvent, SaleState> {
     try {
       final product = await _productRepo.getProductByBarcode(event.barcode);
       if (product != null) {
-        add(SaleProductAdded(product, qty: 1));
+        final p = product;
+        final existing = state.items.indexWhere((i) => i.product.id == p.id);
+        final updated = List<CartItem>.from(state.items);
+        if (existing >= 0) {
+          updated[existing] = updated[existing].copyWith(
+            qty: updated[existing].qty + 1,
+          );
+        } else {
+          updated.add(CartItem(product: p, qty: 1));
+        }
+        emit(
+          state.copyWith(
+            items: updated,
+            status: SaleStatus.idle,
+            errorMessage: null,
+          ),
+        );
+        _scheduleSave();
       } else {
         emit(
           state.copyWith(

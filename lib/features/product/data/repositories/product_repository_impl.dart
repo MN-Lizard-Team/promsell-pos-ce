@@ -24,13 +24,17 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Product?> getProductByBarcode(String barcode) async {
-    final product = await _datasource.getProductByBarcode(barcode);
+    final product = await _datasource.getProductByBarcode(
+      barcode.toUpperCase(),
+    );
     return (product != null && product.isActive) ? product : null;
   }
 
   @override
   Future<bool> barcodeExists(String barcode, {String? excludeId}) async {
-    final product = await _datasource.getProductByBarcode(barcode);
+    final product = await _datasource.getProductByBarcode(
+      barcode.toUpperCase(),
+    );
     if (product == null) return false;
     if (excludeId != null && product.id == excludeId) return false;
     return true;
@@ -68,7 +72,7 @@ class ProductRepositoryImpl implements ProductRepository {
         id: id,
         name: name,
         sku: Value(sku),
-        barcode: Value(barcode),
+        barcode: Value(barcode?.toUpperCase()),
         price: price,
         cost: Value(cost),
         stock: Value(stock),
@@ -109,7 +113,7 @@ class ProductRepositoryImpl implements ProductRepository {
         id: Value(product.id),
         name: Value(product.name),
         sku: Value(product.sku),
-        barcode: Value(product.barcode),
+        barcode: Value(product.barcode?.toUpperCase()),
         price: Value(product.price),
         cost: Value(product.cost),
         stock: Value(product.stock),
@@ -123,6 +127,11 @@ class ProductRepositoryImpl implements ProductRepository {
       ),
     );
   }
+
+  @override
+  Future<void> bulkUpdateBarcodes(
+    List<({String id, String barcode})> updates,
+  ) => _datasource.bulkUpdateBarcodes(updates);
 
   @override
   Future<void> deleteProduct(String id) async {

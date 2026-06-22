@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.8.0
+# Database Handbook — Promsell POS CE v0.8.1
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -110,6 +110,10 @@ erDiagram
         real discountAmount
         real vatAmount
         real subtotal
+        datetime updatedAt
+        datetime deletedAt
+        int version
+        text deviceId
     }
 
     InventoryLogs {
@@ -122,12 +126,17 @@ erDiagram
         text refSaleId
         datetime createdAt
         text deviceId
+        datetime updatedAt
+        datetime deletedAt
+        int version
     }
 
     AppSettings {
         text key PK
         text value
         datetime updatedAt
+        int version
+        text deviceId
     }
 
     DraftCarts {
@@ -138,7 +147,10 @@ erDiagram
         real cartDiscountValue
         datetime createdAt
         datetime updatedAt
+        bool isArchived
         text deviceId
+        datetime deletedAt
+        int version
     }
 
     DraftCartItems {
@@ -150,6 +162,10 @@ erDiagram
         int qty
         text discountType
         real discountValue
+        datetime updatedAt
+        datetime deletedAt
+        int version
+        text deviceId
     }
 
     DailyCloses {
@@ -163,9 +179,15 @@ erDiagram
         real totalVoid
         int salesCount
         int voidCount
+        text paymentBreakdown
+        real vatAmount
+        real discountAmount
         text note
         datetime closedAt
         text deviceId
+        datetime updatedAt
+        datetime deletedAt
+        int version
     }
 
     Categories ||--o{ Products : "categoryId"
@@ -201,7 +223,7 @@ Source: `lib/core/database/tables/products_table.dart`
 | `id` | TEXT | No | — | **PK**, UUIDv4 |
 | `name` | TEXT | No | — | length 1–200 |
 | `sku` | TEXT | Yes | — | |
-| `barcode` | TEXT | Yes | — | **UNIQUE** (schema v16) |
+| `barcode` | TEXT | Yes | — | **UNIQUE** (schema v16); normalized to uppercase on save and lookup |
 | `price` | REAL | No | — | |
 | `cost` | REAL | Yes | — | |
 | `stock` | INTEGER | No | `0` | |
@@ -263,6 +285,10 @@ Source: `lib/core/database/tables/sale_items_table.dart`
 | `discountAmount` | REAL | No | `0` | |
 | `vatAmount` | REAL | No | `0` | |
 | `subtotal` | REAL | No | — | `price × qty − discount` |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
 
 > **Design decision:** `productId` has no FK constraint to `products` — sale history must survive product deletion. `productName` and `price` are snapshots.
 
@@ -298,6 +324,9 @@ Source: `lib/core/database/tables/inventory_logs_table.dart`
 | `refSaleId` | TEXT | Yes | — | Logical ref → sales (for SALE/VOID_REVERSAL) |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
 | `deviceId` | TEXT | Yes | — | Sync |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
 
 ### AppSettings
 
@@ -308,6 +337,8 @@ Source: `lib/core/database/tables/app_settings_table.dart`
 | `key` | TEXT | No | — | **PK** |
 | `value` | TEXT | No | — | JSON-encoded string |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
 
 > Table name override: `app_settings` (Drift `tableName` getter).
 
@@ -323,8 +354,11 @@ Source: `lib/core/database/tables/draft_carts_table.dart`
 | `cartDiscountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `cartDiscountValue` | REAL | Yes | — | |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
-| `updatedAt` | DATETIME | No | `currentDateAndTime` | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `isArchived` | BOOLEAN | No | `false` | Auto-archive after 7 days |
 | `deviceId` | TEXT | Yes | — | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
 
 ### DraftCartItems
 
@@ -340,6 +374,10 @@ Source: `lib/core/database/tables/draft_cart_items_table.dart`
 | `qty` | INTEGER | No | — | |
 | `discountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `discountValue` | REAL | Yes | — | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
 
 ### DailyCloses
 
@@ -357,9 +395,15 @@ Source: `lib/core/database/tables/daily_closes_table.dart`
 | `totalVoid` | REAL | No | `0` | |
 | `salesCount` | INTEGER | No | `0` | |
 | `voidCount` | INTEGER | No | `0` | |
+| `paymentBreakdown` | TEXT | No | `'{}'` | JSON map of payment method → amount |
+| `vatAmount` | REAL | No | `0` | Total VAT for the day |
+| `discountAmount` | REAL | No | `0` | Total discounts for the day |
 | `note` | TEXT | Yes | — | |
-| `closedAt` | DATETIME | No | `currentDateAndTime` | |
+| `closedAt` | DATETIME | Yes | — | Nullable since schema v10 |
 | `deviceId` | TEXT | Yes | — | Sync |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
 
 ---
 
@@ -422,7 +466,7 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 
 ## Sync-Ready Columns
 
-These columns exist on all tables and are **actively populated** since v0.7.5 (schema v13) for Phase 4 (multi-device sync) readiness.
+These columns exist on all tables and are **actively populated** since schema v11 (v0.7.0) for Phase 4 (multi-device sync) readiness. `deviceId` was backfilled on all existing rows in schema v13.
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -438,7 +482,7 @@ When a record is "deleted":
 2. All queries filter `WHERE deleted_at IS NULL` (or use `isActive` for products)
 3. Sync can detect deletions by comparing `deletedAt` timestamps
 
-> Currently (v0.5.x), products use `isActive` for soft deactivation. The `deletedAt` column enables true soft-delete + sync in Phase 4.
+> Products use `isActive` for soft deactivation in the UI layer. The `deletedAt` column enables true soft-delete + sync in Phase 4.
 
 ---
 
@@ -913,9 +957,11 @@ tearDown(() => db.close());
 
 - `test/integration/checkout_flow_test.dart` — add products → create sale → verify stock deduction → check history
 - `test/integration/sale_integrity_test.dart` — atomic sale with receipt number → void sale → stock restored → inventory logs verified → manual stock adjustment → cannot double-void
+- `test/integration/onboarding_first_sale_test.dart` — onboarding flow → first sale → settings persistence
+- `test/tool/seed_integration_test.dart` — stress test (`@Tags(['stress'])`): seeds 10k products + 50k sales + 150k sale_items, measures query performance (all < 1s)
 
 All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.7.6 · Schema v15 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.8.1 · Schema v16 · 9 tables · UUIDv4</sub>

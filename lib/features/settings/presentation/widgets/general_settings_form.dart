@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
@@ -13,8 +13,8 @@ class GeneralSettingsForm extends StatelessWidget {
     super.key,
   });
 
-  final AppSettings settings;
-  final ValueChanged<AppSettings> onUpdate;
+  final Settings settings;
+  final ValueChanged<Settings> onUpdate;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   Widget _buildLanguageTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
@@ -108,7 +108,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   void _showLanguageDialog(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
@@ -150,7 +150,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   Widget _buildThemeTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
@@ -200,7 +200,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   void _showThemeDialog(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
@@ -260,7 +260,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   Widget _buildAccessibilityTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
@@ -312,7 +312,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   Widget _buildCompactCartTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
@@ -374,7 +374,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   Widget _buildResetTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
@@ -424,7 +424,7 @@ class GeneralSettingsForm extends StatelessWidget {
 
   void _showResetConfirmDialog(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {

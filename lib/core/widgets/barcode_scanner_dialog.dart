@@ -12,22 +12,67 @@ import 'package:promsell_pos_ce/core/widgets/scan_overlay_painter.dart';
 Future<String?> showProductBarcodeScanner(
   BuildContext context, {
   bool beepOnScan = true,
+  List<BarcodeFormat>? formats,
+  int autoOpenManualDelay = 0,
 }) => showDialog<String>(
   context: context,
   builder: (dialogContext) => BarcodeScannerDialog(
-    formats: const [
-      BarcodeFormat.ean13,
-      BarcodeFormat.ean8,
-      BarcodeFormat.upcA,
-      BarcodeFormat.upcE,
-      BarcodeFormat.code128,
-      BarcodeFormat.code39,
-      BarcodeFormat.itf,
-    ],
+    formats:
+        formats ??
+        const [
+          BarcodeFormat.ean13,
+          BarcodeFormat.ean8,
+          BarcodeFormat.upcA,
+          BarcodeFormat.upcE,
+          BarcodeFormat.code128,
+          BarcodeFormat.code39,
+          BarcodeFormat.itf,
+          BarcodeFormat.qrCode,
+          BarcodeFormat.dataMatrix,
+          BarcodeFormat.pdf417,
+          BarcodeFormat.aztec,
+          BarcodeFormat.codabar,
+        ],
     onScan: (value) => Navigator.of(dialogContext).pop(value),
     beepOnScan: beepOnScan,
+    autoOpenManualDelay: autoOpenManualDelay,
   ),
 );
+
+BarcodeFormat _formatFromName(String name) {
+  switch (name) {
+    case 'ean13':
+      return BarcodeFormat.ean13;
+    case 'ean8':
+      return BarcodeFormat.ean8;
+    case 'upcA':
+      return BarcodeFormat.upcA;
+    case 'upcE':
+      return BarcodeFormat.upcE;
+    case 'code128':
+      return BarcodeFormat.code128;
+    case 'code39':
+      return BarcodeFormat.code39;
+    case 'itf':
+      return BarcodeFormat.itf;
+    case 'qrCode':
+      return BarcodeFormat.qrCode;
+    case 'dataMatrix':
+      return BarcodeFormat.dataMatrix;
+    case 'pdf417':
+      return BarcodeFormat.pdf417;
+    case 'aztec':
+      return BarcodeFormat.aztec;
+    case 'codabar':
+      return BarcodeFormat.codabar;
+    default:
+      return BarcodeFormat.ean13;
+  }
+}
+
+List<BarcodeFormat> barcodeFormatsFromNames(List<String> names) {
+  return names.map(_formatFromName).toList();
+}
 
 /// Fullscreen barcode scanner dialog.
 ///
@@ -42,6 +87,7 @@ class BarcodeScannerDialog extends StatefulWidget {
     this.title,
     this.hint,
     this.beepOnScan = true,
+    this.autoOpenManualDelay = 0,
   });
 
   final List<BarcodeFormat> formats;
@@ -49,19 +95,29 @@ class BarcodeScannerDialog extends StatefulWidget {
   final String? title;
   final String? hint;
   final bool beepOnScan;
+  final int autoOpenManualDelay;
 
   @override
   State<BarcodeScannerDialog> createState() => _BarcodeScannerDialogState();
 }
 
-class _BarcodeScannerDialogState extends State<BarcodeScannerDialog> {
+class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
+    with SingleTickerProviderStateMixin {
   late final MobileScannerController _controller;
   final _manualCtrl = TextEditingController();
   bool _scanned = false;
   bool _showManualEntry = false;
   String? _errorText;
-  Timer? _debounceTimer;
   Timer? _errorClearTimer;
+  Timer? _autoOpenTimer;
+  static final _alphanumeric = RegExp(r'^[a-zA-Z0-9]+$');
+
+  late final AnimationController _laserAnim;
+  late final Animation<double> _laserCurve;
+
+  static const _cutoutWidth = 300.0;
+  static const _cutoutHeight = 180.0;
+  static const _cutoutRadius = 16.0;
 
   @override
   void initState() {
@@ -71,23 +127,62 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog> {
       facing: CameraFacing.back,
       formats: widget.formats,
     );
+    _laserAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _laserCurve = CurvedAnimation(parent: _laserAnim, curve: Curves.easeInOut);
+    if (widget.autoOpenManualDelay > 0) {
+      _autoOpenTimer = Timer(Duration(seconds: widget.autoOpenManualDelay), () {
+        if (mounted && !_scanned) {
+          setState(() => _showManualEntry = true);
+        }
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller.start();
+  }
+
+  @override
+  void deactivate() {
+    _controller.stop();
+    super.deactivate();
   }
 
   @override
   void dispose() {
+    _laserAnim.dispose();
     _manualCtrl.dispose();
-    _debounceTimer?.cancel();
     _errorClearTimer?.cancel();
+    _autoOpenTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
+  void _setError(String? text) {
+    if (!mounted) return;
+    setState(() => _errorText = text);
+    _errorClearTimer?.cancel();
+    if (text != null) {
+      _errorClearTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _errorText = null);
+      });
+    }
+  }
+
   void _submitManual() {
     final value = _manualCtrl.text.trim();
-    if (value.isNotEmpty) {
-      widget.onScan(value);
-      Navigator.of(context).pop();
+    if (value.isEmpty) return;
+    if (!_alphanumeric.hasMatch(value)) {
+      _setError('Barcode must be alphanumeric (letters and numbers only).');
+      return;
     }
+    widget.onScan(value);
+    Navigator.of(context).pop();
   }
 
   void _onDetect(BarcodeCapture capture) {
@@ -98,18 +193,13 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog> {
     final raw = barcodes.first.rawValue;
     if (raw == null || raw.isEmpty) return;
 
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 800), () async {
-      if (!mounted || _scanned) return;
-
-      setState(() => _scanned = true);
-      if (widget.beepOnScan) HapticFeedback.mediumImpact();
-      await _controller.stop();
-
-      if (mounted) {
-        widget.onScan(raw);
-        Navigator.of(context).pop();
-      }
+    setState(() => _scanned = true);
+    _autoOpenTimer?.cancel();
+    if (widget.beepOnScan) HapticFeedback.mediumImpact();
+    _controller.stop().then((_) {
+      if (!mounted) return;
+      widget.onScan(raw);
+      Navigator.of(context).pop();
     });
   }
 
@@ -159,41 +249,40 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog> {
               );
             },
           ),
-          CustomPaint(
-            size: MediaQuery.of(context).size,
-            painter: ScanOverlayPainter(
-              cutoutSize: 260,
-              borderRadius: 20,
-              borderColor: _errorText != null
-                  ? theme.colorScheme.error
-                  : _scanned
-                  ? theme.colorScheme.primary
-                  : null,
-            ),
+          AnimatedBuilder(
+            animation: _laserCurve,
+            builder: (context, child) {
+              final laserY = _scanned ? 0.5 : _laserCurve.value;
+              return CustomPaint(
+                size: MediaQuery.of(context).size,
+                painter: ScanOverlayPainter(
+                  cutoutWidth: _cutoutWidth,
+                  cutoutHeight: _cutoutHeight,
+                  borderRadius: _cutoutRadius,
+                  borderColor: _errorText != null
+                      ? theme.colorScheme.error
+                      : _scanned
+                      ? theme.colorScheme.primary
+                      : null,
+                  laserY: laserY,
+                  laserColor: _errorText != null
+                      ? theme.colorScheme.error.withValues(alpha: 0.5)
+                      : _scanned
+                      ? theme.colorScheme.primary.withValues(alpha: 0.5)
+                      : theme.colorScheme.primary,
+                ),
+              );
+            },
           ),
           Center(
             child: SizedBox(
-              width: 260,
-              height: 260,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: _errorText != null
-                        ? theme.colorScheme.error
-                        : _scanned
-                        ? theme.colorScheme.primary
-                        : Colors.white,
-                    width: 3,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: _scanned
-                    ? const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    : null,
-              ),
+              width: _cutoutWidth,
+              height: _cutoutHeight,
+              child: _scanned
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    )
+                  : null,
             ),
           ),
           if (_errorText != null)

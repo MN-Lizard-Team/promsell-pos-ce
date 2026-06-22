@@ -142,21 +142,22 @@ Produces three APKs in `build/app/outputs/flutter-apk/`:
 ### Sale tab
 
 1. Use the search bar or category chips to narrow the product catalog
-2. Tap any product card to add it to the cart
-3. Adjust quantity with `+` / `-` controls, or **tap the quantity number** to open a numeric input dialog with stock info and clamping; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
-4. **Cart layout** — Items display in a single-row 3-zone layout (product info | stepper | price). Swipe right to delete (with undo), swipe left to increment quantity, and long-press to drag-and-reorder items. Discount chips appear inline with the price
-5. **Compact modes** — Tap the density toggle button in the cart header to switch between Normal ↔ Ultra-Compact layouts
-6. **Resizable panel** — Drag the handle between the catalog and cart to resize the panel, or use the size slider in the cart header for Small/Large presets
-7. **Apply discounts** (optional):
+2. Tap any product card to add it to the cart — out-of-stock products appear dimmed and cannot be tapped (unless **Allow oversell** is enabled in Settings → Stock)
+3. If a product in your cart goes out of stock (e.g. stock adjusted elsewhere), a snackbar warns you with the product name; the item stays in the cart with qty clamped to available stock
+4. Adjust quantity with `+` / `-` controls, or **tap the quantity number** to open a numeric input dialog with stock info and clamping; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
+5. **Cart layout** — Items display in a single-row 3-zone layout (product info | stepper | price). Swipe right to delete (with undo), swipe left to increment quantity, and long-press to drag-and-reorder items. Discount chips appear inline with the price
+6. **Compact modes** — Tap the density toggle button in the cart header to switch between Normal ↔ Ultra-Compact layouts
+7. **Resizable panel** — Drag the handle between the catalog and cart to resize the panel, or use the size slider in the cart header for Small/Large presets
+8. **Apply discounts** (optional):
    - Tap the 🏷️ tag icon on any cart item → choose **%** or **฿**, enter value, tap Apply
    - Tap **Apply cart discount** below the subtotal for a bill-wide discount
    - Payment sheet shows the full breakdown: Subtotal → discounts → Total
-8. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, search, switch between customers / tables, or delete; cart auto-saves every 1.5 s
-9. Tap **Checkout** → full-screen `CheckoutPage` opens
-10. Select **Cash / Transfer / Card / PromptPay**
-11. For cash, use quick cash chips or enter the amount received — change is calculated automatically
-12. Optionally add a sale note
-13. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
+9. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, search, switch between customers / tables, or delete; cart auto-saves every 1.5 s
+10. Tap **Checkout** → full-screen `CheckoutPage` opens
+11. Select **Cash / Transfer / Card / PromptPay**
+12. For cash, use quick cash chips or enter the amount received — change is calculated automatically
+13. Optionally add a sale note
+14. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
 
 > **Review cart before checkout:** Tap the 🛒 cart icon with the item-count badge in the app bar to open `CartReviewPage` — tap a product image for zoom (with share and info buttons in the viewer toolbar), tap a row for product detail, use +/- to adjust quantities, or delete items with undo. The total updates live on every change.
 
@@ -170,11 +171,12 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - Tap **Add Product** (➕ icon, app bar) to open the product form
 - Product form uses a **2-tab layout** (Basic + Advanced) with sticky save button:
   - **Basic tab** — image (tap to pick from Gallery/Camera, long-press to preview, remove with confirmation), name, price, stock, category picker (bottom sheet with auto-pop selection and "None" clear option)
-  - **Advanced tab** — barcode (scan with camera or enter manually), generate barcode from timestamp with custom prefix, SKU, cost, track stock toggle
+  - **Advanced tab** — barcode (scan with camera or enter manually), generate EAN-13 compliant barcode with Luhn check digit (GS1 prefix `200`, auto-padded to 3 digits, collision-checked against DB), SKU, cost, track stock toggle
   - Image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; `ImageCacheService` enforces 50MB LRU cache eviction automatically
   - Draft save/restore — unsaved changes prompt to save draft on back press; drafts validate image paths on restore
 - Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
 - Tap **Manage Categories** (overflow menu ⋮) to open **Category Management** — drag & drop reordering, color + icon picker (10 colors / 21 icons), product count badges, search, and bulk delete
+- Tap **Generate Missing Barcodes** (overflow menu ⋮) to batch-generate EAN-13 barcodes for all products without one — shows confirmation dialog with count, then success snackbar
 - Search filters by name and category in real time
 
 ### History tab
@@ -201,7 +203,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 ### Settings tab
 
-The Settings root page uses a **3-level hierarchy**: topic groups (General, Store, Payment, System) → sub-topics → individual pages. A **search bar** at the top filters settings across all sub-topics in real time. A **dashboard card** shows at-a-glance badges (shop name, language, theme, backup status, PromptPay status, barcode scan status). Each category tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
+The Settings root page uses a **2-level hierarchy**: section headers (General, Store & Sales, Discounts, Payments, System & Data, About) → individual pages. A **search bar** at the top filters settings across all sections in real time. A **dashboard card** shows at-a-glance badges (shop name, language, theme, backup status, PromptPay status, barcode scan status). Each tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
 
 ---
 
@@ -212,9 +214,9 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 ### Root page
 
 - **Dashboard card** — Gradient card at the top showing current shop name, language, theme, backup status (Safe/Warning/Overdue), and PromptPay status (Active/Not set)
-- **Topic groups** — General, Store, Payment, System — each expands to sub-topics → individual pages
+- **Section headers** — General, Store & Sales, Discounts, Payments, System & Data, About — each lists individual setting pages directly (1 tap to reach any page)
 - **Status chips** — Each tile shows a colored badge: Complete/Incomplete, Active/Not set, Safe/Warning/Overdue, or the current value (language, currency, receipt size)
-- **Search** — Cross-sub-topic real-time filtering by title or subtitle across all settings pages
+- **Search** — Cross-section real-time filtering by title or subtitle across all settings pages
 
 ### General Settings
 
@@ -285,8 +287,9 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | Setting | Description |
 |---------|-------------|
 | **Enable barcode scan** | Show/hide camera scan button on Sale page |
-| **Play beep on scan** | Haptic feedback when barcode is detected |
-| **Auto-generate prefix** | Prefix for auto-generated barcodes (default `P`) |
+| **Vibrate on scan** | Haptic vibration feedback when barcode is detected |
+| **Auto-generate prefix** | Numeric prefix for EAN-13 barcodes (default `200`, 1-3 digits, auto-padded to 3 digits) |
+| **Generate Missing Barcodes** | Batch-generate EAN-13 barcodes for all products without one — shows count of products missing barcodes, confirmation dialog, and success message |
 | **Help section** | Expandable guide for non-technical staff on how to use barcodes |
 
 ### Draft Settings
@@ -296,6 +299,16 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Max drafts** | Maximum number of simultaneous draft carts (default `30`, range 5–100) |
 | **Compact cart** | Reduce padding and font size in the cart panel |
 | **Ultra-compact cart** | Hide unit price line and shrink avatar for maximum density |
+
+### About App
+
+- **App icon + name + version** — Shows app name "Promsell POS CE", version and build number (retrieved via `package_info_plus`)
+- **Description** — "Offline-first mobile POS for small businesses"
+- **Built with** — Tech stack summary (Flutter, Drift SQLite)
+- **Contact** — Support email (mnlizard.official@gmail.com)
+- **Privacy Policy** — Opens in-app `PrivacyPolicyPage` with 6 sections: Data Collection, Third-Party Services, Data Storage, Backup Encryption, Permissions, Contact
+- **Open Source License** — Opens in-app `AppLicensePage` showing full AGPL-3.0 license text (loaded from `LICENSE` file, selectable for copy)
+- **Footer** — Copyright notice "© 2026 Promsell POS CE · AGPL-3.0"
 
 ---
 
@@ -381,7 +394,7 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart       # Database class, schema v15, migration, indexes, seed
+├── app_database.dart       # Database class, schema v16, migration, indexes, seed
 ├── app_database.g.dart     # GENERATED — do not edit
 └── tables/
     ├── products_table.dart
@@ -411,7 +424,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **16** (v0.8.0). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **16** (v0.8.1). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 
@@ -468,13 +481,19 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **340 automated tests** covering domain logic, state management, data access, services, widgets, integration, and localization parity.
+Promsell has **405 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
 
 ### Running tests
 
 ```bash
-# Run all tests
+# Run all tests (includes stress tests)
 flutter test
+
+# Exclude stress tests (faster — recommended for regular development)
+flutter test --exclude-tags stress
+
+# Stress tests only (10k products, 50k sales — may take several minutes)
+flutter test --tags stress --timeout 600s
 
 # Run with coverage report
 flutter test --coverage
@@ -489,7 +508,8 @@ Tests mirror `lib/` structure under `test/`:
 
 - `test/helpers/` — shared mocks (`mocks.dart`), entity fixtures (`fixtures.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`)
 - `test/features/` — per-feature tests: domain (`entities/`, `usecases/`), data (`repositories/`, `datasources/`), presentation (`bloc/`, `pages/`, `widgets/`)
-- `test/integration/` — end-to-end checkout flow + sale integrity (void, adjust stock) with real in-memory SQLite
+- `test/integration/` — end-to-end checkout flow + sale integrity (void, adjust stock) + onboarding → first sale with real in-memory SQLite
+- `test/tool/` — stress test seeder (`@Tags(['stress'])`, excluded from default run) — seeds 10k products + 50k sales and measures query performance
 - `test/core/` — utility tests (`MoneyUtils`, etc.)
 - `test/l10n/` — EN/TH translation parity test
 

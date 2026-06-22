@@ -90,7 +90,7 @@ void main() {
     expect(updatedProduct!.stock, 98);
 
     // 6. Update settings and verify
-    final updatedSettings = loaded.copyWith(
+    final updatedSettings = loaded.copyWithEntities(
       shopInfo: const ShopInfo(name: 'Updated Shop'),
     );
     await settingsRepo.save(updatedSettings);

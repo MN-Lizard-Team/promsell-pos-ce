@@ -38,6 +38,11 @@ class Validators {
 
   static String? barcode(String? value) {
     if (value == null || value.isEmpty) return null;
+    if (value.length > 50) {
+      throw ArgumentError(
+        'Barcode must be 50 characters or fewer (got ${value.length}).',
+      );
+    }
     if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
       throw ArgumentError('Barcode must be alphanumeric (got "$value").');
     }

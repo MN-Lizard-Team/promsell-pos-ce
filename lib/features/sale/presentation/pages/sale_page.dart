@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/core/widgets/adaptive_breakpoints.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode_scanner_dialog.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/sale_bloc.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -64,6 +65,20 @@ class _SaleViewState extends State<_SaleView> {
   static const double _maxCartWidth = 560;
   static const double _handleHeight = 24;
   static const double _snapTolerance = 18;
+
+  bool _hasStockOrPriceChange(List<Product> prev, List<Product> curr) {
+    final prevMap = {for (final p in prev) p.id: p};
+    for (final c in curr) {
+      final p = prevMap[c.id];
+      if (p == null) return true;
+      if (p.stock != c.stock ||
+          p.price != c.price ||
+          p.isActive != c.isActive) {
+        return true;
+      }
+    }
+    return prev.length != curr.length;
+  }
 
   @override
   void initState() {
@@ -187,71 +202,86 @@ class _SaleViewState extends State<_SaleView> {
     return BlocListener<ProductBloc, ProductState>(
       listenWhen: (prev, curr) =>
           curr.status == ProductStatus.success &&
-          prev.products != curr.products,
+          prev.products != curr.products &&
+          _hasStockOrPriceChange(prev.products, curr.products),
       listener: (context, state) {
         context.read<SaleBloc>().add(SaleCartProductsRefreshed(state.products));
       },
       child: BlocListener<SaleBloc, SaleState>(
         listenWhen: (prev, curr) =>
-            prev.errorMessage != curr.errorMessage && curr.errorMessage != null,
+            prev.stockWarning != curr.stockWarning && curr.stockWarning != null,
         listener: (context, state) {
-          final l10n = context.l10n;
-          final msg = state.errorMessage == 'barcodeNotFound'
-              ? l10n.barcodeNotFound
-              : state.errorMessage!;
-          AppSnackBar.error(context, msg);
+          AppSnackBar.info(context, state.stockWarning!);
         },
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(context.l10n.salePageTitle),
-            actions: [
-              BlocBuilder<SettingsCubit, SettingsState>(
-                builder: (ctx, settingsState) {
-                  if (!settingsState.settings.barcodeScanEnabled) {
-                    return const SizedBox.shrink();
-                  }
-                  return IconButton(
-                    icon: const Icon(Icons.camera_alt_outlined),
-                    tooltip: context.l10n.scanBarcode,
-                    onPressed: () async {
-                      final bloc = context.read<SaleBloc>();
-                      final barcode = await showProductBarcodeScanner(
-                        context,
-                        beepOnScan: settingsState.settings.barcodeBeepOnScan,
-                      );
-                      if (barcode != null && barcode.isNotEmpty) {
-                        bloc.add(SaleBarcodeScanned(barcode));
-                      }
-                    },
-                  );
-                },
-              ),
-              BlocBuilder<SaleBloc, SaleState>(
-                builder: (ctx, state) => IconButton(
-                  icon: Badge(
-                    isLabelVisible: state.activeDraftId != null,
-                    child: const Icon(Icons.bookmarks_outlined),
-                  ),
-                  tooltip: ctx.l10n.draftsTitle,
-                  onPressed: () => DraftsBottomSheet.show(ctx),
+        child: BlocListener<SaleBloc, SaleState>(
+          listenWhen: (prev, curr) =>
+              prev.errorMessage != curr.errorMessage &&
+              curr.errorMessage != null,
+          listener: (context, state) {
+            final l10n = context.l10n;
+            final msg = state.errorMessage == 'barcodeNotFound'
+                ? l10n.barcodeNotFound
+                : state.errorMessage!;
+            AppSnackBar.error(context, msg);
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(context.l10n.salePageTitle),
+              actions: [
+                BlocBuilder<SettingsCubit, SettingsState>(
+                  builder: (ctx, settingsState) {
+                    if (!settingsState.settings.barcodeScanEnabled) {
+                      return const SizedBox.shrink();
+                    }
+                    return IconButton(
+                      icon: const Icon(Icons.camera_alt_outlined),
+                      tooltip: context.l10n.scanBarcode,
+                      onPressed: () async {
+                        final bloc = context.read<SaleBloc>();
+                        final settings = settingsState.settings;
+                        final barcode = await showProductBarcodeScanner(
+                          context,
+                          beepOnScan: settings.barcodeBeepOnScan,
+                          formats: barcodeFormatsFromNames(
+                            settings.barcodeEnabledFormats,
+                          ),
+                          autoOpenManualDelay:
+                              settings.barcodeAutoOpenManualDelay,
+                        );
+                        if (barcode != null && barcode.isNotEmpty) {
+                          bloc.add(SaleBarcodeScanned(barcode));
+                        }
+                      },
+                    );
+                  },
                 ),
-              ),
-            ],
-          ),
-          body: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: compactCart
-                        ? const SaleCatalog()
-                        : (isExpanded
-                              ? _buildExpandedLayout()
-                              : _buildCompactLayout()),
+                BlocBuilder<SaleBloc, SaleState>(
+                  builder: (ctx, state) => IconButton(
+                    icon: Badge(
+                      isLabelVisible: state.activeDraftId != null,
+                      child: const Icon(Icons.bookmarks_outlined),
+                    ),
+                    tooltip: ctx.l10n.draftsTitle,
+                    onPressed: () => DraftsBottomSheet.show(ctx),
                   ),
-                  if (compactCart) const CompactCartFab(),
-                ],
+                ),
+              ],
+            ),
+            body: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: compactCart
+                          ? const SaleCatalog()
+                          : (isExpanded
+                                ? _buildExpandedLayout()
+                                : _buildCompactLayout()),
+                    ),
+                    if (compactCart) const CompactCartFab(),
+                  ],
+                ),
               ),
             ),
           ),

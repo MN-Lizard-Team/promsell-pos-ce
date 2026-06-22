@@ -14,6 +14,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart'
 import 'package:promsell_pos_ce/features/settings/domain/entities/shop_info.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/stock_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/tax_config.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/barcode_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/ui_config.dart';
 
 class SettingsMapper {
@@ -63,6 +64,12 @@ class SettingsMapper {
   static const _keyDailyCloseLock = 'dailyCloseLock';
   static const _keyLastClosedDate = 'lastClosedDate';
   static const _keyBackupEncryptionEnabled = 'backupEncryptionEnabled';
+  static const _keyBarcodeScanEnabled = 'barcodeScanEnabled';
+  static const _keyBarcodeBeepOnScan = 'barcodeBeepOnScan';
+  static const _keyBarcodeAutoGeneratePrefix = 'barcodeAutoGeneratePrefix';
+  static const _keyBarcodeEnabledFormats = 'barcodeEnabledFormats';
+  static const _keyBarcodeAutoOpenManualDelay = 'barcodeAutoOpenManualDelay';
+  static const _keyBarcodeLastCounter = 'barcodeLastCounter';
 
   Map<String, String> toMap(Settings settings) {
     return {
@@ -124,6 +131,15 @@ class SettingsMapper {
       _keyLastClosedDate: settings.dailyCloseConfig.lastClosedDate ?? '',
       _keyBackupEncryptionEnabled: settings.backupConfig.encryptionEnabled
           .toString(),
+      _keyBarcodeScanEnabled: settings.barcodeConfig.scanEnabled.toString(),
+      _keyBarcodeBeepOnScan: settings.barcodeConfig.beepOnScan.toString(),
+      _keyBarcodeAutoGeneratePrefix: settings.barcodeConfig.autoGeneratePrefix,
+      _keyBarcodeEnabledFormats: settings.barcodeConfig.enabledFormats.join(
+        ',',
+      ),
+      _keyBarcodeAutoOpenManualDelay: settings.barcodeConfig.autoOpenManualDelay
+          .toString(),
+      _keyBarcodeLastCounter: settings.barcodeConfig.lastCounter.toString(),
     };
   }
 
@@ -196,6 +212,14 @@ class SettingsMapper {
         encryptionEnabled: _parseBool(map[_keyBackupEncryptionEnabled], false),
       ),
       draftConfig: DraftConfig(maxDrafts: _parseInt(map[_keyMaxDrafts], 30)),
+      barcodeConfig: BarcodeConfig(
+        scanEnabled: _parseBool(map[_keyBarcodeScanEnabled], true),
+        autoGeneratePrefix: map[_keyBarcodeAutoGeneratePrefix] ?? '200',
+        beepOnScan: _parseBool(map[_keyBarcodeBeepOnScan], true),
+        enabledFormats: _parseFormatList(map[_keyBarcodeEnabledFormats]),
+        autoOpenManualDelay: _parseInt(map[_keyBarcodeAutoOpenManualDelay], 0),
+        lastCounter: _parseInt(map[_keyBarcodeLastCounter], 0),
+      ),
       onboardingCompleted: _parseBool(map[_keyOnboardingCompleted], false),
     );
   }
@@ -208,6 +232,12 @@ class SettingsMapper {
   static int _parseInt(String? raw, int fallback) {
     if (raw == null) return fallback;
     return int.tryParse(raw) ?? fallback;
+  }
+
+  static List<String> _parseFormatList(String? raw) {
+    if (raw == null || raw.isEmpty) return BarcodeConfig.defaultAllFormats;
+    final parsed = raw.split(',').where((e) => e.isNotEmpty).toList();
+    return parsed.isEmpty ? BarcodeConfig.defaultAllFormats : parsed;
   }
 
   static String _parseThemeMode(String? raw) {

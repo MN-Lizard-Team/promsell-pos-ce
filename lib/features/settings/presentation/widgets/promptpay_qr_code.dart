@@ -4,14 +4,24 @@ import 'package:thai_promptpay/thai_promptpay.dart' as pp;
 
 /// Builds a PromptPay QR payload using the thai_promptpay library.
 /// Supports mobile (10-digit), National ID (13-digit), and e-Wallet (15-digit).
-String buildPromptPayQrPayload({
-  required String promptpayId,
-  required double amount,
-}) {
-  final satang = (amount * 100).round();
+/// Pass [amount] = null for a static QR (no amount embedded).
+String buildPromptPayQrPayload({required String promptpayId, double? amount}) {
   final isMobile = promptpayId.startsWith('0') && promptpayId.length == 10;
   final isNationalId = promptpayId.length == 13;
 
+  if (amount == null) {
+    if (isMobile) {
+      return pp.promptPayMobile(promptpayId);
+    } else if (isNationalId) {
+      return pp.promptPayNationalId(promptpayId);
+    } else if (promptpayId.length == 15) {
+      return pp.promptPayEWallet(promptpayId);
+    } else {
+      return pp.promptPayMobile(promptpayId);
+    }
+  }
+
+  final satang = (amount * 100).round();
   if (isMobile) {
     return pp.promptPayMobile(promptpayId, amountSatang: satang);
   } else if (isNationalId) {
@@ -19,7 +29,6 @@ String buildPromptPayQrPayload({
   } else if (promptpayId.length == 15) {
     return pp.promptPayEWallet(promptpayId, amountSatang: satang);
   } else {
-    // Fallback: treat as mobile (library will validate/normalize)
     return pp.promptPayMobile(promptpayId, amountSatang: satang);
   }
 }

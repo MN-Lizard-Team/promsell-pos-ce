@@ -7,6 +7,7 @@ abstract class CategoryLocalDatasource {
   Future<void> insert(CategoriesCompanion companion);
   Future<void> update(CategoriesCompanion companion);
   Future<void> delete(String id);
+  Future<void> reorderAll(List<(String id, int sortOrder)> updates);
 }
 
 @LazySingleton(as: CategoryLocalDatasource)
@@ -31,4 +32,16 @@ class CategoryLocalDatasourceImpl implements CategoryLocalDatasource {
   @override
   Future<void> delete(String id) =>
       (_db.delete(_db.categories)..where((c) => c.id.equals(id))).go();
+
+  @override
+  Future<void> reorderAll(List<(String id, int sortOrder)> updates) =>
+      _db.batch((b) {
+        for (final (id, sortOrder) in updates) {
+          b.update(
+            _db.categories,
+            CategoriesCompanion(sortOrder: Value(sortOrder)),
+            where: (c) => c.id.equals(id),
+          );
+        }
+      });
 }

@@ -63,4 +63,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
   @override
   Future<void> deleteCategory(String id) => _datasource.delete(id);
+
+  @override
+  Future<void> reorderCategories(List<String> orderedIds) =>
+      _datasource.reorderAll(
+        orderedIds.asMap().entries.map((e) => (e.value, e.key)).toList(),
+      );
 }

@@ -213,7 +213,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get searchHistoryHint => 'ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…';
 
   @override
-  String get noSearchResults => 'ไม่พบรายการขายที่ตรงกัน';
+  String get noSearchResults => 'ไม่พบการตั้งค่า';
 
   @override
   String get noSalesYet => 'ยังไม่มีรายการขาย';
@@ -1137,7 +1137,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get backupActionSubtitle => 'แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว';
 
   @override
-  String get backupEncryptionTitle => 'การเข้ารหัสสำรองข้อมูล';
+  String get backupEncryptionTitle => 'การเข้ารหัสสำรองข้อมูล (ไม่บังคับ)';
 
   @override
   String get backupEncryptionLabel => 'เข้ารหัสไฟล์สำรอง';
@@ -1560,6 +1560,37 @@ class AppLocalizationsTh extends AppLocalizations {
   String get barcodeGenerated => 'สร้างบาร์โค้ดแล้ว';
 
   @override
+  String get batchGenerateBarcodes => 'สร้างบาร์โค้ดให้สินค้าที่ยังไม่มี';
+
+  @override
+  String get batchGenerateBarcodesHint =>
+      'สร้างบาร์โค้ดให้สินค้าทุกชิ้นที่ยังไม่มีบาร์โค้ด';
+
+  @override
+  String get batchGenerateConfirmTitle => 'สร้างบาร์โค้ด';
+
+  @override
+  String batchGenerateConfirmBody(Object count) {
+    return 'สร้างบาร์โค้ด EAN-13 ให้สินค้า $count ชิ้นที่ยังไม่มีบาร์โค้ด?';
+  }
+
+  @override
+  String batchGenerateSuccess(Object count) {
+    return 'สร้างบาร์โค้ดให้สินค้า $count ชิ้นแล้ว';
+  }
+
+  @override
+  String get batchGenerateNone => 'สินค้าทุกชิ้นมีบาร์โค้ดแล้ว';
+
+  @override
+  String get batchGenerateFailed => 'สร้างบาร์โค้ดไม่สำเร็จ';
+
+  @override
+  String productsWithoutBarcode(Object count) {
+    return 'มีสินค้า $count ชิ้นที่ยังไม่มีบาร์โค้ด';
+  }
+
+  @override
   String get barcodeSettings => 'ตั้งค่าบาร์โค้ด';
 
   @override
@@ -1569,16 +1600,82 @@ class AppLocalizationsTh extends AppLocalizations {
   String get enableBarcodeScanHint => 'แสดงปุ่มสแกนกล้องในหน้าขาย';
 
   @override
-  String get playBeepOnScan => 'เล่นเสียงเมื่อสแกนสำเร็จ';
+  String get playBeepOnScan => 'สั่นเตือนเมื่อสแกนสำเร็จ';
 
   @override
-  String get playBeepOnScanHint => 'แจ้งเตือนด้วยเสียงเมื่อสแกนบาร์โค้ดสำเร็จ';
+  String get playBeepOnScanHint =>
+      'สั่นเตือนด้วยการสั่นสะเทือนเมื่อสแกนบาร์โค้ดสำเร็จ';
 
   @override
   String get barcodePrefix => 'คำนำหน้าสร้างอัตโนมัติ';
 
   @override
-  String get barcodePrefixHint => 'เช่น P, PROD';
+  String get barcodePrefixHint =>
+      'เช่น 200, 201 (ตัวเลข 1-3 หลัก สำหรับ EAN-13)';
+
+  @override
+  String get barcodePrefixError => 'ต้องเป็นตัวเลข 1-3 หลักเท่านั้น';
+
+  @override
+  String get barcodeFormats => 'รูปแบบบาร์โค้ดที่สแกน';
+
+  @override
+  String get barcodeFormatsHint => 'เลือกรูปแบบที่ต้องการสแกน (ลดการสแกนผิด)';
+
+  @override
+  String get barcodeFormatEan13 => 'EAN-13';
+
+  @override
+  String get barcodeFormatEan8 => 'EAN-8';
+
+  @override
+  String get barcodeFormatUpcA => 'UPC-A';
+
+  @override
+  String get barcodeFormatUpcE => 'UPC-E';
+
+  @override
+  String get barcodeFormatCode128 => 'Code 128';
+
+  @override
+  String get barcodeFormatCode39 => 'Code 39';
+
+  @override
+  String get barcodeFormatItf => 'ITF';
+
+  @override
+  String get barcodeFormatQrCode => 'QR Code';
+
+  @override
+  String get barcodeFormatDataMatrix => 'Data Matrix';
+
+  @override
+  String get barcodeFormatPdf417 => 'PDF417';
+
+  @override
+  String get barcodeFormatAztec => 'Aztec';
+
+  @override
+  String get barcodeFormatCodabar => 'Codabar';
+
+  @override
+  String get selectAll => 'เลือกทั้งหมด';
+
+  @override
+  String get deselectAll => 'ยกเลิกเลือกทั้งหมด';
+
+  @override
+  String get barcodeAutoOpenManual => 'เปิดป้อนด้วยตนเองอัตโนมัติ';
+
+  @override
+  String get barcodeAutoOpenManualHint =>
+      'เปิดช่องป้อนบาร์โค้ดด้วยตนเองถ้าสแกนไม่สำเร็จภายในเวลาที่กำหนด';
+
+  @override
+  String get disabled => 'ปิดใช้งาน';
+
+  @override
+  String get secondsSuffix => ' วิ';
 
   @override
   String get barcodeHelpTitle => 'วิธีใช้บาร์โค้ด';
@@ -1641,4 +1738,99 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get advanced => 'ขั้นสูง';
+
+  @override
+  String get settingsStoreSales => 'ร้านค้าและการขาย';
+
+  @override
+  String get settingsDiscounts => 'ส่วนลด';
+
+  @override
+  String get settingsAbout => 'เกี่ยวกับ';
+
+  @override
+  String get aboutApp => 'เกี่ยวกับแอป';
+
+  @override
+  String get appVersion => 'เวอร์ชัน';
+
+  @override
+  String get appBuild => 'บิลด์';
+
+  @override
+  String get appDescription => 'แอป POS ออฟไลน์สำหรับร้านค้าเล็กๆ';
+
+  @override
+  String get builtWith => 'สร้างด้วย';
+
+  @override
+  String get techStackFlutter => 'Flutter';
+
+  @override
+  String get techStackDrift => 'Drift SQLite';
+
+  @override
+  String get privacyPolicy => 'นโยบายความเป็นส่วนตัว';
+
+  @override
+  String get openSourceLicense => 'ลิขสิทธิ์โอเพนซอร์ส';
+
+  @override
+  String get contactUs => 'ติดต่อ';
+
+  @override
+  String get agplLicense =>
+      'สัญญาอนุญาต GNU Affero General Public License v3.0';
+
+  @override
+  String get agplShort => 'AGPL-3.0';
+
+  @override
+  String get copyrightNotice => '© 2026 Promsell POS CE · AGPL-3.0';
+
+  @override
+  String get dataCollection => 'การเก็บข้อมูล';
+
+  @override
+  String get dataCollectionBody =>
+      'Promsell ไม่เก็บข้อมูลส่วนบุคคลใดๆ ข้อมูลการขาย สินค้าคงคลัง และการตั้งค่าทั้งหมดจัดเก็บไว้ในเครื่องของคุณด้วย SQLite ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์ของเรา';
+
+  @override
+  String get thirdPartyServices => 'บริการภายนอก';
+
+  @override
+  String get thirdPartyServicesBody =>
+      'เราไม่ใช้บริการวิเคราะห์ข้อมูล โฆษณา หรือคลาวด์ แอปทำงานแบบออฟไลน์ทั้งหมด';
+
+  @override
+  String get dataStorage => 'การจัดเก็บข้อมูล';
+
+  @override
+  String get dataStorageBody =>
+      'ข้อมูลของคุณอยู่ในเครื่อง คุณสามารถส่งออกหรือลบได้ตลอดเวลาผ่านฟีเจอร์สำรอง/กู้คืน รูปภาพสินค้าจัดเก็บในไดเรกทอรีส่วนตัวของแอปและมีการล้างแคชอัตโนมัติ (จำกัด 50MB) เพื่อป้องกันการใช้พื้นที่มากเกินไป';
+
+  @override
+  String get backupEncryptionBody =>
+      'Promsell มีการเข้ารหัส AES-256-GCM สำหรับสำรองข้อมูล หากเปิดใช้งาน ข้อมูลสำรองจะถูกเข้ารหัสด้วยคีย์ที่ได้จาก PIN ที่ผู้ใช้กำหนดผ่าน PBKDF2 PIN ไม่ถูกจัดเก็บในเครื่องหรือส่งไปยังที่ใด หากลืม PIN จะไม่สามารถกู้คืนข้อมูลสำรองได้ — เราไม่สามารถรีเซ็ตหรือกู้คืนได้';
+
+  @override
+  String get permissionsTitle => 'สิทธิ์การเข้าถึง';
+
+  @override
+  String get permissionsCamera =>
+      'กล้อง: ใช้สำหรับถ่ายรูปสินค้าและสแกนบาร์โค้ด ไม่มีการส่งรูปภาพหรือข้อมูลสแกนออกจากเครื่อง';
+
+  @override
+  String get permissionsStorage =>
+      'คลังข้อมูล: ใช้สำหรับบันทึกข้อมูลสำรองและใบเสร็จเท่านั้น';
+
+  @override
+  String get permissionsInternet =>
+      'อินเทอร์เน็ต: ไม่บังคับ ใช้สำหรับโหลดรูปภาพสินค้าจาก URL เท่านั้น เมื่อแชร์รูปภาพสินค้า URL จะถูกส่งไปยังชีตแชร์ของระบบ (ในเครื่องเท่านั้น ไม่ส่งไปเซิร์ฟเวอร์ของเรา)';
+
+  @override
+  String get contactTitle => 'ติดต่อ';
+
+  @override
+  String get contactBody => 'สอบถามเพิ่มเติม: mnlizard.official@gmail.com';
 }

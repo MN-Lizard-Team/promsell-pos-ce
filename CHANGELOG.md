@@ -17,6 +17,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.1] - 2026-06-22
+
+PromptPay static QR support, AppSettings facade removal, full barcode system overhaul, and category/settings UX fixes.
+
+### Highlights
+
+- **Barcode System Overhaul** — Reliable scan (first-detect lock pattern), all 12 formats supported, EAN-13 generator with collision check + persistent counter, format selector, auto-open manual entry, prefix validation.
+- **Category System Fixes** — Removed double filtering, fixed reactive category lookup race, added "no category" option/filter, unified picker, consistent styling, batch reorder.
+- **Settings UX Overhaul** — Flattened 3-level → 2-level hierarchy, merged discount pages, rebalanced groups (Barcode moved to General).
+- **AppSettings Facade Removed** — ~30 files migrated to typed `Settings` aggregate ahead of Phase 4 multi-device sync.
+- **Critical Sale/Product Fixes** — Cart items no longer silently dropped on stock=0 refresh; SaleCatalog no longer disappears on empty category/loading state; draft name race fixed.
+- **About App Page** — Version info, in-app Privacy Policy, and License pages.
+- Static PromptPay QR support (no amount embedded) for tip/top-up use cases.
+
+### Added
+
+- PromptPay QR unit tests (22 tests) — EMVCo payload, formatting, CRC16, static/dynamic modes.
+- Stress test seeder tooling (`tool/seed_db.dart`) for production-scale data volumes.
+- EAN-13 compliant barcode generator (Luhn check digit, GS1 prefix `"200"`).
+- Barcode format selector, length validation, case normalization, auto-open manual entry timer, prefix input validation with live preview.
+- Batch barcode generation for products missing barcodes.
+- "No category" filter chip in Sale Catalog and Product List.
+- About App, Privacy Policy, and License in-app pages.
+
+### Changed
+
+- `buildPromptPayQrPayload` — `amount` now nullable; `null` generates a static QR.
+- `AppSettings` facade removed in favor of typed `Settings` aggregate (~30 files updated).
+- "Play sound on scan" relabeled to "Vibrate on scan" to match actual behavior.
+- `BarcodeConfig` expanded with `enabledFormats` and `autoOpenManualDelay`.
+- `Product.category` named parameter removed; `categoryId` is now the sole source of truth.
+- `CategoryFilterBar` now prefers DB-stored color/icon over name-based guessing.
+- `CategoryRepository.reorderCategories` batched into a single transaction.
+
+### Fixed
+
+- **Scan never confirms (critical)** — Debounce restart bug replaced with first-detect lock pattern.
+- **Error overlay stuck (critical)** — Error text now auto-clears after 3 seconds.
+- **Barcode settings not persisting (critical)** — Mapper was missing barcode keys; settings reset every restart.
+- **Cart items silently removed on stock refresh (critical)** — Items now kept with clamped qty + stock warning instead of being dropped.
+- **Category lookup race (critical)** — Reactive `BlocListener` replaces one-shot lookup that could fall back to a fake "Uncategorized".
+- **Prefix padding bug (critical)** — EAN-13 prefixes now zero-padded to 3 digits.
+- **No barcode collision check** — Generation now checks the database and retries up to 10 times.
+- **Barcode counter resets on restart** — Now persisted in Settings.
+- **`add()` after `close()` crash (critical)** — Inlined cart update to avoid late event dispatch on bloc close.
+- **SaleCatalog disappears on empty category / during batch loading (critical)** — Early-return and loading-state bugs removed.
+- **Out-of-stock products hidden** — Now shown dimmed instead of filtered out.
+- **Draft name race condition** — Switched to timestamp-based unique naming.
+- **Double category filtering** — Removed redundant UI-level filter.
+- **Cannot remove category from product** — `showNoneOption` now enabled.
+- Camera lifecycle, manual entry validation, and `SliverFillRemaining` crash fixes for the barcode scanner UI.
+
+`flutter analyze` → **0 issues** · `flutter test` → **405 passing**
+
 ## [0.8.0] - 2026-06-12
 
 Full barcode system (scan, manual entry, generation, settings) + image UX cleanup and orphaned file fixes.
@@ -1379,7 +1433,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.6...v0.8.0
 [0.7.6]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.4...v0.7.5

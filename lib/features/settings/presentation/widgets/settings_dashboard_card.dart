@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_dashboard_badge.dart';
 
@@ -18,7 +18,7 @@ class SettingsDashboardCard extends StatelessWidget {
     this.onThemeToggle,
   });
 
-  final AppSettings settings;
+  final Settings settings;
   final String localeLabel;
   final String themeLabel;
   final IconData themeIcon;

@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/services/settings_persistence_service.dart';
@@ -23,14 +22,13 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const Settings());
-    registerFallbackValue(AppSettings());
   });
 
   SettingsCubit buildCubit() => SettingsCubit(mockRepo, mockPersistence);
 
   group('SettingsCubit', () {
     test('initial state is SettingsState()', () {
-      expect(buildCubit().state, SettingsState());
+      expect(buildCubit().state, const SettingsState());
     });
 
     blocTest<SettingsCubit, SettingsState>(
@@ -41,8 +39,11 @@ void main() {
       build: buildCubit,
       act: (c) => c.load(),
       expect: () => [
-        SettingsState(status: SettingsStatus.loading),
-        SettingsState(status: SettingsStatus.loaded, settings: AppSettings()),
+        const SettingsState(status: SettingsStatus.loading),
+        const SettingsState(
+          status: SettingsStatus.loaded,
+          settings: Settings(),
+        ),
       ],
     );
 
@@ -54,8 +55,8 @@ void main() {
       build: buildCubit,
       act: (c) => c.load(),
       expect: () => [
-        SettingsState(status: SettingsStatus.loading, errorMessage: null),
-        SettingsState(
+        const SettingsState(status: SettingsStatus.loading, errorMessage: null),
+        const SettingsState(
           status: SettingsStatus.failure,
           errorMessage: 'Exception: fail',
         ),
@@ -70,16 +71,16 @@ void main() {
         ).thenAnswer((_) async {});
       },
       build: buildCubit,
-      act: (c) => c.update(AppSettings(shopName: 'New')),
+      act: (c) => c.update(const Settings().copyWith(shopName: 'New')),
       expect: () => [
         SettingsState(
           status: SettingsStatus.saving,
-          settings: AppSettings(shopName: 'New'),
+          settings: const Settings().copyWith(shopName: 'New'),
           errorMessage: null,
         ),
         SettingsState(
           status: SettingsStatus.saved,
-          settings: AppSettings(shopName: 'New'),
+          settings: const Settings().copyWith(shopName: 'New'),
         ),
       ],
     );
@@ -94,18 +95,18 @@ void main() {
       build: buildCubit,
       seed: () => SettingsState(
         status: SettingsStatus.loaded,
-        settings: AppSettings(shopName: 'Old'),
+        settings: const Settings().copyWith(shopName: 'Old'),
       ),
-      act: (c) => c.update(AppSettings(shopName: 'New')),
+      act: (c) => c.update(const Settings().copyWith(shopName: 'New')),
       expect: () => [
         SettingsState(
           status: SettingsStatus.saving,
-          settings: AppSettings(shopName: 'New'),
+          settings: const Settings().copyWith(shopName: 'New'),
           errorMessage: null,
         ),
         SettingsState(
           status: SettingsStatus.failure,
-          settings: AppSettings(shopName: 'Old'),
+          settings: const Settings().copyWith(shopName: 'Old'),
           errorMessage: 'Exception: fail',
         ),
       ],

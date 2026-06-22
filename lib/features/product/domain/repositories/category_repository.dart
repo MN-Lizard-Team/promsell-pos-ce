@@ -10,4 +10,5 @@ abstract class CategoryRepository {
   });
   Future<void> updateCategory(Category category);
   Future<void> deleteCategory(String id);
+  Future<void> reorderCategories(List<String> orderedIds);
 }

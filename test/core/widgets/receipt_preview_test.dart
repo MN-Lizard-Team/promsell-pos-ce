@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 void main() {
   group('ReceiptPreview', () {
-    final settings = AppSettings(
+    final settings = const Settings().copyWith(
       shopName: 'Test Shop',
       address: '123 Street',
       phone: '0812345678',
@@ -107,7 +107,7 @@ void main() {
     testWidgets('hides shop info when showShopInfoOnReceipt is false', (
       tester,
     ) async {
-      final hiddenSettings = AppSettings(
+      final hiddenSettings = const Settings().copyWith(
         shopName: 'Test Shop',
         address: '123 Street',
         showShopInfoOnReceipt: false,

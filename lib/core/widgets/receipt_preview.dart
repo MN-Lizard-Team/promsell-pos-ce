@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 /// A data item for receipt preview (works for both pre-sale cart items
 /// and post-sale [SaleItem]s).
@@ -52,7 +52,7 @@ class ReceiptPreview extends StatelessWidget {
     this.createdAt,
   });
 
-  final AppSettings settings;
+  final Settings settings;
   final ReceiptLabels labels;
   final ReceiptPreviewStyle style;
   final List<ReceiptPreviewItem> items;

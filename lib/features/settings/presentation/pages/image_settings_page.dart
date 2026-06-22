@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/clear_orphaned_images.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/demo_image_preview.dart';
@@ -59,7 +59,7 @@ class ImageSettingsPage extends StatelessWidget {
 
   Widget _buildWidthTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
   ) {
     final st = context.settingsTheme;
@@ -113,11 +113,7 @@ class ImageSettingsPage extends StatelessWidget {
     );
   }
 
-  void _showWidthDialog(
-    BuildContext context,
-    AppSettings s,
-    SettingsCubit cubit,
-  ) {
+  void _showWidthDialog(BuildContext context, Settings s, SettingsCubit cubit) {
     final st = context.settingsTheme;
     final ctrl = TextEditingController(text: s.imageMaxWidth.toString());
     showDialog(
@@ -195,7 +191,7 @@ class ImageSettingsPage extends StatelessWidget {
 
   Widget _buildQualityTile(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
   ) {
     final st = context.settingsTheme;
@@ -251,7 +247,7 @@ class ImageSettingsPage extends StatelessWidget {
 
   void _showQualityDialog(
     BuildContext context,
-    AppSettings s,
+    Settings s,
     SettingsCubit cubit,
   ) {
     final st = context.settingsTheme;

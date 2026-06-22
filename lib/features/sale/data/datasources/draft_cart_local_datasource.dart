@@ -253,7 +253,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
     name: d.name,
     price: d.price,
     stock: d.stock,
-    category: d.categoryId,
+    categoryId: d.categoryId,
     imageUrl: d.imageUrl,
     imagePath: d.imagePath,
     imageThumbnailPath: d.imageThumbnailPath,

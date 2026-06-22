@@ -18,6 +18,7 @@ class SaleState extends Equatable {
     this.cartDiscountValue,
     this.activeDraftId,
     this.activeDraftName,
+    this.stockWarning,
   });
 
   final SaleStatus status;
@@ -29,6 +30,7 @@ class SaleState extends Equatable {
   final double? cartDiscountValue;
   final String? activeDraftId;
   final String? activeDraftName;
+  final String? stockWarning;
 
   double get itemsSubtotal =>
       MoneyUtils.round(items.fold(0.0, (sum, i) => sum + i.subtotal));
@@ -62,6 +64,7 @@ class SaleState extends Equatable {
     Object? cartDiscountValue = _unset,
     Object? activeDraftId = _unset,
     Object? activeDraftName = _unset,
+    Object? stockWarning = _unset,
   }) => SaleState(
     status: status ?? this.status,
     items: items ?? this.items,
@@ -82,6 +85,9 @@ class SaleState extends Equatable {
     activeDraftName: identical(activeDraftName, _unset)
         ? this.activeDraftName
         : activeDraftName as String?,
+    stockWarning: identical(stockWarning, _unset)
+        ? this.stockWarning
+        : stockWarning as String?,
   );
 
   @override
@@ -95,5 +101,6 @@ class SaleState extends Equatable {
     cartDiscountValue,
     activeDraftId,
     activeDraftName,
+    stockWarning,
   ];
 }

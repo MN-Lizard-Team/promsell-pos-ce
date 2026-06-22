@@ -7,7 +7,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/app_settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 @lazySingleton
 class ReceiptPdfService {
@@ -27,7 +27,7 @@ class ReceiptPdfService {
 
   Future<void> printReceipt({
     required Sale sale,
-    required AppSettings settings,
+    required Settings settings,
     required ReceiptLabels labels,
   }) async {
     await _ensureFonts();
@@ -43,7 +43,7 @@ class ReceiptPdfService {
 
   Future<void> shareReceipt({
     required Sale sale,
-    required AppSettings settings,
+    required Settings settings,
     required ReceiptLabels labels,
   }) async {
     await _ensureFonts();
@@ -63,7 +63,7 @@ class ReceiptPdfService {
 
   pw.Document _buildDocument({
     required Sale sale,
-    required AppSettings settings,
+    required Settings settings,
     required ReceiptLabels labels,
     pw.Font? baseFont,
     pw.Font? boldFont,
@@ -256,7 +256,7 @@ class ReceiptPdfService {
 
   pw.Document buildDocumentForTest({
     required Sale sale,
-    required AppSettings settings,
+    required Settings settings,
     required ReceiptLabels labels,
   }) => _buildDocument(
     sale: sale,

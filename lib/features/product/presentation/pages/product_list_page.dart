@@ -13,6 +13,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/add_product_draft_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/add_product_page.dart';
@@ -82,120 +83,190 @@ class _ProductListViewState extends State<_ProductListView> {
         AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.errorOccurred);
       },
       child: BlocListener<ProductBloc, ProductState>(
-        listenWhen: (prev, curr) => prev.searchQuery != curr.searchQuery,
-        listener: (_, state) {
-          if (_searchController.text != state.searchQuery) {
-            _searchController.text = state.searchQuery;
+        listenWhen: (prev, curr) =>
+            curr.batchResultMessage != null &&
+            prev.batchResultMessage != curr.batchResultMessage,
+        listener: (ctx, state) {
+          final count = int.tryParse(state.batchResultMessage ?? '0') ?? 0;
+          if (count > 0) {
+            AppSnackBar.success(ctx, ctx.l10n.batchGenerateSuccess(count));
+          } else {
+            AppSnackBar.info(ctx, ctx.l10n.batchGenerateNone);
           }
         },
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(context.l10n.productsTitle),
-            actions: [
-              IconButton(
-                tooltip: context.l10n.listView,
-                icon: _viewMode == _ViewMode.list
-                    ? const Icon(Icons.view_list)
-                    : const Icon(Icons.view_list_outlined),
-                color: _viewMode == _ViewMode.list
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-                onPressed: () => setState(() => _viewMode = _ViewMode.list),
-              ),
-              IconButton(
-                tooltip: context.l10n.gridView,
-                icon: _viewMode == _ViewMode.grid
-                    ? const Icon(Icons.grid_view)
-                    : const Icon(Icons.grid_view_outlined),
-                color: _viewMode == _ViewMode.grid
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-                onPressed: () => setState(() => _viewMode = _ViewMode.grid),
-              ),
-              IconButton(
-                icon: const Icon(Icons.folder_outlined),
-                tooltip: context.l10n.manageCategories,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CategoryManagementPage(),
+        child: BlocListener<ProductBloc, ProductState>(
+          listenWhen: (prev, curr) => prev.searchQuery != curr.searchQuery,
+          listener: (_, state) {
+            if (_searchController.text != state.searchQuery) {
+              _searchController.text = state.searchQuery;
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(context.l10n.productsTitle),
+              actions: [
+                IconButton(
+                  tooltip: context.l10n.listView,
+                  icon: _viewMode == _ViewMode.list
+                      ? const Icon(Icons.view_list)
+                      : const Icon(Icons.view_list_outlined),
+                  color: _viewMode == _ViewMode.list
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                  onPressed: () => setState(() => _viewMode = _ViewMode.list),
+                ),
+                IconButton(
+                  tooltip: context.l10n.gridView,
+                  icon: _viewMode == _ViewMode.grid
+                      ? const Icon(Icons.grid_view)
+                      : const Icon(Icons.grid_view_outlined),
+                  color: _viewMode == _ViewMode.grid
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                  onPressed: () => setState(() => _viewMode = _ViewMode.grid),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.folder_outlined),
+                  tooltip: context.l10n.manageCategories,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CategoryManagementPage(),
+                      ),
+                    );
+                  },
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (value) {
+                    if (value == 'batch_generate') {
+                      _showBatchGenerateDialog(context);
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    PopupMenuItem(
+                      value: 'batch_generate',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.barcode_reader),
+                          const SizedBox(width: 12),
+                          Text(context.l10n.batchGenerateBarcodes),
+                        ],
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(width: 4),
+              ],
+            ),
+            body: SafeArea(
+              child: BlocBuilder<ProductBloc, ProductState>(
+                builder: (context, state) {
+                  final categoryState = context.watch<CategoryBloc>().state;
+                  final categories = categoryState.categories;
+                  final selectedCategoryId = state.categoryFilter;
+                  final products = state.filtered;
+
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        child:
+                            BlocBuilder<SearchHistoryCubit, SearchHistoryState>(
+                              builder: (ctx, historyState) {
+                                return AppSearchBar(
+                                  controller: _searchController,
+                                  focusNode: _searchFocus,
+                                  hintText: context.l10n.searchProducts,
+                                  isFocused: _searchFocused,
+                                  recentSearches: historyState.searches,
+                                  onChanged: (q) => context
+                                      .read<ProductBloc>()
+                                      .add(ProductSearchChanged(q)),
+                                  onSubmitted: (q) {
+                                    context.read<SearchHistoryCubit>().add(q);
+                                  },
+                                  onRecentTap: (q) {
+                                    _searchController.text = q;
+                                    context.read<ProductBloc>().add(
+                                      ProductSearchChanged(q),
+                                    );
+                                    _searchFocus.unfocus();
+                                  },
+                                  onRecentDismiss: (q) => context
+                                      .read<SearchHistoryCubit>()
+                                      .remove(q),
+                                );
+                              },
+                            ),
+                      ),
+                      if (categories.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        CategoryFilterBar(
+                          categories: categories,
+                          selectedId: selectedCategoryId,
+                          onSelected: (id) => context.read<ProductBloc>().add(
+                            ProductCategoryFilterChanged(id),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      _ProductStatsBar(products: products),
+                      const SizedBox(height: 8),
+                      Expanded(child: _buildContent(context, state, products)),
+                    ],
                   );
                 },
               ),
-              const SizedBox(width: 4),
-            ],
-          ),
-          body: SafeArea(
-            child: BlocBuilder<ProductBloc, ProductState>(
-              builder: (context, state) {
-                final categoryState = context.watch<CategoryBloc>().state;
-                final categories = categoryState.categories;
-                final selectedCategoryId = state.categoryFilter;
-                final products = selectedCategoryId == null
-                    ? state.filtered
-                    : state.filtered
-                          .where((p) => p.categoryId == selectedCategoryId)
-                          .toList();
-
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                      child:
-                          BlocBuilder<SearchHistoryCubit, SearchHistoryState>(
-                            builder: (ctx, historyState) {
-                              return AppSearchBar(
-                                controller: _searchController,
-                                focusNode: _searchFocus,
-                                hintText: context.l10n.searchProducts,
-                                isFocused: _searchFocused,
-                                recentSearches: historyState.searches,
-                                onChanged: (q) => context
-                                    .read<ProductBloc>()
-                                    .add(ProductSearchChanged(q)),
-                                onSubmitted: (q) {
-                                  context.read<SearchHistoryCubit>().add(q);
-                                },
-                                onRecentTap: (q) {
-                                  _searchController.text = q;
-                                  context.read<ProductBloc>().add(
-                                    ProductSearchChanged(q),
-                                  );
-                                  _searchFocus.unfocus();
-                                },
-                                onRecentDismiss: (q) => context
-                                    .read<SearchHistoryCubit>()
-                                    .remove(q),
-                              );
-                            },
-                          ),
-                    ),
-                    if (categories.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      CategoryFilterBar(
-                        categories: categories,
-                        selectedId: selectedCategoryId,
-                        onSelected: (id) => context.read<ProductBloc>().add(
-                          ProductCategoryFilterChanged(id),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 10),
-                    _ProductStatsBar(products: products),
-                    const SizedBox(height: 8),
-                    Expanded(child: _buildContent(context, state, products)),
-                  ],
-                );
-              },
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () => _showAddProductPage(context),
+              child: const Icon(Icons.add),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _showAddProductPage(context),
-            child: const Icon(Icons.add),
-          ),
         ),
+      ),
+    );
+  }
+
+  void _showBatchGenerateDialog(BuildContext context) {
+    final state = context.read<ProductBloc>().state;
+    final l10n = context.l10n;
+    final withoutBarcode = state.products
+        .where((p) => p.barcode == null || p.barcode!.isEmpty)
+        .length;
+
+    if (withoutBarcode == 0) {
+      AppSnackBar.info(context, l10n.batchGenerateNone);
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.batchGenerateConfirmTitle),
+        content: Text(l10n.batchGenerateConfirmBody(withoutBarcode)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              final prefix = context
+                  .read<SettingsCubit>()
+                  .state
+                  .settings
+                  .barcodeAutoGeneratePrefix;
+              context.read<ProductBloc>().add(
+                BarcodesBatchGenerated(prefix: prefix),
+              );
+            },
+            child: Text(l10n.generateBarcode),
+          ),
+        ],
       ),
     );
   }

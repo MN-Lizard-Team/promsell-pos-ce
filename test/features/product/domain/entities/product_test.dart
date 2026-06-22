@@ -12,7 +12,7 @@ void main() {
         name: 'Test Product',
         price: 100.0,
         stock: 50,
-        category: 'Drinks',
+        categoryId: 'Drinks',
         imageUrl: null,
         imagePath: null,
         imageThumbnailPath: null,
@@ -39,9 +39,9 @@ void main() {
     });
 
     test('copyWith can set nullable fields to null', () {
-      final withCategory = tProduct.copyWith(category: 'Food');
+      final withCategory = tProduct.copyWith(categoryId: 'Food');
       expect(withCategory.category, 'Food');
-      final cleared = withCategory.copyWith(category: null);
+      final cleared = withCategory.copyWith(categoryId: null);
       expect(cleared.category, isNull);
     });
 

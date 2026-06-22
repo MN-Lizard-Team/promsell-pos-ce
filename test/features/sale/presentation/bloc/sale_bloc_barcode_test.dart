@@ -25,6 +25,9 @@ void main() {
       () => mockDraftRepo.createDraft(name: any(named: 'name')),
     ).thenAnswer((_) async => 'draft-id-1');
     when(
+      () => mockDraftRepo.createDraft(),
+    ).thenAnswer((_) async => 'draft-id-1');
+    when(
       () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
     ).thenAnswer((_) async {});
     when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
