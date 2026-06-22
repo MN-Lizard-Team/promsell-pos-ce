@@ -29,7 +29,7 @@ dependencies:
   injectable: ^2.6.0
 
   # PDF Receipt
-  pdf: ^3.11.3
+  pdf: ^3.13.0
   printing: ^5.14.1
 
   # Utilities
