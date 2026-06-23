@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
 class OnboardingHeroSection extends StatelessWidget {
   const OnboardingHeroSection({
@@ -29,16 +30,13 @@ class OnboardingHeroSection extends StatelessWidget {
               width: double.infinity,
               height: 220,
             ),
-            Positioned.fill(
+            const Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
+                    colors: [Colors.transparent, AppColors.overlaySurface],
                   ),
                 ),
               ),
@@ -54,7 +52,7 @@ class OnboardingHeroSection extends StatelessWidget {
                   Text(
                     'Promsell POS',
                     style: theme.textTheme.headlineSmall?.copyWith(
-                      color: Colors.white,
+                      color: AppColors.overlayIcon,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -62,7 +60,7 @@ class OnboardingHeroSection extends StatelessWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: AppColors.overlayTextSecondary,
                     ),
                   ),
                 ],
@@ -75,12 +73,12 @@ class OnboardingHeroSection extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
+                  color: AppColors.overlaySurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
                   Icons.fullscreen,
-                  color: Colors.white,
+                  color: AppColors.overlayIcon,
                   size: 18,
                 ),
               ),
@@ -102,7 +100,7 @@ class OnboardingHeroSection extends StatelessWidget {
             GestureDetector(
               onTap: () => Navigator.of(ctx).pop(),
               child: Container(
-                color: Colors.black.withValues(alpha: 0.95),
+                color: AppColors.overlayBackground,
                 child: Center(
                   child: InteractiveViewer(
                     minScale: 0.5,
@@ -116,10 +114,16 @@ class OnboardingHeroSection extends StatelessWidget {
               top: 24,
               right: 24,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                icon: const Icon(
+                  Icons.close,
+                  color: AppColors.overlayIcon,
+                  size: 28,
+                ),
                 onPressed: () => Navigator.of(ctx).pop(),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  backgroundColor: AppColors.overlayTextSecondary.withValues(
+                    alpha: 0.15,
+                  ),
                 ),
               ),
             ),

@@ -31,7 +31,7 @@ class DemoImagePreview extends StatelessWidget {
         border: Border.all(color: st.cardBorderColor, width: 0.8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Theme.of(context).colorScheme.shadow,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

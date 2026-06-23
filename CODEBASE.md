@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.3
+# CODEBASE.md — Promsell POS CE v0.8.4
 
 ## System overview
 
@@ -77,7 +77,7 @@ features/<name>/
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
-| `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#00C853` primary, `#0D1117` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
+| `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#0D5D6B` primary Teal, `#FF6B00` accent Orange, `#0D1B2A` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
 | `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v17, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories`; v16 adds `UNIQUE INDEX` on `barcode` with duplicate-safe migration; v17 auto-deduplicates barcodes before index creation |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
@@ -112,6 +112,8 @@ features/<name>/
 | `AppEmptyState` | `lib/core/widgets/` | Consistent empty/error states with compact-height support |
 | `MoneyText` | `lib/core/widgets/` | Currency text with fixed decimal formatting |
 | `SectionCard` | `lib/core/widgets/` | Shared grouped card surface for settings and dashboards |
+| `BarcodeWidget` | `package:barcode_widget/` | Visual barcode rendering (EAN13, EAN8, UPCA, Code128) used in `ProductPreviewPage` |
+| `ProductPreviewPage` | `lib/features/product/presentation/pages/` | Full-page read-only product detail: hero image + gradient overlay, price card (selling price, cost, profit + margin %), stock card with inline edit, SKU/barcode card with visual barcode + actions (view, save PDF, print), system info card (product ID, timestamps) |
 | `ImageViewerDialog` | `lib/core/widgets/` | Full-screen image viewer with `InteractiveViewer` (pinch zoom, pan, double-tap zoom), swipe gallery, page indicators. Bottom toolbar: share button (`share_plus`) + info bottom sheet (source, path, file size). Used by product image tap and receipt preview |
 | `CrashLogService` | `lib/core/services/` | Persistent local crash logging with PII sanitization (phone, PromptPay ID, citizen ID); export via share sheet; clear with confirmation. `@LazySingleton` |
 
@@ -122,7 +124,7 @@ features/<name>/
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
 | Sale | `CartBloc`, `DraftBloc`, `CheckoutBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
-| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `ProductEditTabView`, `QuickEditSheet`, `QuickEditMixin`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet` (with `showCategoryPicker` helper), `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages`, `ReorderCategories` |
+| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `product_preview_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `ProductEditTabView`, `QuickEditSheet`, `QuickEditMixin`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet` (with `showCategoryPicker` helper), `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages`, `ReorderCategories` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
 | Settings | `SettingsCubit` | Pages: 2-level hierarchy — `settings_root_page.dart` (flat section list), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart` (merged with presets), `stock_settings_page.dart`, `image_settings_page.dart`, `barcode_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`, `about_page.dart`, `privacy_policy_page.dart`, `license_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 13 typed group entities |

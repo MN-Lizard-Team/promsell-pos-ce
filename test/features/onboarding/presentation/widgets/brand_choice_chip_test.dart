@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/green_choice_chip.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/brand_choice_chip.dart';
 
 import '../../../../helpers/pump_app.dart';
 
 void main() {
-  group('GreenChoiceChip', () {
+  group('BrandChoiceChip', () {
     testWidgets('calls onSelected when tapped', (tester) async {
       var selected = false;
       await tester.pumpApp(
-        GreenChoiceChip(
+        BrandChoiceChip(
           label: const Text('Option A'),
           selected: false,
           onSelected: (value) => selected = value,
         ),
       );
 
-      await tester.tap(find.byType(GreenChoiceChip));
+      await tester.tap(find.byType(BrandChoiceChip));
       await tester.pump();
 
       expect(selected, isTrue);
@@ -24,7 +24,7 @@ void main() {
 
     testWidgets('renders label text', (tester) async {
       await tester.pumpApp(
-        GreenChoiceChip(
+        BrandChoiceChip(
           label: const Text('Test Label'),
           selected: false,
           onSelected: (_) {},

@@ -174,7 +174,7 @@ class DiscountPresetsPage extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: st.softAccentContainer,
+                  color: st.activeAccentContainer,
                   borderRadius: BorderRadius.circular(st.cardRadius),
                   border: Border.all(color: st.cardBorderColor),
                 ),

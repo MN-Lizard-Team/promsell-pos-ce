@@ -728,5 +728,21 @@
   "crashLoggingBody": "หากแอปผิดพลาด ระบบจะบันทึกข้อความผิดพลาด สแตกเทรซ และเวลาที่เกิดเหตุลงในเครื่องของคุณ ข้อมูลที่อ่อนไหว (หมายเลขโทรศัพท์ PromptPay ID เลขบัตรประชาชน) จะถูกล้างโดยอัตโนมัติก่อนจัดเก็บ บันทึกข้อผิดพลาดไม่ถูกส่งออกจากเครื่อง คุณสามารถดู ส่งออก และล้างบันทึกได้ใน การตั้งค่า → เกี่ยวกับ → บันทึกข้อผิดพลาด",
   "contactTitle": "ติดต่อ",
   "contactBody": "สอบถามเพิ่มเติม: mnlizard.official@gmail.com",
-  "noSearchResults": "ไม่พบการตั้งค่า"
+  "noSearchResults": "ไม่พบการตั้งค่า",
+  "productPreviewSystemInfo": "ข้อมูลระบบ",
+  "sellingPrice": "ราคาขาย",
+  "profit": "กำไร",
+  "trackStock": "ติดตามสต็อก",
+  "dateCreated": "วันที่สร้าง",
+  "dateUpdated": "วันที่อัปเดต",
+  "barcodeViewFull": "ดู",
+  "barcodeSave": "บันทึก",
+  "barcodePrint": "พิมพ์",
+  "productPreviewMargin": "กำไรขั้นต้น",
+  "productPreviewStockValue": "มูลค่าสต็อก",
+  "productPreviewStatus": "สถานะ",
+  "productPreviewActive": "เปิดใช้งาน",
+  "productPreviewCost": "ต้นทุน",
+  "productPreviewBarcodeLabel": "ป้ายบาร์โค้ด",
+  "productPreviewProductId": "รหัสสินค้า"
 }

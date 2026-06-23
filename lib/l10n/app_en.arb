@@ -731,5 +731,21 @@
   "crashLoggingBody": "If the app crashes, a local crash log entry is written to your device containing the error message, stack trace, and timestamp. Sensitive data (phone numbers, PromptPay IDs, citizen IDs) is automatically sanitized before storage. Crash logs are never transmitted off-device. You can view, export, and clear crash logs in Settings → About → Crash Logs.",
   "contactTitle": "Contact",
   "contactBody": "For questions: mnlizard.official@gmail.com",
-  "noSearchResults": "No settings found"
+  "noSearchResults": "No settings found",
+  "productPreviewSystemInfo": "System Info",
+  "sellingPrice": "Selling Price",
+  "profit": "Profit",
+  "trackStock": "Track Stock",
+  "dateCreated": "Created",
+  "dateUpdated": "Updated",
+  "barcodeViewFull": "View",
+  "barcodeSave": "Save",
+  "barcodePrint": "Print",
+  "productPreviewMargin": "Margin",
+  "productPreviewStockValue": "Stock Value",
+  "productPreviewStatus": "Status",
+  "productPreviewActive": "Active",
+  "productPreviewCost": "Cost",
+  "productPreviewBarcodeLabel": "Barcode Label",
+  "productPreviewProductId": "Product ID"
 }

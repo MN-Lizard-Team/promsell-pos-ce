@@ -118,9 +118,9 @@ class _SettingsRootViewState extends State<_SettingsRootView>
 
   Color _themeColor() {
     return switch (widget.settings.themeMode) {
-      ThemeMode.light => Colors.amber,
-      ThemeMode.dark => Colors.indigo,
-      ThemeMode.system => Colors.teal,
+      ThemeMode.light => AppColors.warning,
+      ThemeMode.dark => AppColors.info,
+      ThemeMode.system => AppColors.primary,
     };
   }
 

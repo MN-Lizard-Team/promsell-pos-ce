@@ -39,10 +39,10 @@ class DiscountPresetListTile extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isActive ? st.softAccentContainer : st.cardBackground,
+        color: isActive ? st.activeAccentContainer : st.cardBackground,
         borderRadius: BorderRadius.circular(st.cardRadius),
         border: Border.all(
-          color: isActive ? st.softAccent : st.cardBorderColor,
+          color: isActive ? st.activeAccent : st.cardBorderColor,
           width: isActive ? 1.5 : 0.8,
         ),
       ),

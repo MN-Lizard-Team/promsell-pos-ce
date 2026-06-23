@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
 class SkeletonCard extends StatelessWidget {
   const SkeletonCard({super.key, this.height = 80, this.borderRadius = 16});
@@ -10,11 +11,11 @@ class SkeletonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark
-        ? const Color(0xFF2A2A2A)
-        : const Color(0xFFE8E8E8);
+        ? AppColors.darkSkeletonBase
+        : AppColors.elevatedSurface;
     final highlightColor = isDark
-        ? const Color(0xFF3A3A3A)
-        : const Color(0xFFF5F5F5);
+        ? AppColors.darkSkeletonHighlight
+        : AppColors.background;
 
     return Container(
       height: height,

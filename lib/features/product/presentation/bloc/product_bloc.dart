@@ -46,6 +46,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ProductDeleted>(_onDeleted);
     on<ProductSearchChanged>(_onSearchChanged);
     on<ProductCategoryFilterChanged>(_onCategoryFilterChanged);
+    on<ProductStockFilterChanged>(_onStockFilterChanged);
     on<BarcodesBatchGenerated>(_onBatchGenerated);
   }
 
@@ -177,6 +178,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     Emitter<ProductState> emit,
   ) {
     emit(state.copyWith(categoryFilter: event.category));
+  }
+
+  void _onStockFilterChanged(
+    ProductStockFilterChanged event,
+    Emitter<ProductState> emit,
+  ) {
+    final newFilter = state.stockFilter == event.filter
+        ? StockFilter.all
+        : event.filter;
+    emit(state.copyWith(stockFilter: newFilter));
   }
 
   Future<void> _onBatchGenerated(

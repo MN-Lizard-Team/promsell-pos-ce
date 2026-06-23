@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_card_shell.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_image_container.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_info_block.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_action_sheet.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_avatar.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/stock_indicator.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
+    show parseCategoryColor, parseCategoryIcon;
 import 'package:promsell_pos_ce/features/product/presentation/widgets/quick_edit_mixin.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/product_preview_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class ModernProductTile extends StatefulWidget {
@@ -32,6 +35,7 @@ class _ModernProductTileState extends State<ModernProductTile>
   Widget build(BuildContext context) {
     final currency = context.watch<SettingsCubit>().state.settings.currency;
     final product = widget.product;
+    final theme = Theme.of(context);
 
     return Dismissible(
       key: ValueKey(product.id),
@@ -44,41 +48,126 @@ class _ModernProductTileState extends State<ModernProductTile>
               .where((c) => c.id == product.categoryId)
               .firstOrNull;
 
-          return ProductCardShell(
-            onTap: () => _showEdit(context),
-            onLongPress: () => showProductActionSheet(context, product),
-            isActive: product.isActive,
+          final content = Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ProductImageContainer(
-                    imagePath: product.imagePath,
-                    imageThumbnailPath: product.imageThumbnailPath,
-                    imageUrl: product.imageUrl,
-                    categoryName: cat?.name,
-                    size: 64,
-                    borderRadius: BorderRadius.circular(16),
-                    heroTag: product.id,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                width: 0.5,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                onTap: () => _showPreview(context),
+                onLongPress: () => _showEdit(context),
+                borderRadius: BorderRadius.circular(14),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: ProductInfoBlock(
-                      product: product,
-                      currency: currency,
-                      categoryName: cat?.name,
-                      layout: ProductInfoLayout.row,
-                      onNameTap: () => quickEditName(context),
-                      onPriceTap: () => quickEditPrice(context),
-                      onStockTap: () => quickEditStock(context),
-                    ),
+                  child: Row(
+                    children: [
+                      ProductAvatar(
+                        imagePath: product.imagePath,
+                        imageThumbnailPath: product.imageThumbnailPath,
+                        imageUrl: product.imageUrl,
+                        size: 48,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            InkWell(
+                              onTap: () => quickEditName(context),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Text(
+                                product.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                if (cat != null) ...[
+                                  _CategoryDot(category: cat),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      cat.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                            fontSize: 12,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                InkWell(
+                                  onTap: () => quickEditStock(context),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: StockIndicator(
+                                    stock: product.stock,
+                                    trackStock: product.trackStock,
+                                    compact: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () => quickEditPrice(context),
+                        borderRadius: BorderRadius.circular(6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: MoneyText(
+                            value: product.price,
+                            currency: currency,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           );
+
+          if (!product.isActive) {
+            return Opacity(opacity: 0.55, child: content);
+          }
+          return content;
         },
       ),
     );
@@ -129,6 +218,43 @@ class _ModernProductTileState extends State<ModernProductTile>
       ),
     );
   }
+
+  void _showPreview(BuildContext context) {
+    final productBloc = context.read<ProductBloc>();
+    final categoryBloc = context.read<CategoryBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: productBloc),
+            BlocProvider.value(value: categoryBloc),
+          ],
+          child: ProductPreviewPage(product: widget.product),
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryDot extends StatelessWidget {
+  const _CategoryDot({required this.category});
+  final Category category;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = parseCategoryColor(category.color);
+    final icon = parseCategoryIcon(category.iconName);
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Icon(icon, size: 10, color: color),
+    );
+  }
 }
 
 class _DeleteBackground extends StatelessWidget {
@@ -138,7 +264,7 @@ class _DeleteBackground extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.error,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
       ),
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(right: 20),

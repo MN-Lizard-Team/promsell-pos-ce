@@ -139,6 +139,74 @@ class ProductInfoBlock extends StatelessWidget {
       );
     }
 
+    if (layout == ProductInfoLayout.compact) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: onNameTap,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: onPriceTap,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: MoneyText(
+                    value: product.price,
+                    currency: currency,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              if (categoryChip != null) Flexible(child: categoryChip),
+              const Spacer(),
+              InkWell(
+                onTap: onStockTap,
+                borderRadius: BorderRadius.circular(8),
+                child: StockIndicator(
+                  stock: product.stock,
+                  trackStock: product.trackStock,
+                  compact: true,
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
     // list layout
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,4 +236,4 @@ class ProductInfoBlock extends StatelessWidget {
   }
 }
 
-enum ProductInfoLayout { row, grid }
+enum ProductInfoLayout { row, grid, compact }

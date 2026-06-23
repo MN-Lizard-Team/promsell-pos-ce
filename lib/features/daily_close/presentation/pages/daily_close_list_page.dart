@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
@@ -44,9 +45,9 @@ class DailyCloseListPage extends StatelessWidget {
                 'dd/MM/yyyy',
               ).format(DateTime.parse(item.closeDate));
               final overShortColor = item.overShortAmount > 0
-                  ? Colors.green
+                  ? AppColors.success
                   : item.overShortAmount < 0
-                  ? Colors.red
+                  ? AppColors.error
                   : null;
               return ListTile(
                 leading: CircleAvatar(child: Text('${item.salesCount}')),

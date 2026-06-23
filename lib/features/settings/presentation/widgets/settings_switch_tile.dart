@@ -72,7 +72,6 @@ class SettingsSwitchTile extends StatelessWidget {
               HapticFeedback.lightImpact();
               onChanged(v);
             },
-            activeThumbColor: accent,
           ),
         ),
         onTap: () {

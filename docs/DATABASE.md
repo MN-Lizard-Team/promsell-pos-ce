@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.8.3
+# Database Handbook — Promsell POS CE v0.8.4
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -968,4 +968,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.8.3 · Schema v17 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.8.4 · Schema v17 · 9 tables · UUIDv4</sub>

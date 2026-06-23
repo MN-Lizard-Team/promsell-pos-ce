@@ -1169,7 +1169,7 @@ abstract class AppLocalizations {
   /// No description provided for @trackStock.
   ///
   /// In th, this message translates to:
-  /// **'ติดตามสต็อค'**
+  /// **'ติดตามสต็อก'**
   String get trackStock;
 
   /// No description provided for @trackStockHint.
@@ -3715,6 +3715,96 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'สอบถามเพิ่มเติม: mnlizard.official@gmail.com'**
   String get contactBody;
+
+  /// No description provided for @productPreviewSystemInfo.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลระบบ'**
+  String get productPreviewSystemInfo;
+
+  /// No description provided for @sellingPrice.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาขาย'**
+  String get sellingPrice;
+
+  /// No description provided for @profit.
+  ///
+  /// In th, this message translates to:
+  /// **'กำไร'**
+  String get profit;
+
+  /// No description provided for @dateCreated.
+  ///
+  /// In th, this message translates to:
+  /// **'วันที่สร้าง'**
+  String get dateCreated;
+
+  /// No description provided for @dateUpdated.
+  ///
+  /// In th, this message translates to:
+  /// **'วันที่อัปเดต'**
+  String get dateUpdated;
+
+  /// No description provided for @barcodeViewFull.
+  ///
+  /// In th, this message translates to:
+  /// **'ดู'**
+  String get barcodeViewFull;
+
+  /// No description provided for @barcodeSave.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึก'**
+  String get barcodeSave;
+
+  /// No description provided for @barcodePrint.
+  ///
+  /// In th, this message translates to:
+  /// **'พิมพ์'**
+  String get barcodePrint;
+
+  /// No description provided for @productPreviewMargin.
+  ///
+  /// In th, this message translates to:
+  /// **'กำไรขั้นต้น'**
+  String get productPreviewMargin;
+
+  /// No description provided for @productPreviewStockValue.
+  ///
+  /// In th, this message translates to:
+  /// **'มูลค่าสต็อก'**
+  String get productPreviewStockValue;
+
+  /// No description provided for @productPreviewStatus.
+  ///
+  /// In th, this message translates to:
+  /// **'สถานะ'**
+  String get productPreviewStatus;
+
+  /// No description provided for @productPreviewActive.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดใช้งาน'**
+  String get productPreviewActive;
+
+  /// No description provided for @productPreviewCost.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้นทุน'**
+  String get productPreviewCost;
+
+  /// No description provided for @productPreviewBarcodeLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ป้ายบาร์โค้ด'**
+  String get productPreviewBarcodeLabel;
+
+  /// No description provided for @productPreviewProductId.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสสินค้า'**
+  String get productPreviewProductId;
 }
 
 class _AppLocalizationsDelegate

@@ -40,9 +40,9 @@ class GeneralSummaryCard extends StatelessWidget {
 
   Color _themeColor(BuildContext context) {
     return switch (themeMode) {
-      ThemeMode.light => Colors.amber,
-      ThemeMode.dark => Colors.indigo,
-      ThemeMode.system => Colors.teal,
+      ThemeMode.light => AppColors.warning,
+      ThemeMode.dark => AppColors.info,
+      ThemeMode.system => AppColors.primary,
     };
   }
 

@@ -574,7 +574,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productFormImageUrlLabel => 'Image URL (optional)';
 
   @override
-  String get trackStock => 'Track stock';
+  String get trackStock => 'Track Stock';
 
   @override
   String get trackStockHint =>
@@ -1940,4 +1940,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactBody => 'For questions: mnlizard.official@gmail.com';
+
+  @override
+  String get productPreviewSystemInfo => 'System Info';
+
+  @override
+  String get sellingPrice => 'Selling Price';
+
+  @override
+  String get profit => 'Profit';
+
+  @override
+  String get dateCreated => 'Created';
+
+  @override
+  String get dateUpdated => 'Updated';
+
+  @override
+  String get barcodeViewFull => 'View';
+
+  @override
+  String get barcodeSave => 'Save';
+
+  @override
+  String get barcodePrint => 'Print';
+
+  @override
+  String get productPreviewMargin => 'Margin';
+
+  @override
+  String get productPreviewStockValue => 'Stock Value';
+
+  @override
+  String get productPreviewStatus => 'Status';
+
+  @override
+  String get productPreviewActive => 'Active';
+
+  @override
+  String get productPreviewCost => 'Cost';
+
+  @override
+  String get productPreviewBarcodeLabel => 'Barcode Label';
+
+  @override
+  String get productPreviewProductId => 'Product ID';
 }

@@ -9,12 +9,15 @@ enum ProductSaveStatus { idle, saving, saved, error }
 
 const String kNoCategoryFilter = '__none__';
 
+enum StockFilter { all, lowStock, outOfStock }
+
 class ProductState extends Equatable {
   const ProductState({
     this.status = ProductStatus.initial,
     this.products = const [],
     this.searchQuery = '',
     this.categoryFilter,
+    this.stockFilter = StockFilter.all,
     this.errorMessage,
     this.saveStatus = ProductSaveStatus.idle,
     this.batchResultMessage,
@@ -24,6 +27,7 @@ class ProductState extends Equatable {
   final List<Product> products;
   final String searchQuery;
   final String? categoryFilter;
+  final StockFilter stockFilter;
   final String? errorMessage;
   final ProductSaveStatus saveStatus;
   final String? batchResultMessage;
@@ -48,6 +52,13 @@ class ProductState extends Equatable {
         result = result.where((p) => p.categoryId == categoryFilter).toList();
       }
     }
+    if (stockFilter == StockFilter.lowStock) {
+      result = result
+          .where((p) => p.trackStock && p.stock > 0 && p.stock <= 5)
+          .toList();
+    } else if (stockFilter == StockFilter.outOfStock) {
+      result = result.where((p) => p.trackStock && p.stock == 0).toList();
+    }
     return result;
   }
 
@@ -56,6 +67,7 @@ class ProductState extends Equatable {
     List<Product>? products,
     String? searchQuery,
     Object? categoryFilter = _unset,
+    StockFilter? stockFilter,
     Object? errorMessage = _unset,
     ProductSaveStatus? saveStatus,
     Object? batchResultMessage = _unset,
@@ -67,6 +79,7 @@ class ProductState extends Equatable {
       categoryFilter: identical(categoryFilter, _unset)
           ? this.categoryFilter
           : categoryFilter as String?,
+      stockFilter: stockFilter ?? this.stockFilter,
       errorMessage: identical(errorMessage, _unset)
           ? this.errorMessage
           : errorMessage as String?,
@@ -83,6 +96,7 @@ class ProductState extends Equatable {
     products,
     searchQuery,
     categoryFilter,
+    stockFilter,
     errorMessage,
     saveStatus,
     batchResultMessage,

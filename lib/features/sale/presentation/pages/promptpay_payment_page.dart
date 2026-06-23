@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/utils/slip_verifier.dart';
 import 'package:thai_promptpay/thai_promptpay.dart' as pp;
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
@@ -125,7 +126,11 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.verified, color: Colors.white, size: 20),
+              const Icon(
+                Icons.verified,
+                color: AppColors.overlayIcon,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 '${context.l10n.slipScanSuccess}${result.bankNameTh != null ? ' — ${result.bankNameTh}' : ''}',
@@ -217,7 +222,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
       context: context,
       barrierDismissible: true,
       builder: (ctx) => Dialog.fullscreen(
-        backgroundColor: Colors.black.withValues(alpha: 0.92),
+        backgroundColor: AppColors.overlayBackground,
         child: SafeArea(
           child: GestureDetector(
             onTap: () => Navigator.of(ctx).pop(),
@@ -242,7 +247,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
                 Text(
                   '${widget.currency}${widget.total.toStringAsFixed(2)}',
                   style: theme.textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
+                    color: AppColors.overlayIcon,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -250,16 +255,21 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
                 Text(
                   widget.promptpayId,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white70,
+                    color: AppColors.overlayTextSecondary,
                   ),
                 ),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  icon: const Icon(Icons.close, color: Colors.white70),
+                  icon: const Icon(
+                    Icons.close,
+                    color: AppColors.overlayTextSecondary,
+                  ),
                   label: Text(
                     l10n.cancel,
-                    style: const TextStyle(color: Colors.white70),
+                    style: const TextStyle(
+                      color: AppColors.overlayTextSecondary,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -403,7 +413,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
     if (progress > 0.5) {
       barColor = theme.colorScheme.primary;
     } else if (progress > 0.2) {
-      barColor = Colors.orange;
+      barColor = AppColors.warning;
     } else {
       barColor = theme.colorScheme.error;
     }

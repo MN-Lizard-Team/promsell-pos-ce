@@ -174,7 +174,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
   - **Advanced tab** — barcode (scan with camera or enter manually), generate EAN-13 compliant barcode with Luhn check digit (GS1 prefix `200`, auto-padded to 3 digits, collision-checked against DB), SKU, cost, track stock toggle
   - Image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; `ImageCacheService` enforces 50MB LRU cache eviction automatically
   - Draft save/restore — unsaved changes prompt to save draft on back press; drafts validate image paths on restore
-- Tap a card to edit, or long-press (grid) / 3-dot menu (list) for **Edit** / **Delete**
+- Tap a card to **preview** the product, or long-press to **edit** — the preview page shows a hero image, price breakdown (selling price, cost, profit + margin %), stock status with inline edit button, SKU/barcode with visual barcode rendering and actions (view full, save as PDF, print), and system info (product ID, timestamps)
 - Tap **Manage Categories** (overflow menu ⋮) to open **Category Management** — drag & drop reordering, color + icon picker (10 colors / 21 icons), product count badges, search, and bulk delete
 - Tap **Generate Missing Barcodes** (overflow menu ⋮) to batch-generate EAN-13 barcodes for all products without one — shows confirmation dialog with count, then success snackbar
 - Search filters by name and category in real time
@@ -424,7 +424,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **17** (v0.8.3). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **17** (v0.8.4). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 

@@ -151,7 +151,7 @@ class ImageSettingsPage extends StatelessWidget {
                       onSelected: (_) {
                         ctrl.text = '$value';
                       },
-                      selectedColor: st.softAccentContainer,
+                      selectedColor: st.activeAccentContainer,
                       backgroundColor: st.cardBackground,
                       side: BorderSide(color: st.cardBorderColor),
                       shape: RoundedRectangleBorder(
@@ -287,7 +287,7 @@ class ImageSettingsPage extends StatelessWidget {
                       onSelected: (_) {
                         ctrl.text = '$value';
                       },
-                      selectedColor: st.softAccentContainer,
+                      selectedColor: st.activeAccentContainer,
                       backgroundColor: st.cardBackground,
                       side: BorderSide(color: st.cardBorderColor),
                       shape: RoundedRectangleBorder(

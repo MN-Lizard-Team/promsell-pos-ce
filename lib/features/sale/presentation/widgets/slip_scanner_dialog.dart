@@ -5,6 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/slip_verifier.dart';
 import 'package:promsell_pos_ce/core/widgets/scan_overlay_painter.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
 class SlipScannerDialog extends StatefulWidget {
   const SlipScannerDialog({super.key});
@@ -94,7 +95,7 @@ class _SlipScannerDialogState extends State<SlipScannerDialog>
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black.withValues(alpha: 0.6),
+        backgroundColor: AppColors.overlaySurface,
         elevation: 0,
         title: Text(l10n.slipScanTitle),
         leading: IconButton(
@@ -165,7 +166,9 @@ class _SlipScannerDialogState extends State<SlipScannerDialog>
               height: _cutoutHeight,
               child: _scanned
                   ? const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
+                      child: CircularProgressIndicator(
+                        color: AppColors.overlayIcon,
+                      ),
                     )
                   : null,
             ),
@@ -209,20 +212,20 @@ class _SlipScannerDialogState extends State<SlipScannerDialog>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.document_scanner,
                   size: 32,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: AppColors.overlayTextSecondary,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   l10n.slipScanHint,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
+                  style: const TextStyle(
+                    color: AppColors.overlayIcon,
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    shadows: const [Shadow(blurRadius: 6, color: Colors.black)],
+                    shadows: [Shadow(blurRadius: 6, color: Colors.black)],
                   ),
                 ),
               ],

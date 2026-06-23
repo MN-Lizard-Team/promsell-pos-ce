@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/utils/money_utils.dart';
 import 'package:promsell_pos_ce/core/widgets/money_text.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/daily_close_read_only_row.dart';
@@ -34,9 +35,9 @@ class DailyCloseReconciliationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final overShortColor = overShort > 0
-        ? Colors.green
+        ? AppColors.success
         : overShort < 0
-        ? Colors.red
+        ? AppColors.error
         : null;
 
     return Card(

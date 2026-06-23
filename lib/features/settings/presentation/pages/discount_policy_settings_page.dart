@@ -254,13 +254,17 @@ class _DiscountPresetsSection extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: st.softAccentContainer,
+            color: st.activeAccentContainer,
             borderRadius: BorderRadius.circular(st.cardRadius),
             border: Border.all(color: st.cardBorderColor),
           ),
           child: Row(
             children: [
-              Icon(Icons.local_offer_outlined, color: st.softAccent, size: 24),
+              Icon(
+                Icons.local_offer_outlined,
+                color: st.activeAccent,
+                size: 24,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

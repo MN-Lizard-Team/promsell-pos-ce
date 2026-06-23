@@ -17,6 +17,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.4] - 2026-06-23
+
+Brand theme migration (Teal + Orange) + Product Preview Page — Promsell Teal (#0E7C8A) and Orange (#FF6B00) replacing green/amber across FAB, FilledButton, Chip, Progress, Switch, and SnackBar action.
+
+### Highlights
+
+- **Product Preview Page** — New read-only `ProductPreviewPage` with hero image + gradient overlay, price/cost/profit card, stock card with inline edit, SKU/barcode card with visual rendering (EAN13/EAN8/UPCA/Code128) and actions (view full, save PDF, print), and system info card.
+- **Barcode Widget** — Added `barcode_widget` package dependency for barcode rendering on the preview page.
+- **Navigation Update** — `ModernProductTile` + `ModernProductGridCard`: tap → Preview, long-press → Edit Form.
+- **AppBadge + SnackBar Variants** — New `AppBadge` widget with 4 types (success/info/warning/error); `AppSnackBar` 4 variants with icons and brand colors.
+- **7 New Theme Definitions** — dialog, bottomSheet, floatingActionButton, tabBar, progressIndicator, listTile, popupMenu; TextTheme now has explicit color, line-height, and letter-spacing across all 13 styles.
+- **Brand Identity** — Primary changed from Green (#2E7D32) → Promsell Teal (#0E7C8A); accent from Amber → Promsell Orange (#FF6B00); `tertiary` = Orange in ColorScheme, auto-propagates to stock indicators, badges, and report cards.
+
+### Changed
+
+- `AppColors` — 25 color values updated (light/dark/semantic); added onTertiary, onTertiaryContainer, accentShadow, overlay constants, and skeleton colors.
+- `app_theme.dart` — ColorScheme tertiary=Orange; AppBar white + Teal border 1.5px; FilledButton → Orange CTA; NavBar active pill → Teal tint; Chip selected → Orange; 11 new theme definitions for dark mode.
+- `SettingsThemeExtension` — Added `activeAccent` + `activeAccentContainer` (Orange); 10 color values updated (light/dark).
+- 9 settings widgets — `softAccent`/`softAccentContainer` → `activeAccent`/`activeAccentContainer` in selected/active states.
+- `GreenChoiceChip` → `BrandChoiceChip`; `accentGreen` → `accentBrand` (16 references in onboarding).
+- `animated_nav_bar.dart` — Active tab changed from Orange dot to `primaryContainer` (Teal tint) pill.
+- `product_list_page.dart` — Search moved into AppBar; category filter → `ChoiceChip` + ShaderMask fade; body → `CustomScrollView` with slivers.
+- `modern_product_tile.dart` + `modern_product_grid_card.dart` — Full redesign with avatar-first layout and category dot/label widgets.
+- Replaced ~34 hardcoded `Colors.green/amber/orange/black/white` references with `AppColors` equivalents.
+
+### Fixed
+
+- Dark mode text invisible — root cause: shared `_textTheme` (light colors) used in dark `ThemeData`; fixed by creating separate `_darkTextTheme` with white/Slate-400 colors.
+- Switch thumb inconsistency — 5 widgets had `activeThumbColor` overrides conflicting with theme track color; fixed by removing overrides and using SwitchThemeData defaults.
+
+`flutter analyze` → **0 issues** · `flutter test` → **438 passing**
+
+---
+
 ## [0.8.3] - 2026-06-23
 
 CI/CD coverage gates, schema v17 barcode dedup migration, persistent crash logging, dev/prod flavor separation, barcode scanner hardening, and product/category UX fixes.
@@ -1552,7 +1586,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.3...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.4...HEAD
+[0.8.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.0...v0.8.1

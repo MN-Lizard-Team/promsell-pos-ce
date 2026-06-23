@@ -8,7 +8,7 @@ class ProductCardShell extends StatelessWidget {
     this.onLongPress,
     this.margin,
     this.isActive = true,
-    this.borderRadius = 20,
+    this.borderRadius = 16,
   });
 
   final Widget child;
@@ -24,7 +24,8 @@ class ProductCardShell extends StatelessWidget {
 
     Widget content = Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 0,
+      elevation: 2,
+      shadowColor: theme.shadowColor,
       margin: margin ?? EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
@@ -32,10 +33,6 @@ class ProductCardShell extends StatelessWidget {
       color: theme.colorScheme.surfaceContainerLowest,
       child: InkWell(onTap: onTap, onLongPress: onLongPress, child: child),
     );
-
-    if (!isActive) {
-      content = Opacity(opacity: 0.55, child: content);
-    }
 
     return content;
   }

@@ -201,10 +201,10 @@ class SalesSettingsForm extends StatelessWidget {
               ),
               selected: isSelected,
               onSelected: (_) => onSelected(opt),
-              selectedColor: st.softAccentContainer,
+              selectedColor: st.activeAccentContainer,
               backgroundColor: st.cardBackground,
               side: BorderSide(
-                color: isSelected ? st.softAccent : st.cardBorderColor,
+                color: isSelected ? st.activeAccent : st.cardBorderColor,
                 width: isSelected ? 1.5 : 1,
               ),
               shape: RoundedRectangleBorder(
@@ -355,7 +355,6 @@ class SalesSettingsForm extends StatelessWidget {
             HapticFeedback.lightImpact();
             onChanged(v);
           },
-          activeThumbColor: st.softAccent,
         ),
         onTap: () {
           HapticFeedback.lightImpact();

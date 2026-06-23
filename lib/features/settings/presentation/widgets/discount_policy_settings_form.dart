@@ -215,7 +215,7 @@ class DiscountPolicySettingsForm extends StatelessWidget {
                   onSelected: (_) {
                     ctrl.text = preset.toStringAsFixed(0);
                   },
-                  selectedColor: st.softAccentContainer,
+                  selectedColor: st.activeAccentContainer,
                   backgroundColor: st.cardBackground,
                   side: BorderSide(color: st.cardBorderColor),
                   shape: RoundedRectangleBorder(
@@ -313,10 +313,10 @@ class DiscountPolicySettingsForm extends StatelessWidget {
               ),
               selected: isSelected,
               onSelected: (_) => onSelected(opt),
-              selectedColor: st.softAccentContainer,
+              selectedColor: st.activeAccentContainer,
               backgroundColor: st.cardBackground,
               side: BorderSide(
-                color: isSelected ? st.softAccent : st.cardBorderColor,
+                color: isSelected ? st.activeAccent : st.cardBorderColor,
                 width: isSelected ? 1.5 : 1,
               ),
               shape: RoundedRectangleBorder(
@@ -366,7 +366,6 @@ class DiscountPolicySettingsForm extends StatelessWidget {
             HapticFeedback.lightImpact();
             onChanged(v);
           },
-          activeThumbColor: st.softAccent,
         ),
         onTap: () {
           HapticFeedback.lightImpact();

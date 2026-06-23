@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 
 abstract class ProductEvent extends Equatable {
   const ProductEvent();
@@ -91,4 +92,12 @@ class BarcodesBatchGenerated extends ProductEvent {
 
   @override
   List<Object?> get props => [prefix];
+}
+
+class ProductStockFilterChanged extends ProductEvent {
+  const ProductStockFilterChanged(this.filter);
+  final StockFilter filter;
+
+  @override
+  List<Object?> get props => [filter];
 }

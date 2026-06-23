@@ -571,7 +571,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get productFormImageUrlLabel => 'URL รูปภาพ (ไม่บังคับ)';
 
   @override
-  String get trackStock => 'ติดตามสต็อค';
+  String get trackStock => 'ติดตามสต็อก';
 
   @override
   String get trackStockHint => 'ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)';
@@ -1931,4 +1931,49 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get contactBody => 'สอบถามเพิ่มเติม: mnlizard.official@gmail.com';
+
+  @override
+  String get productPreviewSystemInfo => 'ข้อมูลระบบ';
+
+  @override
+  String get sellingPrice => 'ราคาขาย';
+
+  @override
+  String get profit => 'กำไร';
+
+  @override
+  String get dateCreated => 'วันที่สร้าง';
+
+  @override
+  String get dateUpdated => 'วันที่อัปเดต';
+
+  @override
+  String get barcodeViewFull => 'ดู';
+
+  @override
+  String get barcodeSave => 'บันทึก';
+
+  @override
+  String get barcodePrint => 'พิมพ์';
+
+  @override
+  String get productPreviewMargin => 'กำไรขั้นต้น';
+
+  @override
+  String get productPreviewStockValue => 'มูลค่าสต็อก';
+
+  @override
+  String get productPreviewStatus => 'สถานะ';
+
+  @override
+  String get productPreviewActive => 'เปิดใช้งาน';
+
+  @override
+  String get productPreviewCost => 'ต้นทุน';
+
+  @override
+  String get productPreviewBarcodeLabel => 'ป้ายบาร์โค้ด';
+
+  @override
+  String get productPreviewProductId => 'รหัสสินค้า';
 }

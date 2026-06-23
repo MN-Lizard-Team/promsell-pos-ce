@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/core/utils/validators.dart';
-import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/green_choice_chip.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/brand_choice_chip.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_hero_section.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_section.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/onboarding_sheet_option.dart';
@@ -243,7 +243,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         final theme = Theme.of(ctx);
         final colorScheme = theme.colorScheme;
         final isDark = theme.brightness == Brightness.dark;
-        final accentGreen = colorScheme.primary;
+        final accentBrand = colorScheme.primary;
         final scaffoldBg = theme.scaffoldBackgroundColor;
         final cardBg = colorScheme.surface;
 
@@ -256,7 +256,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               IconButton(
                 icon: const Icon(Icons.tune),
                 onPressed: () =>
-                    _showOnboardingSettingsSheet(ctx, settings, accentGreen),
+                    _showOnboardingSettingsSheet(ctx, settings, accentBrand),
               ),
             ],
           ),
@@ -277,9 +277,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       builder: (context, value, child) {
                         return LinearProgressIndicator(
                           value: value,
-                          backgroundColor: accentGreen.withValues(alpha: 0.15),
+                          backgroundColor: accentBrand.withValues(alpha: 0.15),
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            accentGreen,
+                            accentBrand,
                           ),
                           minHeight: 6,
                         );
@@ -304,7 +304,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.store,
-                          iconColor: accentGreen,
+                          iconColor: accentBrand,
                           title: ctx.l10n.onboardingShopInfoTitle,
                           child: Column(
                             children: [
@@ -355,7 +355,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.settings,
-                          iconColor: accentGreen,
+                          iconColor: accentBrand,
                           title: ctx.l10n.onboardingLocaleCurrencyTitle,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,7 +365,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               Wrap(
                                 spacing: 8,
                                 children: [
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.onboardingThai),
                                     selected:
                                         settings.locale.languageCode == 'th',
@@ -376,7 +376,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                           ),
                                         ),
                                   ),
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.onboardingEnglish),
                                     selected:
                                         settings.locale.languageCode == 'en',
@@ -395,7 +395,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               Wrap(
                                 spacing: 8,
                                 children: [
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.settingsThemeLight),
                                     selected:
                                         settings.themeMode == ThemeMode.light,
@@ -406,7 +406,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                           ),
                                         ),
                                   ),
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.settingsThemeDark),
                                     selected:
                                         settings.themeMode == ThemeMode.dark,
@@ -417,7 +417,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                           ),
                                         ),
                                   ),
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.settingsThemeSystem),
                                     selected:
                                         settings.themeMode == ThemeMode.system,
@@ -460,7 +460,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.receipt_long,
-                          iconColor: accentGreen,
+                          iconColor: accentBrand,
                           title: ctx.l10n.onboardingTaxSetup,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,19 +470,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               Wrap(
                                 spacing: 8,
                                 children: [
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.onboardingNone),
                                     selected: _vatMode == 'NONE',
                                     onSelected: (_) =>
                                         setState(() => _vatMode = 'NONE'),
                                   ),
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.onboardingInclusive),
                                     selected: _vatMode == 'INCLUSIVE',
                                     onSelected: (_) =>
                                         setState(() => _vatMode = 'INCLUSIVE'),
                                   ),
-                                  GreenChoiceChip(
+                                  BrandChoiceChip(
                                     label: Text(ctx.l10n.onboardingExclusive),
                                     selected: _vatMode == 'EXCLUSIVE',
                                     onSelected: (_) =>
@@ -530,7 +530,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         OnboardingSection(
                           cardBg: cardBg,
                           icon: Icons.check_circle,
-                          iconColor: accentGreen,
+                          iconColor: accentBrand,
                           title: ctx.l10n.onboardingAllSet,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

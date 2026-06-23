@@ -165,7 +165,7 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
                               ),
                               decoration: BoxDecoration(
                                 color: isActive
-                                    ? colorScheme.primary
+                                    ? colorScheme.primaryContainer
                                     : Colors.transparent,
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -190,7 +190,7 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
                                           ? item.activeIcon
                                           : item.icon,
                                       color: isActive
-                                          ? colorScheme.onPrimary
+                                          ? colorScheme.onPrimaryContainer
                                           : colorScheme.onSurfaceVariant
                                                 .withValues(alpha: 0.55),
                                       badgeCount: item.badgeCount,
@@ -208,7 +208,8 @@ class _AnimatedNavBarState extends State<AnimatedNavBar>
                                             .copyWith(
                                               fontFamily: 'NotoSansThai',
                                               color: isActive
-                                                  ? colorScheme.onPrimary
+                                                  ? colorScheme
+                                                        .onPrimaryContainer
                                                   : colorScheme.onSurfaceVariant
                                                         .withValues(
                                                           alpha: 0.55,

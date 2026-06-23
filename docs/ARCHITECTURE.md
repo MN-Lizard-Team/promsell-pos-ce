@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.8.3
+# Architecture — Promsell POS CE v0.8.4
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -26,6 +26,8 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
   - [ADR-017: Settings hierarchy (revised)](#adr-017-settings-hierarchy-revised-in-v081)
   - [ADR-018: Settings aggregate root](#adr-018-settings-aggregate-root-with-typed-group-entities)
   - [ADR-019: Widget decomposition](#adr-019-widget-decomposition-and-domain-logic-extraction)
+  - [ADR-020: Generated code size](#adr-020-generated-code-size-appdatabasegdart)
+  - [ADR-021: Product Preview Page](#adr-021-product-preview-page-v084)
 - [PlantUML Source Files](#plantuml-source-files)
 
 ---
@@ -811,6 +813,27 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 
 ---
 
+### ADR-021: Product Preview Page (v0.8.4)
+
+**Context:** Product cards previously navigated directly to the edit form on tap. Merchants wanted a read-only detail view to quickly check product information (price, stock, barcode, margins) without accidentally modifying data. Long-press was already used for quick actions.
+
+**Decision:** Introduce `ProductPreviewPage` as a full-page read-only product detail view. Navigation pattern: tap → Preview, long-press → Edit Form. The preview page displays:
+- Hero image with gradient overlay (260px) + product name, category, active status
+- Price card: prominent selling price on `primaryContainer`, cost and profit (with margin %) as mini-stats
+- Stock card: large stock number with color-coded status, stock value, inline edit button via `showQuickEditSheet`
+- Codes card: SKU, barcode text, visual barcode rendering (`barcode_widget` — EAN13/EAN8/UPCA/Code128) with actions (view full image, save as PDF, print)
+- System info card: product ID, created/updated timestamps
+
+**Consequences:**
+- ✅ Merchants can review product details without risk of accidental edits
+- ✅ Visual barcode enables quick verification against physical products
+- ✅ Inline stock edit from preview page reduces navigation for common adjustments
+- ✅ Barcode PDF export (58mm label format) supports thermal label printers
+- ⚠️ `barcode_widget` adds a new dependency
+- ⚠️ `ModernProductTile` and `ModernProductGridCard` navigation changed — existing muscle memory may need adjustment
+
+---
+
 ## PlantUML Source Files
 
 Detailed diagrams are available as `.puml` files for rendering with PlantUML tools:
@@ -842,4 +865,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.8.3 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.8.4 · Architecture Document · Deep Technical Reference</sub>

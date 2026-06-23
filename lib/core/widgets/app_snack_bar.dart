@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
 abstract final class AppSnackBar {
   static void success(
@@ -7,7 +8,13 @@ abstract final class AppSnackBar {
     Duration duration = const Duration(milliseconds: 2000),
   }) {
     if (!context.mounted) return;
-    _show(context, message, duration: duration, accentColor: null);
+    _show(
+      context,
+      message,
+      duration: duration,
+      backgroundColor: AppColors.success,
+      icon: Icons.check_circle,
+    );
   }
 
   static void error(BuildContext context, String message) {
@@ -16,7 +23,23 @@ abstract final class AppSnackBar {
       context,
       message,
       duration: const Duration(seconds: 4),
-      accentColor: Theme.of(context).colorScheme.error,
+      backgroundColor: AppColors.error,
+      icon: Icons.error,
+    );
+  }
+
+  static void warning(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(milliseconds: 2500),
+  }) {
+    if (!context.mounted) return;
+    _show(
+      context,
+      message,
+      duration: duration,
+      backgroundColor: AppColors.warning,
+      icon: Icons.warning,
     );
   }
 
@@ -26,7 +49,13 @@ abstract final class AppSnackBar {
     Duration duration = const Duration(milliseconds: 1200),
   }) {
     if (!context.mounted) return;
-    _show(context, message, duration: duration, accentColor: null);
+    _show(
+      context,
+      message,
+      duration: duration,
+      backgroundColor: AppColors.info,
+      icon: Icons.info,
+    );
   }
 
   static void withAction(
@@ -51,13 +80,15 @@ abstract final class AppSnackBar {
     BuildContext context,
     String message, {
     required Duration duration,
-    Color? accentColor,
+    required Color backgroundColor,
+    IconData? icon,
   }) {
     final overlay = Overlay.of(context);
     final entry = _SimpleEntry(
       message: message,
       duration: duration,
-      accentColor: accentColor,
+      backgroundColor: backgroundColor,
+      icon: icon,
     );
     overlay.insert(entry.overlayEntry);
   }
@@ -68,14 +99,16 @@ class _SimpleEntry {
   _SimpleEntry({
     required this.message,
     required this.duration,
-    this.accentColor,
+    required this.backgroundColor,
+    this.icon,
   }) {
     overlayEntry = OverlayEntry(builder: (_) => _SimpleToast(state: this));
   }
 
   final String message;
   final Duration duration;
-  final Color? accentColor;
+  final Color backgroundColor;
+  final IconData? icon;
   late final OverlayEntry overlayEntry;
 
   void remove() {
@@ -124,10 +157,9 @@ class _SimpleToastState extends State<_SimpleToast>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final topPadding = MediaQuery.of(context).padding.top;
-    final bg = widget.state.accentColor ?? colorScheme.inverseSurface;
+    final bg = widget.state.backgroundColor;
 
     return Positioned(
       top: topPadding + 16,
@@ -156,11 +188,24 @@ class _SimpleToastState extends State<_SimpleToast>
                     ),
                   ],
                 ),
-                child: Text(
-                  widget.state.message,
-                  style: textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onInverseSurface,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.state.icon != null) ...[
+                      Icon(
+                        widget.state.icon,
+                        size: 18,
+                        color: AppColors.onSuccess,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      widget.state.message,
+                      style: textTheme.labelLarge?.copyWith(
+                        color: AppColors.onSuccess,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

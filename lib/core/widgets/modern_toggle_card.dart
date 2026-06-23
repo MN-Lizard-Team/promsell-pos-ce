@@ -81,11 +81,7 @@ class ModernToggleCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Switch(
-                value: value,
-                onChanged: onChanged,
-                activeThumbColor: color,
-              ),
+              Switch(value: value, onChanged: onChanged),
             ],
           ),
         ),

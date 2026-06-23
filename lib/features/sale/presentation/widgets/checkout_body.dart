@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
@@ -215,7 +216,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                     );
                     return DecoratedBox(
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
+                        color: theme.colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: theme.colorScheme.primary.withValues(
@@ -698,7 +699,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
+                            color: Theme.of(dialogCtx).colorScheme.shadow,
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
@@ -737,7 +738,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                   top: 8,
                   right: 8,
                   child: Material(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: AppColors.overlaySurface,
                     shape: const CircleBorder(),
                     child: InkWell(
                       onTap: () => Navigator.of(dialogCtx).pop(),
@@ -748,7 +749,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         alignment: Alignment.center,
                         child: const Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: AppColors.overlayIcon,
                           size: 24,
                         ),
                       ),

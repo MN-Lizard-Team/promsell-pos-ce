@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
-class GreenChoiceChip extends StatelessWidget {
-  const GreenChoiceChip({
+class BrandChoiceChip extends StatelessWidget {
+  const BrandChoiceChip({
     super.key,
     required this.label,
     required this.selected,
@@ -20,9 +21,9 @@ class GreenChoiceChip extends StatelessWidget {
       selected: selected,
       onSelected: onSelected,
       selectedColor: primary,
-      checkmarkColor: Colors.white,
+      checkmarkColor: AppColors.textOnPrimary,
       labelStyle: TextStyle(
-        color: selected ? Colors.white : null,
+        color: selected ? AppColors.textOnPrimary : null,
         fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
       ),
     );
