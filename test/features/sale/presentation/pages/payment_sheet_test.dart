@@ -107,7 +107,8 @@ void main() {
         await tester.enterText(textField, '10');
         await tester.pumpAndSettle();
 
-        expect(find.textContaining('Insufficient'), findsOneWidget);
+        // ChangePreview shows remaining amount when insufficient
+        expect(find.textContaining('Remaining'), findsOneWidget);
       },
     );
   });

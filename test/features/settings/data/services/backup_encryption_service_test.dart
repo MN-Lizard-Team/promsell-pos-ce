@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:promsell_pos_ce/core/services/backup_encryption_service.dart';
+import 'package:promsell_pos_ce/features/settings/data/services/backup_encryption_service.dart';
 
 void main() {
   late BackupEncryptionService service;

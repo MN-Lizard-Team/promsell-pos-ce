@@ -66,6 +66,9 @@ Promsell is an **offline-first local app** with no network access by default:
 11. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
 12. **Barcode case normalization** (v0.8.1+) — barcodes normalized to uppercase on save and lookup; prevents case-mismatch bypass of duplicate detection and lookup
 13. **Barcode manual entry validation** (v0.8.1+) — inline alphanumeric validation before submission; prevents unhandled `ArgumentError` from reaching downstream use cases
+14. **Crash log PII sanitization** (v0.8.3+) — `CrashLogService` sanitizes phone numbers, PromptPay IDs, and citizen IDs in crash logs before persistence; prevents accidental PII leakage in exported crash reports
+15. **Barcode deduplication migration** (v0.8.3+) — schema v17 automatically clears duplicate barcodes before unique index creation; prevents `StateError` crash on barcode scan when pre-migration duplicates exist
+16. **Dev/prod flavor separation** (v0.8.3+) — separate entry points (`main_dev.dart`, `main_prod.dart`) prevent development configurations from leaking into production builds
 
 ## Security changelog
 

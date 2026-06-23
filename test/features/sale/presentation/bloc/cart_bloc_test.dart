@@ -87,7 +87,9 @@ void main() {
       'emits outOfStock error when stock=0 and trackStock=true (Bug 3)',
       build: buildBloc,
       act: (b) => b.add(CartProductAdded(tProduct.copyWith(stock: 0))),
-      expect: () => [const CartState(errorMessage: 'outOfStock')],
+      expect: () => [
+        const CartState(errorMessage: 'outOfStock', errorNonce: 1),
+      ],
     );
 
     blocTest<CartBloc, CartState>(
@@ -327,7 +329,9 @@ void main() {
         ).thenAnswer((_) async => null);
       },
       act: (b) => b.add(const CartBarcodeScanned('0000000000000')),
-      expect: () => [const CartState(errorMessage: 'barcodeNotFound')],
+      expect: () => [
+        const CartState(errorMessage: 'barcodeNotFound', errorNonce: 1),
+      ],
     );
   });
 

@@ -33,11 +33,11 @@ class SalePage extends StatelessWidget {
       providers: [
         BlocProvider.value(value: sl<ProductBloc>()),
         BlocProvider.value(value: sl<CategoryBloc>()),
-        BlocProvider(create: (_) => sl<CartBloc>()),
-        BlocProvider(create: (_) => sl<CheckoutBloc>()),
-        BlocProvider(
-          create: (_) => sl<DraftBloc>()..add(const DraftInitialized()),
+        BlocProvider.value(value: sl<CartBloc>()),
+        BlocProvider.value(
+          value: sl<DraftBloc>()..add(const DraftInitialized()),
         ),
+        BlocProvider.value(value: sl<CheckoutBloc>()),
         BlocProvider(
           create: (_) => SearchHistoryCubit(
             sl<SettingsLocalDatasource>(),
@@ -128,7 +128,7 @@ class _SaleViewState extends State<_SaleView> {
     );
   }
 
-  void _onHorizontalDrag(DragUpdateDetails details) {
+  void _onHorizontalDrag(BuildContext context, DragUpdateDetails details) {
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final dxAdjusted = isRtl ? -details.delta.dx : details.delta.dx;
     _cartWidth.value = (_cartWidth.value - dxAdjusted).clamp(
@@ -221,8 +221,7 @@ class _SaleViewState extends State<_SaleView> {
         },
         child: BlocListener<CartBloc, CartState>(
           listenWhen: (prev, curr) =>
-              prev.errorMessage != curr.errorMessage &&
-              curr.errorMessage != null,
+              prev.errorNonce != curr.errorNonce && curr.errorMessage != null,
           listener: (context, state) {
             final l10n = context.l10n;
             final msg = state.errorMessage == 'barcodeNotFound'
@@ -320,24 +319,29 @@ class _SaleViewState extends State<_SaleView> {
                 onVerticalDragEnd: (d) => _onVerticalDragEnd(context, d),
                 onVerticalDragCancel: _onDragEnd,
                 behavior: HitTestBehavior.opaque,
-                child: SizedBox(
-                  height: 24,
-                  child: Center(
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isDraggingHandle,
-                      builder: (context, isDragging, child) {
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          width: isDragging ? 56 : 40,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: isDragging
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.outlineVariant,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        );
-                      },
+                child: Semantics(
+                  label: context.l10n.dragToResizeCart,
+                  child: SizedBox(
+                    height: 24,
+                    child: Center(
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _isDraggingHandle,
+                        builder: (context, isDragging, child) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            width: isDragging ? 56 : 40,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: isDragging
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -376,28 +380,31 @@ class _SaleViewState extends State<_SaleView> {
           cursor: SystemMouseCursors.resizeColumn,
           child: GestureDetector(
             onHorizontalDragStart: (_) => _onDragStart(),
-            onHorizontalDragUpdate: _onHorizontalDrag,
+            onHorizontalDragUpdate: (d) => _onHorizontalDrag(context, d),
             onHorizontalDragEnd: _onHorizontalDragEnd,
             onHorizontalDragCancel: _onDragEnd,
             behavior: HitTestBehavior.opaque,
-            child: SizedBox(
-              width: 20,
-              child: Center(
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: _isDraggingHandle,
-                  builder: (context, isDragging, child) {
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      width: 6,
-                      height: isDragging ? 56 : 40,
-                      decoration: BoxDecoration(
-                        color: isDragging
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    );
-                  },
+            child: Semantics(
+              label: context.l10n.dragToResizeCart,
+              child: SizedBox(
+                width: 20,
+                child: Center(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _isDraggingHandle,
+                    builder: (context, isDragging, child) {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 6,
+                        height: isDragging ? 56 : 40,
+                        decoration: BoxDecoration(
+                          color: isDragging
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.outlineVariant,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

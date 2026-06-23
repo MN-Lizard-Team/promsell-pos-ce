@@ -17,8 +17,7 @@ import 'package:promsell_pos_ce/core/di/bloc_module.dart' as _i1055;
 import 'package:promsell_pos_ce/core/di/database_module.dart' as _i205;
 import 'package:promsell_pos_ce/core/di/image_picker_module.dart' as _i714;
 import 'package:promsell_pos_ce/core/image/image_cache_service.dart' as _i710;
-import 'package:promsell_pos_ce/core/services/backup_encryption_service.dart'
-    as _i177;
+import 'package:promsell_pos_ce/core/services/crash_log_service.dart' as _i686;
 import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart'
     as _i622;
 import 'package:promsell_pos_ce/features/daily_close/data/repositories/daily_close_repository_impl.dart'
@@ -139,6 +138,8 @@ import 'package:promsell_pos_ce/features/settings/data/datasources/settings_loca
     as _i440;
 import 'package:promsell_pos_ce/features/settings/data/repositories/settings_repository_impl.dart'
     as _i173;
+import 'package:promsell_pos_ce/features/settings/data/services/backup_encryption_service.dart'
+    as _i288;
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart'
     as _i243;
 import 'package:promsell_pos_ce/features/settings/domain/usecases/get_settings.dart'
@@ -165,10 +166,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i422.AppDatabase>(() => databaseModule.appDatabase);
     gh.lazySingleton<_i183.ImagePicker>(() => imagePickerModule.imagePicker);
     gh.lazySingleton<_i710.ImageCacheService>(() => _i710.ImageCacheService());
-    gh.lazySingleton<_i177.BackupEncryptionService>(
-      () => _i177.BackupEncryptionService(),
-    );
+    gh.lazySingleton<_i686.CrashLogService>(() => _i686.CrashLogService());
     gh.lazySingleton<_i734.ReceiptPdfService>(() => _i734.ReceiptPdfService());
+    gh.lazySingleton<_i288.BackupEncryptionService>(
+      () => _i288.BackupEncryptionService(),
+    );
     gh.lazySingleton<_i409.ProductLocalDatasource>(
       () => _i409.ProductLocalDatasourceImpl(gh<_i422.AppDatabase>()),
     );
@@ -267,7 +269,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i752.ReorderCategories>(
       () => _i752.ReorderCategories(gh<_i1059.CategoryRepository>()),
     );
-    gh.factory<_i67.DraftBloc>(
+    gh.lazySingleton<_i67.DraftBloc>(
       () => _i67.DraftBloc(
         draftRepo: gh<_i564.DraftCartRepository>(),
         settingsRepo: gh<_i243.SettingsRepository>(),
@@ -288,12 +290,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i747.AddProduct>(
       () => _i747.AddProduct(gh<_i126.ProductRepository>()),
     );
-    gh.factory<_i475.BatchGenerateBarcodes>(
-      () => _i475.BatchGenerateBarcodes(
-        gh<_i126.ProductRepository>(),
-        gh<_i243.SettingsRepository>(),
-      ),
-    );
     gh.factory<_i447.DeleteProduct>(
       () => _i447.DeleteProduct(gh<_i126.ProductRepository>()),
     );
@@ -303,7 +299,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i107.UpdateProduct>(
       () => _i107.UpdateProduct(gh<_i126.ProductRepository>()),
     );
-    gh.factory<_i401.CartBloc>(
+    gh.lazySingleton<_i401.CartBloc>(
       () => _i401.CartBloc(
         productRepo: gh<_i126.ProductRepository>(),
         settingsRepo: gh<_i243.SettingsRepository>(),
@@ -327,6 +323,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i707.ClearOrphanedImages(
         gh<_i126.ProductRepository>(),
         gh<_i502.ProductImageService>(),
+      ),
+    );
+    gh.factory<_i475.BatchGenerateBarcodes>(
+      () => _i475.BatchGenerateBarcodes(
+        gh<_i126.ProductRepository>(),
+        gh<_i243.SettingsRepository>(),
       ),
     );
     gh.factory<_i21.InventoryLogCubit>(
@@ -405,7 +407,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i426.WatchSaleHistory>(
       () => _i426.WatchSaleHistory(gh<_i26.HistoryRepository>()),
     );
-    gh.factory<_i1038.CheckoutBloc>(
+    gh.lazySingleton<_i1038.CheckoutBloc>(
       () => _i1038.CheckoutBloc(
         createSale: gh<_i648.CreateSale>(),
         cartBloc: gh<_i401.CartBloc>(),

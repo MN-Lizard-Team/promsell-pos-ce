@@ -18,6 +18,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc
 import 'package:promsell_pos_ce/features/product/presentation/bloc/add_product_draft_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/add_product_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/category_management_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/modern_product_tile.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/modern_product_grid_card.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_filter_bar.dart';
@@ -222,6 +223,7 @@ class _ProductListViewState extends State<_ProductListView> {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () => _showAddProductPage(context),
+              heroTag: 'product_add_fab',
               child: const Icon(Icons.add),
             ),
           ),
@@ -326,16 +328,30 @@ class _ProductListViewState extends State<_ProductListView> {
         );
       },
       child: state.searchQuery.isNotEmpty
-          ? ListView.separated(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
-              itemCount: products.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (_, i) => SearchResultTile(
-                product: products[i],
-                query: state.searchQuery,
-                onTap: () {},
-              ),
-            )
+          ? _viewMode == _ViewMode.list
+                ? ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                    itemCount: products.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) => SearchResultTile(
+                      product: products[i],
+                      query: state.searchQuery,
+                      onTap: () => _showEdit(context, products[i]),
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.72,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                    itemCount: products.length,
+                    itemBuilder: (_, i) =>
+                        ModernProductGridCard(product: products[i]),
+                  )
           : _viewMode == _ViewMode.list
           ? ListView.separated(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
@@ -359,12 +375,15 @@ class _ProductListViewState extends State<_ProductListView> {
   }
 
   void _showAddProductPage(BuildContext context) async {
+    final productBloc = context.read<ProductBloc>();
+    final categoryBloc = context.read<CategoryBloc>();
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
-            BlocProvider.value(value: context.read<ProductBloc>()),
+            BlocProvider.value(value: productBloc),
+            BlocProvider.value(value: categoryBloc),
             BlocProvider(
               create: (_) =>
                   AddProductDraftCubit(sl<SettingsLocalDatasource>()),
@@ -377,6 +396,23 @@ class _ProductListViewState extends State<_ProductListView> {
     if (result == true && context.mounted) {
       AppSnackBar.success(context, context.l10n.productSaved);
     }
+  }
+
+  void _showEdit(BuildContext context, Product product) {
+    final productBloc = context.read<ProductBloc>();
+    final categoryBloc = context.read<CategoryBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: productBloc),
+            BlocProvider.value(value: categoryBloc),
+          ],
+          child: ProductFormPage(product: product),
+        ),
+      ),
+    );
   }
 }
 

@@ -8,7 +8,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.d
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
 
-@injectable
+@lazySingleton
 class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   CheckoutBloc({
     required CreateSale createSale,
@@ -34,7 +34,15 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     CheckoutConfirmed event,
     Emitter<CheckoutState> emit,
   ) async {
-    if (_cartBloc.state.isEmpty) return;
+    if (_cartBloc.state.isEmpty) {
+      emit(
+        state.copyWith(
+          status: CheckoutStatus.failure,
+          errorMessage: 'Cart is empty',
+        ),
+      );
+      return;
+    }
 
     if (event.paymentMethod == 'promptpay') {
       _pendingSaleEvent = event;

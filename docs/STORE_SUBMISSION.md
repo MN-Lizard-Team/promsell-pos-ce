@@ -1,12 +1,12 @@
 # Store Submission Checklist
 
-Last updated: 2026-06-22 | Version: 0.8.2+1
+Last updated: 2026-06-23 | Version: 0.8.3+1
 
 ---
 
 ## Pre-Flight (Code — DONE)
 
-- [x] Version bumped to `0.8.2+1` in `pubspec.yaml`
+- [x] Version bumped to `0.8.3+1` in `pubspec.yaml`
 - [x] Android app label = "Promsell"
 - [x] iOS display name = "Promsell"
 - [x] iOS bundle name = "Promsell"
@@ -15,7 +15,7 @@ Last updated: 2026-06-22 | Version: 0.8.2+1
 - [x] Release signing config with keystore fallback
 - [x] `.gitignore` excludes keystore files
 - [x] `flutter analyze` → 0 issues
-- [x] `flutter test` → 425 passing
+- [x] `flutter test` → 438 passing
 
 ---
 
@@ -65,7 +65,7 @@ Use emulator or physical device. Capture key screens:
 - Product list
 - Receipt / QR
 - Inventory
-- Settings (3-level hierarchy with search)
+- Settings (2-level hierarchy with search)
 - Reports
 
 Save to:
@@ -85,11 +85,11 @@ Save to:
 
 ```bash
 # Android AAB (required for Play Store)
-flutter build appbundle
-# Output: build/app/outputs/bundle/release/app-release.aab
+flutter build appbundle --release --flavor prod -t lib/main_prod.dart
+# Output: build/app/outputs/bundle/prodRelease/app-prod-release.aab
 
 # iOS IPA (required for App Store)
-flutter build ipa
+flutter build ipa --release --flavor prod -t lib/main_prod.dart
 # Output: build/ios/ipa/Promsell.ipa
 ```
 
@@ -140,7 +140,7 @@ flutter build ipa
 | Item | Value |
 |------|-------|
 | App name | Promsell |
-| Version | 0.8.1+1 |
+| Version | 0.8.3+1 |
 | Contact | mnlizard.official@gmail.com |
 | Privacy URL | https://github.com/teepakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
 | Bundle ID (Android) | com.promsell.promsell_pos_ce |

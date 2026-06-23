@@ -38,6 +38,8 @@ class CartPanel extends StatefulWidget {
 }
 
 class _CartPanelState extends State<CartPanel> {
+  bool _isShowingReceipt = false;
+
   Widget _buildReorderableList(List<CartItem> items, String currency) {
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -79,13 +81,22 @@ class _CartPanelState extends State<CartPanel> {
     return BlocListener<CheckoutBloc, CheckoutState>(
       listenWhen: (prev, curr) => curr.status == CheckoutStatus.success,
       listener: (ctx, state) {
+        if (_isShowingReceipt) return;
         final settings = ctx.read<SettingsCubit>().state.settings;
         if (settings.autoPrintPrompt && state.lastSale != null) {
           final sale = state.lastSale!;
+          _isShowingReceipt = true;
           // ADR-009: Defer dialog push to next frame so the modal/page
           // listener can pop first, avoiding route stack corruption.
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (ctx.mounted) SaleReceiptDialog.show(ctx, sale, settings);
+            if (ctx.mounted) {
+              SaleReceiptDialog.show(ctx, sale, settings).then((_) {
+                _isShowingReceipt = false;
+                if (ctx.mounted) {
+                  ctx.read<CheckoutBloc>().add(const CheckoutReset());
+                }
+              });
+            }
           });
         } else {
           AppSnackBar.success(ctx, ctx.l10n.saleSavedSuccess);

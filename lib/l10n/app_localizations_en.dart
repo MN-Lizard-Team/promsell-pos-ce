@@ -36,6 +36,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get salePageTitle => 'Sale';
 
   @override
+  String get dragToResizeCart => 'Drag to resize cart';
+
+  @override
+  String get exitCompactMode => 'Exit Compact Mode';
+
+  @override
+  String get exitCompactModeConfirm => 'Switch to normal cart view?';
+
+  @override
+  String autoConfirmingIn(int secs) {
+    return 'Auto-confirming in $secs...';
+  }
+
+  @override
   String get clearCart => 'Clear';
 
   @override
@@ -120,6 +134,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get insufficientCash => 'Insufficient cash received';
 
   @override
+  String get remainingAmount => 'Remaining';
+
+  @override
   String get productsTitle => 'Products';
 
   @override
@@ -147,6 +164,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get activate => 'Activate';
+
+  @override
+  String get deactivate => 'Deactivate';
 
   @override
   String get deleteProduct => 'Delete Product';
@@ -190,6 +213,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidQuantity => 'Invalid quantity';
+
+  @override
+  String get invalidBarcode =>
+      'Barcode must be alphanumeric (letters and numbers only)';
 
   @override
   String get categoryLabel => 'Category';
@@ -552,6 +579,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get trackStockHint =>
       'Turn off for service items (no stock deduction)';
+
+  @override
+  String get stockTrackingDisabled =>
+      'Stock tracking is disabled. Enable to manage stock quantity.';
 
   @override
   String get settingsStockPolicy => 'Stock Policy';
@@ -1436,6 +1467,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteCategoryConfirm => 'Confirm delete category?';
 
   @override
+  String get deleteCategory => 'Delete Category';
+
+  @override
+  String confirmDeleteCategory(String name) {
+    return 'Are you sure you want to delete \"$name\"?';
+  }
+
+  @override
+  String bulkDeleteConfirm(int count) {
+    return 'Delete $count categories?';
+  }
+
+  @override
   String get categoryName => 'Category name';
 
   @override
@@ -1537,6 +1581,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unsavedChangesMessage => 'You have unsaved changes';
 
   @override
+  String get unsavedChangesTitle => 'Unsaved Changes';
+
+  @override
   String get restore => 'Restore';
 
   @override
@@ -1564,6 +1611,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openSettings => 'Open Settings';
+
+  @override
+  String get scanSuccess => 'Scan successful';
+
+  @override
+  String get scanFromGallery => 'Scan from image';
+
+  @override
+  String get barcodeNotFoundInImage => 'No barcode found in image';
+
+  @override
+  String get torchOn => 'Turn on flashlight';
+
+  @override
+  String get torchOff => 'Turn off flashlight';
 
   @override
   String get submit => 'Submit';
@@ -1732,6 +1794,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imagePickFailed => 'Could not add image. Please try again.';
 
   @override
+  String get storagePermissionDenied =>
+      'Storage permission is required to pick images. Please grant storage access in settings.';
+
+  @override
   String get removeImageConfirm => 'Remove this image?';
 
   @override
@@ -1793,6 +1859,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openSourceLicense => 'Open Source License';
 
   @override
+  String get crashLogs => 'Crash Logs';
+
+  @override
+  String get exportCrashLogs => 'Export Crash Logs';
+
+  @override
+  String get clearCrashLogs => 'Clear Crash Logs';
+
+  @override
+  String get clearCrashLogsConfirm => 'Do you want to clear all crash logs?';
+
+  @override
+  String get crashLogSize => 'File size';
+
+  @override
+  String get crashLogEmpty => 'No crash logs';
+
+  @override
   String get contactUs => 'Contact';
 
   @override
@@ -1843,6 +1927,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permissionsInternet =>
       'Internet: Optional, used only for loading product images if URLs are provided. When sharing product images, URLs are sent to the platform\'s native share sheet (local device only, not to our servers).';
+
+  @override
+  String get crashLoggingTitle => 'Crash Logging';
+
+  @override
+  String get crashLoggingBody =>
+      'If the app crashes, a local crash log entry is written to your device containing the error message, stack trace, and timestamp. Sensitive data (phone numbers, PromptPay IDs, citizen IDs) is automatically sanitized before storage. Crash logs are never transmitted off-device. You can view, export, and clear crash logs in Settings → About → Crash Logs.';
 
   @override
   String get contactTitle => 'Contact';

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -12,8 +11,6 @@ import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_servi
 import 'package:promsell_pos_ce/core/widgets/receipt_preview.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 class SaleReceiptDialog {
@@ -66,6 +63,7 @@ class SaleReceiptDialog {
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogCtx) => AlertDialog(
         title: Text(
           '${l.receiptLabelReceipt} #${sale.receiptNumber ?? sale.id}',
@@ -106,7 +104,6 @@ class SaleReceiptDialog {
             icon: const Icon(Icons.print_outlined),
             label: Text(l.printReceipt),
             onPressed: () async {
-              final checkoutBloc = dialogCtx.read<CheckoutBloc>();
               Navigator.pop(dialogCtx);
               final productImages = await _loadProductImages(sale, productMap);
               await sl<ReceiptPdfService>().printReceipt(
@@ -118,14 +115,12 @@ class SaleReceiptDialog {
                 labels: labels,
                 productImages: productImages,
               );
-              checkoutBloc.add(const CheckoutReset());
             },
           ),
           TextButton.icon(
             icon: const Icon(Icons.share_outlined),
             label: Text(l.shareReceipt),
             onPressed: () async {
-              final checkoutBloc = dialogCtx.read<CheckoutBloc>();
               Navigator.pop(dialogCtx);
               final productImages = await _loadProductImages(sale, productMap);
               await sl<ReceiptPdfService>().shareReceipt(
@@ -137,15 +132,10 @@ class SaleReceiptDialog {
                 labels: labels,
                 productImages: productImages,
               );
-              checkoutBloc.add(const CheckoutReset());
             },
           ),
           TextButton(
-            onPressed: () {
-              final checkoutBloc = dialogCtx.read<CheckoutBloc>();
-              Navigator.pop(dialogCtx);
-              checkoutBloc.add(const CheckoutReset());
-            },
+            onPressed: () => Navigator.pop(dialogCtx),
             child: Text(l.cancel),
           ),
         ],

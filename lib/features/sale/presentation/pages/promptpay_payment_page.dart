@@ -60,7 +60,6 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
         _timer?.cancel();
         if (mounted) {
           widget.bloc.add(const CheckoutPaymentCancelled());
-          Navigator.of(context).pop();
         }
         return;
       }
@@ -102,14 +101,12 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
         sendingBankCode: _sendingBankCode,
       ),
     );
-    Navigator.of(context).pop();
   }
 
   void _cancel() {
     HapticFeedback.mediumImpact();
     _timer?.cancel();
     widget.bloc.add(const CheckoutPaymentCancelled());
-    Navigator.of(context).pop();
   }
 
   Future<void> _scanSlip() async {
@@ -175,6 +172,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
     _autoConfirmTimer?.cancel();
     const delay = Duration(seconds: 2);
     final end = DateTime.now().add(delay);
+    final l10n = context.l10n;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: StreamBuilder<int>(
@@ -184,12 +182,12 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
           }),
           builder: (context, snapshot) {
             final secs = snapshot.data ?? 2;
-            return Text('Auto-confirming in $secs...');
+            return Text(l10n.autoConfirmingIn(secs));
           },
         ),
         duration: delay + const Duration(milliseconds: 500),
         action: SnackBarAction(
-          label: 'Cancel',
+          label: l10n.cancel,
           onPressed: () {
             _autoConfirmTimer?.cancel();
           },
@@ -361,7 +359,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
             ),
           ],
         ),
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         bottomNavigationBar: _buildStickyFooter(theme, l10n),
       ),
     );

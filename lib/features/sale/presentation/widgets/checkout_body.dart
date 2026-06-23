@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,12 +36,29 @@ class _CheckoutBodyState extends State<CheckoutBody> {
   bool _submitted = false;
   bool _inPaymentFlow = false;
   double _effectiveTotal = 0;
+  Timer? _processingTimeoutTimer;
 
   double get _received => double.tryParse(_receivedCtrl.text) ?? 0;
   double get _change => _received - _effectiveTotal;
 
+  void _startProcessingTimeout(BuildContext ctx) {
+    _processingTimeoutTimer?.cancel();
+    _processingTimeoutTimer = Timer(const Duration(seconds: 30), () {
+      if (!mounted) return;
+      _submitted = false;
+      _inPaymentFlow = false;
+      AppSnackBar.error(ctx, ctx.l10n.saleError);
+    });
+  }
+
+  void _cancelProcessingTimeout() {
+    _processingTimeoutTimer?.cancel();
+    _processingTimeoutTimer = null;
+  }
+
   @override
   void dispose() {
+    _cancelProcessingTimeout();
     _receivedCtrl.dispose();
     _noteCtrl.dispose();
     _referenceCtrl.dispose();
@@ -55,6 +74,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
   void _confirm() {
     if (_submitted) return;
     _submitted = true;
+    setState(() {});
     HapticFeedback.mediumImpact();
     final note = _noteCtrl.text.trim();
     final reference = _referenceCtrl.text.trim();
@@ -65,12 +85,6 @@ class _CheckoutBodyState extends State<CheckoutBody> {
             '${context.l10n.paymentReferenceOptional}: $reference',
           ].join('\n');
     final settings = context.read<SettingsCubit>().state.settings;
-    final today = DateTime.now().toIso8601String().split('T').first;
-    if (settings.dailyCloseLock && settings.lastClosedDate == today) {
-      AppSnackBar.error(context, context.l10n.dayClosedMessage);
-      _submitted = false;
-      return;
-    }
     final cartState = context.read<CartBloc>().state;
     context.read<CheckoutBloc>().add(
       CheckoutConfirmed(
@@ -97,66 +111,93 @@ class _CheckoutBodyState extends State<CheckoutBody> {
     final nextHundred = roundedHundred > total
         ? roundedHundred
         : roundedHundred + 100;
-    return {total, nextTen, nextHundred}.where((v) => v > 0).toList()..sort();
+    final amounts = {total, nextTen, nextHundred}.where((v) => v > 0).toList()
+      ..sort();
+    if (amounts.length < 2) {
+      amounts.add(total + 20);
+      amounts.sort();
+    }
+    return amounts;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocBuilder<CartBloc, CartState>(
-      builder: (_, cartState) {
-        final settings = context.watch<SettingsCubit>().state.settings;
-        final currency = settings.currency;
-        final vatInfo = sl<ReceiptPdfService>().calculateVat(
-          total: cartState.total,
-          rate: settings.vatRate,
-          mode: settings.vatMode,
-        );
-        _effectiveTotal = vatInfo?.totalWithVat ?? cartState.total;
-
-        return BlocListener<CheckoutBloc, CheckoutState>(
-          listenWhen: (_, curr) =>
-              curr.status == CheckoutStatus.failure ||
+    return BlocListener<CheckoutBloc, CheckoutState>(
+      listenWhen: (prev, curr) =>
+          prev.status != curr.status &&
+          (curr.status == CheckoutStatus.failure ||
               curr.status == CheckoutStatus.success ||
               curr.status == CheckoutStatus.waitingPayment ||
-              curr.status == CheckoutStatus.idle,
-          listener: (ctx, state) {
-            if (state.status == CheckoutStatus.waitingPayment) {
-              _inPaymentFlow = true;
-              Navigator.of(ctx).push(
-                MaterialPageRoute(
-                  builder: (_) => PromptPayPaymentPage(
-                    total: _effectiveTotal,
-                    currency: currency,
-                    promptpayId: settings.promptpayId,
-                    settings: settings,
-                    bloc: ctx.read<CheckoutBloc>(),
-                    items: cartState.items,
-                  ),
-                ),
-              );
-              return;
-            }
-            if (state.status == CheckoutStatus.success) {
-              _inPaymentFlow = false;
-              _submitted = false;
-              Navigator.of(ctx).pop();
-              return;
-            }
-            if (state.status == CheckoutStatus.idle && _inPaymentFlow) {
-              _inPaymentFlow = false;
-              _submitted = false;
-              Navigator.of(ctx).pop();
-              return;
-            }
-            if (state.status == CheckoutStatus.failure) {
-              _inPaymentFlow = false;
-              _submitted = false;
-              AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
-            }
-          },
-          child: SingleChildScrollView(
+              curr.status == CheckoutStatus.idle ||
+              curr.status == CheckoutStatus.processing),
+      listener: (ctx, state) {
+        if (state.status == CheckoutStatus.processing) {
+          _startProcessingTimeout(ctx);
+          return;
+        }
+        if (state.status == CheckoutStatus.waitingPayment) {
+          _inPaymentFlow = true;
+          _cancelProcessingTimeout();
+          final cartState = ctx.read<CartBloc>().state;
+          final settings = ctx.read<SettingsCubit>().state.settings;
+          Navigator.of(ctx).push(
+            MaterialPageRoute(
+              builder: (_) => PromptPayPaymentPage(
+                total: _effectiveTotal,
+                currency: settings.currency,
+                promptpayId: settings.promptpayId,
+                settings: settings,
+                bloc: ctx.read<CheckoutBloc>(),
+                items: cartState.items,
+              ),
+            ),
+          );
+          return;
+        }
+        if (state.status == CheckoutStatus.success) {
+          _cancelProcessingTimeout();
+          final wasInFlow = _inPaymentFlow;
+          _inPaymentFlow = false;
+          _submitted = false;
+          if (wasInFlow) {
+            Navigator.of(ctx).pop();
+          }
+          Navigator.of(ctx).pop();
+          return;
+        }
+        if (state.status == CheckoutStatus.idle && _inPaymentFlow) {
+          _cancelProcessingTimeout();
+          _inPaymentFlow = false;
+          _submitted = false;
+          Navigator.of(ctx).pop();
+          Navigator.of(ctx).pop();
+          return;
+        }
+        if (state.status == CheckoutStatus.failure) {
+          _cancelProcessingTimeout();
+          final wasInFlow = _inPaymentFlow;
+          _inPaymentFlow = false;
+          _submitted = false;
+          if (wasInFlow) {
+            Navigator.of(ctx).pop();
+          }
+          AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
+        }
+      },
+      child: BlocBuilder<CartBloc, CartState>(
+        builder: (_, cartState) {
+          final settings = context.read<SettingsCubit>().state.settings;
+          final currency = settings.currency;
+          final vatInfo = sl<ReceiptPdfService>().calculateVat(
+            total: cartState.total,
+            rate: settings.vatRate,
+            mode: settings.vatMode,
+          );
+          _effectiveTotal = vatInfo?.totalWithVat ?? cartState.total;
+
+          return SingleChildScrollView(
             padding: EdgeInsets.only(
               left: 20,
               right: 20,
@@ -288,7 +329,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         selected: _method == 'transfer',
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(() => _method = 'transfer');
+                          setState(() {
+                            _method = 'transfer';
+                            _referenceCtrl.clear();
+                          });
                         },
                       ),
                     ),
@@ -300,7 +344,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         selected: _method == 'card',
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(() => _method = 'card');
+                          setState(() {
+                            _method = 'card';
+                            _referenceCtrl.clear();
+                          });
                         },
                       ),
                     ),
@@ -313,7 +360,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                           selected: _method == 'promptpay',
                           onTap: () {
                             HapticFeedback.selectionClick();
-                            setState(() => _method = 'promptpay');
+                            setState(() {
+                              _method = 'promptpay';
+                              _referenceCtrl.clear();
+                            });
                           },
                         ),
                       ),
@@ -404,6 +454,15 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _referenceCtrl,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.paymentReferenceOptional,
+                      prefixIcon: const Icon(Icons.tag_outlined),
+                    ),
+                    textInputAction: TextInputAction.next,
+                  ),
                 ] else ...[
                   const SizedBox(height: 16),
                   TextFormField(
@@ -415,38 +474,30 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                     textInputAction: TextInputAction.next,
                   ),
                 ],
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _noteCtrl,
-                  decoration: InputDecoration(
-                    labelText: context.l10n.notePlaceholder,
-                    prefixIcon: const Icon(Icons.notes_outlined),
+                if (_method != 'promptpay') ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _noteCtrl,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.notePlaceholder,
+                      prefixIcon: const Icon(Icons.notes_outlined),
+                    ),
+                    textInputAction: TextInputAction.done,
+                    maxLines: 1,
                   ),
-                  textInputAction: TextInputAction.done,
-                  maxLines: 1,
-                ),
+                ],
                 const SizedBox(height: 20),
                 BlocBuilder<CheckoutBloc, CheckoutState>(
                   builder: (_, checkoutState) {
                     final isProcessing =
                         checkoutState.status == CheckoutStatus.processing;
                     final canConfirm =
-                        _method != 'cash' || _received >= _effectiveTotal;
+                        !cartState.isEmpty &&
+                        (_method != 'cash' || _received >= _effectiveTotal);
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (_method == 'cash' && !canConfirm && _received > 0)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              context.l10n.insufficientCash,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.error,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
                         FilledButton.icon(
                           style: FilledButton.styleFrom(
                             minimumSize: const Size(0, 56),
@@ -456,13 +507,13 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          onPressed: isProcessing || !canConfirm
+                          onPressed: isProcessing || !canConfirm || _submitted
                               ? null
                               : () {
                                   HapticFeedback.mediumImpact();
                                   _confirm();
                                 },
-                          icon: isProcessing
+                          icon: isProcessing || _submitted
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
@@ -546,7 +597,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                                     ),
                                   )
                                   .toList(),
-                              total: cartState.total,
+                              total: _effectiveTotal,
                               vatInfo: vatInfo,
                               paymentMethod: _method,
                               amountReceived: _method == 'cash'
@@ -577,7 +628,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                                     ),
                                   )
                                   .toList(),
-                              total: cartState.total,
+                              total: _effectiveTotal,
                               vatInfo: vatInfo,
                               paymentMethod: _method,
                               amountReceived: _method == 'cash'
@@ -600,9 +651,9 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                 ),
               ],
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -622,8 +673,8 @@ class _CheckoutBodyState extends State<CheckoutBody> {
     showDialog(
       context: context,
       barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.92),
-      builder: (_) => GestureDetector(
-        onTap: () => Navigator.of(context).pop(),
+      builder: (dialogCtx) => GestureDetector(
+        onTap: () => Navigator.of(dialogCtx).pop(),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(
@@ -639,11 +690,11 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                         vertical: 48,
                       ),
                       constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.78,
+                        maxHeight: MediaQuery.of(dialogCtx).size.height * 0.78,
                         maxWidth: 440,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: Theme.of(dialogCtx).colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -689,7 +740,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                     color: Colors.black.withValues(alpha: 0.5),
                     shape: const CircleBorder(),
                     child: InkWell(
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () => Navigator.of(dialogCtx).pop(),
                       customBorder: const CircleBorder(),
                       child: Container(
                         width: 44,

@@ -12,6 +12,7 @@ class CartState extends Equatable {
     this.cartDiscountValue,
     this.stockWarning,
     this.errorMessage,
+    this.errorNonce = 0,
   });
 
   final List<CartItem> items;
@@ -20,6 +21,7 @@ class CartState extends Equatable {
   final double? cartDiscountValue;
   final String? stockWarning;
   final String? errorMessage;
+  final int errorNonce;
 
   double get itemsSubtotal =>
       MoneyUtils.round(items.fold(0.0, (sum, i) => sum + i.subtotal));
@@ -50,6 +52,7 @@ class CartState extends Equatable {
     Object? cartDiscountValue = _unset,
     Object? stockWarning = _unset,
     Object? errorMessage = _unset,
+    int? errorNonce,
   }) => CartState(
     items: items ?? this.items,
     note: note ?? this.note,
@@ -65,6 +68,7 @@ class CartState extends Equatable {
     errorMessage: identical(errorMessage, _unset)
         ? this.errorMessage
         : errorMessage as String?,
+    errorNonce: errorNonce ?? this.errorNonce,
   );
 
   @override
@@ -75,5 +79,6 @@ class CartState extends Equatable {
     cartDiscountValue,
     stockWarning,
     errorMessage,
+    errorNonce,
   ];
 }

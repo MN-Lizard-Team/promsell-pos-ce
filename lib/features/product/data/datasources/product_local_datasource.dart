@@ -63,10 +63,14 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   @override
   Future<Product?> getProductByBarcode(String barcode) async {
     final lowerBarcode = barcode.toLowerCase();
-    final row = await (_db.select(
-      _db.products,
-    )..where((p) => p.barcode.lower().equals(lowerBarcode))).getSingleOrNull();
-    return row == null ? null : _fromData(row);
+    final rows =
+        await (_db.select(_db.products)
+              ..where((p) => p.barcode.lower().equals(lowerBarcode))
+              ..where((p) => p.isActive.equals(true))
+              ..orderBy([(p) => OrderingTerm.desc(p.updatedAt)])
+              ..limit(1))
+            .get();
+    return rows.isEmpty ? null : _fromData(rows.first);
   }
 
   @override

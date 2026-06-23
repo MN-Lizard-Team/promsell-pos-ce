@@ -37,6 +37,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
   late final _barcodeCtrl = TextEditingController(
     text: widget.product?.barcode ?? '',
   );
+  late final _costCtrl = TextEditingController(
+    text: () {
+      final cost = widget.product?.cost;
+      return cost != null ? cost.toStringAsFixed(2) : '';
+    }(),
+  );
   Category? _selectedCategory;
   String? _imagePath;
   String? _imageUrl;
@@ -44,6 +50,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
   late bool _isActive;
   late bool _trackStock;
   bool _isPickingImage = false;
+  bool _isDirty = false;
+  bool _deleting = false;
 
   bool get _isEditing => widget.product != null;
 
@@ -55,7 +63,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _imagePath = widget.product?.imagePath;
     _imageUrl = widget.product?.imageUrl;
     _imageThumbnailPath = widget.product?.imageThumbnailPath;
+    _nameCtrl.addListener(_markDirty);
+    _priceCtrl.addListener(_markDirty);
+    _stockCtrl.addListener(_markDirty);
+    _skuCtrl.addListener(_markDirty);
+    _barcodeCtrl.addListener(_markDirty);
+    _costCtrl.addListener(_markDirty);
   }
+
+  void _markDirty() => _isDirty = true;
 
   void _tryLookupCategory(List<Category> categories) {
     if (_selectedCategory != null) return;
@@ -74,6 +90,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _stockCtrl.dispose();
     _skuCtrl.dispose();
     _barcodeCtrl.dispose();
+    _costCtrl.dispose();
     super.dispose();
   }
 
@@ -83,10 +100,14 @@ class _ProductFormPageState extends State<ProductFormPage> {
     if (!_formKey.currentState!.validate()) return;
     if (_submitted) return;
     _submitted = true;
+    _isDirty = false;
     final bloc = context.read<ProductBloc>();
     if (_isEditing) {
       final price = double.tryParse(_priceCtrl.text);
-      final stock = int.tryParse(_stockCtrl.text);
+      final stock = _trackStock
+          ? int.tryParse(_stockCtrl.text)
+          : widget.product!.stock;
+      final cost = double.tryParse(_costCtrl.text);
       if (price == null || stock == null) return;
       bloc.add(
         ProductUpdated(
@@ -98,6 +119,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
             barcode: _barcodeCtrl.text.trim().isEmpty
                 ? null
                 : _barcodeCtrl.text.trim(),
+            cost: cost,
             categoryId: _selectedCategory?.id,
             imagePath: _imagePath,
             imageUrl: _imageUrl,
@@ -140,59 +162,142 @@ class _ProductFormPageState extends State<ProductFormPage> {
       listener: (ctx, state) => _tryLookupCategory(state.categories),
       child: BlocListener<ProductBloc, ProductState>(
         listenWhen: (prev, curr) =>
-            _submitted && prev.saveStatus != curr.saveStatus,
+            (_submitted || _deleting) && prev.saveStatus != curr.saveStatus,
         listener: (ctx, state) {
           if (state.saveStatus == ProductSaveStatus.saved) {
             Navigator.pop(ctx, true);
           } else if (state.saveStatus == ProductSaveStatus.error) {
             _submitted = false;
+            _deleting = false;
             final msg = state.errorMessage == 'duplicateBarcode'
                 ? ctx.l10n.duplicateBarcode
                 : state.errorMessage ?? ctx.l10n.errorOccurred;
             AppSnackBar.error(ctx, msg);
           }
         },
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
-            builder: (_, state) {
-              final isSaving = state.saveStatus == ProductSaveStatus.saving;
-              return StickyActionBar(
-                primaryLabel: _isEditing
-                    ? context.l10n.save
-                    : context.l10n.addProduct,
-                onPrimary: _submit,
-                dangerLabel: _isEditing ? context.l10n.delete : null,
-                onDanger: _isEditing ? () => _confirmDelete(context) : null,
-                isLoading: isSaving,
-              );
-            },
-          ),
-          body: ProductEditTabView(
-            product: widget.product,
-            formKey: _formKey,
-            nameCtrl: _nameCtrl,
-            priceCtrl: _priceCtrl,
-            stockCtrl: _stockCtrl,
-            skuCtrl: _skuCtrl,
-            barcodeCtrl: _barcodeCtrl,
-            selectedCategory: _selectedCategory,
-            imagePath: _imagePath,
-            imageUrl: _imageUrl,
-            isActive: _isActive,
-            trackStock: _trackStock,
-            isPickingImage: _isPickingImage,
-            onCategoryChanged: (cat) => setState(() => _selectedCategory = cat),
-            onImageTap: () => _showImageSourceSheet(),
-            onActiveChanged: (v) => setState(() => _isActive = v),
-            onTrackStockChanged: (v) => setState(() => _trackStock = v),
-            onStockChanged: (v) =>
-                setState(() => _stockCtrl.text = v.toString()),
-            onDelete: () => _confirmDelete(context),
+        child: PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+            if (!_isDirty || _submitted || _deleting) {
+              if (!context.mounted) return;
+              Navigator.of(context).pop();
+              return;
+            }
+            final shouldPop = await _showUnsavedDialog();
+            if (shouldPop && context.mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: DefaultTabController(
+            length: 4,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(
+                  _isEditing
+                      ? context.l10n.editProductTitle
+                      : context.l10n.addProduct,
+                ),
+                bottom: TabBar(
+                  tabs: [
+                    Tab(
+                      icon: const Icon(Icons.badge_outlined),
+                      text: context.l10n.tabInfo,
+                    ),
+                    Tab(
+                      icon: const Icon(Icons.sell_outlined),
+                      text: context.l10n.tabPrice,
+                    ),
+                    Tab(
+                      icon: const Icon(Icons.inventory_2_outlined),
+                      text: context.l10n.tabStock,
+                    ),
+                    Tab(
+                      icon: const Icon(Icons.settings_outlined),
+                      text: context.l10n.settingsTitle,
+                    ),
+                  ],
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                ),
+              ),
+              bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
+                builder: (_, state) {
+                  final isSaving = state.saveStatus == ProductSaveStatus.saving;
+                  return StickyActionBar(
+                    primaryLabel: _isEditing
+                        ? context.l10n.save
+                        : context.l10n.addProduct,
+                    onPrimary: _submit,
+                    dangerLabel: _isEditing ? context.l10n.delete : null,
+                    onDanger: _isEditing ? () => _confirmDelete(context) : null,
+                    isLoading: isSaving,
+                  );
+                },
+              ),
+              body: ProductEditTabView(
+                product: widget.product,
+                formKey: _formKey,
+                nameCtrl: _nameCtrl,
+                priceCtrl: _priceCtrl,
+                stockCtrl: _stockCtrl,
+                skuCtrl: _skuCtrl,
+                barcodeCtrl: _barcodeCtrl,
+                costCtrl: _costCtrl,
+                selectedCategory: _selectedCategory,
+                imagePath: _imagePath,
+                imageUrl: _imageUrl,
+                isActive: _isActive,
+                trackStock: _trackStock,
+                isPickingImage: _isPickingImage,
+                onCategoryChanged: (cat) {
+                  _markDirty();
+                  setState(() => _selectedCategory = cat);
+                },
+                onImageTap: () {
+                  _showImageSourceSheet();
+                },
+                onActiveChanged: (v) {
+                  _markDirty();
+                  setState(() => _isActive = v);
+                },
+                onTrackStockChanged: (v) {
+                  _markDirty();
+                  setState(() => _trackStock = v);
+                },
+                onStockChanged: (v) {
+                  _markDirty();
+                  setState(() => _stockCtrl.text = v.toString());
+                },
+                onDelete: () => _confirmDelete(context),
+              ),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Future<bool> _showUnsavedDialog() async {
+    final l10n = context.l10n;
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.unsavedChangesTitle),
+        content: Text(l10n.unsavedChangesMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'discard'),
+            child: Text(l10n.discardDraft),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
+            child: Text(l10n.cancel),
+          ),
+        ],
+      ),
+    );
+    return result == 'discard';
   }
 
   void _confirmDelete(BuildContext context) {
@@ -201,9 +306,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteProduct),
-        content: Text(
-          '${l10n.deleteCategoryConfirm} "${widget.product!.name}"?',
-        ),
+        content: Text(l10n.confirmDeleteProduct(widget.product!.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -211,11 +314,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
           ),
           FilledButton(
             onPressed: () {
+              Navigator.pop(ctx);
+              _deleting = true;
+              _isDirty = false;
               context.read<ProductBloc>().add(
                 ProductDeleted(widget.product!.id),
               );
-              Navigator.pop(ctx);
-              Navigator.pop(context);
             },
             child: Text(l10n.delete),
           ),
@@ -258,6 +362,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
         _imagePath = null;
         _imageUrl = null;
         _imageThumbnailPath = null;
+        _isDirty = true;
       });
       return;
     }
@@ -280,6 +385,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
         _imagePath = path;
         _imageThumbnailPath = thumbPath;
         _isPickingImage = false;
+        _isDirty = true;
       });
       if (!mounted) return;
       AppSnackBar.success(context, l10n.imagePicked);
@@ -287,7 +393,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
       if (!mounted) return;
       setState(() => _isPickingImage = false);
       if (!mounted) return;
-      AppSnackBar.error(context, l10n.imagePickFailed);
+      final msg = e.toString().contains('PERMISSION_DENIED_CAMERA')
+          ? l10n.cameraPermissionDenied
+          : e.toString().contains('PERMISSION_DENIED_STORAGE')
+          ? l10n.storagePermissionDenied
+          : l10n.imagePickFailed;
+      AppSnackBar.error(context, msg);
       AppLogger.error('ProductFormPage image pick failed', error: e);
     }
   }

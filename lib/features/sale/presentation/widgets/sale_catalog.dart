@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/app_search_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/search_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/search_result_tile.dart';
@@ -13,6 +14,8 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart'
     show parseCategoryColor, parseCategoryIcon;
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/sale_product_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -250,7 +253,24 @@ class _SaleCatalogState extends State<SaleCatalog> {
                     itemBuilder: (_, i) => SearchResultTile(
                       product: products[i],
                       query: state.searchQuery,
-                      onTap: () {},
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        final allowOversell = context
+                            .read<SettingsCubit>()
+                            .state
+                            .settings
+                            .allowOversell;
+                        context.read<CartBloc>().add(
+                          CartProductAdded(
+                            products[i],
+                            allowOversell: allowOversell,
+                          ),
+                        );
+                        AppSnackBar.info(
+                          context,
+                          context.l10n.productAddedToCart(products[i].name),
+                        );
+                      },
                     ),
                   ),
                 )

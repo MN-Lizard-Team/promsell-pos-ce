@@ -21,6 +21,8 @@
 </p>
  
 <p>
+  <a href="https://github.com/teeprakorn1/promsell-pos-ce/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/teeprakorn1/promsell-pos-ce/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
+  <a href="https://codecov.io/gh/teeprakorn1/promsell-pos-ce"><img src="https://img.shields.io/codecov/c/github/teeprakorn1/promsell-pos-ce?style=flat-square" alt="Coverage"></a>
   <a href="https://github.com/teeprakorn1/promsell-pos-ce/commits/main"><img src="https://img.shields.io/github/last-commit/teeprakorn1/promsell-pos-ce?style=flat-square&color=64748b" alt="Last Commit"></a>
   <a href="https://github.com/teeprakorn1/promsell-pos-ce"><img src="https://img.shields.io/github/languages/top/teeprakorn1/promsell-pos-ce?style=flat-square&color=64748b" alt="Top Language"></a>
   <a href="https://github.com/teeprakorn1/promsell-pos-ce/pulls"><img src="https://img.shields.io/badge/PRs-Welcome-ff69b4?style=flat-square&logo=git&logoColor=white" alt="PRs Welcome"></a>
@@ -42,7 +44,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
  
-> **Latest Release: v0.8.2** — SaleBloc decomposition (CartBloc, DraftBloc, CheckoutBloc), bug hunt fixes (receipt dialog reset, draft auto-save flush, stock guard, error handling), barcode system fixes (scanner double-pop, batch counter persistence, barcode selection, prefix validation), camera permission handling for barcode scanner, receipt preview & PDF product images. 425 passing tests.
+> **Latest Release: v0.8.3** — CI/CD coverage gates, schema v17 barcode dedup migration, persistent crash logging, dev/prod flavors, barcode scanner hardening, and product/category UX fixes.
  
 ---
  
@@ -123,19 +125,19 @@ flutter pub get
  
 # 3. Generate code (Drift, l10n)
 flutter gen-l10n
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
  
-# 4. Run on connected device or emulator
-flutter run
+# 4. Run on connected device or emulator (dev flavor)
+flutter run --flavor dev -t lib/main_dev.dart
 ```
  
 ### Build release APK
  
 ```bash
-flutter build apk --release
+flutter build apk --release --flavor prod -t lib/main_prod.dart
 ```
  
-The APK will be at `build/app/outputs/flutter-apk/app-release.apk`.
+The APK will be at `build/app/outputs/flutter-apk/app-prod-release.apk`.
  
 For more details, see [`docs/USAGE.md`](docs/USAGE.md).
  
@@ -203,13 +205,11 @@ features/<name>/
  
 ## Screenshots
  
-> **Help wanted!** We'd love real device screenshots here.
-> To contribute: run the app in release mode, capture each tab, and open a PR adding images to `docs/screenshots/`.
-> Suggested filenames: `sale.png`, `products.png`, `history.png`, `report.png`, `settings.png`.
+> Screenshots captured via `adb screencap` on Android emulator (dev flavor).
  
 | Sale | Products | History | Report | Settings |
 |------|----------|---------|--------|----------|
-| _TBA_ | _TBA_ | _TBA_ | _TBA_ | _TBA_ |
+| ![Sale](screenshots/sale.png) | ![Products](screenshots/products.png) | ![History](screenshots/history.png) | ![Report](screenshots/report.png) | ![Settings](screenshots/settings.png) |
  
 ---
  
@@ -237,22 +237,23 @@ features/<name>/
 - [x] **R12 — Category System Overhaul** (v0.7.6): Category color/icon picker (schema v15), drag-drop reordering, product count badges, search, bulk delete; product page category support (sale cards, catalog chips, editor); 22 system-wide bug fixes; new app icon
 - [x] **R13 — Barcode System** (v0.8.0): Camera barcode scanning (EAN/UPC/Code128/Code39/ITF), manual entry fallback, auto-generation with custom prefix, duplicate prevention (schema v16), BarcodeSettingsPage with scan/beep/prefix toggles + help section for non-technical staff. Image system UX fixes: shared `showImageSourceSheet()`, temp file lifecycle, draft path validation, error handling, remove confirmation, orphaned image cleanup
 - [x] **R14 — SaleBloc Decomposition & Bug Hunt** (v0.8.2): Split monolithic `SaleBloc` into `CartBloc`, `DraftBloc`, `CheckoutBloc`; receipt dialog `CheckoutReset` fix, draft auto-save flush, stock=0 guard, deleted product warning, barcode scanner double-pop fix, batch counter persistence, EAN-13 prefix validation, runtime camera permission for barcode scanner, receipt preview & PDF product images
+- [x] **R15 — CI/CD, Crash Logging & UX Hardening** (v0.8.3): CI/CD coverage gates (≥30%), Codecov upload, weekly stress test workflow; `CrashLogService` with PII sanitization and export/clear UI; `dev`/`prod` product flavors with separate entry points; schema v17 barcode deduplication migration; barcode scanner hardening (torch, gallery, freeze fix); product/category UX fixes (validators, cost field, bulk delete, reorder bug, `QuickEditMixin`); 13 bug fixes across checkout/cart/settings
 
 ### Future
 
-- [ ] Receipt printing via Bluetooth thermal printer
+- [ ] **[CE]** Receipt printing via Bluetooth thermal printer — *Help wanted*
 - [x] PDF receipt export and share (v0.3.0)
-- [ ] Multi-shop support
-- [ ] Cloud backup and restore
+- [ ] **[Pro]** Multi-shop support
+- [ ] **[Pro]** Cloud backup and restore
 - [x] CSV export for products and sales (v0.6.0)
-- [ ] Customer management and loyalty
-- [ ] More languages (Lao, Khmer, Burmese, Vietnamese)
+- [ ] **[CE]** Customer management and loyalty
+- [ ] **[CE]** More languages (Lao, Khmer, Burmese, Vietnamese) — *Help wanted*
 
 ---
 
 ## Testing
 
-**425 tests** covering every application layer:
+**438 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -343,6 +344,6 @@ Built by **[MN Lizard Team](https://github.com/MN-Lizard-Team)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.8.2 · 425 tests · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.3 · AGPL-3.0</sub>
 
 </div>

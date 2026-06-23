@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:meta/meta.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/database/tables/app_settings_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/categories_table.dart';
@@ -31,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -223,6 +224,10 @@ class AppDatabase extends _$AppDatabase {
       if (from < 16) {
         await _createBarcodeUniqueIndex();
       }
+      if (from < 17) {
+        await _deduplicateBarcodes();
+        await _createBarcodeUniqueIndex();
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA journal_mode=WAL');
@@ -309,14 +314,59 @@ class AppDatabase extends _$AppDatabase {
     String column,
     String type,
   ) async {
-    try {
+    final exists = await customSelect(
+      'SELECT COUNT(*) as cnt FROM pragma_table_info(?) WHERE name = ?',
+      variables: [Variable.withString(table), Variable.withString(column)],
+    ).getSingle();
+    if (exists.read<int>('cnt') == 0) {
       await customStatement('ALTER TABLE $table ADD COLUMN $column $type');
-    } catch (e) {
-      // Column may already exist; ignore
-      if (!e.toString().contains('duplicate column')) {
-        AppLogger.error('Migration ALTER failed for $table.$column', error: e);
-        rethrow;
+    }
+  }
+
+  @visibleForTesting
+  Future<void> deduplicateBarcodesForTest() => _deduplicateBarcodes();
+
+  Future<void> _deduplicateBarcodes() async {
+    try {
+      final duplicates = await customSelect('''
+        SELECT barcode FROM products
+        WHERE barcode IS NOT NULL AND barcode != ''
+        GROUP BY barcode HAVING COUNT(*) > 1
+      ''').get();
+
+      if (duplicates.isEmpty) return;
+
+      var clearedCount = 0;
+      for (final row in duplicates) {
+        final barcode = row.read<String>('barcode');
+
+        // Keep the product with latest updated_at; prefer active products
+        final keepId = await customSelect(
+          '''SELECT id FROM products
+             WHERE barcode = ?
+             ORDER BY is_active DESC, updated_at DESC
+             LIMIT 1''',
+          variables: [Variable.withString(barcode)],
+        ).getSingle();
+
+        final result = await customUpdate(
+          '''UPDATE products SET barcode = NULL
+             WHERE barcode = ? AND id != ?''',
+          updates: {products},
+          variables: [
+            Variable.withString(barcode),
+            Variable.withString(keepId.read<String>('id')),
+          ],
+        );
+        clearedCount += result;
       }
+
+      AppLogger.warning(
+        'Schema v17: cleared $clearedCount duplicate barcodes '
+        'across ${duplicates.length} groups.',
+      );
+    } catch (e) {
+      AppLogger.error('Schema v17: barcode dedup failed', error: e);
     }
   }
 

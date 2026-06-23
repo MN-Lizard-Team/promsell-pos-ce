@@ -45,7 +45,7 @@ class ChangePreview extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  context.l10n.change,
+                  isEnough ? context.l10n.change : context.l10n.remainingAmount,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontFamily: 'NotoSansThai',
                     fontWeight: FontWeight.w600,
@@ -53,7 +53,7 @@ class ChangePreview extends StatelessWidget {
                 ),
               ),
               MoneyText(
-                value: isEnough ? change : 0,
+                value: change,
                 currency: currency,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontFamily: 'NotoSansThai',

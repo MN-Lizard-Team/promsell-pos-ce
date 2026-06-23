@@ -62,13 +62,12 @@ class CategoryListTile extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (productCount > 0)
-                      Text(
-                        '$productCount ${context.l10n.productsCount}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
+                    Text(
+                      '$productCount ${context.l10n.productsCount}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -109,8 +108,8 @@ class CategoryListTile extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(context.l10n.deleteCategoryConfirm),
-        content: Text(category.name),
+        title: Text(context.l10n.deleteCategory),
+        content: Text(context.l10n.confirmDeleteCategory(category.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

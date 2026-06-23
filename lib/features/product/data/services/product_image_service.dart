@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:promsell_pos_ce/core/image/image_cache_service.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -44,6 +45,12 @@ class ProductImageServiceImpl implements ProductImageService {
 
   @override
   Future<String?> pickFromGallery(String productId) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      final photos = await Permission.photos.request();
+      if (!photos.isGranted && !photos.isLimited) {
+        throw Exception('PERMISSION_DENIED_STORAGE');
+      }
+    }
     final xFile = await _picker.pickImage(source: ImageSource.gallery);
     if (xFile == null) return null;
     if (!_isValidImage(xFile.path)) return null;
@@ -55,6 +62,12 @@ class ProductImageServiceImpl implements ProductImageService {
 
   @override
   Future<String?> pickFromCamera(String productId) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      final camera = await Permission.camera.request();
+      if (!camera.isGranted) {
+        throw Exception('PERMISSION_DENIED_CAMERA');
+      }
+    }
     final xFile = await _picker.pickImage(source: ImageSource.camera);
     if (xFile == null) return null;
     if (!_isValidImage(xFile.path)) return null;

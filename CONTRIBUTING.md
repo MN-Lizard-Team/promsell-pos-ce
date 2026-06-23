@@ -144,7 +144,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **425 automated tests**. All must pass before submitting a PR.
+The project has **438 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests (includes stress tests)
@@ -245,7 +245,8 @@ Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/
 - `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints, `ImageViewerDialog`, `BarcodeScannerDialog`, `showImageSourceSheet`)
 - `lib/core/image/` — unified image system (`UnifiedImageWidget`, `ImageSkeleton`, `ImageErrorPlaceholder`, `ImageCacheService`)
 - `lib/core/database/app_database.dart` — Drift schema and DAOs
-- `lib/main.dart` — app entry, `SettingsCubit` provider, 5-tab shell
+- `lib/main.dart` — shared app entry (`runPromsellApp`), `SettingsCubit` provider, 5-tab shell
+- `lib/main_dev.dart` / `lib/main_prod.dart` — flavor-specific entry points (v0.8.3+)
 
 ---
 

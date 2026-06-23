@@ -162,7 +162,7 @@ void main() {
     );
 
     blocTest<CheckoutBloc, CheckoutState>(
-      'does nothing when cart is empty',
+      'emits failure when cart is empty',
       build: buildBloc,
       setUp: () {
         when(() => mockCartBloc.state).thenReturn(const CartState());
@@ -174,7 +174,11 @@ void main() {
           vatRate: 0,
         ),
       ),
-      expect: () => [],
+      expect: () => [
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.failure)
+            .having((s) => s.errorMessage, 'errorMessage', isNotNull),
+      ],
     );
 
     blocTest<CheckoutBloc, CheckoutState>(

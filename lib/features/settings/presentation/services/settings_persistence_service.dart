@@ -35,10 +35,10 @@ class SettingsPersistenceService {
   }
 
   Future<void> dispose() async {
-    _isDisposed = true;
     _saveTimer?.cancel();
     if (_lastSettings != null) {
-      await _save(_lastSettings!);
+      await _repository.save(_lastSettings!);
     }
+    _isDisposed = true;
   }
 }

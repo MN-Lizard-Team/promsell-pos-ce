@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/services/crash_log_service.dart';
+import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/privacy_policy_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/license_page.dart';
+import 'package:share_plus/share_plus.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -25,6 +29,45 @@ class _AboutPageState extends State<AboutPage> {
   Future<void> _loadPackageInfo() async {
     final info = await PackageInfo.fromPlatform();
     if (mounted) setState(() => _packageInfo = info);
+  }
+
+  Future<void> _exportCrashLogs(BuildContext context) async {
+    final l10n = context.l10n;
+    final crashLogService = sl<CrashLogService>();
+    final path = await crashLogService.exportLogs();
+    if (!context.mounted) return;
+    if (path == null) {
+      AppSnackBar.info(context, l10n.crashLogEmpty);
+      return;
+    }
+    await Share.shareXFiles([
+      XFile(path),
+    ], subject: 'Promsell POS CE — Crash Logs');
+  }
+
+  Future<void> _clearCrashLogs(BuildContext context) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.clearCrashLogs),
+        content: Text(l10n.clearCrashLogsConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await sl<CrashLogService>().clearLogs();
+    if (!context.mounted) return;
+    AppSnackBar.info(context, l10n.clearCrashLogs);
   }
 
   void _push(BuildContext context, Widget page) {
@@ -204,6 +247,32 @@ class _AboutPageState extends State<AboutPage> {
                 l10n.openSourceLicense,
                 st,
                 () => _push(context, const AppLicensePage()),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SettingsSectionCard(
+            title: l10n.crashLogs,
+            children: [
+              _buildLinkTile(
+                context,
+                Icons.file_download_outlined,
+                l10n.exportCrashLogs,
+                st,
+                () => _exportCrashLogs(context),
+              ),
+              Divider(
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+                color: st.cardBorderColor,
+              ),
+              _buildLinkTile(
+                context,
+                Icons.delete_outline,
+                l10n.clearCrashLogs,
+                st,
+                () => _clearCrashLogs(context),
               ),
             ],
           ),

@@ -86,6 +86,7 @@ class DailyCloseListPage extends StatelessWidget {
             MaterialPageRoute(builder: (_) => DailyClosePage(date: today)),
           );
         },
+        heroTag: 'daily_close_list_fab',
         icon: const Icon(Icons.lock_outline),
         label: Text(context.l10n.closeToday),
       ),

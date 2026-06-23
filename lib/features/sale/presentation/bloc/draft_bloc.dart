@@ -9,7 +9,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
-@injectable
+@lazySingleton
 class DraftBloc extends Bloc<DraftEvent, DraftState> {
   DraftBloc({
     required DraftCartRepository draftRepo,
@@ -176,33 +176,38 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
 
   Future<void> _onRotated(DraftRotated event, Emitter<DraftState> emit) async {
     _cancelSaveTimer();
-    final prevDraftId = state.activeDraftId;
-    if (prevDraftId != null) {
-      await _draftRepo.deleteDraft(prevDraftId);
-    }
-    final newDraftId = await _draftRepo.createDraft();
-    final newDraftName =
-        'Bill #${DateTime.now().millisecondsSinceEpoch % 100000}';
     try {
-      await _draftRepo.saveDraft(
-        newDraftId,
-        const CartState(),
-        name: newDraftName,
+      final prevDraftId = state.activeDraftId;
+      if (prevDraftId != null) {
+        await _draftRepo.deleteDraft(prevDraftId);
+      }
+      final newDraftId = await _draftRepo.createDraft();
+      final newDraftName =
+          'Bill #${DateTime.now().millisecondsSinceEpoch % 100000}';
+      try {
+        await _draftRepo.saveDraft(
+          newDraftId,
+          const CartState(),
+          name: newDraftName,
+        );
+      } catch (e, stack) {
+        AppLogger.error(
+          'DraftBloc._onRotated: failed to save new draft',
+          error: e,
+          stack: stack,
+        );
+      }
+      emit(
+        state.copyWith(
+          activeDraftId: newDraftId,
+          activeDraftName: newDraftName,
+          loadedDraft: null,
+        ),
       );
     } catch (e, stack) {
-      AppLogger.error(
-        'DraftBloc._onRotated: failed to save new draft',
-        error: e,
-        stack: stack,
-      );
+      AppLogger.error('DraftBloc._onRotated failed', error: e, stack: stack);
+      emit(state.copyWith(errorMessage: e.toString()));
     }
-    emit(
-      state.copyWith(
-        activeDraftId: newDraftId,
-        activeDraftName: newDraftName,
-        loadedDraft: null,
-      ),
-    );
   }
 
   void _cancelSaveTimer() {

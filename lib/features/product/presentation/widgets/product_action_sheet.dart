@@ -38,7 +38,11 @@ class ProductActionSheet extends StatelessWidget {
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
             ),
-            title: Text(product.isActive ? 'Deactivate' : 'Activate'),
+            title: Text(
+              product.isActive
+                  ? context.l10n.deactivate
+                  : context.l10n.activate,
+            ),
             onTap: () {
               Navigator.pop(context);
               bloc.add(

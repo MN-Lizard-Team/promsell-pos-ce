@@ -75,6 +75,13 @@ class PrivacyPolicyPage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           SettingsSectionCard(
+            title: l10n.crashLoggingTitle,
+            children: [
+              _PolicyBody(text: l10n.crashLoggingBody, st: st, theme: theme),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SettingsSectionCard(
             title: l10n.contactTitle,
             children: [
               _PolicyBody(text: l10n.contactBody, st: st, theme: theme),

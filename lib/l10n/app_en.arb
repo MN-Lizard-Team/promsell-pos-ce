@@ -11,6 +11,13 @@
   "navSettings": "Settings",
 
   "salePageTitle": "Sale",
+  "dragToResizeCart": "Drag to resize cart",
+  "exitCompactMode": "Exit Compact Mode",
+  "exitCompactModeConfirm": "Switch to normal cart view?",
+  "autoConfirmingIn": "Auto-confirming in {secs}...",
+  "@autoConfirmingIn": {
+    "placeholders": { "secs": { "type": "int" } }
+  },
   "clearCart": "Clear",
   "confirmClearCart": "Clear the entire cart?",
   "cartTitle": "Cart",
@@ -47,6 +54,7 @@
   "paymentReferenceOptional": "Payment reference (optional)",
   "saleError": "Failed to save sale",
   "insufficientCash": "Insufficient cash received",
+  "remainingAmount": "Remaining",
 
   "productsTitle": "Products",
   "searchProducts": "Search products...",
@@ -60,6 +68,8 @@
   },
   "edit": "Edit",
   "delete": "Delete",
+  "activate": "Activate",
+  "deactivate": "Deactivate",
   "deleteProduct": "Delete Product",
   "confirmDeleteProduct": "Confirm delete \"{name}\"?",
   "@confirmDeleteProduct": {
@@ -80,6 +90,7 @@
   "quantityLabel": "Quantity",
   "quantityRequired": "Please enter quantity",
   "invalidQuantity": "Invalid quantity",
+  "invalidBarcode": "Barcode must be alphanumeric (letters and numbers only)",
   "categoryLabel": "Category",
   "showProduct": "Show product",
   "save": "Save",
@@ -222,6 +233,7 @@
 
   "trackStock": "Track stock",
   "trackStockHint": "Turn off for service items (no stock deduction)",
+  "stockTrackingDisabled": "Stock tracking is disabled. Enable to manage stock quantity.",
   "settingsStockPolicy": "Stock Policy",
   "allowOversell": "Allow overselling",
   "allowOversellHint": "Allow adding items beyond available stock",
@@ -560,6 +572,15 @@
   "addCategory": "Add Category",
   "editCategory": "Edit Category",
   "deleteCategoryConfirm": "Confirm delete category?",
+  "deleteCategory": "Delete Category",
+  "confirmDeleteCategory": "Are you sure you want to delete \"{name}\"?",
+  "@confirmDeleteCategory": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "bulkDeleteConfirm": "Delete {count} categories?",
+  "@bulkDeleteConfirm": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "categoryName": "Category name",
   "categoryNameRequired": "Please enter category name",
   "categoryNameExists": "Category name already exists",
@@ -597,6 +618,7 @@
   "restoreDraft": "Restore draft?",
   "draftSaved": "Draft saved",
   "unsavedChangesMessage": "You have unsaved changes",
+  "unsavedChangesTitle": "Unsaved Changes",
   "restore": "Restore",
   "scanBarcode": "Scan Barcode",
   "barcodeScannerHint": "Align barcode within the frame",
@@ -606,6 +628,11 @@
   "enterBarcodeManually": "Enter barcode manually",
   "cameraPermissionDenied": "Camera permission is required to scan barcodes. Please grant camera access in settings.",
   "openSettings": "Open Settings",
+  "scanSuccess": "Scan successful",
+  "scanFromGallery": "Scan from image",
+  "barcodeNotFoundInImage": "No barcode found in image",
+  "torchOn": "Turn on flashlight",
+  "torchOff": "Turn off flashlight",
   "submit": "Submit",
   "generateBarcode": "Generate Barcode",
   "barcodeGenerated": "Barcode generated",
@@ -657,6 +684,7 @@
   "save": "Save",
   "imagePicked": "Image added",
   "imagePickFailed": "Could not add image. Please try again.",
+  "storagePermissionDenied": "Storage permission is required to pick images. Please grant storage access in settings.",
   "removeImageConfirm": "Remove this image?",
   "imageHelper": "Tap to change, long-press to preview",
   "imageNotFound": "Saved image was removed. Please pick again.",
@@ -677,6 +705,12 @@
   "techStackDrift": "Drift SQLite",
   "privacyPolicy": "Privacy Policy",
   "openSourceLicense": "Open Source License",
+  "crashLogs": "Crash Logs",
+  "exportCrashLogs": "Export Crash Logs",
+  "clearCrashLogs": "Clear Crash Logs",
+  "clearCrashLogsConfirm": "Do you want to clear all crash logs?",
+  "crashLogSize": "File size",
+  "crashLogEmpty": "No crash logs",
   "contactUs": "Contact",
   "agplLicense": "GNU Affero General Public License v3.0",
   "agplShort": "AGPL-3.0",
@@ -693,6 +727,8 @@
   "permissionsCamera": "Camera: Used for taking product photos and scanning product barcodes. No photos or scans are transmitted off-device.",
   "permissionsStorage": "Storage: Used only for saving backups and receipts.",
   "permissionsInternet": "Internet: Optional, used only for loading product images if URLs are provided. When sharing product images, URLs are sent to the platform's native share sheet (local device only, not to our servers).",
+  "crashLoggingTitle": "Crash Logging",
+  "crashLoggingBody": "If the app crashes, a local crash log entry is written to your device containing the error message, stack trace, and timestamp. Sensitive data (phone numbers, PromptPay IDs, citizen IDs) is automatically sanitized before storage. Crash logs are never transmitted off-device. You can view, export, and clear crash logs in Settings → About → Crash Logs.",
   "contactTitle": "Contact",
   "contactBody": "For questions: mnlizard.official@gmail.com",
   "noSearchResults": "No settings found"

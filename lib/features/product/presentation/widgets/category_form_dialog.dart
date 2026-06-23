@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 
@@ -15,9 +14,6 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late final _nameCtrl = TextEditingController(
     text: widget.category?.name ?? '',
-  );
-  late final _sortOrderCtrl = TextEditingController(
-    text: widget.category?.sortOrder.toString() ?? '0',
   );
   String? _selectedColor = _presetColors.first;
   String? _selectedIcon = _presetIcons.first.value;
@@ -36,7 +32,6 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _sortOrderCtrl.dispose();
     super.dispose();
   }
 
@@ -60,29 +55,10 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                   labelText: context.l10n.categoryName,
                   prefixIcon: const Icon(Icons.folder_outlined),
                 ),
-                textInputAction: TextInputAction.next,
+                textInputAction: TextInputAction.done,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return context.l10n.categoryNameRequired;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _sortOrderCtrl,
-                decoration: InputDecoration(
-                  labelText: context.l10n.sortOrder,
-                  prefixIcon: const Icon(Icons.sort),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return context.l10n.sortOrderRequired;
-                  }
-                  if (int.tryParse(value) == null) {
-                    return context.l10n.invalidNumber;
                   }
                   return null;
                 },
@@ -188,7 +164,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                 context,
                 CategoryFormResult(
                   name: _nameCtrl.text.trim(),
-                  sortOrder: int.parse(_sortOrderCtrl.text),
+                  sortOrder: widget.category?.sortOrder ?? 0,
                   color: _selectedColor,
                   iconName: _selectedIcon,
                 ),

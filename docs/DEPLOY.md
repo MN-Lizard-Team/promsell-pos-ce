@@ -11,37 +11,37 @@
 ### Debug build (testing)
 
 ```bash
-flutter run --debug
+flutter run --debug --flavor dev -t lib/main_dev.dart
 ```
 
 ### Release APK (sideload)
 
 ```bash
-flutter build apk --release
+flutter build apk --release --flavor prod -t lib/main_prod.dart
 ```
 
-Output: `build/app/outputs/flutter-apk/app-release.apk`
+Output: `build/app/outputs/flutter-apk/app-prod-release.apk`
 
 Transfer to device via USB or share link for manual installation.
 
 ### Split APKs (smaller per-device downloads)
 
 ```bash
-flutter build apk --release --split-per-abi
+flutter build apk --release --flavor prod -t lib/main_prod.dart --split-per-abi
 ```
 
 Outputs:
-- `app-arm64-v8a-release.apk` — modern Android (recommended)
-- `app-armeabi-v7a-release.apk` — older 32-bit devices
-- `app-x86_64-release.apk` — emulators
+- `app-arm64-v8a-prod-release.apk` — modern Android (recommended)
+- `app-armeabi-v7a-prod-release.apk` — older 32-bit devices
+- `app-x86_64-prod-release.apk` — emulators
 
 ### App Bundle (Google Play Store)
 
 ```bash
-flutter build appbundle --release
+flutter build appbundle --release --flavor prod -t lib/main_prod.dart
 ```
 
-Output: `build/app/outputs/bundle/release/app-release.aab`
+Output: `build/app/outputs/bundle/prodRelease/app-prod-release.aab`
 
 Upload to Google Play Console under your app listing.
 
@@ -81,7 +81,7 @@ storeFile=../../promsell-release-key.jks
 ### Build
 
 ```bash
-flutter build ios --release
+flutter build ios --release --flavor prod -t lib/main_prod.dart
 ```
 
 Then open Xcode:
@@ -92,6 +92,19 @@ open ios/Runner.xcworkspace
 
 Archive via **Product → Archive**, then distribute via TestFlight or App Store Connect.
 
+### iOS Scheme Setup for Flavors
+
+To support `dev` and `prod` flavors on iOS, create Xcode schemes:
+
+1. Open `ios/Runner.xcworkspace` in Xcode.
+2. **Product → Scheme → Manage Schemes**.
+3. Duplicate the default `Runner` scheme → name it `dev`.
+4. Duplicate again → name it `prod`.
+5. For each scheme, under **Run** and **Archive**, set the **Build Configuration** to the matching flavor.
+6. In `ios/Flutter/Info.plist`, ensure `FLUTTER_FLAVOR` is set per scheme (use User-Defined Settings in Build Settings).
+
+> See [Flutter flavors iOS guide](https://docs.flutter.dev/deployment/flavors) for detailed steps.
+
 ---
 
 ## Version management
@@ -99,7 +112,7 @@ Archive via **Product → Archive**, then distribute via TestFlight or App Store
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.8.1+1
+version: 0.8.3+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -121,7 +134,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 405 tests pass
+- [ ] `flutter test` — all 438 tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date
@@ -185,7 +198,7 @@ For internal beta distribution without Play Store:
 npm install -g firebase-tools
 
 # Distribute APK
-firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+firebase appdistribution:distribute build/app/outputs/flutter-apk/app-prod-release.apk \
   --app <YOUR_FIREBASE_APP_ID> \
   --groups "internal-testers"
 ```

@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.2
+# CODEBASE.md — Promsell POS CE v0.8.3
 
 ## System overview
 
@@ -13,7 +13,8 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│             main.dart — App entry point              │
+│   main.dart — App entry point (shared)               │
+│   main_dev.dart / main_prod.dart — Flavor entry pts  │
 │   MaterialApp wrapped in BlocBuilder<SettingsCubit>  │
 │   5-tab NavigationBar shell with lazy-loaded tabs    │
 └────────────────────────┬─────────────────────────────┘  
@@ -34,7 +35,7 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   extensions/ — context.l10n helper                                          │
 │   image/      — Unified image system (UnifiedImageWidget,                    │
 │                 ImageSkeleton, ImageErrorPlaceholder, ImageCacheService)     │
-│   services/   — (deprecated — services moved to features)                    │
+│   services/  — CrashLogService (PII sanitization, export/clear)              │
 │   utils/      — IdGenerator, payment_method                                  │
 │   widgets/    — shared UI primitives                                         │
 └───────────────────────┬──────────────────────────────────────────────────────┘
@@ -78,7 +79,7 @@ features/<name>/
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#00C853` primary, `#0D1117` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v16, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories`; v16 adds `UNIQUE INDEX` on `barcode` with duplicate-safe migration |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v17, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories`; v16 adds `UNIQUE INDEX` on `barcode` with duplicate-safe migration; v17 auto-deduplicates barcodes before index creation |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -112,6 +113,7 @@ features/<name>/
 | `MoneyText` | `lib/core/widgets/` | Currency text with fixed decimal formatting |
 | `SectionCard` | `lib/core/widgets/` | Shared grouped card surface for settings and dashboards |
 | `ImageViewerDialog` | `lib/core/widgets/` | Full-screen image viewer with `InteractiveViewer` (pinch zoom, pan, double-tap zoom), swipe gallery, page indicators. Bottom toolbar: share button (`share_plus`) + info bottom sheet (source, path, file size). Used by product image tap and receipt preview |
+| `CrashLogService` | `lib/core/services/` | Persistent local crash logging with PII sanitization (phone, PromptPay ID, citizen ID); export via share sheet; clear with confirmation. `@LazySingleton` |
 
 ---
 
@@ -120,7 +122,7 @@ features/<name>/
 | Feature | BLoC / Cubit | Key files |
 |---------|-------------|-----------|
 | Sale | `CartBloc`, `DraftBloc`, `CheckoutBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
-| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `QuickEditSheet`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet` (with `showCategoryPicker` helper), `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages`, `ReorderCategories` |
+| Product | `ProductBloc`, `CategoryBloc` | `product_list_page.dart`, `product_form_page.dart`, `add_product_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets: `ProductAvatar`, `StockBadge`, `ProductTile`, `ProductGridCard`, `ModernProductTile`, `ModernProductGridCard`, `ProductInfoBlock`, `ProductCardShell`, `ProductImageContainer`, `ProductHeroImage`, `ProductEditTabView`, `QuickEditSheet`, `QuickEditMixin`, `CategoryListTile`, `CategoryFormDialog`, `CategoryPickerListView`, `CategoryPickerBottomSheet` (with `showCategoryPicker` helper), `CategoryFilterBar`, `ProductTextField` (with `.suffix`); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages`, `ReorderCategories` |
 | History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
 | Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
 | Settings | `SettingsCubit` | Pages: 2-level hierarchy — `settings_root_page.dart` (flat section list), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart` (merged with presets), `stock_settings_page.dart`, `image_settings_page.dart`, `barcode_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`, `about_page.dart`, `privacy_policy_page.dart`, `license_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 13 typed group entities |
@@ -148,7 +150,7 @@ features/<name>/
 
 ---
 
-## Database schema (v16)
+## Database schema (v17)
 
 Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All IDs are UUIDv4 TEXT.
 
@@ -164,7 +166,7 @@ Managed by [Drift](https://drift.simonbinder.eu/) — type-safe SQLite ORM. All 
 | `DraftCartItems` | id, cartId, productId, productName, price, qty, discountType, discountValue |
 | `DailyCloses` | id, closeDate, openingCash, expectedCash, countedCash, overShortAmount, totalRevenue, totalVoid, salesCount, voidCount, paymentBreakdown, vatAmount, discountAmount, note, closedAt, **deviceId** |
 
-**Indexes:** `idx_products_category_id`, `idx_products_is_active`, `idx_products_barcode`, **`idx_products_barcode_unique`** (schema v16), `idx_sales_created_at`, `idx_sales_status`, `idx_sale_items_sale_id`, `idx_inventory_logs_product_id`, `idx_draft_cart_items_cart_id`, `idx_daily_closes_close_date`
+**Indexes:** `idx_products_category_id`, `idx_products_is_active`, `idx_products_barcode`, **`idx_products_barcode_unique`** (schema v16, auto-dedup v17), `idx_sales_created_at`, `idx_sales_status`, `idx_sale_items_sale_id`, `idx_inventory_logs_product_id`, `idx_draft_cart_items_cart_id`, `idx_daily_closes_close_date`
 
 **Pragmas:** WAL journal mode + `foreign_keys=ON` via `beforeOpen`
 
@@ -182,7 +184,7 @@ dart run build_runner build --delete-conflicting-outputs
 
 ## Phase 4 Sync Readiness Audit
 
-**Date:** 2026-06-22 | **Schema:** v16
+**Date:** 2026-06-23 | **Schema:** v17
 
 All tables require 4 sync columns: `updatedAt`, `deletedAt`, `version`, `deviceId`.
 
@@ -280,8 +282,8 @@ Annotations on implementation classes drive registration:
 | Scope | Annotation | Examples |
 |-------|-----------|----------|
 | Lazy singleton | `@LazySingleton(as: Abc)` | datasources, repositories, services |
-| Lazy singleton | `@lazySingleton` | `ProductBloc`, `SettingsCubit`, `ReportCubit` |
-| Factory | `@injectable` | use cases, `SaleBloc` |
+| Lazy singleton | `@lazySingleton` | `ProductBloc`, `CategoryBloc`, `CartBloc`, `DraftBloc`, `CheckoutBloc`, `SettingsCubit`, `ReportCubit` |
+| Factory | `@injectable` | use cases |
 | Module | `@module` | `DatabaseModule` provides `AppDatabase` |
 
 Access anywhere via `sl<T>()`.
@@ -345,7 +347,7 @@ Two generators must be run after changes:
 
 ## Test infrastructure
 
-425 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
+438 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
 
 ### Test directory structure
 

@@ -159,7 +159,7 @@ class ShopInfoForm extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 
   Widget _buildAddressTile(BuildContext context) {
@@ -253,7 +253,7 @@ class ShopInfoForm extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 
   Widget _buildPhoneTile(BuildContext context) {
@@ -349,7 +349,7 @@ class ShopInfoForm extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 
   String _formatPhone(String raw) {

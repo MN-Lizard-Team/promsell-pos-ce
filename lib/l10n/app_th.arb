@@ -11,6 +11,13 @@
   "navSettings": "ตั้งค่า",
 
   "salePageTitle": "ขายสินค้า",
+  "dragToResizeCart": "ลากเพื่อปรับขนาดตะกร้า",
+  "exitCompactMode": "ออกจากโหมดกะทัดรัด",
+  "exitCompactModeConfirm": "สลับเป็นมุมมองตะกร้าปกติ?",
+  "autoConfirmingIn": "ยืนยันอัตโนมัติใน {secs}...",
+  "@autoConfirmingIn": {
+    "placeholders": { "secs": { "type": "int" } }
+  },
   "clearCart": "ล้าง",
   "confirmClearCart": "ยืนยันล้างตะกร้าทั้งหมด?",
   "cartTitle": "ตะกร้า",
@@ -47,6 +54,7 @@
   "paymentReferenceOptional": "เลขอ้างอิงการชำระเงิน (ไม่บังคับ)",
   "saleError": "บันทึกการขายไม่สำเร็จ",
   "insufficientCash": "เงินที่รับมายังไม่ครบยอด",
+  "remainingAmount": "ยอดขาด",
 
   "productsTitle": "สินค้า",
   "searchProducts": "ค้นหาสินค้า...",
@@ -60,6 +68,8 @@
   },
   "edit": "แก้ไข",
   "delete": "ลบ",
+  "activate": "เปิดใช้งาน",
+  "deactivate": "ปิดการใช้งาน",
   "deleteProduct": "ลบสินค้า",
   "confirmDeleteProduct": "ยืนยันการลบ \"{name}\"?",
   "@confirmDeleteProduct": {
@@ -80,6 +90,7 @@
   "quantityLabel": "จำนวน",
   "quantityRequired": "กรุณาใส่จำนวน",
   "invalidQuantity": "จำนวนไม่ถูกต้อง",
+  "invalidBarcode": "บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น",
   "categoryLabel": "หมวดหมู่",
   "showProduct": "แสดงสินค้า",
   "save": "บันทึก",
@@ -219,6 +230,7 @@
 
   "trackStock": "ติดตามสต็อค",
   "trackStockHint": "ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)",
+  "stockTrackingDisabled": "การติดตามสต็อกปิดอยู่ เปิดเพื่อจัดการจำนวนสต็อก",
   "settingsStockPolicy": "นโยบายสต็อค",
   "allowOversell": "อนุญาตขายเกินสต็อค",
   "allowOversellHint": "อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้",
@@ -557,6 +569,15 @@
   "addCategory": "เพิ่มหมวดหมู่",
   "editCategory": "แก้ไขหมวดหมู่",
   "deleteCategoryConfirm": "ยืนยันการลบหมวดหมู่?",
+  "deleteCategory": "ลบหมวดหมู่",
+  "confirmDeleteCategory": "คุณแน่ใจหรือว่าจะลบ \"{name}\"?",
+  "@confirmDeleteCategory": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "bulkDeleteConfirm": "ลบ {count} หมวดหมู่?",
+  "@bulkDeleteConfirm": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "categoryName": "ชื่อหมวดหมู่",
   "categoryNameRequired": "กรุณาใส่ชื่อหมวดหมู่",
   "categoryNameExists": "ชื่อหมวดหมู่นี้มีอยู่แล้ว",
@@ -594,6 +615,7 @@
   "restoreDraft": "กู้คืนร่าง?",
   "draftSaved": "บันทึกร่างแล้ว",
   "unsavedChangesMessage": "มีการเปลี่ยนแปลงที่ยังไม่บันทึก",
+  "unsavedChangesTitle": "ยังไม่ได้บันทึก",
   "restore": "กู้คืน",
   "scanBarcode": "สแกนบาร์โค้ด",
   "barcodeScannerHint": "จัดบาร์โค้ดให้อยู่ในกรอบ",
@@ -603,6 +625,11 @@
   "enterBarcodeManually": "ป้อนบาร์โค้ดด้วยตนเอง",
   "cameraPermissionDenied": "ต้องอนุญาตใช้กล้องเพื่อสแกนบาร์โค้ด กรุณาเปิดสิทธิ์การเข้าถึงกล้องในการตั้งค่า",
   "openSettings": "เปิดการตั้งค่า",
+  "scanSuccess": "สแกนสำเร็จ",
+  "scanFromGallery": "สแกนจากรูป",
+  "barcodeNotFoundInImage": "ไม่พบบาร์โค้ดในรูป",
+  "torchOn": "เปิดไฟฉาย",
+  "torchOff": "ปิดไฟฉาย",
   "submit": "ยืนยัน",
   "generateBarcode": "สร้างบาร์โค้ด",
   "barcodeGenerated": "สร้างบาร์โค้ดแล้ว",
@@ -654,6 +681,7 @@
   "save": "บันทึก",
   "imagePicked": "เพิ่มรูปภาพแล้ว",
   "imagePickFailed": "ไม่สามารถเพิ่มรูปภาพได้ โปรดลองอีกครั้ง",
+  "storagePermissionDenied": "ต้องอนุญาตเข้าถึงคลังรูปเพื่อเลือกรูป กรุณาเปิดสิทธิ์การเข้าถึงในการตั้งค่า",
   "removeImageConfirm": "ต้องการลบรูปภาพนี้?",
   "imageHelper": "แตะเพื่อเปลี่ยนรูป กดค้างเพื่อดูตัวอย่าง",
   "imageNotFound": "รูปภาพที่บันทึกไว้ถูกลบแล้ว โปรดเลือกใหม่",
@@ -674,6 +702,12 @@
   "techStackDrift": "Drift SQLite",
   "privacyPolicy": "นโยบายความเป็นส่วนตัว",
   "openSourceLicense": "ลิขสิทธิ์โอเพนซอร์ส",
+  "crashLogs": "บันทึกข้อผิดพลาด",
+  "exportCrashLogs": "ส่งออกบันทึกข้อผิดพลาด",
+  "clearCrashLogs": "ล้างบันทึกข้อผิดพลาด",
+  "clearCrashLogsConfirm": "ต้องการล้างบันทึกข้อผิดพลาดทั้งหมดใช่หรือไม่?",
+  "crashLogSize": "ขนาดไฟล์",
+  "crashLogEmpty": "ไม่มีบันทึกข้อผิดพลาด",
   "contactUs": "ติดต่อ",
   "agplLicense": "สัญญาอนุญาต GNU Affero General Public License v3.0",
   "agplShort": "AGPL-3.0",
@@ -690,6 +724,8 @@
   "permissionsCamera": "กล้อง: ใช้สำหรับถ่ายรูปสินค้าและสแกนบาร์โค้ด ไม่มีการส่งรูปภาพหรือข้อมูลสแกนออกจากเครื่อง",
   "permissionsStorage": "คลังข้อมูล: ใช้สำหรับบันทึกข้อมูลสำรองและใบเสร็จเท่านั้น",
   "permissionsInternet": "อินเทอร์เน็ต: ไม่บังคับ ใช้สำหรับโหลดรูปภาพสินค้าจาก URL เท่านั้น เมื่อแชร์รูปภาพสินค้า URL จะถูกส่งไปยังชีตแชร์ของระบบ (ในเครื่องเท่านั้น ไม่ส่งไปเซิร์ฟเวอร์ของเรา)",
+  "crashLoggingTitle": "การบันทึกข้อผิดพลาด",
+  "crashLoggingBody": "หากแอปผิดพลาด ระบบจะบันทึกข้อความผิดพลาด สแตกเทรซ และเวลาที่เกิดเหตุลงในเครื่องของคุณ ข้อมูลที่อ่อนไหว (หมายเลขโทรศัพท์ PromptPay ID เลขบัตรประชาชน) จะถูกล้างโดยอัตโนมัติก่อนจัดเก็บ บันทึกข้อผิดพลาดไม่ถูกส่งออกจากเครื่อง คุณสามารถดู ส่งออก และล้างบันทึกได้ใน การตั้งค่า → เกี่ยวกับ → บันทึกข้อผิดพลาด",
   "contactTitle": "ติดต่อ",
   "contactBody": "สอบถามเพิ่มเติม: mnlizard.official@gmail.com",
   "noSearchResults": "ไม่พบการตั้งค่า"

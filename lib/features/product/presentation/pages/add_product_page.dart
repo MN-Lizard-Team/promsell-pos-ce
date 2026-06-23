@@ -92,7 +92,7 @@ class _AddProductPageState extends State<AddProductPage> {
     _submitted = true;
 
     final price = double.tryParse(_priceCtrl.text);
-    final stock = int.tryParse(_stockCtrl.text);
+    final stock = _trackStock ? int.tryParse(_stockCtrl.text) : 0;
     final cost = double.tryParse(_costCtrl.text);
     if (price == null || stock == null) return;
 
@@ -203,7 +203,7 @@ class _AddProductPageState extends State<AddProductPage> {
 
   void _showRestoreDraftDialog(Map<String, dynamic> draft) {
     final name = draft['name'] as String?;
-    final price = draft['price'] as num?;
+    final price = double.tryParse(draft['price'] as String? ?? '');
     final categoryName = draft['categoryName'] as String?;
     showDialog(
       context: context,
@@ -217,7 +217,7 @@ class _AddProductPageState extends State<AddProductPage> {
               Text('${context.l10n.productNameLabel}: $name'),
             if (price != null)
               Text(
-                '${context.l10n.priceLabel('')}: \${price.toStringAsFixed(2)}',
+                '${context.l10n.priceLabel('')}: ${price.toStringAsFixed(2)}',
               ),
             if (categoryName != null && categoryName.isNotEmpty)
               Text('${context.l10n.categoryLabel}: $categoryName'),
@@ -356,6 +356,7 @@ class _AddProductPageState extends State<AddProductPage> {
             setState(() {});
           },
           validator: (value) {
+            if (!_trackStock) return null;
             if (value == null || value.isEmpty) {
               return context.l10n.quantityRequired;
             }
@@ -408,18 +409,22 @@ class _AddProductPageState extends State<AddProductPage> {
                 onChanged: (_) => _markDirty(),
               ),
               const SizedBox(height: 10),
-              if (useTwoColumns)
-                Row(
-                  children: [
-                    Expanded(child: priceField),
-                    const SizedBox(width: 12),
-                    Expanded(child: stockField),
-                  ],
-                )
-              else ...[
+              if (_trackStock) ...[
+                if (useTwoColumns)
+                  Row(
+                    children: [
+                      Expanded(child: priceField),
+                      const SizedBox(width: 12),
+                      Expanded(child: stockField),
+                    ],
+                  )
+                else ...[
+                  priceField,
+                  const SizedBox(height: 10),
+                  stockField,
+                ],
+              ] else ...[
                 priceField,
-                const SizedBox(height: 10),
-                stockField,
               ],
               const SizedBox(height: 10),
               _buildCategoryField(context),
@@ -431,66 +436,101 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   Widget _buildAdvancedTab(BuildContext context, String currency) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ProductTextField(
-            controller: _barcodeCtrl,
-            labelText: context.l10n.barcodeLabel,
-            helperText: context.l10n.barcodeHelper,
-            icon: Icons.qr_code_scanner_outlined,
-            textInputAction: TextInputAction.next,
-            onChanged: (_) => _markDirty(),
-            suffix: IconButton(
-              icon: const Icon(Icons.camera_alt_outlined),
-              tooltip: context.l10n.scanBarcode,
-              onPressed: () => _scanBarcode(context),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useTwoColumns = constraints.maxWidth >= 420;
+        final barcodeField = ProductTextField(
+          controller: _barcodeCtrl,
+          labelText: context.l10n.barcodeLabel,
+          helperText: context.l10n.barcodeHelper,
+          icon: Icons.qr_code_scanner_outlined,
+          textInputAction: TextInputAction.next,
+          onChanged: (_) => _markDirty(),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) return null;
+            if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value.trim())) {
+              return context.l10n.invalidBarcode;
+            }
+            return null;
+          },
+          suffix: IconButton(
+            icon: const Icon(Icons.camera_alt_outlined),
+            tooltip: context.l10n.scanBarcode,
+            onPressed: () => _scanBarcode(context),
           ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => _generateBarcode(context),
-              icon: const Icon(Icons.auto_fix_high_outlined, size: 18),
-              label: Text(context.l10n.generateBarcode),
-            ),
-          ),
-          const SizedBox(height: 10),
-          ProductTextField(
-            controller: _skuCtrl,
-            labelText: context.l10n.skuLabel,
-            helperText: context.l10n.skuHelper,
-            icon: Icons.tag_outlined,
-            textInputAction: TextInputAction.next,
-            onChanged: (_) => _markDirty(),
-          ),
-          const SizedBox(height: 10),
-          ProductTextField(
-            controller: _costCtrl,
-            labelText: context.l10n.costLabel(currency),
-            icon: Icons.price_change_outlined,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+        );
+        final skuField = ProductTextField(
+          controller: _skuCtrl,
+          labelText: context.l10n.skuLabel,
+          helperText: context.l10n.skuHelper,
+          icon: Icons.tag_outlined,
+          textInputAction: TextInputAction.next,
+          onChanged: (_) => _markDirty(),
+        );
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (useTwoColumns)
+                Row(
+                  children: [
+                    Expanded(child: barcodeField),
+                    const SizedBox(width: 12),
+                    Expanded(child: skuField),
+                  ],
+                )
+              else ...[
+                barcodeField,
+                const SizedBox(height: 10),
+                skuField,
+              ],
+              const SizedBox(height: 6),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => _generateBarcode(context),
+                  icon: const Icon(Icons.auto_fix_high_outlined, size: 18),
+                  label: Text(context.l10n.generateBarcode),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ProductTextField(
+                controller: _costCtrl,
+                labelText: context.l10n.costLabel(currency),
+                icon: Icons.price_change_outlined,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                ],
+                textInputAction: TextInputAction.done,
+                onChanged: (_) => _markDirty(),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  final parsed = double.tryParse(value);
+                  if (parsed == null || parsed < 0) {
+                    return context.l10n.invalidPrice;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 10),
+              SwitchListTile(
+                value: _trackStock,
+                onChanged: (value) {
+                  setState(() => _trackStock = value);
+                  _markDirty();
+                },
+                title: Text(context.l10n.trackStock),
+                subtitle: Text(context.l10n.trackStockHint),
+                contentPadding: EdgeInsets.zero,
+              ),
             ],
-            onChanged: (_) => _markDirty(),
           ),
-          const SizedBox(height: 10),
-          SwitchListTile(
-            value: _trackStock,
-            onChanged: (value) {
-              setState(() => _trackStock = value);
-              _markDirty();
-            },
-            title: Text(context.l10n.trackStock),
-            subtitle: Text(context.l10n.trackStockHint),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -641,7 +681,12 @@ class _AddProductPageState extends State<AddProductPage> {
       if (!mounted) return;
       setState(() => _isPickingImage = false);
       if (!mounted) return;
-      AppSnackBar.error(context, l10n.imagePickFailed);
+      final msg = e.toString().contains('PERMISSION_DENIED_CAMERA')
+          ? l10n.cameraPermissionDenied
+          : e.toString().contains('PERMISSION_DENIED_STORAGE')
+          ? l10n.storagePermissionDenied
+          : l10n.imagePickFailed;
+      AppSnackBar.error(context, msg);
       AppLogger.error('AddProductPage image pick failed', error: e);
     }
   }

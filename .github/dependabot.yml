@@ -8,6 +8,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
+      - "auto-merge"
     commit-message:
       prefix: "chore"
       include: "scope"

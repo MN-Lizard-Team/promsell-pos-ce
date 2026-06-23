@@ -298,7 +298,7 @@ class CartItemRow extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 
   void _confirmRemove(BuildContext context, CartItem item, bool allowOversell) {

@@ -3,7 +3,7 @@ title Sale Flow — Atomic Transaction (v0.5.0)
 
 actor Merchant
 participant "SalePage" as UI
-participant "SaleBloc" as Bloc
+participant "CheckoutBloc" as Bloc
 participant "DraftCartRepository" as DraftRepo
 participant "CreateSale" as UC
 participant "SaleRepositoryImpl" as Repo
@@ -14,7 +14,7 @@ database "SQLite" as DB
 
 Merchant -> UI: Tap "Confirm Payment"
 note right of UI: total = preTaxTotal\n(after discounts, before VAT)
-UI -> Bloc: SaleConfirmed(items, method, vatMode, vatRate,\n  cartDiscountType, cartDiscountValue, cartDiscountAmount)
+UI -> Bloc: CheckoutConfirmed(items, method, vatMode, vatRate,\n  cartDiscountType, cartDiscountValue, cartDiscountAmount)
 Bloc -> UC: call(items, ..., discount params)
 UC -> Repo: createSale(items, ..., discount params)
 Repo -> DS: insertSaleWithItems(...)
@@ -51,7 +51,7 @@ group Post-sale draft lifecycle
     DraftRepo --> Bloc: newDraftId
 end
 
-Bloc --> UI: emit SaleSuccess(lastSale, activeDraftId=newDraftId)
+Bloc --> UI: emit CheckoutSuccess(lastSale, activeDraftId=newDraftId)
 UI --> Merchant: Show success + receipt preview
 
 @enduml

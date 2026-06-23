@@ -36,6 +36,20 @@ class AppLocalizationsTh extends AppLocalizations {
   String get salePageTitle => 'ขายสินค้า';
 
   @override
+  String get dragToResizeCart => 'ลากเพื่อปรับขนาดตะกร้า';
+
+  @override
+  String get exitCompactMode => 'ออกจากโหมดกะทัดรัด';
+
+  @override
+  String get exitCompactModeConfirm => 'สลับเป็นมุมมองตะกร้าปกติ?';
+
+  @override
+  String autoConfirmingIn(int secs) {
+    return 'ยืนยันอัตโนมัติใน $secs...';
+  }
+
+  @override
   String get clearCart => 'ล้าง';
 
   @override
@@ -120,6 +134,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get insufficientCash => 'เงินที่รับมายังไม่ครบยอด';
 
   @override
+  String get remainingAmount => 'ยอดขาด';
+
+  @override
   String get productsTitle => 'สินค้า';
 
   @override
@@ -147,6 +164,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get delete => 'ลบ';
+
+  @override
+  String get activate => 'เปิดใช้งาน';
+
+  @override
+  String get deactivate => 'ปิดการใช้งาน';
 
   @override
   String get deleteProduct => 'ลบสินค้า';
@@ -190,6 +213,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get invalidQuantity => 'จำนวนไม่ถูกต้อง';
+
+  @override
+  String get invalidBarcode => 'บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น';
 
   @override
   String get categoryLabel => 'หมวดหมู่';
@@ -549,6 +575,10 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get trackStockHint => 'ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)';
+
+  @override
+  String get stockTrackingDisabled =>
+      'การติดตามสต็อกปิดอยู่ เปิดเพื่อจัดการจำนวนสต็อก';
 
   @override
   String get settingsStockPolicy => 'นโยบายสต็อค';
@@ -1429,6 +1459,19 @@ class AppLocalizationsTh extends AppLocalizations {
   String get deleteCategoryConfirm => 'ยืนยันการลบหมวดหมู่?';
 
   @override
+  String get deleteCategory => 'ลบหมวดหมู่';
+
+  @override
+  String confirmDeleteCategory(String name) {
+    return 'คุณแน่ใจหรือว่าจะลบ \"$name\"?';
+  }
+
+  @override
+  String bulkDeleteConfirm(int count) {
+    return 'ลบ $count หมวดหมู่?';
+  }
+
+  @override
   String get categoryName => 'ชื่อหมวดหมู่';
 
   @override
@@ -1530,6 +1573,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get unsavedChangesMessage => 'มีการเปลี่ยนแปลงที่ยังไม่บันทึก';
 
   @override
+  String get unsavedChangesTitle => 'ยังไม่ได้บันทึก';
+
+  @override
   String get restore => 'กู้คืน';
 
   @override
@@ -1556,6 +1602,21 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get openSettings => 'เปิดการตั้งค่า';
+
+  @override
+  String get scanSuccess => 'สแกนสำเร็จ';
+
+  @override
+  String get scanFromGallery => 'สแกนจากรูป';
+
+  @override
+  String get barcodeNotFoundInImage => 'ไม่พบบาร์โค้ดในรูป';
+
+  @override
+  String get torchOn => 'เปิดไฟฉาย';
+
+  @override
+  String get torchOff => 'ปิดไฟฉาย';
 
   @override
   String get submit => 'ยืนยัน';
@@ -1722,6 +1783,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get imagePickFailed => 'ไม่สามารถเพิ่มรูปภาพได้ โปรดลองอีกครั้ง';
 
   @override
+  String get storagePermissionDenied =>
+      'ต้องอนุญาตเข้าถึงคลังรูปเพื่อเลือกรูป กรุณาเปิดสิทธิ์การเข้าถึงในการตั้งค่า';
+
+  @override
   String get removeImageConfirm => 'ต้องการลบรูปภาพนี้?';
 
   @override
@@ -1783,6 +1848,25 @@ class AppLocalizationsTh extends AppLocalizations {
   String get openSourceLicense => 'ลิขสิทธิ์โอเพนซอร์ส';
 
   @override
+  String get crashLogs => 'บันทึกข้อผิดพลาด';
+
+  @override
+  String get exportCrashLogs => 'ส่งออกบันทึกข้อผิดพลาด';
+
+  @override
+  String get clearCrashLogs => 'ล้างบันทึกข้อผิดพลาด';
+
+  @override
+  String get clearCrashLogsConfirm =>
+      'ต้องการล้างบันทึกข้อผิดพลาดทั้งหมดใช่หรือไม่?';
+
+  @override
+  String get crashLogSize => 'ขนาดไฟล์';
+
+  @override
+  String get crashLogEmpty => 'ไม่มีบันทึกข้อผิดพลาด';
+
+  @override
   String get contactUs => 'ติดต่อ';
 
   @override
@@ -1834,6 +1918,13 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get permissionsInternet =>
       'อินเทอร์เน็ต: ไม่บังคับ ใช้สำหรับโหลดรูปภาพสินค้าจาก URL เท่านั้น เมื่อแชร์รูปภาพสินค้า URL จะถูกส่งไปยังชีตแชร์ของระบบ (ในเครื่องเท่านั้น ไม่ส่งไปเซิร์ฟเวอร์ของเรา)';
+
+  @override
+  String get crashLoggingTitle => 'การบันทึกข้อผิดพลาด';
+
+  @override
+  String get crashLoggingBody =>
+      'หากแอปผิดพลาด ระบบจะบันทึกข้อความผิดพลาด สแตกเทรซ และเวลาที่เกิดเหตุลงในเครื่องของคุณ ข้อมูลที่อ่อนไหว (หมายเลขโทรศัพท์ PromptPay ID เลขบัตรประชาชน) จะถูกล้างโดยอัตโนมัติก่อนจัดเก็บ บันทึกข้อผิดพลาดไม่ถูกส่งออกจากเครื่อง คุณสามารถดู ส่งออก และล้างบันทึกได้ใน การตั้งค่า → เกี่ยวกับ → บันทึกข้อผิดพลาด';
 
   @override
   String get contactTitle => 'ติดต่อ';

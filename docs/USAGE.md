@@ -394,7 +394,7 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart       # Database class, schema v16, migration, indexes, seed
+├── app_database.dart       # Database class, schema v17, migration, indexes, seed
 ├── app_database.g.dart     # GENERATED — do not edit
 └── tables/
     ├── products_table.dart
@@ -424,7 +424,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **16** (v0.8.1). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **17** (v0.8.3). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 
@@ -457,7 +457,7 @@ Promsell follows **Clean Architecture** with a **feature-first** folder layout.
 
 | Layer | Responsibility | Example |
 |-------|----------------|---------|
-| **Presentation** | Render UI, dispatch events, react to state | `SalePage`, `SaleBloc` |
+| **Presentation** | Render UI, dispatch events, react to state | `SalePage`, `CartBloc`, `CheckoutBloc` |
 | **Domain** | Pure business logic, no Flutter imports | `Product` entity, `GetProducts` usecase |
 | **Data** | I/O, DB access, mapping to/from entities | `ProductRepositoryImpl`, Drift DAOs |
 | **Core** | Cross-cutting helpers (DI, extensions, utils) | `injection_container.dart`, `l10n_extension.dart` |
@@ -473,7 +473,7 @@ Presentation → Domain ← Data
 ### Why BLoC + Cubit?
 
 - **Cubit** — for simple state or stream-based data (e.g. `SettingsCubit`, `InventoryLogCubit`)
-- **BLoC** — for event-driven flows (e.g. `ProductBloc`, `SaleBloc`)
+- **BLoC** — for event-driven flows (e.g. `ProductBloc`, `CartBloc`, `CheckoutBloc`)
 
 Both are reactive and easy to test.
 
@@ -481,7 +481,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **405 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
+Promsell has **438 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
 
 ### Running tests
 

@@ -117,7 +117,7 @@ class SaleProductCard extends StatelessWidget {
                             color: product.trackStock && product.stock == 0
                                 ? theme.colorScheme.error
                                 : product.trackStock && product.stock <= 5
-                                ? theme.colorScheme.error
+                                ? theme.colorScheme.tertiary
                                 : theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
@@ -195,7 +195,7 @@ class SaleProductCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 }
 

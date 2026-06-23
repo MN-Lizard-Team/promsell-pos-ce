@@ -8,7 +8,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
-@injectable
+@lazySingleton
 class CartBloc extends Bloc<CartEvent, CartState> {
   CartBloc({
     required ProductRepository productRepo,
@@ -52,7 +52,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       );
     } else {
       if (stockLimited && p.stock <= 0) {
-        emit(state.copyWith(errorMessage: 'outOfStock'));
+        emit(
+          state.copyWith(
+            errorMessage: 'outOfStock',
+            errorNonce: state.errorNonce + 1,
+          ),
+        );
         return;
       }
       final clampedQty = stockLimited ? qtyToAdd.clamp(1, p.stock) : qtyToAdd;
@@ -65,7 +70,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     final updated = state.items
         .where((i) => i.product.id != event.productId)
         .toList();
-    emit(state.copyWith(items: updated));
+    emit(state.copyWith(items: updated, errorMessage: null));
   }
 
   void _onQtyChanged(CartItemQtyChanged event, Emitter<CartState> emit) {
@@ -83,7 +88,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       }
       return i;
     }).toList();
-    emit(state.copyWith(items: updated));
+    emit(state.copyWith(items: updated, errorMessage: null));
   }
 
   void _onCartCleared(CartCleared event, Emitter<CartState> emit) {
@@ -211,7 +216,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         if (existing >= 0) {
           final currentQty = updated[existing].qty;
           if (stockLimited && currentQty >= p.stock) {
-            emit(state.copyWith(errorMessage: 'outOfStock'));
+            emit(
+              state.copyWith(
+                errorMessage: 'outOfStock',
+                errorNonce: state.errorNonce + 1,
+              ),
+            );
             return;
           }
           final newQty = currentQty + 1;
@@ -220,18 +230,33 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           );
         } else {
           if (stockLimited && p.stock <= 0) {
-            emit(state.copyWith(errorMessage: 'outOfStock'));
+            emit(
+              state.copyWith(
+                errorMessage: 'outOfStock',
+                errorNonce: state.errorNonce + 1,
+              ),
+            );
             return;
           }
           updated.add(CartItem(product: p, qty: 1));
         }
         emit(state.copyWith(items: updated, errorMessage: null));
       } else {
-        emit(state.copyWith(errorMessage: 'barcodeNotFound'));
+        emit(
+          state.copyWith(
+            errorMessage: 'barcodeNotFound',
+            errorNonce: state.errorNonce + 1,
+          ),
+        );
       }
     } catch (e) {
       AppLogger.error('CartBloc._onBarcodeScanned failed', error: e);
-      emit(state.copyWith(errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          errorMessage: e.toString(),
+          errorNonce: state.errorNonce + 1,
+        ),
+      );
     }
   }
 

@@ -84,6 +84,7 @@ class _HistoryView extends StatelessWidget {
             MaterialPageRoute(builder: (_) => DailyClosePage(date: today)),
           );
         },
+        heroTag: 'history_close_day_fab',
         icon: const Icon(Icons.lock_outline),
         label: Text(context.l10n.closeDay),
       ),

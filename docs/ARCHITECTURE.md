@@ -1,4 +1,4 @@
-# Architecture — Promsell POS CE v0.8.2
+# Architecture — Promsell POS CE v0.8.3
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -36,7 +36,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 
 ```
 ┌─────────────────────────┐
-│   👤 Merchant          │
+│   👤 Merchant           │
 │   Small shop owner      │
 │   / cashier             │
 └────────────┬────────────┘
@@ -68,7 +68,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 
 ```
 ┌────────────────────────────────────────────────────┐
-│   👤 Merchant → Touch interactions                │
+│   👤 Merchant → Touch interactions                 │
 └────────────────────────┬───────────────────────────┘
                          ▼
 ┌────────────────────────────────────────────────────┐
@@ -99,7 +99,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
                          ▼
 ┌─────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                 │
-│  9 tables • schema v16 • WAL • FK ON • UUIDv4 PKs   │
+│  9 tables • schema v17 • WAL • FK ON • UUIDv4 PKs   │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -125,8 +125,8 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 │  PaymentSheet  │                │              │        │
 │  CheckoutBody  │                │              │        │
 │                ▼                ▼              ▼        │
-│         SaleBloc        HistoryBloc   ReportCubit       │
-│         ProductBloc                                     │
+│    CartBloc/DraftBloc/  HistoryBloc   ReportCubit       │
+│    CheckoutBloc         ProductBloc   CategoryBloc      │
 └─────────┬─────────────┬─────────────┬───────────────────┘
           │             │             │
           ▼             ▼             ▼
@@ -172,7 +172,7 @@ Deep technical reference for the system architecture: C4 model, data flow per fe
 > PlantUML source: [`docs/architecture/sequence-sale.puml`](architecture/sequence-sale.puml)
 
 ```
-Merchant → SalePage → SaleBloc → CreateSale → SaleLocalDatasource
+Merchant → SalePage → CheckoutBloc → CreateSale → SaleLocalDatasource
                                                     │
                 ┌───────────────────────────────────┘
                 │  TRANSACTION BEGIN
@@ -191,9 +191,9 @@ Merchant → SalePage → SaleBloc → CreateSale → SaleLocalDatasource
                 │            INSERT inventory_logs (type=SALE, qty=-N)
                 │
                 │  TRANSACTION COMMIT
-                └───────────────────────────────────────────┘
+                └───────────────────────────────────┬───────┘
                                                     │
-SaleLocalDatasource → CreateSale → SaleBloc → SalePage → Merchant
+SaleLocalDatasource → CreateSale → CheckoutBloc → SalePage → Merchant
                       (Sale entity)   (emit SaleSuccess)  (toast)
 ```
 
@@ -277,7 +277,7 @@ Merchant → AdjustStockDialog [Enter qty ±, reason, confirm]
                 │       (type=ADJUSTMENT_IN or ADJUSTMENT_OUT)
                 │
                 │  TRANSACTION COMMIT
-                └──────────────────────────────┘
+                └───┬──────────────────────────┘
                     │
 AdjustStockDialog ← success → close dialog + refresh product
 ```
@@ -290,7 +290,7 @@ AdjustStockDialog ← success → close dialog + refresh product
 
 | Pattern | Used by | Why chosen |
 |---------|---------|------------|
-| **BLoC** (event-driven) | `SaleBloc`, `ProductBloc`, `HistoryBloc` | Multiple event types, complex async flows, stream subscriptions |
+| **BLoC** (event-driven) | `CartBloc`, `DraftBloc`, `CheckoutBloc`, `ProductBloc`, `CategoryBloc`, `HistoryBloc` | Multiple event types, complex async flows, stream subscriptions |
 | **Cubit** (method-driven) | `SettingsCubit`, `ReportCubit`, `InventoryLogCubit` | Simple state or stream-based data, no event classes needed, direct method calls |
 
 ### BlocListener ordering caution
@@ -302,6 +302,8 @@ Multiple `BlocListener`s subscribed to the same BLoC receive emissions in **subs
 | Registration | Instance | Reason |
 |-------------|----------|--------|
 | `@LazySingleton` | `ProductBloc` | Shared across Sale + Product tabs — same product list everywhere |
+| `@LazySingleton` | `CategoryBloc` | Shared across Product + Category Management — same category list everywhere |
+| `@LazySingleton` | `CartBloc`, `DraftBloc`, `CheckoutBloc` | Shared single instances across SalePage, CartPanel, CheckoutPage — prevents split-brain state (v0.8.3 fix from `@injectable` factory) |
 | `@LazySingleton` | `SettingsCubit` | Global app state (locale, theme) — must persist across navigation |
 | `@LazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()` |
 
@@ -338,6 +340,9 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  CategoryBloc ──→ WatchCategories, AddCategory,           │
 │                  UpdateCategory, DeleteCategory,          │
 │                  ReorderCategories                        │
+│  CartBloc ──→ (cart state, product add/remove/qty)        │
+│  DraftBloc ──→ DraftCartRepository (persist/load drafts)  │
+│  CheckoutBloc ──→ CreateSale, VoidSale                    │
 │  SettingsCubit ──→ SettingsRepository                     │
 │  ReportCubit (lazySingleton) ──→ WatchReport              │
 │  InventoryLogCubit ──→ WatchInventoryLogs                 │
@@ -608,7 +613,7 @@ try {
 
 ### ADR-009: Deferred route push after modal pop (addPostFrameCallback)
 
-**Context:** Both a modal bottom sheet (`PaymentSheet`) / full-screen page (`CheckoutPage`) and its parent page (`_CartPanel`) listen to `SaleBloc`. On `SaleStatus.success`, the parent listener (subscribed first) pushes a receipt dialog before the modal/page listener can pop. `Navigator.pop()` then removes the dialog, not the modal — leaving it open and `_submitted = true` permanently.
+**Context:** Both a modal bottom sheet (`PaymentSheet`) / full-screen page (`CheckoutPage`) and its parent page (`_CartPanel`) listen to `CheckoutBloc`. On `SaleStatus.success`, the parent listener (subscribed first) pushes a receipt dialog before the modal/page listener can pop. `Navigator.pop()` then removes the dialog, not the modal — leaving it open and `_submitted = true` permanently.
 
 **Decision:** Wrap any `showDialog` call in the parent `BlocListener` with `WidgetsBinding.instance.addPostFrameCallback`. The dialog push is deferred to the next frame, after the modal/page's `Navigator.pop()` has already run. Applies to both `PaymentSheet` (legacy bottom sheet) and `CheckoutPage` (v0.6.1+ full-screen page).
 
@@ -655,13 +660,13 @@ try {
 
 **Context:** Cart state changes rapidly on every tap (add item, change qty, apply discount). Saving to SQLite synchronously on every event would cause write thrashing.
 
-**Decision:** Use a `Timer?` field in `SaleBloc`. Every cart-mutating handler cancels the previous timer and schedules a new 1.5 s save (increased from 500 ms in v0.6.1 to reduce write pressure). The save captures `state.activeDraftId` at schedule time and validates it's still the same draft at fire time.
+**Decision:** Use a `Timer?` field in `DraftBloc`. Every cart-mutating handler cancels the previous timer and schedules a new 1.5 s save (increased from 500 ms in v0.6.1 to reduce write pressure). The save captures `state.activeDraftId` at schedule time and validates it's still the same draft at fire time.
 
 **Consequences:**
 - ✅ Batches rapid edits into a single write
 - ✅ No lost state — even a crash within the 1.5 s window only loses the last 1.5 s of changes
 - ✅ `Timer` is cancelled in `close()` to prevent post-dispose writes
-- ⚠️ `SaleBloc` must be registered as `factory` (not singleton) so each `SalePage` instance gets its own timer lifecycle
+- ⚠️ `DraftBloc` timer lifecycle is managed by `@lazySingleton` — single shared instance, timer cancelled in `close()`
 
 ---
 
@@ -685,20 +690,20 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 
 ---
 
-### ADR-013: CheckoutBody extraction with dynamic total from SaleBloc
+### ADR-013: CheckoutBody extraction with dynamic total from CheckoutBloc
 
 **Context:** v0.6.1 introduces a full-screen `CheckoutPage` and interactive `CartReviewPage` where merchants can edit quantities mid-checkout. Previously `CheckoutPage` and `PaymentSheet` received static `preTaxTotal`/`vatInfo` as constructor parameters — these became stale after returning from `CartReviewPage`.
 
-**Decision:** Extract shared payment UI into `CheckoutBody` (stateful widget). Remove static `preTaxTotal`/`vatInfo` parameters from `CheckoutPage`, `PaymentSheet`, and `CheckoutBody`. The effective total is computed dynamically on every build by reading the live `SaleBloc` state via `context.read<SaleBloc>()`. This ensures:
+**Decision:** Extract shared payment UI into `CheckoutBody` (stateful widget). Remove static `preTaxTotal`/`vatInfo` parameters from `CheckoutPage`, `PaymentSheet`, and `CheckoutBody`. The effective total is computed dynamically on every build by reading the live `CheckoutBloc` state via `context.read<CheckoutBloc>()`. This ensures:
 - `CartReviewPage` quantity changes immediately reflect in `CheckoutPage` upon return
 - `CheckoutBody` is reusable by both `CheckoutPage` (full-screen) and `PaymentSheet` (bottom sheet wrapper)
 - Quick amount chips, change calculation, and `canConfirm` logic all use the live `_effectiveTotal`
 
 **Consequences:**
 - ✅ Total is always fresh — no stale parameters
-- ✅ Single source of truth (`SaleBloc` state) for all checkout widgets
+- ✅ Single source of truth (`CheckoutBloc` state) for all checkout widgets
 - ✅ `CheckoutBody` is framework-agnostic to its container (page or sheet)
-- ⚠️ `CheckoutBody` must be placed inside a `BlocProvider<SaleBloc>` scope (enforced by `BlocBuilder` assertion at runtime)
+- ⚠️ `CheckoutBody` must be placed inside a `BlocProvider<CheckoutBloc>` scope (enforced by `BlocBuilder` assertion at runtime)
 - ⚠️ Slightly more build-time computation (total recomputed on every frame) — negligible for POS-scale cart sizes
 
 ---
@@ -837,4 +842,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.8.1 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.8.3 · Architecture Document · Deep Technical Reference</sub>

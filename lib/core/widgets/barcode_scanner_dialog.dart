@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
@@ -34,7 +36,6 @@ Future<String?> showProductBarcodeScanner(
           BarcodeFormat.aztec,
           BarcodeFormat.codabar,
         ],
-    onScan: (_) {},
     beepOnScan: beepOnScan,
     autoOpenManualDelay: autoOpenManualDelay,
   ),
@@ -67,6 +68,7 @@ BarcodeFormat _formatFromName(String name) {
     case 'codabar':
       return BarcodeFormat.codabar;
     default:
+      debugPrint('Unknown barcode format "$name", defaulting to ean13');
       return BarcodeFormat.ean13;
   }
 }
@@ -78,13 +80,11 @@ List<BarcodeFormat> barcodeFormatsFromNames(List<String> names) {
 /// Fullscreen barcode scanner dialog.
 ///
 /// [formats] controls which barcode symbologies to detect.
-/// [onScan] is called with the raw barcode string on successful scan.
 /// [title] overrides the AppBar title.
 class BarcodeScannerDialog extends StatefulWidget {
   const BarcodeScannerDialog({
     super.key,
     required this.formats,
-    required this.onScan,
     this.title,
     this.hint,
     this.beepOnScan = true,
@@ -92,7 +92,6 @@ class BarcodeScannerDialog extends StatefulWidget {
   });
 
   final List<BarcodeFormat> formats;
-  final ValueChanged<String> onScan;
   final String? title;
   final String? hint;
   final bool beepOnScan;
@@ -107,6 +106,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
   late final MobileScannerController _controller;
   final _manualCtrl = TextEditingController();
   bool _scanned = false;
+  String? _scannedValue;
   bool _showManualEntry = false;
   bool _permissionGranted = false;
   bool _permissionChecked = false;
@@ -138,6 +138,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
     if (widget.autoOpenManualDelay > 0) {
       _autoOpenTimer = Timer(Duration(seconds: widget.autoOpenManualDelay), () {
         if (mounted && !_scanned) {
+          _controller.stop();
           setState(() => _showManualEntry = true);
         }
       });
@@ -152,15 +153,6 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
       _permissionGranted = status.isGranted;
       _permissionChecked = true;
     });
-    if (_permissionGranted) {
-      _controller.start();
-    }
-  }
-
-  @override
-  void deactivate() {
-    _controller.stop();
-    super.deactivate();
   }
 
   @override
@@ -191,8 +183,67 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
       _setError('Barcode must be alphanumeric (letters and numbers only).');
       return;
     }
-    widget.onScan(value);
     Navigator.of(context).pop(value);
+  }
+
+  Future<void> _scanFromGallery() async {
+    if (_scanned) return;
+    final l10n = context.l10n;
+
+    if (Platform.isAndroid || Platform.isIOS) {
+      final photos = await Permission.photos.request();
+      if (!photos.isGranted && !photos.isLimited) {
+        _setError(l10n.storagePermissionDenied);
+        return;
+      }
+    }
+
+    await _controller.stop();
+    if (!mounted) return;
+
+    final picker = ImagePicker();
+    final xFile = await picker.pickImage(source: ImageSource.gallery);
+    if (xFile == null) {
+      if (mounted) await _controller.start();
+      return;
+    }
+
+    try {
+      final capture = await _controller.analyzeImage(xFile.path);
+      if (!mounted) return;
+
+      if (capture == null || capture.barcodes.isEmpty) {
+        _setError(l10n.barcodeNotFoundInImage);
+        await _controller.start();
+        return;
+      }
+
+      final raw = capture.barcodes
+          .firstWhere(
+            (b) => b.rawValue != null && b.rawValue!.isNotEmpty,
+            orElse: () => capture.barcodes.first,
+          )
+          .rawValue;
+
+      if (raw == null || raw.isEmpty) {
+        _setError(l10n.barcodeNotFoundInImage);
+        await _controller.start();
+        return;
+      }
+
+      setState(() => _scanned = true);
+      _scannedValue = raw;
+      _autoOpenTimer?.cancel();
+      if (widget.beepOnScan) HapticFeedback.mediumImpact();
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted) return;
+        Navigator.of(context).pop(raw);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      _setError(l10n.barcodeNotFoundInImage);
+      await _controller.start();
+    }
   }
 
   void _onDetect(BarcodeCapture capture) {
@@ -209,12 +260,15 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
     if (raw == null || raw.isEmpty) return;
 
     setState(() => _scanned = true);
+    _scannedValue = raw;
     _autoOpenTimer?.cancel();
     if (widget.beepOnScan) HapticFeedback.mediumImpact();
     _controller.stop().then((_) {
       if (!mounted) return;
-      widget.onScan(raw);
-      Navigator.of(context).pop(raw);
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (!mounted) return;
+        Navigator.of(context).pop(raw);
+      });
     });
   }
 
@@ -233,6 +287,27 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: l10n.scanFromGallery,
+            onPressed: _scanFromGallery,
+          ),
+          ValueListenableBuilder<MobileScannerState>(
+            valueListenable: _controller,
+            builder: (context, state, _) {
+              if (state.torchState == TorchState.unavailable) {
+                return const SizedBox.shrink();
+              }
+              final isOn = state.torchState == TorchState.on;
+              return IconButton(
+                icon: Icon(isOn ? Icons.flash_on : Icons.flash_off),
+                tooltip: isOn ? l10n.torchOff : l10n.torchOn,
+                onPressed: () => _controller.toggleTorch(),
+              );
+            },
+          ),
+        ],
       ),
       body: !_permissionChecked
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
@@ -298,20 +373,46 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                     width: _cutoutWidth,
                     height: _cutoutHeight,
                     child: _scanned
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: theme.colorScheme.primary,
+                                size: 48,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _scannedValue ?? '',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [
+                                    Shadow(blurRadius: 6, color: Colors.black),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.scanSuccess,
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontSize: 13,
+                                  shadows: const [
+                                    Shadow(blurRadius: 6, color: Colors.black),
+                                  ],
+                                ),
+                              ),
+                            ],
                           )
                         : null,
                   ),
                 ),
                 if (_errorText != null)
                   Positioned(
-                    top:
-                        MediaQuery.of(context).padding.top +
-                        kToolbarHeight +
-                        24,
+                    bottom: 200,
                     left: 24,
                     right: 24,
                     child: Container(
@@ -361,7 +462,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                               children: [
                                 TextField(
                                   controller: _manualCtrl,
-                                  keyboardType: TextInputType.number,
+                                  keyboardType: TextInputType.visiblePassword,
                                   textInputAction: TextInputAction.done,
                                   onSubmitted: (_) => _submitManual(),
                                   style: const TextStyle(color: Colors.white),
@@ -391,9 +492,12 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                                   children: [
                                     Expanded(
                                       child: OutlinedButton(
-                                        onPressed: () => setState(
-                                          () => _showManualEntry = false,
-                                        ),
+                                        onPressed: () {
+                                          setState(
+                                            () => _showManualEntry = false,
+                                          );
+                                          _controller.start();
+                                        },
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: Colors.white,
                                           side: BorderSide(
@@ -424,14 +528,14 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                               Icon(
                                 Icons.document_scanner,
                                 size: 32,
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Colors.white.withValues(alpha: 0.9),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 widget.hint ?? l10n.barcodeScannerHint,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color: Colors.white.withValues(alpha: 1.0),
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                   shadows: const [
@@ -441,15 +545,28 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                               ),
                               const SizedBox(height: 16),
                               TextButton.icon(
-                                onPressed: () =>
-                                    setState(() => _showManualEntry = true),
+                                onPressed: () {
+                                  _controller.stop();
+                                  setState(() => _showManualEntry = true);
+                                },
                                 icon: const Icon(
                                   Icons.keyboard,
-                                  color: Colors.white70,
+                                  color: Colors.white,
                                 ),
                                 label: Text(
                                   l10n.enterManually,
-                                  style: const TextStyle(color: Colors.white70),
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              TextButton.icon(
+                                onPressed: _scanFromGallery,
+                                icon: const Icon(
+                                  Icons.photo_library,
+                                  color: Colors.white,
+                                ),
+                                label: Text(
+                                  l10n.scanFromGallery,
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ),
                             ],

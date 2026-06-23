@@ -17,6 +17,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.3] - 2026-06-23
+
+CI/CD coverage gates, schema v17 barcode dedup migration, persistent crash logging, dev/prod flavor separation, barcode scanner hardening, and product/category UX fixes.
+
+### Highlights
+
+- **CI/CD** — Coverage threshold gate (≥30%), Codecov upload, weekly stress test workflow.
+- **Database** — Schema v17 with automatic barcode deduplication migration.
+- **Crash Logging** — Persistent local crash log with PII sanitization and export/clear UI.
+- **Flavors** — `dev`/`prod` environment separation with Android product flavors.
+- **Product UX** — AddProductPage, ProductFormPage, and CategoryManagement fixes (validators, cost field, nested Scaffold, delete confirmations, bulk delete, reorder bug).
+- **Barcode Scanner** — Camera freeze fix, torch toggle, scan from gallery, manual entry improvements.
+
+### Added
+
+- GitHub Actions CI badge, Codecov badge, coverage threshold (≥30%), weekly stress test workflow.
+- `CrashLogService` — persistent local crash logging with PII sanitization, export, and clear UI.
+- `dev`/`prod` product flavors with separate entry points (`main_dev.dart`, `main_prod.dart`).
+- Integration test screenshot capture + optional screenshots CI workflow.
+- Barcode deduplication migration (schema v17).
+- `ProductFormPage` cost field, barcode validator, generate barcode button, `PopScope` back guard.
+- `AddProductPage` cost/barcode validators, `TextInputAction.done`, stock hidden when `trackStock=false`, 2-column advanced tab.
+- `CategoryManagementPage` bulk delete confirmation, `CategoryFormDialog` sortOrder removed.
+- `QuickEditMixin` — shared quick-edit logic for `ModernProductTile` and `ModernProductGridCard`.
+- `BarcodeScannerDialog` torch toggle, scan from gallery, scan success animation, error repositioning.
+- L10n: `invalidBarcode`, `stockTrackingDisabled`, `unsavedChangesTitle`, `deleteCategory`, `confirmDeleteCategory`, `bulkDeleteConfirm`, `activate`, `deactivate`.
+
+### Changed
+
+- `_addColumnIfNotExists` refactored to use `PRAGMA table_info` for cross-platform reliability.
+- Schema version bumped v16 → v17.
+- `BackupEncryptionService` moved to `lib/features/settings/data/services/`.
+- `main.dart` extracted to `runPromsellApp()` for flavor entry points.
+- CI/DEPLOY/README updated with flavor commands.
+- `CartBloc`, `DraftBloc`, `CheckoutBloc` changed from `@injectable` to `@lazySingleton`.
+- `SalePage` simplified to flat `BlocProvider.value` (removed nested `Builder`).
+- `CartHeader` ultraCompact toggle merged into PopupMenu.
+- `PromptPayPaymentPage` auto-confirm snackbar localized, `resizeToAvoidBottomInset: true`.
+- `CheckoutBody` `listenWhen` checks `prev.status != curr.status`, `context.read` instead of `watch`, BlocListener moved to parent of BlocBuilder.
+- `ProductEditTabView` inner Scaffold removed; AppBar+TabBar moved to outer `ProductFormPage`.
+- `CategoryListTile` always shows product count (including 0).
+
+### Fixed
+
+- **CheckoutBloc shared instances (critical)** — `@injectable` factory created separate BLoC instances, causing silent checkout failure; now `@lazySingleton`.
+- **SettingsPersistenceService.dispose()** — Final save was blocked by `_isDisposed` guard.
+- **CrashLogService** — StackTrace now written to log entries; PromptPay PII pattern requires context prefix.
+- **ShopInfoForm / CartHeader / CartItemRow / SaleProductCard** — `TextEditingController` leak in dialogs fixed.
+- **DraftBloc._onRotated** — Unhandled exceptions now caught.
+- **CartBottomSheet** — Checkout from compact mode no longer crashes.
+- **SaleReceiptDialog** — `barrierDismissible: false` + `CartPanel` resets CheckoutBloc via `.then()`.
+- **SaleCatalog** — Search result tap now adds product to cart (was no-op).
+- **CompactCartFab** — Watches `SettingsCubit` for currency, long-press confirmation before exiting compact mode.
+- **SaleProductCard** — Low-stock indicator uses `tertiary` color, snackbar dedup on rapid taps.
+- **PromptPayPaymentPage** — No longer pops itself; CheckoutBody is single source of truth for navigation.
+- **CartPanel** — `_isShowingReceipt` flag prevents duplicate receipt dialog.
+- **CheckoutBody** — Processing timeout (30s), confirm button disables on tap + empty cart, receipt preview uses VAT-inclusive total, reference field clears on payment method switch, removed duplicate insufficient-cash text.
+- **FAB Hero tag collision** — All FABs now have unique `heroTag` values.
+- **ProductLocalDatasource** — `getProductByBarcode` no longer throws on duplicates, filters `isActive=true`.
+- **CartState** — `errorNonce` field ensures repeated identical errors still fire snackbar.
+- **CartBloc** — `errorMessage` cleared on `CartProductRemoved`/`CartItemQtyChanged`.
+- **BarcodeScannerDialog** — Camera freeze on second scan fixed, manual entry keyboard `visiblePassword`, torch toggle, scan from gallery, scan success animation, error text repositioned, bottom panel opacity 1.0.
+- **ProductImageService** — Permission requests before `ImagePicker.pickImage` with specific error messages.
+- **ProductListPage** — Search result tap opens `ProductFormPage`, respects grid view mode.
+- **ProductActionSheet** — Activate/deactivate labels localized.
+- **ProductFormPage** — Delete dialog uses `confirmDeleteProduct(name)`, waits for BLoC before popping, `PopScope` back guard, `resizeToAvoidBottomInset` fixed, nested Scaffold removed, cost field added, barcode validator, price validator `<= 0` → `< 0`, stock hidden when `trackStock=false`, `_markDirty` moved to image success path, generate barcode button, unsaved dialog title fixed.
+- **AddProductPage** — Draft restore price type cast crash fixed, draft restore price display fixed, cost/barcode validators, `TextInputAction.done`, stock hidden when `trackStock=false`, 2-column advanced tab, `CategoryBloc` crash fixed.
+- **CategoryManagementPage** — Delete dialog shows category name, bulk delete confirmation, reorder merges filtered subset into full list, search hint fixed.
+- **CategoryFormDialog** — sortOrder field removed (drag-to-reorder manages order).
+- **QuickEditMixin** — Extracted shared quick-edit logic, eliminates ~60 lines duplication.
+
+`flutter analyze` → **0 issues** · `flutter test` → **438 passing**
+
+---
+
 ## [0.8.2] - 2026-06-22
 
 SaleBloc decomposition into focused BLoCs (CartBloc, DraftBloc, CheckoutBloc), critical checkout/draft bug-hunt fixes, and barcode/receipt image fixes.
@@ -1477,7 +1552,8 @@ First public release. Complete offline-first mobile POS with sale, inventory, hi
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.3...HEAD
+[0.8.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.7.6...v0.8.0

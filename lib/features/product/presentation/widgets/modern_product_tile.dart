@@ -10,7 +10,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_ca
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_image_container.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_info_block.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_action_sheet.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/quick_edit_sheet.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/quick_edit_mixin.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -23,7 +23,11 @@ class ModernProductTile extends StatefulWidget {
   State<ModernProductTile> createState() => _ModernProductTileState();
 }
 
-class _ModernProductTileState extends State<ModernProductTile> {
+class _ModernProductTileState extends State<ModernProductTile>
+    with QuickEditMixin {
+  @override
+  Product get product => widget.product;
+
   @override
   Widget build(BuildContext context) {
     final currency = context.watch<SettingsCubit>().state.settings.currency;
@@ -66,9 +70,9 @@ class _ModernProductTileState extends State<ModernProductTile> {
                       currency: currency,
                       categoryName: cat?.name,
                       layout: ProductInfoLayout.row,
-                      onNameTap: () => _quickEditName(context),
-                      onPriceTap: () => _quickEditPrice(context),
-                      onStockTap: () => _quickEditStock(context),
+                      onNameTap: () => quickEditName(context),
+                      onPriceTap: () => quickEditPrice(context),
+                      onStockTap: () => quickEditStock(context),
                     ),
                   ),
                 ],
@@ -124,53 +128,6 @@ class _ModernProductTileState extends State<ModernProductTile> {
         ),
       ),
     );
-  }
-
-  Future<void> _quickEditName(BuildContext context) async {
-    final result = await showQuickEditSheet(
-      context,
-      field: QuickEditField.name,
-      initialValue: widget.product.name,
-      productName: widget.product.name,
-    );
-    if (!context.mounted) return;
-    if (result != null && result.isNotEmpty && result != widget.product.name) {
-      context.read<ProductBloc>().add(
-        ProductUpdated(widget.product.copyWith(name: result)),
-      );
-    }
-  }
-
-  Future<void> _quickEditPrice(BuildContext context) async {
-    final result = await showQuickEditSheet(
-      context,
-      field: QuickEditField.price,
-      initialValue: widget.product.price.toStringAsFixed(2),
-      productName: widget.product.name,
-    );
-    if (!context.mounted) return;
-    final price = double.tryParse(result ?? '');
-    if (price != null && price >= 0 && price != widget.product.price) {
-      context.read<ProductBloc>().add(
-        ProductUpdated(widget.product.copyWith(price: price)),
-      );
-    }
-  }
-
-  Future<void> _quickEditStock(BuildContext context) async {
-    final result = await showQuickEditSheet(
-      context,
-      field: QuickEditField.stock,
-      initialValue: widget.product.stock.toString(),
-      productName: widget.product.name,
-    );
-    if (!context.mounted) return;
-    final stock = int.tryParse(result ?? '');
-    if (stock != null && stock >= 0 && stock != widget.product.stock) {
-      context.read<ProductBloc>().add(
-        ProductUpdated(widget.product.copyWith(stock: stock)),
-      );
-    }
   }
 }
 

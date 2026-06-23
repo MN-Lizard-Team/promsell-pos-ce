@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_bottom_sheet.dart';
@@ -34,7 +35,7 @@ class _CompactCartFabState extends State<CompactCartFab>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currency = context.read<SettingsCubit>().state.settings.currency;
+    final currency = context.watch<SettingsCubit>().state.settings.currency;
 
     return Positioned(
       bottom: 16 + MediaQuery.paddingOf(context).bottom,
@@ -73,11 +74,31 @@ class _CompactCartFabState extends State<CompactCartFab>
                   },
                   onTapCancel: () => _pressController.reverse(),
                   onLongPress: () {
-                    final cubit = ctx.read<SettingsCubit>();
-                    cubit.update(
-                      cubit.state.settings.copyWith(
-                        cartCompactMode: false,
-                        ultraCompactMode: false,
+                    final l10n = ctx.l10n;
+                    showDialog(
+                      context: ctx,
+                      builder: (dialogCtx) => AlertDialog(
+                        title: Text(l10n.exitCompactMode),
+                        content: Text(l10n.exitCompactModeConfirm),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogCtx),
+                            child: Text(l10n.cancel),
+                          ),
+                          FilledButton(
+                            onPressed: () {
+                              Navigator.pop(dialogCtx);
+                              final cubit = ctx.read<SettingsCubit>();
+                              cubit.update(
+                                cubit.state.settings.copyWith(
+                                  cartCompactMode: false,
+                                  ultraCompactMode: false,
+                                ),
+                              );
+                            },
+                            child: Text(l10n.confirm),
+                          ),
+                        ],
                       ),
                     );
                   },

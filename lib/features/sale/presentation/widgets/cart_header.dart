@@ -153,65 +153,76 @@ class _CartHeaderState extends State<CartHeader> {
                 ),
               BlocBuilder<SettingsCubit, SettingsState>(
                 builder: (_, settingsState) {
-                  final settings = settingsState.settings;
-                  final isUltra = settings.ultraCompactMode;
-                  final (icon, tooltip) = isUltra
-                      ? (Icons.density_small, context.l10n.cartCompactNormal)
-                      : (Icons.view_agenda, context.l10n.cartCompactUltra);
-                  return IconButton(
-                    icon: Icon(icon, size: 20),
-                    tooltip: tooltip,
-                    onPressed: () {
-                      final cubit = context.read<SettingsCubit>();
-                      cubit.updateField(
-                        (s) => s.copyWith(ultraCompactMode: !isUltra),
-                      );
+                  final isUltra = settingsState.settings.ultraCompactMode;
+                  return PopupMenuButton<String>(
+                    itemBuilder: (ctx) => [
+                      PopupMenuItem(
+                        value: 'toggle_compact',
+                        child: Row(
+                          children: [
+                            Icon(
+                              isUltra ? Icons.density_small : Icons.view_agenda,
+                              size: 18,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              isUltra
+                                  ? context.l10n.cartCompactNormal
+                                  : context.l10n.cartCompactUltra,
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'new_draft',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.add_circle_outline,
+                              size: 18,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(context.l10n.newDraft),
+                          ],
+                        ),
+                      ),
+                      if (!widget.cartState.isEmpty)
+                        PopupMenuItem(
+                          value: 'clear_cart',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                                color: theme.colorScheme.error,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                context.l10n.clearCart,
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'toggle_compact':
+                          final cubit = context.read<SettingsCubit>();
+                          cubit.updateField(
+                            (s) => s.copyWith(ultraCompactMode: !isUltra),
+                          );
+                        case 'new_draft':
+                          _showCreateDialog(context);
+                        case 'clear_cart':
+                          _confirmClearCart(context);
+                      }
                     },
                   );
-                },
-              ),
-              PopupMenuButton<String>(
-                itemBuilder: (ctx) => [
-                  PopupMenuItem(
-                    value: 'new_draft',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.add_circle_outline,
-                          size: 18,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(context.l10n.newDraft),
-                      ],
-                    ),
-                  ),
-                  if (!widget.cartState.isEmpty)
-                    PopupMenuItem(
-                      value: 'clear_cart',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline,
-                            size: 18,
-                            color: theme.colorScheme.error,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            context.l10n.clearCart,
-                            style: TextStyle(color: theme.colorScheme.error),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-                onSelected: (value) {
-                  switch (value) {
-                    case 'new_draft':
-                      _showCreateDialog(context);
-                    case 'clear_cart':
-                      _confirmClearCart(context);
-                  }
                 },
               ),
             ],
@@ -254,7 +265,7 @@ class _CartHeaderState extends State<CartHeader> {
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 
   void _confirmClearCart(BuildContext context) {

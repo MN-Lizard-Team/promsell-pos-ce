@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.8.2
+# Database Handbook — Promsell POS CE v0.8.3
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -27,7 +27,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 16 |
+| **Schema version** | 17 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -223,7 +223,7 @@ Source: `lib/core/database/tables/products_table.dart`
 | `id` | TEXT | No | — | **PK**, UUIDv4 |
 | `name` | TEXT | No | — | length 1–200 |
 | `sku` | TEXT | Yes | — | |
-| `barcode` | TEXT | Yes | — | **UNIQUE** (schema v16); normalized to uppercase on save and lookup |
+| `barcode` | TEXT | Yes | — | **UNIQUE** (schema v16, auto-dedup v17); normalized to uppercase on save and lookup |
 | `price` | REAL | No | — | |
 | `cost` | REAL | Yes | — | |
 | `stock` | INTEGER | No | `0` | |
@@ -416,7 +416,7 @@ Created in `_createIndexes()` during `onCreate` and `onUpgrade`.
 | `idx_products_category_id` | products | `category_id` | Filter products by category |
 | `idx_products_is_active` | products | `is_active` | Filter active products for sale catalog |
 | `idx_products_barcode` | products | `barcode` | Barcode lookup for scan/generate |
-| `idx_products_barcode_unique` | products | `barcode` | **UNIQUE** constraint preventing duplicate barcodes (schema v16) |
+| `idx_products_barcode_unique` | products | `barcode` | **UNIQUE** constraint preventing duplicate barcodes (schema v16, auto-dedup v17) |
 | `idx_sales_created_at` | sales | `created_at` | Date-range queries in history/reports |
 | `idx_sales_status` | sales | `status` | Filter completed vs voided sales |
 | `idx_sale_items_sale_id` | sale_items | `sale_id` | Fetch items for a specific sale |
@@ -718,9 +718,9 @@ onUpgrade: (m, from, to) async {
 },
 ```
 
-### Incremental migrations (v2 → v12)
+### Incremental migrations (v2 → v17)
 
-Schema versions 2 through 12 use incremental migration:
+Schema versions 2 through 17 use incremental migration:
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -773,6 +773,10 @@ onUpgrade: (m, from, to) async {
     // Add UNIQUE INDEX on products.barcode
     // Duplicate-safe: logs warning and skips if legacy data has duplicates
     // Prevents migration crash while enforcing uniqueness going forward
+  }
+  if (from < 17) {
+    // Auto-deduplicate barcodes before unique index creation
+    // Clears duplicate barcode rows (keeps most recently updated) so v16 unique index can be enforced
   }
 },
 ```
@@ -854,7 +858,7 @@ Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2-HMAC-SHA256
 
 ### Cautions
 
-- **Version mismatch:** Restoring a pre-v2 backup on v12+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
+- **Version mismatch:** Restoring a pre-v2 backup on v17+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
 - **Encrypted backups:** Restoring an encrypted backup without the PIN is impossible.
 - **CSV export** (v0.6.0): Export sales and products data as CSV via `csv` + `share_plus`.
 
@@ -964,4 +968,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.8.1 · Schema v16 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.8.3 · Schema v17 · 9 tables · UUIDv4</sub>

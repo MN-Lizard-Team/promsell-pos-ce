@@ -128,6 +128,7 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
       floatingActionButton: !_bulkMode
           ? FloatingActionButton(
               onPressed: () => _showAddDialog(context),
+              heroTag: 'category_add_fab',
               child: const Icon(Icons.add),
             )
           : null,
@@ -142,7 +143,7 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
           controller: _searchCtrl,
           autofocus: true,
           decoration: InputDecoration(
-            hintText: l10n.searchByNameSkuBarcode,
+            hintText: l10n.searchCategories,
             border: InputBorder.none,
             suffixIcon: IconButton(
               icon: const Icon(Icons.clear),
@@ -211,13 +212,36 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
   }
 
   void _bulkDelete(BuildContext context) {
+    final l10n = context.l10n;
     final bloc = context.read<CategoryBloc>();
-    for (final id in _selectedIds) {
-      bloc.add(CategoryDeleted(id));
-    }
-    setState(() {
-      _bulkMode = false;
-      _selectedIds.clear();
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteCategory),
+        content: Text(l10n.bulkDeleteConfirm(_selectedIds.length)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              l10n.delete,
+              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed != true) return;
+      for (final id in _selectedIds) {
+        bloc.add(CategoryDeleted(id));
+      }
+      setState(() {
+        _bulkMode = false;
+        _selectedIds.clear();
+      });
     });
   }
 
@@ -231,9 +255,17 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
     final reordered = List<Category>.from(cats);
     final item = reordered.removeAt(oldIndex);
     reordered.insert(newIndex, item);
-    context.read<CategoryBloc>().add(
-      CategoriesReordered(reordered.map((c) => c.id).toList()),
-    );
+    final reorderedIds = reordered.map((c) => c.id).toList();
+    final allCats = context.read<CategoryBloc>().state.categories;
+    final fullOrder = <String>[];
+    for (final c in allCats) {
+      if (reorderedIds.contains(c.id)) {
+        fullOrder.add(reorderedIds.removeAt(0));
+      } else {
+        fullOrder.add(c.id);
+      }
+    }
+    context.read<CategoryBloc>().add(CategoriesReordered(fullOrder));
   }
 
   void _showAddDialog(BuildContext context) async {

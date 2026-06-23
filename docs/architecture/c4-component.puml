@@ -1,12 +1,14 @@
 @startuml C4_Component
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Promsell POS CE — Component Diagram (Sale Feature) v0.7.2
+title Promsell POS CE — Component Diagram (Sale Feature) v0.8.3
 
 Container_Boundary(sale_feature, "Sale Feature") {
     Component(sale_page, "SalePage", "Flutter Widget", "Product catalog + cart + discount dialog + drafts sheet")
     Component(payment_sheet, "PaymentSheet", "Flutter Widget", "Payment method, breakdown, cash input, confirm")
-    Component(sale_bloc, "SaleBloc", "flutter_bloc", "Cart state + discount + draft auto-save (500ms debounce)")
+    Component(cart_bloc, "CartBloc", "flutter_bloc", "Cart state + discount")
+    Component(draft_bloc, "DraftBloc", "flutter_bloc", "Draft auto-save (1.5s debounce)")
+    Component(checkout_bloc, "CheckoutBloc", "flutter_bloc", "Checkout + payment confirmation")
     Component(create_sale_uc, "CreateSale", "Use Case", "Delegates to SaleRepository")
     Component(void_sale_uc, "VoidSale", "Use Case", "Delegates to SaleRepository")
     Component(sale_repo, "SaleRepository", "Interface", "Abstract contract")
@@ -21,10 +23,11 @@ Container_Boundary(sale_feature, "Sale Feature") {
 
 ContainerDb(db, "SQLite", "Drift", "sales + sale_items + inventory_logs + app_settings + draft_carts + draft_cart_items + daily_closes")
 
-Rel(sale_page, sale_bloc, "add events (cart, discount, draft)")
-Rel(payment_sheet, sale_bloc, "SaleConfirmed (with discount params)")
-Rel(sale_bloc, create_sale_uc, "call")
-Rel(sale_bloc, draft_repo, "saveDraft / loadDraft / deleteDraft")
+Rel(sale_page, cart_bloc, "add events (cart, discount)")
+Rel(sale_page, draft_bloc, "draft events")
+Rel(payment_sheet, checkout_bloc, "CheckoutConfirmed (with discount params)")
+Rel(checkout_bloc, create_sale_uc, "call")
+Rel(draft_bloc, draft_repo, "saveDraft / loadDraft / deleteDraft")
 Rel(create_sale_uc, sale_repo, "call")
 Rel(sale_repo, sale_repo_impl, "implements")
 Rel(sale_repo_impl, sale_ds, "delegates")

@@ -152,6 +152,30 @@ abstract class AppLocalizations {
   /// **'ขายสินค้า'**
   String get salePageTitle;
 
+  /// No description provided for @dragToResizeCart.
+  ///
+  /// In th, this message translates to:
+  /// **'ลากเพื่อปรับขนาดตะกร้า'**
+  String get dragToResizeCart;
+
+  /// No description provided for @exitCompactMode.
+  ///
+  /// In th, this message translates to:
+  /// **'ออกจากโหมดกะทัดรัด'**
+  String get exitCompactMode;
+
+  /// No description provided for @exitCompactModeConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'สลับเป็นมุมมองตะกร้าปกติ?'**
+  String get exitCompactModeConfirm;
+
+  /// No description provided for @autoConfirmingIn.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันอัตโนมัติใน {secs}...'**
+  String autoConfirmingIn(int secs);
+
   /// No description provided for @clearCart.
   ///
   /// In th, this message translates to:
@@ -308,6 +332,12 @@ abstract class AppLocalizations {
   /// **'เงินที่รับมายังไม่ครบยอด'**
   String get insufficientCash;
 
+  /// No description provided for @remainingAmount.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขาด'**
+  String get remainingAmount;
+
   /// No description provided for @productsTitle.
   ///
   /// In th, this message translates to:
@@ -361,6 +391,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ลบ'**
   String get delete;
+
+  /// No description provided for @activate.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดใช้งาน'**
+  String get activate;
+
+  /// No description provided for @deactivate.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดการใช้งาน'**
+  String get deactivate;
 
   /// No description provided for @deleteProduct.
   ///
@@ -439,6 +481,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'จำนวนไม่ถูกต้อง'**
   String get invalidQuantity;
+
+  /// No description provided for @invalidBarcode.
+  ///
+  /// In th, this message translates to:
+  /// **'บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น'**
+  String get invalidBarcode;
 
   /// No description provided for @categoryLabel.
   ///
@@ -1129,6 +1177,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)'**
   String get trackStockHint;
+
+  /// No description provided for @stockTrackingDisabled.
+  ///
+  /// In th, this message translates to:
+  /// **'การติดตามสต็อกปิดอยู่ เปิดเพื่อจัดการจำนวนสต็อก'**
+  String get stockTrackingDisabled;
 
   /// No description provided for @settingsStockPolicy.
   ///
@@ -2780,6 +2834,24 @@ abstract class AppLocalizations {
   /// **'ยืนยันการลบหมวดหมู่?'**
   String get deleteCategoryConfirm;
 
+  /// No description provided for @deleteCategory.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบหมวดหมู่'**
+  String get deleteCategory;
+
+  /// No description provided for @confirmDeleteCategory.
+  ///
+  /// In th, this message translates to:
+  /// **'คุณแน่ใจหรือว่าจะลบ \"{name}\"?'**
+  String confirmDeleteCategory(String name);
+
+  /// No description provided for @bulkDeleteConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบ {count} หมวดหมู่?'**
+  String bulkDeleteConfirm(int count);
+
   /// No description provided for @categoryName.
   ///
   /// In th, this message translates to:
@@ -2978,6 +3050,12 @@ abstract class AppLocalizations {
   /// **'มีการเปลี่ยนแปลงที่ยังไม่บันทึก'**
   String get unsavedChangesMessage;
 
+  /// No description provided for @unsavedChangesTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ได้บันทึก'**
+  String get unsavedChangesTitle;
+
   /// No description provided for @restore.
   ///
   /// In th, this message translates to:
@@ -3031,6 +3109,36 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'เปิดการตั้งค่า'**
   String get openSettings;
+
+  /// No description provided for @scanSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนสำเร็จ'**
+  String get scanSuccess;
+
+  /// No description provided for @scanFromGallery.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนจากรูป'**
+  String get scanFromGallery;
+
+  /// No description provided for @barcodeNotFoundInImage.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบบาร์โค้ดในรูป'**
+  String get barcodeNotFoundInImage;
+
+  /// No description provided for @torchOn.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดไฟฉาย'**
+  String get torchOn;
+
+  /// No description provided for @torchOff.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดไฟฉาย'**
+  String get torchOff;
 
   /// No description provided for @submit.
   ///
@@ -3332,6 +3440,12 @@ abstract class AppLocalizations {
   /// **'ไม่สามารถเพิ่มรูปภาพได้ โปรดลองอีกครั้ง'**
   String get imagePickFailed;
 
+  /// No description provided for @storagePermissionDenied.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องอนุญาตเข้าถึงคลังรูปเพื่อเลือกรูป กรุณาเปิดสิทธิ์การเข้าถึงในการตั้งค่า'**
+  String get storagePermissionDenied;
+
   /// No description provided for @removeImageConfirm.
   ///
   /// In th, this message translates to:
@@ -3452,6 +3566,42 @@ abstract class AppLocalizations {
   /// **'ลิขสิทธิ์โอเพนซอร์ส'**
   String get openSourceLicense;
 
+  /// No description provided for @crashLogs.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกข้อผิดพลาด'**
+  String get crashLogs;
+
+  /// No description provided for @exportCrashLogs.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกบันทึกข้อผิดพลาด'**
+  String get exportCrashLogs;
+
+  /// No description provided for @clearCrashLogs.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้างบันทึกข้อผิดพลาด'**
+  String get clearCrashLogs;
+
+  /// No description provided for @clearCrashLogsConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องการล้างบันทึกข้อผิดพลาดทั้งหมดใช่หรือไม่?'**
+  String get clearCrashLogsConfirm;
+
+  /// No description provided for @crashLogSize.
+  ///
+  /// In th, this message translates to:
+  /// **'ขนาดไฟล์'**
+  String get crashLogSize;
+
+  /// No description provided for @crashLogEmpty.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีบันทึกข้อผิดพลาด'**
+  String get crashLogEmpty;
+
   /// No description provided for @contactUs.
   ///
   /// In th, this message translates to:
@@ -3541,6 +3691,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'อินเทอร์เน็ต: ไม่บังคับ ใช้สำหรับโหลดรูปภาพสินค้าจาก URL เท่านั้น เมื่อแชร์รูปภาพสินค้า URL จะถูกส่งไปยังชีตแชร์ของระบบ (ในเครื่องเท่านั้น ไม่ส่งไปเซิร์ฟเวอร์ของเรา)'**
   String get permissionsInternet;
+
+  /// No description provided for @crashLoggingTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'การบันทึกข้อผิดพลาด'**
+  String get crashLoggingTitle;
+
+  /// No description provided for @crashLoggingBody.
+  ///
+  /// In th, this message translates to:
+  /// **'หากแอปผิดพลาด ระบบจะบันทึกข้อความผิดพลาด สแตกเทรซ และเวลาที่เกิดเหตุลงในเครื่องของคุณ ข้อมูลที่อ่อนไหว (หมายเลขโทรศัพท์ PromptPay ID เลขบัตรประชาชน) จะถูกล้างโดยอัตโนมัติก่อนจัดเก็บ บันทึกข้อผิดพลาดไม่ถูกส่งออกจากเครื่อง คุณสามารถดู ส่งออก และล้างบันทึกได้ใน การตั้งค่า → เกี่ยวกับ → บันทึกข้อผิดพลาด'**
+  String get crashLoggingBody;
 
   /// No description provided for @contactTitle.
   ///

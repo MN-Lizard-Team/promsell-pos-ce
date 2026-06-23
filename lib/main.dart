@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/services/crash_log_service.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/history/presentation/pages/history_page.dart';
@@ -20,7 +21,14 @@ import 'package:promsell_pos_ce/core/widgets/animated_nav_bar.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 void main() async {
+  await runPromsellApp();
+}
+
+Future<void> runPromsellApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  configureDependencies();
+  final crashLogService = sl<CrashLogService>();
 
   FlutterError.onError = (details) {
     AppLogger.error(
@@ -28,13 +36,18 @@ void main() async {
       error: details.exception,
       stack: details.stack,
     );
+    crashLogService.recordError(
+      details.exception,
+      details.stack,
+      context: 'FlutterError',
+    );
   };
   PlatformDispatcher.instance.onError = (error, stack) {
     AppLogger.error('PlatformError', error: error, stack: stack);
+    crashLogService.recordError(error, stack, context: 'PlatformError');
     return true;
   };
 
-  configureDependencies();
   final settingsCubit = sl<SettingsCubit>();
   await settingsCubit.load();
   runApp(const PromsellApp());
