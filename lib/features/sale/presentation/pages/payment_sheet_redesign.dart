@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout_body.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body.dart';
 
 class PaymentSheet extends StatefulWidget {
   const PaymentSheet({super.key});

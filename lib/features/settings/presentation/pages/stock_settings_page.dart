@@ -4,8 +4,8 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_switch_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_switch_tile.dart';
 
 class StockSettingsPage extends StatelessWidget {
   const StockSettingsPage({super.key});
@@ -166,11 +166,11 @@ class StockSettingsPage extends StatelessWidget {
               Navigator.of(ctx).pop();
             },
             style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: const Text('Save'),
+            child: Text(context.l10n.save),
           ),
         ],
       ),
-    );
+    ).then((_) => ctrl.dispose());
   }
 }
 

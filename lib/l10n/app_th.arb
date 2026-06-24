@@ -744,5 +744,22 @@
   "productPreviewActive": "เปิดใช้งาน",
   "productPreviewCost": "ต้นทุน",
   "productPreviewBarcodeLabel": "ป้ายบาร์โค้ด",
-  "productPreviewProductId": "รหัสสินค้า"
+  "productPreviewProductId": "รหัสสินค้า",
+  "ok": "ตกลง",
+  "close": "ปิด",
+  "invalidValue": "ค่าไม่ถูกต้อง",
+  "discountPresetAdded": "เพิ่ม {label}",
+  "@discountPresetAdded": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "discountPresetRemoved": "ลบ {label}",
+  "@discountPresetRemoved": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "unsupportedFormat": "รูปแบบไม่รองรับ",
+  "barcodeSavedSuccess": "บันทึกบาร์โค้ดสำเร็จ",
+  "barcodePrintedSuccess": "พิมพ์บาร์โค้ดสำเร็จ",
+  "barcodeViewError": "ไม่สามารถดูบาร์โค้ดได้",
+  "barcodeSaveError": "ไม่สามารถบันทึกบาร์โค้ดได้",
+  "barcodePrintError": "ไม่สามารถพิมพ์บาร์โค้ดได้"
 }

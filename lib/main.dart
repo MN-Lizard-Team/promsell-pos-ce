@@ -12,12 +12,12 @@ import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.d
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:flutter/services.dart';
-import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
-import 'package:promsell_pos_ce/core/widgets/app_splash_wrapper.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/splash/app_splash_wrapper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
-import 'package:promsell_pos_ce/core/widgets/animated_nav_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/nav/animated_nav_bar.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 void main() async {

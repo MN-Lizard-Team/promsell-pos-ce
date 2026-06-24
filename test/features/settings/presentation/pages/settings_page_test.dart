@@ -4,8 +4,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_category_tile.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_category_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';

@@ -4,7 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount_preset_edit_form.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_preset_edit_form.dart';
 
 class DiscountPresetEditPage extends StatelessWidget {
   const DiscountPresetEditPage({

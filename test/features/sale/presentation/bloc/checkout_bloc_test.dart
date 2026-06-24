@@ -157,7 +157,7 @@ void main() {
         ),
         isA<CheckoutState>()
             .having((s) => s.status, 'status', CheckoutStatus.failure)
-            .having((s) => s.errorMessage, 'errorMessage', isNotNull),
+            .having((s) => s.errorMessage, 'errorMessage', isNull),
       ],
     );
 

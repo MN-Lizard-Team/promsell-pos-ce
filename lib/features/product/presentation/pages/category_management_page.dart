@@ -1,45 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
-import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/category_form_dialog.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/category_list_tile.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/category_management_page/category_management_app_bars.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_form_dialog.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart';
 
-class CategoryManagementPage extends StatelessWidget {
+class CategoryManagementPage extends StatefulWidget {
   const CategoryManagementPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(value: sl<CategoryBloc>()),
-        BlocProvider.value(value: sl<ProductBloc>()),
-      ],
-      child: const _CategoryManagementView(),
-    );
-  }
+  State<CategoryManagementPage> createState() => _CategoryManagementPageState();
 }
 
-class _CategoryManagementView extends StatefulWidget {
-  const _CategoryManagementView();
-
-  @override
-  State<_CategoryManagementView> createState() =>
-      _CategoryManagementViewState();
-}
-
-class _CategoryManagementViewState extends State<_CategoryManagementView> {
+class _CategoryManagementPageState extends State<CategoryManagementPage> {
+  final _searchCtrl = TextEditingController();
   bool _searchMode = false;
   bool _bulkMode = false;
-  final _searchCtrl = TextEditingController();
   final _selectedIds = <String>{};
 
   @override
@@ -67,57 +50,54 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
             };
             AppSnackBar.error(ctx, msg);
           },
-          child: BlocBuilder<ProductBloc, ProductState>(
-            builder: (_, productState) {
-              return BlocBuilder<CategoryBloc, CategoryState>(
-                builder: (context, state) {
-                  if (state.status == CategoryStatus.loading ||
-                      state.status == CategoryStatus.initial) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (state.status == CategoryStatus.failure) {
-                    return AppEmptyState(
-                      icon: Icons.error_outline,
-                      title: state.errorMessage ?? context.l10n.errorOccurred,
-                    );
-                  }
-                  final cats = _filteredCategories(state.categories);
-                  if (cats.isEmpty) {
-                    return AppEmptyState(
-                      icon: Icons.folder_open_outlined,
-                      title: context.l10n.noCategoriesYet,
-                      actionLabel: context.l10n.addCategory,
-                      onAction: () => _showAddDialog(context),
-                    );
-                  }
-                  return ReorderableListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
-                    itemCount: cats.length,
-                    buildDefaultDragHandles: false,
-                    // ignore: deprecated_member_use
-                    onReorder: (oldIndex, newIndex) =>
-                        _onReorder(context, cats, oldIndex, newIndex),
-                    itemBuilder: (_, i) {
-                      final cat = cats[i];
-                      final count = productState.products
-                          .where((p) => p.categoryId == cat.id)
-                          .length;
-                      return CategoryListTile(
-                        key: ValueKey(cat.id),
-                        category: cat,
-                        productCount: count,
-                        index: i,
-                        showDragHandle: !_bulkMode && !_searchMode,
-                        selected: _selectedIds.contains(cat.id),
-                        selectionMode: _bulkMode,
-                        onTap: _bulkMode
-                            ? () => _toggleSelect(cat.id)
-                            : () => _showEditDialog(context, cat),
-                        onDelete: () => context.read<CategoryBloc>().add(
-                          CategoryDeleted(cat.id),
-                        ),
-                      );
-                    },
+          child: BlocBuilder<CategoryBloc, CategoryState>(
+            builder: (context, state) {
+              if (state.status == CategoryStatus.loading ||
+                  state.status == CategoryStatus.initial) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state.status == CategoryStatus.failure) {
+                return AppEmptyState(
+                  icon: Icons.error_outline,
+                  title: state.errorMessage ?? context.l10n.errorOccurred,
+                );
+              }
+              final cats = _filteredCategories(state.categories);
+              if (cats.isEmpty) {
+                return AppEmptyState(
+                  icon: Icons.folder_open_outlined,
+                  title: context.l10n.noCategoriesYet,
+                  actionLabel: context.l10n.addCategory,
+                  onAction: () => _showAddDialog(context),
+                );
+              }
+              final productState = context.watch<ProductBloc>().state;
+              return ReorderableListView.builder(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
+                itemCount: cats.length,
+                buildDefaultDragHandles: false,
+                // ignore: deprecated_member_use
+                onReorder: (oldIndex, newIndex) =>
+                    _onReorder(context, cats, oldIndex, newIndex),
+                itemBuilder: (_, i) {
+                  final cat = cats[i];
+                  final count = productState.products
+                      .where((p) => p.categoryId == cat.id)
+                      .length;
+                  return CategoryListTile(
+                    key: ValueKey(cat.id),
+                    category: cat,
+                    productCount: count,
+                    index: i,
+                    showDragHandle: !_bulkMode && !_searchMode,
+                    selected: _selectedIds.contains(cat.id),
+                    selectionMode: _bulkMode,
+                    onTap: _bulkMode
+                        ? () => _toggleSelect(cat.id)
+                        : () => _showEditDialog(context, cat),
+                    onDelete: () => context.read<CategoryBloc>().add(
+                      CategoryDeleted(cat.id),
+                    ),
                   );
                 },
               );
@@ -135,49 +115,25 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     final l10n = context.l10n;
     if (_searchMode) {
-      return AppBar(
-        title: TextField(
-          controller: _searchCtrl,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: l10n.searchCategories,
-            border: InputBorder.none,
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.clear),
-              onPressed: () {
-                _searchCtrl.clear();
-                setState(() => _searchMode = false);
-              },
-            ),
-          ),
-          onChanged: (_) => setState(() {}),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => setState(() => _searchMode = false),
-        ),
+      return CategoryManagementSearchAppBar(
+        controller: _searchCtrl,
+        onClose: () {
+          _searchCtrl.clear();
+          setState(() => _searchMode = false);
+        },
       );
     }
     if (_bulkMode) {
-      return AppBar(
-        title: Text(l10n.bulkSelected(_selectedIds.length)),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => setState(() {
-            _bulkMode = false;
-            _selectedIds.clear();
-          }),
-        ),
-        actions: [
-          if (_selectedIds.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () => _bulkDelete(context),
-            ),
-        ],
+      return CategoryManagementBulkAppBar(
+        selectedCount: _selectedIds.length,
+        onClose: () => setState(() {
+          _bulkMode = false;
+          _selectedIds.clear();
+        }),
+        onBulkDelete: () => _bulkDelete(context),
       );
     }
     return AppBar(
@@ -211,10 +167,10 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
     });
   }
 
-  void _bulkDelete(BuildContext context) {
+  Future<void> _bulkDelete(BuildContext context) async {
     final l10n = context.l10n;
     final bloc = context.read<CategoryBloc>();
-    showDialog<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteCategory),
@@ -233,15 +189,15 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
           ),
         ],
       ),
-    ).then((confirmed) {
-      if (confirmed != true) return;
-      for (final id in _selectedIds) {
-        bloc.add(CategoryDeleted(id));
-      }
-      setState(() {
-        _bulkMode = false;
-        _selectedIds.clear();
-      });
+    );
+    if (confirmed != true) return;
+    for (final id in _selectedIds) {
+      bloc.add(CategoryDeleted(id));
+    }
+    if (!mounted) return;
+    setState(() {
+      _bulkMode = false;
+      _selectedIds.clear();
     });
   }
 
@@ -268,7 +224,7 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
     context.read<CategoryBloc>().add(CategoriesReordered(fullOrder));
   }
 
-  void _showAddDialog(BuildContext context) async {
+  Future<void> _showAddDialog(BuildContext context) async {
     final result = await showDialog<CategoryFormResult>(
       context: context,
       builder: (_) => const CategoryFormDialog(),
@@ -285,7 +241,7 @@ class _CategoryManagementViewState extends State<_CategoryManagementView> {
     }
   }
 
-  void _showEditDialog(BuildContext context, Category category) async {
+  Future<void> _showEditDialog(BuildContext context, Category category) async {
     final result = await showDialog<CategoryFormResult>(
       context: context,
       builder: (_) => CategoryFormDialog(category: category),

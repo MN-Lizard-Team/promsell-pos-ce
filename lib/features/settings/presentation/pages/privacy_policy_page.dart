@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_section_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});

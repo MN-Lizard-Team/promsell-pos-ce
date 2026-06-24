@@ -1976,4 +1976,41 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get productPreviewProductId => 'รหัสสินค้า';
+
+  @override
+  String get ok => 'ตกลง';
+
+  @override
+  String get close => 'ปิด';
+
+  @override
+  String get invalidValue => 'ค่าไม่ถูกต้อง';
+
+  @override
+  String discountPresetAdded(String label) {
+    return 'เพิ่ม $label';
+  }
+
+  @override
+  String discountPresetRemoved(String label) {
+    return 'ลบ $label';
+  }
+
+  @override
+  String get unsupportedFormat => 'รูปแบบไม่รองรับ';
+
+  @override
+  String get barcodeSavedSuccess => 'บันทึกบาร์โค้ดสำเร็จ';
+
+  @override
+  String get barcodePrintedSuccess => 'พิมพ์บาร์โค้ดสำเร็จ';
+
+  @override
+  String get barcodeViewError => 'ไม่สามารถดูบาร์โค้ดได้';
+
+  @override
+  String get barcodeSaveError => 'ไม่สามารถบันทึกบาร์โค้ดได้';
+
+  @override
+  String get barcodePrintError => 'ไม่สามารถพิมพ์บาร์โค้ดได้';
 }

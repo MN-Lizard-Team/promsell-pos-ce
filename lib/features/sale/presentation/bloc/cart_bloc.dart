@@ -249,11 +249,15 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           ),
         );
       }
-    } catch (e) {
-      AppLogger.error('CartBloc._onBarcodeScanned failed', error: e);
+    } catch (e, stack) {
+      AppLogger.error(
+        'CartBloc._onBarcodeScanned failed',
+        error: e,
+        stack: stack,
+      );
       emit(
         state.copyWith(
-          errorMessage: e.toString(),
+          errorMessage: 'errorOccurred',
           errorNonce: state.errorNonce + 1,
         ),
       );

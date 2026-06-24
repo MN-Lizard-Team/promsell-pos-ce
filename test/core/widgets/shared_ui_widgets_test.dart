@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
-import 'package:promsell_pos_ce/core/widgets/money_text.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 
 void main() {
   testWidgets('MoneyText formats currency with two decimals', (tester) async {

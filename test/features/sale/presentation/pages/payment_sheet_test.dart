@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment_widgets.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment/payment_widgets.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';

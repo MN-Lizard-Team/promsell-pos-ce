@@ -39,13 +39,13 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
        _deleteCategory = deleteCategory,
        _reorderCategories = reorderCategories,
        super(const CategoryState()) {
-    _startWatching();
     on<_CategoriesUpdated>(_onUpdated);
     on<_CategoriesError>(_onError);
     on<CategoryAdded>(_onAdded);
     on<CategoryUpdated>(_onCategoryUpdated);
     on<CategoryDeleted>(_onDeleted);
     on<CategoriesReordered>(_onReordered);
+    _startWatching();
   }
 
   final WatchCategories _watchCategories;

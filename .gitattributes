@@ -16,3 +16,7 @@
 *.ico binary
 *.ttf binary
 *.otf binary
+
+# Generated code — hide from PR diffs and language stats
+*.g.dart linguist-generated=true
+*.config.dart linguist-generated=true

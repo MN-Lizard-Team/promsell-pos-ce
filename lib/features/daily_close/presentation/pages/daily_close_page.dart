@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart';
-import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/daily_close_date_card.dart';
-import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/daily_close_reconciliation_card.dart';
-import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/daily_close_summary_card.dart';
+import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/cards/daily_close_date_card.dart';
+import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/cards/daily_close_reconciliation_card.dart';
+import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/cards/daily_close_summary_card.dart';
 import 'package:intl/intl.dart';
 
 class DailyClosePage extends StatefulWidget {

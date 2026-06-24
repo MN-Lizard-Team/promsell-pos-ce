@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop_info_form.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop_preview_card.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_dropdown_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop/shop_info_form.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop/shop_preview_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_dropdown_tile.dart';
 
 class ShopInfoSettingsPage extends StatelessWidget {
   const ShopInfoSettingsPage({super.key});

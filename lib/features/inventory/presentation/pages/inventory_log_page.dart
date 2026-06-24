@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';

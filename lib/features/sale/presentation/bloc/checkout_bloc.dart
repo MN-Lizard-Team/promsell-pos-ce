@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
@@ -143,13 +144,13 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       _draftBloc.add(const DraftRotated());
 
       emit(state.copyWith(status: CheckoutStatus.success, lastSale: sale));
-    } catch (e) {
-      emit(
-        state.copyWith(
-          status: CheckoutStatus.failure,
-          errorMessage: e.toString(),
-        ),
+    } catch (e, stack) {
+      AppLogger.error(
+        'CheckoutBloc._onCheckoutStarted failed',
+        error: e,
+        stack: stack,
       );
+      emit(state.copyWith(status: CheckoutStatus.failure, errorMessage: null));
     }
   }
 

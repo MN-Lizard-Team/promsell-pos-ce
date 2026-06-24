@@ -38,10 +38,13 @@ class ReportCubit extends Cubit<ReportState> {
     emit(state.copyWith(status: ReportStatus.loading, to: to));
     await _sub?.cancel();
     _sub = _watchReport(from: state.from, to: to).listen(
-      (sales) =>
-          emit(state.copyWith(status: ReportStatus.success, sales: sales)),
+      (sales) {
+        if (isClosed) return;
+        emit(state.copyWith(status: ReportStatus.success, sales: sales));
+      },
       onError: (e) {
         AppLogger.error('ReportCubit.load failed', error: e);
+        if (isClosed) return;
         emit(state.copyWith(status: ReportStatus.failure));
       },
     );
@@ -51,10 +54,13 @@ class ReportCubit extends Cubit<ReportState> {
     emit(state.copyWith(from: from, to: to, status: ReportStatus.loading));
     await _sub?.cancel();
     _sub = _watchReport(from: from, to: to).listen(
-      (sales) =>
-          emit(state.copyWith(status: ReportStatus.success, sales: sales)),
+      (sales) {
+        if (isClosed) return;
+        emit(state.copyWith(status: ReportStatus.success, sales: sales));
+      },
       onError: (e) {
         AppLogger.error('ReportCubit.changeDateRange failed', error: e);
+        if (isClosed) return;
         emit(state.copyWith(status: ReportStatus.failure));
       },
     );

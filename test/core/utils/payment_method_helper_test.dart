@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
+
+import '../../helpers/pump_app.dart';
 
 void main() {
   group('normalizePaymentMethod', () {
@@ -29,6 +32,29 @@ void main() {
 
     test('returns unknown method as-is', () {
       expect(normalizePaymentMethod('bitcoin'), 'bitcoin');
+    });
+  });
+
+  group('localizePaymentMethod', () {
+    testWidgets('localizes cash', (tester) async {
+      await tester.pumpApp(
+        Builder(
+          builder: (context) => Text(localizePaymentMethod(context, 'cash')),
+        ),
+      );
+
+      expect(find.text('Cash'), findsOneWidget);
+    });
+
+    testWidgets('localizes transfer', (tester) async {
+      await tester.pumpApp(
+        Builder(
+          builder: (context) =>
+              Text(localizePaymentMethod(context, 'transfer')),
+        ),
+      );
+
+      expect(find.text('Transfer'), findsOneWidget);
     });
   });
 }

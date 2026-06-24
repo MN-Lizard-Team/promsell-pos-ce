@@ -46,7 +46,7 @@ import 'package:promsell_pos_ce/features/inventory/domain/repositories/inventory
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
-import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
+import 'package:promsell_pos_ce/core/widgets/search/search_history_cubit.dart';
 
 // ── Repositories ──
 class MockSaleRepository extends Mock implements SaleRepository {}

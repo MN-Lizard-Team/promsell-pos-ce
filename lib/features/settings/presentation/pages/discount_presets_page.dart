@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/discount_prese
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/discount_preset_edit_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount_preset_list_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/discount_preset_list_tile.dart';
 
 class DiscountPresetsPage extends StatelessWidget {
   const DiscountPresetsPage({super.key});

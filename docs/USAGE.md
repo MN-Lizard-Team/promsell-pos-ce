@@ -4,22 +4,6 @@
 
 ---
 
-## Table of contents
-
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Running the app](#running-the-app)
-- [Building for production](#building-for-production)
-- [Features walkthrough](#features-walkthrough)
-- [Settings](#settings)
-- [Localization (i18n)](#localization-i18n)
-- [Database (Drift)](#database-drift)
-- [Architecture overview](#architecture-overview)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-
----
-
 ## Prerequisites
 
 | Tool | Minimum version |
@@ -38,6 +22,32 @@ flutter doctor -v
 
 All sections under "Flutter", "Android toolchain", and "Connected device" should show green checkmarks.
 
+### Dev environment setup
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  Prerequisites                                                   │
+│  Flutter 3.11+ · Dart 3.11+ · Android Studio / Xcode · Git       │
+└───────────────────────────┬──────────────────────────────────────┘
+                            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  1. Clone & Install                                              │
+│  git clone → cd → flutter pub get                                │
+└───────────────────────────┬──────────────────────────────────────┘
+                            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  2. Generate Code                                                │
+│  build_runner build → flutter gen-l10n                           │
+│  Produces: app_database.g.dart, *.config.dart, app_localizations │
+└───────────────────────────┬──────────────────────────────────────┘
+                            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  3. Run                                                          │
+│  flutter run (debug) · flutter run --release (perf test)         │
+│  Flavors: dev (main_dev.dart) · prod (main_prod.dart)            │
+└──────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## Installation
@@ -55,19 +65,14 @@ cd promsell-pos-ce
 flutter pub get
 ```
 
-### 3. Generate code
+### 3. Generate code (Drift + Injectable + l10n)
 
-Promsell uses two code generators — **Flutter localization** for ARB → Dart, and **Drift** for SQLite schema → Dart.
+Generated files are not committed to git. Run after every `flutter pub get`:
 
 ```bash
-# Generate AppLocalizations from ARB files
-flutter gen-l10n
-
-# Generate Drift database code
 dart run build_runner build --delete-conflicting-outputs
+flutter gen-l10n
 ```
-
-Re-run these whenever you add new ARB keys or change Drift schema.
 
 ---
 
@@ -76,25 +81,21 @@ Re-run these whenever you add new ARB keys or change Drift schema.
 ### Debug mode (with hot reload)
 
 ```bash
-# List available devices
-flutter devices
-
-# Run on connected device or emulator
 flutter run
-
-# Run on a specific device
-flutter run -d <device-id>
 ```
 
-### Common commands during development
+### With flavor
 
-| Action | Shortcut |
-|--------|----------|
-| Hot reload | `r` |
-| Hot restart | `R` |
-| Quit | `q` |
-| Toggle performance overlay | `P` |
-| Toggle debug paint | `p` |
+```bash
+flutter run --flavor dev -t lib/main_dev.dart
+flutter run --flavor prod -t lib/main_prod.dart
+```
+
+### Release mode (performance testing)
+
+```bash
+flutter run --release
+```
 
 ---
 
@@ -103,477 +104,59 @@ flutter run -d <device-id>
 ### Android APK
 
 ```bash
-flutter build apk --release
+flutter build apk --release --flavor prod -t lib/main_prod.dart
 ```
 
-Output: `build/app/outputs/flutter-apk/app-release.apk`
+Output: `build/app/outputs/flutter-apk/app-prod-release.apk`
 
-### Android App Bundle (Play Store)
+### Android App Bundle (for Play Store)
 
 ```bash
-flutter build appbundle --release
+flutter build appbundle --release --flavor prod -t lib/main_prod.dart
 ```
 
-Output: `build/app/outputs/bundle/release/app-release.aab`
-
-### iOS (macOS only)
+### iOS
 
 ```bash
 flutter build ios --release
 ```
 
-Then open `ios/Runner.xcworkspace` in Xcode and archive for distribution.
+Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 
-### Split APKs per ABI (smaller downloads)
+> **Note:** iOS builds require a macOS machine with Xcode.
 
-```bash
-flutter build apk --release --split-per-abi
+### Build pipeline
+
 ```
-
-Produces three APKs in `build/app/outputs/flutter-apk/`:
-- `app-armeabi-v7a-release.apk` (old 32-bit ARM)
-- `app-arm64-v8a-release.apk` (modern 64-bit ARM — most devices)
-- `app-x86_64-release.apk` (emulators / Intel Chromebooks)
+┌──────────────┐     ┌────────────────┐      ┌──────────────────────┐
+│  Source Code │ ──▶ │  build_runner  │ ──▶ │  Generated Code      │
+│  (lib/)      │     │  (Drift + DI)  │      │  *.g.dart            │
+│              │     │                │      │  *.config.dart       │
+└──────────────┘     └────────────────┘      └──────────┬───────────┘
+                                                        │
+                              ┌─────────────────────────┘
+                              ▼
+                     ┌──────────────────┐     ┌──────────────────┐
+                     │ flutter gen-l10n │     │ Flutter Compiler │
+                     │  (ARB → Dart)    │ ──▶ │  (AOT / JIT)     │
+                     └──────────────────┘     └────────┬─────────┘
+                                                       │
+                          ┌────────────────────────────┘
+                          ▼
+               ┌─────────────────────┐
+               │  Build Output       │
+               │  APK / AAB / IPA    │
+               └─────────────────────┘
+```
 
 ---
 
-## Features walkthrough
-
-### Sale tab
-
-1. Use the search bar or category chips to narrow the product catalog
-2. Tap any product card to add it to the cart — out-of-stock products appear dimmed and cannot be tapped (unless **Allow oversell** is enabled in Settings → Stock)
-3. If a product in your cart goes out of stock (e.g. stock adjusted elsewhere), a snackbar warns you with the product name; the item stays in the cart with qty clamped to available stock
-4. Adjust quantity with `+` / `-` controls, or **tap the quantity number** to open a numeric input dialog with stock info and clamping; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
-5. **Cart layout** — Items display in a single-row 3-zone layout (product info | stepper | price). Swipe right to delete (with undo), swipe left to increment quantity, and long-press to drag-and-reorder items. Discount chips appear inline with the price
-6. **Compact modes** — Tap the density toggle button in the cart header to switch between Normal ↔ Ultra-Compact layouts
-7. **Resizable panel** — Drag the handle between the catalog and cart to resize the panel, or use the size slider in the cart header for Small/Large presets
-8. **Apply discounts** (optional):
-   - Tap the 🏷️ tag icon on any cart item → choose **%** or **฿**, enter value, tap Apply
-   - Tap **Apply cart discount** below the subtotal for a bill-wide discount
-   - Payment sheet shows the full breakdown: Subtotal → discounts → Total
-9. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, search, switch between customers / tables, or delete; cart auto-saves every 1.5 s
-10. Tap **Checkout** → full-screen `CheckoutPage` opens
-11. Select **Cash / Transfer / Card / PromptPay**
-12. For cash, use quick cash chips or enter the amount received — change is calculated automatically
-13. Optionally add a sale note
-14. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
-
-> **Review cart before checkout:** Tap the 🛒 cart icon with the item-count badge in the app bar to open `CartReviewPage` — tap a product image for zoom (with share and info buttons in the viewer toolbar), tap a row for product detail, use +/- to adjust quantities, or delete items with undo. The total updates live on every change.
-
-On compact phones, the cart appears as a bottom command panel. On tablet or expanded width layouts, the cart remains visible beside the product grid.
-
-### Products tab
-
-- Toggle between **List** and **Grid** view with the icon pair in the app bar
-- Use category **filter chips** to narrow the catalog; combined with the search bar
-- Each product shows an image avatar via `UnifiedImageWidget` — skeleton shimmer loading while fetching, consistent error placeholder with neutral dark-mode-safe colors, local file with thumbnail for small sizes, or `CachedNetworkImage` for network URLs; traffic-light **stock badge** (green > 5 / orange 1–5 / red 0); inactive products appear dimmed with strikethrough
-- Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form uses a **2-tab layout** (Basic + Advanced) with sticky save button:
-  - **Basic tab** — image (tap to pick from Gallery/Camera, long-press to preview, remove with confirmation), name, price, stock, category picker (bottom sheet with auto-pop selection and "None" clear option)
-  - **Advanced tab** — barcode (scan with camera or enter manually), generate EAN-13 compliant barcode with Luhn check digit (GS1 prefix `200`, auto-padded to 3 digits, collision-checked against DB), SKU, cost, track stock toggle
-  - Image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; `ImageCacheService` enforces 50MB LRU cache eviction automatically
-  - Draft save/restore — unsaved changes prompt to save draft on back press; drafts validate image paths on restore
-- Tap a card to **preview** the product, or long-press to **edit** — the preview page shows a hero image, price breakdown (selling price, cost, profit + margin %), stock status with inline edit button, SKU/barcode with visual barcode rendering and actions (view full, save as PDF, print), and system info (product ID, timestamps)
-- Tap **Manage Categories** (overflow menu ⋮) to open **Category Management** — drag & drop reordering, color + icon picker (10 colors / 21 icons), product count badges, search, and bulk delete
-- Tap **Generate Missing Barcodes** (overflow menu ⋮) to batch-generate EAN-13 barcodes for all products without one — shows confirmation dialog with count, then success snackbar
-- Search filters by name and category in real time
-
-### History tab
-
-- Lists all sales as receipt-like cards, newest first
-- Each card shows receipt number (e.g. `260527-A1-0001`), total, timestamp, and payment method
-- Tap any card to expand the per-item breakdown
-- **Voided sales** display a red **VOIDED** badge, strikethrough amount, dimmed card, and a block icon
-- Expanded card shows:
-  - **VAT breakdown** — when `vatMode` is INCLUSIVE or EXCLUSIVE, Subtotal and VAT (with rate %) rows are shown above the total, using the VAT settings that were active at the time of sale
-  - **Void Sale** button (red) — opens confirmation dialog with optional reason; atomically marks sale as voided, restores stock, and logs VOID_REVERSAL
-  - **Print Receipt** and **Share Receipt** buttons — generates an 80 mm thermal receipt PDF with sale-time VAT values
-- Use the **search bar** (appears below the app bar) to filter by receipt number, payment method, or amount
-- Use the date-range picker (calendar icon) to filter history by period
-
-### Report tab
-
-- Tap the date icon or date filter chip to pick a custom range (default: last 30 days)
-- **Net Revenue** card — shows revenue from completed sales only (voided sales excluded)
-- **Voided Total** card — appears when voided sales exist; shows voided amount and count
-- Payment method breakdown and top 5 products only count completed (non-voided) sales
-- Pull down to refresh the report dashboard
-- Empty states are shown when there are no sales in the selected date range
-
-### Settings tab
-
-The Settings root page uses a **2-level hierarchy**: section headers (General, Store & Sales, Discounts, Payments, System & Data, About) → individual pages. A **search bar** at the top filters settings across all sections in real time. A **dashboard card** shows at-a-glance badges (shop name, language, theme, backup status, PromptPay status, barcode scan status). Each tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
-
----
-
-## Settings
-
-All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value store). Locale, theme, currency, and date format apply immediately; shop info and other text fields are saved automatically.
-
-### Root page
-
-- **Dashboard card** — Gradient card at the top showing current shop name, language, theme, backup status (Safe/Warning/Overdue), and PromptPay status (Active/Not set)
-- **Section headers** — General, Store & Sales, Discounts, Payments, System & Data, About — each lists individual setting pages directly (1 tap to reach any page)
-- **Status chips** — Each tile shows a colored badge: Complete/Incomplete, Active/Not set, Safe/Warning/Overdue, or the current value (language, currency, receipt size)
-- **Search** — Cross-section real-time filtering by title or subtitle across all settings pages
-
-### General Settings
-
-- **Summary card** — Gradient card showing current language, theme, and accessibility status as badge chips
-- **Language** — Tap to open a visual dialog picker with icon-based option cards for Thai (`th`) and English (`en`) — live reload
-- **Theme** — Tap to open a visual dialog picker with icon-based option cards for Light, Dark, or System — live reload
-- **Accessibility mode** — Toggle "Large Text & High Contrast" (default off)
-- **Reset to Defaults** — Confirmation dialog restoring `locale: th`, `themeMode: system`, `accessibilityMode: false`
-
-### Shop Info
-
-- **Preview card** — Live preview showing shop name, address, and phone as they will appear on receipts
-- **Inline form** — All 3 fields visible and editable at once with character counters and phone auto-format (`081-234-5678`)
-- **Receipt size** — `80mm` (thermal) or `A4` dropdown
-
-### Sales Settings
-
-| Setting | Description |
-|---------|-------------|
-| **Currency symbol** | Default `฿` — used in money formatting |
-| **Date format** | Default `dd/MM/yyyy` — `intl` format pattern |
-| **Allow oversell** | Permit selling beyond available stock (default off) |
-| **Low stock threshold** | Stock count at which the product card turns red (default `5`) |
-| **Enable item discount** | Show discount button on each cart item (default off) |
-| **Enable cart discount** | Show bill-wide discount button below subtotal (default off) |
-| **Max discount percent** | Upper limit for percentage discounts (default `0` = unlimited) |
-| **Max discount amount** | Upper limit for fixed-amount discounts (default `0` = unlimited) |
-| **Discount presets** | Named preset groups with type (%/฿) and quick-apply values |
-| **Active discount preset** | Which preset group is active in the sale discount dialog |
-| **VAT mode** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` |
-| **VAT rate** | Percentage (default `7.0`) |
-
-### Receipt Settings
-
-| Setting | Description |
-|---------|-------------|
-| **Receipt note** | Optional footer text on receipts |
-| **Show shop info on receipt** | Toggle on/off |
-| **Auto print prompt** | Ask to print receipt after sale |
-| **Receipt preview style** | `thermal` / `card` / `none` |
-| **Show pre-sale preview** | Show preview in PaymentSheet |
-| **Show post-sale preview** | Show preview in success dialog |
-
-### PromptPay Settings
-
-- **Preview card** — Gradient card showing configured/not-configured state with QR icon and current PromptPay ID
-- **PromptPay ID** — Tap to open validation dialog: phone number (10 digits, starting with 0) or citizen ID (13 digits)
-- **Info card** — Explains how PromptPay ID is used for QR code payments
-
-### Backup Settings
-
-- **Status card** — Gradient card showing backup status (Safe/Warning/Overdue) with last backup date
-- **Backup reminder** — Switch to enable/disable; tap to open frequency picker dialog with preset chips (3/7/14/30 days) or custom input
-- **Encryption** (v0.7.2+) — Toggle to enable AES-256-GCM encryption with PIN-derived PBKDF2 key; PIN is never stored — forgotten PIN = unrecoverable backup
-- **Backup Now** — Manual backup trigger action tile
-- **Export/Restore** — Export database (`.db` or `.db.enc` if encrypted), sales CSV, products CSV; restore from backup file
-
-### Image Settings
-
-| Setting | Description |
-|---------|-------------|
-| **Image max width** | Maximum width for product image compression in pixels (default `800`) |
-| **Image quality** | JPEG quality for product images 1–100 (default `80`) |
-| **Clear image cache** | Removes orphaned/unused product images to free disk space |
-
-### Barcode Settings
-
-| Setting | Description |
-|---------|-------------|
-| **Enable barcode scan** | Show/hide camera scan button on Sale page |
-| **Vibrate on scan** | Haptic vibration feedback when barcode is detected |
-| **Auto-generate prefix** | Numeric prefix for EAN-13 barcodes (default `200`, 1-3 digits, auto-padded to 3 digits) |
-| **Generate Missing Barcodes** | Batch-generate EAN-13 barcodes for all products without one — shows count of products missing barcodes, confirmation dialog, and success message |
-| **Help section** | Expandable guide for non-technical staff on how to use barcodes |
-
-### Draft Settings
-
-| Setting | Description |
-|---------|-------------|
-| **Max drafts** | Maximum number of simultaneous draft carts (default `30`, range 5–100) |
-| **Compact cart** | Reduce padding and font size in the cart panel |
-| **Ultra-compact cart** | Hide unit price line and shrink avatar for maximum density |
-
-### About App
-
-- **App icon + name + version** — Shows app name "Promsell POS CE", version and build number (retrieved via `package_info_plus`)
-- **Description** — "Offline-first mobile POS for small businesses"
-- **Built with** — Tech stack summary (Flutter, Drift SQLite)
-- **Contact** — Support email (mnlizard.official@gmail.com)
-- **Privacy Policy** — Opens in-app `PrivacyPolicyPage` with 6 sections: Data Collection, Third-Party Services, Data Storage, Backup Encryption, Permissions, Contact
-- **Open Source License** — Opens in-app `AppLicensePage` showing full AGPL-3.0 license text (loaded from `LICENSE` file, selectable for copy)
-- **Footer** — Copyright notice "© 2026 Promsell POS CE · AGPL-3.0"
-
----
-
-## Localization (i18n)
-
-Promsell uses Flutter's official ARB localization workflow.
-
-### Files
-
-```
-lib/l10n/
-├── app_th.arb            # Thai (template / source of truth)
-└── app_en.arb            # English
-```
-
-Config: [`l10n.yaml`](../l10n.yaml)
-
-```yaml
-arb-dir: lib/l10n
-template-arb-file: app_th.arb
-output-localization-file: app_localizations.dart
-```
-
-### Adding a new string
-
-1. Add the key + Thai value to `lib/l10n/app_th.arb`:
-
-   ```json
-   {
-     "myNewKey": "ข้อความใหม่"
-   }
-   ```
-
-2. Add the same key with the English translation to `lib/l10n/app_en.arb`:
-
-   ```json
-   {
-     "myNewKey": "New text"
-   }
-   ```
-
-3. Regenerate:
-
-   ```bash
-   flutter gen-l10n
-   ```
-
-4. Use in code:
-
-   ```dart
-   import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-
-   Text(context.l10n.myNewKey)
-   ```
-
-### Adding a new language
-
-1. Create `lib/l10n/app_<code>.arb` (e.g. `app_lo.arb` for Lao)
-2. Translate every key from `app_th.arb`
-3. Add the locale to `MaterialApp.supportedLocales` in `lib/main.dart`
-4. Run `flutter gen-l10n`
-
-### Parametrized strings (plurals, numbers)
-
-```json
-{
-  "salesCount": "{count, plural, =0{No sales} =1{1 sale} other{{count} sales}}",
-  "@salesCount": {
-    "placeholders": { "count": { "type": "int" } }
-  }
-}
-```
-
-Then call: `context.l10n.salesCount(42)` → `"42 sales"`
-
----
-
-## Database (Drift)
-
-Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-safe SQLite access.
-
-### Schema location
-
-```
-lib/core/database/
-├── app_database.dart       # Database class, schema v17, migration, indexes, seed
-├── app_database.g.dart     # GENERATED — do not edit
-└── tables/
-    ├── products_table.dart
-    ├── sales_table.dart
-    ├── sale_items_table.dart
-    ├── categories_table.dart
-    ├── inventory_logs_table.dart
-    ├── settings_table.dart
-    ├── draft_carts_table.dart
-    ├── draft_cart_items_table.dart
-    └── daily_closes_table.dart
-```
-
-All tables use **UUIDv4 TEXT** primary keys generated by `IdGenerator.newId()`.
-
-### Regenerating after schema change
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
-
-Or watch mode for continuous regeneration during development:
-
-```bash
-dart run build_runner watch --delete-conflicting-outputs
-```
-
-### Schema migrations
-
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **17** (v0.8.4). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
-
-> **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
-
----
-
-## Architecture overview
-
-> **Deep dive:** See [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) for C4 diagrams, full data flow sequences, transaction boundaries, DI graph, and Architecture Decision Records.
-
-Promsell follows **Clean Architecture** with a **feature-first** folder layout.
-
-### High-level flow
-
-```
-┌─────────────────────────────────────────────────┐
-│  Presentation (Widgets + BLoC/Cubit)            │
-│     ↓ events                  ↑ states          │
-├─────────────────────────────────────────────────┤
-│  Domain (Entities + UseCases + Repository abs.) │
-│     ↓ calls                   ↑ returns         │
-├─────────────────────────────────────────────────┤
-│  Data (Repository impl + DAO)                   │
-│     ↓ SQL                     ↑ rows            │
-├─────────────────────────────────────────────────┤
-│  Drift / SettingsLocalDatasource                │
-└─────────────────────────────────────────────────┘
-```
-
-### Layer responsibilities
-
-| Layer | Responsibility | Example |
-|-------|----------------|---------|
-| **Presentation** | Render UI, dispatch events, react to state | `SalePage`, `CartBloc`, `CheckoutBloc` |
-| **Domain** | Pure business logic, no Flutter imports | `Product` entity, `GetProducts` usecase |
-| **Data** | I/O, DB access, mapping to/from entities | `ProductRepositoryImpl`, Drift DAOs |
-| **Core** | Cross-cutting helpers (DI, extensions, utils) | `injection_container.dart`, `l10n_extension.dart` |
-
-### Dependency direction
-
-Outer layers depend on inner layers. **Domain has zero external dependencies.**
-
-```
-Presentation → Domain ← Data
-```
-
-### Why BLoC + Cubit?
-
-- **Cubit** — for simple state or stream-based data (e.g. `SettingsCubit`, `InventoryLogCubit`)
-- **BLoC** — for event-driven flows (e.g. `ProductBloc`, `CartBloc`, `CheckoutBloc`)
-
-Both are reactive and easy to test.
-
----
-
-## Testing
-
-Promsell has **438 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
-
-### Running tests
-
-```bash
-# Run all tests (includes stress tests)
-flutter test
-
-# Exclude stress tests (faster — recommended for regular development)
-flutter test --exclude-tags stress
-
-# Stress tests only (10k products, 50k sales — may take several minutes)
-flutter test --tags stress --timeout 600s
-
-# Run with coverage report
-flutter test --coverage
-
-# Run a specific test file
-flutter test test/integration/checkout_flow_test.dart
-```
-
-### Test structure
-
-Tests mirror `lib/` structure under `test/`:
-
-- `test/helpers/` — shared mocks (`mocks.dart`), entity fixtures (`fixtures.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`)
-- `test/features/` — per-feature tests: domain (`entities/`, `usecases/`), data (`repositories/`, `datasources/`), presentation (`bloc/`, `pages/`, `widgets/`)
-- `test/integration/` — end-to-end checkout flow + sale integrity (void, adjust stock) + onboarding → first sale with real in-memory SQLite
-- `test/tool/` — stress test seeder (`@Tags(['stress'])`, excluded from default run) — seeds 10k products + 50k sales and measures query performance
-- `test/core/` — utility tests (`MoneyUtils`, etc.)
-- `test/l10n/` — EN/TH translation parity test
-
-### In-memory database testing
-
-Datasource and integration tests use a real SQLite database in memory via `sqlite3_flutter_libs` (FFI). This provides true SQL execution without disk I/O:
-
-```dart
-import 'package:drift/native.dart';
-
-AppDatabase createInMemoryDatabase() {
-  return AppDatabase.forTesting(NativeDatabase.memory());
-}
-```
-
-Add `sqlite3_flutter_libs` to `dev_dependencies` in `pubspec.yaml` for this to work on desktop test runners.
-
----
-
-## Troubleshooting
-
-### `flutter pub get` fails with version conflict
-
-```bash
-flutter pub upgrade --major-versions
-```
-
-### Generated code is out of sync
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-flutter gen-l10n
-```
-
-### App crashes on first launch — "table doesn't exist"
-
-The Drift database file may be stale. Uninstall and reinstall the app, or delete app data:
-
-```bash
-adb shell pm clear com.mnlizard.promsell
-```
-
-### Hot reload not picking up changes
-
-Some changes (new providers, generated code, native plugins) require a **full restart** (`R`), not hot reload (`r`).
-
-### UI overflows on compact screens
-
-Run the app on a small emulator or device and check the Sale, Product form, and payment sheet flows. Compact panels should use scrollable sheets or compact empty states instead of fixed-height content.
-
-```bash
-flutter analyze lib test
-flutter test
-```
-
-If the overflow appears after adding text, verify that the string is localized and fits in Thai and English at larger font scale.
-
-### `flutter analyze` reports unrelated errors
-
-Errors in **other workspace projects** (e.g. `busit_flutter_project`) are not part of Promsell — they can be ignored when scoping analysis to this repo:
-
-```bash
-flutter analyze lib test
-```
+## Reference documents
+
+| Document | Content |
+|----------|---------|
+| [`docs/usage/features.md`](usage/features.md) | Features walkthrough (Sale, Products, History, Report, Settings tabs) + all settings pages with detailed tables |
+| [`docs/usage/development.md`](usage/development.md) | Localization (i18n), Database (Drift), Architecture overview, Testing (1121 tests), Troubleshooting |
 
 ---
 

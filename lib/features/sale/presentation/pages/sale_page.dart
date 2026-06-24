@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/widgets/adaptive_breakpoints.dart';
-import 'package:promsell_pos_ce/core/widgets/barcode_scanner_dialog.dart';
+import 'package:promsell_pos_ce/core/widgets/layout/adaptive_breakpoints.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
@@ -14,15 +13,16 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart_panel.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/compact_cart_fab.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts_bottom_sheet.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/sale_catalog.dart';
-import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_panel.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/compact_cart_fab.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_catalog.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/cart_resize_controller.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/drag_handle.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/sale_app_bar_actions.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/search/search_history_cubit.dart';
 
 class SalePage extends StatelessWidget {
   const SalePage({super.key});
@@ -58,19 +58,7 @@ class _SaleView extends StatefulWidget {
 }
 
 class _SaleViewState extends State<_SaleView> {
-  late final ValueNotifier<double> _cartHeight;
-  late final ValueNotifier<double> _cartWidth;
-  late final ValueNotifier<bool> _isDraggingHandle;
-
-  static const double _minCartHeightPortrait = 320;
-  static const double _minCartHeightLandscape = 280;
-  static const double _maxCartHeightRatioPortrait = 0.95;
-  static const double _maxCartHeightRatioLandscape = 0.90;
-
-  static const double _minCartWidth = 300;
-  static const double _maxCartWidth = 560;
-  static const double _handleHeight = 24;
-  static const double _snapTolerance = 18;
+  late final CartResizeController _resize;
 
   bool _hasStockOrPriceChange(List<Product> prev, List<Product> curr) {
     final prevMap = {for (final p in prev) p.id: p};
@@ -89,108 +77,13 @@ class _SaleViewState extends State<_SaleView> {
   @override
   void initState() {
     super.initState();
-    _cartHeight = ValueNotifier(280);
-    _cartWidth = ValueNotifier(390);
-    _isDraggingHandle = ValueNotifier(false);
+    _resize = CartResizeController();
   }
 
   @override
   void dispose() {
-    _cartHeight.dispose();
-    _cartWidth.dispose();
-    _isDraggingHandle.dispose();
+    _resize.dispose();
     super.dispose();
-  }
-
-  double _minCartHeight(BuildContext context) {
-    final isLandscape =
-        MediaQuery.orientationOf(context) == Orientation.landscape;
-    return isLandscape ? _minCartHeightLandscape : _minCartHeightPortrait;
-  }
-
-  double _maxCartHeightRatio(BuildContext context) {
-    final isLandscape =
-        MediaQuery.orientationOf(context) == Orientation.landscape;
-    return isLandscape
-        ? _maxCartHeightRatioLandscape
-        : _maxCartHeightRatioPortrait;
-  }
-
-  double _maxCartHeight(BuildContext context) =>
-      MediaQuery.sizeOf(context).height * _maxCartHeightRatio(context);
-
-  void _onVerticalDrag(BuildContext context, DragUpdateDetails details) {
-    final minH = _minCartHeight(context);
-    final maxH = _maxCartHeight(context);
-    _cartHeight.value = (_cartHeight.value - details.delta.dy).clamp(
-      minH,
-      maxH,
-    );
-  }
-
-  void _onHorizontalDrag(BuildContext context, DragUpdateDetails details) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
-    final dxAdjusted = isRtl ? -details.delta.dx : details.delta.dx;
-    _cartWidth.value = (_cartWidth.value - dxAdjusted).clamp(
-      _minCartWidth,
-      _maxCartWidth,
-    );
-  }
-
-  void _onDragEnd() => _isDraggingHandle.value = false;
-
-  void _onDragStart() => _isDraggingHandle.value = true;
-
-  void _onVerticalDragEnd(BuildContext context, DragEndDetails details) {
-    final maxH = _maxCartHeight(context);
-    final minH = _minCartHeight(context);
-    final presets = <double>[minH, maxH];
-    for (final p in presets) {
-      if ((_cartHeight.value - p).abs() < _snapTolerance) {
-        _cartHeight.value = p;
-        break;
-      }
-    }
-    _onDragEnd();
-  }
-
-  void _onHorizontalDragEnd(DragEndDetails details) {
-    const presets = <double>[320, 500];
-    for (final p in presets) {
-      if ((_cartWidth.value - p).abs() < _snapTolerance) {
-        _cartWidth.value = p;
-        break;
-      }
-    }
-    _onDragEnd();
-  }
-
-  void _onSizePresetChanged(BuildContext context, double value) {
-    if (value <= 0.0) {
-      _cartHeight.value = _minCartHeight(context);
-    } else {
-      _cartHeight.value = _maxCartHeight(context);
-    }
-  }
-
-  void _onWidthPresetChanged(double value) {
-    if (value <= 0.0) {
-      _cartWidth.value = 320;
-    } else {
-      _cartWidth.value = 500;
-    }
-  }
-
-  double? _currentSizePreset(BuildContext context) {
-    if (_cartHeight.value <= _minCartHeight(context) + 1) return 0.0;
-    if (_cartHeight.value >= _maxCartHeight(context) - 1) return 1.0;
-    return null;
-  }
-
-  double? _currentWidthPreset() {
-    if ((_cartWidth.value - 320).abs() < 10) return 0.0;
-    if ((_cartWidth.value - 500).abs() < 10) return 1.0;
-    return null;
   }
 
   @override
@@ -205,95 +98,64 @@ class _SaleViewState extends State<_SaleView> {
       (SettingsCubit c) => c.state.settings.cartCompactMode,
     );
 
-    return BlocListener<ProductBloc, ProductState>(
-      listenWhen: (prev, curr) =>
-          curr.status == ProductStatus.success &&
-          prev.products != curr.products &&
-          _hasStockOrPriceChange(prev.products, curr.products),
-      listener: (context, state) {
-        context.read<CartBloc>().add(CartProductsRefreshed(state.products));
-      },
-      child: BlocListener<CartBloc, CartState>(
-        listenWhen: (prev, curr) =>
-            prev.stockWarning != curr.stockWarning && curr.stockWarning != null,
-        listener: (context, state) {
-          AppSnackBar.info(context, state.stockWarning!);
-        },
-        child: BlocListener<CartBloc, CartState>(
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ProductBloc, ProductState>(
+          listenWhen: (prev, curr) =>
+              curr.status == ProductStatus.success &&
+              prev.products != curr.products &&
+              _hasStockOrPriceChange(prev.products, curr.products),
+          listener: (context, state) {
+            context.read<CartBloc>().add(CartProductsRefreshed(state.products));
+          },
+        ),
+        BlocListener<CartBloc, CartState>(
+          listenWhen: (prev, curr) =>
+              prev.stockWarning != curr.stockWarning &&
+              curr.stockWarning != null,
+          listener: (context, state) {
+            AppSnackBar.info(context, state.stockWarning!);
+          },
+        ),
+        BlocListener<CartBloc, CartState>(
           listenWhen: (prev, curr) =>
               prev.errorNonce != curr.errorNonce && curr.errorMessage != null,
           listener: (context, state) {
             final l10n = context.l10n;
             final msg = state.errorMessage == 'barcodeNotFound'
                 ? l10n.barcodeNotFound
+                : state.errorMessage == 'errorOccurred'
+                ? l10n.errorOccurred
                 : state.errorMessage!;
             AppSnackBar.error(context, msg);
           },
-          child: BlocListener<CartBloc, CartState>(
-            listenWhen: (prev, curr) => prev.items != curr.items,
-            listener: (context, state) {
-              context.read<DraftBloc>().add(DraftAutoSaveRequested(state));
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                title: Text(context.l10n.salePageTitle),
-                actions: [
-                  BlocBuilder<SettingsCubit, SettingsState>(
-                    builder: (ctx, settingsState) {
-                      if (!settingsState.settings.barcodeScanEnabled) {
-                        return const SizedBox.shrink();
-                      }
-                      return IconButton(
-                        icon: const Icon(Icons.camera_alt_outlined),
-                        tooltip: context.l10n.scanBarcode,
-                        onPressed: () async {
-                          final bloc = context.read<CartBloc>();
-                          final settings = settingsState.settings;
-                          final barcode = await showProductBarcodeScanner(
-                            context,
-                            beepOnScan: settings.barcodeBeepOnScan,
-                            formats: barcodeFormatsFromNames(
-                              settings.barcodeEnabledFormats,
-                            ),
-                            autoOpenManualDelay:
-                                settings.barcodeAutoOpenManualDelay,
-                          );
-                          if (barcode != null && barcode.isNotEmpty) {
-                            bloc.add(CartBarcodeScanned(barcode));
-                          }
-                        },
-                      );
-                    },
-                  ),
-                  BlocBuilder<DraftBloc, DraftState>(
-                    builder: (ctx, state) => IconButton(
-                      icon: Badge(
-                        isLabelVisible: state.activeDraftId != null,
-                        child: const Icon(Icons.bookmarks_outlined),
-                      ),
-                      tooltip: ctx.l10n.draftsTitle,
-                      onPressed: () => DraftsBottomSheet.show(ctx),
-                    ),
-                  ),
-                ],
-              ),
-              body: SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: compactCart
-                            ? const SaleCatalog()
-                            : (isExpanded
-                                  ? _buildExpandedLayout()
-                                  : _buildCompactLayout()),
-                      ),
-                      if (compactCart) const CompactCartFab(),
-                    ],
-                  ),
+        ),
+        BlocListener<CartBloc, CartState>(
+          listenWhen: (prev, curr) => prev.items != curr.items,
+          listener: (context, state) {
+            context.read<DraftBloc>().add(DraftAutoSaveRequested(state));
+          },
+        ),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(context.l10n.salePageTitle),
+          actions: const [SaleAppBarActions()],
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: compactCart
+                      ? const SaleCatalog()
+                      : (isExpanded
+                            ? _buildExpandedLayout()
+                            : _buildCompactLayout()),
                 ),
-              ),
+                if (compactCart) const CompactCartFab(),
+              ],
             ),
           ),
         ),
@@ -305,62 +167,34 @@ class _SaleViewState extends State<_SaleView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxCartH =
-            (constraints.maxHeight * _maxCartHeightRatio(context) -
-                    _handleHeight)
-                .clamp(_minCartHeight(context), double.infinity);
+            (constraints.maxHeight * _resize.maxCartHeight(context) / 1 - 24)
+                .clamp(_resize.minCartHeight(context), double.infinity);
         return Column(
           children: [
             const Expanded(child: SaleCatalog()),
-            MouseRegion(
-              cursor: SystemMouseCursors.resizeRow,
-              child: GestureDetector(
-                onVerticalDragStart: (_) => _onDragStart(),
-                onVerticalDragUpdate: (d) => _onVerticalDrag(context, d),
-                onVerticalDragEnd: (d) => _onVerticalDragEnd(context, d),
-                onVerticalDragCancel: _onDragEnd,
-                behavior: HitTestBehavior.opaque,
-                child: Semantics(
-                  label: context.l10n.dragToResizeCart,
-                  child: SizedBox(
-                    height: 24,
-                    child: Center(
-                      child: ValueListenableBuilder<bool>(
-                        valueListenable: _isDraggingHandle,
-                        builder: (context, isDragging, child) {
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: isDragging ? 56 : 40,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: isDragging
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(
-                                      context,
-                                    ).colorScheme.outlineVariant,
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            DragHandle(
+              axis: Axis.vertical,
+              isDragging: _resize.isDragging,
+              semanticLabel: context.l10n.dragToResizeCart,
+              onDragStart: _resize.onDragStart,
+              onDragEnd: _resize.onDragEnd,
+              onVerticalDragUpdate: (d) => _resize.onVerticalDrag(context, d),
+              onVerticalDragEnd: (d) => _resize.onVerticalDragEnd(context, d),
             ),
             ValueListenableBuilder<double>(
-              valueListenable: _cartHeight,
+              valueListenable: _resize.cartHeight,
               builder: (context, cartHeight, _) {
                 final effectiveH = cartHeight.clamp(
-                  _minCartHeight(context),
+                  _resize.minCartHeight(context),
                   maxCartH,
                 );
                 return SizedBox(
                   height: effectiveH,
                   child: CartPanel(
                     expanded: false,
-                    sizePreset: _currentSizePreset(context),
+                    sizePreset: _resize.currentSizePreset(context),
                     onSizePresetChanged: (v) =>
-                        _onSizePresetChanged(context, v),
+                        _resize.onSizePresetChanged(context, v),
                   ),
                 );
               },
@@ -376,49 +210,24 @@ class _SaleViewState extends State<_SaleView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Expanded(child: SaleCatalog()),
-        MouseRegion(
-          cursor: SystemMouseCursors.resizeColumn,
-          child: GestureDetector(
-            onHorizontalDragStart: (_) => _onDragStart(),
-            onHorizontalDragUpdate: (d) => _onHorizontalDrag(context, d),
-            onHorizontalDragEnd: _onHorizontalDragEnd,
-            onHorizontalDragCancel: _onDragEnd,
-            behavior: HitTestBehavior.opaque,
-            child: Semantics(
-              label: context.l10n.dragToResizeCart,
-              child: SizedBox(
-                width: 20,
-                child: Center(
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: _isDraggingHandle,
-                    builder: (context, isDragging, child) {
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        width: 6,
-                        height: isDragging ? 56 : 40,
-                        decoration: BoxDecoration(
-                          color: isDragging
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
+        DragHandle(
+          axis: Axis.horizontal,
+          isDragging: _resize.isDragging,
+          semanticLabel: context.l10n.dragToResizeCart,
+          onDragStart: _resize.onDragStart,
+          onDragEnd: _resize.onDragEnd,
+          onHorizontalDragUpdate: (d) => _resize.onHorizontalDrag(context, d),
+          onHorizontalDragEnd: _resize.onHorizontalDragEnd,
         ),
         ValueListenableBuilder<double>(
-          valueListenable: _cartWidth,
+          valueListenable: _resize.cartWidth,
           builder: (context, cartWidth, child) {
             return SizedBox(
               width: cartWidth,
               child: CartPanel(
                 expanded: true,
-                widthPreset: _currentWidthPreset(),
-                onWidthPresetChanged: _onWidthPresetChanged,
+                widthPreset: _resize.currentWidthPreset(),
+                onWidthPresetChanged: _resize.onWidthPresetChanged,
               ),
             );
           },

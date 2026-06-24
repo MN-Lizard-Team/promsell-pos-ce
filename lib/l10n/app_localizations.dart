@@ -3805,6 +3805,72 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'รหัสสินค้า'**
   String get productPreviewProductId;
+
+  /// No description provided for @ok.
+  ///
+  /// In th, this message translates to:
+  /// **'ตกลง'**
+  String get ok;
+
+  /// No description provided for @close.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิด'**
+  String get close;
+
+  /// No description provided for @invalidValue.
+  ///
+  /// In th, this message translates to:
+  /// **'ค่าไม่ถูกต้อง'**
+  String get invalidValue;
+
+  /// No description provided for @discountPresetAdded.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่ม {label}'**
+  String discountPresetAdded(String label);
+
+  /// No description provided for @discountPresetRemoved.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบ {label}'**
+  String discountPresetRemoved(String label);
+
+  /// No description provided for @unsupportedFormat.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปแบบไม่รองรับ'**
+  String get unsupportedFormat;
+
+  /// No description provided for @barcodeSavedSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกบาร์โค้ดสำเร็จ'**
+  String get barcodeSavedSuccess;
+
+  /// No description provided for @barcodePrintedSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'พิมพ์บาร์โค้ดสำเร็จ'**
+  String get barcodePrintedSuccess;
+
+  /// No description provided for @barcodeViewError.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถดูบาร์โค้ดได้'**
+  String get barcodeViewError;
+
+  /// No description provided for @barcodeSaveError.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถบันทึกบาร์โค้ดได้'**
+  String get barcodeSaveError;
+
+  /// No description provided for @barcodePrintError.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถพิมพ์บาร์โค้ดได้'**
+  String get barcodePrintError;
 }
 
 class _AppLocalizationsDelegate

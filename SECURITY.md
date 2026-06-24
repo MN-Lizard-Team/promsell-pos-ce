@@ -63,7 +63,7 @@ Promsell is an **offline-first local app** with no network access by default:
 8. **Image cache eviction** (v0.7.5+) — `ImageCacheService` enforces 50MB LRU limit on `/images/` directory; prevents disk space exhaustion from uncompressed product photos
 9. **PDF generation** — local only, no upload
 10. **Orphaned image cleanup** (v0.8.0+) — `AddProductPage` tracks temp image paths and deletes orphaned files on dispose/discard; `ClearOrphanedImages` usecase removes unused images from `/images/` directory. Prevents disk space exhaustion from abandoned temp files
-11. **Dependency hygiene** — keep `flutter pub upgrade` current; run `flutter pub audit`
+11. **Dependency hygiene** — keep `flutter pub upgrade` current; CI runs `tool/check_outdated.dart` to flag direct dependencies behind by ≥ 1 major version; Dependabot opens PRs for security + version updates (see `.github/dependabot.yml`)
 12. **Barcode case normalization** (v0.8.1+) — barcodes normalized to uppercase on save and lookup; prevents case-mismatch bypass of duplicate detection and lookup
 13. **Barcode manual entry validation** (v0.8.1+) — inline alphanumeric validation before submission; prevents unhandled `ArgumentError` from reaching downstream use cases
 14. **Crash log PII sanitization** (v0.8.3+) — `CrashLogService` sanitizes phone numbers, PromptPay IDs, and citizen IDs in crash logs before persistence; prevents accidental PII leakage in exported crash reports
@@ -72,4 +72,4 @@ Promsell is an **offline-first local app** with no network access by default:
 
 ## Security changelog
 
-For the full fix history, see [CHANGELOG.md](CHANGELOG.md).
+For the full fix history, see [CHANGELOG.md](CHANGELOG.md) (current versions 0.8.x). Older versions archived in [`docs/changelog/`](docs/changelog/).

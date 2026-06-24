@@ -112,7 +112,7 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.8.4+1
+version: 0.8.5+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -134,12 +134,12 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 438 tests pass
+- [ ] `flutter test` — all 1121 tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
-- [ ] `dart run build_runner build` — generated code up to date
+- [ ] `dart run build_runner build` — generated code up to date (files not committed to git)
 - [ ] Version bumped in `pubspec.yaml`
-- [ ] `CHANGELOG.md` updated with release notes
+- [ ] `CHANGELOG.md` updated with release notes (archive old versions to `docs/changelog/` if needed)
 - [ ] Signed with release keystore (Android)
 - [ ] Tested on physical device
 - [ ] Sale flow smoke-tested on compact phone layout
@@ -202,6 +202,19 @@ firebase appdistribution:distribute build/app/outputs/flutter-apk/app-prod-relea
   --app <YOUR_FIREBASE_APP_ID> \
   --groups "internal-testers"
 ```
+
+---
+
+## Dependabot security alerts
+
+Dependabot is configured for weekly `pub` package updates (see `.github/dependabot.yml`). To enable security alerts:
+
+1. Go to **Settings → Security & analysis** in the GitHub repository.
+2. Enable **Dependabot security updates**.
+3. Enable **Dependabot alerts** for the `pub` ecosystem.
+4. Dependabot will automatically scan dependencies against the GitHub Advisory Database and open PRs for vulnerable packages.
+
+The CI workflow also runs `dart pub outdated` and `tool/check_outdated.dart` to flag direct dependencies behind by ≥ 1 major version.
 
 ---
 

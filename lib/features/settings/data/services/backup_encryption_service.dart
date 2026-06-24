@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 
 @LazySingleton()
 class BackupEncryptionService {
@@ -121,7 +122,8 @@ class BackupEncryptionService {
     try {
       await decryptFile(sourcePath: sourcePath, pin: pin);
       return true;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.warning('Backup PIN verification failed', error: e);
       return false;
     }
   }

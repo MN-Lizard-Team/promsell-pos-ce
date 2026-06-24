@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/utils/app_logger.dart';
-import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
-import 'package:promsell_pos_ce/core/widgets/image_source_sheet.dart';
-import 'package:promsell_pos_ce/core/widgets/sticky_action_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/layout/sticky_action_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
-import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
@@ -14,7 +10,10 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_edit_tab_view.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_add/image_source_handler.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_edit_tab_view.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/confirm_delete_dialog.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/unsaved_changes_dialog.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key, this.product});
@@ -49,9 +48,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
   String? _imageThumbnailPath;
   late bool _isActive;
   late bool _trackStock;
-  bool _isPickingImage = false;
   bool _isDirty = false;
   bool _deleting = false;
+  bool _submitted = false;
+
+  late final ImageSourceHandler _imageHandler;
 
   bool get _isEditing => widget.product != null;
 
@@ -69,6 +70,21 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _skuCtrl.addListener(_markDirty);
     _barcodeCtrl.addListener(_markDirty);
     _costCtrl.addListener(_markDirty);
+    _imageHandler = ImageSourceHandler(
+      setState: setState,
+      isMounted: () => mounted,
+      onImagePicked: (path, thumb) {
+        _imagePath = path;
+        _imageThumbnailPath = thumb;
+        _isDirty = true;
+      },
+      onImageRemoved: () {
+        _imagePath = null;
+        _imageUrl = null;
+        _imageThumbnailPath = null;
+        _isDirty = true;
+      },
+    );
   }
 
   void _markDirty() => _isDirty = true;
@@ -94,31 +110,37 @@ class _ProductFormPageState extends State<ProductFormPage> {
     super.dispose();
   }
 
-  bool _submitted = false;
-
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     if (_submitted) return;
     _submitted = true;
     _isDirty = false;
     final bloc = context.read<ProductBloc>();
+    final price = double.tryParse(_priceCtrl.text);
+    final stock = _trackStock
+        ? int.tryParse(_stockCtrl.text)
+        : _isEditing
+        ? widget.product!.stock
+        : int.tryParse(_stockCtrl.text);
+    final cost = double.tryParse(_costCtrl.text);
+    if (price == null || stock == null) {
+      _submitted = false;
+      return;
+    }
+    final sku = _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim();
+    final barcode = _barcodeCtrl.text.trim().isEmpty
+        ? null
+        : _barcodeCtrl.text.trim();
+
     if (_isEditing) {
-      final price = double.tryParse(_priceCtrl.text);
-      final stock = _trackStock
-          ? int.tryParse(_stockCtrl.text)
-          : widget.product!.stock;
-      final cost = double.tryParse(_costCtrl.text);
-      if (price == null || stock == null) return;
       bloc.add(
         ProductUpdated(
           widget.product!.copyWith(
             name: _nameCtrl.text.trim(),
             price: price,
             stock: stock,
-            sku: _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
-            barcode: _barcodeCtrl.text.trim().isEmpty
-                ? null
-                : _barcodeCtrl.text.trim(),
+            sku: sku,
+            barcode: barcode,
             cost: cost,
             categoryId: _selectedCategory?.id,
             imagePath: _imagePath,
@@ -130,18 +152,13 @@ class _ProductFormPageState extends State<ProductFormPage> {
         ),
       );
     } else {
-      final price = double.tryParse(_priceCtrl.text);
-      final stock = int.tryParse(_stockCtrl.text);
-      if (price == null || stock == null) return;
       bloc.add(
         ProductAdded(
           name: _nameCtrl.text.trim(),
           price: price,
           stock: stock,
-          sku: _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
-          barcode: _barcodeCtrl.text.trim().isEmpty
-              ? null
-              : _barcodeCtrl.text.trim(),
+          sku: sku,
+          barcode: barcode,
           categoryId: _selectedCategory?.id,
           imagePath: _imagePath,
           imageUrl: _imageUrl,
@@ -154,123 +171,132 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CategoryBloc, CategoryState>(
-      listenWhen: (prev, curr) =>
-          prev.categories != curr.categories &&
-          curr.categories.isNotEmpty &&
-          _selectedCategory == null,
-      listener: (ctx, state) => _tryLookupCategory(state.categories),
-      child: BlocListener<ProductBloc, ProductState>(
-        listenWhen: (prev, curr) =>
-            (_submitted || _deleting) && prev.saveStatus != curr.saveStatus,
-        listener: (ctx, state) {
-          if (state.saveStatus == ProductSaveStatus.saved) {
-            Navigator.pop(ctx, true);
-          } else if (state.saveStatus == ProductSaveStatus.error) {
-            _submitted = false;
-            _deleting = false;
-            final msg = state.errorMessage == 'duplicateBarcode'
-                ? ctx.l10n.duplicateBarcode
-                : state.errorMessage ?? ctx.l10n.errorOccurred;
-            AppSnackBar.error(ctx, msg);
-          }
-        },
-        child: PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) async {
-            if (didPop) return;
-            if (!_isDirty || _submitted || _deleting) {
-              if (!context.mounted) return;
-              Navigator.of(context).pop();
-              return;
-            }
-            final shouldPop = await _showUnsavedDialog();
-            if (shouldPop && context.mounted) {
-              Navigator.of(context).pop();
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<CategoryBloc, CategoryState>(
+          listenWhen: (prev, curr) =>
+              prev.categories != curr.categories &&
+              curr.categories.isNotEmpty &&
+              _selectedCategory == null,
+          listener: (ctx, state) => _tryLookupCategory(state.categories),
+        ),
+        BlocListener<ProductBloc, ProductState>(
+          listenWhen: (prev, curr) =>
+              (_submitted || _deleting) && prev.saveStatus != curr.saveStatus,
+          listener: (ctx, state) {
+            if (state.saveStatus == ProductSaveStatus.saved) {
+              Navigator.pop(ctx, true);
+            } else if (state.saveStatus == ProductSaveStatus.error) {
+              _submitted = false;
+              _deleting = false;
+              final msg = state.errorMessage == 'duplicateBarcode'
+                  ? ctx.l10n.duplicateBarcode
+                  : state.errorMessage ?? ctx.l10n.errorOccurred;
+              AppSnackBar.error(ctx, msg);
             }
           },
-          child: DefaultTabController(
-            length: 4,
-            child: Scaffold(
-              appBar: AppBar(
-                title: Text(
-                  _isEditing
-                      ? context.l10n.editProductTitle
+        ),
+      ],
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          if (!_isDirty || _submitted || _deleting) {
+            if (!context.mounted) return;
+            Navigator.of(context).pop();
+            return;
+          }
+          final shouldPop = await showUnsavedChangesDialog(context);
+          if (shouldPop && context.mounted) {
+            Navigator.of(context).pop();
+          }
+        },
+        child: DefaultTabController(
+          length: 4,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(
+                _isEditing
+                    ? context.l10n.editProductTitle
+                    : context.l10n.addProduct,
+              ),
+              bottom: TabBar(
+                tabs: [
+                  Tab(
+                    icon: const Icon(Icons.badge_outlined),
+                    text: context.l10n.tabInfo,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.sell_outlined),
+                    text: context.l10n.tabPrice,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.inventory_2_outlined),
+                    text: context.l10n.tabStock,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.settings_outlined),
+                    text: context.l10n.settingsTitle,
+                  ),
+                ],
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+              ),
+            ),
+            bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
+              builder: (_, state) {
+                final isSaving = state.saveStatus == ProductSaveStatus.saving;
+                return StickyActionBar(
+                  primaryLabel: _isEditing
+                      ? context.l10n.save
                       : context.l10n.addProduct,
-                ),
-                bottom: TabBar(
-                  tabs: [
-                    Tab(
-                      icon: const Icon(Icons.badge_outlined),
-                      text: context.l10n.tabInfo,
-                    ),
-                    Tab(
-                      icon: const Icon(Icons.sell_outlined),
-                      text: context.l10n.tabPrice,
-                    ),
-                    Tab(
-                      icon: const Icon(Icons.inventory_2_outlined),
-                      text: context.l10n.tabStock,
-                    ),
-                    Tab(
-                      icon: const Icon(Icons.settings_outlined),
-                      text: context.l10n.settingsTitle,
-                    ),
-                  ],
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                ),
-              ),
-              bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
-                builder: (_, state) {
-                  final isSaving = state.saveStatus == ProductSaveStatus.saving;
-                  return StickyActionBar(
-                    primaryLabel: _isEditing
-                        ? context.l10n.save
-                        : context.l10n.addProduct,
-                    onPrimary: _submit,
-                    dangerLabel: _isEditing ? context.l10n.delete : null,
-                    onDanger: _isEditing ? () => _confirmDelete(context) : null,
-                    isLoading: isSaving,
-                  );
-                },
-              ),
-              body: ProductEditTabView(
-                product: widget.product,
-                formKey: _formKey,
-                nameCtrl: _nameCtrl,
-                priceCtrl: _priceCtrl,
-                stockCtrl: _stockCtrl,
-                skuCtrl: _skuCtrl,
-                barcodeCtrl: _barcodeCtrl,
-                costCtrl: _costCtrl,
-                selectedCategory: _selectedCategory,
-                imagePath: _imagePath,
-                imageUrl: _imageUrl,
-                isActive: _isActive,
-                trackStock: _trackStock,
-                isPickingImage: _isPickingImage,
-                onCategoryChanged: (cat) {
-                  _markDirty();
-                  setState(() => _selectedCategory = cat);
-                },
-                onImageTap: () {
-                  _showImageSourceSheet();
-                },
-                onActiveChanged: (v) {
-                  _markDirty();
-                  setState(() => _isActive = v);
-                },
-                onTrackStockChanged: (v) {
-                  _markDirty();
-                  setState(() => _trackStock = v);
-                },
-                onStockChanged: (v) {
-                  _markDirty();
-                  setState(() => _stockCtrl.text = v.toString());
-                },
-                onDelete: () => _confirmDelete(context),
-              ),
+                  onPrimary: _submit,
+                  dangerLabel: _isEditing ? context.l10n.delete : null,
+                  onDanger: _isEditing ? () => _confirmDelete(context) : null,
+                  isLoading: isSaving,
+                );
+              },
+            ),
+            body: ProductEditTabView(
+              product: widget.product,
+              formKey: _formKey,
+              nameCtrl: _nameCtrl,
+              priceCtrl: _priceCtrl,
+              stockCtrl: _stockCtrl,
+              skuCtrl: _skuCtrl,
+              barcodeCtrl: _barcodeCtrl,
+              costCtrl: _costCtrl,
+              selectedCategory: _selectedCategory,
+              imagePath: _imagePath,
+              imageUrl: _imageUrl,
+              isActive: _isActive,
+              trackStock: _trackStock,
+              isPickingImage: _imageHandler.isPickingImage,
+              onCategoryChanged: (cat) {
+                _markDirty();
+                setState(() => _selectedCategory = cat);
+              },
+              onImageTap: () {
+                _imageHandler.showSheet(
+                  context,
+                  hasImage: _imagePath != null || _imageUrl != null,
+                  productId: _isEditing ? widget.product!.id : 'new',
+                  logTag: 'ProductFormPage',
+                );
+              },
+              onActiveChanged: (v) {
+                _markDirty();
+                setState(() => _isActive = v);
+              },
+              onTrackStockChanged: (v) {
+                _markDirty();
+                setState(() => _trackStock = v);
+              },
+              onStockChanged: (v) {
+                _markDirty();
+                setState(() => _stockCtrl.text = v.toString());
+              },
+              onDelete: () => _confirmDelete(context),
             ),
           ),
         ),
@@ -278,128 +304,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
     );
   }
 
-  Future<bool> _showUnsavedDialog() async {
-    final l10n = context.l10n;
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.unsavedChangesTitle),
-        content: Text(l10n.unsavedChangesMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'discard'),
-            child: Text(l10n.discardDraft),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'cancel'),
-            child: Text(l10n.cancel),
-          ),
-        ],
-      ),
-    );
-    return result == 'discard';
-  }
-
-  void _confirmDelete(BuildContext context) {
-    final l10n = context.l10n;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteProduct),
-        content: Text(l10n.confirmDeleteProduct(widget.product!.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _deleting = true;
-              _isDirty = false;
-              context.read<ProductBloc>().add(
-                ProductDeleted(widget.product!.id),
-              );
-            },
-            child: Text(l10n.delete),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showImageSourceSheet() async {
-    final l10n = context.l10n;
-    final action = await showImageSourceSheet(
+  void _confirmDelete(BuildContext context) async {
+    final confirmed = await showConfirmDeleteDialog(
       context,
-      hasImage: _imagePath != null || _imageUrl != null,
+      widget.product!.name,
     );
-    if (action == null) return;
-    if (!mounted) return;
-
-    if (action == ImageSourceAction.remove) {
-      if (!mounted) return;
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(l10n.removeImage),
-          content: Text(l10n.removeImageConfirm),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(l10n.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(l10n.delete),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true) return;
-      if (!mounted) return;
-      setState(() {
-        _imagePath = null;
-        _imageUrl = null;
-        _imageThumbnailPath = null;
-        _isDirty = true;
-      });
-      return;
-    }
-
-    final imageService = GetIt.I<ProductImageService>();
-    final productId = _isEditing ? widget.product!.id : 'new';
-
-    setState(() => _isPickingImage = true);
-    try {
-      final path = action == ImageSourceAction.gallery
-          ? await imageService.pickFromGallery(productId)
-          : await imageService.pickFromCamera(productId);
-      if (path == null) {
-        setState(() => _isPickingImage = false);
-        return;
-      }
-      final thumbPath = await imageService.generateThumbnail(path);
-      if (!mounted) return;
-      setState(() {
-        _imagePath = path;
-        _imageThumbnailPath = thumbPath;
-        _isPickingImage = false;
-        _isDirty = true;
-      });
-      if (!mounted) return;
-      AppSnackBar.success(context, l10n.imagePicked);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isPickingImage = false);
-      if (!mounted) return;
-      final msg = e.toString().contains('PERMISSION_DENIED_CAMERA')
-          ? l10n.cameraPermissionDenied
-          : e.toString().contains('PERMISSION_DENIED_STORAGE')
-          ? l10n.storagePermissionDenied
-          : l10n.imagePickFailed;
-      AppSnackBar.error(context, msg);
-      AppLogger.error('ProductFormPage image pick failed', error: e);
+    if (confirmed && context.mounted) {
+      _deleting = true;
+      _isDirty = false;
+      context.read<ProductBloc>().add(ProductDeleted(widget.product!.id));
     }
   }
 }

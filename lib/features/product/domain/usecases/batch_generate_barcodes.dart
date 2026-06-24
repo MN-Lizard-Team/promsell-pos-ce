@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -53,8 +54,8 @@ class BatchGenerateBarcodes {
         barcodeLastCounter: Ean13Generator.currentCounter,
       );
       await _settingsRepo.save(updated);
-    } catch (_) {
-      // Counter persistence is best-effort
+    } catch (e) {
+      AppLogger.warning('Barcode counter persistence failed', error: e);
     }
   }
 }

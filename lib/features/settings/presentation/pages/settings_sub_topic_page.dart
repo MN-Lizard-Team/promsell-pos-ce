@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_category_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_category_tile.dart';
 
 class SettingsSubTopicPage extends StatefulWidget {
   const SettingsSubTopicPage({

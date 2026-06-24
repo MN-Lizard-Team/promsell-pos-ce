@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales_preview_card.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales_settings_form.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_preview_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form.dart';
 
 class SalesSettingsPage extends StatelessWidget {
   const SalesSettingsPage({super.key});

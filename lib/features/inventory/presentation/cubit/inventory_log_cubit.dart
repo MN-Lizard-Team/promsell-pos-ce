@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/features/inventory/domain/entities/inventory_log
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
 
-@injectable
+@lazySingleton
 class InventoryLogCubit extends Cubit<InventoryLogState> {
   InventoryLogCubit({required WatchInventoryLogs watchInventoryLogs})
     : _watchInventoryLogs = watchInventoryLogs,
@@ -19,15 +19,19 @@ class InventoryLogCubit extends Cubit<InventoryLogState> {
     emit(const InventoryLogState(status: InventoryLogStatus.loading));
     _sub?.cancel();
     _sub = _watchInventoryLogs(productId: productId).listen(
-      (logs) => emit(
-        InventoryLogState(status: InventoryLogStatus.success, logs: logs),
-      ),
-      onError: (Object e) => emit(
-        InventoryLogState(
-          status: InventoryLogStatus.failure,
-          errorMessage: e.toString(),
-        ),
-      ),
+      (logs) {
+        if (isClosed) return;
+        emit(InventoryLogState(status: InventoryLogStatus.success, logs: logs));
+      },
+      onError: (Object e) {
+        if (isClosed) return;
+        emit(
+          InventoryLogState(
+            status: InventoryLogStatus.failure,
+            errorMessage: e.toString(),
+          ),
+        );
+      },
     );
   }
 

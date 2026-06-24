@@ -7,8 +7,8 @@ import 'package:promsell_pos_ce/features/product/presentation/pages/product_form
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
-import 'package:promsell_pos_ce/core/widgets/modern_toggle_card.dart';
-import 'package:promsell_pos_ce/core/widgets/stock_stepper.dart';
+import 'package:promsell_pos_ce/core/widgets/layout/modern_toggle_card.dart';
+import 'package:promsell_pos_ce/core/widgets/stock/stock_stepper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';

@@ -55,6 +55,10 @@ app.*.map.json
 /android/app/*.keystore
 /android/app/keystore.properties
 
+# Generated code (run: dart run build_runner build)
+**/*.g.dart
+**/*.config.dart
+
 # Aiyu MultiAgent
 .agent
 .windsurf

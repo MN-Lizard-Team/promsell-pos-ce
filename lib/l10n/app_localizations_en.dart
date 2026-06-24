@@ -1985,4 +1985,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productPreviewProductId => 'Product ID';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get invalidValue => 'Invalid value';
+
+  @override
+  String discountPresetAdded(String label) {
+    return 'Added $label';
+  }
+
+  @override
+  String discountPresetRemoved(String label) {
+    return 'Removed $label';
+  }
+
+  @override
+  String get unsupportedFormat => 'Unsupported format';
+
+  @override
+  String get barcodeSavedSuccess => 'Barcode saved successfully';
+
+  @override
+  String get barcodePrintedSuccess => 'Barcode printed successfully';
+
+  @override
+  String get barcodeViewError => 'Failed to view barcode';
+
+  @override
+  String get barcodeSaveError => 'Failed to save barcode';
+
+  @override
+  String get barcodePrintError => 'Failed to print barcode';
 }

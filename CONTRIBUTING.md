@@ -14,7 +14,7 @@ cd promsell-pos-ce
 # 2. Install dependencies
 flutter pub get
 
-# 3. Generate code
+# 3. Generate code (generated files are NOT committed — see .gitignore)
 flutter gen-l10n
 dart run build_runner build --delete-conflicting-outputs
 
@@ -74,6 +74,7 @@ Before submitting, verify:
 - [ ] `flutter analyze lib test` passes with no errors
 - [ ] `flutter test` passes
 - [ ] Code generation is up to date (`flutter gen-l10n`, `build_runner build`)
+- [ ] No generated files (`*.g.dart`, `*.config.dart`) staged in git
 - [ ] Commit messages follow Conventional Commits format
 - [ ] PR description explains the change and motivation
 - [ ] New strings added to both `app_th.arb` and `app_en.arb`
@@ -144,7 +145,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **438 automated tests**. All must pass before submitting a PR.
+The project has **1121 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests (includes stress tests)
@@ -236,7 +237,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current 0.8.x) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)

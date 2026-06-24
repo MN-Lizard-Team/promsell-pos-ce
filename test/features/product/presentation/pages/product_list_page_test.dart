@@ -14,7 +14,7 @@ import 'package:promsell_pos_ce/features/settings/data/datasources/settings_loca
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
-import 'package:promsell_pos_ce/core/widgets/search_history_cubit.dart';
+import 'package:promsell_pos_ce/core/widgets/search/search_history_cubit.dart';
 
 void main() {
   late MockProductBloc mockProductBloc;

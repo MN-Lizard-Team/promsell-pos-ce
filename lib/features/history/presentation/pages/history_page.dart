@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
-import 'package:promsell_pos_ce/core/widgets/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
@@ -12,7 +12,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_page.dart';
-import 'package:promsell_pos_ce/features/history/presentation/widgets/sale_expansion_tile.dart';
+import 'package:promsell_pos_ce/features/history/presentation/widgets/tiles/sale_expansion_tile.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});

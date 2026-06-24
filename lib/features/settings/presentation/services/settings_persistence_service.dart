@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
@@ -31,7 +32,15 @@ class SettingsPersistenceService {
 
   Future<void> _save(Settings settings) async {
     if (_isDisposed) return;
-    await _repository.save(settings);
+    try {
+      await _repository.save(settings);
+    } catch (e, stack) {
+      AppLogger.error(
+        'SettingsPersistenceService._save failed',
+        error: e,
+        stack: stack,
+      );
+    }
   }
 
   Future<void> dispose() async {

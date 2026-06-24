@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/widgets/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/features/report/domain/extensions/report_calculator.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
-import 'package:promsell_pos_ce/features/report/presentation/widgets/report_date_range_card.dart';
-import 'package:promsell_pos_ce/features/report/presentation/widgets/report_payment_method_card.dart';
-import 'package:promsell_pos_ce/features/report/presentation/widgets/report_promptpay_card.dart';
-import 'package:promsell_pos_ce/features/report/presentation/widgets/report_top_products_card.dart';
-import 'package:promsell_pos_ce/features/report/presentation/widgets/summary_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_date_range_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_payment_method_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_promptpay_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_top_products_card.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/summary_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class ReportPage extends StatefulWidget {

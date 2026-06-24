@@ -5,7 +5,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout_body.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CheckoutPage extends StatelessWidget {

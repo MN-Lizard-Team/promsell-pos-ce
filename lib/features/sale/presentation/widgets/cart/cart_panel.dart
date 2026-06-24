@@ -1,0 +1,152 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_header.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_item_row.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_total_bar.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/sale_receipt_dialog.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+
+class CartPanel extends StatefulWidget {
+  const CartPanel({
+    super.key,
+    required this.expanded,
+    this.sizePreset,
+    this.onSizePresetChanged,
+    this.widthPreset,
+    this.onWidthPresetChanged,
+  });
+
+  final bool expanded;
+  final double? sizePreset;
+  final ValueChanged<double>? onSizePresetChanged;
+  final double? widthPreset;
+  final ValueChanged<double>? onWidthPresetChanged;
+
+  @override
+  State<CartPanel> createState() => _CartPanelState();
+}
+
+class _CartPanelState extends State<CartPanel> {
+  bool _isShowingReceipt = false;
+
+  Widget _buildReorderableList(List<CartItem> items, String currency) {
+    return ReorderableListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      itemCount: items.length,
+      // ignore: deprecated_member_use
+      onReorder: (oldIndex, newIndex) {
+        if (newIndex > oldIndex) newIndex--;
+        final reordered = List<CartItem>.from(items);
+        final moved = reordered.removeAt(oldIndex);
+        reordered.insert(newIndex, moved);
+        context.read<CartBloc>().add(
+          CartItemsReordered(reordered.map((i) => i.product.id).toList()),
+        );
+      },
+      itemBuilder: (_, index) {
+        final item = items[index];
+        return Padding(
+          key: ValueKey(item.product.id),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: CartItemRow(
+            item: item,
+            currency: currency,
+            ultraCompact: context
+                .watch<SettingsCubit>()
+                .state
+                .settings
+                .ultraCompactMode,
+            dragHandleIndex: index,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = context.watch<SettingsCubit>().state.settings.currency;
+
+    return BlocListener<CheckoutBloc, CheckoutState>(
+      listenWhen: (prev, curr) => curr.status == CheckoutStatus.success,
+      listener: (ctx, state) {
+        if (_isShowingReceipt) return;
+        final settings = ctx.read<SettingsCubit>().state.settings;
+        if (settings.autoPrintPrompt && state.lastSale != null) {
+          final sale = state.lastSale!;
+          _isShowingReceipt = true;
+          // ADR-009: Defer dialog push to next frame so the modal/page
+          // listener can pop first, avoiding route stack corruption.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (ctx.mounted) {
+              SaleReceiptDialog.show(ctx, sale, settings).then((_) {
+                _isShowingReceipt = false;
+                if (ctx.mounted) {
+                  ctx.read<CheckoutBloc>().add(const CheckoutReset());
+                }
+              });
+            }
+          });
+        } else {
+          AppSnackBar.success(ctx, ctx.l10n.saleSavedSuccess);
+          ctx.read<CheckoutBloc>().add(const CheckoutReset());
+        }
+      },
+      child: BlocBuilder<CartBloc, CartState>(
+        builder: (ctx, state) {
+          final theme = Theme.of(ctx);
+          final items = state.items;
+          final draftState = ctx.watch<DraftBloc>().state;
+
+          final content = Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CartHeader(
+                  cartState: state,
+                  draftState: draftState,
+                  expanded: widget.expanded,
+                  sizePreset: widget.sizePreset,
+                  onSizePresetChanged: widget.onSizePresetChanged,
+                  widthPreset: widget.widthPreset,
+                  onWidthPresetChanged: widget.onWidthPresetChanged,
+                ),
+                if (state.isEmpty)
+                  Expanded(
+                    child: AppEmptyState(
+                      icon: Icons.shopping_cart_outlined,
+                      title: ctx.l10n.tapProductToAdd,
+                    ),
+                  )
+                else ...[
+                  Expanded(child: _buildReorderableList(items, currency)),
+                  CartTotalBar(state: state, currency: currency),
+                ],
+              ],
+            ),
+          );
+
+          return content;
+        },
+      ),
+    );
+  }
+}

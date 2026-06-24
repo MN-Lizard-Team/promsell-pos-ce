@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:promsell_pos_ce/core/image/image_cache_service.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
+import 'package:promsell_pos_ce/features/product/data/services/image_permission_exception.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 abstract class ProductImageService {
@@ -48,7 +49,7 @@ class ProductImageServiceImpl implements ProductImageService {
     if (Platform.isAndroid || Platform.isIOS) {
       final photos = await Permission.photos.request();
       if (!photos.isGranted && !photos.isLimited) {
-        throw Exception('PERMISSION_DENIED_STORAGE');
+        throw const ImagePermissionException(type: PermissionType.storage);
       }
     }
     final xFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -65,7 +66,7 @@ class ProductImageServiceImpl implements ProductImageService {
     if (Platform.isAndroid || Platform.isIOS) {
       final camera = await Permission.camera.request();
       if (!camera.isGranted) {
-        throw Exception('PERMISSION_DENIED_CAMERA');
+        throw const ImagePermissionException(type: PermissionType.camera);
       }
     }
     final xFile = await _picker.pickImage(source: ImageSource.camera);
