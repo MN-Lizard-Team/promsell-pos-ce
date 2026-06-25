@@ -44,7 +44,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
 
-> **Latest Release: v0.8.5** — Test suite green: **1121 passing**, `flutter analyze` clean. Fixed all failing widget tests and dialog `TextEditingController` lifecycle issues. CHANGELOG archived by minor version, generated code removed from git tracking, dependency vulnerability scanning in CI + Dependabot.
+> **Latest Release: v0.8.6** — NavBar overhaul, Product Preview redesign, persistent barcode images (`BarcodeImageService` via `RenderRepaintBoundary`), `Ean13Generator` refactored to `@injectable`, theme polish (WCAG AA), QuickEdit upgrade. Test suite green: **1259 passing**, `flutter analyze` clean, coverage **54.5%**.
 
 ---
 
@@ -135,7 +135,7 @@ promsell-pos-ce/
 │   │   └── widgets/           # shared UI primitives
 │   ├── features/
 │   │   ├── sale/              # Cart + checkout (CartBloc, DraftBloc, CheckoutBloc)
-│   │   ├── product/           # CRUD inventory, barcode, category management
+│   │   ├── product/           # CRUD inventory, barcode + image generation, category management
 │   │   ├── receipt/           # PDF receipt, labels, PromptPay QR
 │   │   ├── history/           # Sale history viewer + void dialog
 │   │   ├── report/            # Analytics dashboard (net revenue)
@@ -156,14 +156,14 @@ promsell-pos-ce/
 │   └── readme/                # Features, roadmap, testing (split from README)
 ├── android/                   # Android platform code
 ├── ios/                       # iOS platform code
-├── test/                      # 438 tests (unit + widget + integration)
+├── test/                      # 1259 tests (unit + widget + integration)
 ├── pubspec.yaml
 ├── l10n.yaml
 ├── CODEBASE.md                # System overview, architecture, links
 ├── CONTRIBUTING.md            # Contribution guide
 ├── CODE_OF_CONDUCT.md
 ├── SECURITY.md
-├── CHANGELOG.md               # Current versions (0.8.x) + archive links
+├── CHANGELOG.md               # Current versions (v0.8.6) + archive links
 ├── LICENSE
 └── README.md
 ```
@@ -238,7 +238,7 @@ features/<name>/
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Build, signing, release checklist, smoke test |
 | [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md) | Privacy policy template for Play Store / App Store |
 | [`docs/STORE_SUBMISSION.md`](docs/STORE_SUBMISSION.md) | Store submission checklist: keystore, screenshots, build commands, console setup |
-| [`CHANGELOG.md`](CHANGELOG.md) | Current version history (0.8.x) + archive links to older versions |
+| [`CHANGELOG.md`](CHANGELOG.md) | Current version history (v0.8.6) + archive links to older versions |
 | [`docs/changelog/`](docs/changelog/) | Archived changelogs by minor version (v0.1.x–v0.7.x) |
 
 ### Split references
@@ -247,7 +247,7 @@ features/<name>/
 |----------|----------|
 | [`docs/readme/features.md`](docs/readme/features.md) | Full features table (16 features) + tech stack (12 layers) |
 | [`docs/readme/roadmap.md`](docs/readme/roadmap.md) | Phase 1 milestones (R3–R17) + future plans + release timeline |
-| [`docs/readme/testing.md`](docs/readme/testing.md) | 1121 tests across 9 layers + test pyramid + run commands |
+| [`docs/readme/testing.md`](docs/readme/testing.md) | 1259 tests across 9 layers + test pyramid + run commands |
 
 ---
 
@@ -286,6 +286,6 @@ Built by **[MN Lizard Team](https://github.com/MN-Lizard-Team)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.8.5 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.6 · AGPL-3.0</sub>
 
 </div>

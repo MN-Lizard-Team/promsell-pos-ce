@@ -37,17 +37,20 @@ class SettingsSectionCard extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(st.cardRadius),
-            child: Column(
-              children: _buildChildrenWithDividers(
-                children
-                    .map(
-                      (c) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: c,
-                      ),
-                    )
-                    .toList(),
-                st,
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                children: _buildChildrenWithDividers(
+                  children
+                      .map(
+                        (c) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: c,
+                        ),
+                      )
+                      .toList(),
+                  st,
+                ),
               ),
             ),
           ),

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor, parseCategoryIcon;
+    show parseCategoryColor;
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_picker_bottom_sheet.dart';
 
 class CategoryField extends StatelessWidget {

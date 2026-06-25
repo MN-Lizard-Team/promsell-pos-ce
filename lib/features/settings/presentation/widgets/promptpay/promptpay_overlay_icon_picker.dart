@@ -69,7 +69,7 @@ class PromptpayOverlayIconPicker extends StatelessWidget {
           size: 20,
           color: isSelected
               ? theme.colorScheme.primary
-              : theme.colorScheme.onSurfaceVariant,
+              : theme.colorScheme.secondary,
         ),
       ),
     );

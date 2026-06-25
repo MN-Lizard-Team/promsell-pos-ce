@@ -69,6 +69,8 @@ Promsell is an **offline-first local app** with no network access by default:
 14. **Crash log PII sanitization** (v0.8.3+) — `CrashLogService` sanitizes phone numbers, PromptPay IDs, and citizen IDs in crash logs before persistence; prevents accidental PII leakage in exported crash reports
 15. **Barcode deduplication migration** (v0.8.3+) — schema v17 automatically clears duplicate barcodes before unique index creation; prevents `StateError` crash on barcode scan when pre-migration duplicates exist
 16. **Dev/prod flavor separation** (v0.8.3+) — separate entry points (`main_dev.dart`, `main_prod.dart`) prevent development configurations from leaking into production builds
+17. **Barcode image generation isolation** (v0.8.6+) — `BarcodeImageService` uses off-screen `RenderRepaintBoundary` for barcode image generation; no external rendering dependencies, no network calls, images saved locally to `/barcodes/` directory only
+18. **Ean13Generator instance isolation** (v0.8.6+) — refactored from static mutable counter to `@injectable` per-instance counter; eliminates cross-test counter contamination and ensures counter state isolation between concurrent operations
 
 ## Security changelog
 

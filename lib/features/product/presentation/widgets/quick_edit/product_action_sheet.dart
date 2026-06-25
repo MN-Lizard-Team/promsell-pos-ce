@@ -139,6 +139,8 @@ void showProductActionSheet(BuildContext context, Product product) {
   final bloc = context.read<ProductBloc>();
   showModalBottomSheet<void>(
     context: context,
+    enableDrag: true,
+    showDragHandle: false,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),

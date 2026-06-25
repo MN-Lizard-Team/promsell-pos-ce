@@ -17,6 +17,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.6] - 2026-06-25
+
+NavBar overhaul + Product Preview redesign + persistent barcode images + theme polish across light/dark modes.
+
+### Highlights
+
+- **NavBar Overhaul** — Renamed `AnimatedNavBar` → `AppBottomNavigationBar`; long-press actions (Sale → New Draft, Product → Add Product); swipe logic extracted to `NavSwipeHelper`; `AnimatedBuilder` scoped to bouncing tab only (~96 fewer rebuilds/cycle); Semantics for VoiceOver/TalkBack; 34 new tests.
+- **Product Preview Redesign** — `SliverAppBar` with collapsing hero, `ProductPreviewImage` widget (shimmer skeleton, retry, tap-to-zoom hint), `PreviewOverlay` with gradient + `StatusChip`, `StickyActionBar` with Delete + Quick Edit, per-product barcode image persistence.
+- **Barcode Images** — `BarcodeImageService` renders via `RenderRepaintBoundary` (600×200, pixelRatio 3.0); persistent `barcodeImagePath` column; save as PNG/JPEG/PDF; copy SKU/barcode; generate from preview.
+- **QuickEdit Upgrade** — Real-time validation, Save disabled when invalid/unchanged, stock Set/Adjust dual-mode with live preview, SnackBar feedback for all actions, 9 new l10n keys.
+- **Theme Polish** — Light theme: secondary → slate gray `#475569`, fixed token collisions, WCAG AA contrast; dark mode: surfaceContainer tokens, theme-aware scrim/alpha; system-wide `colorScheme.secondary` replaces `onSurface.withValues(alpha:)` (33 widgets).
+- **Category Management** — `category_icon_data.dart` single source of truth; app bars moved to `widgets/category/`; real-time search; Semantics; 13 new tests.
+
+### Added
+
+- `AppBottomNavigationBar`: long-press → New Draft / Add Product; `Semantics(button, label, selected)` per tab.
+- `NavSwipeHelper.handleSwipe()` — shared swipe logic for shell + nav bar.
+- `ProductPreviewImage` widget: shimmer skeleton (200ms delay), error + retry, tap-to-zoom hint (once per session), `hasImage(Product)` static method, full-resolution (no `ResizeImage`).
+- `PreviewOverlay`: gradient + `StatusChip`; no-image mode uses `black 0.45` gradient.
+- `StickyActionBar`: Delete (confirm dialog) + Quick Edit Price actions.
+- `BarcodeImageService.generate()`: `BarcodeWidget` off-screen render, PNG/JPEG/PDF export via share sheet.
+- `Product.barcodeImagePath` + `barcodeImagePath` DB column; auto-generated on add/update.
+- `CodesCard`: copy icon for SKU + barcode; "Generate barcode" button when no barcode exists.
+- `ProductInfoTab`: `isGeneratingBarcode` loading state on Generate Barcode button (prevents double-tap).
+- `category_icon_data.dart`: single source of truth for `categoryIconMap` + `parseCategoryIcon()`.
+- `CategorySearchAppBar` / `CategoryBulkAppBar` (renamed from `CategoryManagement*`).
+- L10n: `inStock`, `codesCardTitle`, `barcodeGenerationError`, `productNameTooLong`, `quickEditStock*`, `quickEditName/Price Saved/Cancelled/Invalid` (EN/TH).
+- **Tests**: 23 NavBar + 11 regression + 28 `ProductPreviewImage` + 18 Preview UX + 13 Category + 8 Preview regression = **101 new tests**.
+
+### Changed
+
+- `Ean13Generator` → `@injectable` instance (was static); counter per-instance, eliminating cross-test contamination.
+- `BarcodeImageService`: size 400×160 → 600×200, `pixelRatio: 3.0`; `BarcodeImageWidget` height 80 → 120px.
+- `ProductBloc` error events emit l10n keys instead of raw `e.toString()`.
+- `ModernProductTile`: `ProductDeleted` dispatched in `confirmDismiss` (returns `false` to prevent actual dismiss) — fixes "Dismissible still in tree" error.
+- `ProductPreviewPage`: `StatelessWidget` → `StatefulWidget` with `BlocListener`; stale product reads via `_latestProduct()`.
+- `SliverAppBar`: title/icons use `Color.lerp(onSurface, white, _expandRatio)` for smooth scroll transition.
+- `QuickEditSheet`: validation + Save disable; stock Set/Adjust modes; `easeOutCubic` 300ms; haptic on Save.
+- Dropdowns: `DropdownButton` for ≤3 options, `SettingsDropdownTile` for ≥4; haptic on all `onChanged`.
+- `CategoryPickerBottomSheet` + `SettingsDropdownTile`: `elevation: 0`, `borderRadius: 28`, `enableDrag: true`.
+- Light theme: `primary` `#0E7C8A` → `#0D5D6B` (WCAG AA), `secondary` → slate gray `#475569`, token collisions fixed, `inputFillColor` → `surface`.
+- Dark theme: `secondary` → `#94A3B8`, `surfaceContainerLow/Medium/High` tokens added, scrim alpha 0.6 (was uncapped).
+- `PreviewCard` bg → `surface`; `PriceCard` selling price box → `surface` with border; profit % → `AppColors.success`.
+- 33 widgets: `onSurfaceVariant`/`onSurface.withValues(alpha:)` → `colorScheme.secondary`.
+
+### Removed
+
+- `hero_section.dart` + test file — replaced by `ProductPreviewImage`.
+- `product_image_container.dart` — dead code, removed with its test group.
+- `ProductPreviewImage.heroTag` — Hero animation was one-sided; parameter removed.
+- `imageThumbnailPath` usage in preview — full image loaded directly.
+
+### Fixed
+
+- `_animatingIndex` not reset after bounce animation; missing `setState` in `didUpdateWidget`.
+- Category Management: unnecessary `ProductBloc` rebuilds; bulk delete concurrent modification; dialog `context` use-after-dispose.
+- `ProductPreviewImage`: `FlexibleSpaceBar` uses `CollapseMode.pin`; `SizedBox.expand` + `ClipRect` fills background; no-image gradient `black 0.45`.
+- `Navigator.of(context, rootNavigator: true).push()` — prevents double bottom bar on preview.
+- `extendBodyBehindAppBar: true` — fixes status bar bleed on preview page.
+- `GenerateBarcode`: counter persisted after every retry exit (including failure).
+- `BatchGenerateBarcodes`: `initCounter()` called at start to prevent drift.
+- `ProductFormPage._generateBarcode()`: passes `excludeId` to prevent self-collision.
+- Light theme: divider `#CBD5E1`, text contrast (`textSecondary` `#475569`, `onSurfaceVariant` `#334155`), SnackBar bg → `inverseSurface`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **1259 passing** · coverage **54.5%** (21,562 lines)
+
+---
+
 ## [0.8.5] - 2026-06-24
  
 Project quality improvements: CHANGELOG archive, generated code gitignore, dependency vulnerability scanning, and god file decomposition round 2.
@@ -336,7 +404,7 @@ Older versions are archived by minor version:
 
 ---
 
-[Unreleased]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.5...HEAD
+[0.8.6]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.2...v0.8.3

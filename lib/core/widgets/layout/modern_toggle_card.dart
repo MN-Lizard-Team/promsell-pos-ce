@@ -54,7 +54,7 @@ class ModernToggleCard extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 22,
-                  color: value ? color : theme.colorScheme.onSurfaceVariant,
+                  color: value ? color : theme.colorScheme.secondary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -74,7 +74,7 @@ class ModernToggleCard extends StatelessWidget {
                       Text(
                         subtitle!,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color: theme.colorScheme.secondary,
                         ),
                       ),
                     ],

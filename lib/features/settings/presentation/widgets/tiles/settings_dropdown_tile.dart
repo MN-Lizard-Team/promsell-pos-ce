@@ -31,9 +31,12 @@ class SettingsDropdownTile<T> extends StatelessWidget {
 
     final result = await showModalBottomSheet<T>(
       context: context,
+      enableDrag: true,
+      showDragHandle: false,
+      elevation: 0,
       backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -43,11 +46,13 @@ class SettingsDropdownTile<T> extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 40,
+                  width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: st.cardBorderColor,
-                    borderRadius: BorderRadius.circular(2),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.25,
+                    ),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -75,7 +80,10 @@ class SettingsDropdownTile<T> extends StatelessWidget {
                             : FontWeight.normal,
                       ),
                     ),
-                    onTap: () => Navigator.of(ctx).pop(item),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      Navigator.of(ctx).pop(item);
+                    },
                   );
                 }),
               ],

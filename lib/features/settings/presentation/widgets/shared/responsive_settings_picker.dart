@@ -14,6 +14,8 @@ class ResponsiveSettingsPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 360) {
@@ -24,7 +26,7 @@ class ResponsiveSettingsPicker extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(icon),
+                    Icon(icon, color: theme.colorScheme.onSurfaceVariant),
                     const SizedBox(width: 16),
                     Expanded(child: Text(title)),
                   ],
@@ -37,7 +39,7 @@ class ResponsiveSettingsPicker extends StatelessWidget {
         }
 
         return ListTile(
-          leading: Icon(icon),
+          leading: Icon(icon, color: theme.colorScheme.onSurfaceVariant),
           title: Text(title),
           trailing: SizedBox(width: 180, child: child),
         );

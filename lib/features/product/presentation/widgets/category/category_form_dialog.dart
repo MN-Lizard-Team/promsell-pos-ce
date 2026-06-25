@@ -77,31 +77,35 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                 children: _presetColors.map((hex) {
                   final color = Color(int.parse('FF$hex', radix: 16));
                   final selected = _selectedColor == hex;
-                  return InkWell(
-                    onTap: () => setState(() => _selectedColor = hex),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: selected
-                            ? Border.all(
-                                color: theme.colorScheme.onSurface,
-                                width: 3,
+                  return Semantics(
+                    label: 'Color $hex',
+                    button: true,
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedColor = hex),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: selected
+                              ? Border.all(
+                                  color: theme.colorScheme.onSurface,
+                                  width: 3,
+                                )
+                              : null,
+                        ),
+                        child: selected
+                            ? Icon(
+                                Icons.check,
+                                size: 18,
+                                color: color.computeLuminance() > 0.5
+                                    ? Colors.black
+                                    : Colors.white,
                               )
                             : null,
                       ),
-                      child: selected
-                          ? Icon(
-                              Icons.check,
-                              size: 18,
-                              color: color.computeLuminance() > 0.5
-                                  ? Colors.black
-                                  : Colors.white,
-                            )
-                          : null,
                     ),
                   );
                 }).toList(),
@@ -119,30 +123,34 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                 runSpacing: 8,
                 children: _presetIcons.map((item) {
                   final selected = _selectedIcon == item.value;
-                  return InkWell(
-                    onTap: () => setState(() => _selectedIcon = item.value),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? theme.colorScheme.primaryContainer
-                            : theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(10),
-                        border: selected
-                            ? Border.all(
-                                color: theme.colorScheme.primary,
-                                width: 2,
-                              )
-                            : null,
-                      ),
-                      child: Icon(
-                        item.icon,
-                        size: 22,
-                        color: selected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurfaceVariant,
+                  return Semantics(
+                    label: item.value,
+                    button: true,
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedIcon = item.value),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? theme.colorScheme.primaryContainer
+                              : theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(10),
+                          border: selected
+                              ? Border.all(
+                                  color: theme.colorScheme.primary,
+                                  width: 2,
+                                )
+                              : null,
+                        ),
+                        child: Icon(
+                          item.icon,
+                          size: 22,
+                          color: selected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   );
@@ -178,7 +186,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
   }
 }
 
-final _presetColors = [
+const _presetColors = [
   'E53935', // red
   'FB8C00', // orange
   'FDD835', // yellow
@@ -191,7 +199,7 @@ final _presetColors = [
   '212121', // dark
 ];
 
-final _presetIcons = const [
+const _presetIcons = [
   _IconItem(Icons.folder_outlined, 'folder_outlined'),
   _IconItem(Icons.restaurant_outlined, 'restaurant_outlined'),
   _IconItem(Icons.shopping_basket_outlined, 'shopping_basket_outlined'),

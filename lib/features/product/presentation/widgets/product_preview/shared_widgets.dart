@@ -18,10 +18,10 @@ class PreviewCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.7),
         ),
       ),
       child: Column(
@@ -47,7 +47,7 @@ class SectionHeader extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+        Icon(icon, size: 18, color: theme.colorScheme.secondary),
         const SizedBox(width: 6),
         Text(
           title,
@@ -72,12 +72,12 @@ class InfoRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 80,
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 64, maxWidth: 100),
           child: Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: theme.colorScheme.secondary,
             ),
           ),
         ),

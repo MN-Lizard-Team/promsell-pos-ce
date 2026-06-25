@@ -87,7 +87,7 @@ Annotations on implementation classes drive registration:
 |-------|-----------|----------|
 | Lazy singleton | `@LazySingleton(as: Abc)` | datasources, repositories, services |
 | Lazy singleton | `@lazySingleton` | `ProductBloc`, `CategoryBloc`, `CartBloc`, `DraftBloc`, `CheckoutBloc`, `SettingsCubit`, `ReportCubit` |
-| Factory | `@injectable` | use cases |
+| Factory | `@injectable` | use cases, `Ean13Generator` |
 | Module | `@module` | `DatabaseModule` provides `AppDatabase` |
 
 Access anywhere via `sl<T>()`.
@@ -115,4 +115,4 @@ Two generators must be run after changes:
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Conventions</sub>
+<sub>Promsell POS CE · v0.8.6 · Conventions</sub>

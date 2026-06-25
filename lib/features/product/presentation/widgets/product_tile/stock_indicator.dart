@@ -17,7 +17,7 @@ class StockIndicator extends StatelessWidget {
     final l10n = context.l10n;
     if (!trackStock) {
       return (
-        color: Theme.of(context).colorScheme.outline,
+        color: Theme.of(context).colorScheme.onSecondaryContainer,
         icon: Icons.remove_circle_outline,
         label: l10n.na,
       );

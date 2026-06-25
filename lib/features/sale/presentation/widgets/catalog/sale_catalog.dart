@@ -109,7 +109,7 @@ class _SaleCatalogState extends State<SaleCatalog> {
                         child: Text(
                           ctx.l10n.searchResultsCount(products.length),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: theme.colorScheme.secondary,
                           ),
                         ),
                       ),

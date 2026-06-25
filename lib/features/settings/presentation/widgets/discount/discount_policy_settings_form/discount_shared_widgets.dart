@@ -96,36 +96,42 @@ class DiscountSharedWidgets {
     final theme = Theme.of(context);
 
     return MergeSemantics(
-      child: ListTile(
-        minTileHeight: st.tileMinHeight,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: st.iconSize,
-          height: st.iconSize,
-          decoration: BoxDecoration(
-            color: st.iconContainerBackground,
-            borderRadius: BorderRadius.circular(12),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListTile(
+          minTileHeight: st.tileMinHeight,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
           ),
-          child: Icon(icon, color: st.softAccent, size: 24),
-        ),
-        title: Text(
-          title,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
+          leading: Container(
+            width: st.iconSize,
+            height: st.iconSize,
+            decoration: BoxDecoration(
+              color: st.iconContainerBackground,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: st.softAccent, size: 24),
           ),
-        ),
-        trailing: Switch(
-          value: value,
-          onChanged: (v) {
+          title: Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+          trailing: Switch(
+            value: value,
+            onChanged: (v) {
+              HapticFeedback.lightImpact();
+              onChanged(v);
+            },
+          ),
+          onTap: () {
             HapticFeedback.lightImpact();
-            onChanged(v);
+            onChanged(!value);
           },
         ),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onChanged(!value);
-        },
       ),
     );
   }
@@ -144,38 +150,41 @@ class DiscountSharedWidgets {
     final st = context.settingsTheme;
     final theme = Theme.of(context);
 
-    return ListTile(
-      leading: Icon(icon, color: st.softAccent, size: 22),
-      title: Text(
-        label,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            displayValue,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-              color: st.softTextPrimary,
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(icon, color: st.softAccent, size: 22),
+        title: Text(
+          label,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
-        ],
-      ),
-      onTap: () => showLimitDialog(
-        context: context,
-        label: label,
-        value: value,
-        min: min,
-        max: max,
-        presets: presets,
-        onChanged: onChanged,
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              displayValue,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: st.softTextPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
+          ],
+        ),
+        onTap: () => showLimitDialog(
+          context: context,
+          label: label,
+          value: value,
+          min: min,
+          max: max,
+          presets: presets,
+          onChanged: onChanged,
+        ),
       ),
     );
   }

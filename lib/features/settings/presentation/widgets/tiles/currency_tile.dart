@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/responsive_settings_picker.dart';
 
@@ -19,13 +20,18 @@ class CurrencyTile extends StatelessWidget {
       child: DropdownButton<String>(
         value: current,
         isExpanded: true,
+        dropdownColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
         items: const [
           DropdownMenuItem(value: '฿', child: Text('฿ (THB)')),
           DropdownMenuItem(value: '\$', child: Text('\$ (USD)')),
           DropdownMenuItem(value: '€', child: Text('€ (EUR)')),
         ],
         onChanged: (v) {
-          if (v != null) onChanged(v);
+          if (v != null) {
+            HapticFeedback.selectionClick();
+            onChanged(v);
+          }
         },
       ),
     );

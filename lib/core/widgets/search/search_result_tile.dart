@@ -107,7 +107,7 @@ class _SearchResultTileState extends State<SearchResultTile>
                 const SizedBox(width: 8),
                 Icon(
                   Icons.chevron_right,
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: theme.colorScheme.secondary,
                   size: 24,
                 ),
               ],
@@ -144,7 +144,7 @@ class _SubtitleRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: theme.colorScheme.secondary,
             ),
           );
         },
@@ -159,7 +159,7 @@ class _SubtitleRow extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: theme.textTheme.bodySmall?.copyWith(
-        color: theme.colorScheme.onSurfaceVariant,
+        color: theme.colorScheme.secondary,
       ),
     );
   }

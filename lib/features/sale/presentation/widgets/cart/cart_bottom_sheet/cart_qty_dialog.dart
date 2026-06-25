@@ -14,56 +14,91 @@ class CartQtyDialog {
     required CartItem item,
     required Settings settings,
   }) {
-    final ctrl = TextEditingController(text: '${item.qty}');
-    final l10n = context.l10n;
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(item.product.name),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(signed: true),
-          decoration: InputDecoration(
-            labelText: l10n.quantityLabel,
-            suffixText: item.product.trackStock
-                ? l10n.stockLabel(item.product.stock)
-                : null,
-          ),
+      builder: (_) =>
+          _CartQtyDialogContent(bloc: bloc, item: item, settings: settings),
+    );
+  }
+}
+
+class _CartQtyDialogContent extends StatefulWidget {
+  const _CartQtyDialogContent({
+    required this.bloc,
+    required this.item,
+    required this.settings,
+  });
+
+  final CartBloc bloc;
+  final CartItem item;
+  final Settings settings;
+
+  @override
+  State<_CartQtyDialogContent> createState() => _CartQtyDialogContentState();
+}
+
+class _CartQtyDialogContentState extends State<_CartQtyDialogContent> {
+  late final TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: '${widget.item.qty}');
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final qty = int.tryParse(_ctrl.text);
+    if (qty == null || qty <= 0) {
+      Navigator.pop(context);
+      widget.bloc.add(CartProductRemoved(widget.item.product.id));
+      return;
+    }
+    final allowOversell = widget.settings.allowOversell;
+    var clamped = qty;
+    if (widget.item.product.trackStock && !allowOversell) {
+      clamped = qty.clamp(1, widget.item.product.stock);
+    }
+    Navigator.pop(context);
+    if (clamped != widget.item.qty) {
+      widget.bloc.add(
+        CartItemQtyChanged(
+          productId: widget.item.product.id,
+          qty: clamped,
+          allowOversell: allowOversell,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final qty = int.tryParse(ctrl.text);
-              if (qty == null || qty <= 0) {
-                Navigator.pop(context);
-                bloc.add(CartProductRemoved(item.product.id));
-                return;
-              }
-              final allowOversell = settings.allowOversell;
-              var clamped = qty;
-              if (item.product.trackStock && !allowOversell) {
-                clamped = qty.clamp(1, item.product.stock);
-              }
-              Navigator.pop(context);
-              if (clamped != item.qty) {
-                bloc.add(
-                  CartItemQtyChanged(
-                    productId: item.product.id,
-                    qty: clamped,
-                    allowOversell: allowOversell,
-                  ),
-                );
-              }
-            },
-            child: Text(l10n.save),
-          ),
-        ],
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(widget.item.product.name),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(signed: true),
+        decoration: InputDecoration(
+          labelText: l10n.quantityLabel,
+          suffixText: widget.item.product.trackStock
+              ? l10n.stockLabel(widget.item.product.stock)
+              : null,
+        ),
       ),
-    ).then((_) => ctrl.dispose());
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(onPressed: _save, child: Text(l10n.save)),
+      ],
+    );
   }
 }

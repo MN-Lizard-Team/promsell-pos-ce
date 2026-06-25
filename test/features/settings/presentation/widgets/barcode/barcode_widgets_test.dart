@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_th
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/barcode/barcode_auto_open_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/barcode/barcode_formats_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/barcode/barcode_format_labels.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_dropdown_tile.dart';
 
 import '../../../../../helpers/mocks.dart';
 import '../../../../../helpers/pump_app.dart';
@@ -32,7 +33,7 @@ void main() {
       );
 
       expect(find.byIcon(Icons.timer_outlined), findsOneWidget);
-      expect(find.byType(DropdownButton<int>), findsOneWidget);
+      expect(find.byType(SettingsDropdownTile<int>), findsOneWidget);
     });
   });
 

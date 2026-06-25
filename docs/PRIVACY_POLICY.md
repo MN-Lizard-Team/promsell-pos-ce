@@ -1,6 +1,6 @@
 # Privacy Policy — Promsell
 
-Last updated: June 23, 2026
+Last updated: June 25, 2026
 
 ## 1. Data Collection
 Promsell does **not** collect any personal data. All sales, inventory, and settings are stored locally on your device using SQLite. No data is transmitted to our servers.

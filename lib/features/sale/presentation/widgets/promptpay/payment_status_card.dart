@@ -37,7 +37,7 @@ class PaymentStatusCard extends StatelessWidget {
               hasBank ? Icons.verified : Icons.schedule,
               color: hasBank
                   ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
+                  : theme.colorScheme.secondary,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -49,7 +49,7 @@ class PaymentStatusCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   color: hasBank
                       ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurfaceVariant,
+                      : theme.colorScheme.secondary,
                 ),
               ),
             ),

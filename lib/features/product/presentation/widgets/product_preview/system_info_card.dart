@@ -13,12 +13,9 @@ class SystemInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final dateFormat = DateFormat.yMMMd(
-      Localizations.localeOf(context).languageCode,
-    );
-    final timeFormat = DateFormat.Hm(
-      Localizations.localeOf(context).languageCode,
-    );
+    final locale = Localizations.localeOf(context).languageCode;
+    final dateFormat = DateFormat.yMMMd(locale);
+    final timeFormat = DateFormat.Hm(locale);
 
     return PreviewCard(
       icon: Icons.info_outline,
@@ -33,7 +30,7 @@ class SystemInfoCard extends StatelessWidget {
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontFamily: 'monospace',
-                fontSize: 12,
+                fontSize: 13,
               ),
             ),
           ),

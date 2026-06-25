@@ -123,7 +123,7 @@ class _DiscountDialogState extends State<DiscountDialog> {
           Text(
             widget.title,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: theme.colorScheme.secondary,
             ),
           ),
           const SizedBox(height: 12),

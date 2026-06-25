@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 
 class CategoryListTile extends StatelessWidget {
   const CategoryListTile({
@@ -29,75 +30,79 @@ class CategoryListTile extends StatelessWidget {
     final theme = Theme.of(context);
     final catColor = parseCategoryColor(category.color);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      color: selected ? theme.colorScheme.primaryContainer : null,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: catColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+    return Semantics(
+      button: true,
+      label: '${category.name}, $productCount ${context.l10n.productsCount}',
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        color: selected ? theme.colorScheme.primaryContainer : null,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: catColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    parseCategoryIcon(category.iconName),
+                    color: catColor,
+                    size: 22,
+                  ),
                 ),
-                child: Icon(
-                  parseCategoryIcon(category.iconName),
-                  color: catColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      category.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '$productCount ${context.l10n.productsCount}',
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      Text(
+                        '$productCount ${context.l10n.productsCount}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (showDragHandle && index != null)
+                  ReorderableDragStartListener(
+                    index: index!,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Icon(
+                        Icons.drag_handle,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              if (showDragHandle && index != null)
-                ReorderableDragStartListener(
-                  index: index!,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      Icons.drag_handle,
-                      color: theme.colorScheme.onSurfaceVariant,
+                  )
+                else if (selectionMode)
+                  Icon(
+                    selected ? Icons.check_circle : Icons.circle_outlined,
+                    color: selected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outline,
+                  )
+                else if (onDelete != null)
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline,
+                      color: theme.colorScheme.error,
                     ),
+                    onPressed: () => _confirmDelete(context),
                   ),
-                )
-              else if (selectionMode)
-                Icon(
-                  selected ? Icons.check_circle : Icons.circle_outlined,
-                  color: selected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.outline,
-                )
-              else if (onDelete != null)
-                IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: theme.colorScheme.error,
-                  ),
-                  onPressed: () => _confirmDelete(context),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -107,18 +112,18 @@ class CategoryListTile extends StatelessWidget {
   void _confirmDelete(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(context.l10n.deleteCategory),
         content: Text(context.l10n.confirmDeleteCategory(category.name)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               onDelete?.call();
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
             child: Text(
               context.l10n.delete,
@@ -139,31 +144,3 @@ Color parseCategoryColor(String? hex) {
     return Colors.blue;
   }
 }
-
-IconData parseCategoryIcon(String? name) {
-  return categoryIconMap[name] ?? Icons.folder_outlined;
-}
-
-const categoryIconMap = <String, IconData>{
-  'folder_outlined': Icons.folder_outlined,
-  'restaurant_outlined': Icons.restaurant_outlined,
-  'shopping_basket_outlined': Icons.shopping_basket_outlined,
-  'local_drink_outlined': Icons.local_drink_outlined,
-  'cake_outlined': Icons.cake_outlined,
-  'local_cafe_outlined': Icons.local_cafe_outlined,
-  'fastfood_outlined': Icons.fastfood_outlined,
-  'local_pizza_outlined': Icons.local_pizza_outlined,
-  'icecream_outlined': Icons.icecream_outlined,
-  'kitchen_outlined': Icons.kitchen_outlined,
-  'checkroom_outlined': Icons.checkroom_outlined,
-  'smartphone_outlined': Icons.smartphone_outlined,
-  'computer_outlined': Icons.computer_outlined,
-  'chair_outlined': Icons.chair_outlined,
-  'pets_outlined': Icons.pets_outlined,
-  'sports_soccer_outlined': Icons.sports_soccer_outlined,
-  'brush_outlined': Icons.brush_outlined,
-  'local_hospital_outlined': Icons.local_hospital_outlined,
-  'school_outlined': Icons.school_outlined,
-  'build_outlined': Icons.build_outlined,
-  'more_horiz_outlined': Icons.more_horiz_outlined,
-};

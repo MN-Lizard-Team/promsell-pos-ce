@@ -195,6 +195,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productNameRequired => 'Please enter product name';
 
   @override
+  String get productNameTooLong =>
+      'Product name is too long (max 100 characters)';
+
+  @override
+  String get quickEditStockSet => 'Set';
+
+  @override
+  String get quickEditStockAdjust => 'Adjust';
+
+  @override
+  String get quickEditNameHint => 'Enter the new product name';
+
+  @override
+  String get quickEditPriceHint => 'Enter the new selling price';
+
+  @override
+  String get quickEditStockSetHint =>
+      'Tap + / - or the number to edit. Long-press buttons for fast adjust.';
+
+  @override
+  String get quickEditStockAdjustHint =>
+      'Enter the amount to add or subtract from current stock';
+
+  @override
+  String get stockStepperLongPressHint => 'Long-press to continuously adjust';
+
+  @override
+  String get stockStepperTapNumberHint => 'Tap number to enter directly';
+
+  @override
+  String get quickEditNameSaved => 'Name updated';
+
+  @override
+  String get quickEditNameCancelled => 'Name not changed';
+
+  @override
+  String get quickEditNameInvalid => 'Invalid name';
+
+  @override
+  String get quickEditPriceSaved => 'Price updated';
+
+  @override
+  String get quickEditPriceCancelled => 'Price not changed';
+
+  @override
+  String get quickEditPriceInvalid => 'Invalid price';
+
+  @override
   String priceLabel(String currency) {
     return 'Price ($currency) *';
   }
@@ -204,6 +252,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidPrice => 'Invalid price';
+
+  @override
+  String get priceMustBePositive => 'Price must be greater than 0';
 
   @override
   String get quantityLabel => 'Quantity';
@@ -229,6 +280,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productSaved => 'Product saved';
+
+  @override
+  String get productActivated => 'Product activated';
+
+  @override
+  String get productDeactivated => 'Product deactivated';
+
+  @override
+  String get productDeleted => 'Product deleted';
+
+  @override
+  String get stockUpdated => 'Stock updated';
+
+  @override
+  String get stockUpdateCancelled => 'Stock not changed';
+
+  @override
+  String get stockUpdateInvalid => 'Invalid stock value';
+
+  @override
+  String get stockUpdateError => 'Failed to update stock';
+
+  @override
+  String get productUpdateError => 'Failed to update product';
+
+  @override
+  String get productAddError => 'Failed to add product';
+
+  @override
+  String get productDeleteError => 'Failed to delete product';
 
   @override
   String get stockZeroWarning =>
@@ -598,6 +679,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lowStockWarning => 'Low stock';
+
+  @override
+  String get inStock => 'In stock';
+
+  @override
+  String get codesCardTitle => 'SKU & Barcode';
 
   @override
   String get discountSectionLabel => 'Discount';
@@ -1540,6 +1627,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inactive => 'Inactive';
 
   @override
+  String get tapToZoom => 'Tap to zoom';
+
+  @override
+  String get imageError => 'Image error';
+
+  @override
+  String get productImageSemantics => 'Product image';
+
+  @override
+  String get noProductImageSemantics => 'No product image';
+
+  @override
   String get na => 'N/A';
 
   @override
@@ -1635,6 +1734,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeGenerated => 'Barcode generated';
+
+  @override
+  String get barcodeGenerationError => 'Failed to generate barcode';
 
   @override
   String get batchGenerateBarcodes => 'Generate Missing Barcodes';

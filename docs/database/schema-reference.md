@@ -1,4 +1,4 @@
-# Schema Reference — Promsell POS CE v0.8.5
+# Schema Reference — Promsell POS CE v0.8.6
 
 Detailed column reference for all 9 database tables, indexes, seed data, and enum values.
 
@@ -25,6 +25,7 @@ Source: `lib/core/database/tables/products_table.dart`
 | `imageUrl` | TEXT | Yes | — | Network URL for future online sync |
 | `imagePath` | TEXT | Yes | — | Local file path from gallery/camera pick |
 | `imageThumbnailPath` | TEXT | Yes | — | Local thumbnail path (200px) for small avatar display |
+| `barcodeImagePath` | TEXT | Yes | — | Local barcode image (PNG or JPEG) generated from `barcode` text via `BarcodeImageService` off-screen `RenderRepaintBoundary` rendering (600×200 @ 3x pixel ratio); auto-generated on product add/update |
 | `trackStock` | BOOLEAN | No | `true` | `false` = service item: skip stock check, no deduction, show ∞ in UI |
 | `isActive` | BOOLEAN | No | `true` | |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
@@ -306,4 +307,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Schema Reference · 9 tables</sub>
+<sub>Promsell POS CE · v0.8.6 · Schema Reference · 9 tables</sub>

@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.8.5
+# Database Handbook — Promsell POS CE v0.8.6
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -10,7 +10,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 17 |
+| **Schema version** | 18 |
 | **Tables** | 9 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -137,11 +137,11 @@ v1          v2          v5          v7          v8          v10
 Initial     Draft      Image       VAT         Daily       Device
 schema      discounts  settings    columns     Closes      settings
 
-v11         v12         v13         v14         v15         v16    v17
-│           │           │           │           │           │      │
-▼           ▼           ▼           ▼           ▼           ▼      ▼
-Sync        Timestamp   Backfill    Category    Category    Unique  Auto-
-columns     INT ms      deviceId    FK + UUID   color/icon  barcode dedup
+v11         v12         v13         v14         v15         v16    v17         v18
+│           │           │           │           │           │      │           │
+▼           ▼           ▼           ▼           ▼           ▼      ▼           ▼
+Sync        Timestamp   Backfill    Category    Category    Unique  Auto-       Barcode
+columns     INT ms      deviceId    FK + UUID   color/icon  barcode dedup       images
 (6 tables)  conversion  (all rows)  backfill    presets     index   barcodes
 ```
 
@@ -153,8 +153,8 @@ columns     INT ms      deviceId    FK + UUID   color/icon  barcode dedup
 |----------|---------|
 | [`docs/database/schema-reference.md`](database/schema-reference.md) | All 9 tables with column details, indexes, seed data, enum values |
 | [`docs/database/query-patterns.md`](database/query-patterns.md) | Drift query patterns: watch products, insert sale, void sale, date range, draft upsert |
-| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→v17), backup & restore, encrypted backups, performance notes, DB testing |
+| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→v18), backup & restore, encrypted backups, performance notes, DB testing |
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Schema v17 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.8.6 · Schema v18 · 9 tables · UUIDv4</sub>

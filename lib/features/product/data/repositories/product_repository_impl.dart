@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
+import 'package:path/path.dart' as p;
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/data/services/barcode_image_service.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
@@ -12,6 +14,7 @@ class ProductRepositoryImpl implements ProductRepository {
   const ProductRepositoryImpl(this._datasource, this._imageService);
   final ProductLocalDatasource _datasource;
   final ProductImageService _imageService;
+  static final _barcodeImageService = BarcodeImageService();
 
   @override
   Stream<List<Product>> watchAllProducts() => _datasource.watchAllProducts();
@@ -67,12 +70,21 @@ class ProductRepositoryImpl implements ProductRepository {
       }
     }
 
+    String? barcodeImagePath;
+    final normalizedBarcode = barcode?.toUpperCase().trim();
+    if (normalizedBarcode != null && normalizedBarcode.isNotEmpty) {
+      barcodeImagePath = await _barcodeImageService.generate(
+        barcode: normalizedBarcode,
+        productId: id,
+      );
+    }
+
     await _datasource.insertProduct(
       ProductsCompanion.insert(
         id: id,
         name: name,
         sku: Value(sku),
-        barcode: Value(barcode?.toUpperCase()),
+        barcode: Value(normalizedBarcode),
         price: price,
         cost: Value(cost),
         stock: Value(stock),
@@ -80,6 +92,7 @@ class ProductRepositoryImpl implements ProductRepository {
         imageUrl: Value(imageUrl),
         imagePath: Value(finalImagePath),
         imageThumbnailPath: Value(finalThumbPath),
+        barcodeImagePath: Value(barcodeImagePath),
         trackStock: Value(trackStock),
         createdAt: Value(now),
         updatedAt: Value(now),
@@ -91,11 +104,30 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<void> updateProduct(Product product) async {
     final existing = await _datasource.getProductById(product.id);
+
+    // Images picked during edit are saved to a temporary path. Rename them to
+    // the final product path before updating the database.
+    String? finalImagePath = product.imagePath;
+    String? finalThumbPath = product.imageThumbnailPath;
+    if (product.imagePath != null && product.imagePath!.isNotEmpty) {
+      final imageName = p.basenameWithoutExtension(product.imagePath!);
+      if (imageName != product.id) {
+        final renamed = await _imageService.renameImages(
+          product.imagePath,
+          product.id,
+        );
+        if (renamed != null) {
+          finalImagePath = renamed.fullPath;
+          finalThumbPath = renamed.thumbnailPath;
+        }
+      }
+    }
+
     if (existing != null) {
       final oldPath = existing.imagePath;
       final oldThumb = existing.imageThumbnailPath;
-      final newPath = product.imagePath;
-      final newThumb = product.imageThumbnailPath;
+      final newPath = finalImagePath;
+      final newThumb = finalThumbPath;
 
       final imageChanged = oldPath != newPath || oldThumb != newThumb;
       final imageRemoved =
@@ -107,20 +139,39 @@ class ProductRepositoryImpl implements ProductRepository {
       }
     }
 
+    String? barcodeImagePath;
+    final normalizedBarcode = product.barcode?.toUpperCase().trim();
+    if (normalizedBarcode != null && normalizedBarcode.isNotEmpty) {
+      final existingBarcode = existing?.barcode?.toUpperCase().trim();
+      if (existingBarcode == normalizedBarcode &&
+          existing?.barcodeImagePath != null) {
+        barcodeImagePath = existing!.barcodeImagePath;
+      } else {
+        barcodeImagePath = await _barcodeImageService.generate(
+          barcode: normalizedBarcode,
+          productId: product.id,
+        );
+      }
+    } else if (existing?.barcodeImagePath != null) {
+      await _barcodeImageService.delete(product.id);
+      barcodeImagePath = null;
+    }
+
     final now = DateTime.now();
     await _datasource.updateProduct(
       ProductsCompanion(
         id: Value(product.id),
         name: Value(product.name),
         sku: Value(product.sku),
-        barcode: Value(product.barcode?.toUpperCase()),
+        barcode: Value(normalizedBarcode),
         price: Value(product.price),
         cost: Value(product.cost),
         stock: Value(product.stock),
         categoryId: Value(product.categoryId),
         imageUrl: Value(product.imageUrl),
-        imagePath: Value(product.imagePath),
-        imageThumbnailPath: Value(product.imageThumbnailPath),
+        imagePath: Value(finalImagePath),
+        imageThumbnailPath: Value(finalThumbPath),
+        barcodeImagePath: Value(barcodeImagePath),
         isActive: Value(product.isActive),
         trackStock: Value(product.trackStock),
         updatedAt: Value(now),
@@ -141,6 +192,7 @@ class ProductRepositoryImpl implements ProductRepository {
         product.imagePath,
         product.imageThumbnailPath,
       );
+      await _barcodeImageService.delete(id);
     }
     await _datasource.deleteProduct(id);
   }

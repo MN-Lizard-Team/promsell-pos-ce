@@ -1,4 +1,4 @@
-# Architecture Decision Records (ADRs) — Promsell POS CE v0.8.5
+# Architecture Decision Records (ADRs) — Promsell POS CE v0.8.6
 
 All architecture decision records, ordered by ADR number.
 
@@ -36,6 +36,8 @@ All architecture decision records, ordered by ADR number.
 | [ADR-022](#adr-022-generated-code-untracked-from-git-v085) | Generated code untracked from git | v0.8.5 |
 | [ADR-023](#adr-023-dependency-vulnerability-scanning-v085) | Dependency vulnerability scanning | v0.8.5 |
 | [ADR-024](#adr-024-widget-folder-standardization-v085) | Widget folder standardization (feature + core) | v0.8.5 |
+| [ADR-025](#adr-025-ean13generator-injectable-instance-v086) | Ean13Generator injectable instance | v0.8.6 |
+| [ADR-026](#adr-026-barcode-image-rendering-via-repaintboundary-v086) | Barcode image rendering via RenderRepaintBoundary | v0.8.6 |
 
 ---
 
@@ -496,4 +498,37 @@ lib/core/widgets/
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Architecture Decision Records</sub>
+## ADR-025: Ean13Generator injectable instance (v0.8.6)
+
+**Context:** `Ean13Generator` used a static mutable `_counter` field shared across all calls. This caused cross-test contamination (test order dependency) and prevented proper dependency injection.
+
+**Decision:** Refactor to `@injectable` instance class. Counter state is now per-instance. `GenerateBarcode`, `BatchGenerateBarcodes`, and `SettingsCubit` receive `Ean13Generator` via constructor injection.
+
+**Consequences:**
+- ✅ Eliminates cross-test counter contamination — each test gets a fresh instance
+- ✅ Enables mocking in unit tests via `mocktail`
+- ✅ Follows existing DI patterns (`@injectable` for factory-scoped services)
+- ✅ Counter persistence still works via `initCounter()` / `currentCounter` → Settings
+- ⚠️ All call sites and tests must be updated to pass instance via constructor
+- ⚠️ `build_runner build` required after annotation change
+
+---
+
+## ADR-026: Barcode image rendering via RenderRepaintBoundary (v0.8.6)
+
+**Context:** `BarcodeImageService` used manual canvas drawing (`PictureRecorder` + `Canvas.drawRect` for each bar + `ParagraphBuilder` for text). This produced small, incomplete barcode images with inconsistent text rendering.
+
+**Decision:** Replace manual canvas drawing with `BarcodeWidget` off-screen rendering via `RenderRepaintBoundary`. The widget tree is built off-screen using `RenderObjectToWidgetAdapter`, laid out via `PipelineOwner`, and captured with `repaintBoundary.toImage(pixelRatio: 3.0)`.
+
+**Consequences:**
+- ✅ Consistent rendering — uses same `BarcodeWidget` as on-screen display
+- ✅ Higher quality — 600×200 @ 3x pixel ratio (was 400×160 @ 3x)
+- ✅ Proper text rendering — `BarcodeWidget.drawText: true` handles font/layout automatically
+- ✅ White background via `ColoredBox` wrapper
+- ⚠️ Off-screen rendering requires `PipelineOwner` + `BuildOwner` setup — more complex than manual canvas
+- ⚠️ Must call `flushLayout` / `flushCompositingBits` / `flushPaint` before `toImage()`
+- ⚠️ Not unit-testable without a full Flutter binding (uses rendering infrastructure)
+
+---
+
+<sub>Promsell POS CE · v0.8.6 · Architecture Decision Records</sub>

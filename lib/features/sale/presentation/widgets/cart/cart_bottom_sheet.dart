@@ -24,6 +24,8 @@ class CartBottomSheet {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      enableDrag: true,
+      showDragHandle: false,
       backgroundColor: theme.colorScheme.surface,
       constraints: BoxConstraints(
         maxHeight: mediaQuery.size.height - mediaQuery.padding.top,

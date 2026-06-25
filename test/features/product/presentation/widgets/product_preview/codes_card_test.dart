@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/codes_card.dart';
@@ -60,6 +61,47 @@ void main() {
       );
 
       expect(find.text('1234567890'), findsNWidgets(2));
+    });
+
+    testWidgets('card title shows SKU & Barcode not just SKU (P7)', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        CodesCard(
+          product: Product(
+            id: 'p1',
+            name: 'Test',
+            price: 50,
+            stock: 10,
+            isActive: true,
+            createdAt: DateTime(2024, 1, 1),
+            updatedAt: DateTime(2024, 1, 1),
+          ),
+        ),
+      );
+
+      expect(find.text('SKU & Barcode'), findsOneWidget);
+    });
+
+    testWidgets('barcode image wrapped in frame container (U8)', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        CodesCard(
+          product: Product(
+            id: 'p1',
+            name: 'Test',
+            price: 50,
+            stock: 10,
+            barcode: '1234567890',
+            isActive: true,
+            createdAt: DateTime(2024, 1, 1),
+            updatedAt: DateTime(2024, 1, 1),
+          ),
+        ),
+      );
+
+      expect(find.byType(SelectableText), findsNWidgets(2));
     });
   });
 }

@@ -39,16 +39,19 @@ If you change a file, these are the files that must also be updated.
 | `SaleState` new field (e.g. `stockWarning`) | Update `sale_state.dart` props count + `sale_bloc_test.dart` expectations + any `copyWith` usage |
 | `DraftCart` entity (new fields) | Update `draft_cart.dart` + `DraftCartLocalDatasource` + `SaleBloc` draft event handlers + `sale_bloc_test.dart` |
 | `DraftCarts` table schema | Run `build_runner build`; bump schema version + add migration in `app_database.dart` |
-| `Product` entity (new fields) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductRepositoryImpl` constructor if services added |
+| `Product` entity (new fields, e.g. `barcodeImagePath`) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductLocalDatasource` mapping + `ProductRepositoryImpl` constructor if services added |
 | `Category` entity (new fields: color, iconName) | Update `category_test.dart` props count + fixtures + `CategoryRepositoryImpl` mapping + run `build_runner build`; bump schema version |
 | `CategoryRepositoryImpl` constructor | Update tests to inject mock datasource; regenerate with `build_runner` |
 | `CategoryBloc` constructor / events | Update mock in `test/helpers/mocks.dart`; add `CategoriesReordered` event handler tests; inject `ReorderCategories` use case |
-| `ProductRepositoryImpl` constructor | Update `product_repository_impl_test.dart` to inject `MockProductImageService` |
+| `ProductRepositoryImpl` constructor | Update `product_repository_impl_test.dart` to inject `MockProductImageService` (and `MockBarcodeImageService` if image generation is wired) |
 | `ProductLocalDatasource` / `ProductRepository` new method (e.g. `bulkUpdateBarcodes`) | Update interface + impl + mock in `mocks.dart` + `batch_generate_barcodes_test.dart` |
+| `Ean13Generator` constructor / annotations | Run `build_runner build`; update `GenerateBarcode`, `BatchGenerateBarcodes`, `SettingsCubit` constructors + their tests (`generate_barcode_test.dart`, `batch_generate_barcodes_test.dart`, `settings_cubit_test.dart`) |
+| `GenerateBarcode` / `BatchGenerateBarcodes` constructor | Update mock in `test/helpers/mocks.dart` + corresponding test files to inject `Ean13Generator` instance |
+| `BarcodeImageService.generate()` rendering method | Update `barcode_image_service_test.dart` if present; verify `BarcodeImageWidget` display still renders correctly |
 | `InventoryLog` entity | Update `inventory_log_test.dart` props count + `InventoryLogRepositoryImpl` mapping |
 | `InventoryLogCubit` constructor | Update mock in `test/helpers/mocks.dart` + inject `MockWatchInventoryLogs` in tests |
 | `InventoryLogLocalDatasource` | Update `InventoryLogRepositoryImpl` tests to inject mock datasource |
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · File Dependency Map</sub>
+<sub>Promsell POS CE · v0.8.6 · File Dependency Map</sub>

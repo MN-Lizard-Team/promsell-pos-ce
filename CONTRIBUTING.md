@@ -145,7 +145,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **1121 automated tests**. All must pass before submitting a PR.
+The project has **1259 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests (includes stress tests)
@@ -237,13 +237,14 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current 0.8.x) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.8.6) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)
 - `lib/core/extensions/l10n_extension.dart` — `context.l10n` helper
 - `lib/core/utils/payment_method_helper.dart` — payment method normalization
-- `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints, `ImageViewerDialog`, `BarcodeScannerDialog`, `showImageSourceSheet`)
+- `lib/core/widgets/` — shared UI widgets (`AppEmptyState`, `MoneyText`, `SectionCard`, breakpoints, `ImageViewerDialog`, `BarcodeScannerDialog`, `showImageSourceSheet`, `OverlayToast`)
+- `lib/core/utils/ean13_generator.dart` — `@injectable` EAN-13 barcode generator with Luhn check digit; injected into `GenerateBarcode`, `BatchGenerateBarcodes`, `SettingsCubit`
 - `lib/core/image/` — unified image system (`UnifiedImageWidget`, `ImageSkeleton`, `ImageErrorPlaceholder`, `ImageCacheService`)
 - `lib/core/database/app_database.dart` — Drift schema and DAOs
 - `lib/main.dart` — shared app entry (`runPromsellApp`), `SettingsCubit` provider, 5-tab shell

@@ -3,28 +3,38 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFF0E7C8A);
+  static const Color primary = Color(0xFF0D5D6B);
   static const Color primaryLight = Color(0xFF2A9DAD);
-  static const Color primaryDark = Color(0xFF0D5D6B);
-  static const Color primaryContainer = Color(0xFFB8E6EC);
-  static const Color onPrimaryContainer = Color(0xFF0E7C8A);
+  static const Color primaryDark = Color(0xFF094551);
+  static const Color primaryContainer = Color(0xFFD0ECEF);
+  static const Color onPrimaryContainer = Color(0xFF0D5D6B);
 
-  static const Color secondary = Color(0xFF0E7C8A);
+  static const Color secondary = Color(0xFF475569);
   static const Color accent = Color(0xFFFF6B00);
   static const Color accentContainer = Color(0xFFFFE0CC);
 
+  static const Color neutralAccent = Color(0xFF64748B);
+  static const Color neutralAccentContainer = Color(0xFFC0CCDB);
+  static const Color onNeutralAccent = Color(0xFFFFFFFF);
+  static const Color onNeutralAccentContainer = Color(0xFF1E293B);
+
+  static const Color darkNeutralAccent = Color(0xFF94A3B8);
+  static const Color darkNeutralAccentContainer = Color(0xFF1E293B);
+  static const Color darkOnNeutralAccent = Color(0xFF0F172A);
+  static const Color darkOnNeutralAccentContainer = Color(0xFFCBD5E1);
+
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceWarm = Color(0xFFE8EEF4);
-  static const Color background = Color(0xFFF1F5F9);
+  static const Color surfaceWarm = Color(0xFFCCD9E5);
+  static const Color background = Color(0xFFE2E8F0);
   static const Color cardBackground = Color(0xFFFFFFFF);
-  static const Color elevatedSurface = Color(0xFFF1F5F9);
+  static const Color elevatedSurface = Color(0xFFE8EDF2);
 
   static const Color onTertiary = Color(0xFFFFFFFF);
   static const Color onTertiaryContainer = Color(0xFF8A3500);
   static const Color accentShadow = Color(0x33FF6B00);
 
   static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textSecondary = Color(0xFF475569);
   static const Color textHint = Color(0xFF94A3B8);
   static const Color textOnPrimary = Color(0xFFFFFFFF);
 
@@ -37,19 +47,25 @@ class AppColors {
   static const Color onSuccess = Color(0xFFFFFFFF);
   static const Color onInfo = Color(0xFFFFFFFF);
 
-  static const Color divider = Color(0xFFE2E8F0);
-  static const Color border = Color(0xFFCBD5E1);
+  static const Color divider = Color(0xFFB0C4D4);
+  static const Color border = Color(0xFF94A3B8);
 
-  static const Color onSurfaceVariant = Color(0xFF475569);
-  static const Color surfaceContainerHighest = Color(0xFFE2E8F0);
+  static const Color onSurfaceVariant = Color(0xFF334155);
+  static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
+  static const Color surfaceContainerLow = Color(0xFFF1F5F9);
+  static const Color surfaceContainerMedium = Color(0xFFD8E1EC);
+  static const Color surfaceContainerHigh = Color(0xFFCBD5E1);
+  static const Color surfaceContainerHighest = Color(0xFFA8BDD0);
   static const Color darkSurfaceContainerHighest = Color(0xFF2C2C2C);
+  static const Color darkSurfaceContainerLow = Color(0xFF242424);
+  static const Color darkSurfaceContainerMedium = Color(0xFF2A2A2A);
   static const Color errorContainer = Color(0xFFFEE2E2);
   static const Color inverseSurface = Color(0xFF1E293B);
   static const Color onInverseSurface = Color(0xFFF1F5F9);
   static const Color shadow = Color(0x1A000000);
 
-  static const Color cartBackground = Color(0xFFB8E6EC);
-  static const Color posBackground = Color(0xFFF1F5F9);
+  static const Color cartBackground = Color(0xFFD0ECEF);
+  static const Color posBackground = Color(0xFFE2E8F0);
 
   static const Color darkBackground = Color(0xFF121212);
   static const Color darkSurface = Color(0xFF1A1A1A);

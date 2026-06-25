@@ -189,7 +189,7 @@ class ReceiptPreviewThermal extends StatelessWidget {
     child: Text(text, style: style, textAlign: TextAlign.center),
   );
   Widget _divider(ThemeData theme) => Divider(
-    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+    color: theme.colorScheme.outlineVariant,
     height: 1,
     thickness: 0.5,
   );

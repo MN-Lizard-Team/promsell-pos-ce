@@ -5,13 +5,14 @@ import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_r
 
 @injectable
 class GenerateBarcode {
-  const GenerateBarcode(this._productRepo, this._settingsRepo);
+  const GenerateBarcode(this._productRepo, this._settingsRepo, this._generator);
   final ProductRepository _productRepo;
   final SettingsRepository _settingsRepo;
+  final Ean13Generator _generator;
 
   Future<String> call({String? prefix, String? excludeId}) async {
     for (var i = 0; i < 10; i++) {
-      final barcode = Ean13Generator.generate(prefix: prefix);
+      final barcode = _generator.generate(prefix: prefix);
       final exists = await _productRepo.barcodeExists(
         barcode,
         excludeId: excludeId,
@@ -21,6 +22,7 @@ class GenerateBarcode {
         return barcode;
       }
     }
+    await _persistCounter();
     throw StateError('Could not generate unique barcode after 10 attempts');
   }
 
@@ -28,7 +30,7 @@ class GenerateBarcode {
     try {
       final settings = await _settingsRepo.load();
       final updated = settings.copyWith(
-        barcodeLastCounter: Ean13Generator.currentCounter,
+        barcodeLastCounter: _generator.currentCounter,
       );
       await _settingsRepo.save(updated);
     } catch (_) {

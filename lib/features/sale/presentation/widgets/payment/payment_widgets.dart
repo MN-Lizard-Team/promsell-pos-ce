@@ -116,7 +116,7 @@ class PaymentMethodCard extends StatelessWidget {
                   icon,
                   color: selected
                       ? colorScheme.onPrimary
-                      : colorScheme.onSurfaceVariant,
+                      : colorScheme.secondary,
                   size: 32,
                 ),
                 const SizedBox(height: 8),
@@ -126,7 +126,7 @@ class PaymentMethodCard extends StatelessWidget {
                     fontFamily: 'NotoSansThai',
                     color: selected
                         ? colorScheme.onPrimary
-                        : colorScheme.onSurfaceVariant,
+                        : colorScheme.secondary,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                     fontSize: 13,
                   ),

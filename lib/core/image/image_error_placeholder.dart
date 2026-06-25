@@ -28,7 +28,7 @@ class ImageErrorPlaceholder extends StatelessWidget {
         children: [
           Icon(
             Icons.broken_image_outlined,
-            color: theme.colorScheme.onSurfaceVariant,
+            color: theme.colorScheme.secondary,
             size: size * 0.35,
           ),
           if (showLabel) ...[
@@ -36,7 +36,7 @@ class ImageErrorPlaceholder extends StatelessWidget {
             Text(
               'Image error',
               style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: theme.colorScheme.secondary,
                 fontFamily: 'NotoSansThai',
               ),
               maxLines: 1,

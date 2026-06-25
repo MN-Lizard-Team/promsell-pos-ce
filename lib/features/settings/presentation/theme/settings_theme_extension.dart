@@ -16,6 +16,8 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     required this.iconContainerBackground,
     required this.activeAccent,
     required this.activeAccentContainer,
+    required this.neutralAccent,
+    required this.neutralAccentContainer,
     required this.dividerIndent,
     required this.cardRadius,
     required this.sectionGap,
@@ -36,6 +38,8 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
   final Color iconContainerBackground;
   final Color activeAccent;
   final Color activeAccentContainer;
+  final Color neutralAccent;
+  final Color neutralAccentContainer;
   final double dividerIndent;
   final double cardRadius;
   final double sectionGap;
@@ -45,17 +49,19 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
 
   static const SettingsThemeExtension light = SettingsThemeExtension(
     cardBackground: Color(0xFFFFFFFF),
-    cardBorderColor: Color(0xFFE2E8F0),
-    softAccent: Color(0xFF0E7C8A),
-    softAccentContainer: Color(0xFFB8E6EC),
+    cardBorderColor: Color(0xFFCBD5E1),
+    softAccent: Color(0xFF0D5D6B),
+    softAccentContainer: Color(0xFFD0ECEF),
     activeAccent: Color(0xFFFF6B00),
     activeAccentContainer: Color(0xFFFFE0CC),
+    neutralAccent: Color(0xFF64748B),
+    neutralAccentContainer: Color(0xFFC0CCDB),
     softTextPrimary: Color(0xFF0F172A),
-    softTextSecondary: Color(0xFF64748B),
+    softTextSecondary: Color(0xFF475569),
     danger: Color(0xFFDC2626),
     success: Color(0xFF22C55E),
-    mutedText: Color(0xFF64748B),
-    iconContainerBackground: Color(0xFFB8E6EC),
+    mutedText: Color(0xFF475569),
+    iconContainerBackground: Color(0xFFD0ECEF),
     dividerIndent: 16,
     cardRadius: 16,
     sectionGap: 32,
@@ -71,6 +77,8 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     softAccentContainer: Color(0xFF0A4A52),
     activeAccent: Color(0xFFFF6B00),
     activeAccentContainer: Color(0xFF4A2A00),
+    neutralAccent: Color(0xFF94A3B8),
+    neutralAccentContainer: Color(0xFF1E293B),
     softTextPrimary: Color(0xFFF0F6FC),
     softTextSecondary: Color(0xFF8B949E),
     danger: Color(0xFFEF4444),
@@ -99,6 +107,8 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     Color? iconContainerBackground,
     Color? activeAccent,
     Color? activeAccentContainer,
+    Color? neutralAccent,
+    Color? neutralAccentContainer,
     double? dividerIndent,
     double? cardRadius,
     double? sectionGap,
@@ -121,6 +131,9 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
       activeAccent: activeAccent ?? this.activeAccent,
       activeAccentContainer:
           activeAccentContainer ?? this.activeAccentContainer,
+      neutralAccent: neutralAccent ?? this.neutralAccent,
+      neutralAccentContainer:
+          neutralAccentContainer ?? this.neutralAccentContainer,
       dividerIndent: dividerIndent ?? this.dividerIndent,
       cardRadius: cardRadius ?? this.cardRadius,
       sectionGap: sectionGap ?? this.sectionGap,
@@ -160,6 +173,12 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
       activeAccentContainer: Color.lerp(
         activeAccentContainer,
         other.activeAccentContainer,
+        t,
+      )!,
+      neutralAccent: Color.lerp(neutralAccent, other.neutralAccent, t)!,
+      neutralAccentContainer: Color.lerp(
+        neutralAccentContainer,
+        other.neutralAccentContainer,
         t,
       )!,
       dividerIndent: lerpDouble(dividerIndent, other.dividerIndent, t)!,

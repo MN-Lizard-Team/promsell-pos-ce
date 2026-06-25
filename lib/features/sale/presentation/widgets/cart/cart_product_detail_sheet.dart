@@ -11,6 +11,8 @@ class CartProductDetailSheet {
     final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
+      enableDrag: true,
+      showDragHandle: false,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

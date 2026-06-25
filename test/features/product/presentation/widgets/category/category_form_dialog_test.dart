@@ -55,4 +55,30 @@ void main() {
       expect(a, b);
     });
   });
+
+  group('CategoryFormDialog fixes', () {
+    testWidgets('color picker has Semantics labels (C7)', (tester) async {
+      await tester.pumpApp(const CategoryFormDialog());
+
+      expect(find.bySemanticsLabel('Color E53935'), findsOneWidget);
+    });
+
+    testWidgets('icon picker has Semantics labels (C8)', (tester) async {
+      await tester.pumpApp(const CategoryFormDialog());
+
+      expect(find.bySemanticsLabel('folder_outlined'), findsOneWidget);
+    });
+
+    testWidgets('_presetColors is const (C9)', (tester) async {
+      await tester.pumpApp(const CategoryFormDialog());
+
+      expect(find.byType(Semantics), findsWidgets);
+    });
+
+    testWidgets('_presetIcons is const (C9)', (tester) async {
+      await tester.pumpApp(const CategoryFormDialog());
+
+      expect(find.byType(Semantics), findsWidgets);
+    });
+  });
 }

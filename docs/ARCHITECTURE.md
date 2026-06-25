@@ -1,4 +1,4 @@
-﻿# Architecture — Promsell POS CE v0.8.5
+﻿# Architecture — Promsell POS CE v0.8.6
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -32,25 +32,25 @@ Offline-first mobile POS system — Flutter, Drift SQLite, BLoC/Cubit, Material 
 │   5-tab NavigationBar shell with lazy-loaded tabs    │
 └────────────────────────┬─────────────────────────────┘  
                          ▼
-┌──────────────────────────────────────────────────────────────────────────────┐
-│   lib/features/ — Feature modules                                            │
-│   sale/       — Cart, checkout, draft, discount                              │        
-│   product/    — CRUD inventory, ProductBloc, image service, barcode scanning │
-│   history/    — Sale history viewer                                          │
-│   report/     — Analytics dashboard                                          │
-│   settings/   — Locale, theme, shop info                                     │
-└────────────────────────┬─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│   lib/features/ — Feature modules                                               │
+│   sale/       — Cart, checkout, draft, discount                                 │        
+│   product/    — CRUD inventory, image service, barcode scan + image generation  │
+│   history/    — Sale history viewer                                             │
+│   report/     — Analytics dashboard                                             │
+│   settings/   — Locale, theme, shop info                                        │
+└────────────────────────┬────────────────────────────────────────────────────────┘
                          ▼
-┌──────────────────────────────────────────────────────────────────────────────┐
-│   lib/core/ — Cross-cutting infrastructure                                   │
-│   database/   — Drift schema, tables, DAOs                                   │
-│   di/         — injectable + get_it DI                                       │
-│   extensions/ — context.l10n helper                                          │
-│   image/      — Unified image system                                         │
-│   services/  — CrashLogService (PII sanitization, export/clear)              │
-│   utils/      — IdGenerator, payment_method                                  │
-│   widgets/    — shared UI primitives                                         │
-└───────────────────────┬──────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│   lib/core/ — Cross-cutting infrastructure                                      │
+│   database/   — Drift schema, tables, DAOs                                      │
+│   di/         — injectable + get_it DI                                          │
+│   extensions/ — context.l10n helper                                             │
+│   image/      — Unified image system                                            │
+│   services/  — CrashLogService (PII sanitization, export/clear)                 │
+│   utils/      — IdGenerator, payment_method, Ean13Generator (@injectable)       │
+│   widgets/    — shared UI primitives                                            │
+└───────────────────────┬─────────────────────────────────────────────────────────┘
                         ▼
 ┌──────────────────────────────────────────────────────────┐
 │   lib/l10n/ — Localization                               │
@@ -113,4 +113,4 @@ features/<name>/
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.8.6 · Architecture Document · Deep Technical Reference</sub>

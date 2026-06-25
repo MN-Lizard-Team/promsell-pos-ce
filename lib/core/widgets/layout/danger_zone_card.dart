@@ -58,7 +58,7 @@ class DangerZoneCard extends StatelessWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: theme.colorScheme.secondary,
                     ),
                   ),
                 ],

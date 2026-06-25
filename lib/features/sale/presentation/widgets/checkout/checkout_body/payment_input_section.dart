@@ -36,14 +36,14 @@ class PaymentInputSection extends StatelessWidget {
                 Text(
                   context.l10n.promptpay,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: theme.colorScheme.secondary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   settings.promptpayId,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: theme.colorScheme.secondary,
                   ),
                 ),
               ],

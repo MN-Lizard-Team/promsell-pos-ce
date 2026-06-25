@@ -102,5 +102,5 @@ void _showStockDialog(
         ),
       ],
     ),
-  );
+  ).then((_) => ctrl.dispose());
 }

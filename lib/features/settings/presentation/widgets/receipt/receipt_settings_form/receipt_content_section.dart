@@ -63,38 +63,41 @@ class ReceiptContentSection extends StatelessWidget {
     final l10n = context.l10n;
     final preview = s.receiptNote.isEmpty ? '—' : s.receiptNote;
 
-    return ListTile(
-      leading: Icon(
-        Icons.receipt_long_outlined,
-        color: st.softAccent,
-        size: 22,
-      ),
-      title: Text(
-        l10n.settingsReceiptNote,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(
+          Icons.receipt_long_outlined,
+          color: st.softAccent,
+          size: 22,
         ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              preview,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-                color: st.softTextSecondary,
+        title: Text(
+          l10n.settingsReceiptNote,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                preview,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: st.softTextSecondary,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
-        ],
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
+          ],
+        ),
+        onTap: () => _showNoteDialog(context, s),
       ),
-      onTap: () => _showNoteDialog(context, s),
     );
   }
 

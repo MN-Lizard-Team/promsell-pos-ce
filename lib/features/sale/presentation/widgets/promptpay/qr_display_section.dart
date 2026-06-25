@@ -65,13 +65,13 @@ class QrDisplaySection extends StatelessWidget {
               Icon(
                 Icons.account_balance_wallet_outlined,
                 size: 18,
-                color: theme.colorScheme.onSurfaceVariant,
+                color: theme.colorScheme.secondary,
               ),
               const SizedBox(width: 6),
               Text(
                 promptpayId,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: theme.colorScheme.secondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -5,7 +5,8 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/utils/category_style_resolver.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor, parseCategoryIcon;
+    show parseCategoryColor;
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 
 class CategoryFilterBar extends StatelessWidget {
   const CategoryFilterBar({

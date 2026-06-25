@@ -6,7 +6,8 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor, parseCategoryIcon;
+    show parseCategoryColor;
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 
 class SaleCatalogCategoryFilter extends StatelessWidget {
   const SaleCatalogCategoryFilter({
@@ -78,7 +79,7 @@ class SaleCatalogCategoryFilter extends StatelessWidget {
               labelStyle: TextStyle(
                 color: selected
                     ? theme.colorScheme.onPrimaryContainer
-                    : theme.colorScheme.onSurfaceVariant,
+                    : theme.colorScheme.secondary,
                 fontWeight: selected ? FontWeight.w600 : null,
               ),
               onSelected: (_) {

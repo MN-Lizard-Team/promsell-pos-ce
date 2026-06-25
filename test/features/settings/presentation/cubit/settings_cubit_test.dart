@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/services/settings_persistence_service.dart';
@@ -13,10 +14,12 @@ class MockSettingsPersistenceService extends Mock
 void main() {
   late MockSettingsRepository mockRepo;
   late MockSettingsPersistenceService mockPersistence;
+  late Ean13Generator generator;
 
   setUp(() {
     mockRepo = MockSettingsRepository();
     mockPersistence = MockSettingsPersistenceService();
+    generator = Ean13Generator();
     when(() => mockPersistence.dispose()).thenAnswer((_) async {});
   });
 
@@ -24,7 +27,8 @@ void main() {
     registerFallbackValue(const Settings());
   });
 
-  SettingsCubit buildCubit() => SettingsCubit(mockRepo, mockPersistence);
+  SettingsCubit buildCubit() =>
+      SettingsCubit(mockRepo, mockPersistence, generator);
 
   group('SettingsCubit', () {
     test('initial state is SettingsState()', () {

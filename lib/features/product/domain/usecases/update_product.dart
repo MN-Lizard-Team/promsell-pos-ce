@@ -13,9 +13,6 @@ class UpdateProduct {
     Validators.productName(product.name);
     Validators.price(product.price);
     Validators.stock(product.stock);
-    if (product.categoryId != null && product.categoryId!.isNotEmpty) {
-      Validators.productName(product.categoryId!);
-    }
     Validators.barcode(product.barcode);
     if (product.barcode != null && product.barcode!.isNotEmpty) {
       final exists = await _repository.barcodeExists(

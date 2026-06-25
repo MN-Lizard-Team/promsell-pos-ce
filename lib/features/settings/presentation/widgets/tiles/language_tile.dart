@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/responsive_settings_picker.dart';
 
@@ -20,12 +21,17 @@ class LanguageTile extends StatelessWidget {
       child: DropdownButton<String>(
         value: current.languageCode,
         isExpanded: true,
+        dropdownColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
         items: [
           DropdownMenuItem(value: 'th', child: Text(l10n.langThai)),
           DropdownMenuItem(value: 'en', child: Text(l10n.langEnglish)),
         ],
         onChanged: (code) {
-          if (code != null) onChanged(Locale(code));
+          if (code != null) {
+            HapticFeedback.selectionClick();
+            onChanged(Locale(code));
+          }
         },
       ),
     );

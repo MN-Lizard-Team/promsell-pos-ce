@@ -41,8 +41,11 @@ class ProductPricingTab extends StatelessWidget {
                   return context.l10n.priceRequired;
                 }
                 final parsed = double.tryParse(value);
-                if (parsed == null || parsed < 0) {
+                if (parsed == null) {
                   return context.l10n.invalidPrice;
+                }
+                if (parsed <= 0) {
+                  return context.l10n.priceMustBePositive;
                 }
                 return null;
               },

@@ -66,31 +66,34 @@ class ReceiptTaxSection extends StatelessWidget {
     final st = context.settingsTheme;
     final theme = Theme.of(context);
 
-    return ListTile(
-      leading: Icon(Icons.percent, color: st.softAccent, size: 22),
-      title: Text(
-        context.l10n.settingsVatRate,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '${s.vatRate.toStringAsFixed(1)}%',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-              color: st.softTextPrimary,
-            ),
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(Icons.percent, color: st.softAccent, size: 22),
+        title: Text(
+          context.l10n.settingsVatRate,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
-        ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${s.vatRate.toStringAsFixed(1)}%',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: st.softTextPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
+          ],
+        ),
+        onTap: () => _showVatRateDialog(context, s),
       ),
-      onTap: () => _showVatRateDialog(context, s),
     );
   }
 

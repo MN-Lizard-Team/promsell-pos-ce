@@ -1,4 +1,4 @@
-# Core Modules & Feature Modules — Promsell POS CE v0.8.5
+# Core Modules & Feature Modules — Promsell POS CE v0.8.6
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 
@@ -10,7 +10,7 @@
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#0D5D6B` primary Teal, `#FF6B00` accent Orange, `#0D1B2A` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v17, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories`; v16 adds `UNIQUE INDEX` on `barcode` with duplicate-safe migration; v17 auto-deduplicates barcodes before index creation |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v18, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories`; v16 adds `UNIQUE INDEX` on `barcode` with duplicate-safe migration; v17 auto-deduplicates barcodes before index creation; v18 adds `barcodeImagePath` to `Products` for generated barcode PNGs |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -26,12 +26,13 @@
 | `showImageSourceSheet()` | `lib/core/widgets/image_source_sheet.dart` | Shared bottom-sheet helper for gallery/camera/remove image actions; used by AddProductPage and ProductFormPage |
 | `DuplicateBarcodeException` | `lib/core/exceptions/` | Thrown when barcode already exists on another product |
 | `SoundPlayer` | `lib/core/utils/` | Lightweight audio player for PromptPay confirmation feedback (`audioplayers`) |
-| `Ean13Generator` | `lib/core/utils/` | EAN-13 compliant barcode generator with Luhn check digit; default prefix `200` (GS1 internal use range); pads 1-2 digit prefixes to 3 digits; counter persisted via `initCounter()`/`currentCounter` |
-| `GenerateBarcode` | `lib/features/product/domain/usecases/` | Injectable use case wrapping `Ean13Generator.generate()` with DB collision check (`barcodeExists`) + retry (max 10) + counter persistence to Settings |
-| `BatchGenerateBarcodes` | `lib/features/product/domain/usecases/` | Injectable use case that finds all active products without barcodes, generates unique EAN-13 for each, and updates them in a single `bulkUpdateBarcodes()` call (Drift batch) for single stream event |
+| `Ean13Generator` | `lib/core/utils/` | `@injectable` EAN-13 compliant barcode generator with Luhn check digit; default prefix `200` (GS1 internal use range); pads 1-2 digit prefixes to 3 digits; per-instance counter persisted via `initCounter()`/`currentCounter`; injected into `GenerateBarcode`, `BatchGenerateBarcodes`, and `SettingsCubit` |
+| `GenerateBarcode` | `lib/features/product/domain/usecases/` | `@injectable` use case wrapping `Ean13Generator.generate()` with DB collision check (`barcodeExists`, `excludeId` for self-collision) + retry (max 10) + counter persistence to Settings on every attempt (not just success) |
+| `BatchGenerateBarcodes` | `lib/features/product/domain/usecases/` | `@injectable` use case that syncs `Ean13Generator.initCounter()` from persisted settings, finds all active products without barcodes, generates unique EAN-13 for each, and updates them in a single `bulkUpdateBarcodes()` call (Drift batch) for single stream event |
 | `PromptPayQrCode` | `lib/features/settings/presentation/widgets/` | EMVCo-compliant QR payload generator via `thai_promptpay`; optional customizable icon overlay |
 | `ReceiptNumberService` | `lib/features/sale/data/services/` | Auto-generated receipt numbers (`YYMMDD-XX-NNNN`) per day/device |
 | `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; delegates delete to `ImageCacheService`; format validation (`.jpg`, `.png`, `.webp`, etc.); auto LRU cache eviction on save; `@LazySingleton` |
+| `BarcodeImageService` | `lib/features/product/data/services/` | Generates barcode images from barcode text using `BarcodeWidget` off-screen rendering via `RenderRepaintBoundary` (600×200 @ 3x pixel ratio); saves to `/barcodes/{productId}.{png|jpg}`; supports both PNG and JPEG output formats; invoked by `ProductRepositoryImpl` on product add/update; used by `BarcodeImageWidget` to encode PNG to JPEG for share |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
 | `ReportCalculator` | `lib/features/report/domain/extensions/` | Domain extension on `List<Sale>`: `completedSales`, `voidedSales`, `netRevenue`, `voidedTotal`, `byPaymentMethod`, `topProducts` |
 | `SettingsMapper` | `lib/features/settings/data/mappers/` | `Settings` ↔ `Map<String,String>` serialization; handles legacy themeMode integer migration (0→light, 1→dark, 2→system) |
@@ -44,7 +45,7 @@
 | `MoneyText` | `lib/core/widgets/` | Currency text with fixed decimal formatting |
 | `SectionCard` | `lib/core/widgets/` | Shared grouped card surface for settings and dashboards |
 | `BarcodeWidget` | `package:barcode_widget/` | Visual barcode rendering (EAN13, EAN8, UPCA, Code128) used in `ProductPreviewPage` |
-| `ProductPreviewPage` | `lib/features/product/presentation/pages/` | Full-page read-only product detail: hero image + gradient overlay, price card (selling price, cost, profit + margin %), stock card with inline edit, SKU/barcode card with visual barcode + actions (view, save PDF, print), system info card (product ID, timestamps) |
+| `ProductPreviewPage` | `lib/features/product/presentation/pages/` | Full-page read-only product detail: hero image + gradient overlay, price card (selling price, cost, profit + margin %), stock card with inline edit, SKU/barcode card with visual barcode + copy actions + generate-barcode button when missing + save as PDF/PNG/JPEG, system info card (product ID, timestamps). Barcode images are persisted to `product.barcodeImagePath` and reused for view/save/print |
 | `ImageViewerDialog` | `lib/core/widgets/` | Full-screen image viewer with `InteractiveViewer` (pinch zoom, pan, double-tap zoom), swipe gallery, page indicators. Bottom toolbar: share button (`share_plus`) + info bottom sheet (source, path, file size). Used by product image tap and receipt preview |
 | `CrashLogService` | `lib/core/services/` | Persistent local crash logging with PII sanitization (phone, PromptPay ID, citizen ID); export via share sheet; clear with confirmation. `@LazySingleton` |
 
@@ -68,4 +69,4 @@
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Core & Feature Modules</sub>
+<sub>Promsell POS CE · v0.8.6 · Core & Feature Modules</sub>

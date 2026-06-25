@@ -28,39 +28,45 @@ class GeneralResetTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(st.cardRadius),
         border: Border.all(color: st.cardBorderColor, width: 0.8),
       ),
-      child: ListTile(
-        minTileHeight: st.tileMinHeight,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: st.iconSize,
-          height: st.iconSize,
-          decoration: BoxDecoration(
-            color: st.iconContainerBackground,
-            borderRadius: BorderRadius.circular(12),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListTile(
+          minTileHeight: st.tileMinHeight,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
           ),
-          child: Icon(Icons.restore, color: st.mutedText, size: 24),
-        ),
-        title: Text(
-          l10n.generalSettingsReset,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
+          leading: Container(
+            width: st.iconSize,
+            height: st.iconSize,
+            decoration: BoxDecoration(
+              color: st.iconContainerBackground,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.restore, color: st.mutedText, size: 24),
           ),
+          title: Text(
+            l10n.generalSettingsReset,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Text(
+            l10n.generalSettingsResetConfirm,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: st.mutedText),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: st.softTextSecondary,
+            size: 20,
+          ),
+          onTap: () => _showResetConfirmDialog(context, s, st, l10n),
         ),
-        subtitle: Text(
-          l10n.generalSettingsResetConfirm,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: st.mutedText),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Icon(
-          Icons.chevron_right,
-          color: st.softTextSecondary,
-          size: 20,
-        ),
-        onTap: () => _showResetConfirmDialog(context, s, st, l10n),
       ),
     );
   }

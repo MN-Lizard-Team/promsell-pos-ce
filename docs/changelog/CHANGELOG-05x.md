@@ -1,6 +1,6 @@
 # Changelog — v0.5.x — Promsell POS CE
 
-> ดู [CHANGELOG.md](../../CHANGELOG.md) สำหรับเวอร์ชันล่าสุด (0.8.x)
+> For the most up-to-date changes and release information, see [CHANGELOG.md](/CHANGELOG.md) for version 0.8.x, including feature additions, system improvements, performance enhancements, and bug fixes.
 
 ---
 

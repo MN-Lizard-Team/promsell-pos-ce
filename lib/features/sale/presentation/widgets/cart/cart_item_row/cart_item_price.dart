@@ -66,7 +66,7 @@ class CartItemPriceColumn extends StatelessWidget {
           Text(
             '$currency${(item.product.price * item.qty).toStringAsFixed(2)}',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: theme.colorScheme.secondary,
               decoration: TextDecoration.lineThrough,
             ),
           ),

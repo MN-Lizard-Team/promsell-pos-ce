@@ -20,20 +20,26 @@ class IconWithBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasBadge = badgeCount != null;
     final showNumber = (badgeCount ?? 0) > 0;
+    final textScaler = MediaQuery.textScalerOf(context);
+    final iconSize = textScaler.scale(28).clamp(28.0, 36.0);
+    final badgeTextColor =
+        ThemeData.estimateBrightnessForColor(badgeColor) == Brightness.dark
+        ? Colors.white
+        : Colors.black;
 
     return SizedBox(
-      width: 40,
-      height: 32,
+      width: iconSize + 12,
+      height: iconSize,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Icon(icon, color: color, size: 28),
+          Icon(icon, color: color, size: iconSize),
           if (hasBadge)
             Positioned(
               top: 0,
               right: 0,
-              child: AnimatedScale(
-                scale: isActive ? 0.85 : 1.0,
+              child: AnimatedOpacity(
+                opacity: isActive ? 0.7 : 1.0,
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOut,
                 child: Container(
@@ -58,7 +64,7 @@ class IconWithBadge extends StatelessWidget {
                       ? Text(
                           badgeCount! > 99 ? '99+' : badgeCount.toString(),
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onError,
+                            color: badgeTextColor,
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
                             height: 1,

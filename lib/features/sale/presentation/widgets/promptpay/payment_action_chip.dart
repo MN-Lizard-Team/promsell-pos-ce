@@ -26,7 +26,7 @@ class PaymentActionChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+              Icon(icon, size: 18, color: theme.colorScheme.secondary),
               const SizedBox(width: 8),
               Text(
                 label,

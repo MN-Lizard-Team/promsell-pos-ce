@@ -6,11 +6,19 @@ import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_r
 
 @injectable
 class BatchGenerateBarcodes {
-  const BatchGenerateBarcodes(this._repository, this._settingsRepo);
+  const BatchGenerateBarcodes(
+    this._repository,
+    this._settingsRepo,
+    this._generator,
+  );
   final ProductRepository _repository;
   final SettingsRepository _settingsRepo;
+  final Ean13Generator _generator;
 
   Future<int> call({required String prefix}) async {
+    final settings = await _settingsRepo.load();
+    _generator.initCounter(settings.barcodeLastCounter);
+
     final products = await _repository.getActiveProducts();
     final withoutBarcode = products
         .where((p) => p.barcode == null || p.barcode!.isEmpty)
@@ -24,7 +32,7 @@ class BatchGenerateBarcodes {
     for (final product in withoutBarcode) {
       String? barcode;
       for (var i = 0; i < 10; i++) {
-        final candidate = Ean13Generator.generate(prefix: prefix);
+        final candidate = _generator.generate(prefix: prefix);
         final existsInDb = await _repository.barcodeExists(
           candidate,
           excludeId: product.id,
@@ -51,7 +59,7 @@ class BatchGenerateBarcodes {
     try {
       final settings = await _settingsRepo.load();
       final updated = settings.copyWith(
-        barcodeLastCounter: Ean13Generator.currentCounter,
+        barcodeLastCounter: _generator.currentCounter,
       );
       await _settingsRepo.save(updated);
     } catch (e) {

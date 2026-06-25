@@ -446,6 +446,96 @@ abstract class AppLocalizations {
   /// **'กรุณาใส่ชื่อสินค้า'**
   String get productNameRequired;
 
+  /// No description provided for @productNameTooLong.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อสินค้ายาวเกินไป (สูงสุด 100 ตัวอักษร)'**
+  String get productNameTooLong;
+
+  /// No description provided for @quickEditStockSet.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งค่าใหม่'**
+  String get quickEditStockSet;
+
+  /// No description provided for @quickEditStockAdjust.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่ม/ลด'**
+  String get quickEditStockAdjust;
+
+  /// No description provided for @quickEditNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ใส่ชื่อสินค้าใหม่'**
+  String get quickEditNameHint;
+
+  /// No description provided for @quickEditPriceHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ใส่ราคาขายใหม่'**
+  String get quickEditPriceHint;
+
+  /// No description provided for @quickEditStockSetHint.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะ + / - หรือตัวเลขเพื่อแก้ไข กดค้างปุ่มเพื่อปรับเร็ว'**
+  String get quickEditStockSetHint;
+
+  /// No description provided for @quickEditStockAdjustHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ใส่จำนวนที่ต้องการเพิ่มหรือลดจากสต็อกปัจจุบัน'**
+  String get quickEditStockAdjustHint;
+
+  /// No description provided for @stockStepperLongPressHint.
+  ///
+  /// In th, this message translates to:
+  /// **'กดค้างเพื่อเพิ่ม/ลดแบบต่อเนื่อง'**
+  String get stockStepperLongPressHint;
+
+  /// No description provided for @stockStepperTapNumberHint.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะตัวเลขเพื่อกรอกโดยตรง'**
+  String get stockStepperTapNumberHint;
+
+  /// No description provided for @quickEditNameSaved.
+  ///
+  /// In th, this message translates to:
+  /// **'อัปเดตชื่อแล้ว'**
+  String get quickEditNameSaved;
+
+  /// No description provided for @quickEditNameCancelled.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ได้เปลี่ยนแปลงชื่อ'**
+  String get quickEditNameCancelled;
+
+  /// No description provided for @quickEditNameInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อไม่ถูกต้อง'**
+  String get quickEditNameInvalid;
+
+  /// No description provided for @quickEditPriceSaved.
+  ///
+  /// In th, this message translates to:
+  /// **'อัปเดตราคาแล้ว'**
+  String get quickEditPriceSaved;
+
+  /// No description provided for @quickEditPriceCancelled.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ได้เปลี่ยนแปลงราคา'**
+  String get quickEditPriceCancelled;
+
+  /// No description provided for @quickEditPriceInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาไม่ถูกต้อง'**
+  String get quickEditPriceInvalid;
+
   /// No description provided for @priceLabel.
   ///
   /// In th, this message translates to:
@@ -463,6 +553,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ราคาไม่ถูกต้อง'**
   String get invalidPrice;
+
+  /// No description provided for @priceMustBePositive.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาต้องมากกว่า 0'**
+  String get priceMustBePositive;
 
   /// No description provided for @quantityLabel.
   ///
@@ -511,6 +607,66 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'บันทึกสินค้าแล้ว'**
   String get productSaved;
+
+  /// No description provided for @productActivated.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดใช้งานสินค้าแล้ว'**
+  String get productActivated;
+
+  /// No description provided for @productDeactivated.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดการใช้งานสินค้าแล้ว'**
+  String get productDeactivated;
+
+  /// No description provided for @productDeleted.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบสินค้าแล้ว'**
+  String get productDeleted;
+
+  /// No description provided for @stockUpdated.
+  ///
+  /// In th, this message translates to:
+  /// **'อัปเดตสต็อกแล้ว'**
+  String get stockUpdated;
+
+  /// No description provided for @stockUpdateCancelled.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ได้เปลี่ยนแปลงสต็อก'**
+  String get stockUpdateCancelled;
+
+  /// No description provided for @stockUpdateInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'ค่าสต็อกไม่ถูกต้อง'**
+  String get stockUpdateInvalid;
+
+  /// No description provided for @stockUpdateError.
+  ///
+  /// In th, this message translates to:
+  /// **'อัปเดตสต็อกไม่สำเร็จ'**
+  String get stockUpdateError;
+
+  /// No description provided for @productUpdateError.
+  ///
+  /// In th, this message translates to:
+  /// **'อัปเดตสินค้าไม่สำเร็จ'**
+  String get productUpdateError;
+
+  /// No description provided for @productAddError.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มสินค้าไม่สำเร็จ'**
+  String get productAddError;
+
+  /// No description provided for @productDeleteError.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบสินค้าไม่สำเร็จ'**
+  String get productDeleteError;
 
   /// No description provided for @stockZeroWarning.
   ///
@@ -1213,6 +1369,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'สต็อคใกล้หมด'**
   String get lowStockWarning;
+
+  /// No description provided for @inStock.
+  ///
+  /// In th, this message translates to:
+  /// **'มีสินค้า'**
+  String get inStock;
+
+  /// No description provided for @codesCardTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'SKU & บาร์โค้ด'**
+  String get codesCardTitle;
 
   /// No description provided for @discountSectionLabel.
   ///
@@ -2972,6 +3140,30 @@ abstract class AppLocalizations {
   /// **'ไม่ใช้งาน'**
   String get inactive;
 
+  /// No description provided for @tapToZoom.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อขยาย'**
+  String get tapToZoom;
+
+  /// No description provided for @imageError.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถโหลดรูปได้'**
+  String get imageError;
+
+  /// No description provided for @productImageSemantics.
+  ///
+  /// In th, this message translates to:
+  /// **'รูปภาพสินค้า'**
+  String get productImageSemantics;
+
+  /// No description provided for @noProductImageSemantics.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีรูปภาพสินค้า'**
+  String get noProductImageSemantics;
+
   /// No description provided for @na.
   ///
   /// In th, this message translates to:
@@ -3157,6 +3349,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'สร้างบาร์โค้ดแล้ว'**
   String get barcodeGenerated;
+
+  /// No description provided for @barcodeGenerationError.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างบาร์โค้ดไม่สำเร็จ'**
+  String get barcodeGenerationError;
 
   /// No description provided for @batchGenerateBarcodes.
   ///

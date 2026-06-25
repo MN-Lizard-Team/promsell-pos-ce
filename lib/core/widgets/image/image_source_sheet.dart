@@ -15,6 +15,8 @@ Future<ImageSourceAction?> showImageSourceSheet(
   final l10n = context.l10n;
   return showModalBottomSheet<ImageSourceAction>(
     context: context,
+    enableDrag: true,
+    showDragHandle: false,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     builder: (ctx) => SafeArea(
       child: Padding(

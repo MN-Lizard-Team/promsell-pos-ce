@@ -198,7 +198,7 @@ class UnifiedImageWidget extends StatelessWidget {
       ),
       child: Icon(
         Icons.image_outlined,
-        color: theme.colorScheme.onSurfaceVariant,
+        color: theme.colorScheme.secondary,
         size: size * 0.45,
       ),
     );

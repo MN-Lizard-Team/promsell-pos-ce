@@ -41,9 +41,9 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
   - **Advanced tab** — barcode (scan with camera or enter manually), generate EAN-13 compliant barcode with Luhn check digit (GS1 prefix `200`, auto-padded to 3 digits, collision-checked against DB), SKU, cost, track stock toggle
   - Image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; `ImageCacheService` enforces 50MB LRU cache eviction automatically
   - Draft save/restore — unsaved changes prompt to save draft on back press; drafts validate image paths on restore
-- Tap a card to **preview** the product, or long-press to **edit** — the preview page shows a hero image, price breakdown (selling price, cost, profit + margin %), stock status with inline edit button, SKU/barcode with visual barcode rendering and actions (view full, save as PDF, print), and system info (product ID, timestamps)
+- Tap a card to **preview** the product, or long-press to **edit** — the preview page shows a hero image, price breakdown (selling price, cost, profit + margin %), stock status with inline edit button, SKU/barcode with visual barcode rendering and copy actions (copy text, view full, save as PDF/PNG/JPEG, print), a **Generate barcode** button when none exists, and system info (product ID, timestamps). Generated barcode images are persisted to `product.barcodeImagePath` and reused for view/save/print
 - Tap **Manage Categories** (overflow menu ⋮) to open **Category Management** — drag & drop reordering, color + icon picker (10 colors / 21 icons), product count badges, search, and bulk delete
-- Tap **Generate Missing Barcodes** (overflow menu ⋮) to batch-generate EAN-13 barcodes for all products without one — shows confirmation dialog with count, then success snackbar
+- Tap **Generate Missing Barcodes** (overflow menu ⋮) to batch-generate EAN-13 barcodes for all products without one — shows confirmation dialog with count, then success snackbar. Each generated barcode also creates a persisted PNG image in the app documents directory
 - Search filters by name and category in real time
 
 ### History tab
@@ -156,7 +156,7 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Enable barcode scan** | Show/hide camera scan button on Sale page |
 | **Vibrate on scan** | Haptic vibration feedback when barcode is detected |
 | **Auto-generate prefix** | Numeric prefix for EAN-13 barcodes (default `200`, 1-3 digits, auto-padded to 3 digits) |
-| **Generate Missing Barcodes** | Batch-generate EAN-13 barcodes for all products without one — shows count of products missing barcodes, confirmation dialog, and success message |
+| **Generate Missing Barcodes** | Batch-generate EAN-13 barcodes for all products without one — shows count of products missing barcodes, confirmation dialog, and success message. Each product receives a persisted PNG barcode image (`/barcodes/{productId}.png`) |
 | **Help section** | Expandable guide for non-technical staff on how to use barcodes |
 
 ### Draft Settings

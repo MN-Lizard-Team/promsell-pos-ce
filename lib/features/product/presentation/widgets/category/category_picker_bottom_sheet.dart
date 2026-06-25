@@ -27,10 +27,12 @@ class CategoryPickerBottomSheet extends StatelessWidget {
           children: [
             Center(
               child: Container(
-                width: 40,
+                width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.outlineVariant,
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.25,
+                  ),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -67,6 +69,13 @@ Future<Category?> showCategoryPicker(
   final result = await showModalBottomSheet<Category>(
     context: context,
     isScrollControlled: true,
+    enableDrag: true,
+    showDragHandle: false,
+    elevation: 0,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+    ),
     builder: (_) => BlocProvider.value(
       value: bloc,
       child: CategoryPickerBottomSheet(

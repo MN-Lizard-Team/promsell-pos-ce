@@ -154,7 +154,7 @@ class _SettingsRootViewState extends State<_SettingsRootView>
                   hintText: l10n.searchSettings,
                   border: InputBorder.none,
                   hintStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
                 style: Theme.of(context).textTheme.titleMedium,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
@@ -77,7 +78,7 @@ class BarcodePrefixTile extends StatelessWidget {
           trimmed.length <= 3 &&
           RegExp(r'^[0-9]+$').hasMatch(trimmed)) {
         try {
-          previewBarcode = Ean13Generator.generate(prefix: trimmed);
+          previewBarcode = GetIt.I<Ean13Generator>().generate(prefix: trimmed);
         } catch (_) {
           previewBarcode = null;
         }

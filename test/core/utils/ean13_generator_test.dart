@@ -2,36 +2,42 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 
 void main() {
+  late Ean13Generator generator;
+
+  setUp(() {
+    generator = Ean13Generator();
+  });
+
   group('Ean13Generator', () {
     test('generates 13-digit barcode', () {
-      final barcode = Ean13Generator.generate();
+      final barcode = generator.generate();
       expect(barcode.length, 13);
       expect(RegExp(r'^[0-9]{13}$').hasMatch(barcode), isTrue);
     });
 
     test('generates barcode with default prefix 200', () {
-      final barcode = Ean13Generator.generate();
+      final barcode = generator.generate();
       expect(barcode.startsWith('200'), isTrue);
     });
 
     test('generates barcode with custom prefix', () {
-      final barcode = Ean13Generator.generate(prefix: '690');
+      final barcode = generator.generate(prefix: '690');
       expect(barcode.startsWith('690'), isTrue);
     });
 
     test('falls back to default when prefix is empty', () {
-      final barcode = Ean13Generator.generate(prefix: '');
+      final barcode = generator.generate(prefix: '');
       expect(barcode.startsWith('200'), isTrue);
     });
 
     test('falls back to default when prefix is null', () {
-      final barcode = Ean13Generator.generate(prefix: null);
+      final barcode = generator.generate(prefix: null);
       expect(barcode.startsWith('200'), isTrue);
     });
 
     test('check digit is valid EAN-13 Luhn', () {
       for (var i = 0; i < 10; i++) {
-        final barcode = Ean13Generator.generate();
+        final barcode = generator.generate();
         final twelve = barcode.substring(0, 12);
         final checkDigit = int.parse(barcode[12]);
 
@@ -52,75 +58,66 @@ void main() {
     test('generates unique barcodes in rapid succession', () {
       final barcodes = <String>{};
       for (var i = 0; i < 100; i++) {
-        barcodes.add(Ean13Generator.generate());
+        barcodes.add(generator.generate());
       }
       expect(barcodes.length, 100);
     });
 
     test('prefix 1 digit is padded to 3 digits', () {
-      final barcode = Ean13Generator.generate(prefix: '2');
+      final barcode = generator.generate(prefix: '2');
       expect(barcode.length, 13);
       expect(barcode.startsWith('002'), isTrue);
     });
 
     test('prefix 2 digits is padded to 3 digits', () {
-      final barcode = Ean13Generator.generate(prefix: '69');
+      final barcode = generator.generate(prefix: '69');
       expect(barcode.length, 13);
       expect(barcode.startsWith('069'), isTrue);
     });
 
     test('prefix 3 digits is not padded', () {
-      final barcode = Ean13Generator.generate(prefix: '200');
+      final barcode = generator.generate(prefix: '200');
       expect(barcode.length, 13);
       expect(barcode.startsWith('200'), isTrue);
     });
 
     test('initCounter sets the internal counter', () {
-      Ean13Generator.initCounter(42);
-      expect(Ean13Generator.currentCounter, 42);
+      generator.initCounter(42);
+      expect(generator.currentCounter, 42);
     });
 
     test('initCounter wraps around at 100000', () {
-      Ean13Generator.initCounter(100001);
-      expect(Ean13Generator.currentCounter, 1);
+      generator.initCounter(100001);
+      expect(generator.currentCounter, 1);
     });
 
     test('counter increments after generate', () {
-      Ean13Generator.initCounter(0);
-      Ean13Generator.generate();
-      expect(Ean13Generator.currentCounter, 1);
+      generator.initCounter(0);
+      generator.generate();
+      expect(generator.currentCounter, 1);
     });
 
     group('prefix validation (Issue 5)', () {
       test('throws ArgumentError for non-numeric prefix', () {
-        expect(
-          () => Ean13Generator.generate(prefix: 'abc'),
-          throwsArgumentError,
-        );
+        expect(() => generator.generate(prefix: 'abc'), throwsArgumentError);
       });
 
       test('throws ArgumentError for prefix longer than 3 digits', () {
-        expect(
-          () => Ean13Generator.generate(prefix: '1234'),
-          throwsArgumentError,
-        );
+        expect(() => generator.generate(prefix: '1234'), throwsArgumentError);
       });
 
       test('throws ArgumentError for prefix with special characters', () {
-        expect(
-          () => Ean13Generator.generate(prefix: '2#0'),
-          throwsArgumentError,
-        );
+        expect(() => generator.generate(prefix: '2#0'), throwsArgumentError);
       });
 
       test('accepts valid 1-digit prefix', () {
-        final barcode = Ean13Generator.generate(prefix: '5');
+        final barcode = generator.generate(prefix: '5');
         expect(barcode.length, 13);
         expect(barcode.startsWith('005'), isTrue);
       });
 
       test('accepts valid 2-digit prefix', () {
-        final barcode = Ean13Generator.generate(prefix: '99');
+        final barcode = generator.generate(prefix: '99');
         expect(barcode.length, 13);
         expect(barcode.startsWith('099'), isTrue);
       });

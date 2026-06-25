@@ -32,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -227,6 +227,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 17) {
         await _deduplicateBarcodes();
         await _createBarcodeUniqueIndex();
+      }
+      if (from < 18) {
+        await _addColumnIfNotExists('products', 'barcode_image_path', 'TEXT');
       }
     },
     beforeOpen: (details) async {

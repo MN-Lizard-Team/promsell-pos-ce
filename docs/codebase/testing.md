@@ -1,6 +1,6 @@
-# Testing — Promsell POS CE v0.8.5
+# Testing — Promsell POS CE v0.8.6
 
-1121 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
+1259 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 
@@ -59,4 +59,4 @@ test/
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Testing</sub>
+<sub>Promsell POS CE · v0.8.6 · Testing</sub>

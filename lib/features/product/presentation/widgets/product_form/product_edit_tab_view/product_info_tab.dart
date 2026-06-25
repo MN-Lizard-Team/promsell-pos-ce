@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
-import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
-import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_edit_tab_view/category_field.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_hero_image.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/shared/product_text_field.dart';
@@ -23,8 +20,10 @@ class ProductInfoTab extends StatelessWidget {
     required this.imageUrl,
     required this.categoryName,
     required this.isPickingImage,
+    required this.isGeneratingBarcode,
     required this.onImageTap,
     required this.onCategoryChanged,
+    required this.onGenerateBarcode,
   });
 
   final TextEditingController nameCtrl;
@@ -35,8 +34,10 @@ class ProductInfoTab extends StatelessWidget {
   final String? imageUrl;
   final String? categoryName;
   final bool isPickingImage;
+  final bool isGeneratingBarcode;
   final VoidCallback onImageTap;
   final ValueChanged<Category?> onCategoryChanged;
+  final VoidCallback onGenerateBarcode;
 
   @override
   Widget build(BuildContext context) {
@@ -129,8 +130,14 @@ class ProductInfoTab extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () => _generateBarcode(context, barcodeCtrl),
-                    icon: const Icon(Icons.auto_fix_high_outlined, size: 18),
+                    onPressed: isGeneratingBarcode ? null : onGenerateBarcode,
+                    icon: isGeneratingBarcode
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_fix_high_outlined, size: 18),
                     label: Text(context.l10n.generateBarcode),
                   ),
                 ),
@@ -140,23 +147,5 @@ class ProductInfoTab extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-Future<void> _generateBarcode(
-  BuildContext context,
-  TextEditingController barcodeCtrl,
-) async {
-  final l10n = context.l10n;
-  final settings = context.read<SettingsCubit>().state.settings;
-  final prefix = settings.barcodeAutoGeneratePrefix;
-  try {
-    final generateBarcode = sl<GenerateBarcode>();
-    final barcode = await generateBarcode(prefix: prefix);
-    if (!context.mounted) return;
-    barcodeCtrl.text = barcode;
-    AppSnackBar.success(context, l10n.barcodeGenerated);
-  } catch (_) {
-    if (context.mounted) AppSnackBar.error(context, l10n.errorOccurred);
   }
 }

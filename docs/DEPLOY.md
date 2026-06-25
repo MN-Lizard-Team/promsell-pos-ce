@@ -112,7 +112,7 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.8.5+1
+version: 0.8.6+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -134,7 +134,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 1121 tests pass
+- [ ] `flutter test` — all 1259 tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date (files not committed to git)
@@ -147,7 +147,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 - [ ] Product form and payment sheet checked for keyboard/overflow behavior
 - [ ] Light, dark, and system theme modes checked
 - [ ] Thai and English locale checked after `flutter gen-l10n`
-- [ ] Screenshots updated (if UI changed)
+- [ ] Barcode generation and display checked (generate from Product Preview, verify image quality)
 
 ### UI release smoke test
 

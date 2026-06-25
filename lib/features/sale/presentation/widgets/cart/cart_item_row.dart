@@ -60,7 +60,7 @@ class CartItemRow extends StatelessWidget {
     final subtitleStyle = theme.textTheme.bodySmall?.copyWith(
       fontFamily: 'NotoSansThai',
       fontWeight: FontWeight.w500,
-      color: theme.colorScheme.onSurfaceVariant,
+      color: theme.colorScheme.secondary,
     );
 
     return AnimatedContainer(

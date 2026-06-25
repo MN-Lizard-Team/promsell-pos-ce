@@ -17,8 +17,16 @@ import 'package:promsell_pos_ce/core/widgets/splash/app_splash_wrapper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
-import 'package:promsell_pos_ce/core/widgets/nav/animated_nav_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/nav/bottom_navigation_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/nav/nav_swipe_helper.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/add_product_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/add_product_draft_cubit.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 void main() async {
   await runPromsellApp();
@@ -140,13 +148,40 @@ class _MainShellState extends State<_MainShell> {
   }
 
   void _handleSwipe(DragEndDetails details) {
-    if (details.velocity.pixelsPerSecond.dx.abs() < 300) return;
-    if (details.velocity.pixelsPerSecond.dx > 0) {
-      // Swipe right → previous tab
-      if (_index > 0) _handleTabTap(_index - 1);
-    } else {
-      // Swipe left → next tab
-      if (_index < _pageBuilders.length - 1) _handleTabTap(_index + 1);
+    NavSwipeHelper.handleSwipe(
+      details,
+      _index,
+      _pageBuilders.length,
+      _handleTabTap,
+    );
+  }
+
+  void _onSaleLongPress(String key) {
+    if (key == 'new_draft') {
+      if (_index != 0) setState(() => _index = 0);
+      sl<DraftBloc>().add(const DraftCreated());
+    }
+  }
+
+  void _onProductLongPress(String key) {
+    if (key == 'add_product') {
+      if (_index != 1) setState(() => _index = 1);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: sl<ProductBloc>()),
+              BlocProvider.value(value: sl<CategoryBloc>()),
+              BlocProvider(
+                create: (_) =>
+                    AddProductDraftCubit(sl<SettingsLocalDatasource>()),
+              ),
+            ],
+            child: const AddProductPage(),
+          ),
+        ),
+      );
     }
   }
 
@@ -171,11 +206,15 @@ class _MainShellState extends State<_MainShell> {
         icon: Icons.point_of_sale_outlined,
         activeIcon: Icons.point_of_sale,
         label: l10n.navSale,
+        longPressActions: {'new_draft': l10n.newDraft},
+        onLongPressAction: _onSaleLongPress,
       ),
       NavItem(
         icon: Icons.inventory_2_outlined,
         activeIcon: Icons.inventory_2,
         label: l10n.navProducts,
+        longPressActions: {'add_product': l10n.addProduct},
+        onLongPressAction: _onProductLongPress,
       ),
       NavItem(
         icon: Icons.receipt_long_outlined,
@@ -259,7 +298,7 @@ class _MainShellState extends State<_MainShell> {
                 }
                 return Scaffold(
                   body: body,
-                  bottomNavigationBar: AnimatedNavBar(
+                  bottomNavigationBar: AppBottomNavigationBar(
                     selectedIndex: _index,
                     onTap: _handleTabTap,
                     items: navItems,

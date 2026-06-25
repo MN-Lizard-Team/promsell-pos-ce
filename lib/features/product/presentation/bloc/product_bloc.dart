@@ -117,7 +117,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       emit(
         state.copyWith(
           saveStatus: ProductSaveStatus.error,
-          errorMessage: e.toString(),
+          errorMessage: 'productAddError',
         ),
       );
     }
@@ -142,7 +142,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       emit(
         state.copyWith(
           saveStatus: ProductSaveStatus.error,
-          errorMessage: e.toString(),
+          errorMessage: 'productUpdateError',
         ),
       );
     }
@@ -160,7 +160,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       emit(
         state.copyWith(
           saveStatus: ProductSaveStatus.error,
-          errorMessage: e.toString(),
+          errorMessage: 'productDeleteError',
         ),
       );
     }
@@ -207,7 +207,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       emit(
         state.copyWith(
           status: ProductStatus.failure,
-          errorMessage: e.toString(),
+          errorMessage: 'barcodeGenerationError',
           batchResultMessage: null,
         ),
       );

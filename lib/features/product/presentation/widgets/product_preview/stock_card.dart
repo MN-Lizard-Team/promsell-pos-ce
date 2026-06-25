@@ -20,6 +20,9 @@ class StockCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    final isDark = theme.brightness == Brightness.dark;
+    final iconBgAlpha = isDark ? 0.20 : 0.12;
+    final badgeBgAlpha = isDark ? 0.25 : 0.15;
     final stockInfo = _resolveStock(context);
     final stockValue = product.stock * product.cost;
 
@@ -34,32 +37,13 @@ class StockCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
-                    color: stockInfo.color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(18),
+                    color: stockInfo.color.withValues(alpha: iconBgAlpha),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        product.stock.toString(),
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: stockInfo.color,
-                          fontSize: 26,
-                        ),
-                      ),
-                      Text(
-                        l10n.quantityLabel,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: stockInfo.color.withValues(alpha: 0.7),
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: Icon(stockInfo.icon, size: 28, color: stockInfo.color),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -67,47 +51,45 @@ class StockCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
                         children: [
-                          Icon(
-                            stockInfo.icon,
-                            size: 16,
-                            color: stockInfo.color,
-                          ),
-                          const SizedBox(width: 4),
                           Text(
-                            stockInfo.label,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: stockInfo.color,
-                              fontWeight: FontWeight.w600,
+                            product.stock.toString(),
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            l10n.quantityLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.secondary,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      InfoRow(
-                        label: l10n.productPreviewStockValue,
-                        value: MoneyText(
-                          value: stockValue,
-                          currency: currency,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: stockInfo.color.withValues(
+                            alpha: badgeBgAlpha,
+                          ),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          stockInfo.label,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: stockInfo.color,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      if (onEditStock != null)
-                        FilledButton.tonalIcon(
-                          onPressed: onEditStock,
-                          icon: const Icon(Icons.edit, size: 16),
-                          label: Text(l10n.edit),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 6,
-                            ),
-                            minimumSize: Size.zero,
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -119,17 +101,46 @@ class StockCard extends StatelessWidget {
                 Icon(
                   Icons.remove_circle_outline,
                   size: 20,
-                  color: theme.colorScheme.outline,
+                  color: theme.colorScheme.onSecondaryContainer,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   l10n.disabled,
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: theme.colorScheme.onSecondaryContainer,
                   ),
                 ),
               ],
             ),
+          if (product.trackStock && product.cost > 0) ...[
+            const SizedBox(height: 12),
+            InfoRow(
+              label: l10n.productPreviewStockValue,
+              value: MoneyText(
+                value: stockValue,
+                currency: currency,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+          if (product.trackStock && onEditStock != null) ...[
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              onPressed: onEditStock,
+              icon: const Icon(Icons.edit, size: 16),
+              label: Text(l10n.edit),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                minimumSize: Size.zero,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -140,24 +151,25 @@ class StockCard extends StatelessWidget {
   ) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     if (product.stock == 0) {
       return (
-        color: theme.colorScheme.error,
+        color: isDark ? const Color(0xFFF87171) : theme.colorScheme.error,
         icon: Icons.error,
         label: l10n.outOfStock,
       );
     }
     if (product.stock <= 5) {
       return (
-        color: theme.colorScheme.tertiary,
+        color: isDark ? const Color(0xFFFB923C) : theme.colorScheme.tertiary,
         icon: Icons.warning,
         label: l10n.lowStock,
       );
     }
     return (
-      color: theme.colorScheme.primary,
+      color: isDark ? const Color(0xFF2DD4BF) : theme.colorScheme.primary,
       icon: Icons.check_circle,
-      label: l10n.lowStockWarning,
+      label: l10n.inStock,
     );
   }
 }

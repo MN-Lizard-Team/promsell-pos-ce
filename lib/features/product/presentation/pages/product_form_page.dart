@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/sticky_action_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
@@ -14,6 +16,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_ad
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_edit_tab_view.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/confirm_delete_dialog.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/unsaved_changes_dialog.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({super.key, this.product});
@@ -51,6 +54,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
   bool _isDirty = false;
   bool _deleting = false;
   bool _submitted = false;
+  bool _isGeneratingBarcode = false;
+  final List<String> _tempImagePaths = [];
 
   late final ImageSourceHandler _imageHandler;
 
@@ -74,17 +79,28 @@ class _ProductFormPageState extends State<ProductFormPage> {
       setState: setState,
       isMounted: () => mounted,
       onImagePicked: (path, thumb) {
+        _imageHandler.deleteTempImages();
         _imagePath = path;
         _imageThumbnailPath = thumb;
         _isDirty = true;
       },
       onImageRemoved: () {
+        _imageHandler.deleteTempImages();
         _imagePath = null;
         _imageUrl = null;
         _imageThumbnailPath = null;
         _isDirty = true;
       },
+      tempImagePaths: _tempImagePaths,
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final categories = context.read<CategoryBloc>().state.categories;
+      if (categories.isNotEmpty) {
+        _tryLookupCategory(categories);
+      }
+    });
   }
 
   void _markDirty() => _isDirty = true;
@@ -101,6 +117,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   @override
   void dispose() {
+    _imageHandler.deleteTempImages();
     _nameCtrl.dispose();
     _priceCtrl.dispose();
     _stockCtrl.dispose();
@@ -117,13 +134,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _isDirty = false;
     final bloc = context.read<ProductBloc>();
     final price = double.tryParse(_priceCtrl.text);
-    final stock = _trackStock
-        ? int.tryParse(_stockCtrl.text)
-        : _isEditing
-        ? widget.product!.stock
-        : int.tryParse(_stockCtrl.text);
+    final stock = _resolveStock();
     final cost = double.tryParse(_costCtrl.text);
-    if (price == null || stock == null) {
+    if (price == null) {
       _submitted = false;
       return;
     }
@@ -189,9 +202,13 @@ class _ProductFormPageState extends State<ProductFormPage> {
             } else if (state.saveStatus == ProductSaveStatus.error) {
               _submitted = false;
               _deleting = false;
-              final msg = state.errorMessage == 'duplicateBarcode'
-                  ? ctx.l10n.duplicateBarcode
-                  : state.errorMessage ?? ctx.l10n.errorOccurred;
+              final msg = switch (state.errorMessage) {
+                'duplicateBarcode' => ctx.l10n.duplicateBarcode,
+                'productAddError' => ctx.l10n.productAddError,
+                'productUpdateError' => ctx.l10n.productUpdateError,
+                'productDeleteError' => ctx.l10n.productDeleteError,
+                _ => ctx.l10n.errorOccurred,
+              };
               AppSnackBar.error(ctx, msg);
             }
           },
@@ -252,7 +269,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       : context.l10n.addProduct,
                   onPrimary: _submit,
                   dangerLabel: _isEditing ? context.l10n.delete : null,
-                  onDanger: _isEditing ? () => _confirmDelete(context) : null,
+                  onDanger: _isEditing ? _confirmDelete : null,
                   isLoading: isSaving,
                 );
               },
@@ -272,6 +289,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
               isActive: _isActive,
               trackStock: _trackStock,
               isPickingImage: _imageHandler.isPickingImage,
+              isGeneratingBarcode: _isGeneratingBarcode,
               onCategoryChanged: (cat) {
                 _markDirty();
                 setState(() => _selectedCategory = cat);
@@ -280,7 +298,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 _imageHandler.showSheet(
                   context,
                   hasImage: _imagePath != null || _imageUrl != null,
-                  productId: _isEditing ? widget.product!.id : 'new',
+                  productId: 'new',
                   logTag: 'ProductFormPage',
                 );
               },
@@ -296,7 +314,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 _markDirty();
                 setState(() => _stockCtrl.text = v.toString());
               },
-              onDelete: () => _confirmDelete(context),
+              onDelete: _confirmDelete,
+              onGenerateBarcode: _generateBarcode,
             ),
           ),
         ),
@@ -304,15 +323,43 @@ class _ProductFormPageState extends State<ProductFormPage> {
     );
   }
 
-  void _confirmDelete(BuildContext context) async {
+  int _resolveStock() {
+    if (_trackStock) return int.tryParse(_stockCtrl.text) ?? 0;
+    if (_isEditing) return widget.product!.stock;
+    return int.tryParse(_stockCtrl.text) ?? 0;
+  }
+
+  void _confirmDelete() async {
     final confirmed = await showConfirmDeleteDialog(
       context,
       widget.product!.name,
     );
-    if (confirmed && context.mounted) {
-      _deleting = true;
-      _isDirty = false;
-      context.read<ProductBloc>().add(ProductDeleted(widget.product!.id));
+    if (!mounted || !confirmed) return;
+    _deleting = true;
+    _isDirty = false;
+    context.read<ProductBloc>().add(ProductDeleted(widget.product!.id));
+  }
+
+  Future<void> _generateBarcode() async {
+    final l10n = context.l10n;
+    final settings = context.read<SettingsCubit>().state.settings;
+    final prefix = settings.barcodeAutoGeneratePrefix;
+    setState(() => _isGeneratingBarcode = true);
+    try {
+      final generateBarcode = sl<GenerateBarcode>();
+      final barcode = await generateBarcode(
+        prefix: prefix,
+        excludeId: widget.product?.id,
+      );
+      if (!mounted) return;
+      _barcodeCtrl.text = barcode;
+      _markDirty();
+      AppSnackBar.success(context, l10n.barcodeGenerated);
+    } catch (_) {
+      if (!mounted) return;
+      AppSnackBar.error(context, l10n.errorOccurred);
+    } finally {
+      if (mounted) setState(() => _isGeneratingBarcode = false);
     }
   }
 }

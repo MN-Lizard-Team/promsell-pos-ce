@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.5
+# CODEBASE.md — Promsell POS CE v0.8.6
 
 ## System overview
 
@@ -22,7 +22,8 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 ┌───────────────────────────────────────────────────────────────────────────────┐
 │   lib/features/ — Feature modules                                             │
 │   sale/       — Cart, checkout, draft, discount                               │
-│   product/    — CRUD inventory, ProductBloc, image service, barcode scanning  │
+│   product/    — CRUD inventory, ProductBloc, image service, barcode scan + generation │
+│               + BarcodeImageService (RenderRepaintBoundary off-screen render)       │
 │   history/    — Sale history viewer                                           │
 │   report/     — Analytics dashboard                                           │
 │   settings/   — Locale, theme, shop info                                      │
@@ -36,7 +37,7 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   image/      — Unified image system (UnifiedImageWidget,                     │
 │                 ImageSkeleton, ImageErrorPlaceholder, ImageCacheService)      │
 │   services/  — CrashLogService (PII sanitization, export/clear)               │
-│   utils/      — IdGenerator, payment_method                                   │
+│   utils/      — IdGenerator, payment_method, Ean13Generator (@injectable)       │
 │   widgets/    — shared UI primitives                                          │
 └───────────────────────┬───────────────────────────────────────────────────────┘
                         ▼
@@ -136,7 +137,7 @@ features/<name>/
 │  │            ↕ Cart Review Page                 │   │
 │  │            ↕ PromptPay Payment Page           │   │
 │  │                                               │   │
-│  │  Settings Root → 12 sub-pages (2-level)       │   │
+│  │  Settings Root → 13 sub-pages (2-level)       │   │
 │  └───────────────────────────────────────────────┘   │
 │                                                      │
 │  Overlay: Onboarding (6-step, first-launch)          │
@@ -164,13 +165,13 @@ features/<name>/
 
 | Document | Content |
 |----------|---------|
-| [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (38 entries) + Feature modules table (11 features) |
+| [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (52 entries) + Feature modules table (11 features) |
 | [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (13 group entities), Localization, DI, Code generation |
 | [`docs/codebase/file-dependency-map.md`](docs/codebase/file-dependency-map.md) | If-you-change-X-update-Y rules for all entities, BLoCs, datasources |
-| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (1121 tests, 8 layers) + test layer techniques |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema v17 overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-024) |
+| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (1259 tests, 8 layers) + test layer techniques |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema v18 overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-024) + barcode DI graph |
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.8.6 · Codebase Reference</sub>

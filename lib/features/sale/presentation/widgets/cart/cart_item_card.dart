@@ -80,7 +80,7 @@ class CartItemCard extends StatelessWidget {
                     Text(
                       '${item.qty} x $currency${item.product.price.toStringAsFixed(2)}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: theme.colorScheme.secondary,
                       ),
                     ),
                     if (item.discountAmount > 0) ...[
@@ -166,51 +166,93 @@ class CartItemCard extends StatelessWidget {
         .state
         .settings
         .allowOversell;
-    final ctrl = TextEditingController(text: '${item.qty}');
-    final l10n = context.l10n;
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(item.product.name),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(signed: true),
-          decoration: InputDecoration(
-            labelText: l10n.quantityLabel,
-            suffixText: item.product.trackStock
-                ? l10n.stockLabel(item.product.stock)
-                : null,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final qty = int.tryParse(ctrl.text);
-              if (qty == null || qty <= 0) return;
-              var clamped = qty;
-              if (item.product.trackStock && !allowOversell) {
-                clamped = qty.clamp(0, item.product.stock);
-              }
-              Navigator.pop(context);
-              if (clamped != item.qty) {
-                context.read<CartBloc>().add(
-                  CartItemQtyChanged(
-                    productId: item.product.id,
-                    qty: clamped,
-                    allowOversell: allowOversell,
-                  ),
-                );
-              }
-            },
-            child: Text(l10n.save),
-          ),
-        ],
+      builder: (_) => _CartItemQtyDialog(
+        item: item,
+        allowOversell: allowOversell,
+        onSaved: (qty) {
+          if (qty != item.qty) {
+            context.read<CartBloc>().add(
+              CartItemQtyChanged(
+                productId: item.product.id,
+                qty: qty,
+                allowOversell: allowOversell,
+              ),
+            );
+          }
+        },
       ),
-    ).then((_) => ctrl.dispose());
+    );
+  }
+}
+
+class _CartItemQtyDialog extends StatefulWidget {
+  const _CartItemQtyDialog({
+    required this.item,
+    required this.allowOversell,
+    required this.onSaved,
+  });
+
+  final CartItem item;
+  final bool allowOversell;
+  final ValueChanged<int> onSaved;
+
+  @override
+  State<_CartItemQtyDialog> createState() => _CartItemQtyDialogState();
+}
+
+class _CartItemQtyDialogState extends State<_CartItemQtyDialog> {
+  late final TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: '${widget.item.qty}');
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final qty = int.tryParse(_ctrl.text);
+    if (qty == null || qty <= 0) return;
+    var clamped = qty;
+    if (widget.item.product.trackStock && !widget.allowOversell) {
+      clamped = qty.clamp(0, widget.item.product.stock);
+    }
+    Navigator.pop(context);
+    if (clamped != widget.item.qty) {
+      widget.onSaved(clamped);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(widget.item.product.name),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(signed: true),
+        decoration: InputDecoration(
+          labelText: l10n.quantityLabel,
+          suffixText: widget.item.product.trackStock
+              ? l10n.stockLabel(widget.item.product.stock)
+              : null,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(onPressed: _save, child: Text(l10n.save)),
+      ],
+    );
   }
 }

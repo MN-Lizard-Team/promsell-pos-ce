@@ -29,6 +29,7 @@
 - [x] **R15 — CI/CD, Crash Logging & UX Hardening** (v0.8.3): CI/CD coverage gates (≥30%), Codecov upload, weekly stress test workflow; `CrashLogService` with PII sanitization and export/clear UI; `dev`/`prod` product flavors with separate entry points; schema v17 barcode deduplication migration; barcode scanner hardening (torch, gallery, freeze fix); product/category UX fixes (validators, cost field, bulk delete, reorder bug, `QuickEditMixin`); 13 bug fixes across checkout/cart/settings
 - [x] **R16 — Brand Theme & Product Preview** (v0.8.4): Promsell Teal (#0E7C8A) + Orange (#FF6B00) brand migration across entire app; `ProductPreviewPage` with hero image, price card (selling price, cost, profit + margin %), stock card with inline edit, visual barcode rendering (EAN13/EAN8/UPCA/Code128) with view/save PDF/print actions; navigation update (tap → preview, long-press → edit)
 - [x] **R17 — Project Quality Hardening** (v0.8.5): CHANGELOG archived by minor version (`docs/changelog/`); generated code (`*.g.dart`, `*.config.dart`) removed from git tracking with `linguist-generated` attributes; dependency vulnerability scanning via `tool/check_outdated.dart` in CI + Dependabot security alerts
+- [x] **R18 — NavBar + Preview + Barcode Overhaul** (v0.8.6): NavBar overhaul (`AppBottomNavigationBar` with long-press actions, `NavSwipeHelper`); Product Preview redesign (`SliverAppBar` collapsing hero, `ProductPreviewImage`, `StickyActionBar`); persistent barcode images (`BarcodeImageService` via `RenderRepaintBoundary` 600×200 @ 3x, `barcodeImagePath` column); `Ean13Generator` refactored to `@injectable` instance; theme polish (WCAG AA light theme, dark mode surfaceContainer tokens); QuickEdit upgrade (validation, Set/Adjust dual-mode); category management overhaul (`category_icon_data.dart`, search, Semantics)
 
 ### Release timeline
 
@@ -38,9 +39,9 @@ v0.4.0    v0.5.x    v0.6.x    v0.7.x         v0.8.x
   ▼         ▼         ▼         ▼               ▼
 Schema     Cashier   Merchant  Settings+       Brand+
 + Sale     UX +      Tools +   Ops +           Preview +
-Integrity  Discount  Cart UX   Data +          Quality
-           + Images  Redesign  PromptPay       Hardening
-                               + Barcode
+Integrity  Discount  Cart UX   Data +          NavBar +
+           + Images  Redesign  PromptPay       Barcode +
+                               + Barcode       Theme Polish
 ```
 
 ---
@@ -57,4 +58,4 @@ Integrity  Discount  Cart UX   Data +          Quality
 
 ---
 
-<sub>Promsell POS Community Edition · v0.8.5 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.6 · AGPL-3.0</sub>

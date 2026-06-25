@@ -8,7 +8,8 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor, parseCategoryIcon;
+    show parseCategoryColor;
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
@@ -118,7 +119,7 @@ class SaleProductCard extends StatelessWidget {
                                 ? theme.colorScheme.error
                                 : product.trackStock && product.stock <= 5
                                 ? theme.colorScheme.tertiary
-                                : theme.colorScheme.onSurfaceVariant,
+                                : theme.colorScheme.secondary,
                           ),
                         ),
                       ],
@@ -144,7 +145,6 @@ class SaleProductCard extends StatelessWidget {
   }
 
   void _showQtyDialog(BuildContext context, Product product, int currentQty) {
-    final ctrl = TextEditingController(text: '1');
     final l10n = context.l10n;
     final settings = context.read<SettingsCubit>().state.settings;
     final allowOversell = settings.allowOversell;
@@ -152,50 +152,88 @@ class SaleProductCard extends StatelessWidget {
     final snackCtx = context;
     showDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: Text(product.name),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(signed: true),
-          decoration: InputDecoration(
-            labelText: l10n.quantityLabel,
-            suffixText: product.trackStock
-                ? l10n.stockLabel(product.stock)
-                : null,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final qty = int.tryParse(ctrl.text);
-              if (qty == null || qty <= 0) {
-                Navigator.pop(dialogCtx);
-                return;
-              }
-              var clamped = qty;
-              if (product.trackStock && !allowOversell) {
-                clamped = qty.clamp(1, product.stock);
-              }
-              Navigator.pop(dialogCtx);
-              saleBloc.add(
-                CartProductAdded(
-                  product,
-                  qty: clamped,
-                  allowOversell: allowOversell,
-                ),
-              );
-              AppSnackBar.info(snackCtx, l10n.productAddedToCart(product.name));
-            },
-            child: Text(l10n.save),
-          ),
-        ],
+      builder: (dialogCtx) => _QtyDialog(
+        product: product,
+        allowOversell: allowOversell,
+        onSaved: (qty) {
+          saleBloc.add(
+            CartProductAdded(product, qty: qty, allowOversell: allowOversell),
+          );
+          AppSnackBar.info(snackCtx, l10n.productAddedToCart(product.name));
+        },
       ),
-    ).then((_) => ctrl.dispose());
+    );
+  }
+}
+
+class _QtyDialog extends StatefulWidget {
+  const _QtyDialog({
+    required this.product,
+    required this.allowOversell,
+    required this.onSaved,
+  });
+
+  final Product product;
+  final bool allowOversell;
+  final ValueChanged<int> onSaved;
+
+  @override
+  State<_QtyDialog> createState() => _QtyDialogState();
+}
+
+class _QtyDialogState extends State<_QtyDialog> {
+  late final TextEditingController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: '1');
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final qty = int.tryParse(_ctrl.text);
+    if (qty == null || qty <= 0) {
+      Navigator.pop(context);
+      return;
+    }
+    var clamped = qty;
+    if (widget.product.trackStock && !widget.allowOversell) {
+      clamped = qty.clamp(1, widget.product.stock);
+    }
+    Navigator.pop(context);
+    widget.onSaved(clamped);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(widget.product.name),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(signed: true),
+        decoration: InputDecoration(
+          labelText: l10n.quantityLabel,
+          suffixText: widget.product.trackStock
+              ? l10n.stockLabel(widget.product.stock)
+              : null,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(onPressed: _save, child: Text(l10n.save)),
+      ],
+    );
   }
 }
 
@@ -214,7 +252,7 @@ class _CategoryNameText extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         textAlign: TextAlign.center,
         style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+          color: theme.colorScheme.secondary,
         ),
       );
     }
@@ -245,7 +283,7 @@ class _CategoryNameText extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: theme.colorScheme.secondary,
               ),
             ),
           ],

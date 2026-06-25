@@ -11,7 +11,8 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/stock_indicator.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor, parseCategoryIcon;
+    show parseCategoryColor;
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/quick_edit/quick_edit_mixin.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_preview_page.dart';
@@ -189,7 +190,7 @@ class _ModernProductTileState extends State<ModernProductTile>
               context.read<ProductBloc>().add(
                 ProductDeleted(widget.product.id),
               );
-              Navigator.pop(context, true);
+              Navigator.pop(context, false);
             },
             child: Text(
               context.l10n.delete,
@@ -205,8 +206,7 @@ class _ModernProductTileState extends State<ModernProductTile>
   void _showEdit(BuildContext context) {
     final productBloc = context.read<ProductBloc>();
     final categoryBloc = context.read<CategoryBloc>();
-    Navigator.push(
-      context,
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
@@ -222,8 +222,7 @@ class _ModernProductTileState extends State<ModernProductTile>
   void _showPreview(BuildContext context) {
     final productBloc = context.read<ProductBloc>();
     final categoryBloc = context.read<CategoryBloc>();
-    Navigator.push(
-      context,
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [

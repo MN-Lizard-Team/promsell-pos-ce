@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
@@ -8,6 +9,7 @@ import '../../../../helpers/mocks.dart';
 void main() {
   late MockProductRepository mockProductRepo;
   late MockSettingsRepository mockSettingsRepo;
+  late Ean13Generator generator;
   late GenerateBarcode generateBarcode;
 
   setUpAll(() {
@@ -17,7 +19,12 @@ void main() {
   setUp(() {
     mockProductRepo = MockProductRepository();
     mockSettingsRepo = MockSettingsRepository();
-    generateBarcode = GenerateBarcode(mockProductRepo, mockSettingsRepo);
+    generator = Ean13Generator();
+    generateBarcode = GenerateBarcode(
+      mockProductRepo,
+      mockSettingsRepo,
+      generator,
+    );
 
     when(
       () => mockSettingsRepo.load(),

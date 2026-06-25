@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE v0.8.5
+# Technical Deep-Dive — Promsell POS CE v0.8.6
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 
@@ -67,7 +67,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  CartBloc ──→ (cart state, product add/remove/qty)        │
 │  DraftBloc ──→ DraftCartRepository (persist/load drafts)  │
 │  CheckoutBloc ──→ CreateSale, VoidSale                    │
-│  SettingsCubit ──→ SettingsRepository                     │
+│  SettingsCubit ──→ SettingsRepository, Ean13Generator        │
 │  ReportCubit (lazySingleton) ──→ WatchReport              │
 │  InventoryLogCubit ──→ WatchInventoryLogs                 │
 │                                                           │
@@ -80,6 +80,9 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  VoidSale ──→ SaleRepository                                                │
 │  AdjustStock ──→ ProductRepository + InventoryLogService                    │
 │  GetProducts / Add / Update / Delete ──→ ProductRepository                  │
+│  GenerateBarcode ──→ ProductRepository + SettingsRepository + Ean13Generator │
+│  BatchGenerateBarcodes ──→ ProductRepository + SettingsRepository +          │
+│                           Ean13Generator                                     │
 │  WatchCategories / Add / Update / Delete / Reorder ──→ CategoryRepository   │
 │  GetSales / GetSaleById ──→ SaleRepository                                  │
 │  WatchSaleHistory ──→ HistoryRepository                                     │
@@ -95,6 +98,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  SaleRepository ──→ SaleLocalDatasource                     │
 │  ProductRepository ──→ ProductLocalDatasource               │
 │                       ──→ ProductImageService               │
+│                       ──→ BarcodeImageService               │
 │  CategoryRepository ──→ CategoryLocalDatasource             │
 │  HistoryRepository ──→ SaleLocalDatasource                  │
 │  InventoryLogRepository ──→ InventoryLogLocalDatasource     │
@@ -111,7 +115,10 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │       └──→ InventoryLogService ──→ AppDatabase              │
 │  ProductLocalDatasource ──→ AppDatabase                     │
 │  InventoryLogLocalDatasource ──→ AppDatabase                │
+│  Ean13Generator (@injectable)                               │
 │  ProductImageService ──→ SettingsRepository (image config)  │
+│  BarcodeImageService ──→ BarcodeWidget off-screen render    │
+│                       ──→ barcodes directory (PNG/JPEG)      │
 │  ImageCacheService ──→ image directory (size tracking)      │
 │  SettingsLocalDatasource ──→ AppDatabase                    │
 │  ReceiptPdfService (stateless)                              │
@@ -232,4 +239,4 @@ try {
 
 ---
 
-<sub>Promsell POS CE · v0.8.5 · Technical Deep-Dive</sub>
+<sub>Promsell POS CE · v0.8.6 · Technical Deep-Dive</sub>

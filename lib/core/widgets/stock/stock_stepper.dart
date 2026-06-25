@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,7 +37,7 @@ class StockStepper extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: theme.colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -66,32 +68,73 @@ class StockStepper extends StatelessWidget {
   }
 }
 
-class _StepButton extends StatelessWidget {
+class _StepButton extends StatefulWidget {
   const _StepButton({required this.icon, this.onPressed});
 
   final IconData icon;
   final VoidCallback? onPressed;
 
   @override
+  State<_StepButton> createState() => _StepButtonState();
+}
+
+class _StepButtonState extends State<_StepButton> {
+  Timer? _initialDelay;
+  Timer? _repeatTimer;
+
+  @override
+  void dispose() {
+    _cancelTimers();
+    super.dispose();
+  }
+
+  void _cancelTimers() {
+    _initialDelay?.cancel();
+    _repeatTimer?.cancel();
+    _initialDelay = null;
+    _repeatTimer = null;
+  }
+
+  void _startLongPress() {
+    if (widget.onPressed == null) return;
+    _cancelTimers();
+    _initialDelay = Timer(const Duration(milliseconds: 400), () {
+      widget.onPressed!();
+      _repeatTimer = Timer.periodic(const Duration(milliseconds: 80), (_) {
+        widget.onPressed!();
+      });
+    });
+  }
+
+  void _endLongPress() {
+    _cancelTimers();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final enabled = onPressed != null;
+    final enabled = widget.onPressed != null;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          width: 44,
-          height: 44,
-          alignment: Alignment.center,
-          child: Icon(
-            icon,
-            size: 20,
-            color: enabled
-                ? theme.colorScheme.primary
-                : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+    return Listener(
+      onPointerDown: (_) => _startLongPress(),
+      onPointerUp: (_) => _endLongPress(),
+      onPointerCancel: (_) => _endLongPress(),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onPressed,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            child: Icon(
+              widget.icon,
+              size: 20,
+              color: enabled
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+            ),
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
@@ -6,6 +7,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 
 class CategoryPickerListView extends StatefulWidget {
   const CategoryPickerListView({
@@ -61,7 +63,7 @@ class _CategoryPickerListViewState extends State<CategoryPickerListView> {
             ],
             elevation: const WidgetStatePropertyAll(0),
             backgroundColor: WidgetStatePropertyAll(
-              theme.colorScheme.surfaceContainerHighest,
+              theme.colorScheme.surfaceContainerHigh,
             ),
             onChanged: (v) => setState(() => _query = v.toLowerCase()),
           ),
@@ -128,14 +130,17 @@ class _CategoryPickerListViewState extends State<CategoryPickerListView> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      onTap: () => widget.onSelected(
-                        Category(
-                          id: '',
-                          name: context.l10n.noCategory,
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
-                        ),
-                      ),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        widget.onSelected(
+                          Category(
+                            id: '',
+                            name: context.l10n.noCategory,
+                            createdAt: DateTime.now(),
+                            updatedAt: DateTime.now(),
+                          ),
+                        );
+                      },
                     );
                   }
 
@@ -148,7 +153,10 @@ class _CategoryPickerListViewState extends State<CategoryPickerListView> {
                       category: cat,
                       selected: selected,
                       selectionMode: true,
-                      onTap: () => widget.onSelected(cat),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        widget.onSelected(cat);
+                      },
                     );
                   }
 
@@ -177,7 +185,10 @@ class _CategoryPickerListViewState extends State<CategoryPickerListView> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    onTap: () => widget.onSelected(cat),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      widget.onSelected(cat);
+                    },
                   );
                 },
               );

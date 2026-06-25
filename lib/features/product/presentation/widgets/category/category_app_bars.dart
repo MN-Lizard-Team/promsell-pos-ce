@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 
-class CategoryManagementSearchAppBar extends StatelessWidget
+class CategorySearchAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  const CategoryManagementSearchAppBar({
+  const CategorySearchAppBar({
     super.key,
     required this.controller,
+    required this.onChanged,
     required this.onClose,
   });
 
   final TextEditingController controller;
+  final ValueChanged<String> onChanged;
   final VoidCallback onClose;
 
   @override
@@ -27,7 +29,7 @@ class CategoryManagementSearchAppBar extends StatelessWidget
             onPressed: onClose,
           ),
         ),
-        onChanged: (_) => {},
+        onChanged: onChanged,
       ),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
@@ -40,9 +42,9 @@ class CategoryManagementSearchAppBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class CategoryManagementBulkAppBar extends StatelessWidget
+class CategoryBulkAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  const CategoryManagementBulkAppBar({
+  const CategoryBulkAppBar({
     super.key,
     required this.selectedCount,
     required this.onClose,

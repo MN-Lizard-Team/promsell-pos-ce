@@ -11,17 +11,21 @@ part 'settings_state.dart';
 
 @lazySingleton
 class SettingsCubit extends Cubit<SettingsState> {
-  SettingsCubit(this._repository, this._persistenceService)
-    : super(const SettingsState());
+  SettingsCubit(
+    this._repository,
+    this._persistenceService,
+    this._barcodeGenerator,
+  ) : super(const SettingsState());
 
   final SettingsRepository _repository;
   final SettingsPersistenceService _persistenceService;
+  final Ean13Generator _barcodeGenerator;
 
   Future<void> load() async {
     emit(state.copyWith(status: SettingsStatus.loading, errorMessage: null));
     try {
       final settings = await _repository.load();
-      Ean13Generator.initCounter(settings.barcodeLastCounter);
+      _barcodeGenerator.initCounter(settings.barcodeLastCounter);
       emit(state.copyWith(status: SettingsStatus.loaded, settings: settings));
     } catch (e, stack) {
       AppLogger.error('SettingsCubit.load failed', error: e, stack: stack);

@@ -20,34 +20,37 @@ class ShopNameField extends StatelessWidget {
     final l10n = context.l10n;
     final preview = initialValue.isEmpty ? '—' : initialValue;
 
-    return ListTile(
-      leading: Icon(Icons.store_outlined, color: st.softAccent, size: 22),
-      title: Text(
-        l10n.settingsShopName,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(Icons.store_outlined, color: st.softAccent, size: 22),
+        title: Text(
+          l10n.settingsShopName,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              preview,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-                color: st.softTextSecondary,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                preview,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: st.softTextSecondary,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
-        ],
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
+          ],
+        ),
+        onTap: () => _showDialog(context),
       ),
-      onTap: () => _showDialog(context),
     );
   }
 

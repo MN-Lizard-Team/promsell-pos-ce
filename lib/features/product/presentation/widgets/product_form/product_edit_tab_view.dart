@@ -25,12 +25,14 @@ class ProductEditTabView extends StatelessWidget {
     required this.isActive,
     required this.trackStock,
     required this.isPickingImage,
+    required this.isGeneratingBarcode,
     required this.onCategoryChanged,
     required this.onImageTap,
     required this.onActiveChanged,
     required this.onTrackStockChanged,
     required this.onStockChanged,
     required this.onDelete,
+    required this.onGenerateBarcode,
   });
 
   final Product? product;
@@ -47,12 +49,14 @@ class ProductEditTabView extends StatelessWidget {
   final bool isActive;
   final bool trackStock;
   final bool isPickingImage;
+  final bool isGeneratingBarcode;
   final ValueChanged<Category?> onCategoryChanged;
   final VoidCallback onImageTap;
   final ValueChanged<bool> onActiveChanged;
   final ValueChanged<bool> onTrackStockChanged;
   final ValueChanged<int> onStockChanged;
   final VoidCallback onDelete;
+  final VoidCallback onGenerateBarcode;
 
   bool get isEditing => product != null;
 
@@ -73,8 +77,10 @@ class ProductEditTabView extends StatelessWidget {
             imageUrl: imageUrl,
             categoryName: selectedCategory?.name,
             isPickingImage: isPickingImage,
+            isGeneratingBarcode: isGeneratingBarcode,
             onImageTap: onImageTap,
             onCategoryChanged: onCategoryChanged,
+            onGenerateBarcode: onGenerateBarcode,
           ),
           ProductPricingTab(
             priceCtrl: priceCtrl,

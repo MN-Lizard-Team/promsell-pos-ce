@@ -13,7 +13,8 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/stock_indicator.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor, parseCategoryIcon;
+    show parseCategoryColor;
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/quick_edit/quick_edit_mixin.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -125,13 +126,15 @@ class _ModernProductGridCardState extends State<ModernProductGridCard>
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.error.withValues(alpha: 0.85),
+                      color: theme.colorScheme.secondaryContainer.withValues(
+                        alpha: 0.85,
+                      ),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       context.l10n.inactive,
                       style: TextStyle(
-                        color: theme.colorScheme.onError,
+                        color: theme.colorScheme.onSecondaryContainer,
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
@@ -148,8 +151,7 @@ class _ModernProductGridCardState extends State<ModernProductGridCard>
   void _showEdit(BuildContext context) {
     final productBloc = context.read<ProductBloc>();
     final categoryBloc = context.read<CategoryBloc>();
-    Navigator.push(
-      context,
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [
@@ -165,8 +167,7 @@ class _ModernProductGridCardState extends State<ModernProductGridCard>
   void _showPreview(BuildContext context) {
     final productBloc = context.read<ProductBloc>();
     final categoryBloc = context.read<CategoryBloc>();
-    Navigator.push(
-      context,
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => MultiBlocProvider(
           providers: [

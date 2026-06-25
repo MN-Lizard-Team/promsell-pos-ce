@@ -95,36 +95,42 @@ class ReceiptSharedWidgets {
     final theme = Theme.of(context);
 
     return MergeSemantics(
-      child: ListTile(
-        minTileHeight: st.tileMinHeight,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: st.iconSize,
-          height: st.iconSize,
-          decoration: BoxDecoration(
-            color: st.iconContainerBackground,
-            borderRadius: BorderRadius.circular(12),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ListTile(
+          minTileHeight: st.tileMinHeight,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
           ),
-          child: Icon(icon, color: st.softAccent, size: 24),
-        ),
-        title: Text(
-          title,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
+          leading: Container(
+            width: st.iconSize,
+            height: st.iconSize,
+            decoration: BoxDecoration(
+              color: st.iconContainerBackground,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: st.softAccent, size: 24),
           ),
-        ),
-        trailing: Switch(
-          value: value,
-          onChanged: (v) {
+          title: Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+          trailing: Switch(
+            value: value,
+            onChanged: (v) {
+              HapticFeedback.lightImpact();
+              onChanged(v);
+            },
+          ),
+          onTap: () {
             HapticFeedback.lightImpact();
-            onChanged(v);
+            onChanged(!value);
           },
         ),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onChanged(!value);
-        },
       ),
     );
   }

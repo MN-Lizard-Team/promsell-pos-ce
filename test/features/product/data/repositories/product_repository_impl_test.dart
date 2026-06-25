@@ -102,6 +102,9 @@ void main() {
       when(
         () => mockImageService.deleteImages(any(), any()),
       ).thenAnswer((_) async {});
+      when(
+        () => mockImageService.renameImages(any(), any()),
+      ).thenAnswer((_) async => null);
       when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
 
       await repo.updateProduct(updatedProduct);
@@ -150,6 +153,9 @@ void main() {
       when(
         () => mockDs.getProductById(any()),
       ).thenAnswer((_) async => oldProduct);
+      when(
+        () => mockImageService.renameImages(any(), any()),
+      ).thenAnswer((_) async => null);
       when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
 
       await repo.updateProduct(updatedProduct);

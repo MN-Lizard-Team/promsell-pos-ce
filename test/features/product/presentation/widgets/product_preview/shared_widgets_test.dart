@@ -19,6 +19,29 @@ void main() {
       expect(find.text('Stock'), findsOneWidget);
       expect(find.text('Content'), findsOneWidget);
     });
+
+    testWidgets('uses surfaceContainerLow not surfaceContainerLowest (U11)', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const PreviewCard(
+          icon: Icons.inventory,
+          title: 'Stock',
+          child: Text('Content'),
+        ),
+      );
+
+      final container = tester.widget<Container>(find.byType(Container).first);
+      final decoration = container.decoration as BoxDecoration;
+      expect(
+        decoration.color,
+        isNot(
+          Theme.of(
+            tester.element(find.byType(Container).first),
+          ).colorScheme.surfaceContainerLowest,
+        ),
+      );
+    });
   });
 
   group('SectionHeader', () {
@@ -38,6 +61,21 @@ void main() {
 
       expect(find.text('Name'), findsOneWidget);
       expect(find.text('Coffee'), findsOneWidget);
+    });
+
+    testWidgets('long label does not clip (P6)', (tester) async {
+      await tester.pumpApp(
+        const InfoRow(
+          label: 'A very long label that exceeds 80px width',
+          value: Text('Value'),
+        ),
+      );
+
+      expect(
+        find.text('A very long label that exceeds 80px width'),
+        findsOneWidget,
+      );
+      expect(find.text('Value'), findsOneWidget);
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/shared_widgets.dart';
@@ -25,10 +26,13 @@ class PriceCard extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
+              color: theme.colorScheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.7),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,17 +42,13 @@ class PriceCard extends StatelessWidget {
                     Icon(
                       Icons.sell_outlined,
                       size: 16,
-                      color: theme.colorScheme.onPrimaryContainer.withValues(
-                        alpha: 0.7,
-                      ),
+                      color: theme.colorScheme.secondary,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       l10n.sellingPrice,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer.withValues(
-                          alpha: 0.7,
-                        ),
+                        color: theme.colorScheme.secondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -58,9 +58,9 @@ class PriceCard extends StatelessWidget {
                 MoneyText(
                   value: product.price,
                   currency: currency,
-                  style: theme.textTheme.headlineMedium?.copyWith(
+                  style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: theme.colorScheme.onPrimaryContainer,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -77,6 +77,7 @@ class PriceCard extends StatelessWidget {
                     currency: currency,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   icon: Icons.account_balance_wallet_outlined,
@@ -93,18 +94,18 @@ class PriceCard extends StatelessWidget {
                         currency: currency,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: profit >= 0
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.error,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${marginPct.toStringAsFixed(0)}%',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           color: profit >= 0
-                              ? theme.colorScheme.primary
+                              ? (theme.brightness == Brightness.dark
+                                    ? AppColors.darkSuccess
+                                    : AppColors.success)
                               : theme.colorScheme.error,
                         ),
                       ),
@@ -112,7 +113,9 @@ class PriceCard extends StatelessWidget {
                   ),
                   icon: profit >= 0 ? Icons.trending_up : Icons.trending_down,
                   iconColor: profit >= 0
-                      ? theme.colorScheme.primary
+                      ? (theme.brightness == Brightness.dark
+                            ? AppColors.darkSuccess
+                            : AppColors.success)
                       : theme.colorScheme.error,
                 ),
               ),
@@ -141,11 +144,11 @@ class MiniStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = iconColor ?? theme.colorScheme.onSurfaceVariant;
+    final color = iconColor ?? theme.colorScheme.onSurface;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHigh,
+        color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -159,7 +162,7 @@ class MiniStat extends StatelessWidget {
                 child: Text(
                   label,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: color,
+                    color: theme.colorScheme.secondary,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),

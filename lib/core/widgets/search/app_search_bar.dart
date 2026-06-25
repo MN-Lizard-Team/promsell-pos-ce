@@ -138,7 +138,7 @@ class _RecentSearchesPanel extends StatelessWidget {
             child: Text(
               'Recent searches',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: theme.colorScheme.secondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -156,7 +156,7 @@ class _RecentSearchesPanel extends StatelessWidget {
                     Icon(
                       Icons.history,
                       size: 18,
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: theme.colorScheme.secondary,
                     ),
                     const SizedBox(width: 12),
                     Expanded(

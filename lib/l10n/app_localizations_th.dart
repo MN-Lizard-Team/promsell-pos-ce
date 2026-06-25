@@ -195,6 +195,53 @@ class AppLocalizationsTh extends AppLocalizations {
   String get productNameRequired => 'กรุณาใส่ชื่อสินค้า';
 
   @override
+  String get productNameTooLong => 'ชื่อสินค้ายาวเกินไป (สูงสุด 100 ตัวอักษร)';
+
+  @override
+  String get quickEditStockSet => 'ตั้งค่าใหม่';
+
+  @override
+  String get quickEditStockAdjust => 'เพิ่ม/ลด';
+
+  @override
+  String get quickEditNameHint => 'ใส่ชื่อสินค้าใหม่';
+
+  @override
+  String get quickEditPriceHint => 'ใส่ราคาขายใหม่';
+
+  @override
+  String get quickEditStockSetHint =>
+      'แตะ + / - หรือตัวเลขเพื่อแก้ไข กดค้างปุ่มเพื่อปรับเร็ว';
+
+  @override
+  String get quickEditStockAdjustHint =>
+      'ใส่จำนวนที่ต้องการเพิ่มหรือลดจากสต็อกปัจจุบัน';
+
+  @override
+  String get stockStepperLongPressHint => 'กดค้างเพื่อเพิ่ม/ลดแบบต่อเนื่อง';
+
+  @override
+  String get stockStepperTapNumberHint => 'แตะตัวเลขเพื่อกรอกโดยตรง';
+
+  @override
+  String get quickEditNameSaved => 'อัปเดตชื่อแล้ว';
+
+  @override
+  String get quickEditNameCancelled => 'ไม่ได้เปลี่ยนแปลงชื่อ';
+
+  @override
+  String get quickEditNameInvalid => 'ชื่อไม่ถูกต้อง';
+
+  @override
+  String get quickEditPriceSaved => 'อัปเดตราคาแล้ว';
+
+  @override
+  String get quickEditPriceCancelled => 'ไม่ได้เปลี่ยนแปลงราคา';
+
+  @override
+  String get quickEditPriceInvalid => 'ราคาไม่ถูกต้อง';
+
+  @override
   String priceLabel(String currency) {
     return 'ราคา ($currency) *';
   }
@@ -204,6 +251,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get invalidPrice => 'ราคาไม่ถูกต้อง';
+
+  @override
+  String get priceMustBePositive => 'ราคาต้องมากกว่า 0';
 
   @override
   String get quantityLabel => 'จำนวน';
@@ -228,6 +278,36 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get productSaved => 'บันทึกสินค้าแล้ว';
+
+  @override
+  String get productActivated => 'เปิดใช้งานสินค้าแล้ว';
+
+  @override
+  String get productDeactivated => 'ปิดการใช้งานสินค้าแล้ว';
+
+  @override
+  String get productDeleted => 'ลบสินค้าแล้ว';
+
+  @override
+  String get stockUpdated => 'อัปเดตสต็อกแล้ว';
+
+  @override
+  String get stockUpdateCancelled => 'ไม่ได้เปลี่ยนแปลงสต็อก';
+
+  @override
+  String get stockUpdateInvalid => 'ค่าสต็อกไม่ถูกต้อง';
+
+  @override
+  String get stockUpdateError => 'อัปเดตสต็อกไม่สำเร็จ';
+
+  @override
+  String get productUpdateError => 'อัปเดตสินค้าไม่สำเร็จ';
+
+  @override
+  String get productAddError => 'เพิ่มสินค้าไม่สำเร็จ';
+
+  @override
+  String get productDeleteError => 'ลบสินค้าไม่สำเร็จ';
 
   @override
   String get stockZeroWarning => 'สินค้าจะไม่แสดงในหน้าขายเมื่อสต็อก = 0';
@@ -594,6 +674,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get lowStockWarning => 'สต็อคใกล้หมด';
+
+  @override
+  String get inStock => 'มีสินค้า';
+
+  @override
+  String get codesCardTitle => 'SKU & บาร์โค้ด';
 
   @override
   String get discountSectionLabel => 'ส่วนลด';
@@ -1532,6 +1618,18 @@ class AppLocalizationsTh extends AppLocalizations {
   String get inactive => 'ไม่ใช้งาน';
 
   @override
+  String get tapToZoom => 'แตะเพื่อขยาย';
+
+  @override
+  String get imageError => 'ไม่สามารถโหลดรูปได้';
+
+  @override
+  String get productImageSemantics => 'รูปภาพสินค้า';
+
+  @override
+  String get noProductImageSemantics => 'ไม่มีรูปภาพสินค้า';
+
+  @override
   String get na => 'ไม่ระบุ';
 
   @override
@@ -1626,6 +1724,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get barcodeGenerated => 'สร้างบาร์โค้ดแล้ว';
+
+  @override
+  String get barcodeGenerationError => 'สร้างบาร์โค้ดไม่สำเร็จ';
 
   @override
   String get batchGenerateBarcodes => 'สร้างบาร์โค้ดให้สินค้าที่ยังไม่มี';

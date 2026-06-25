@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -154,6 +155,51 @@ void main() {
         parseCategoryIcon('restaurant_outlined'),
         Icons.restaurant_outlined,
       );
+    });
+  });
+
+  group('CategoryListTile fixes', () {
+    testWidgets('has Semantics label for screen readers (C6)', (tester) async {
+      await tester.pumpApp(
+        CategoryListTile(
+          category: Category(
+            id: 'c1',
+            name: 'Beverages',
+            sortOrder: 0,
+            createdAt: DateTime(2024, 1, 1),
+            updatedAt: DateTime(2024, 1, 1),
+          ),
+          productCount: 3,
+        ),
+      );
+
+      expect(find.byType(Semantics), findsWidgets);
+    });
+
+    testWidgets('delete dialog uses dialogContext safely (C4)', (tester) async {
+      var deleted = false;
+      await tester.pumpApp(
+        CategoryListTile(
+          category: Category(
+            id: 'c1',
+            name: 'Food',
+            sortOrder: 0,
+            createdAt: DateTime(2024, 1, 1),
+            updatedAt: DateTime(2024, 1, 1),
+          ),
+          onDelete: () => deleted = true,
+        ),
+      );
+
+      await tester.tap(find.byIcon(Icons.delete_outline));
+      await tester.pump();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await tester.tap(find.text('Delete'));
+      await tester.pump();
+
+      expect(deleted, isTrue);
+      expect(find.byType(AlertDialog), findsNothing);
     });
   });
 }

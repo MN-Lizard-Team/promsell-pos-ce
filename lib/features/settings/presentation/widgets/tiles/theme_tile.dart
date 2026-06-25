@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/responsive_settings_picker.dart';
 
@@ -16,6 +17,8 @@ class ThemeTile extends StatelessWidget {
       child: DropdownButton<ThemeMode>(
         value: current,
         isExpanded: true,
+        dropdownColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
         items: [
           DropdownMenuItem(
             value: ThemeMode.light,
@@ -31,7 +34,10 @@ class ThemeTile extends StatelessWidget {
           ),
         ],
         onChanged: (m) {
-          if (m != null) onChanged(m);
+          if (m != null) {
+            HapticFeedback.selectionClick();
+            onChanged(m);
+          }
         },
       ),
     );

@@ -1,17 +1,33 @@
+import 'package:injectable/injectable.dart';
+
 /// Generates EAN-13 compliant barcodes with Luhn check digit.
 ///
-/// Format: [prefix (3 digits)] + [manufacturer (4 digits)] + [product (5 digits)] + [check digit (1)]
+/// Format: [prefix (3 digits)] + [timestamp(4 digits)] + [counter(5 digits)] + [check digit (1)]
 /// Total: 13 digits.
+@injectable
 class Ean13Generator {
+  Ean13Generator();
+
   /// GS1 internal use range (200–299) — safe for in-store generated barcodes.
   static const String defaultPrefix = '200';
+
+  int _counter = 0;
+
+  /// Initializes the internal counter from a persisted value.
+  /// Call at app startup with the last saved counter from Settings.
+  void initCounter(int value) {
+    _counter = value % 100000;
+  }
+
+  /// Current counter value — persist this to Settings after each generate.
+  int get currentCounter => _counter;
 
   /// Generates a 13-digit EAN-13 barcode.
   ///
   /// [prefix] must be 1–3 numeric digits. Padded to 3 digits with leading zeros.
   /// Defaults to "200" (GS1 internal use).
   /// The remaining digits are derived from timestamp + counter to ensure uniqueness.
-  static String generate({String? prefix}) {
+  String generate({String? prefix}) {
     final raw = (prefix == null || prefix.isEmpty) ? defaultPrefix : prefix;
     if (!RegExp(r'^[0-9]{1,3}$').hasMatch(raw)) {
       throw ArgumentError('Prefix must be 1–3 numeric digits, got: "$raw"');
@@ -42,19 +58,7 @@ class Ean13Generator {
     return remainder == 0 ? 0 : 10 - remainder;
   }
 
-  static int _counter = 0;
-
-  /// Initializes the internal counter from a persisted value.
-  /// Call at app startup with the last saved counter from Settings.
-  static void initCounter(int value) {
-    _counter = value % 100000;
-  }
-
-  /// Current counter value — persist this to Settings after each generate.
-  static int get currentCounter => _counter;
-
-  /// Increments internal counter for uniqueness within same millisecond.
-  static void _incrementCounter() {
+  void _incrementCounter() {
     _counter = (_counter + 1) % 100000;
   }
 }

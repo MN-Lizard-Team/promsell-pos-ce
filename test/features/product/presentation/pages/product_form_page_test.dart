@@ -3,10 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
+import 'package:promsell_pos_ce/core/widgets/layout/danger_zone_card.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/modern_toggle_card.dart';
 import 'package:promsell_pos_ce/core/widgets/stock/stock_stepper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -17,6 +19,8 @@ import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
 
 class MockProductImageService extends Mock implements ProductImageService {}
+
+class MockGenerateBarcode extends Mock implements GenerateBarcode {}
 
 void main() {
   late MockProductBloc mockProductBloc;
@@ -34,6 +38,9 @@ void main() {
     );
     if (!GetIt.I.isRegistered<ProductImageService>()) {
       GetIt.I.registerSingleton<ProductImageService>(mockImageService);
+    }
+    if (!GetIt.I.isRegistered<GenerateBarcode>()) {
+      GetIt.I.registerSingleton<GenerateBarcode>(MockGenerateBarcode());
     }
     when(
       () => mockProductBloc.state,
@@ -200,6 +207,174 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(StockStepper), findsOneWidget);
+    });
+  });
+
+  group('T4: price=0 validation', () {
+    testWidgets('shows error when price is 0', (tester) async {
+      await tester.pumpApp(
+        const ProductFormPage(),
+        productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      final nameField = find.byType(TextFormField).at(0);
+      await tester.enterText(nameField, 'Test');
+
+      await tester.tap(find.text('Price'));
+      await tester.pumpAndSettle();
+
+      final priceField = find.byType(TextFormField).at(0);
+      await tester.enterText(priceField, '0.00');
+
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Price must be greater than 0'), findsOneWidget);
+    });
+  });
+
+  group('T5: trackStock toggle', () {
+    testWidgets('hides stock stepper when trackStock is off', (tester) async {
+      await tester.pumpApp(
+        const ProductFormPage(),
+        productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      await tester.tap(find.text('Stock'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StockStepper), findsOneWidget);
+
+      final toggle = find.byType(ModernToggleCard);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StockStepper), findsNothing);
+    });
+
+    testWidgets('shows stock stepper when trackStock is toggled back on', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        const ProductFormPage(),
+        productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      await tester.tap(find.text('Stock'));
+      await tester.pumpAndSettle();
+
+      final toggle = find.byType(ModernToggleCard);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StockStepper), findsOneWidget);
+    });
+  });
+
+  group('T2: delete flow (edit mode)', () {
+    final existingProduct = Product(
+      id: 'prod-0001-0001-0001-000000000001',
+      name: 'Water',
+      price: 10.0,
+      stock: 100,
+      imageThumbnailPath: null,
+      isActive: true,
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+    );
+
+    testWidgets('tapping delete shows confirm dialog', (tester) async {
+      when(() => mockProductBloc.add(any())).thenReturn(null);
+
+      await tester.pumpApp(
+        ProductFormPage(product: existingProduct),
+        productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DangerZoneCard),
+          matching: find.byType(TextButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+    });
+
+    testWidgets('confirming delete dispatches ProductDeleted', (tester) async {
+      when(() => mockProductBloc.add(any())).thenReturn(null);
+
+      await tester.pumpApp(
+        ProductFormPage(product: existingProduct),
+        productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DangerZoneCard),
+          matching: find.byType(TextButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final dialog = find.byType(AlertDialog);
+      await tester.tap(
+        find.descendant(of: dialog, matching: find.byType(FilledButton)),
+      );
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockProductBloc.add(any(that: isA<ProductDeleted>())),
+      ).called(1);
+    });
+
+    testWidgets('cancelling delete does not dispatch event', (tester) async {
+      when(() => mockProductBloc.add(any())).thenReturn(null);
+
+      await tester.pumpApp(
+        ProductFormPage(product: existingProduct),
+        productBloc: mockProductBloc,
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DangerZoneCard),
+          matching: find.byType(TextButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final dialog = find.byType(AlertDialog);
+      await tester.tap(
+        find.descendant(of: dialog, matching: find.byType(TextButton)),
+      );
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockProductBloc.add(any()));
     });
   });
 }

@@ -6,18 +6,18 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_pr
 import '../../../../../helpers/pump_app.dart';
 
 void main() {
-  group('PriceCard', () {
-    final product = Product(
-      id: 'p1',
-      name: 'Coffee',
-      price: 80,
-      cost: 50,
-      stock: 10,
-      isActive: true,
-      createdAt: DateTime(2025, 1, 1),
-      updatedAt: DateTime(2025, 1, 1),
-    );
+  final product = Product(
+    id: 'p1',
+    name: 'Coffee',
+    price: 80,
+    cost: 50,
+    stock: 10,
+    isActive: true,
+    createdAt: DateTime(2025, 1, 1),
+    updatedAt: DateTime(2025, 1, 1),
+  );
 
+  group('PriceCard', () {
     testWidgets('renders selling price', (tester) async {
       await tester.pumpApp(PriceCard(product: product, currency: '฿'));
 
@@ -46,6 +46,19 @@ void main() {
       await tester.pumpApp(PriceCard(product: freeProduct, currency: '฿'));
 
       expect(find.text('0%'), findsOneWidget);
+    });
+  });
+
+  group('PriceCard U6 fixes', () {
+    testWidgets('selling price uses headlineSmall not headlineMedium (U6)', (
+      tester,
+    ) async {
+      await tester.pumpApp(PriceCard(product: product, currency: '฿'));
+
+      final moneyText = tester.widget(find.text('฿80.00'));
+      expect(moneyText, isA<Text>());
+      final text = moneyText as Text;
+      expect(text.style?.fontSize, isNot(equals(28)));
     });
   });
 

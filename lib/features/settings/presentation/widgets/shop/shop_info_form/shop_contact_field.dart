@@ -39,34 +39,41 @@ class ShopContactField extends StatelessWidget {
     final l10n = context.l10n;
     final preview = initialAddress.isEmpty ? '—' : initialAddress;
 
-    return ListTile(
-      leading: Icon(Icons.location_on_outlined, color: st.softAccent, size: 22),
-      title: Text(
-        l10n.settingsAddress,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(
+          Icons.location_on_outlined,
+          color: st.softAccent,
+          size: 22,
         ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              preview,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-                color: st.softTextSecondary,
+        title: Text(
+          l10n.settingsAddress,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                preview,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: st.softTextSecondary,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
-        ],
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
+          ],
+        ),
+        onTap: () => _showAddressDialog(context),
       ),
-      onTap: () => _showAddressDialog(context),
     );
   }
 
@@ -87,34 +94,37 @@ class ShopContactField extends StatelessWidget {
     final displayPhone = _formatPhone(initialPhone);
     final preview = displayPhone.isEmpty ? '—' : displayPhone;
 
-    return ListTile(
-      leading: Icon(Icons.phone_outlined, color: st.softAccent, size: 22),
-      title: Text(
-        l10n.settingsPhone,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(Icons.phone_outlined, color: st.softAccent, size: 22),
+        title: Text(
+          l10n.settingsPhone,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              preview,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-                color: st.softTextSecondary,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                preview,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: st.softTextSecondary,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
-        ],
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
+          ],
+        ),
+        onTap: () => _showPhoneDialog(context),
       ),
-      onTap: () => _showPhoneDialog(context),
     );
   }
 

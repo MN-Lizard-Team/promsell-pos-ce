@@ -23,6 +23,8 @@ class ImageViewerInfoSheet {
 
     showModalBottomSheet(
       context: context,
+      enableDrag: true,
+      showDragHandle: false,
       backgroundColor: Colors.black.withValues(alpha: 0.85),
       builder: (_) => SafeArea(
         child: Padding(

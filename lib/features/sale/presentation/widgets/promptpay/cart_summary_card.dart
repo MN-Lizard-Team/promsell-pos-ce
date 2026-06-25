@@ -95,7 +95,7 @@ class CartSummaryCard extends StatelessWidget {
                         'x${item.qty}',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color: theme.colorScheme.secondary,
                         ),
                       ),
                     ),

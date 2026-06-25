@@ -4,7 +4,7 @@
 
 ---
 
-**1121 tests** covering every application layer:
+**1259 tests** covering every application layer:
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -13,7 +13,7 @@
 | **Repository** | Impl with mocked datasources | ~50 |
 | **Datasource** | Real in-memory SQLite (Drift) | ~50 |
 | **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService, DI graph, crash logging, PDF receipt | ~190 |
-| **Widget** | Page tests + 40+ extracted widget tests across core, product, sale, and settings | ~510 |
+| **Widget** | Page tests + 40+ extracted widget tests across core, product, sale, and settings | ~611 |
 | **Integration** | Checkout flow, sale integrity (void + adjust), onboarding → first sale | 14 |
 | **Stress** | 10k products / 50k sales seed + query timing (`@Tags(['stress'])`) | 2 |
 | **L10n parity** | EN/TH key coverage, non-empty values, params | 7 |
@@ -28,7 +28,7 @@
                 │   Integration     │  14 tests (in-memory DB end-to-end)
                 └─────────┬─────────┘
             ┌─────────────┴─────────────┐
-            │      Widget + L10n        │  ~517 tests (pumpApp + mock BLoC)
+            │      Widget + L10n        │  ~618 tests (pumpApp + mock BLoC)
             └─────────────┬─────────────┘
         ┌─────────────────┴──────────────────┐
         │   BLoC + Services + Repository     │  ~310 tests (mocktail + mock DS)
@@ -67,4 +67,4 @@ flutter test test/integration/checkout_flow_test.dart
 
 ---
 
-<sub>Promsell POS Community Edition · v0.8.5 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.6 · AGPL-3.0</sub>

@@ -95,7 +95,7 @@ class _CartHeaderState extends State<CartHeader> {
                       Text(
                         context.l10n.cartTitle,
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                          color: theme.colorScheme.secondary,
                         ),
                       ),
                   ],
