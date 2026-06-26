@@ -30,6 +30,7 @@
 - [x] **R16 — Brand Theme & Product Preview** (v0.8.4): Promsell Teal (#0E7C8A) + Orange (#FF6B00) brand migration across entire app; `ProductPreviewPage` with hero image, price card (selling price, cost, profit + margin %), stock card with inline edit, visual barcode rendering (EAN13/EAN8/UPCA/Code128) with view/save PDF/print actions; navigation update (tap → preview, long-press → edit)
 - [x] **R17 — Project Quality Hardening** (v0.8.5): CHANGELOG archived by minor version (`docs/changelog/`); generated code (`*.g.dart`, `*.config.dart`) removed from git tracking with `linguist-generated` attributes; dependency vulnerability scanning via `tool/check_outdated.dart` in CI + Dependabot security alerts
 - [x] **R18 — NavBar + Preview + Barcode Overhaul** (v0.8.6): NavBar overhaul (`AppBottomNavigationBar` with long-press actions, `NavSwipeHelper`); Product Preview redesign (`SliverAppBar` collapsing hero, `ProductPreviewImage`, `StickyActionBar`); persistent barcode images (`BarcodeImageService` via `RenderRepaintBoundary` 600×200 @ 3x, `barcodeImagePath` column); `Ean13Generator` refactored to `@injectable` instance; theme polish (WCAG AA light theme, dark mode surfaceContainer tokens); QuickEdit upgrade (validation, Set/Adjust dual-mode); category management overhaul (`category_icon_data.dart`, search, Semantics)
+- [x] **R19 — Product Form Redesign** (v0.8.7): Merged `AddProductPage` + `ProductFormPage` into unified `ProductFormPage` with Hybrid Collapsible layout (basic fields visible, advanced in `ExpansionTile`); `ProductFormCubit` with typed `ProductDraft` entity replacing raw `Map<String, dynamic>` draft; draft persistence fixes (data loss, `isClosed` guard); `TextEditingController` disposal fix (unfocus before pop, remove listeners before dispose); 31 widget + unit tests
 
 ### Release timeline
 
@@ -58,4 +59,4 @@ Integrity  Discount  Cart UX   Data +          NavBar +
 
 ---
 
-<sub>Promsell POS Community Edition · v0.8.6 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.7 · AGPL-3.0</sub>

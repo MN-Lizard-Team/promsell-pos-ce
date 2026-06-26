@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE v0.8.6
+# Technical Deep-Dive — Promsell POS CE v0.8.7
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 
@@ -15,7 +15,7 @@ State management patterns, dependency injection graph, transaction boundaries, e
 | Pattern | Used by | Why chosen |
 |---------|---------|------------|
 | **BLoC** (event-driven) | `CartBloc`, `DraftBloc`, `CheckoutBloc`, `ProductBloc`, `CategoryBloc`, `HistoryBloc` | Multiple event types, complex async flows, stream subscriptions |
-| **Cubit** (method-driven) | `SettingsCubit`, `ReportCubit`, `InventoryLogCubit` | Simple state or stream-based data, no event classes needed, direct method calls |
+| **Cubit** (method-driven) | `SettingsCubit`, `ReportCubit`, `InventoryLogCubit`, `ProductFormCubit` | Simple state or stream-based data, no event classes needed, direct method calls |
 
 ### BlocListener ordering caution
 
@@ -239,4 +239,4 @@ try {
 
 ---
 
-<sub>Promsell POS CE · v0.8.6 · Technical Deep-Dive</sub>
+<sub>Promsell POS CE · v0.8.7 · Technical Deep-Dive</sub>

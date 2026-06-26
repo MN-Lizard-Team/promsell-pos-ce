@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog.dart';
 import 'package:promsell_pos_ce/features/product/presentation/utils/category_style_resolver.dart';
 
@@ -83,7 +84,7 @@ class ProductHeroImage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Tap to add image',
+                      context.l10n.tapToAddImage,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -103,12 +104,15 @@ class ProductHeroImage extends StatelessWidget {
                 ),
               ),
             Positioned(
-              bottom: 16,
+              bottom: _hasImage ? null : 16,
+              top: _hasImage ? 16 : null,
               right: 16,
               child: FloatingActionButton.small(
                 onPressed: onTap,
                 heroTag: 'product_image_fab',
-                child: const Icon(Icons.camera_alt),
+                child: Icon(
+                  _hasImage ? Icons.edit : Icons.add_a_photo_outlined,
+                ),
               ),
             ),
           ],

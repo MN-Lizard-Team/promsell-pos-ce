@@ -1,4 +1,4 @@
-# Migration & Operations — Promsell POS CE v0.8.6
+# Migration & Operations — Promsell POS CE v0.8.7
 
 Migration guide, backup & restore procedures, performance notes, and database testing.
 
@@ -286,4 +286,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.8.6 · Migration & Operations</sub>
+<sub>Promsell POS CE · v0.8.7 · Migration & Operations</sub>

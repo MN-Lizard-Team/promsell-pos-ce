@@ -1,4 +1,4 @@
-# Conventions — Promsell POS CE v0.8.5
+# Conventions — Promsell POS CE v0.8.7
 
 State management, settings persistence, localization, dependency injection, and code generation conventions.
 
@@ -11,7 +11,7 @@ State management, settings persistence, localization, dependency injection, and 
 | Pattern | When used |
 |---------|-----------|
 | **BLoC** (event → state) | Complex flows with multiple event types — sale, product, history |
-| **Cubit** (method → state) | Simpler state without event classes — settings, report |
+| **Cubit** (method → state) | Simpler state without event classes — settings, report, `ProductFormCubit` (typed draft state) |
 
 All state classes extend `Equatable` for efficient rebuilds.
 
@@ -86,7 +86,7 @@ Annotations on implementation classes drive registration:
 | Scope | Annotation | Examples |
 |-------|-----------|----------|
 | Lazy singleton | `@LazySingleton(as: Abc)` | datasources, repositories, services |
-| Lazy singleton | `@lazySingleton` | `ProductBloc`, `CategoryBloc`, `CartBloc`, `DraftBloc`, `CheckoutBloc`, `SettingsCubit`, `ReportCubit` |
+| Lazy singleton | `@lazySingleton` | `ProductBloc`, `CategoryBloc`, `CartBloc`, `DraftBloc`, `CheckoutBloc`, `SettingsCubit`, `ReportCubit`, `ProductFormCubit` |
 | Factory | `@injectable` | use cases, `Ean13Generator` |
 | Module | `@module` | `DatabaseModule` provides `AppDatabase` |
 
@@ -115,4 +115,4 @@ Two generators must be run after changes:
 
 ---
 
-<sub>Promsell POS CE · v0.8.6 · Conventions</sub>
+<sub>Promsell POS CE · v0.8.7 · Conventions</sub>

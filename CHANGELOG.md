@@ -7,13 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.8.7] - 2026-06-26
+
+Product form unification + draft system hardening + product list dashboard redesign + tile performance optimization.
+
+### Highlights
+
+- **Product Form Unification** — Merged `AddProductPage` + `ProductFormPage` into single Hybrid Collapsible form; `ProductFormCubit` with typed `ProductDraft` persistence replaces raw `Map` drafts; `ExpansionTile` for advanced fields; `_VisibilitySection` card for show/hide toggle.
+- **Draft System Hardening** — `Completer<void>` sync for load-before-check race; `clearDraft` resets both state + storage; restore cancels debounce (no empty re-save); empty drafts skipped on auto-save.
+- **Product List Dashboard** — `StatsDashboard` redesigned with hero gradient card (total products + inventory value) and 3 mini stat cards; view toggle moved to separate row with filtered count label.
+- **Tile Performance** — `BlocBuilder<CategoryBloc>` → `BlocSelector` in tiles (only changed-category tiles rebuild); `product_navigation.dart` shared helpers eliminate duplicate `_showEdit`/`_showPreview`/`_confirmDelete` across 3 files.
+- **Grid Mode Parity** — `Dismissible` swipe-to-delete added to `ModernProductGridCard`; `ProductCardShell` refactored from `Card(elevation: 2)` to flat `Container` + `BoxDecoration`; `childAspectRatio` 0.75 → 0.80.
 
 ### Added
 
+- `ProductFormCubit`, `ProductDraft`, `ProductFormState`, `ProductFormView` — typed draft system with `toJson`/`fromJson`, Equatable state, single-scroll form.
+- `product_navigation.dart` — shared `showProductEditPage`, `showProductPreviewPage`, `confirmDeleteProduct`, `DeleteBackground`.
+- `UnsavedDialogAction` enum; `_VisibilitySection` widget.
+- L10n: `productVisibility`, `tapToAddImage`, `inventoryValue`, `totalProducts` (en + th).
+- Tests: `ProductFormCubit` (8), `CategoryField` (5), `Product.copyWith` cost sentinel (3), `ProductFormPage` (5), `ProductCardShell` updated, `ProductHeroImage` updated.
+
 ### Changed
 
+- Pinned Flutter to `3.41.4` in CI workflows.
+- All add-product entry points navigate to `ProductFormPage()` instead of deleted `AddProductPage`.
+- Draft key bumped `product_add_draft_v2` → `product_form_draft_v3`.
+- `ProductPreviewPage._showEdit` uses shared `showProductEditPage` helper.
+- `ScaffoldMessenger.showSnackBar` → `AppSnackBar.info/success/error` in `ProductPreviewPage` (5 calls).
+- `_currentProduct` updates via `BlocListener` only (removed `build()` mutation).
+- `StatsDashboard` receives pre-computed counts from parent (no per-build recalculation).
+- `ProductCardShell` — `Card` → `Container` + `Material` + `InkWell`; `isActive` opacity handled internally.
+
 ### Fixed
+
+- Draft data loss (`syncDraftFromControllers` sends actual form state, not `null`).
+- `isClosed` guard prevents `emit` after cubit disposal.
+- Cost field clearing via `Product.copyWith` sentinel pattern.
+- Image URL cleared when picking new local image.
+- Category race condition fallback to `widget.product!.categoryId`.
+- Stale product data in `_submit` (reads latest from `ProductBloc.state`).
+- Unsaved changes dialog now includes Save option.
+- Stock sync on trackStock toggle restores original stock.
+- Expansion state persists across rebuilds (`_AdvancedSection` as `StatefulWidget`).
+- FAB moves to top-right when image present.
+
+### Removed
+
+- `AddProductPage`, `BasicTabView`, `AdvancedTabView`, `AddProductDraftHandler`, `ImageSourceHandler`, `AddProductDraftCubit`.
+- `ProductEditTabView`, `ProductInfoTab`, `ProductPricingTab`, `ProductStockTab`, `ProductSettingsTab`.
+- `category_field.dart` moved from `product_edit_tab_view/` to `product_form/`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **1294 product tests passing**
 
 ---
 

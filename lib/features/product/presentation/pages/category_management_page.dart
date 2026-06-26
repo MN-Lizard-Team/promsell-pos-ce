@@ -84,7 +84,7 @@ class _CategoryManagementPageState extends State<CategoryManagementPage> {
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
                   itemCount: cats.length,
                   buildDefaultDragHandles: false,
-                  onReorder: (oldIndex, newIndex) =>
+                  onReorderItem: (oldIndex, newIndex) =>
                       _onReorder(context, cats, oldIndex, newIndex),
                   itemBuilder: (_, i) {
                     final cat = cats[i];
@@ -220,7 +220,6 @@ class _CategoryManagementPageState extends State<CategoryManagementPage> {
     int oldIndex,
     int newIndex,
   ) {
-    if (newIndex > oldIndex) newIndex--;
     final reordered = List<Category>.from(cats);
     final item = reordered.removeAt(oldIndex);
     reordered.insert(newIndex, item);

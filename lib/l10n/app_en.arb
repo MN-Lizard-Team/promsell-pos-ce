@@ -109,6 +109,7 @@
   "invalidBarcode": "Barcode must be alphanumeric (letters and numbers only)",
   "categoryLabel": "Category",
   "showProduct": "Show product",
+  "productVisibility": "Product visibility",
   "save": "Save",
   "productSaved": "Product saved",
   "productActivated": "Product activated",
@@ -724,6 +725,7 @@
   "storagePermissionDenied": "Storage permission is required to pick images. Please grant storage access in settings.",
   "removeImageConfirm": "Remove this image?",
   "imageHelper": "Tap to change, long-press to preview",
+  "tapToAddImage": "Tap to add image",
   "imageNotFound": "Saved image was removed. Please pick again.",
   "clearImageCache": "Clear image cache",
   "clearImageCacheConfirm": "This will delete all unused product images to free up storage. Continue?",
@@ -801,5 +803,7 @@
   "barcodePrintedSuccess": "Barcode printed successfully",
   "barcodeViewError": "Failed to view barcode",
   "barcodeSaveError": "Failed to save barcode",
-  "barcodePrintError": "Failed to print barcode"
+  "barcodePrintError": "Failed to print barcode",
+  "inventoryValue": "Inventory value",
+  "totalProducts": "Total products"
 }

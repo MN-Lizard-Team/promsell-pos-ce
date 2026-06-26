@@ -12,7 +12,7 @@ void main() {
       );
 
       expect(find.text('Hello'), findsOneWidget);
-      expect(find.byType(Card), findsOneWidget);
+      expect(find.byType(Container), findsWidgets);
     });
 
     testWidgets('calls onTap when tapped', (tester) async {

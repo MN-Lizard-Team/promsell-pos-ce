@@ -72,7 +72,10 @@ class CategoryField extends StatelessWidget {
       selectedId: selectedCategory?.id,
       showNoneOption: true,
     );
-    if (result != null || selectedCategory != null) {
+    if (result == null) return;
+    if (result.id.isEmpty) {
+      onChanged(null);
+    } else {
       onChanged(result);
     }
   }

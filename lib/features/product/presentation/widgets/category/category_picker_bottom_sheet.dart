@@ -84,7 +84,5 @@ Future<Category?> showCategoryPicker(
       ),
     ),
   );
-  if (result == null) return null;
-  if (result.id.isEmpty) return null;
   return result;
 }

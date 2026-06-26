@@ -274,6 +274,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get showProduct => 'แสดงสินค้า';
 
   @override
+  String get productVisibility => 'การมองเห็นสินค้า';
+
+  @override
   String get save => 'บันทึก';
 
   @override
@@ -1894,6 +1897,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get imageHelper => 'แตะเพื่อเปลี่ยนรูป กดค้างเพื่อดูตัวอย่าง';
 
   @override
+  String get tapToAddImage => 'แตะเพื่อเพิ่มรูปภาพ';
+
+  @override
   String get imageNotFound => 'รูปภาพที่บันทึกไว้ถูกลบแล้ว โปรดเลือกใหม่';
 
   @override
@@ -2114,4 +2120,10 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get barcodePrintError => 'ไม่สามารถพิมพ์บาร์โค้ดได้';
+
+  @override
+  String get inventoryValue => 'มูลค่าคงคลัง';
+
+  @override
+  String get totalProducts => 'สินค้าทั้งหมด';
 }

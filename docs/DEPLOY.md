@@ -112,7 +112,7 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.8.6+1
+version: 0.8.7+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -134,7 +134,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 1259 tests pass
+- [ ] `flutter test` — all 1294 tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date (files not committed to git)
@@ -153,7 +153,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 
 Before distributing a build with UI changes:
 
-1. Add a product (set trackStock=off on one service item to verify ∞ display).
+1. Add a product (set trackStock=off on one service item to verify ∞ display). Verify the unified Product Form page with Hybrid Collapsible layout: basic fields (name, price, stock, image, category) visible by default, advanced fields (SKU, barcode, cost, show product toggle) in expandable ExpansionTile.
 2. Search and filter products in the Sale tab.
 3. Add items to cart and adjust quantity.
 3b. **Tap the quantity number** in cart → verify numeric input dialog opens with stock info and clamping.

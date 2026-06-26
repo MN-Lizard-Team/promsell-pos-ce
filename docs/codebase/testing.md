@@ -1,6 +1,6 @@
-# Testing — Promsell POS CE v0.8.6
+# Testing — Promsell POS CE v0.8.7
 
-1259 automated tests across 8 layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
+1294 automated tests across 8 layers — 56% line coverage (11,978 / 21,392 lines). Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 
@@ -21,7 +21,7 @@ test/
 │   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
 │   │   └── presentation/widgets/  # CartItemCard, CartDetailRow, CartQtyButton, CartDottedLineRow, CompactCartFab
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
-│   │   └── presentation/widgets/  # CategoryPicker, CategoryFilterBar
+│   │   └── presentation/widgets/  # CategoryPicker, CategoryFilterBar, ProductCardShell, ProductFormCubit, ProductHeroImage
 │   ├── history/                # Use case, BLoC, repo tests
 │   ├── inventory/              # InventoryLog entity, use case, cubit, repo tests
 │   ├── report/                 # ReportCubit tests + ReportCalculator domain tests
@@ -57,6 +57,25 @@ test/
 | Stress | `@Tags(['stress'])` — excluded from CI | In-memory Drift DB, 10k+ rows |
 | L10n | Direct class instantiation | None |
 
+### Coverage
+
+| Feature | Coverage |
+|---------|----------|
+| inventory | 96.3% |
+| report | 88.5% |
+| onboarding | 82.1% |
+| history | 76.8% |
+| product | 70.2% |
+| daily_close | 60.2% |
+| settings | 61.9% |
+| sale | 53.0% |
+| core | 47.4% |
+| l10n | 30.6% |
+| receipt | 19.6% |
+| **Total** | **56.0%** |
+
+> Low-coverage areas: `l10n` (generated code), `receipt` (PDF platform plugins), `core` (generated DI/DB code).
+
 ---
 
-<sub>Promsell POS CE · v0.8.6 · Testing</sub>
+<sub>Promsell POS CE · v0.8.7 · Testing</sub>

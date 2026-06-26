@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
-import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/add_product_draft_cubit.dart';
-import 'package:promsell_pos_ce/features/product/presentation/pages/add_product_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/category_management_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/batch_generate_dialog.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/category_filter_chips.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/product_sliver_content.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/stats_dashboard.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class ProductListPage extends StatelessWidget {
   const ProductListPage({super.key});
@@ -171,9 +171,43 @@ class _ProductListViewState extends State<_ProductListView> {
               final categories = categoryState.categories;
               final selectedCategoryId = state.categoryFilter;
               final products = state.filtered;
+              final allProducts = state.products;
+              final activeCount = products.where((p) => p.isActive).length;
+              final lowStockCount = products
+                  .where((p) => p.trackStock && p.stock > 0 && p.stock <= 5)
+                  .length;
+              final outOfStockCount = products
+                  .where((p) => p.trackStock && p.stock == 0)
+                  .length;
+              final totalCount = allProducts.length;
+              final inventoryValue = allProducts
+                  .where((p) => p.trackStock)
+                  .fold<double>(0, (sum, p) => sum + p.stock * p.cost);
+              final currency = context
+                  .watch<SettingsCubit>()
+                  .state
+                  .settings
+                  .currency;
 
               return CustomScrollView(
                 slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                      child: StatsDashboard(
+                        activeCount: activeCount,
+                        lowStockCount: lowStockCount,
+                        outOfStockCount: outOfStockCount,
+                        totalCount: totalCount,
+                        inventoryValue: inventoryValue,
+                        currency: currency,
+                        activeFilter: state.stockFilter,
+                        onFilterTap: (filter) => context
+                            .read<ProductBloc>()
+                            .add(ProductStockFilterChanged(filter)),
+                      ),
+                    ),
+                  ),
                   if (categories.isNotEmpty)
                     SliverToBoxAdapter(
                       child: CategoryFilterChips(
@@ -194,44 +228,37 @@ class _ProductListViewState extends State<_ProductListView> {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            flex: 4,
-                            child: StatsDashboard(
-                              products: products,
-                              activeFilter: state.stockFilter,
-                              onFilterTap: (filter) => context
-                                  .read<ProductBloc>()
-                                  .add(ProductStockFilterChanged(filter)),
+                          Text(
+                            '${products.length} ${context.l10n.productsCount}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            flex: 3,
-                            child: SegmentedButton<ViewMode>(
-                              segments: const [
-                                ButtonSegment(
-                                  value: ViewMode.list,
-                                  icon: Icon(Icons.view_list, size: 18),
-                                ),
-                                ButtonSegment(
-                                  value: ViewMode.grid,
-                                  icon: Icon(Icons.grid_view, size: 18),
-                                ),
-                              ],
-                              selected: {_viewMode},
-                              onSelectionChanged: (selection) =>
-                                  setState(() => _viewMode = selection.first),
-                              style: const ButtonStyle(
-                                visualDensity: VisualDensity.compact,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          const Spacer(),
+                          SegmentedButton<ViewMode>(
+                            segments: const [
+                              ButtonSegment(
+                                value: ViewMode.list,
+                                icon: Icon(Icons.view_list, size: 18),
                               ),
+                              ButtonSegment(
+                                value: ViewMode.grid,
+                                icon: Icon(Icons.grid_view, size: 18),
+                              ),
+                            ],
+                            selected: {_viewMode},
+                            onSelectionChanged: (selection) =>
+                                setState(() => _viewMode = selection.first),
+                            style: const ButtonStyle(
+                              visualDensity: VisualDensity.compact,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 4)),
                   ProductSliverContent(
                     status: state.status,
                     products: products,
@@ -265,12 +292,9 @@ class _ProductListViewState extends State<_ProductListView> {
           providers: [
             BlocProvider.value(value: productBloc),
             BlocProvider.value(value: categoryBloc),
-            BlocProvider(
-              create: (_) =>
-                  AddProductDraftCubit(sl<SettingsLocalDatasource>()),
-            ),
+            BlocProvider(create: (_) => sl<ProductFormCubit>()),
           ],
-          child: const AddProductPage(),
+          child: const ProductFormPage(),
         ),
       ),
     );

@@ -596,6 +596,12 @@ abstract class AppLocalizations {
   /// **'แสดงสินค้า'**
   String get showProduct;
 
+  /// No description provided for @productVisibility.
+  ///
+  /// In th, this message translates to:
+  /// **'การมองเห็นสินค้า'**
+  String get productVisibility;
+
   /// No description provided for @save.
   ///
   /// In th, this message translates to:
@@ -3656,6 +3662,12 @@ abstract class AppLocalizations {
   /// **'แตะเพื่อเปลี่ยนรูป กดค้างเพื่อดูตัวอย่าง'**
   String get imageHelper;
 
+  /// No description provided for @tapToAddImage.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อเพิ่มรูปภาพ'**
+  String get tapToAddImage;
+
   /// No description provided for @imageNotFound.
   ///
   /// In th, this message translates to:
@@ -4069,6 +4081,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ไม่สามารถพิมพ์บาร์โค้ดได้'**
   String get barcodePrintError;
+
+  /// No description provided for @inventoryValue.
+  ///
+  /// In th, this message translates to:
+  /// **'มูลค่าคงคลัง'**
+  String get inventoryValue;
+
+  /// No description provided for @totalProducts.
+  ///
+  /// In th, this message translates to:
+  /// **'สินค้าทั้งหมด'**
+  String get totalProducts;
 }
 
 class _AppLocalizationsDelegate

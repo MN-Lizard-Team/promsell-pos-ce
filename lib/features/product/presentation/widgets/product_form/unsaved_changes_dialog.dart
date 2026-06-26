@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 
-Future<bool> showUnsavedChangesDialog(BuildContext context) async {
+enum UnsavedDialogAction { discard, cancel, save }
+
+Future<UnsavedDialogAction> showUnsavedChangesDialog(
+  BuildContext context,
+) async {
   final l10n = context.l10n;
   final result = await showDialog<String>(
     context: context,
@@ -17,8 +21,16 @@ Future<bool> showUnsavedChangesDialog(BuildContext context) async {
           onPressed: () => Navigator.pop(ctx, 'cancel'),
           child: Text(l10n.cancel),
         ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, 'save'),
+          child: Text(l10n.save),
+        ),
       ],
     ),
   );
-  return result == 'discard';
+  return switch (result) {
+    'discard' => UnsavedDialogAction.discard,
+    'save' => UnsavedDialogAction.save,
+    _ => UnsavedDialogAction.cancel,
+  };
 }

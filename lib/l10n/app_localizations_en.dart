@@ -276,6 +276,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showProduct => 'Show product';
 
   @override
+  String get productVisibility => 'Product visibility';
+
+  @override
   String get save => 'Save';
 
   @override
@@ -1906,6 +1909,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageHelper => 'Tap to change, long-press to preview';
 
   @override
+  String get tapToAddImage => 'Tap to add image';
+
+  @override
   String get imageNotFound => 'Saved image was removed. Please pick again.';
 
   @override
@@ -2124,4 +2130,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodePrintError => 'Failed to print barcode';
+
+  @override
+  String get inventoryValue => 'Inventory value';
+
+  @override
+  String get totalProducts => 'Total products';
 }

@@ -32,13 +32,16 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 
 ### Products tab
 
-- Toggle between **List** and **Grid** view with the icon pair in the app bar
+- **Dashboard** — Hero gradient card at top showing total product count and inventory value (stock × cost), with 3 mini stat cards below for active, low stock, and out of stock (tap to filter)
+- Toggle between **List** and **Grid** view with the segmented button below the stats
 - Use category **filter chips** to narrow the catalog; combined with the search bar
 - Each product shows an image avatar via `UnifiedImageWidget` — skeleton shimmer loading while fetching, consistent error placeholder with neutral dark-mode-safe colors, local file with thumbnail for small sizes, or `CachedNetworkImage` for network URLs; traffic-light **stock badge** (green > 5 / orange 1–5 / red 0); inactive products appear dimmed with strikethrough
-- Tap **Add Product** (➕ icon, app bar) to open the product form
-- Product form uses a **2-tab layout** (Basic + Advanced) with sticky save button:
-  - **Basic tab** — image (tap to pick from Gallery/Camera, long-press to preview, remove with confirmation), name, price, stock, category picker (bottom sheet with auto-pop selection and "None" clear option)
-  - **Advanced tab** — barcode (scan with camera or enter manually), generate EAN-13 compliant barcode with Luhn check digit (GS1 prefix `200`, auto-padded to 3 digits, collision-checked against DB), SKU, cost, track stock toggle
+- Swipe left on any product card (list or grid) to delete with confirmation
+- Tap **Add Product** (➕ FAB) to open the product form
+- Product form uses a **Hybrid Collapsible layout** (single scroll) with sticky save button:
+  - **Basic fields** (always visible) — image (tap to pick from Gallery/Camera, long-press to preview, remove with confirmation), name, price, stock, category picker (bottom sheet with auto-pop selection and "None" clear option)
+  - **Advanced fields** (expandable `ExpansionTile`) — barcode (scan with camera or enter manually), generate EAN-13 compliant barcode with Luhn check digit (GS1 prefix `200`, auto-padded to 3 digits, collision-checked against DB), SKU, cost, track stock toggle
+  - **Show Product toggle** — dedicated visibility card, always visible in edit mode
   - Image is compressed using pure Dart (configurable max width/quality in Settings, default 800px/80%) and saved locally with a 200px thumbnail; `ImageCacheService` enforces 50MB LRU cache eviction automatically
   - Draft save/restore — unsaved changes prompt to save draft on back press; drafts validate image paths on restore
 - Tap a card to **preview** the product, or long-press to **edit** — the preview page shows a hero image, price breakdown (selling price, cost, profit + margin %), stock status with inline edit button, SKU/barcode with visual barcode rendering and copy actions (copy text, view full, save as PDF/PNG/JPEG, print), a **Generate barcode** button when none exists, and system info (product ID, timestamps). Generated barcode images are persisted to `product.barcodeImagePath` and reused for view/save/print

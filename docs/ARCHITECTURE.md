@@ -1,4 +1,4 @@
-﻿# Architecture — Promsell POS CE v0.8.6
+﻿# Architecture — Promsell POS CE v0.8.7
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -36,6 +36,9 @@ Offline-first mobile POS system — Flutter, Drift SQLite, BLoC/Cubit, Material 
 │   lib/features/ — Feature modules                                               │
 │   sale/       — Cart, checkout, draft, discount                                 │        
 │   product/    — CRUD inventory, image service, barcode scan + image generation  │
+│               + ProductFormCubit (typed draft state, Hybrid Collapsible form)   │
+│               + product_navigation.dart (shared show/edit/preview/delete)       │
+│               + StatsDashboard (hero gradient: total products + inventory val)  │
 │   history/    — Sale history viewer                                             │
 │   report/     — Analytics dashboard                                             │
 │   settings/   — Locale, theme, shop info                                        │
@@ -113,4 +116,4 @@ features/<name>/
 
 ---
 
-<sub>Promsell POS CE · v0.8.6 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.8.7 · Architecture Document · Deep Technical Reference</sub>

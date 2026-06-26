@@ -50,7 +50,7 @@ class Product extends Equatable {
     Object? sku = _unset,
     Object? barcode = _unset,
     double? price,
-    double? cost,
+    Object? cost = _unset,
     int? stock,
     Object? categoryId = _unset,
     Object? imageUrl = _unset,
@@ -68,7 +68,7 @@ class Product extends Equatable {
       sku: identical(sku, _unset) ? this.sku : sku as String?,
       barcode: identical(barcode, _unset) ? this.barcode : barcode as String?,
       price: price ?? this.price,
-      cost: cost ?? this.cost,
+      cost: identical(cost, _unset) ? this.cost : (cost as double?) ?? 0.0,
       stock: stock ?? this.stock,
       categoryId: identical(categoryId, _unset)
           ? this.categoryId

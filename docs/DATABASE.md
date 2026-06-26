@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.8.6
+# Database Handbook — Promsell POS CE v0.8.7
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -157,4 +157,4 @@ columns     INT ms      deviceId    FK + UUID   color/icon  barcode dedup       
 
 ---
 
-<sub>Promsell POS CE · v0.8.6 · Schema v18 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.8.7 · Schema v18 · 9 tables · UUIDv4</sub>

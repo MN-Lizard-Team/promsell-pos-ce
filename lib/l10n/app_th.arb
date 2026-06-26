@@ -109,6 +109,7 @@
   "invalidBarcode": "บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น",
   "categoryLabel": "หมวดหมู่",
   "showProduct": "แสดงสินค้า",
+  "productVisibility": "การมองเห็นสินค้า",
   "save": "บันทึก",
   "productSaved": "บันทึกสินค้าแล้ว",
   "productActivated": "เปิดใช้งานสินค้าแล้ว",
@@ -721,6 +722,7 @@
   "storagePermissionDenied": "ต้องอนุญาตเข้าถึงคลังรูปเพื่อเลือกรูป กรุณาเปิดสิทธิ์การเข้าถึงในการตั้งค่า",
   "removeImageConfirm": "ต้องการลบรูปภาพนี้?",
   "imageHelper": "แตะเพื่อเปลี่ยนรูป กดค้างเพื่อดูตัวอย่าง",
+  "tapToAddImage": "แตะเพื่อเพิ่มรูปภาพ",
   "imageNotFound": "รูปภาพที่บันทึกไว้ถูกลบแล้ว โปรดเลือกใหม่",
   "clearImageCache": "ล้างแคชรูปภาพ",
   "clearImageCacheConfirm": "จะลบรูปภาพสินค้าที่ไม่ได้ใช้งานเพื่อเพิ่มพื้นที่จัดเก็บ ต้องการดำเนินการต่อ?",
@@ -798,5 +800,7 @@
   "barcodePrintedSuccess": "พิมพ์บาร์โค้ดสำเร็จ",
   "barcodeViewError": "ไม่สามารถดูบาร์โค้ดได้",
   "barcodeSaveError": "ไม่สามารถบันทึกบาร์โค้ดได้",
-  "barcodePrintError": "ไม่สามารถพิมพ์บาร์โค้ดได้"
+  "barcodePrintError": "ไม่สามารถพิมพ์บาร์โค้ดได้",
+  "inventoryValue": "มูลค่าคงคลัง",
+  "totalProducts": "สินค้าทั้งหมด"
 }

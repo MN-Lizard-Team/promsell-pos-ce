@@ -22,18 +22,27 @@ class ProductCardShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    Widget content = Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shadowColor: theme.shadowColor,
+    return Container(
       margin: margin ?? EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 0.5,
+        ),
       ),
-      color: theme.colorScheme.surfaceContainerLowest,
-      child: InkWell(onTap: onTap, onLongPress: onLongPress, child: child),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: isActive ? child : Opacity(opacity: 0.55, child: child),
+        ),
+      ),
     );
-
-    return content;
   }
 }

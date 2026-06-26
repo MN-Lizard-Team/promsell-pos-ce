@@ -7,6 +7,8 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
 
 class ProductActionSheet extends StatelessWidget {
   const ProductActionSheet({super.key, required this.product});
@@ -83,6 +85,7 @@ class ProductActionSheet extends StatelessWidget {
           providers: [
             BlocProvider.value(value: productBloc),
             BlocProvider.value(value: categoryBloc),
+            BlocProvider(create: (_) => sl<ProductFormCubit>()),
           ],
           child: ProductFormPage(product: product),
         ),

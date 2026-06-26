@@ -156,7 +156,7 @@ Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 | Document | Content |
 |----------|---------|
 | [`docs/usage/features.md`](usage/features.md) | Features walkthrough (Sale, Products, History, Report, Settings tabs) + all settings pages with detailed tables |
-| [`docs/usage/development.md`](usage/development.md) | Localization (i18n), Database (Drift), Architecture overview, Testing (1259 tests), Troubleshooting |
+| [`docs/usage/development.md`](usage/development.md) | Localization (i18n), Database (Drift), Architecture overview, Testing (1269 tests), Troubleshooting |
 
 ---
 

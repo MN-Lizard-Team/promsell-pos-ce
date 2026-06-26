@@ -22,11 +22,10 @@ import 'package:promsell_pos_ce/core/widgets/nav/nav_swipe_helper.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
-import 'package:promsell_pos_ce/features/product/presentation/pages/add_product_page.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/add_product_draft_cubit.dart';
+import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
-import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 void main() async {
   await runPromsellApp();
@@ -173,12 +172,9 @@ class _MainShellState extends State<_MainShell> {
             providers: [
               BlocProvider.value(value: sl<ProductBloc>()),
               BlocProvider.value(value: sl<CategoryBloc>()),
-              BlocProvider(
-                create: (_) =>
-                    AddProductDraftCubit(sl<SettingsLocalDatasource>()),
-              ),
+              BlocProvider(create: (_) => sl<ProductFormCubit>()),
             ],
-            child: const AddProductPage(),
+            child: const ProductFormPage(),
           ),
         ),
       );

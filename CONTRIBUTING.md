@@ -124,6 +124,10 @@ When working on presentation code:
 - Prefer theme tokens from `lib/core/theme/` over ad-hoc colors, radius, or padding
 - Use `colorScheme.*` (e.g., `colorScheme.primary`, `colorScheme.error`) instead of `Colors.*` — never hardcode Material colors in feature code
 - Use `AppColors` tokens from `lib/core/theme/app_colors.dart` for status/warning/success/error colors instead of `Colors.green`, `Colors.red`, etc.
+- Use `AppSnackBar.info/success/error` for all snackbars — never raw `ScaffoldMessenger.showSnackBar`
+- Use `BlocSelector` (not `BlocBuilder`) when a widget only needs a slice of BLoC state (e.g., single category in product tiles)
+- Use shared navigation helpers from `product_navigation.dart` (`showProductEditPage`, `showProductPreviewPage`, `confirmDeleteProduct`) — never duplicate `_showEdit`/`_showPreview` in tiles or pages
+- Use `ProductCardShell` for product card containers — flat `Container` + `BoxDecoration` (no `Card` elevation) for clean `Dismissible` integration
 - Keep primary actions touch-friendly and reachable on compact mobile screens
 - Test constrained layouts such as bottom sheets, cart panels, and forms with the keyboard open
 - Verify light, dark, and system theme modes if colors or surfaces changed
@@ -145,7 +149,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **1259 automated tests**. All must pass before submitting a PR.
+The project has **1294 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests (includes stress tests)
@@ -237,7 +241,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.8.6) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.8.7) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)

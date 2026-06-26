@@ -34,7 +34,7 @@ void main() {
     });
 
     testWidgets('renders loss with down trend icon', (tester) async {
-      final lossProduct = product.copyWith(cost: 100);
+      final lossProduct = product.copyWith(cost: 100.0);
       await tester.pumpApp(PriceCard(product: lossProduct, currency: '฿'));
 
       expect(find.text('฿-20.00'), findsOneWidget);

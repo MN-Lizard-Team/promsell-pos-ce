@@ -62,7 +62,7 @@ Promsell is an **offline-first local app** with no network access by default:
 7. **Image format validation** (v0.7.5+) — `ProductImageService._isValidImage()` rejects non-image files (`.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.bmp`, `.heic` only); prevents malicious file upload via picker
 8. **Image cache eviction** (v0.7.5+) — `ImageCacheService` enforces 50MB LRU limit on `/images/` directory; prevents disk space exhaustion from uncompressed product photos
 9. **PDF generation** — local only, no upload
-10. **Orphaned image cleanup** (v0.8.0+) — `AddProductPage` tracks temp image paths and deletes orphaned files on dispose/discard; `ClearOrphanedImages` usecase removes unused images from `/images/` directory. Prevents disk space exhaustion from abandoned temp files
+10. **Orphaned image cleanup** (v0.8.0+) — `ProductFormPage` tracks temp image paths and deletes orphaned files on dispose/discard; `ClearOrphanedImages` usecase removes unused images from `/images/` directory. Prevents disk space exhaustion from abandoned temp files
 11. **Dependency hygiene** — keep `flutter pub upgrade` current; CI runs `tool/check_outdated.dart` to flag direct dependencies behind by ≥ 1 major version; Dependabot opens PRs for security + version updates (see `.github/dependabot.yml`)
 12. **Barcode case normalization** (v0.8.1+) — barcodes normalized to uppercase on save and lookup; prevents case-mismatch bypass of duplicate detection and lookup
 13. **Barcode manual entry validation** (v0.8.1+) — inline alphanumeric validation before submission; prevents unhandled `ArgumentError` from reaching downstream use cases
@@ -71,6 +71,7 @@ Promsell is an **offline-first local app** with no network access by default:
 16. **Dev/prod flavor separation** (v0.8.3+) — separate entry points (`main_dev.dart`, `main_prod.dart`) prevent development configurations from leaking into production builds
 17. **Barcode image generation isolation** (v0.8.6+) — `BarcodeImageService` uses off-screen `RenderRepaintBoundary` for barcode image generation; no external rendering dependencies, no network calls, images saved locally to `/barcodes/` directory only
 18. **Ean13Generator instance isolation** (v0.8.6+) — refactored from static mutable counter to `@injectable` per-instance counter; eliminates cross-test counter contamination and ensures counter state isolation between concurrent operations
+19. **Cubit disposal guard** (v0.8.7+) — `ProductFormCubit._loadDraftFromStorage` checks `isClosed` before `emit` after async storage read; prevents dirty widget build scope errors and potential state leaks when navigating away during draft load
 
 ## Security changelog
 

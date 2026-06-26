@@ -1,4 +1,4 @@
-# Schema Reference — Promsell POS CE v0.8.6
+# Schema Reference — Promsell POS CE v0.8.7
 
 Detailed column reference for all 9 database tables, indexes, seed data, and enum values.
 
@@ -307,4 +307,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 
 ---
 
-<sub>Promsell POS CE · v0.8.6 · Schema Reference · 9 tables</sub>
+<sub>Promsell POS CE · v0.8.7 · Schema Reference · 9 tables</sub>

@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/sticky_action_bar.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_navigation.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/codes_card.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/product_preview_image.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/price_card.dart';
@@ -55,21 +56,8 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
   }
 
   void _showEdit(BuildContext context) {
-    final productBloc = context.read<ProductBloc>();
-    final categoryBloc = context.read<CategoryBloc>();
     final latest = _latestProduct();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: productBloc),
-            BlocProvider.value(value: categoryBloc),
-          ],
-          child: ProductFormPage(product: latest),
-        ),
-      ),
-    );
+    showProductEditPage(context, latest);
   }
 
   Future<void> _editStock(BuildContext context) async {
@@ -99,9 +87,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
               );
               Navigator.pop(dialogContext);
               Navigator.pop(context);
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(l10n.productDeleted)));
+              AppSnackBar.info(context, l10n.productDeleted);
             },
             child: Text(
               l10n.delete,
@@ -121,12 +107,9 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
     context.read<ProductBloc>().add(
       ProductUpdated(latest.copyWith(isActive: !latest.isActive)),
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          latest.isActive ? l10n.productDeactivated : l10n.productActivated,
-        ),
-      ),
+    AppSnackBar.info(
+      context,
+      latest.isActive ? l10n.productDeactivated : l10n.productActivated,
     );
   }
 
@@ -154,14 +137,10 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
       context.read<ProductBloc>().add(
         ProductUpdated(_currentProduct.copyWith(barcode: barcode)),
       );
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.barcodeGenerated)));
+      AppSnackBar.success(context, l10n.barcodeGenerated);
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorOccurred)));
+        AppSnackBar.error(context, l10n.errorOccurred);
       }
     }
   }
@@ -172,13 +151,6 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
     final currency = context.watch<SettingsCubit>().state.settings.currency;
     final catState = context.watch<CategoryBloc>().state;
     final productState = context.watch<ProductBloc>().state;
-
-    final latest = productState.products
-        .where((p) => p.id == widget.product.id)
-        .firstOrNull;
-    if (latest != null && latest != _currentProduct) {
-      _currentProduct = latest;
-    }
 
     final product = _currentProduct;
     final cat = catState.categories
@@ -207,9 +179,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
           if (state.saveStatus == ProductSaveStatus.error &&
               state.errorMessage != null &&
               mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(context.l10n.productUpdateError)),
-            );
+            AppSnackBar.error(context, context.l10n.productUpdateError);
             return;
           }
           final updated = state.products
