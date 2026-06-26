@@ -70,6 +70,8 @@ dev_dependencies:
   mocktail: ^1.0.4
   bloc_test: ^10.0.0
   sqlite3_flutter_libs: ^0.5.28
+  integration_test:
+    sdk: flutter
 
   # Drift codegen
   drift_dev: ^2.26.1
