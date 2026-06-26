@@ -43,9 +43,12 @@ class _AboutPageState extends State<AboutPage> {
       AppSnackBar.info(context, l10n.crashLogEmpty);
       return;
     }
-    await Share.shareXFiles([
-      XFile(path),
-    ], subject: 'Promsell POS CE — Crash Logs');
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(path)],
+        subject: 'Promsell POS CE — Crash Logs',
+      ),
+    );
   }
 
   Future<void> _clearCrashLogs(BuildContext context) async {

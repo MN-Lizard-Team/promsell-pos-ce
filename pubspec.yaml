@@ -25,8 +25,8 @@ dependencies:
   path_provider: ^2.1.5
 
   # Dependency Injection
-  get_it: ^8.0.3
-  injectable: ^2.6.0
+  get_it: ^9.0.0
+  injectable: ^3.0.0
 
   # PDF Receipt
   pdf: ^3.11.3
@@ -39,20 +39,20 @@ dependencies:
   image_picker: ^1.2.2
   image: ^4.0.0
   cached_network_image: ^3.3.0
-  image_cropper: ^8.0.0
+  image_cropper: ^12.0.0
 
   # Merchant Tools
-  share_plus: ^10.0.2
-  package_info_plus: ^8.3.0
-  file_picker: ^8.1.2
-  csv: ^6.0.0
+  share_plus: ^13.0.0
+  package_info_plus: ^10.0.0
+  file_picker: 12.0.0-beta.7
+  csv: ^8.0.0
   qr_flutter: ^4.1.0
   barcode_widget: ^2.0.4
   barcode: ^2.2.9
   thai_promptpay: ^0.3.0
-  mobile_scanner: ^6.0.0
+  mobile_scanner: ^7.0.0
   audioplayers: ^6.2.0
-  permission_handler: ^11.3.0
+  permission_handler: ^12.0.0
 
   # Backup Encryption
   encrypt: ^5.0.3
@@ -78,7 +78,7 @@ dev_dependencies:
   build_runner: ^2.4.15
 
   # DI codegen
-  injectable_generator: ^2.6.0
+  injectable_generator: ^3.0.0
 
   # App Icon Generator
   flutter_launcher_icons: ^0.14.3

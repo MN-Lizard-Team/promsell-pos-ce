@@ -19,9 +19,9 @@ ImageProvider providerFromPaths({String? imagePath, String? imageUrl}) {
 Future<void> shareImage(ImageProvider image) async {
   try {
     if (image is FileImage) {
-      await Share.shareXFiles([XFile(image.file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(image.file.path)]));
     } else if (image is CachedNetworkImageProvider) {
-      await Share.share(image.url);
+      await SharePlus.instance.share(ShareParams(text: image.url));
     }
   } catch (_) {}
 }

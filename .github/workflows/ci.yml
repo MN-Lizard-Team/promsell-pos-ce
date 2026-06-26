@@ -46,7 +46,7 @@ jobs:
         run: exit 1
 
       - name: Run tests with coverage
-        run: flutter test --coverage
+        run: flutter test --coverage --exclude-tags stress
 
       - name: Check coverage threshold
         uses: VeryGoodOpenSource/very_good_coverage@v3

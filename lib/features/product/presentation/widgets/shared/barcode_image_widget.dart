@@ -152,7 +152,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
       await file.writeAsBytes(pdfBytes);
       final viewContext = context;
       if (!viewContext.mounted) return false;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
       return true;
     } catch (e, stack) {
       AppLogger.error(
@@ -181,7 +181,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
       await file.writeAsBytes(bytes);
       final viewContext = context;
       if (!viewContext.mounted) return false;
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
       return true;
     } catch (e, stack) {
       AppLogger.error(

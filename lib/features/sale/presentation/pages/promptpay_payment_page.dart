@@ -133,9 +133,11 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
       promptpayId: widget.promptpayId,
       amount: widget.total,
     );
-    Share.share(
-      '${widget.currency}${widget.total.toStringAsFixed(2)}\n$payload',
-      subject: context.l10n.promptpay,
+    SharePlus.instance.share(
+      ShareParams(
+        text: '${widget.currency}${widget.total.toStringAsFixed(2)}\n$payload',
+        subject: context.l10n.promptpay,
+      ),
     );
   }
 

@@ -32,7 +32,7 @@ Future<String?> showProductBarcodeScanner(
           BarcodeFormat.upcE,
           BarcodeFormat.code128,
           BarcodeFormat.code39,
-          BarcodeFormat.itf,
+          BarcodeFormat.itf14,
           BarcodeFormat.qrCode,
           BarcodeFormat.dataMatrix,
           BarcodeFormat.pdf417,
@@ -282,7 +282,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                 MobileScanner(
                   controller: _controller,
                   onDetect: _onDetect,
-                  errorBuilder: (context, error, child) {
+                  errorBuilder: (context, error) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),

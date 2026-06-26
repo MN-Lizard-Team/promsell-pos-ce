@@ -16,7 +16,7 @@ BarcodeFormat formatFromName(String name) {
     case 'code39':
       return BarcodeFormat.code39;
     case 'itf':
-      return BarcodeFormat.itf;
+      return BarcodeFormat.itf14;
     case 'qrCode':
       return BarcodeFormat.qrCode;
     case 'dataMatrix':
