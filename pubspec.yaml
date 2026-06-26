@@ -43,7 +43,7 @@ dependencies:
 
   # Merchant Tools
   share_plus: ^13.0.0
-  package_info_plus: ^10.0.0
+  package_info_plus: ^10.2.0
   file_picker: 12.0.0-beta.7
   csv: ^8.0.0
   qr_flutter: ^4.1.0
