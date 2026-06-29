@@ -4,11 +4,9 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/discount_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CartTotalBar extends StatelessWidget {
@@ -20,12 +18,6 @@ class CartTotalBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final settings = context.read<SettingsCubit>().state.settings;
-    final enableCartDiscount = settings.enableCartDiscount;
-    final itemDiscountTotal = state.items.fold<double>(
-      0,
-      (sum, i) => sum + i.discountAmount,
-    );
 
     return Container(
       decoration: BoxDecoration(
@@ -33,109 +25,35 @@ class CartTotalBar extends StatelessWidget {
         border: Border(
           top: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.15),
-            blurRadius: 16,
-            offset: const Offset(0, -6),
-          ),
-        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: Row(
           children: [
-            _SummaryLine(
-              label: context.l10n.receiptLabelSubtotal,
-              value: state.itemsSubtotal,
-              currency: currency,
-              theme: theme,
-            ),
-            if (itemDiscountTotal > 0)
-              _SummaryLine(
-                label: context.l10n.receiptItemDiscounts,
-                value: -itemDiscountTotal,
-                currency: currency,
-                theme: theme,
-                valueColor: theme.colorScheme.error,
-              ),
-            if (state.hasCartDiscount)
-              _SummaryLine(
-                label: context.l10n.cartDiscount,
-                value: -state.cartDiscountAmount,
-                currency: currency,
-                theme: theme,
-                valueColor: theme.colorScheme.error,
-              ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              child: Divider(height: 1),
-            ),
-            Row(
-              children: [
-                Text(
-                  context.l10n.totalAmount,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontFamily: 'NotoSansThai',
-                    fontWeight: FontWeight.w800,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    context.l10n.totalAmount,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                MoneyText(
-                  value: state.total,
-                  currency: currency,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontFamily: 'NotoSansThai',
-                    fontWeight: FontWeight.w800,
+                  MoneyText(
+                    value: state.total,
+                    currency: currency,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontFamily: 'NotoSansThai',
+                      fontWeight: FontWeight.w800,
+                    ),
+                    color: theme.colorScheme.primary,
                   ),
-                  color: theme.colorScheme.primary,
-                ),
-              ],
-            ),
-            if (enableCartDiscount) ...[
-              const SizedBox(height: 4),
-              TextButton.icon(
-                onPressed: () => DiscountDialog.showCartDiscount(
-                  context,
-                  title: context.l10n.cartDiscount,
-                  currency: currency,
-                  initialType:
-                      state.cartDiscountType ?? settings.defaultDiscountType,
-                  initialValue: state.cartDiscountValue,
-                  onApply: (type, value) {
-                    context.read<CartBloc>().add(
-                      CartDiscountChanged(
-                        discountType: type,
-                        discountValue: value,
-                      ),
-                    );
-                  },
-                  onClear: state.hasCartDiscount
-                      ? () => context.read<CartBloc>().add(
-                          const CartDiscountCleared(),
-                        )
-                      : null,
-                  maxPercent: settings.maxDiscountPercent,
-                  maxAmount: settings.maxDiscountAmount,
-                  presetValues: settings.activeDiscountPreset.values,
-                  presetType: settings.activeDiscountPreset.type,
-                ),
-                icon: Icon(
-                  state.hasCartDiscount
-                      ? Icons.local_offer
-                      : Icons.local_offer_outlined,
-                  size: 18,
-                ),
-                label: Text(
-                  state.hasCartDiscount
-                      ? context.l10n.cartDiscount
-                      : context.l10n.applyCartDiscount,
-                ),
+                ],
               ),
-            ],
-            const SizedBox(height: 4),
+            ),
+            const SizedBox(width: 12),
             FilledButton.icon(
               onPressed: () => _showPayment(context, state),
               icon: const Icon(Icons.payment, size: 22),
@@ -148,9 +66,7 @@ class CartTotalBar extends StatelessWidget {
                 ),
               ),
               style: theme.filledButtonTheme.style?.copyWith(
-                minimumSize: const WidgetStatePropertyAll(
-                  Size(double.infinity, 56),
-                ),
+                minimumSize: const WidgetStatePropertyAll(Size(160, 48)),
               ),
             ),
           ],
@@ -177,51 +93,6 @@ class CartTotalBar extends StatelessWidget {
           ],
           child: const CheckoutPage(),
         ),
-      ),
-    );
-  }
-}
-
-class _SummaryLine extends StatelessWidget {
-  const _SummaryLine({
-    required this.label,
-    required this.value,
-    required this.currency,
-    required this.theme,
-    this.valueColor,
-  });
-
-  final String label;
-  final double value;
-  final String currency;
-  final ThemeData theme;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 1),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontFamily: 'NotoSansThai',
-              fontWeight: FontWeight.w500,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const Spacer(),
-          MoneyText(
-            value: value,
-            currency: currency,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontFamily: 'NotoSansThai',
-              fontWeight: FontWeight.w700,
-            ),
-            color: valueColor ?? theme.colorScheme.onSurface,
-          ),
-        ],
       ),
     );
   }

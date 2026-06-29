@@ -9,7 +9,7 @@ class BarcodeErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Positioned(
-      bottom: 200,
+      bottom: 160,
       left: 24,
       right: 24,
       child: Container(

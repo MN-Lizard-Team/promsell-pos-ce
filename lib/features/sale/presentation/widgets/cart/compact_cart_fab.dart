@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_bottom_sheet.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CompactCartFab extends StatefulWidget {
@@ -70,7 +72,23 @@ class _CompactCartFabState extends State<CompactCartFab>
                   onTapDown: (_) => _pressController.forward(),
                   onTapUp: (_) {
                     _pressController.reverse();
-                    CartBottomSheet.show(ctx);
+                    final cartBloc = ctx.read<CartBloc>();
+                    final checkoutBloc = ctx.read<CheckoutBloc>();
+                    final draftBloc = ctx.read<DraftBloc>();
+                    final settingsCubit = ctx.read<SettingsCubit>();
+                    Navigator.of(ctx).push(
+                      MaterialPageRoute(
+                        builder: (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(value: cartBloc),
+                            BlocProvider.value(value: checkoutBloc),
+                            BlocProvider.value(value: draftBloc),
+                            BlocProvider.value(value: settingsCubit),
+                          ],
+                          child: const CartReviewPage(),
+                        ),
+                      ),
+                    );
                   },
                   onTapCancel: () => _pressController.reverse(),
                   onLongPress: () {
@@ -91,7 +109,6 @@ class _CompactCartFabState extends State<CompactCartFab>
                               final cubit = ctx.read<SettingsCubit>();
                               cubit.update(
                                 cubit.state.settings.copyWith(
-                                  cartCompactMode: false,
                                   ultraCompactMode: false,
                                 ),
                               );

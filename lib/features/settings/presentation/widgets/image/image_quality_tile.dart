@@ -69,79 +69,105 @@ class ImageQualityTile extends StatelessWidget {
   }
 
   void _showQualityDialog(BuildContext context) {
-    final st = context.settingsTheme;
-    final l10n = context.l10n;
-    final ctrl = TextEditingController(text: settings.imageQuality.toString());
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.settingsImageQuality),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 280,
-              child: TextField(
-                controller: ctrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                autofocus: true,
-              ),
+      builder: (_) => _QualityDialog(settings: settings, cubit: cubit),
+    );
+  }
+}
+
+class _QualityDialog extends StatefulWidget {
+  const _QualityDialog({required this.settings, required this.cubit});
+
+  final Settings settings;
+  final SettingsCubit cubit;
+
+  @override
+  State<_QualityDialog> createState() => _QualityDialogState();
+}
+
+class _QualityDialogState extends State<_QualityDialog> {
+  late final _ctrl = TextEditingController(
+    text: widget.settings.imageQuality.toString(),
+  );
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final st = context.settingsTheme;
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.settingsImageQuality),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 280,
+            child: TextField(
+              controller: _ctrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              autofocus: true,
             ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children:
-                  [
-                    (50, l10n.imageQualityDraft),
-                    (70, l10n.imageQualityStandard),
-                    (80, l10n.imageQualityHigh),
-                    (90, l10n.imageQualityBest),
-                    (100, l10n.imageQualityOriginal),
-                  ].map((preset) {
-                    final (value, label) = preset;
-                    return ChoiceChip(
-                      label: Text('$label ($value%)'),
-                      selected: false,
-                      onSelected: (_) {
-                        ctrl.text = '$value';
-                      },
-                      selectedColor: st.activeAccentContainer,
-                      backgroundColor: st.cardBackground,
-                      side: BorderSide(color: st.cardBorderColor),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                    );
-                  }).toList(),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.cancel),
           ),
-          FilledButton(
-            onPressed: () {
-              final n = int.tryParse(ctrl.text.trim());
-              if (n != null) {
-                cubit.updateField(
-                  (s) => s.copyWith(imageQuality: n.clamp(1, 100)),
-                );
-              }
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(l10n.save),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children:
+                [
+                  (50, l10n.imageQualityDraft),
+                  (70, l10n.imageQualityStandard),
+                  (80, l10n.imageQualityHigh),
+                  (90, l10n.imageQualityBest),
+                  (100, l10n.imageQualityOriginal),
+                ].map((preset) {
+                  final (value, label) = preset;
+                  return ChoiceChip(
+                    label: Text('$label ($value%)'),
+                    selected: false,
+                    onSelected: (_) {
+                      _ctrl.text = '$value';
+                    },
+                    selectedColor: st.activeAccentContainer,
+                    backgroundColor: st.cardBackground,
+                    side: BorderSide(color: st.cardBorderColor),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  );
+                }).toList(),
           ),
         ],
       ),
-    ).then((_) => ctrl.dispose());
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final n = int.tryParse(_ctrl.text.trim());
+            if (n != null) {
+              widget.cubit.updateField(
+                (s) => s.copyWith(imageQuality: n.clamp(1, 100)),
+              );
+            }
+            Navigator.of(context).pop();
+          },
+          style: FilledButton.styleFrom(backgroundColor: st.softAccent),
+          child: Text(l10n.save),
+        ),
+      ],
+    );
   }
 }

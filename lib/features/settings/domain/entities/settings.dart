@@ -112,6 +112,7 @@ class Settings extends Equatable {
   List<String> get barcodeEnabledFormats => barcodeConfig.enabledFormats;
   int get barcodeAutoOpenManualDelay => barcodeConfig.autoOpenManualDelay;
   int get barcodeLastCounter => barcodeConfig.lastCounter;
+  bool get barcodeContinuousScan => barcodeConfig.continuousScan;
 
   // ─── Sub-entity-level copyWith ─────────────────────────────────────────────
 
@@ -204,6 +205,7 @@ class Settings extends Equatable {
     List<String>? barcodeEnabledFormats,
     int? barcodeAutoOpenManualDelay,
     int? barcodeLastCounter,
+    bool? barcodeContinuousScan,
   }) {
     return copyWithEntities(
       shopInfo: shopInfo.copyWith(
@@ -281,6 +283,7 @@ class Settings extends Equatable {
         enabledFormats: barcodeEnabledFormats,
         autoOpenManualDelay: barcodeAutoOpenManualDelay,
         lastCounter: barcodeLastCounter,
+        continuousScan: barcodeContinuousScan,
       ),
       onboardingCompleted: onboardingCompleted,
     );

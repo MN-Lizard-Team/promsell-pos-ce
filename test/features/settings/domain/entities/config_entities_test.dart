@@ -50,7 +50,7 @@ void main() {
       const config = UiConfig();
       expect(config.locale, 'th');
       expect(config.themeMode, 'system');
-      expect(config.cartCompactMode, isFalse);
+      expect(config.cartCompactMode, isTrue);
     });
 
     test('copyWith updates fields', () {

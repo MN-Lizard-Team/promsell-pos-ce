@@ -23,6 +23,7 @@ class ProductFormView extends StatelessWidget {
     required this.stockCtrl,
     required this.skuCtrl,
     required this.barcodeCtrl,
+    required this.barcodeFocusNode,
     required this.costCtrl,
     required this.selectedCategory,
     required this.imageUrl,
@@ -46,6 +47,7 @@ class ProductFormView extends StatelessWidget {
   final TextEditingController stockCtrl;
   final TextEditingController skuCtrl;
   final TextEditingController barcodeCtrl;
+  final FocusNode barcodeFocusNode;
   final TextEditingController costCtrl;
   final Category? selectedCategory;
   final String? imageUrl;
@@ -65,9 +67,7 @@ class ProductFormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final currency = context.watch<SettingsCubit>().state.settings.currency;
-    final hasImage = imagePath != null || imageUrl != null;
 
     return Form(
       key: formKey,
@@ -83,15 +83,6 @@ class ProductFormView extends StatelessWidget {
               isLoading: isPickingImage,
               onTap: onImageTap,
             ),
-            if (!hasImage) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.imageHelper,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
             const SizedBox(height: 20),
             _BasicSection(
               nameCtrl: nameCtrl,
@@ -99,6 +90,10 @@ class ProductFormView extends StatelessWidget {
               currency: currency,
               selectedCategory: selectedCategory,
               onCategoryChanged: onCategoryChanged,
+              barcodeCtrl: barcodeCtrl,
+              barcodeFocusNode: barcodeFocusNode,
+              isGeneratingBarcode: isGeneratingBarcode,
+              onGenerateBarcode: onGenerateBarcode,
             ),
             const SizedBox(height: 16),
             _StockSection(
@@ -110,11 +105,8 @@ class ProductFormView extends StatelessWidget {
             const SizedBox(height: 16),
             _AdvancedSection(
               skuCtrl: skuCtrl,
-              barcodeCtrl: barcodeCtrl,
               costCtrl: costCtrl,
               currency: currency,
-              isGeneratingBarcode: isGeneratingBarcode,
-              onGenerateBarcode: onGenerateBarcode,
             ),
             if (isEditing) ...[
               const SizedBox(height: 16),
@@ -137,6 +129,10 @@ class _BasicSection extends StatelessWidget {
     required this.currency,
     required this.selectedCategory,
     required this.onCategoryChanged,
+    required this.barcodeCtrl,
+    required this.barcodeFocusNode,
+    required this.isGeneratingBarcode,
+    required this.onGenerateBarcode,
   });
 
   final TextEditingController nameCtrl;
@@ -144,6 +140,10 @@ class _BasicSection extends StatelessWidget {
   final String currency;
   final Category? selectedCategory;
   final ValueChanged<Category?> onCategoryChanged;
+  final TextEditingController barcodeCtrl;
+  final FocusNode barcodeFocusNode;
+  final bool isGeneratingBarcode;
+  final VoidCallback onGenerateBarcode;
 
   @override
   Widget build(BuildContext context) {
@@ -192,8 +192,88 @@ class _BasicSection extends StatelessWidget {
             },
             textInputAction: TextInputAction.next,
           ),
+          const SizedBox(height: 12),
+          _BarcodeField(
+            barcodeCtrl: barcodeCtrl,
+            barcodeFocusNode: barcodeFocusNode,
+            isGeneratingBarcode: isGeneratingBarcode,
+            onGenerateBarcode: onGenerateBarcode,
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _BarcodeField extends StatelessWidget {
+  const _BarcodeField({
+    required this.barcodeCtrl,
+    required this.barcodeFocusNode,
+    required this.isGeneratingBarcode,
+    required this.onGenerateBarcode,
+  });
+
+  final TextEditingController barcodeCtrl;
+  final FocusNode barcodeFocusNode;
+  final bool isGeneratingBarcode;
+  final VoidCallback onGenerateBarcode;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final settings = context.read<SettingsCubit>().state.settings;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ProductTextField(
+          controller: barcodeCtrl,
+          focusNode: barcodeFocusNode,
+          labelText: l10n.barcodeLabel,
+          helperText: l10n.barcodeHelper,
+          icon: Icons.qr_code_scanner,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) return null;
+            if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value.trim())) {
+              return l10n.invalidBarcode;
+            }
+            return null;
+          },
+          suffix: IconButton(
+            icon: const Icon(Icons.camera_alt_outlined),
+            tooltip: l10n.scanBarcode,
+            onPressed: () async {
+              await showProductBarcodeScanner(
+                context,
+                beepOnScan: settings.barcodeBeepOnScan,
+                formats: barcodeFormatsFromNames(
+                  settings.barcodeEnabledFormats,
+                ),
+                autoOpenManualDelay: settings.barcodeAutoOpenManualDelay,
+                continuousScan: settings.barcodeContinuousScan,
+                onScanned: (barcode) {
+                  barcodeCtrl.text = barcode.toUpperCase();
+                },
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 6),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: isGeneratingBarcode ? null : onGenerateBarcode,
+            icon: isGeneratingBarcode
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_fix_high_outlined, size: 18),
+            label: Text(l10n.generateBarcode),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -259,19 +339,13 @@ class _StockSection extends StatelessWidget {
 class _AdvancedSection extends StatefulWidget {
   const _AdvancedSection({
     required this.skuCtrl,
-    required this.barcodeCtrl,
     required this.costCtrl,
     required this.currency,
-    required this.isGeneratingBarcode,
-    required this.onGenerateBarcode,
   });
 
   final TextEditingController skuCtrl;
-  final TextEditingController barcodeCtrl;
   final TextEditingController costCtrl;
   final String currency;
-  final bool isGeneratingBarcode;
-  final VoidCallback onGenerateBarcode;
 
   @override
   State<_AdvancedSection> createState() => _AdvancedSectionState();
@@ -284,15 +358,21 @@ class _AdvancedSectionState extends State<_AdvancedSection> {
   void initState() {
     super.initState();
     _expanded =
-        widget.skuCtrl.text.isNotEmpty ||
-        widget.barcodeCtrl.text.isNotEmpty ||
-        widget.costCtrl.text.isNotEmpty;
+        widget.skuCtrl.text.isNotEmpty || widget.costCtrl.text.isNotEmpty;
+  }
+
+  @override
+  void didUpdateWidget(covariant _AdvancedSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_expanded &&
+        (widget.skuCtrl.text.isNotEmpty || widget.costCtrl.text.isNotEmpty)) {
+      _expanded = true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final settings = context.read<SettingsCubit>().state.settings;
 
     return FormSectionCard(
       icon: Icons.tune_outlined,
@@ -301,94 +381,44 @@ class _AdvancedSectionState extends State<_AdvancedSection> {
         icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
         onPressed: () => setState(() => _expanded = !_expanded),
       ),
-      child: AnimatedCrossFade(
-        duration: const Duration(milliseconds: 200),
-        crossFadeState: _expanded
-            ? CrossFadeState.showSecond
-            : CrossFadeState.showFirst,
-        firstChild: const SizedBox(width: double.infinity),
-        secondChild: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ProductTextField(
-              controller: widget.skuCtrl,
-              labelText: l10n.skuLabel,
-              helperText: l10n.skuHelper,
-              icon: Icons.qr_code,
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 12),
-            ProductTextField(
-              controller: widget.barcodeCtrl,
-              labelText: l10n.barcodeLabel,
-              helperText: l10n.barcodeHelper,
-              icon: Icons.qr_code_scanner,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) return null;
-                if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value.trim())) {
-                  return l10n.invalidBarcode;
-                }
-                return null;
-              },
-              suffix: IconButton(
-                icon: const Icon(Icons.camera_alt_outlined),
-                tooltip: l10n.scanBarcode,
-                onPressed: () async {
-                  final result = await showProductBarcodeScanner(
-                    context,
-                    beepOnScan: settings.barcodeBeepOnScan,
-                    formats: barcodeFormatsFromNames(
-                      settings.barcodeEnabledFormats,
+      child: _expanded
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ProductTextField(
+                  controller: widget.skuCtrl,
+                  labelText: l10n.skuLabel,
+                  helperText: l10n.skuHelper,
+                  icon: Icons.qr_code,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 12),
+                ProductTextField(
+                  controller: widget.costCtrl,
+                  labelText: l10n.costLabel(widget.currency),
+                  helperText: l10n.costHelper,
+                  icon: Icons.price_change_outlined,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
                     ),
-                    autoOpenManualDelay: settings.barcodeAutoOpenManualDelay,
-                  );
-                  if (result != null && result.isNotEmpty) {
-                    widget.barcodeCtrl.text = result;
-                  }
-                },
-              ),
-            ),
-            const SizedBox(height: 6),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: widget.isGeneratingBarcode
-                    ? null
-                    : widget.onGenerateBarcode,
-                icon: widget.isGeneratingBarcode
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.auto_fix_high_outlined, size: 18),
-                label: Text(l10n.generateBarcode),
-              ),
-            ),
-            const SizedBox(height: 12),
-            ProductTextField(
-              controller: widget.costCtrl,
-              labelText: l10n.costLabel(widget.currency),
-              icon: Icons.price_change_outlined,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                  ],
+                  textInputAction: TextInputAction.done,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) return null;
+                    final parsed = double.tryParse(value);
+                    if (parsed == null || parsed < 0) {
+                      return l10n.invalidPrice;
+                    }
+                    return null;
+                  },
+                ),
               ],
-              textInputAction: TextInputAction.done,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) return null;
-                final parsed = double.tryParse(value);
-                if (parsed == null || parsed < 0) {
-                  return l10n.invalidPrice;
-                }
-                return null;
-              },
-            ),
-          ],
-        ),
-      ),
+            )
+          : const SizedBox(width: double.infinity, height: 0),
     );
   }
 }
@@ -420,19 +450,32 @@ class _VisibilitySection extends StatelessWidget {
   }
 }
 
-void _showStockDialog(
-  BuildContext context, {
-  required int current,
-  required ValueChanged<int> onChanged,
-}) {
-  final ctrl = TextEditingController(text: '$current');
-  final l10n = context.l10n;
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
+class _StockDialog extends StatefulWidget {
+  const _StockDialog({required this.current, required this.onChanged});
+
+  final int current;
+  final ValueChanged<int> onChanged;
+
+  @override
+  State<_StockDialog> createState() => _StockDialogState();
+}
+
+class _StockDialogState extends State<_StockDialog> {
+  late final _ctrl = TextEditingController(text: '${widget.current}');
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
       title: Text(l10n.quantityLabel),
       content: TextField(
-        controller: ctrl,
+        controller: _ctrl,
         autofocus: true,
         keyboardType: const TextInputType.numberWithOptions(signed: true),
         decoration: InputDecoration(labelText: l10n.quantityLabel),
@@ -444,15 +487,26 @@ void _showStockDialog(
         ),
         FilledButton(
           onPressed: () {
-            final qty = int.tryParse(ctrl.text);
+            final qty = int.tryParse(_ctrl.text);
             if (qty != null && qty >= 0) {
               Navigator.pop(context);
-              onChanged(qty);
+              widget.onChanged(qty);
             }
           },
           child: Text(l10n.save),
         ),
       ],
-    ),
-  ).then((_) => ctrl.dispose());
+    );
+  }
+}
+
+void _showStockDialog(
+  BuildContext context, {
+  required int current,
+  required ValueChanged<int> onChanged,
+}) {
+  showDialog(
+    context: context,
+    builder: (_) => _StockDialog(current: current, onChanged: onChanged),
+  );
 }

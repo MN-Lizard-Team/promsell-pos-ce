@@ -180,23 +180,13 @@ class GeneralAppearanceTiles extends StatelessWidget {
           value: s.cartCompactMode,
           onChanged: (v) {
             HapticFeedback.lightImpact();
-            final next = s.copyWith(cartCompactMode: v);
-            onUpdate(
-              next.cartCompactMode
-                  ? next.copyWith(ultraCompactMode: false)
-                  : next,
-            );
+            onUpdate(s.copyWith(cartCompactMode: v));
           },
           activeThumbColor: st.softAccent,
         ),
         onTap: () {
           HapticFeedback.lightImpact();
-          final next = s.copyWith(cartCompactMode: !s.cartCompactMode);
-          onUpdate(
-            next.cartCompactMode
-                ? next.copyWith(ultraCompactMode: false)
-                : next,
-          );
+          onUpdate(s.copyWith(cartCompactMode: !s.cartCompactMode));
         },
       ),
     );

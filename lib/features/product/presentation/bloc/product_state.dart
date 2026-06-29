@@ -11,6 +11,24 @@ const String kNoCategoryFilter = '__none__';
 
 enum StockFilter { all, lowStock, outOfStock }
 
+enum ProductSort { default_, nameAsc, priceLowHigh, priceHighLow, stockLowHigh }
+
+class PriceRange extends Equatable {
+  const PriceRange({this.min, this.max});
+
+  final double? min;
+  final double? max;
+
+  bool get isActive => min != null || max != null;
+
+  PriceRange copyWith({double? min, double? max}) {
+    return PriceRange(min: min ?? this.min, max: max ?? this.max);
+  }
+
+  @override
+  List<Object?> get props => [min, max];
+}
+
 class ProductState extends Equatable {
   const ProductState({
     this.status = ProductStatus.initial,
@@ -18,6 +36,8 @@ class ProductState extends Equatable {
     this.searchQuery = '',
     this.categoryFilter,
     this.stockFilter = StockFilter.all,
+    this.productSort = ProductSort.default_,
+    this.priceRange,
     this.errorMessage,
     this.saveStatus = ProductSaveStatus.idle,
     this.batchResultMessage,
@@ -28,6 +48,8 @@ class ProductState extends Equatable {
   final String searchQuery;
   final String? categoryFilter;
   final StockFilter stockFilter;
+  final ProductSort productSort;
+  final PriceRange? priceRange;
   final String? errorMessage;
   final ProductSaveStatus saveStatus;
   final String? batchResultMessage;
@@ -59,6 +81,26 @@ class ProductState extends Equatable {
     } else if (stockFilter == StockFilter.outOfStock) {
       result = result.where((p) => p.trackStock && p.stock == 0).toList();
     }
+    switch (productSort) {
+      case ProductSort.nameAsc:
+        result = result..sort((a, b) => a.name.compareTo(b.name));
+      case ProductSort.priceLowHigh:
+        result = result..sort((a, b) => a.price.compareTo(b.price));
+      case ProductSort.priceHighLow:
+        result = result..sort((a, b) => b.price.compareTo(a.price));
+      case ProductSort.stockLowHigh:
+        result = result..sort((a, b) => a.stock.compareTo(b.stock));
+      case ProductSort.default_:
+        break;
+    }
+    if (priceRange != null) {
+      if (priceRange!.min != null) {
+        result = result.where((p) => p.price >= priceRange!.min!).toList();
+      }
+      if (priceRange!.max != null) {
+        result = result.where((p) => p.price <= priceRange!.max!).toList();
+      }
+    }
     return result;
   }
 
@@ -68,6 +110,8 @@ class ProductState extends Equatable {
     String? searchQuery,
     Object? categoryFilter = _unset,
     StockFilter? stockFilter,
+    ProductSort? productSort,
+    Object? priceRange = _unset,
     Object? errorMessage = _unset,
     ProductSaveStatus? saveStatus,
     Object? batchResultMessage = _unset,
@@ -80,6 +124,10 @@ class ProductState extends Equatable {
           ? this.categoryFilter
           : categoryFilter as String?,
       stockFilter: stockFilter ?? this.stockFilter,
+      productSort: productSort ?? this.productSort,
+      priceRange: identical(priceRange, _unset)
+          ? this.priceRange
+          : priceRange as PriceRange?,
       errorMessage: identical(errorMessage, _unset)
           ? this.errorMessage
           : errorMessage as String?,
@@ -97,6 +145,8 @@ class ProductState extends Equatable {
     searchQuery,
     categoryFilter,
     stockFilter,
+    productSort,
+    priceRange,
     errorMessage,
     saveStatus,
     batchResultMessage,

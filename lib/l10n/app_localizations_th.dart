@@ -59,6 +59,26 @@ class AppLocalizationsTh extends AppLocalizations {
   String get cartTitle => 'ตะกร้า';
 
   @override
+  String get cartEmpty => 'ตะกร้าว่าง';
+
+  @override
+  String get backToSale => 'กลับไปขายสินค้า';
+
+  @override
+  String get checkoutButton => 'ชำระเงิน';
+
+  @override
+  String get addItems => 'เพิ่มสินค้า';
+
+  @override
+  String itemRemoved(String name) {
+    return 'ลบรายการแล้ว';
+  }
+
+  @override
+  String get undo => 'เรียกคืน';
+
+  @override
   String get allCategories => 'ทั้งหมด';
 
   @override
@@ -131,6 +151,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get saleError => 'บันทึกการขายไม่สำเร็จ';
 
   @override
+  String get saleTimeout => 'หมดเวลารอการชำระเงิน กรุณาลองอีกครั้ง';
+
+  @override
   String get insufficientCash => 'เงินที่รับมายังไม่ครบยอด';
 
   @override
@@ -141,6 +164,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get searchProducts => 'ค้นหาสินค้า...';
+
+  @override
+  String get recentSearches => 'ค้นหาล่าสุด';
 
   @override
   String get noProductsYet => 'ยังไม่มีสินค้า';
@@ -158,6 +184,23 @@ class AppLocalizationsTh extends AppLocalizations {
   String stockLabel(int count) {
     return 'คงเหลือ: $count';
   }
+
+  @override
+  String stockRemaining(int count) {
+    return 'เหลือ: $count';
+  }
+
+  @override
+  String get itemNoteLabel => 'หมายเหตุสินค้า';
+
+  @override
+  String get itemNoteHint => 'เพิ่มหมายเหตุสำหรับสินค้านี้';
+
+  @override
+  String get duplicateItem => 'คัดลอกรายการแล้ว';
+
+  @override
+  String get clear => 'ล้าง';
 
   @override
   String get edit => 'แก้ไข';
@@ -660,6 +703,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get trackStockHint => 'ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)';
 
   @override
+  String get trackStockDisableConfirm =>
+      'การปิดการติดตามสต็อกจะแช่แข็งค่าสต็อกปัจจุบัน คุณสามารถเปิดใหม่ได้ในภายหลังเพื่อติดตามต่อ';
+
+  @override
   String get stockTrackingDisabled =>
       'การติดตามสต็อกปิดอยู่ เปิดเพื่อจัดการจำนวนสต็อก';
 
@@ -816,12 +863,6 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get cartCleared => 'ล้างตะกร้าแล้ว';
-
-  @override
-  String get undo => 'เรียกคืน';
-
-  @override
-  String get itemRemoved => 'ลบรายการแล้ว';
 
   @override
   String get removeItem => 'ลบรายการ';
@@ -1074,6 +1115,9 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get totalDiscountLabel => 'ส่วนลดทั้งหมด';
+
+  @override
   String get settingsReceiptSize => 'ขนาดใบเสร็จ';
 
   @override
@@ -1086,7 +1130,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get settingsMaxDrafts => 'บิลสูงสุด';
 
   @override
-  String get settingsCompactCartMode => 'โหมดตะกร้ากะทัดรัด';
+  String get settingsCompactCartMode => 'ตะกร้าแบบ Delivery';
 
   @override
   String get settingsUltraCompactMode => 'โหมดกะทัดรัดมาก';
@@ -1096,7 +1140,8 @@ class AppLocalizationsTh extends AppLocalizations {
       'รายการเล็กลงเพื่อความหนาแน่นสูงสุด';
 
   @override
-  String get settingsCompactModeSubtitle => 'แถวสินค้าเล็กลง มองเห็นได้มากขึ้น';
+  String get settingsCompactModeSubtitle =>
+      'แถบล่างแบบแอปส่งอาหาร; ปิด = พาเนลตะกร้าแบบเดิม';
 
   @override
   String get settingsUltraModeOverrides => 'แทนที่โหมดกะทัดรัด';
@@ -1647,6 +1692,9 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get costHelper => 'ใช้คำนวณกำไรขั้นต้น';
+
+  @override
   String get outOfStockShort => 'หมด';
 
   @override
@@ -1712,6 +1760,38 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get barcodeNotFoundInImage => 'ไม่พบบาร์โค้ดในรูป';
+
+  @override
+  String get barcodeMustBeAlphanumeric =>
+      'บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น';
+
+  @override
+  String get scanningImage => 'กำลังสแกนรูป...';
+
+  @override
+  String get continuousScan => 'สแกนต่อเนื่อง';
+
+  @override
+  String get continuousScanHint => 'สแกนต่อเนื่องโดยไม่ปิดหน้าจอสแกน';
+
+  @override
+  String get focusCamera => 'โฟกัส';
+
+  @override
+  String productFound(String name) {
+    return 'เพิ่ม $name แล้ว';
+  }
+
+  @override
+  String get productNotFoundShort => 'ไม่พบสินค้า';
+
+  @override
+  String scanCount(int count) {
+    return 'สแกนแล้ว $count ชิ้น';
+  }
+
+  @override
+  String get done => 'เสร็จ';
 
   @override
   String get torchOn => 'เปิดไฟฉาย';
@@ -2126,4 +2206,71 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get totalProducts => 'สินค้าทั้งหมด';
+
+  @override
+  String get todayRevenue => 'ยอดขายวันนี้';
+
+  @override
+  String get todaySalesCount => 'บิด';
+
+  @override
+  String get cartItems => 'ชิ้น';
+
+  @override
+  String get sortDefault => 'ค่าเริ่มต้น';
+
+  @override
+  String get sortNameAsc => 'ชื่อ A-Z';
+
+  @override
+  String get sortPriceLowHigh => 'ราคา: ต่ำ-สูง';
+
+  @override
+  String get sortPriceHighLow => 'ราคา: สูง-ต่ำ';
+
+  @override
+  String get sortStockLowHigh => 'สต็อก: น้อย-มาก';
+
+  @override
+  String get filterCategory => 'หมวดหมู่';
+
+  @override
+  String get filterSort => 'เรียง';
+
+  @override
+  String get filterStock => 'สต็อก';
+
+  @override
+  String get filterAll => 'ทั้งหมด';
+
+  @override
+  String get filterMore => 'กรอง';
+
+  @override
+  String get filterPageTitle => 'กรองสินค้า';
+
+  @override
+  String get filterReset => 'รีเซ็ต';
+
+  @override
+  String get filterShowResults => 'ดูผลลัพธ์';
+
+  @override
+  String filterShowResultsCount(int count) {
+    return 'ดูผลลัพธ์ ($count)';
+  }
+
+  @override
+  String get filterPriceRange => 'ช่วงราคา';
+
+  @override
+  String get filterPriceMin => 'ต่ำสุด';
+
+  @override
+  String get filterPriceMax => 'สูงสุด';
+
+  @override
+  String filterActiveCount(int count) {
+    return 'ใช้งาน $count';
+  }
 }

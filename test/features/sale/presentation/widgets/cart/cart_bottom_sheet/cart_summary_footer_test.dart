@@ -43,11 +43,10 @@ void main() {
   group('CartSummaryFooter', () {
     testWidgets('renders empty cart as SizedBox', (tester) async {
       await tester.pumpApp(
-        CartSummaryFooter(
+        const CartSummaryFooter(
           bottomInset: 16,
           currency: '฿',
-          settings: const Settings(),
-          onCheckout: () {},
+          settings: Settings(),
         ),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
@@ -64,18 +63,17 @@ void main() {
         () => mockCartBloc.state,
       ).thenReturn(CartState(items: [CartItem(product: product, qty: 2)]));
       await tester.pumpApp(
-        CartSummaryFooter(
+        const CartSummaryFooter(
           bottomInset: 16,
           currency: '฿',
-          settings: const Settings(),
-          onCheckout: () {},
+          settings: Settings(),
         ),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(MoneyText), findsNWidgets(2));
+      expect(find.byType(MoneyText), findsNWidgets(1));
       expect(find.byType(FilledButton), findsOneWidget);
     });
 
@@ -93,33 +91,30 @@ void main() {
         ),
       );
       await tester.pumpApp(
-        CartSummaryFooter(
+        const CartSummaryFooter(
           bottomInset: 16,
           currency: '฿',
-          settings: const Settings(),
-          onCheckout: () {},
+          settings: Settings(),
         ),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(MoneyText), findsNWidgets(3));
+      expect(find.byType(MoneyText), findsNWidgets(2));
     });
 
     testWidgets('shows cart discount button when enabled', (tester) async {
       when(
         () => mockCartBloc.state,
       ).thenReturn(CartState(items: [CartItem(product: product, qty: 1)]));
-      const settings = Settings(
-        discountConfig: DiscountConfig(enableCartDiscount: true),
-      );
       await tester.pumpApp(
-        CartSummaryFooter(
+        const CartSummaryFooter(
           bottomInset: 16,
           currency: '฿',
-          settings: settings,
-          onCheckout: () {},
+          settings: Settings(
+            discountConfig: DiscountConfig(enableCartDiscount: true),
+          ),
         ),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,

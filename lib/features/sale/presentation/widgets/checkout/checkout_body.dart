@@ -51,7 +51,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
       if (!mounted) return;
       _submitted = false;
       _inPaymentFlow = false;
-      AppSnackBar.error(ctx, ctx.l10n.saleError);
+      AppSnackBar.error(ctx, ctx.l10n.saleTimeout);
     });
   }
 
@@ -115,13 +115,16 @@ class _CheckoutBodyState extends State<CheckoutBody> {
     final nextHundred = roundedHundred > total
         ? roundedHundred
         : roundedHundred + 100;
-    final amounts = {total, nextTen, nextHundred}.where((v) => v > 0).toList()
-      ..sort();
-    if (amounts.length < 2) {
-      amounts.add(total + 20);
-      amounts.sort();
+    final unique = <double>{
+      total,
+      nextTen,
+      nextHundred,
+    }.where((v) => v > 0).toList()..sort();
+    if (unique.length < 2) {
+      unique.add(total + 20);
+      unique.sort();
     }
-    return amounts;
+    return unique;
   }
 
   void _showReceiptDialog(
@@ -238,7 +241,10 @@ class _CheckoutBodyState extends State<CheckoutBody> {
           if (wasInFlow) {
             Navigator.of(ctx).pop();
           }
-          AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.saleError);
+          final msg = state.errorMessage == 'cartEmpty'
+              ? ctx.l10n.cartEmpty
+              : state.errorMessage ?? ctx.l10n.saleError;
+          AppSnackBar.error(ctx, msg);
         }
       },
       child: BlocBuilder<CartBloc, CartState>(
@@ -306,15 +312,6 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                   ),
                 if (_method != 'promptpay' && _method != 'cash') ...[
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _noteCtrl,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.notePlaceholder,
-                      prefixIcon: const Icon(Icons.notes_outlined),
-                    ),
-                    textInputAction: TextInputAction.done,
-                    maxLines: 1,
-                  ),
                 ],
                 const SizedBox(height: 20),
                 BlocBuilder<CheckoutBloc, CheckoutState>(

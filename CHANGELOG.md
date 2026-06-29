@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.8] - 2026-06-29
+
+Sale page redesign + cart UI overhaul + barcode scanner upgrade + product form hardening + filter/payment/cart fixes + product preview enrichment.
+
+### Highlights
+
+- **Sale Page Redesign** — `SaleDashboardHeader` (compact `FittedBox` row); `SaleFilterBar` with 3 dropdown filters (Category/Sort/Stock); `SaleProductCard` delivery-style with `ProductCardShell` (grid: full-width images, list: 72×72 rounded-rect); `StockIndicator` + price pills; search moved to AppBar toggle; list/grid `SegmentedButton`.
+- **Cart UI Overhaul** — `CartContent` unified widget (expanded + sheet modes); delivery-style `CartBottomBar` (badge bounce, pull-up gesture, velocity snap); compact `CartItemTile` (~48px, 3-column); item note/SKU/stock in tiles; clear cart buttons; cart state persistence via `DraftBloc`.
+- **Barcode Scanner Upgrade** — Continuous scan (default ON); product name + price overlay; responsive cutout; camera focus button; scan count indicator; portrait lock; alphanumeric validation; `SoundPlayer` confirmation.
+- **Product Form Hardening** — Barcode → Basic section; `_AdvancedSection` auto-expand; `TextEditingController` disposal fix (11 dialogs → `StatefulWidget`); image/barcode orphan prevention (Bugs A–D); stale stock + double-submit fixes.
+- **Filter/Payment/Cart Fixes** — `_CategorySelector` + reactive count + price validation; removed duplicate note/PromptPay reference; cash input `onChanged` fix; localized `cartEmpty`/`saleTimeout`; cart review empty state + `Material` bottom card; `CartProductDetailSheet` with qty/subtotal/discount/note/stock status.
+
+### Added
+
+- `CartContent`, `CartBottomBar`, `cart_checkout_helper.dart`, `_CategorySelector`, `_StockStatusRow`, `MoneyDetailRow`, `_DashedBorder` widgets.
+- `CartItem.note` + `CartItemNoteChanged` event (schema v19); SKU/barcode + stock remaining + duplicate item in `CartItemTile`.
+- Continuous scan mode, product name overlay, camera focus, scan count, `continuousScan` setting.
+- `barcodeExistsAnyStatus` + `bulkUpdateBarcodesWithImages` in `ProductLocalDatasource`.
+- Badge animations, haptic feedback, velocity snap, clear cart buttons, cart state persistence.
+- L10n: `cartEmpty`, `saleTimeout`, `totalDiscountLabel`, `trackStockDisableConfirm`, `costHelper`, `barcodeMustBeAlphanumeric` (EN + TH).
+
+### Changed
+
+- `SaleProductCard` — `ProductCardShell` flat design; grid `FixedCrossAxisCount(3)`; avatar 52→40px; quantity as `จำนวน N` text.
+- `PillButton` expands to fill space; `SaleCatalog` list height 76→88; `SegmentedButton` height matched.
+- `CartReviewPage` — `Card` → `Material` + `boxShadow`; `CartItemCard` price `Expanded(flex: 0)`; localized strings.
+- `CartProductDetailSheet` — localized + currency from `SettingsCubit`; shows qty, subtotal, discount, note, stock status.
+- `CheckoutBody` — removed duplicate note; `PaymentInputSection` — removed duplicate PromptPay reference; timeout uses `saleTimeout`.
+- `CartItemTile` compacted ~48px; `CartSummaryFooter` simplified; `cartCompactMode` default `true`.
+- Barcode scanner: responsive cutout, portrait lock, auto-focus, laser pause on error, success 600→1000ms.
+- Product form: barcode → Basic; `_AdvancedSection` auto-expand; `saveStatus` single source of truth; `_resolveStock` from bloc state.
+
+### Fixed
+
+- Stock filter toggle reset-to-`all` on reselect in `ProductBloc`.
+- Cash input `onChanged` not updating change preview.
+- `'Cart is empty'` → `cartEmpty` l10n key; `'Remove item'` → `removeItem` l10n.
+- `TextEditingController` used after disposed (11 dialogs).
+- Scanner orientation, invalid barcodes, `GenerateBarcode` counter init, `beepOnScan` sound, barcode case mismatch.
+- Image/barcode orphan on fail (Bugs A–D); stale stock; double submit; no confirm on disable stock tracking.
+- `CartBottomBar` RenderFlex overflow; `CartBottomSheet` checkout context; AppBar `endDrawer` → `CartBottomSheet`; 3 cart modes merged; `SaleCatalog` padding; `Dismissible`+`ReorderableListView` conflict; dead `onCheckout` param.
+
+### Removed
+
+- `sale_catalog_search_bar.dart`, `sale_catalog_category_filter.dart`, `sale_category_bar.dart`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **1302 passing**
+
+---
+
 ## [0.8.7] - 2026-06-26
 
 Product form unification + draft system hardening + product list dashboard redesign + tile performance optimization.
@@ -448,6 +498,8 @@ Older versions are archived by minor version:
 
 ---
 
+[0.8.8]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.7...v0.8.8
+[0.8.7]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.3...v0.8.4

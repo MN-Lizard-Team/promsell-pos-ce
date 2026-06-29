@@ -31,7 +31,7 @@ class CartActions {
     bloc.add(CartProductRemoved(item.product.id));
     AppSnackBar.withAction(
       context,
-      context.l10n.itemRemoved,
+      context.l10n.itemRemoved(item.product.name),
       actionLabel: context.l10n.undo,
       onAction: () {
         bloc.add(CartItemRestored(item));

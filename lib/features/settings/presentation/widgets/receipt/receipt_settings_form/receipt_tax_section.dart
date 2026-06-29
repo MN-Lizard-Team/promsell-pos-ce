@@ -98,68 +98,94 @@ class ReceiptTaxSection extends StatelessWidget {
   }
 
   void _showVatRateDialog(BuildContext context, Settings s) {
-    final st = context.settingsTheme;
-    final l10n = context.l10n;
-    final ctrl = TextEditingController(text: s.vatRate.toStringAsFixed(1));
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.settingsVatRate),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: ctrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              autofocus: true,
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [0.0, 7.0, 10.0].map((preset) {
-                return ChoiceChip(
-                  label: Text('${preset.toStringAsFixed(0)}%'),
-                  selected: false,
-                  onSelected: (_) {
-                    ctrl.text = preset.toStringAsFixed(1);
-                  },
-                  selectedColor: st.activeAccentContainer,
-                  backgroundColor: st.cardBackground,
-                  side: BorderSide(color: st.cardBorderColor),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.cancel),
+      builder: (_) => _VatRateDialog(settings: s, onUpdate: onUpdate),
+    );
+  }
+}
+
+class _VatRateDialog extends StatefulWidget {
+  const _VatRateDialog({required this.settings, required this.onUpdate});
+
+  final Settings settings;
+  final ValueChanged<Settings> onUpdate;
+
+  @override
+  State<_VatRateDialog> createState() => _VatRateDialogState();
+}
+
+class _VatRateDialogState extends State<_VatRateDialog> {
+  late final _ctrl = TextEditingController(
+    text: widget.settings.vatRate.toStringAsFixed(1),
+  );
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final st = context.settingsTheme;
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.settingsVatRate),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _ctrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+            autofocus: true,
           ),
-          FilledButton(
-            onPressed: () {
-              final n = double.tryParse(ctrl.text.trim());
-              if (n != null) {
-                onUpdate(s.copyWith(vatRate: n.clamp(0, 30)));
-              }
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(l10n.save),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [0.0, 7.0, 10.0].map((preset) {
+              return ChoiceChip(
+                label: Text('${preset.toStringAsFixed(0)}%'),
+                selected: false,
+                onSelected: (_) {
+                  _ctrl.text = preset.toStringAsFixed(1);
+                },
+                selectedColor: st.activeAccentContainer,
+                backgroundColor: st.cardBackground,
+                side: BorderSide(color: st.cardBorderColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
-    ).then((_) => ctrl.dispose());
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final n = double.tryParse(_ctrl.text.trim());
+            if (n != null) {
+              widget.onUpdate(
+                widget.settings.copyWith(vatRate: n.clamp(0, 30)),
+              );
+            }
+            Navigator.of(context).pop();
+          },
+          style: FilledButton.styleFrom(backgroundColor: st.softAccent),
+          child: Text(l10n.save),
+        ),
+      ],
+    );
   }
 }

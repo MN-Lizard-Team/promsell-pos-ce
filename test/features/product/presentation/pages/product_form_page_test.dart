@@ -100,7 +100,6 @@ void main() {
 
       expect(find.byType(TabBar), findsNothing);
       expect(find.byType(FormSectionCard), findsNWidgets(3));
-      expect(find.byType(AnimatedCrossFade), findsOneWidget);
       expect(find.byType(StockStepper), findsOneWidget);
       expect(find.byType(FilledButton), findsOneWidget);
     });
@@ -155,10 +154,8 @@ void main() {
       );
 
       expect(find.byIcon(Icons.expand_more), findsOneWidget);
-      final crossFade = tester.widget<AnimatedCrossFade>(
-        find.byType(AnimatedCrossFade),
-      );
-      expect(crossFade.crossFadeState, CrossFadeState.showFirst);
+      expect(find.text('SKU'), findsNothing);
+      expect(find.text('Cost (THB)'), findsNothing);
     });
 
     testWidgets('expanding advanced section shows SKU, Barcode, Cost fields', (
@@ -257,12 +254,10 @@ void main() {
       final priceField = find.byType(TextFormField).at(1);
       await tester.enterText(priceField, '10.00');
 
-      final expandBtn = find.byIcon(Icons.expand_more);
-      await tester.ensureVisible(expandBtn);
-      await tester.tap(expandBtn);
-      await tester.pumpAndSettle();
-
-      final barcodeField = find.byType(TextFormField).at(3);
+      final barcodeField = find.ancestor(
+        of: find.text('Barcode'),
+        matching: find.byType(TextFormField),
+      );
       await tester.ensureVisible(barcodeField);
       await tester.enterText(barcodeField, 'ABC-123!');
 
@@ -429,6 +424,9 @@ void main() {
       await tester.tap(toggle);
       await tester.pumpAndSettle();
 
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+
       expect(find.byType(StockStepper), findsNothing);
     });
 
@@ -446,6 +444,9 @@ void main() {
       final toggle = find.byType(ModernToggleCard);
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Confirm'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);
@@ -762,8 +763,12 @@ void main() {
 
       final nameField = find.byType(TextFormField).at(0);
       await tester.enterText(nameField, 'Test');
+      await tester.pumpAndSettle();
 
-      await tester.binding.handlePopRoute();
+      final navigator = tester.state<NavigatorState>(
+        find.byType(Navigator).first,
+      );
+      await navigator.maybePop();
       await tester.pumpAndSettle();
 
       expect(find.text('Save'), findsOneWidget);

@@ -4,16 +4,16 @@
 
 ---
 
-**1294 tests** covering every application layer — **56% line coverage** (11,978 / 21,392 executable lines across 387 files):
+**1302 tests** covering every application layer — **56% line coverage** (11,978 / 21,392 executable lines across 387 files):
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
-| **Domain** | Entity equality, use case delegation, discount math, `InventoryLog` domain, `ReportCalculator` extension, `Ean13Generator` Luhn check digit, `Validators.barcode` length | ~228 |
-| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy, `InventoryLogCubit`, `ReportCubit`, `ProductFormCubit` (draft init, sync, save, clear, restore) | ~80 |
-| **Repository** | Impl with mocked datasources | ~50 |
-| **Datasource** | Real in-memory SQLite (Drift) | ~50 |
-| **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService, DI graph, crash logging, PDF receipt | ~190 |
-| **Widget** | Page tests + 40+ extracted widget tests across core, product, sale, and settings (incl. `ProductFormCubit`, `CategoryField`, `ProductCardShell`, `ProductHeroImage` tests) | ~636 |
+| **Domain** | Entity equality, use case delegation, discount math, `InventoryLog` domain, `ReportCalculator` extension, `Ean13Generator` Luhn check digit, `Validators.barcode` length, `CartItem` discount, `DraftCart`, `Sale` entity, `Category` entity, `Settings`/`ShopInfo`/`ConfigEntities`/`DiscountConfig`/`TaxPaymentConfig` | ~228 |
+| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy, `InventoryLogCubit`, `ReportCubit`, `ProductFormCubit` (draft init, sync, save, clear, restore), `SettingsCubit`, `HistoryBloc`, `DailyCloseCubit`, `SearchHistoryCubit` | ~80 |
+| **Repository** | Impl with mocked datasources (sale, product, category, history, settings, daily_close, draft_cart) | ~50 |
+| **Datasource** | Real in-memory SQLite (Drift) — sale, product, draft_cart, settings, daily_close | ~50 |
+| **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService, ProductImageService, BackupEncryptionService, DI graph, crash logging, PDF receipt | ~190 |
+| **Widget** | Page tests (SalePage, CartReviewPage, CheckoutPage, PaymentSheet, SettingsPage, StockSettingsPage) + 60+ extracted widget tests across core (barcode, image, layout, nav, primitives, search, stock), sale (cart, catalog, checkout, drafts, payment, promptpay), product, settings (about, backup, barcode, discount, general, image, promptpay, receipt, shop, tiles), daily_close, onboarding | ~643 |
 | **Integration** | Checkout flow, sale integrity (void + adjust), onboarding → first sale | 14 |
 | **Stress** | 10k products / 50k sales seed + query timing (`@Tags(['stress'])`) | 2 |
 | **L10n parity** | EN/TH key coverage, non-empty values, params | 7 |
@@ -28,7 +28,7 @@
                 │   Integration     │  14 tests (in-memory DB end-to-end)
                 └─────────┬─────────┘
             ┌─────────────┴─────────────┐
-            │      Widget + L10n        │  ~643 tests (pumpApp + mock BLoC)
+            │      Widget + L10n        │  ~650 tests (pumpApp + mock BLoC)
             └─────────────┬─────────────┘
         ┌─────────────────┴──────────────────┐
         │   BLoC + Services + Repository     │  ~320 tests (mocktail + mock DS)
@@ -88,4 +88,4 @@ Coverage measured via `flutter test --coverage --exclude-tags stress` (lcov.info
 
 ---
 
-<sub>Promsell POS Community Edition · v0.8.7 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.8 · AGPL-3.0</sub>

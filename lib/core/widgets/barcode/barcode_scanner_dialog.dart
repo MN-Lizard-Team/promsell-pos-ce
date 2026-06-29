@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/sound_player.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog/barcode_error_banner.dart';
 export 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog/barcode_format_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog/barcode_manual_entry.dart';
@@ -14,12 +15,16 @@ import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog/barc
 import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog/barcode_scan_hint.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog/barcode_scan_result.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode/scan_overlay_painter.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 
 Future<String?> showProductBarcodeScanner(
   BuildContext context, {
   bool beepOnScan = true,
   List<BarcodeFormat>? formats,
   int autoOpenManualDelay = 0,
+  bool continuousScan = true,
+  void Function(String barcode)? onScanned,
+  Future<Product?> Function(String barcode)? onLookup,
 }) => showDialog<String>(
   context: context,
   builder: (dialogContext) => BarcodeScannerDialog(
@@ -41,6 +46,9 @@ Future<String?> showProductBarcodeScanner(
         ],
     beepOnScan: beepOnScan,
     autoOpenManualDelay: autoOpenManualDelay,
+    continuousScan: continuousScan,
+    onScanned: onScanned,
+    onLookup: onLookup,
   ),
 );
 
@@ -52,6 +60,9 @@ class BarcodeScannerDialog extends StatefulWidget {
     this.hint,
     this.beepOnScan = true,
     this.autoOpenManualDelay = 0,
+    this.continuousScan = true,
+    this.onScanned,
+    this.onLookup,
   });
 
   final List<BarcodeFormat> formats;
@@ -59,6 +70,9 @@ class BarcodeScannerDialog extends StatefulWidget {
   final String? hint;
   final bool beepOnScan;
   final int autoOpenManualDelay;
+  final bool continuousScan;
+  final void Function(String barcode)? onScanned;
+  final Future<Product?> Function(String barcode)? onLookup;
 
   @override
   State<BarcodeScannerDialog> createState() => _BarcodeScannerDialogState();
@@ -73,21 +87,29 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
   bool _showManualEntry = false;
   bool _permissionGranted = false;
   bool _permissionChecked = false;
+  bool _isScanningGallery = false;
+  bool _isContinuous = true;
+  bool _isLookingUp = false;
+  String? _productName;
+  double? _productPrice;
+  bool? _productFound;
+  int _scanCount = 0;
   String? _errorText;
   Timer? _errorClearTimer;
   Timer? _autoOpenTimer;
+  Timer? _resetTimer;
   static final _alphanumeric = RegExp(r'^[a-zA-Z0-9]+$');
 
   late final AnimationController _laserAnim;
   late final Animation<double> _laserCurve;
 
-  static const _cutoutWidth = 300.0;
-  static const _cutoutHeight = 180.0;
   static const _cutoutRadius = 16.0;
 
   @override
   void initState() {
     super.initState();
+    _isContinuous = widget.continuousScan;
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _controller = MobileScannerController(
       detectionSpeed: DetectionSpeed.normal,
       facing: CameraFacing.back,
@@ -124,7 +146,9 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
     _manualCtrl.dispose();
     _errorClearTimer?.cancel();
     _autoOpenTimer?.cancel();
+    _resetTimer?.cancel();
     _controller.dispose();
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     super.dispose();
   }
 
@@ -143,14 +167,19 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
     final value = _manualCtrl.text.trim();
     if (value.isEmpty) return;
     if (!_alphanumeric.hasMatch(value)) {
-      _setError('Barcode must be alphanumeric (letters and numbers only).');
+      _setError(context.l10n.barcodeMustBeAlphanumeric);
       return;
     }
-    Navigator.of(context).pop(value);
+    if (_isContinuous && widget.onScanned != null) {
+      widget.onScanned!(value);
+      _handleScanSuccess(value);
+    } else {
+      Navigator.of(context).pop(value);
+    }
   }
 
   Future<void> _scanFromGallery() async {
-    if (_scanned) return;
+    if (_scanned || _isScanningGallery) return;
     final l10n = context.l10n;
 
     if (Platform.isAndroid || Platform.isIOS) {
@@ -171,6 +200,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
       return;
     }
 
+    setState(() => _isScanningGallery = true);
     try {
       final capture = await _controller.analyzeImage(xFile.path);
       if (!mounted) return;
@@ -194,18 +224,38 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
         return;
       }
 
-      setState(() => _scanned = true);
-      _scannedValue = raw;
-      _autoOpenTimer?.cancel();
-      if (widget.beepOnScan) HapticFeedback.mediumImpact();
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (!mounted) return;
-        Navigator.of(context).pop(raw);
+      final cleaned = raw.trim();
+      if (!_alphanumeric.hasMatch(cleaned)) {
+        _setError(l10n.barcodeMustBeAlphanumeric);
+        await _controller.start();
+        return;
+      }
+
+      setState(() {
+        _scanned = true;
+        _isScanningGallery = false;
       });
+      _scannedValue = cleaned;
+      _autoOpenTimer?.cancel();
+      if (widget.beepOnScan) {
+        HapticFeedback.mediumImpact();
+        SoundPlayer.playConfirmation();
+      }
+      if (_isContinuous && widget.onScanned != null) {
+        widget.onScanned!(cleaned);
+        _handleScanSuccess(cleaned);
+      } else {
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (!mounted) return;
+          Navigator.of(context).pop(cleaned);
+        });
+      }
     } catch (e) {
       if (!mounted) return;
       _setError(l10n.barcodeNotFoundInImage);
       await _controller.start();
+    } finally {
+      if (mounted) setState(() => _isScanningGallery = false);
     }
   }
 
@@ -222,16 +272,67 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
         .rawValue;
     if (raw == null || raw.isEmpty) return;
 
+    final cleaned = raw.trim();
+    if (!_alphanumeric.hasMatch(cleaned)) {
+      _setError(context.l10n.barcodeMustBeAlphanumeric);
+      return;
+    }
+
     setState(() => _scanned = true);
-    _scannedValue = raw;
+    _scannedValue = cleaned;
     _autoOpenTimer?.cancel();
-    if (widget.beepOnScan) HapticFeedback.mediumImpact();
-    _controller.stop().then((_) {
-      if (!mounted) return;
-      Future.delayed(const Duration(milliseconds: 600), () {
+    if (widget.beepOnScan) {
+      HapticFeedback.mediumImpact();
+      SoundPlayer.playConfirmation();
+    }
+
+    if (_isContinuous && widget.onScanned != null) {
+      widget.onScanned!(cleaned);
+      _handleScanSuccess(cleaned);
+    } else {
+      _controller.stop().then((_) {
         if (!mounted) return;
-        Navigator.of(context).pop(raw);
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (!mounted) return;
+          Navigator.of(context).pop(cleaned);
+        });
       });
+    }
+  }
+
+  void _handleScanSuccess(String barcode) {
+    _scanCount++;
+    _resetTimer?.cancel();
+
+    if (widget.onLookup != null) {
+      setState(() => _isLookingUp = true);
+      widget.onLookup!(barcode).then((product) {
+        if (!mounted) return;
+        setState(() {
+          _isLookingUp = false;
+          _productFound = product != null;
+          _productName = product?.name;
+          _productPrice = product?.price;
+        });
+        _scheduleReset();
+      });
+    } else {
+      _scheduleReset();
+    }
+  }
+
+  void _scheduleReset() {
+    _resetTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (mounted && _isContinuous) {
+        setState(() {
+          _scanned = false;
+          _scannedValue = null;
+          _productName = null;
+          _productPrice = null;
+          _productFound = null;
+          _isLookingUp = false;
+        });
+      }
     });
   }
 
@@ -239,6 +340,9 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final screenW = MediaQuery.of(context).size.width;
+    final cutoutW = (screenW * 0.8).clamp(220.0, 360.0);
+    final cutoutH = cutoutW * 0.6;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -251,6 +355,27 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          if (widget.continuousScan)
+            IconButton(
+              icon: Icon(
+                _isContinuous ? Icons.repeat : Icons.repeat_one,
+                color: _isContinuous ? theme.colorScheme.primary : null,
+              ),
+              tooltip: l10n.continuousScan,
+              onPressed: () {
+                setState(() => _isContinuous = !_isContinuous);
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.center_focus_strong),
+            tooltip: l10n.focusCamera,
+            onPressed: () {
+              final size = MediaQuery.of(context).size;
+              _controller.setFocusPoint(
+                Offset(size.width / 2, size.height / 2),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.photo_library),
             tooltip: l10n.scanFromGallery,
@@ -313,17 +438,17 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                     return CustomPaint(
                       size: MediaQuery.of(context).size,
                       painter: ScanOverlayPainter(
-                        cutoutWidth: _cutoutWidth,
-                        cutoutHeight: _cutoutHeight,
+                        cutoutWidth: cutoutW,
+                        cutoutHeight: cutoutH,
                         borderRadius: _cutoutRadius,
                         borderColor: _errorText != null
                             ? theme.colorScheme.error
                             : _scanned
                             ? theme.colorScheme.primary
                             : null,
-                        laserY: laserY,
+                        laserY: _errorText != null ? null : laserY,
                         laserColor: _errorText != null
-                            ? theme.colorScheme.error.withValues(alpha: 0.5)
+                            ? null
                             : _scanned
                             ? theme.colorScheme.primary.withValues(alpha: 0.5)
                             : theme.colorScheme.primary,
@@ -331,15 +456,51 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                     );
                   },
                 ),
+                if (_isScanningGallery)
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(color: Colors.white),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.scanningImage,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 Center(
                   child: SizedBox(
-                    width: _cutoutWidth,
-                    height: _cutoutHeight,
+                    width: cutoutW,
+                    height: cutoutH,
                     child: _scanned
-                        ? BarcodeScanResult(
-                            scannedValue: _scannedValue,
-                            successLabel: l10n.scanSuccess,
-                          )
+                        ? _isLookingUp
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : BarcodeScanResult(
+                                  scannedValue: _scannedValue,
+                                  successLabel: _productFound == false
+                                      ? l10n.productNotFoundShort
+                                      : l10n.scanSuccess,
+                                  productName: _productName,
+                                  productPrice: _productPrice,
+                                  isFound: _productFound,
+                                  notFoundLabel: l10n.productNotFoundShort,
+                                )
                         : null,
                   ),
                 ),
@@ -366,7 +527,9 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                               _controller.stop();
                               setState(() => _showManualEntry = true);
                             },
-                            onGallery: _scanFromGallery,
+                            scanCount: _isContinuous && _scanCount > 0
+                                ? _scanCount
+                                : null,
                           ),
                   ),
                 ),

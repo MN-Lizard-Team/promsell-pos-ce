@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.7
+# CODEBASE.md — Promsell POS CE v0.8.8
 
 ## System overview
 
@@ -157,9 +157,11 @@ features/<name>/
 - **Theme system** lives in `lib/core/theme/` — `AppColors` (static palette), `AppTheme` (light/dark `ThemeData` with Material 3), and `SettingsThemeExtension` (settings-specific surface/accent tokens). All hardcoded `Color(0xFF...)` outside this folder is forbidden.
 - Shared visual behavior should live in `lib/core/theme/` and `lib/core/widgets/` before being duplicated in feature pages.
 - Sale layouts are adaptive:
-  - Compact screens use a product catalog with a bottom cart command panel.
-  - Expanded screens keep the cart pane visible beside the product grid.
-  - **Compact Cart Mode** (toggle in Settings → General) hides the full panel and shows a floating cart icon that opens `CartBottomSheet`.
+  - Compact screens use a product catalog with a delivery-style `CartBottomBar` (item count badge + total + checkout; tap/pull-up to open `CartBottomSheet`).
+  - Expanded screens keep the cart pane visible beside the product grid via `CartContent` (expanded mode with `ReorderableListView` + `Dismissible`).
+  - **Compact Cart Mode** (toggle in Settings → General, default ON) shows `CartBottomBar`; OFF shows classic `CartPanel` with vertical drag handle.
+  - `SaleDashboardHeader` shows shop name + today's revenue/sales count/cart total in a horizontal scrollable row.
+  - `SaleFilterBar` provides 3 dropdown filters (Category/Sort/Stock) replacing the old category chips.
 - User-facing strings must remain localized through ARB files and accessed with `context.l10n`.
 - Empty/error states should prefer `AppEmptyState`; money values should prefer `MoneyText`.
 - Compact constrained areas should avoid fixed-height `Column` content that can trigger `RenderFlex` overflow.
@@ -177,10 +179,10 @@ features/<name>/
 | [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (52 entries) + Feature modules table (11 features) |
 | [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (13 group entities), Localization, DI, Code generation |
 | [`docs/codebase/file-dependency-map.md`](docs/codebase/file-dependency-map.md) | If-you-change-X-update-Y rules for all entities, BLoCs, datasources |
-| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (1269 tests, 8 layers) + test layer techniques |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema v18 overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
+| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (1302 tests, 8 layers) + test layer techniques |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema v19 overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-024) + barcode DI graph |
 
 ---
 
-<sub>Promsell POS CE · v0.8.7 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.8.8 · Codebase Reference</sub>

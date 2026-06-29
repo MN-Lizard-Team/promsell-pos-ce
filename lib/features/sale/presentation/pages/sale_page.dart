@@ -5,15 +5,19 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/adaptive_breakpoints.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/product_sliver_content.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_panel.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_bottom_bar.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_content.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/compact_cart_fab.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_catalog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/cart_resize_controller.dart';
@@ -58,7 +62,34 @@ class _SaleView extends StatefulWidget {
 }
 
 class _SaleViewState extends State<_SaleView> {
-  late final CartResizeController _resize;
+  CartResizeController? _resize;
+  bool _isRestoring = false;
+  final _searchController = TextEditingController();
+  bool _isSearching = false;
+  ViewMode _viewMode = ViewMode.grid;
+
+  void _toggleSearch() {
+    if (_isSearching && _searchController.text.trim().isNotEmpty) {
+      context.read<SearchHistoryCubit>().add(_searchController.text);
+    }
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+        context.read<ProductBloc>().add(const ProductSearchChanged(''));
+      }
+    });
+  }
+
+  void _clearFilters() {
+    _searchController.clear();
+    final bloc = context.read<ProductBloc>();
+    bloc.add(const ProductSearchChanged(''));
+    bloc.add(const ProductCategoryFilterChanged(null));
+    bloc.add(const ProductStockFilterChanged(StockFilter.all));
+    bloc.add(const ProductSortChanged(ProductSort.default_));
+    bloc.add(const ProductPriceRangeChanged(null));
+  }
 
   bool _hasStockOrPriceChange(List<Product> prev, List<Product> curr) {
     final prevMap = {for (final p in prev) p.id: p};
@@ -75,14 +106,9 @@ class _SaleViewState extends State<_SaleView> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _resize = CartResizeController();
-  }
-
-  @override
   void dispose() {
-    _resize.dispose();
+    _resize?.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -94,7 +120,7 @@ class _SaleViewState extends State<_SaleView> {
     final isExpanded =
         AdaptiveBreakpoints.isExpanded(context) ||
         (isLandscape && size.width >= 600);
-    final compactCart = context.select(
+    final compactMode = context.select(
       (SettingsCubit c) => c.state.settings.cartCompactMode,
     );
 
@@ -133,28 +159,133 @@ class _SaleViewState extends State<_SaleView> {
         BlocListener<CartBloc, CartState>(
           listenWhen: (prev, curr) => prev.items != curr.items,
           listener: (context, state) {
+            if (_isRestoring) {
+              _isRestoring = false;
+              return;
+            }
             context.read<DraftBloc>().add(DraftAutoSaveRequested(state));
+          },
+        ),
+        BlocListener<DraftBloc, DraftState>(
+          listenWhen: (prev, curr) =>
+              curr.loadedDraft != null && prev.loadedDraft != curr.loadedDraft,
+          listener: (context, state) {
+            _isRestoring = true;
+            final draft = state.loadedDraft!;
+            context.read<CartBloc>().add(
+              CartRestored(
+                items: draft.items,
+                cartDiscountType: draft.cartDiscountType,
+                cartDiscountValue: draft.cartDiscountValue,
+              ),
+            );
           },
         ),
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text(context.l10n.salePageTitle),
-          actions: const [SaleAppBarActions()],
+          title: _isSearching
+              ? TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.searchProducts,
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  style: Theme.of(context).textTheme.titleMedium,
+                  onChanged: (q) =>
+                      context.read<ProductBloc>().add(ProductSearchChanged(q)),
+                )
+              : Text(context.l10n.salePageTitle),
+          actions: [
+            IconButton(
+              icon: Icon(_isSearching ? Icons.close : Icons.search),
+              onPressed: _toggleSearch,
+            ),
+            const SaleAppBarActions(),
+          ],
         ),
         body: SafeArea(
+          child: Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
+                child: isExpanded
+                    ? _buildExpandedLayout()
+                    : (compactMode
+                          ? _buildCompactLayout()
+                          : _buildClassicCompactLayout()),
+              ),
+              if (_isSearching && _searchController.text.isEmpty)
+                _buildSearchHistoryOverlay(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchHistoryOverlay() {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final history = context.watch<SearchHistoryCubit>().state.searches;
+
+    if (history.isEmpty) return const SizedBox.shrink();
+
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () {},
+        behavior: HitTestBehavior.opaque,
+        child: Material(
+          color: theme.colorScheme.surface.withValues(alpha: 0.95),
           child: Padding(
-            padding: EdgeInsets.fromLTRB(12, 0, 12, isExpanded ? 12 : 8),
-            child: Stack(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Positioned.fill(
-                  child: compactCart
-                      ? const SaleCatalog()
-                      : (isExpanded
-                            ? _buildExpandedLayout()
-                            : _buildCompactLayout()),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.history,
+                      size: 18,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.recentSearches,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () =>
+                          context.read<SearchHistoryCubit>().clear(),
+                      child: Text(l10n.clear),
+                    ),
+                  ],
                 ),
-                if (compactCart) const CompactCartFab(),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: history
+                      .map(
+                        (q) => ActionChip(
+                          label: Text(q),
+                          onPressed: () {
+                            _searchController.text = q;
+                            context.read<ProductBloc>().add(
+                              ProductSearchChanged(q),
+                            );
+                          },
+                        ),
+                      )
+                      .toList(),
+                ),
               ],
             ),
           ),
@@ -164,70 +295,125 @@ class _SaleViewState extends State<_SaleView> {
   }
 
   Widget _buildCompactLayout() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxCartH =
-            (constraints.maxHeight * _resize.maxCartHeight(context) / 1 - 24)
-                .clamp(_resize.minCartHeight(context), double.infinity);
-        return Column(
-          children: [
-            const Expanded(child: SaleCatalog()),
-            DragHandle(
-              axis: Axis.vertical,
-              isDragging: _resize.isDragging,
-              semanticLabel: context.l10n.dragToResizeCart,
-              onDragStart: _resize.onDragStart,
-              onDragEnd: _resize.onDragEnd,
-              onVerticalDragUpdate: (d) => _resize.onVerticalDrag(context, d),
-              onVerticalDragEnd: (d) => _resize.onVerticalDragEnd(context, d),
-            ),
-            ValueListenableBuilder<double>(
-              valueListenable: _resize.cartHeight,
-              builder: (context, cartHeight, _) {
-                final effectiveH = cartHeight.clamp(
-                  _resize.minCartHeight(context),
-                  maxCartH,
-                );
-                return SizedBox(
-                  height: effectiveH,
-                  child: CartPanel(
-                    expanded: false,
-                    sizePreset: _resize.currentSizePreset(context),
-                    onSizePresetChanged: (v) =>
-                        _resize.onSizePresetChanged(context, v),
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
+    final isUltra = context.select(
+      (SettingsCubit c) => c.state.settings.ultraCompactMode,
+    );
+
+    if (isUltra) {
+      return Stack(
+        children: [
+          SaleCatalog(
+            searchController: _searchController,
+            viewMode: _viewMode,
+            onViewModeChanged: (v) => setState(() => _viewMode = v),
+            onClearFilters: _clearFilters,
+          ),
+          const CompactCartFab(),
+        ],
+      );
+    }
+
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    return Stack(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(bottom: 56 + bottomInset),
+          child: SaleCatalog(
+            searchController: _searchController,
+            viewMode: _viewMode,
+            onViewModeChanged: (v) => setState(() => _viewMode = v),
+            onClearFilters: _clearFilters,
+          ),
+        ),
+        const Positioned(left: 0, right: 0, bottom: 0, child: CartBottomBar()),
+      ],
+    );
+  }
+
+  Widget _buildClassicCompactLayout() {
+    _resize ??= CartResizeController();
+    final resize = _resize!;
+    return Column(
+      children: [
+        Expanded(
+          child: SaleCatalog(
+            searchController: _searchController,
+            viewMode: _viewMode,
+            onViewModeChanged: (v) => setState(() => _viewMode = v),
+            onClearFilters: _clearFilters,
+          ),
+        ),
+        DragHandle(
+          axis: Axis.vertical,
+          isDragging: resize.isDragging,
+          semanticLabel: context.l10n.dragToResizeCart,
+          onDragStart: resize.onDragStart,
+          onDragEnd: resize.onDragEnd,
+          onVerticalDragUpdate: (d) => resize.onVerticalDrag(context, d),
+          onVerticalDragEnd: (d) => resize.onVerticalDragEnd(context, d),
+        ),
+        ValueListenableBuilder<double>(
+          valueListenable: resize.cartHeight,
+          builder: (context, cartHeight, child) {
+            return SizedBox(
+              height: cartHeight,
+              child: CartContent(
+                expanded: false,
+                currency: context
+                    .watch<SettingsCubit>()
+                    .state
+                    .settings
+                    .currency,
+                settings: context.read<SettingsCubit>().state.settings,
+                sizePreset: resize.currentSizePreset(context),
+                onSizePresetChanged: (v) =>
+                    resize.onSizePresetChanged(context, v),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
   Widget _buildExpandedLayout() {
+    _resize ??= CartResizeController();
+    final resize = _resize!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Expanded(child: SaleCatalog()),
+        Expanded(
+          child: SaleCatalog(
+            searchController: _searchController,
+            viewMode: _viewMode,
+            onViewModeChanged: (v) => setState(() => _viewMode = v),
+            onClearFilters: _clearFilters,
+          ),
+        ),
         DragHandle(
           axis: Axis.horizontal,
-          isDragging: _resize.isDragging,
+          isDragging: resize.isDragging,
           semanticLabel: context.l10n.dragToResizeCart,
-          onDragStart: _resize.onDragStart,
-          onDragEnd: _resize.onDragEnd,
-          onHorizontalDragUpdate: (d) => _resize.onHorizontalDrag(context, d),
-          onHorizontalDragEnd: _resize.onHorizontalDragEnd,
+          onDragStart: resize.onDragStart,
+          onDragEnd: resize.onDragEnd,
+          onHorizontalDragUpdate: (d) => resize.onHorizontalDrag(context, d),
+          onHorizontalDragEnd: resize.onHorizontalDragEnd,
         ),
         ValueListenableBuilder<double>(
-          valueListenable: _resize.cartWidth,
+          valueListenable: resize.cartWidth,
           builder: (context, cartWidth, child) {
             return SizedBox(
               width: cartWidth,
-              child: CartPanel(
+              child: CartContent(
                 expanded: true,
-                widthPreset: _resize.currentWidthPreset(),
-                onWidthPresetChanged: _resize.onWidthPresetChanged,
+                currency: context
+                    .watch<SettingsCubit>()
+                    .state
+                    .settings
+                    .currency,
+                settings: context.read<SettingsCubit>().state.settings,
+                widthPreset: resize.currentWidthPreset(),
+                onWidthPresetChanged: resize.onWidthPresetChanged,
               ),
             );
           },

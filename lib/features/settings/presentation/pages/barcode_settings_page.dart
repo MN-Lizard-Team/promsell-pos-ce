@@ -63,6 +63,18 @@ class BarcodeSettingsPage extends StatelessWidget {
                       );
                     },
                   ),
+                  SettingsSwitchTile(
+                    icon: Icons.repeat,
+                    title: l10n.continuousScan,
+                    subtitle: l10n.continuousScanHint,
+                    accentColor: accent,
+                    value: s.barcodeContinuousScan,
+                    onChanged: (v) {
+                      cubit.updateField(
+                        (s) => s.copyWith(barcodeContinuousScan: v),
+                      );
+                    },
+                  ),
                   BarcodePrefixTile(settings: s, cubit: cubit),
                 ],
               ),

@@ -39,7 +39,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       emit(
         state.copyWith(
           status: CheckoutStatus.failure,
-          errorMessage: 'Cart is empty',
+          errorMessage: 'cartEmpty',
         ),
       );
       return;

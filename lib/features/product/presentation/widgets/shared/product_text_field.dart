@@ -15,6 +15,7 @@ class ProductTextField extends StatelessWidget {
     this.helperText,
     this.onChanged,
     this.suffix,
+    this.focusNode,
   });
 
   final TextEditingController controller;
@@ -28,11 +29,13 @@ class ProductTextField extends StatelessWidget {
   final String? helperText;
   final ValueChanged<String>? onChanged;
   final Widget? suffix;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(icon),

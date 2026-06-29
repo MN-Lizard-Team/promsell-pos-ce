@@ -70,6 +70,7 @@ class SettingsMapper {
   static const _keyBarcodeEnabledFormats = 'barcodeEnabledFormats';
   static const _keyBarcodeAutoOpenManualDelay = 'barcodeAutoOpenManualDelay';
   static const _keyBarcodeLastCounter = 'barcodeLastCounter';
+  static const _keyBarcodeContinuousScan = 'barcodeContinuousScan';
 
   Map<String, String> toMap(Settings settings) {
     return {
@@ -140,6 +141,8 @@ class SettingsMapper {
       _keyBarcodeAutoOpenManualDelay: settings.barcodeConfig.autoOpenManualDelay
           .toString(),
       _keyBarcodeLastCounter: settings.barcodeConfig.lastCounter.toString(),
+      _keyBarcodeContinuousScan: settings.barcodeConfig.continuousScan
+          .toString(),
     };
   }
 
@@ -219,6 +222,7 @@ class SettingsMapper {
         enabledFormats: _parseFormatList(map[_keyBarcodeEnabledFormats]),
         autoOpenManualDelay: _parseInt(map[_keyBarcodeAutoOpenManualDelay], 0),
         lastCounter: _parseInt(map[_keyBarcodeLastCounter], 0),
+        continuousScan: _parseBool(map[_keyBarcodeContinuousScan], true),
       ),
       onboardingCompleted: _parseBool(map[_keyOnboardingCompleted], false),
     );

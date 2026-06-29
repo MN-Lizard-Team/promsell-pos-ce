@@ -88,7 +88,7 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart       # Database class, schema v18, migration, indexes, seed
+├── app_database.dart       # Database class, schema v19, migration, indexes, seed
 ├── app_database.g.dart     # GENERATED — do not edit (not committed to git)
 └── tables/
     ├── products_table.dart
@@ -118,7 +118,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **18** (v0.8.7). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `onUpgrade`. Current schema version: **19** (v0.8.8). See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 
@@ -177,7 +177,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **1294 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
+Promsell has **1302 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
 
 ### Running tests
 

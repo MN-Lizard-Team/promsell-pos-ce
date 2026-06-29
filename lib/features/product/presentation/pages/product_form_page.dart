@@ -62,9 +62,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
   bool _isDirty = false;
   bool _deleting = false;
   bool _submitted = false;
-  bool _isSaving = false;
   bool _isPickingImage = false;
   bool _isGeneratingBarcode = false;
+  final _barcodeFocusNode = FocusNode();
   final List<String> _tempImagePaths = [];
   Timer? _debounceTimer;
   Timer? _submitTimeoutTimer;
@@ -95,6 +95,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   void _markDirty() {
     _isDirty = true;
+    setState(() {});
     if (_isEditing || _submitted) return;
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
@@ -245,6 +246,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _stockCtrl.dispose();
     _skuCtrl.dispose();
     _barcodeCtrl.dispose();
+    _barcodeFocusNode.dispose();
     _costCtrl.dispose();
     super.dispose();
   }
@@ -262,27 +264,24 @@ class _ProductFormPageState extends State<ProductFormPage> {
   }
 
   void _submit() {
-    if (_submitted || _isSaving) return;
+    final bloc = context.read<ProductBloc>();
+    if (_submitted || bloc.state.saveStatus == ProductSaveStatus.saving) return;
     if (!_formKey.currentState!.validate()) return;
     _submitted = true;
-    _isSaving = true;
     _isDirty = false;
     setState(() {});
     _submitTimeoutTimer?.cancel();
     _submitTimeoutTimer = Timer(const Duration(seconds: 5), () {
-      if (!mounted || !_isSaving) return;
+      if (!mounted || !_submitted) return;
       _submitted = false;
-      _isSaving = false;
       setState(() {});
       AppSnackBar.error(context, context.l10n.errorOccurred);
     });
-    final bloc = context.read<ProductBloc>();
     final price = double.tryParse(_priceCtrl.text);
     final stock = _resolveStock();
     final cost = double.tryParse(_costCtrl.text);
     if (price == null) {
       _submitted = false;
-      _isSaving = false;
       setState(() {});
       return;
     }
@@ -352,7 +351,13 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   int _resolveStock() {
     if (_trackStock) return int.tryParse(_stockCtrl.text) ?? 0;
-    if (_isEditing) return widget.product!.stock;
+    if (_isEditing) {
+      final bloc = context.read<ProductBloc>();
+      final latest = bloc.state.products
+          .where((p) => p.id == widget.product!.id)
+          .firstOrNull;
+      return latest?.stock ?? widget.product!.stock;
+    }
     return int.tryParse(_stockCtrl.text) ?? 0;
   }
 
@@ -379,8 +384,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
         excludeId: widget.product?.id,
       );
       if (!mounted) return;
-      _barcodeCtrl.text = barcode;
+      _barcodeCtrl.text = barcode.toUpperCase();
       _markDirty();
+      _barcodeFocusNode.requestFocus();
       AppSnackBar.success(context, l10n.barcodeGenerated);
     } catch (_) {
       if (!mounted) return;
@@ -473,12 +479,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 ctx.read<ProductFormCubit>().clearDraft();
               }
               AppSnackBar.success(ctx, ctx.l10n.productSaved);
-              FocusScope.of(ctx).unfocus();
               Navigator.pop(ctx, true);
             } else if (state.saveStatus == ProductSaveStatus.error) {
               _submitTimeoutTimer?.cancel();
               _submitted = false;
-              _isSaving = false;
               _deleting = false;
               setState(() {});
               final msg = switch (state.errorMessage) {
@@ -494,15 +498,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
         ),
       ],
       child: PopScope(
-        canPop: false,
+        canPop: !_isDirty || _submitted || _deleting,
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return;
-          if (!_isDirty || _submitted || _deleting) {
-            if (!context.mounted) return;
-            FocusScope.of(context).unfocus();
-            Navigator.of(context).pop();
-            return;
-          }
           final action = await showUnsavedChangesDialog(context);
           if (action == UnsavedDialogAction.save && context.mounted) {
             _submit();
@@ -517,7 +515,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
               }
             }
             _deleteTempImages();
-            FocusScope.of(context).unfocus();
             Navigator.of(context).pop();
           }
         },
@@ -531,8 +528,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
           ),
           bottomNavigationBar: BlocBuilder<ProductBloc, ProductState>(
             builder: (_, state) {
-              final isSaving =
-                  state.saveStatus == ProductSaveStatus.saving || _isSaving;
+              final isSaving = state.saveStatus == ProductSaveStatus.saving;
               return StickyActionBar(
                 primaryLabel: _isEditing
                     ? context.l10n.save
@@ -552,6 +548,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
             stockCtrl: _stockCtrl,
             skuCtrl: _skuCtrl,
             barcodeCtrl: _barcodeCtrl,
+            barcodeFocusNode: _barcodeFocusNode,
             costCtrl: _costCtrl,
             selectedCategory: _selectedCategory,
             imageUrl: _imageUrl,
@@ -569,13 +566,41 @@ class _ProductFormPageState extends State<ProductFormPage> {
               _markDirty();
               setState(() => _isActive = v);
             },
-            onTrackStockChanged: (v) {
+            onTrackStockChanged: (v) async {
+              final bloc = context.read<ProductBloc>();
+              if (!v && _trackStock) {
+                final l10n = context.l10n;
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: Text(l10n.trackStock),
+                    content: Text(l10n.trackStockDisableConfirm),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: Text(l10n.cancel),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: Text(l10n.confirm),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed != true || !mounted) return;
+              }
               _markDirty();
               if (v &&
                   _isEditing &&
                   int.tryParse(_stockCtrl.text) == 0 &&
-                  widget.product!.stock > 0) {
-                _stockCtrl.text = widget.product!.stock.toString();
+                  mounted) {
+                final latest = bloc.state.products
+                    .where((p) => p.id == widget.product!.id)
+                    .firstOrNull;
+                final restoreStock = latest?.stock ?? widget.product!.stock;
+                if (restoreStock > 0) {
+                  _stockCtrl.text = restoreStock.toString();
+                }
               }
               setState(() => _trackStock = v);
             },

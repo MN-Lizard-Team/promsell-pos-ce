@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/slip_verifier.dart';
+import 'package:promsell_pos_ce/core/utils/sound_player.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode/scan_overlay_painter.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
@@ -66,6 +67,7 @@ class _SlipScannerDialogState extends State<SlipScannerDialog>
 
       setState(() => _scanned = true);
       HapticFeedback.mediumImpact();
+      SoundPlayer.playConfirmation();
       await _controller.stop();
 
       final result = verifySlip(raw);

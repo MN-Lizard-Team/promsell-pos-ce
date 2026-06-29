@@ -6,16 +6,17 @@ class BarcodeScanHint extends StatelessWidget {
     super.key,
     required this.hint,
     required this.onManualEntry,
-    required this.onGallery,
+    this.scanCount,
   });
 
   final String? hint;
   final VoidCallback onManualEntry;
-  final VoidCallback onGallery;
+  final int? scanCount;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
 
     return Column(
       key: const ValueKey('scanner'),
@@ -38,19 +39,24 @@ class BarcodeScanHint extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
+        if (scanCount != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              l10n.scanCount(scanCount!),
+              style: TextStyle(
+                color: theme.colorScheme.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                shadows: const [Shadow(blurRadius: 6, color: Colors.black)],
+              ),
+            ),
+          ),
         TextButton.icon(
           onPressed: onManualEntry,
           icon: const Icon(Icons.keyboard, color: Colors.white),
           label: Text(
             l10n.enterManually,
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-        TextButton.icon(
-          onPressed: onGallery,
-          icon: const Icon(Icons.photo_library, color: Colors.white),
-          label: Text(
-            l10n.scanFromGallery,
             style: const TextStyle(color: Colors.white),
           ),
         ),

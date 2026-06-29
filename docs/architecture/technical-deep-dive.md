@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE v0.8.7
+# Technical Deep-Dive — Promsell POS CE v0.8.8
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 
@@ -67,30 +67,30 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  CartBloc ──→ (cart state, product add/remove/qty)        │
 │  DraftBloc ──→ DraftCartRepository (persist/load drafts)  │
 │  CheckoutBloc ──→ CreateSale, VoidSale                    │
-│  SettingsCubit ──→ SettingsRepository, Ean13Generator        │
+│  SettingsCubit ──→ SettingsRepository, Ean13Generator     │
 │  ReportCubit (lazySingleton) ──→ WatchReport              │
 │  InventoryLogCubit ──→ WatchInventoryLogs                 │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
            ▼
-┌─────────────────── Use Cases ───────────────────────────────────────────────┐
-│                                                                             │
-│  CreateSale ──→ SaleRepository                                              │
-│  VoidSale ──→ SaleRepository                                                │
-│  AdjustStock ──→ ProductRepository + InventoryLogService                    │
-│  GetProducts / Add / Update / Delete ──→ ProductRepository                  │
+┌─────────────────── Use Cases ────────────────────────────────────────────────┐
+│                                                                              │
+│  CreateSale ──→ SaleRepository                                               │
+│  VoidSale ──→ SaleRepository                                                 │
+│  AdjustStock ──→ ProductRepository + InventoryLogService                     │
+│  GetProducts / Add / Update / Delete ──→ ProductRepository                   │
 │  GenerateBarcode ──→ ProductRepository + SettingsRepository + Ean13Generator │
 │  BatchGenerateBarcodes ──→ ProductRepository + SettingsRepository +          │
 │                           Ean13Generator                                     │
-│  WatchCategories / Add / Update / Delete / Reorder ──→ CategoryRepository   │
-│  GetSales / GetSaleById ──→ SaleRepository                                  │
-│  WatchSaleHistory ──→ HistoryRepository                                     │
-│  WatchSales / WatchRecentSales ──→ SaleRepository                           │
-│  WatchReport ──→ HistoryRepository                                          │
-│  WatchInventoryLogs ──→ InventoryLogRepository                              │
-│                                                                             │
-└──────────┬──────────────────────────────────────────────────────────────────┘
+│  WatchCategories / Add / Update / Delete / Reorder ──→ CategoryRepository    │
+│  GetSales / GetSaleById ──→ SaleRepository                                   │
+│  WatchSaleHistory ──→ HistoryRepository                                      │
+│  WatchSales / WatchRecentSales ──→ SaleRepository                            │
+│  WatchReport ──→ HistoryRepository                                           │
+│  WatchInventoryLogs ──→ InventoryLogRepository                               │
+│                                                                              │
+└──────────┬───────────────────────────────────────────────────────────────────┘
            │
            ▼
 ┌─────────────────── Repositories ────────────────────────────┐
@@ -118,7 +118,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  Ean13Generator (@injectable)                               │
 │  ProductImageService ──→ SettingsRepository (image config)  │
 │  BarcodeImageService ──→ BarcodeWidget off-screen render    │
-│                       ──→ barcodes directory (PNG/JPEG)      │
+│                       ──→ barcodes directory (PNG/JPEG)     │
 │  ImageCacheService ──→ image directory (size tracking)      │
 │  SettingsLocalDatasource ──→ AppDatabase                    │
 │  ReceiptPdfService (stateless)                              │
@@ -239,4 +239,4 @@ try {
 
 ---
 
-<sub>Promsell POS CE · v0.8.7 · Technical Deep-Dive</sub>
+<sub>Promsell POS CE · v0.8.8 · Technical Deep-Dive</sub>

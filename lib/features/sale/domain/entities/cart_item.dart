@@ -8,12 +8,14 @@ class CartItem extends Equatable {
     required this.qty,
     this.discountType,
     this.discountValue,
+    this.note,
   });
 
   final Product product;
   final int qty;
   final String? discountType;
   final double? discountValue;
+  final String? note;
 
   double get rawSubtotal => MoneyUtils.round(product.price * qty);
 
@@ -34,6 +36,7 @@ class CartItem extends Equatable {
     int? qty,
     Object? discountType = _unset,
     Object? discountValue = _unset,
+    Object? note = _unset,
   }) => CartItem(
     product: product ?? this.product,
     qty: qty ?? this.qty,
@@ -43,12 +46,13 @@ class CartItem extends Equatable {
     discountValue: identical(discountValue, _unset)
         ? this.discountValue
         : discountValue as double?,
+    note: identical(note, _unset) ? this.note : note as String?,
   );
 
-  CartItem clearDiscount() => CartItem(product: product, qty: qty);
+  CartItem clearDiscount() => CartItem(product: product, qty: qty, note: note);
 
   @override
-  List<Object?> get props => [product, qty, discountType, discountValue];
+  List<Object?> get props => [product, qty, discountType, discountValue, note];
 }
 
 const Object _unset = Object();

@@ -198,67 +198,110 @@ class DiscountSharedWidgets {
     required List<double> presets,
     required ValueChanged<double> onChanged,
   }) {
-    final st = context.settingsTheme;
-    final ctrl = TextEditingController(text: value.toStringAsFixed(0));
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(label),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: ctrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              autofocus: true,
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: presets.map((preset) {
-                return ChoiceChip(
-                  label: Text(preset.toStringAsFixed(0)),
-                  selected: false,
-                  onSelected: (_) {
-                    ctrl.text = preset.toStringAsFixed(0);
-                  },
-                  selectedColor: st.activeAccentContainer,
-                  backgroundColor: st.cardBackground,
-                  side: BorderSide(color: st.cardBorderColor),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(context.l10n.cancel),
+      builder: (_) => _LimitDialog(
+        label: label,
+        value: value,
+        min: min,
+        max: max,
+        presets: presets,
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _LimitDialog extends StatefulWidget {
+  const _LimitDialog({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.presets,
+    required this.onChanged,
+  });
+
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final List<double> presets;
+  final ValueChanged<double> onChanged;
+
+  @override
+  State<_LimitDialog> createState() => _LimitDialogState();
+}
+
+class _LimitDialogState extends State<_LimitDialog> {
+  late final _ctrl = TextEditingController(
+    text: widget.value.toStringAsFixed(0),
+  );
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final st = context.settingsTheme;
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(widget.label),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _ctrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+            autofocus: true,
           ),
-          FilledButton(
-            onPressed: () {
-              final n = double.tryParse(ctrl.text.trim());
-              if (n != null) {
-                onChanged(n.clamp(min, max));
-              }
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(context.l10n.save),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: widget.presets.map((preset) {
+              return ChoiceChip(
+                label: Text(preset.toStringAsFixed(0)),
+                selected: false,
+                onSelected: (_) {
+                  _ctrl.text = preset.toStringAsFixed(0);
+                },
+                selectedColor: st.activeAccentContainer,
+                backgroundColor: st.cardBackground,
+                side: BorderSide(color: st.cardBorderColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
-    ).then((_) => ctrl.dispose());
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final n = double.tryParse(_ctrl.text.trim());
+            if (n != null) {
+              widget.onChanged(n.clamp(widget.min, widget.max));
+            }
+            Navigator.of(context).pop();
+          },
+          style: FilledButton.styleFrom(backgroundColor: st.softAccent),
+          child: Text(l10n.save),
+        ),
+      ],
+    );
   }
 }

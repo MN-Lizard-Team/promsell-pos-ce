@@ -6,60 +6,42 @@ import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_result_tile.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/product_sliver_content.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_catalog/sale_catalog_category_filter.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_catalog/sale_catalog_search_bar.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/category_filter_sheet.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_dashboard_header.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_filter_bar.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_product_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
-class SaleCatalog extends StatefulWidget {
-  const SaleCatalog({super.key});
+class SaleCatalog extends StatelessWidget {
+  const SaleCatalog({
+    super.key,
+    required this.searchController,
+    required this.viewMode,
+    required this.onViewModeChanged,
+    required this.onClearFilters,
+  });
 
-  @override
-  State<SaleCatalog> createState() => _SaleCatalogState();
-}
-
-class _SaleCatalogState extends State<SaleCatalog> {
-  final _searchController = TextEditingController();
-  final _searchFocus = FocusNode();
-  bool _searchFocused = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchFocus.addListener(() {
-      setState(() => _searchFocused = _searchFocus.hasFocus);
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_searchController.text.isNotEmpty) {
-        _searchController.clear();
-        context.read<ProductBloc>().add(const ProductSearchChanged(''));
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocus.dispose();
-    super.dispose();
-  }
+  final TextEditingController searchController;
+  final ViewMode viewMode;
+  final ValueChanged<ViewMode> onViewModeChanged;
+  final VoidCallback onClearFilters;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final currency = context.watch<SettingsCubit>().state.settings.currency;
 
     return BlocListener<ProductBloc, ProductState>(
       listenWhen: (prev, curr) => prev.searchQuery != curr.searchQuery,
       listener: (_, state) {
-        if (_searchController.text != state.searchQuery) {
-          _searchController.text = state.searchQuery;
+        if (searchController.text != state.searchQuery) {
+          searchController.text = state.searchQuery;
         }
       },
       child: BlocBuilder<ProductBloc, ProductState>(
@@ -78,54 +60,61 @@ class _SaleCatalogState extends State<SaleCatalog> {
           final activeProducts = state.filtered
               .where((product) => product.isActive)
               .toList();
-          final categories = ctx.watch<CategoryBloc>().state.categories;
-          final selectedCategoryId = state.categoryFilter;
           final products = activeProducts;
 
           return CustomScrollView(
             slivers: [
+              if (state.searchQuery.isEmpty)
+                const SliverToBoxAdapter(child: SaleDashboardHeader()),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: SaleCatalogSearchBar(
-                    controller: _searchController,
-                    focusNode: _searchFocus,
-                    isFocused: _searchFocused,
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SaleCatalogCategoryFilter(
-                      categories: categories,
-                      selectedCategoryId: selectedCategoryId,
-                    ),
-                    if (state.searchQuery.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(
-                          ctx.l10n.searchResultsCount(products.length),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.secondary,
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        flex: 1,
+                        child: SaleFilterBar(productState: state),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        flex: 2,
+                        child: _buildCategoryButton(ctx, state),
+                      ),
+                      const SizedBox(width: 6),
+                      SegmentedButton<ViewMode>(
+                        segments: const [
+                          ButtonSegment(
+                            value: ViewMode.list,
+                            icon: Icon(Icons.view_list, size: 18),
+                          ),
+                          ButtonSegment(
+                            value: ViewMode.grid,
+                            icon: Icon(Icons.grid_view, size: 18),
+                          ),
+                        ],
+                        selected: {viewMode},
+                        onSelectionChanged: (selection) =>
+                            onViewModeChanged(selection.first),
+                        style: const ButtonStyle(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          padding: WidgetStatePropertyAll(
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           ),
                         ),
                       ),
-                    const SizedBox(height: 10),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               if (products.isEmpty)
                 SliverToBoxAdapter(
                   child: SizedBox(
-                    height: 400,
+                    height: MediaQuery.sizeOf(context).height * 0.5,
                     child: state.searchQuery.isNotEmpty
                         ? SearchEmptyState(
                             query: state.searchQuery,
                             onClear: () {
-                              _searchController.clear();
+                              searchController.clear();
                               context.read<ProductBloc>().add(
                                 const ProductSearchChanged(''),
                               );
@@ -136,11 +125,7 @@ class _SaleCatalogState extends State<SaleCatalog> {
                             icon: Icons.filter_list_off,
                             title: ctx.l10n.noProductsInCategory,
                             actionLabel: ctx.l10n.clearFilters,
-                            onAction: () {
-                              context.read<ProductBloc>().add(
-                                const ProductCategoryFilterChanged(null),
-                              );
-                            },
+                            onAction: onClearFilters,
                           )
                         : AppEmptyState(
                             icon: Icons.inventory_2_outlined,
@@ -179,31 +164,80 @@ class _SaleCatalogState extends State<SaleCatalog> {
                     ),
                   ),
                 )
+              else if (viewMode == ViewMode.list)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 80),
+                  sliver: SliverList.separated(
+                    itemCount: products.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 6),
+                    itemBuilder: (_, i) => SizedBox(
+                      height: 88,
+                      child: SaleProductCard(
+                        product: products[i],
+                        currency: currency,
+                      ),
+                    ),
+                  ),
+                )
               else
-                SliverLayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.crossAxisExtent >= 720;
-                    return SliverGrid(
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: isWide ? 220 : 186,
-                        mainAxisExtent: isWide ? 160 : 148,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (_, index) => SaleProductCard(
-                          product: products[index],
-                          currency: currency,
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 80),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 200,
+                          mainAxisExtent: 240,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
                         ),
-                        childCount: products.length,
+                    delegate: SliverChildBuilderDelegate(
+                      (_, index) => SaleProductCard(
+                        product: products[index],
+                        currency: currency,
+                        isGrid: true,
                       ),
-                    );
-                  },
+                      childCount: products.length,
+                    ),
+                  ),
                 ),
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _buildCategoryButton(BuildContext context, ProductState state) {
+    final l10n = context.l10n;
+    final categories = context.watch<CategoryBloc>().state.categories;
+    final selected = state.categoryFilter;
+
+    String label;
+    if (selected == null) {
+      label = l10n.filterCategory;
+    } else if (selected == kNoCategoryFilter) {
+      label = l10n.noCategory;
+    } else {
+      label =
+          categories
+              .where((c) => c.id == selected)
+              .map((c) => c.name)
+              .firstOrNull ??
+          l10n.filterCategory;
+    }
+
+    final hasSelection = selected != null;
+
+    return PillButton(
+      icon: Icons.category_outlined,
+      label: label,
+      active: hasSelection,
+      onTap: () => CategoryFilterSheet.show(context),
+      onClear: hasSelection
+          ? () => context.read<ProductBloc>().add(
+              const ProductCategoryFilterChanged(null),
+            )
+          : null,
     );
   }
 }

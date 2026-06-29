@@ -127,7 +127,7 @@ class CartItemRemoveDialog {
               Navigator.pop(context);
               AppSnackBar.withAction(
                 context,
-                l10n.itemRemoved,
+                l10n.itemRemoved(item.product.name),
                 actionLabel: l10n.undo,
                 onAction: () => bloc.add(
                   CartRestored(items: [...bloc.state.items, prevItem]),

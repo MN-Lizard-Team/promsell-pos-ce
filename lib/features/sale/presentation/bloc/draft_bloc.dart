@@ -31,6 +31,8 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
   Timer? _saveTimer;
   bool _isSaving = false;
   CartState? _pendingCartState;
+  String? _lastRestoredDraftId;
+  DateTime? _lastRestoreTime;
 
   Future<void> _onInitialized(
     DraftInitialized event,
@@ -46,6 +48,8 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         emit(state.copyWith(activeDraftId: id, loadedDraft: null));
       } else {
         final draft = drafts.first;
+        _lastRestoredDraftId = draft.id;
+        _lastRestoreTime = DateTime.now();
         emit(
           state.copyWith(
             activeDraftId: draft.id,
@@ -81,6 +85,8 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         emit(state.copyWith(errorMessage: 'Draft not found'));
         return;
       }
+      _lastRestoredDraftId = draft.id;
+      _lastRestoreTime = DateTime.now();
       emit(
         state.copyWith(
           activeDraftId: draft.id,
@@ -166,6 +172,12 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
   ) {
     final draftId = state.activeDraftId;
     if (draftId == null) return;
+    if (draftId == _lastRestoredDraftId &&
+        _lastRestoreTime != null &&
+        DateTime.now().difference(_lastRestoreTime!) <
+            const Duration(seconds: 2)) {
+      return;
+    }
     _pendingCartState = event.cartState;
     _cancelSaveTimer();
     _saveTimer = Timer(const Duration(milliseconds: 1500), () async {

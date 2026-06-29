@@ -31,6 +31,7 @@ class BarcodeManualEntry extends StatelessWidget {
             controller: controller,
             keyboardType: TextInputType.visiblePassword,
             textInputAction: TextInputAction.done,
+            autofocus: true,
             onSubmitted: (_) => onSubmit(),
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(

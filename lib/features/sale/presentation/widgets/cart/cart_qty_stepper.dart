@@ -20,10 +20,10 @@ class CartQtyStepper extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      height: 44,
+      height: 32,
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Row(
@@ -39,14 +39,14 @@ class CartQtyStepper extends StatelessWidget {
           GestureDetector(
             onTap: onQtyTap,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 32),
+              constraints: const BoxConstraints(minWidth: 28),
               alignment: Alignment.center,
               child: Text(
                 '$qty',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontFamily: 'NotoSansThai',
                   fontWeight: FontWeight.w700,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -92,14 +92,14 @@ class _StepperButtonState extends State<_StepperButton> {
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutBack,
         child: Container(
-          width: 32,
-          height: 32,
+          width: 24,
+          height: 24,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: theme.colorScheme.primary.withValues(alpha: 0.1),
           ),
-          child: Icon(widget.icon, size: 20, color: theme.colorScheme.primary),
+          child: Icon(widget.icon, size: 16, color: theme.colorScheme.primary),
         ),
       ),
     );

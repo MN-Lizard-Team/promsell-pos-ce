@@ -1,6 +1,6 @@
-# Testing — Promsell POS CE v0.8.7
+# Testing — Promsell POS CE v0.8.8
 
-1294 automated tests across 8 layers — 56% line coverage (11,978 / 21,392 lines). Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
+1302 automated tests across 8 layers — 56% line coverage (11,978 / 21,392 lines). Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 
@@ -16,22 +16,54 @@ test/
 │   ├── pump_app.dart           # pumpApp extension for widget tests
 │   └── fake_database.dart      # In-memory Drift DB factory
 ├── core/
-│   └── utils/                  # Core utility tests (MoneyUtils, Ean13Generator, Validators)
+│   ├── database/               # Barcode dedup migration test
+│   ├── di/                     # DI graph test
+│   ├── image/                  # UnifiedImageWidget, ImageSkeleton, ImageErrorPlaceholder
+│   ├── services/               # CrashLogService, ReceiptPdfService
+│   ├── utils/                  # MoneyUtils, Ean13Generator, Validators, PaymentMethodHelper, SlipVerifier, CurrencyFormatter, CustomerQrDecoder, AppLogger
+│   └── widgets/
+│       ├── barcode/            # BarcodeFormatHelper, BarcodeManualEntry, BarcodeScannerWidgets, ScanOverlayPainter
+│       ├── image/              # ImageSourceSheet, ImageViewerUtils, ImageViewerWidgets
+│       ├── layout/             # AdaptiveBreakpoints, LayoutWidgets, StickyActionBar
+│       ├── nav/                # BottomNavigationBar, IconWithBadge, NavBarShell, NavSwipeHelper
+│       ├── primitives/         # AppBadgeEmptyState, AppLoadingOverlay, AppTextDialog, MoneyText, SkeletonCard
+│       ├── receipt_preview_test.dart
+│       ├── search/             # SearchEmptyState, SearchHistoryCubit, SearchResultTile
+│       ├── shared_ui_widgets_test.dart
+│       └── stock/              # StockStepper
 ├── features/
 │   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
-│   │   └── presentation/widgets/  # CartItemCard, CartDetailRow, CartQtyButton, CartDottedLineRow, CompactCartFab
+│   │   └── presentation/
+│   │       ├── pages/          # SalePage, CartReviewPage, CheckoutPage, PaymentSheet
+│   │       └── widgets/
+│   │           ├── cart/       # CartItemCard, CartItemRow, CartQtyButton, CartQtyStepper, CartDetailRow, CartDottedLineRow, CartTotalBar, CompactCartFab, CartBottomSheet (CartItemTile, CartSummaryFooter), CartItemRow (CartItemPrice)
+│   │           ├── catalog/    # SaleProductCard
+│   │           ├── checkout/   # CheckoutTotalCard
+│   │           ├── drafts/     # DraftsBottomSheet (DraftTile)
+│   │           ├── payment/    # PaymentWidgets
+│   │           └── promptpay/  # PaymentStatusCard
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
 │   │   └── presentation/widgets/  # CategoryPicker, CategoryFilterBar, ProductCardShell, ProductFormCubit, ProductHeroImage
 │   ├── history/                # Use case, BLoC, repo tests
-│   ├── inventory/              # InventoryLog entity, use case, cubit, repo tests
+│   ├── inventory/              # InventoryLog entity, use case, cubit, repo, service tests
 │   ├── report/                 # ReportCubit tests + ReportCalculator domain tests
 │   │   └── domain/extensions/   # ReportCalculator_test.dart
 │   ├── settings/               # Cubit, repo, widget tests
-│   │   └── presentation/widgets/  # ImagePreviewCard, DemoImagePreview, BackupStatusCard, BackupInfoCard, PromptpayPreviewCard, PromptpayInfoCard, image_settings_labels
+│   │   └── presentation/widgets/
+│   │       ├── about/          # AboutWidgets
+│   │       ├── backup/         # BackupStatusCard, BackupInfoCard
+│   │       ├── barcode/        # BarcodePrefixTile, BarcodeWidgets
+│   │       ├── discount/       # DiscountPolicySettingsForm (DiscountSections, DiscountSharedWidgets), DiscountPolicySummaryCard
+│   │       ├── general/        # GeneralAppearanceTiles, GeneralLanguageResetTiles, GeneralSummaryCard, GeneralThemeTile, GeneralSettingsForm
+│   │       ├── image/          # ImagePreviewCard, ImageSettingsTiles
+│   │       ├── promptpay/      # PromptpayPreviewCard, PromptpayInfoCard, PromptpaySettingsTiles
+│   │       ├── receipt/        # ReceiptSettingsForm (ReceiptContentSection)
+│   │       ├── shop/           # ShopInfoForm (ShopContactField)
+│   │       └── tiles/          # SettingsTextTile
 │   ├── daily_close/            # Cubit, repo, widget tests
 │   │   └── presentation/widgets/  # DailyCloseDateCard, DailyCloseSummaryCard, DailyCloseReconciliationCard, DailyCloseSummaryRow, DailyCloseReadOnlyRow
 │   └── onboarding/             # Widget tests
-│       └── presentation/widgets/  # OnboardingHeroSection, OnboardingSection, GreenChoiceChip, OnboardingSheetOption
+│       └── presentation/widgets/  # OnboardingHeroSection, OnboardingSection, BrandChoiceChip, OnboardingSheetOption
 ├── integration/
 │   ├── checkout_flow_test.dart  # End-to-end data layer checkout
 │   ├── sale_integrity_test.dart # Void sale, adjust stock, full audit trail
@@ -78,4 +110,4 @@ test/
 
 ---
 
-<sub>Promsell POS CE · v0.8.7 · Testing</sub>
+<sub>Promsell POS CE · v0.8.8 · Testing</sub>

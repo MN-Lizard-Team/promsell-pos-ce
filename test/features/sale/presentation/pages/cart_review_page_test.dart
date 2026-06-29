@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -49,6 +53,25 @@ void main() {
     return const CartReviewPage();
   }
 
+  Widget buildSubjectWithBaseRoute() {
+    return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: BlocProvider<CartBloc>.value(
+        value: mockCartBloc,
+        child: BlocProvider<SettingsCubit>.value(
+          value: mockSettingsCubit,
+          child: const Scaffold(body: SizedBox.shrink()),
+        ),
+      ),
+    );
+  }
+
   group('CartReviewPage', () {
     testWidgets('renders empty cart state', (tester) async {
       when(() => mockCartBloc.state).thenReturn(const CartState(items: []));
@@ -94,25 +117,36 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Water'), findsOneWidget);
-      expect(
-        find.widgetWithText(FilledButton, 'Back to Payment'),
-        findsOneWidget,
-      );
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Back to Sale'), findsOneWidget);
+      expect(find.byIcon(Icons.storefront_outlined), findsOneWidget);
     });
 
     testWidgets('back button pops navigator', (tester) async {
       final items = [CartItem(product: testProduct, qty: 1)];
       when(() => mockCartBloc.state).thenReturn(CartState(items: items));
 
-      await tester.pumpApp(
-        buildSubject(),
-        cartBloc: mockCartBloc,
-        settingsCubit: mockSettingsCubit,
+      await tester.pumpWidget(buildSubjectWithBaseRoute());
+      await tester.pumpAndSettle();
+
+      final navigator = tester.state<NavigatorState>(
+        find.byType(Navigator).first,
+      );
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider<CartBloc>.value(
+            value: mockCartBloc,
+            child: BlocProvider<SettingsCubit>.value(
+              value: mockSettingsCubit,
+              child: const CartReviewPage(),
+            ),
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Back to Payment'));
+      expect(find.byType(CartReviewPage), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Back to Sale'));
       await tester.pumpAndSettle();
 
       expect(find.byType(CartReviewPage), findsNothing);

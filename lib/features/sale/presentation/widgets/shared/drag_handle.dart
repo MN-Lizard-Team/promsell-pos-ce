@@ -46,7 +46,7 @@ class DragHandle extends StatelessWidget {
           label: semanticLabel,
           child: SizedBox(
             width: isVertical ? null : 20,
-            height: isVertical ? 24 : null,
+            height: isVertical ? 32 : null,
             child: Center(
               child: ValueListenableBuilder<bool>(
                 valueListenable: isDragging,

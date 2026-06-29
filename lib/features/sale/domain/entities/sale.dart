@@ -11,6 +11,7 @@ class SaleItem extends Equatable {
     required this.subtotal,
     this.discountAmount = 0.0,
     this.vatAmount = 0.0,
+    this.note,
     this.updatedAt,
     this.deletedAt,
     this.version = 1,
@@ -26,6 +27,7 @@ class SaleItem extends Equatable {
   final double subtotal;
   final double discountAmount;
   final double vatAmount;
+  final String? note;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
   final int version;
@@ -42,6 +44,7 @@ class SaleItem extends Equatable {
     subtotal,
     discountAmount,
     vatAmount,
+    note,
     updatedAt,
     deletedAt,
     version,

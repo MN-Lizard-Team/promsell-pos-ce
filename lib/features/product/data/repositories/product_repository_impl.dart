@@ -35,12 +35,10 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<bool> barcodeExists(String barcode, {String? excludeId}) async {
-    final product = await _datasource.getProductByBarcode(
+    return _datasource.barcodeExistsAnyStatus(
       barcode.toUpperCase(),
+      excludeId: excludeId,
     );
-    if (product == null) return false;
-    if (excludeId != null && product.id == excludeId) return false;
-    return true;
   }
 
   @override
@@ -79,34 +77,42 @@ class ProductRepositoryImpl implements ProductRepository {
       );
     }
 
-    await _datasource.insertProduct(
-      ProductsCompanion.insert(
-        id: id,
-        name: name,
-        sku: Value(sku),
-        barcode: Value(normalizedBarcode),
-        price: price,
-        cost: Value(cost),
-        stock: Value(stock),
-        categoryId: Value(categoryId),
-        imageUrl: Value(imageUrl),
-        imagePath: Value(finalImagePath),
-        imageThumbnailPath: Value(finalThumbPath),
-        barcodeImagePath: Value(barcodeImagePath),
-        trackStock: Value(trackStock),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-      ),
-    );
-    return id;
+    try {
+      await _datasource.insertProduct(
+        ProductsCompanion.insert(
+          id: id,
+          name: name,
+          sku: Value(sku),
+          barcode: Value(normalizedBarcode),
+          price: price,
+          cost: Value(cost),
+          stock: Value(stock),
+          categoryId: Value(categoryId),
+          imageUrl: Value(imageUrl),
+          imagePath: Value(finalImagePath),
+          imageThumbnailPath: Value(finalThumbPath),
+          barcodeImagePath: Value(barcodeImagePath),
+          trackStock: Value(trackStock),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
+      return id;
+    } catch (e) {
+      if (finalImagePath != null) {
+        await _imageService.deleteImages(finalImagePath, finalThumbPath);
+      }
+      if (barcodeImagePath != null) {
+        await _barcodeImageService.delete(id);
+      }
+      rethrow;
+    }
   }
 
   @override
   Future<void> updateProduct(Product product) async {
     final existing = await _datasource.getProductById(product.id);
 
-    // Images picked during edit are saved to a temporary path. Rename them to
-    // the final product path before updating the database.
     String? finalImagePath = product.imagePath;
     String? finalThumbPath = product.imageThumbnailPath;
     if (product.imagePath != null && product.imagePath!.isNotEmpty) {
@@ -123,20 +129,18 @@ class ProductRepositoryImpl implements ProductRepository {
       }
     }
 
+    String? oldImagePath;
+    String? oldThumbPath;
+    bool imageChanged = false;
+    bool imageRemoved = false;
     if (existing != null) {
-      final oldPath = existing.imagePath;
-      final oldThumb = existing.imageThumbnailPath;
-      final newPath = finalImagePath;
-      final newThumb = finalThumbPath;
-
-      final imageChanged = oldPath != newPath || oldThumb != newThumb;
-      final imageRemoved =
-          (oldPath != null || oldThumb != null) &&
-          (newPath == null && newThumb == null);
-
-      if (imageChanged || imageRemoved) {
-        await _imageService.deleteImages(oldPath, oldThumb);
-      }
+      oldImagePath = existing.imagePath;
+      oldThumbPath = existing.imageThumbnailPath;
+      imageChanged =
+          oldImagePath != finalImagePath || oldThumbPath != finalThumbPath;
+      imageRemoved =
+          (oldImagePath != null || oldThumbPath != null) &&
+          (finalImagePath == null && finalThumbPath == null);
     }
 
     String? barcodeImagePath;
@@ -147,6 +151,9 @@ class ProductRepositoryImpl implements ProductRepository {
           existing?.barcodeImagePath != null) {
         barcodeImagePath = existing!.barcodeImagePath;
       } else {
+        if (existing?.barcodeImagePath != null) {
+          await _barcodeImageService.delete(product.id);
+        }
         barcodeImagePath = await _barcodeImageService.generate(
           barcode: normalizedBarcode,
           productId: product.id,
@@ -177,12 +184,32 @@ class ProductRepositoryImpl implements ProductRepository {
         updatedAt: Value(now),
       ),
     );
+
+    if (imageChanged || imageRemoved) {
+      await _imageService.deleteImages(oldImagePath, oldThumbPath);
+    }
   }
 
   @override
   Future<void> bulkUpdateBarcodes(
     List<({String id, String barcode})> updates,
-  ) => _datasource.bulkUpdateBarcodes(updates);
+  ) async {
+    final updatesWithImages =
+        <({String id, String barcode, String? barcodeImagePath})>[];
+    for (final u in updates) {
+      final normalizedBarcode = u.barcode.toUpperCase();
+      final barcodeImagePath = await _barcodeImageService.generate(
+        barcode: normalizedBarcode,
+        productId: u.id,
+      );
+      updatesWithImages.add((
+        id: u.id,
+        barcode: normalizedBarcode,
+        barcodeImagePath: barcodeImagePath,
+      ));
+    }
+    await _datasource.bulkUpdateBarcodesWithImages(updatesWithImages);
+  }
 
   @override
   Future<void> deleteProduct(String id) async {

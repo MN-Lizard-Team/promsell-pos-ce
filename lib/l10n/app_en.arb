@@ -21,6 +21,15 @@
   "clearCart": "Clear",
   "confirmClearCart": "Clear the entire cart?",
   "cartTitle": "Cart",
+  "cartEmpty": "Cart is empty",
+  "backToSale": "Back to Sale",
+  "checkoutButton": "Checkout",
+  "addItems": "Add Items",
+  "itemRemoved": "{name} removed",
+  "@itemRemoved": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "undo": "Undo",
   "allCategories": "All",
   "saleSearchProducts": "Search sale products...",
   "quickCashExact": "Exact cash",
@@ -53,11 +62,13 @@
   "notePlaceholder": "Note (optional)",
   "paymentReferenceOptional": "Payment reference (optional)",
   "saleError": "Failed to save sale",
+  "saleTimeout": "Payment timed out, please try again",
   "insufficientCash": "Insufficient cash received",
   "remainingAmount": "Remaining",
 
   "productsTitle": "Products",
   "searchProducts": "Search products...",
+  "recentSearches": "Recent searches",
   "noProductsYet": "No products yet",
   "errorOccurred": "An error occurred",
   "retry": "Retry",
@@ -66,6 +77,14 @@
   "@stockLabel": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "stockRemaining": "Left: {count}",
+  "@stockRemaining": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "itemNoteLabel": "Item note",
+  "itemNoteHint": "Add a note for this item",
+  "duplicateItem": "Item duplicated",
+  "clear": "Clear",
   "edit": "Edit",
   "delete": "Delete",
   "activate": "Activate",
@@ -260,6 +279,7 @@
 
   "trackStock": "Track stock",
   "trackStockHint": "Turn off for service items (no stock deduction)",
+  "trackStockDisableConfirm": "Disabling stock tracking will freeze the current stock value. You can re-enable it later to resume tracking.",
   "stockTrackingDisabled": "Stock tracking is disabled. Enable to manage stock quantity.",
   "settingsStockPolicy": "Stock Policy",
   "allowOversell": "Allow overselling",
@@ -414,16 +434,18 @@
   "showMore": "Show more",
   "showLess": "Show less",
   "itemsCount": "{count} items",
+  "totalDiscountLabel": "Total discount",
+  "@totalDiscountLabel": {},
 
   "settingsReceiptSize": "Receipt Size",
   "receiptSize80mm": "80mm (Thermal)",
   "receiptSizeA4": "A4",
 
   "settingsMaxDrafts": "Max Drafts",
-  "settingsCompactCartMode": "Compact Cart Mode",
+  "settingsCompactCartMode": "Delivery-style Cart",
   "settingsUltraCompactMode": "Ultra Compact Mode",
   "settingsUltraCompactModeHint": "Smaller items for maximum density",
-  "settingsCompactModeSubtitle": "Smaller item rows, more items visible",
+  "settingsCompactModeSubtitle": "Bottom bar cart like delivery apps; off = classic panel",
   "settingsUltraModeOverrides": "Overrides Compact mode",
   "settingsUltraModeSubtitle": "Minimal padding, maximum density",
   "settingsOversellAllowed": "Oversell allowed",
@@ -646,6 +668,7 @@
   "@costLabel": {
     "placeholders": { "currency": { "type": "String" } }
   },
+  "costHelper": "Used to calculate profit margins",
   "outOfStockShort": "Out",
   "productsCount": "Products",
   "lowStock": "Low stock",
@@ -668,6 +691,21 @@
   "scanSuccess": "Scan successful",
   "scanFromGallery": "Scan from image",
   "barcodeNotFoundInImage": "No barcode found in image",
+  "barcodeMustBeAlphanumeric": "Barcode must be alphanumeric (letters and numbers only)",
+  "scanningImage": "Scanning image...",
+  "continuousScan": "Continuous scan",
+  "continuousScanHint": "Keep scanning without closing the scanner",
+  "focusCamera": "Focus",
+  "productFound": "{name} added",
+  "@productFound": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "productNotFoundShort": "Product not found",
+  "scanCount": "{count} scanned",
+  "@scanCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "done": "Done",
   "torchOn": "Turn on flashlight",
   "torchOff": "Turn off flashlight",
   "submit": "Submit",
@@ -805,5 +843,32 @@
   "barcodeSaveError": "Failed to save barcode",
   "barcodePrintError": "Failed to print barcode",
   "inventoryValue": "Inventory value",
-  "totalProducts": "Total products"
+  "totalProducts": "Total products",
+  "todayRevenue": "Today's Revenue",
+  "todaySalesCount": "Sales",
+  "cartItems": "Items",
+  "sortDefault": "Default",
+  "sortNameAsc": "Name A-Z",
+  "sortPriceLowHigh": "Price: Low to High",
+  "sortPriceHighLow": "Price: High to Low",
+  "sortStockLowHigh": "Stock: Low to High",
+  "filterCategory": "Category",
+  "filterSort": "Sort",
+  "filterStock": "Stock",
+  "filterAll": "All",
+  "filterMore": "Filter",
+  "filterPageTitle": "Filter Products",
+  "filterReset": "Reset",
+  "filterShowResults": "Show Results",
+  "filterShowResultsCount": "Show Results ({count})",
+  "@filterShowResultsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "filterPriceRange": "Price Range",
+  "filterPriceMin": "Min",
+  "filterPriceMax": "Max",
+  "filterActiveCount": "{count} active",
+  "@filterActiveCount": {
+    "placeholders": { "count": { "type": "int" } }
+  }
 }

@@ -1,12 +1,12 @@
 # Store Submission Checklist
 
-Last updated: 2026-06-26 | Version: 0.8.7+1
+Last updated: 2026-06-29 | Version: 0.8.8+1
 
 ---
 
 ## Pre-Flight (Code — DONE)
 
-- [x] Version bumped to `0.8.7+1` in `pubspec.yaml`
+- [x] Version bumped to `0.8.8+1` in `pubspec.yaml`
 - [x] Android app label = "Promsell"
 - [x] iOS display name = "Promsell"
 - [x] iOS bundle name = "Promsell"
@@ -15,7 +15,7 @@ Last updated: 2026-06-26 | Version: 0.8.7+1
 - [x] Release signing config with keystore fallback
 - [x] `.gitignore` excludes keystore files
 - [x] `flutter analyze` → 0 issues
-- [x] `flutter test` → 1294 passing
+- [x] `flutter test` → 1302 passing
 
 ---
 

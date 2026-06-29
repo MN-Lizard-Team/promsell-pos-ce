@@ -1,4 +1,4 @@
-# Migration & Operations — Promsell POS CE v0.8.7
+# Migration & Operations — Promsell POS CE v0.8.8
 
 Migration guide, backup & restore procedures, performance notes, and database testing.
 
@@ -32,9 +32,9 @@ onUpgrade: (m, from, to) async {
 },
 ```
 
-### Incremental migrations (v2 → v18)
+### Incremental migrations (v2 → v19)
 
-Schema versions 2 through 18 use incremental migration:
+Schema versions 2 through 19 use incremental migration:
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -176,7 +176,7 @@ Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2-HMAC-SHA256
 
 ### Cautions
 
-- **Version mismatch:** Restoring a pre-v2 backup on v18+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
+- **Version mismatch:** Restoring a pre-v2 backup on v19+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
 - **Encrypted backups:** Restoring an encrypted backup without the PIN is impossible.
 - **CSV export** (v0.6.0): Export sales and products data as CSV via `csv` + `share_plus`.
 
@@ -286,4 +286,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.8.7 · Migration & Operations</sub>
+<sub>Promsell POS CE · v0.8.8 · Migration & Operations</sub>

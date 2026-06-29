@@ -32,6 +32,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<CartBulkItemsRemoved>(_onBulkItemsRemoved);
     on<CartBulkItemDiscountsCleared>(_onBulkItemDiscountsCleared);
     on<CartItemsReordered>(_onCartItemsReordered);
+    on<CartItemNoteChanged>(_onItemNoteChanged);
   }
 
   final ProductRepository _productRepo;
@@ -97,7 +98,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
   void _onCartRestored(CartRestored event, Emitter<CartState> emit) {
     emit(
-      state.copyWith(
+      CartState(
         items: event.items,
         cartDiscountType: event.cartDiscountType,
         cartDiscountValue: event.cartDiscountValue,
@@ -299,6 +300,16 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       final bIndex = orderMap[b.product.id] ?? fallbackIndex;
       return aIndex.compareTo(bIndex);
     });
+    emit(state.copyWith(items: updated));
+  }
+
+  void _onItemNoteChanged(CartItemNoteChanged event, Emitter<CartState> emit) {
+    final updated = state.items.map((i) {
+      if (i.product.id == event.productId) {
+        return i.copyWith(note: event.note);
+      }
+      return i;
+    }).toList();
     emit(state.copyWith(items: updated));
   }
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
     show parseCategoryColor;
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
@@ -47,13 +50,41 @@ class CategoryField extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                selectedCategory?.name ?? context.l10n.noCategorySelected,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: selectedCategory == null
-                      ? theme.colorScheme.onSurfaceVariant
-                      : theme.colorScheme.onSurface,
-                ),
+              child: BlocBuilder<CategoryBloc, CategoryState>(
+                builder: (ctx, state) {
+                  final isLoading =
+                      state.status == CategoryStatus.loading &&
+                      state.categories.isEmpty;
+                  if (isLoading) {
+                    return Row(
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          ctx.l10n.loading,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return Text(
+                    selectedCategory?.name ?? context.l10n.noCategorySelected,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: selectedCategory == null
+                          ? theme.colorScheme.onSurfaceVariant
+                          : theme.colorScheme.onSurface,
+                    ),
+                  );
+                },
               ),
             ),
             Icon(

@@ -101,3 +101,19 @@ class ProductStockFilterChanged extends ProductEvent {
   @override
   List<Object?> get props => [filter];
 }
+
+class ProductSortChanged extends ProductEvent {
+  const ProductSortChanged(this.sort);
+  final ProductSort sort;
+
+  @override
+  List<Object?> get props => [sort];
+}
+
+class ProductPriceRangeChanged extends ProductEvent {
+  const ProductPriceRangeChanged(this.priceRange);
+  final PriceRange? priceRange;
+
+  @override
+  List<Object?> get props => [priceRange];
+}

@@ -8,37 +8,61 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
 
+class _CreateDraftDialog extends StatefulWidget {
+  const _CreateDraftDialog({required this.bloc});
+
+  final DraftBloc bloc;
+
+  @override
+  State<_CreateDraftDialog> createState() => _CreateDraftDialogState();
+}
+
+class _CreateDraftDialogState extends State<_CreateDraftDialog> {
+  late final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.newDraft),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        decoration: InputDecoration(hintText: l10n.draftNameHint),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final name = _ctrl.text.trim().isEmpty ? null : _ctrl.text.trim();
+            widget.bloc.add(DraftCreated(name: name));
+            Navigator.pop(context);
+          },
+          child: Text(l10n.save),
+        ),
+      ],
+    );
+  }
+}
+
 class CartHeaderDialogs {
   CartHeaderDialogs._();
 
   static void showCreateDialog(BuildContext context) {
     final bloc = context.read<DraftBloc>();
-    final ctrl = TextEditingController();
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(context.l10n.newDraft),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          decoration: InputDecoration(hintText: context.l10n.draftNameHint),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = ctrl.text.trim().isEmpty ? null : ctrl.text.trim();
-              bloc.add(DraftCreated(name: name));
-              Navigator.pop(context);
-            },
-            child: Text(context.l10n.save),
-          ),
-        ],
-      ),
-    ).then((_) => ctrl.dispose());
+      builder: (_) => _CreateDraftDialog(bloc: bloc),
+    );
   }
 
   static void confirmClearCart(BuildContext context) {

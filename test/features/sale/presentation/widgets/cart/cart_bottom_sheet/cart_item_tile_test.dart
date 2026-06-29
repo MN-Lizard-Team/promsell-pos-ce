@@ -132,7 +132,7 @@ void main() {
         cartBloc: mockCartBloc,
       );
 
-      expect(find.textContaining('-฿'), findsOneWidget);
+      expect(find.textContaining('฿-'), findsOneWidget);
     });
   });
 }

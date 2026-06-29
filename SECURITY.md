@@ -71,7 +71,7 @@ Promsell is an **offline-first local app** with no network access by default:
 16. **Dev/prod flavor separation** (v0.8.3+) — separate entry points (`main_dev.dart`, `main_prod.dart`) prevent development configurations from leaking into production builds
 17. **Barcode image generation isolation** (v0.8.6+) — `BarcodeImageService` uses off-screen `RenderRepaintBoundary` for barcode image generation; no external rendering dependencies, no network calls, images saved locally to `/barcodes/` directory only
 18. **Ean13Generator instance isolation** (v0.8.6+) — refactored from static mutable counter to `@injectable` per-instance counter; eliminates cross-test counter contamination and ensures counter state isolation between concurrent operations
-19. **Cubit disposal guard** (v0.8.7+) — `ProductFormCubit._loadDraftFromStorage` checks `isClosed` before `emit` after async storage read; prevents dirty widget build scope errors and potential state leaks when navigating away during draft load
+19. **Cubit disposal guard** (v0.8.8+) — `ProductFormCubit._loadDraftFromStorage` checks `isClosed` before `emit` after async storage read; prevents dirty widget build scope errors and potential state leaks when navigating away during draft load
 
 ## Security changelog
 

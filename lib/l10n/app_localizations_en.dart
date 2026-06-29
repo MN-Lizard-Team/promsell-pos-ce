@@ -59,6 +59,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cartTitle => 'Cart';
 
   @override
+  String get cartEmpty => 'Cart is empty';
+
+  @override
+  String get backToSale => 'Back to Sale';
+
+  @override
+  String get checkoutButton => 'Checkout';
+
+  @override
+  String get addItems => 'Add Items';
+
+  @override
+  String itemRemoved(String name) {
+    return 'Item removed';
+  }
+
+  @override
+  String get undo => 'Undo';
+
+  @override
   String get allCategories => 'All';
 
   @override
@@ -131,6 +151,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saleError => 'Failed to save sale';
 
   @override
+  String get saleTimeout => 'Payment timed out, please try again';
+
+  @override
   String get insufficientCash => 'Insufficient cash received';
 
   @override
@@ -141,6 +164,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchProducts => 'Search products...';
+
+  @override
+  String get recentSearches => 'Recent searches';
 
   @override
   String get noProductsYet => 'No products yet';
@@ -158,6 +184,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String stockLabel(int count) {
     return 'Stock: $count';
   }
+
+  @override
+  String stockRemaining(int count) {
+    return 'Left: $count';
+  }
+
+  @override
+  String get itemNoteLabel => 'Item note';
+
+  @override
+  String get itemNoteHint => 'Add a note for this item';
+
+  @override
+  String get duplicateItem => 'Item duplicated';
+
+  @override
+  String get clear => 'Clear';
 
   @override
   String get edit => 'Edit';
@@ -665,6 +708,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Turn off for service items (no stock deduction)';
 
   @override
+  String get trackStockDisableConfirm =>
+      'Disabling stock tracking will freeze the current stock value. You can re-enable it later to resume tracking.';
+
+  @override
   String get stockTrackingDisabled =>
       'Stock tracking is disabled. Enable to manage stock quantity.';
 
@@ -822,12 +869,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cartCleared => 'Cart cleared';
-
-  @override
-  String get undo => 'Undo';
-
-  @override
-  String get itemRemoved => 'Item removed';
 
   @override
   String get removeItem => 'Remove item';
@@ -1080,6 +1121,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get totalDiscountLabel => 'Total discount';
+
+  @override
   String get settingsReceiptSize => 'Receipt Size';
 
   @override
@@ -1092,7 +1136,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsMaxDrafts => 'Max Drafts';
 
   @override
-  String get settingsCompactCartMode => 'Compact Cart Mode';
+  String get settingsCompactCartMode => 'Delivery-style Cart';
 
   @override
   String get settingsUltraCompactMode => 'Ultra Compact Mode';
@@ -1103,7 +1147,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsCompactModeSubtitle =>
-      'Smaller item rows, more items visible';
+      'Bottom bar cart like delivery apps; off = classic panel';
 
   @override
   String get settingsUltraModeOverrides => 'Overrides Compact mode';
@@ -1656,6 +1700,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get costHelper => 'Used to calculate profit margins';
+
+  @override
   String get outOfStockShort => 'Out';
 
   @override
@@ -1722,6 +1769,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeNotFoundInImage => 'No barcode found in image';
+
+  @override
+  String get barcodeMustBeAlphanumeric =>
+      'Barcode must be alphanumeric (letters and numbers only)';
+
+  @override
+  String get scanningImage => 'Scanning image...';
+
+  @override
+  String get continuousScan => 'Continuous scan';
+
+  @override
+  String get continuousScanHint => 'Keep scanning without closing the scanner';
+
+  @override
+  String get focusCamera => 'Focus';
+
+  @override
+  String productFound(String name) {
+    return '$name added';
+  }
+
+  @override
+  String get productNotFoundShort => 'Product not found';
+
+  @override
+  String scanCount(int count) {
+    return '$count scanned';
+  }
+
+  @override
+  String get done => 'Done';
 
   @override
   String get torchOn => 'Turn on flashlight';
@@ -2136,4 +2215,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalProducts => 'Total products';
+
+  @override
+  String get todayRevenue => 'Today\'s Revenue';
+
+  @override
+  String get todaySalesCount => 'Sales';
+
+  @override
+  String get cartItems => 'Items';
+
+  @override
+  String get sortDefault => 'Default';
+
+  @override
+  String get sortNameAsc => 'Name A-Z';
+
+  @override
+  String get sortPriceLowHigh => 'Price: Low to High';
+
+  @override
+  String get sortPriceHighLow => 'Price: High to Low';
+
+  @override
+  String get sortStockLowHigh => 'Stock: Low to High';
+
+  @override
+  String get filterCategory => 'Category';
+
+  @override
+  String get filterSort => 'Sort';
+
+  @override
+  String get filterStock => 'Stock';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterMore => 'Filter';
+
+  @override
+  String get filterPageTitle => 'Filter Products';
+
+  @override
+  String get filterReset => 'Reset';
+
+  @override
+  String get filterShowResults => 'Show Results';
+
+  @override
+  String filterShowResultsCount(int count) {
+    return 'Show Results ($count)';
+  }
+
+  @override
+  String get filterPriceRange => 'Price Range';
+
+  @override
+  String get filterPriceMin => 'Min';
+
+  @override
+  String get filterPriceMax => 'Max';
+
+  @override
+  String filterActiveCount(int count) {
+    return '$count active';
+  }
 }

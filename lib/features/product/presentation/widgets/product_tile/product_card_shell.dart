@@ -30,7 +30,7 @@ class ProductCardShell extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-          width: 0.5,
+          width: 1,
         ),
       ),
       child: Material(

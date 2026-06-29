@@ -8,6 +8,7 @@ class BarcodeConfig extends Equatable {
     this.enabledFormats = defaultAllFormats,
     this.autoOpenManualDelay = 0,
     this.lastCounter = 0,
+    this.continuousScan = true,
   });
 
   static const defaultAllFormats = <String>[
@@ -31,6 +32,7 @@ class BarcodeConfig extends Equatable {
   final List<String> enabledFormats;
   final int autoOpenManualDelay;
   final int lastCounter;
+  final bool continuousScan;
 
   BarcodeConfig copyWith({
     bool? scanEnabled,
@@ -39,6 +41,7 @@ class BarcodeConfig extends Equatable {
     List<String>? enabledFormats,
     int? autoOpenManualDelay,
     int? lastCounter,
+    bool? continuousScan,
   }) {
     return BarcodeConfig(
       scanEnabled: scanEnabled ?? this.scanEnabled,
@@ -47,6 +50,7 @@ class BarcodeConfig extends Equatable {
       enabledFormats: enabledFormats ?? this.enabledFormats,
       autoOpenManualDelay: autoOpenManualDelay ?? this.autoOpenManualDelay,
       lastCounter: lastCounter ?? this.lastCounter,
+      continuousScan: continuousScan ?? this.continuousScan,
     );
   }
 
@@ -58,5 +62,6 @@ class BarcodeConfig extends Equatable {
     enabledFormats,
     autoOpenManualDelay,
     lastCounter,
+    continuousScan,
   ];
 }

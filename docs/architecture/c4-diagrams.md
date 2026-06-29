@@ -1,4 +1,4 @@
-# C4 Diagrams & Data Flows — Promsell POS CE v0.8.7
+# C4 Diagrams & Data Flows — Promsell POS CE v0.8.8
 
 System context, container diagram, component diagram, and data flow sequences for all stock-mutating operations.
 
@@ -78,7 +78,7 @@ System context, container diagram, component diagram, and data flow sequences fo
                          ▼
 ┌─────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                 │
-│  9 tables • schema v18 • WAL • FK ON • UUIDv4 PKs   │
+│  9 tables • schema v19 • WAL • FK ON • UUIDv4 PKs   │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -294,4 +294,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.8.7 · C4 Diagrams & Data Flows</sub>
+<sub>Promsell POS CE · v0.8.8 · C4 Diagrams & Data Flows</sub>

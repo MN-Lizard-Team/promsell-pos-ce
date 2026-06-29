@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class CartResizeController extends ChangeNotifier {
   CartResizeController() {
-    cartHeight = ValueNotifier(280);
+    cartHeight = ValueNotifier(360);
     cartWidth = ValueNotifier(390);
     isDragging = ValueNotifier(false);
   }
@@ -11,7 +11,7 @@ class CartResizeController extends ChangeNotifier {
   late final ValueNotifier<double> cartWidth;
   late final ValueNotifier<bool> isDragging;
 
-  static const double _minCartHeightPortrait = 320;
+  static const double _minCartHeightPortrait = 360;
   static const double _minCartHeightLandscape = 280;
   static const double _maxCartHeightRatioPortrait = 0.95;
   static const double _maxCartHeightRatioLandscape = 0.90;
@@ -58,7 +58,8 @@ class CartResizeController extends ChangeNotifier {
   void onVerticalDragEnd(BuildContext context, DragEndDetails details) {
     final maxH = maxCartHeight(context);
     final minH = minCartHeight(context);
-    final presets = <double>[minH, maxH];
+    final midH = (minH + maxH) / 2;
+    final presets = <double>[minH, midH, maxH];
     for (final p in presets) {
       if ((cartHeight.value - p).abs() < _snapTolerance) {
         cartHeight.value = p;
@@ -80,10 +81,15 @@ class CartResizeController extends ChangeNotifier {
   }
 
   void onSizePresetChanged(BuildContext context, double value) {
+    final maxH = maxCartHeight(context);
+    final minH = minCartHeight(context);
+    final midH = (minH + maxH) / 2;
     if (value <= 0.0) {
-      cartHeight.value = minCartHeight(context);
+      cartHeight.value = minH;
+    } else if (value >= 1.0) {
+      cartHeight.value = maxH;
     } else {
-      cartHeight.value = maxCartHeight(context);
+      cartHeight.value = midH;
     }
   }
 
@@ -96,8 +102,12 @@ class CartResizeController extends ChangeNotifier {
   }
 
   double? currentSizePreset(BuildContext context) {
-    if (cartHeight.value <= minCartHeight(context) + 1) return 0.0;
-    if (cartHeight.value >= maxCartHeight(context) - 1) return 1.0;
+    final minH = minCartHeight(context);
+    final maxH = maxCartHeight(context);
+    final midH = (minH + maxH) / 2;
+    if ((cartHeight.value - minH).abs() <= 1) return 0.0;
+    if ((cartHeight.value - midH).abs() <= 1) return 0.5;
+    if ((cartHeight.value - maxH).abs() <= 1) return 1.0;
     return null;
   }
 

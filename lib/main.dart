@@ -34,6 +34,8 @@ void main() async {
 Future<void> runPromsellApp() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
   configureDependencies();
   final crashLogService = sl<CrashLogService>();
 

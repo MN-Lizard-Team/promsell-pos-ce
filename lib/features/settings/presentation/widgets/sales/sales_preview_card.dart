@@ -20,14 +20,14 @@ class SalesPreviewCard extends StatelessWidget {
 
   IconData get _modeIcon {
     if (ultraCompactMode) return Icons.density_small;
-    if (cartCompactMode) return Icons.view_compact_outlined;
+    if (cartCompactMode) return Icons.shopping_bag_outlined;
     return Icons.shopping_cart_outlined;
   }
 
   String _modeLabel(BuildContext context) {
     if (ultraCompactMode) return 'Ultra Compact';
-    if (cartCompactMode) return 'Compact';
-    return 'Normal';
+    if (cartCompactMode) return 'Delivery';
+    return 'Classic';
   }
 
   @override

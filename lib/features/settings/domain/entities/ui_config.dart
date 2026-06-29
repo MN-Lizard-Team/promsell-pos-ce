@@ -5,7 +5,7 @@ class UiConfig extends Equatable {
     this.locale = 'th',
     this.themeMode = 'system',
     this.dateFormat = 'dd/MM/yyyy',
-    this.cartCompactMode = false,
+    this.cartCompactMode = true,
     this.ultraCompactMode = false,
     this.accessibilityMode = false,
   });

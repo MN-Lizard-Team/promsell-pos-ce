@@ -61,18 +61,14 @@ void main() {
   }
 
   group('CartTotalBar', () {
-    testWidgets('renders subtotal and total for non-empty cart', (
-      tester,
-    ) async {
+    testWidgets('renders total for non-empty cart', (tester) async {
       final state = CartState(items: [CartItem(product: tProduct, qty: 2)]);
       await pumpBar(tester, state);
 
-      expect(find.byType(MoneyText), findsNWidgets(2));
+      expect(find.byType(MoneyText), findsOneWidget);
     });
 
-    testWidgets('shows item discount line when items have discounts', (
-      tester,
-    ) async {
+    testWidgets('renders total when items have discounts', (tester) async {
       final state = CartState(
         items: [
           CartItem(
@@ -85,12 +81,10 @@ void main() {
       );
       await pumpBar(tester, state);
 
-      expect(find.byType(MoneyText), findsNWidgets(3));
+      expect(find.byType(MoneyText), findsOneWidget);
     });
 
-    testWidgets('shows cart discount line when cart has discount', (
-      tester,
-    ) async {
+    testWidgets('renders total when cart has discount', (tester) async {
       final state = CartState(
         items: [CartItem(product: tProduct, qty: 2)],
         cartDiscountType: 'PERCENT',
@@ -98,7 +92,7 @@ void main() {
       );
       await pumpBar(tester, state);
 
-      expect(find.byType(MoneyText), findsNWidgets(3));
+      expect(find.byType(MoneyText), findsOneWidget);
     });
 
     testWidgets('shows checkout button', (tester) async {
@@ -108,7 +102,7 @@ void main() {
       expect(find.byType(FilledButton), findsOneWidget);
     });
 
-    testWidgets('shows cart discount button when enableCartDiscount is true', (
+    testWidgets('does not show cart discount button in minimal mode', (
       tester,
     ) async {
       final state = CartState(items: [CartItem(product: tProduct, qty: 1)]);
@@ -117,7 +111,7 @@ void main() {
       );
       await pumpBar(tester, state, settings: settings);
 
-      expect(find.byType(TextButton), findsOneWidget);
+      expect(find.byType(TextButton), findsNothing);
     });
 
     testWidgets('does not show cart discount button when disabled', (

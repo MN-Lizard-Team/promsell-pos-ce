@@ -51,15 +51,10 @@ class SalesDisplaySection extends StatelessWidget {
                 context: context,
                 icon: Icons.density_small,
                 title: l10n.settingsUltraCompactMode,
-                subtitle: settings.cartCompactMode && settings.ultraCompactMode
-                    ? l10n.settingsUltraModeOverrides
-                    : l10n.settingsUltraModeSubtitle,
+                subtitle: l10n.settingsUltraModeSubtitle,
                 value: settings.ultraCompactMode,
-                onChanged: (v) {
-                  var next = settings.copyWith(ultraCompactMode: v);
-                  if (v) next = next.copyWith(cartCompactMode: false);
-                  onUpdate(next);
-                },
+                onChanged: (v) =>
+                    onUpdate(settings.copyWith(ultraCompactMode: v)),
               ),
             ],
           ),

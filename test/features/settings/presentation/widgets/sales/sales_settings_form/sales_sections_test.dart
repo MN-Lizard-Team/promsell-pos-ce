@@ -29,7 +29,7 @@ void main() {
       await tester.tap(find.byType(Switch).first);
       await tester.pump();
       expect(updated, isNotNull);
-      expect(updated!.cartCompactMode, isTrue);
+      expect(updated!.cartCompactMode, isFalse);
     });
   });
 

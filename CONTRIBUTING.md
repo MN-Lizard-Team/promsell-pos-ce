@@ -149,7 +149,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **1294 automated tests**. All must pass before submitting a PR.
+The project has **1302 automated tests**. All must pass before submitting a PR.
 
 ```bash
 # Run all tests (includes stress tests)
@@ -241,7 +241,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.8.7) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.8.8) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)

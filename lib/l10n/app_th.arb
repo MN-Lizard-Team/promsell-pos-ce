@@ -21,6 +21,15 @@
   "clearCart": "ล้าง",
   "confirmClearCart": "ยืนยันล้างตะกร้าทั้งหมด?",
   "cartTitle": "ตะกร้า",
+  "cartEmpty": "ตะกร้าว่าง",
+  "backToSale": "กลับไปขายสินค้า",
+  "checkoutButton": "ชำระเงิน",
+  "addItems": "เพิ่มสินค้า",
+  "itemRemoved": "ลบ {name} แล้ว",
+  "@itemRemoved": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "undo": "ยกเลิก",
   "allCategories": "ทั้งหมด",
   "saleSearchProducts": "ค้นหาสินค้าที่ขาย...",
   "quickCashExact": "รับพอดี",
@@ -53,11 +62,13 @@
   "notePlaceholder": "หมายเหตุ (ไม่บังคับ)",
   "paymentReferenceOptional": "เลขอ้างอิงการชำระเงิน (ไม่บังคับ)",
   "saleError": "บันทึกการขายไม่สำเร็จ",
+  "saleTimeout": "หมดเวลารอการชำระเงิน กรุณาลองอีกครั้ง",
   "insufficientCash": "เงินที่รับมายังไม่ครบยอด",
   "remainingAmount": "ยอดขาด",
 
   "productsTitle": "สินค้า",
   "searchProducts": "ค้นหาสินค้า...",
+  "recentSearches": "ค้นหาล่าสุด",
   "noProductsYet": "ยังไม่มีสินค้า",
   "errorOccurred": "เกิดข้อผิดพลาด",
   "retry": "ลองอีกครั้ง",
@@ -66,6 +77,14 @@
   "@stockLabel": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "stockRemaining": "เหลือ: {count}",
+  "@stockRemaining": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "itemNoteLabel": "หมายเหตุสินค้า",
+  "itemNoteHint": "เพิ่มหมายเหตุสำหรับสินค้านี้",
+  "duplicateItem": "คัดลอกรายการแล้ว",
+  "clear": "ล้าง",
   "edit": "แก้ไข",
   "delete": "ลบ",
   "activate": "เปิดใช้งาน",
@@ -257,6 +276,7 @@
 
   "trackStock": "ติดตามสต็อค",
   "trackStockHint": "ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)",
+  "trackStockDisableConfirm": "การปิดการติดตามสต็อกจะแช่แข็งค่าสต็อกปัจจุบัน คุณสามารถเปิดใหม่ได้ในภายหลังเพื่อติดตามต่อ",
   "stockTrackingDisabled": "การติดตามสต็อกปิดอยู่ เปิดเพื่อจัดการจำนวนสต็อก",
   "settingsStockPolicy": "นโยบายสต็อค",
   "allowOversell": "อนุญาตขายเกินสต็อค",
@@ -411,16 +431,17 @@
   "showMore": "แสดงเพิ่ม",
   "showLess": "แสดงน้อยลง",
   "itemsCount": "{count} รายการ",
+  "totalDiscountLabel": "ส่วนลดทั้งหมด",
 
   "settingsReceiptSize": "ขนาดใบเสร็จ",
   "receiptSize80mm": "80mm (กระดาษความร้อน)",
   "receiptSizeA4": "A4",
 
   "settingsMaxDrafts": "บิลสูงสุด",
-  "settingsCompactCartMode": "โหมดตะกร้ากะทัดรัด",
+  "settingsCompactCartMode": "ตะกร้าแบบ Delivery",
   "settingsUltraCompactMode": "โหมดกะทัดรัดมาก",
   "settingsUltraCompactModeHint": "รายการเล็กลงเพื่อความหนาแน่นสูงสุด",
-  "settingsCompactModeSubtitle": "แถวสินค้าเล็กลง มองเห็นได้มากขึ้น",
+  "settingsCompactModeSubtitle": "แถบล่างแบบแอปส่งอาหาร; ปิด = พาเนลตะกร้าแบบเดิม",
   "settingsUltraModeOverrides": "แทนที่โหมดกะทัดรัด",
   "settingsUltraModeSubtitle": "ระยะห่างน้อยที่สุด แสดงได้มากที่สุด",
   "settingsOversellAllowed": "อนุญาตขายเกิน",
@@ -643,6 +664,7 @@
   "@costLabel": {
     "placeholders": { "currency": { "type": "String" } }
   },
+  "costHelper": "ใช้คำนวณกำไรขั้นต้น",
   "outOfStockShort": "หมด",
   "productsCount": "สินค้า",
   "lowStock": "เหลือน้อย",
@@ -665,6 +687,21 @@
   "scanSuccess": "สแกนสำเร็จ",
   "scanFromGallery": "สแกนจากรูป",
   "barcodeNotFoundInImage": "ไม่พบบาร์โค้ดในรูป",
+  "barcodeMustBeAlphanumeric": "บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น",
+  "scanningImage": "กำลังสแกนรูป...",
+  "continuousScan": "สแกนต่อเนื่อง",
+  "continuousScanHint": "สแกนต่อเนื่องโดยไม่ปิดหน้าจอสแกน",
+  "focusCamera": "โฟกัส",
+  "productFound": "เพิ่ม {name} แล้ว",
+  "@productFound": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "productNotFoundShort": "ไม่พบสินค้า",
+  "scanCount": "สแกนแล้ว {count} ชิ้น",
+  "@scanCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "done": "เสร็จ",
   "torchOn": "เปิดไฟฉาย",
   "torchOff": "ปิดไฟฉาย",
   "submit": "ยืนยัน",
@@ -802,5 +839,32 @@
   "barcodeSaveError": "ไม่สามารถบันทึกบาร์โค้ดได้",
   "barcodePrintError": "ไม่สามารถพิมพ์บาร์โค้ดได้",
   "inventoryValue": "มูลค่าคงคลัง",
-  "totalProducts": "สินค้าทั้งหมด"
+  "totalProducts": "สินค้าทั้งหมด",
+  "todayRevenue": "ยอดขายวันนี้",
+  "todaySalesCount": "บิด",
+  "cartItems": "ชิ้น",
+  "sortDefault": "ค่าเริ่มต้น",
+  "sortNameAsc": "ชื่อ A-Z",
+  "sortPriceLowHigh": "ราคา: ต่ำ-สูง",
+  "sortPriceHighLow": "ราคา: สูง-ต่ำ",
+  "sortStockLowHigh": "สต็อก: น้อย-มาก",
+  "filterCategory": "หมวดหมู่",
+  "filterSort": "เรียง",
+  "filterStock": "สต็อก",
+  "filterAll": "ทั้งหมด",
+  "filterMore": "กรอง",
+  "filterPageTitle": "กรองสินค้า",
+  "filterReset": "รีเซ็ต",
+  "filterShowResults": "ดูผลลัพธ์",
+  "filterShowResultsCount": "ดูผลลัพธ์ ({count})",
+  "@filterShowResultsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "filterPriceRange": "ช่วงราคา",
+  "filterPriceMin": "ต่ำสุด",
+  "filterPriceMax": "สูงสุด",
+  "filterActiveCount": "ใช้งาน {count}",
+  "@filterActiveCount": {
+    "placeholders": { "count": { "type": "int" } }
+  }
 }

@@ -35,10 +35,10 @@ class CartItemCard extends StatelessWidget {
     return Card(
       elevation: 1,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         onTap: onRowTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
@@ -128,7 +128,7 @@ class CartItemCard extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.delete_outline),
                           color: theme.colorScheme.error,
-                          tooltip: 'Remove item',
+                          tooltip: context.l10n.removeItem,
                           onPressed: onDelete,
                           iconSize: 20,
                           visualDensity: VisualDensity.compact,
@@ -139,19 +139,22 @@ class CartItemCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  MoneyText(
-                    value: item.subtotal,
-                    currency: currency,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontFamily: 'NotoSansThai',
-                      fontWeight: FontWeight.w700,
+              Expanded(
+                flex: 0,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    MoneyText(
+                      value: item.subtotal,
+                      currency: currency,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontFamily: 'NotoSansThai',
+                        fontWeight: FontWeight.w700,
+                      ),
+                      color: theme.colorScheme.onSurface,
                     ),
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

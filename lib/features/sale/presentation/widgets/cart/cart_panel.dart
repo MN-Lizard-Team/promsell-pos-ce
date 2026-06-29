@@ -41,6 +41,7 @@ class _CartPanelState extends State<CartPanel> {
   bool _isShowingReceipt = false;
 
   Widget _buildReorderableList(List<CartItem> items, String currency) {
+    final theme = Theme.of(context);
     return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       itemCount: items.length,
@@ -56,18 +57,34 @@ class _CartPanelState extends State<CartPanel> {
       },
       itemBuilder: (_, index) {
         final item = items[index];
-        return Padding(
+        return Dismissible(
           key: ValueKey(item.product.id),
-          padding: const EdgeInsets.only(bottom: 8),
-          child: CartItemRow(
-            item: item,
-            currency: currency,
-            ultraCompact: context
-                .watch<SettingsCubit>()
-                .state
-                .settings
-                .ultraCompactMode,
-            dragHandleIndex: index,
+          direction: DismissDirection.endToStart,
+          dismissThresholds: const {DismissDirection.endToStart: 0.5},
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.error,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.delete_outline, color: theme.colorScheme.onError),
+          ),
+          onDismissed: (_) {
+            context.read<CartBloc>().add(CartProductRemoved(item.product.id));
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: CartItemRow(
+              item: item,
+              currency: currency,
+              ultraCompact: context
+                  .watch<SettingsCubit>()
+                  .state
+                  .settings
+                  .ultraCompactMode,
+              dragHandleIndex: index,
+            ),
           ),
         );
       },
@@ -112,7 +129,7 @@ class _CartPanelState extends State<CartPanel> {
           final content = Container(
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
@@ -138,7 +155,9 @@ class _CartPanelState extends State<CartPanel> {
                   )
                 else ...[
                   Expanded(child: _buildReorderableList(items, currency)),
-                  CartTotalBar(state: state, currency: currency),
+                  Flexible(
+                    child: CartTotalBar(state: state, currency: currency),
+                  ),
                 ],
               ],
             ),

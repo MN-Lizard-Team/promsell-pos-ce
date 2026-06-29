@@ -3,6 +3,70 @@ import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
+class _DraftsDialog extends StatefulWidget {
+  const _DraftsDialog({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final String label;
+  final int value;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  @override
+  State<_DraftsDialog> createState() => _DraftsDialogState();
+}
+
+class _DraftsDialogState extends State<_DraftsDialog> {
+  late final _ctrl = TextEditingController(text: widget.value.toString());
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final st = context.settingsTheme;
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(widget.label),
+      content: TextField(
+        controller: _ctrl,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          hintText: '${widget.min}–${widget.max}',
+          border: const OutlineInputBorder(),
+        ),
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final n = int.tryParse(_ctrl.text.trim());
+            if (n != null) {
+              widget.onChanged(n.clamp(widget.min, widget.max));
+            }
+            Navigator.of(context).pop();
+          },
+          style: FilledButton.styleFrom(backgroundColor: st.softAccent),
+          child: Text(l10n.save),
+        ),
+      ],
+    );
+  }
+}
+
 class SalesSharedWidgets {
   SalesSharedWidgets._();
 
@@ -143,40 +207,16 @@ class SalesSharedWidgets {
     required int max,
     required ValueChanged<int> onChanged,
   }) {
-    final st = context.settingsTheme;
-    final ctrl = TextEditingController(text: value.toString());
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(label),
-        content: TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            hintText: '$min–$max',
-            border: const OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final n = int.tryParse(ctrl.text.trim());
-              if (n != null) {
-                onChanged(n.clamp(min, max));
-              }
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(context.l10n.save),
-          ),
-        ],
+      builder: (_) => _DraftsDialog(
+        label: label,
+        value: value,
+        min: min,
+        max: max,
+        onChanged: onChanged,
       ),
-    ).then((_) => ctrl.dispose());
+    );
   }
 
   static Widget buildSwitchTile({

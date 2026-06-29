@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/product/data/repositories/product_repository_impl.dart';
+import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
@@ -163,6 +164,20 @@ void main() {
       verifyNever(() => mockImageService.deleteImages(any(), any()));
     });
 
+    test(
+      'barcodeExists returns true when barcode exists for different product',
+      () async {
+        when(
+          () => mockDs.barcodeExistsAnyStatus(
+            any(),
+            excludeId: any(named: 'excludeId'),
+          ),
+        ).thenAnswer((_) async => true);
+
+        expect(await repo.barcodeExists('dup', excludeId: 'other-id'), true);
+      },
+    );
+
     test('getProductByBarcode returns active product', () async {
       when(
         () => mockDs.getProductByBarcode('123'),
@@ -195,17 +210,121 @@ void main() {
     });
 
     test('barcodeExists respects excludeId', () async {
-      final existing = tProduct.copyWith(barcode: 'dup');
       when(
-        () => mockDs.getProductByBarcode('DUP'),
-      ).thenAnswer((_) async => existing);
-      when(
-        () => mockDs.getProductByBarcode('NEW'),
-      ).thenAnswer((_) async => null);
+        () => mockDs.barcodeExistsAnyStatus(
+          any(),
+          excludeId: any(named: 'excludeId'),
+        ),
+      ).thenAnswer((_) async => false);
 
-      expect(await repo.barcodeExists('dup', excludeId: existing.id), false);
-      expect(await repo.barcodeExists('dup', excludeId: 'other-id'), true);
-      expect(await repo.barcodeExists('new'), false);
+      expect(
+        await repo.barcodeExists(
+          'dup',
+          excludeId: 'prod-0001-0001-0001-000000000001',
+        ),
+        false,
+      );
+      verify(
+        () => mockDs.barcodeExistsAnyStatus(
+          'DUP',
+          excludeId: 'prod-0001-0001-0001-000000000001',
+        ),
+      ).called(1);
+    });
+
+    test(
+      'updateProduct deletes old images after DB update succeeds (Bug A)',
+      () async {
+        final oldProduct = tProduct.copyWith(
+          imagePath: '/old/path.jpg',
+          imageThumbnailPath: '/old/path_thumb.jpg',
+        );
+        final updatedProduct = tProduct.copyWith(
+          imagePath: '/new/path.jpg',
+          imageThumbnailPath: '/new/path_thumb.jpg',
+        );
+        when(
+          () => mockDs.getProductById(any()),
+        ).thenAnswer((_) async => oldProduct);
+        when(
+          () => mockImageService.deleteImages(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockImageService.renameImages(any(), any()),
+        ).thenAnswer((_) async => null);
+        when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+
+        await repo.updateProduct(updatedProduct);
+
+        verifyInOrder([
+          () => mockDs.updateProduct(any()),
+          () => mockImageService.deleteImages(
+            '/old/path.jpg',
+            '/old/path_thumb.jpg',
+          ),
+        ]);
+      },
+    );
+
+    test(
+      'updateProduct does not delete old images when DB update fails (Bug A)',
+      () async {
+        final oldProduct = tProduct.copyWith(
+          imagePath: '/old/path.jpg',
+          imageThumbnailPath: '/old/path_thumb.jpg',
+        );
+        final updatedProduct = tProduct.copyWith(
+          imagePath: '/new/path.jpg',
+          imageThumbnailPath: '/new/path_thumb.jpg',
+        );
+        when(
+          () => mockDs.getProductById(any()),
+        ).thenAnswer((_) async => oldProduct);
+        when(
+          () => mockImageService.deleteImages(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockImageService.renameImages(any(), any()),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockDs.updateProduct(any()),
+        ).thenThrow(Exception('DB error'));
+
+        expect(
+          () => repo.updateProduct(updatedProduct),
+          throwsA(isA<Exception>()),
+        );
+
+        verifyNever(() => mockImageService.deleteImages(any(), any()));
+      },
+    );
+
+    test('addProduct cleans up images when insert fails (Bug D)', () async {
+      when(() => mockImageService.renameImages(any(), any())).thenAnswer(
+        (_) async => const ImagePaths(
+          fullPath: '/renamed/path.jpg',
+          thumbnailPath: '/renamed/path_thumb.jpg',
+        ),
+      );
+      when(
+        () => mockImageService.deleteImages(any(), any()),
+      ).thenAnswer((_) async {});
+      when(() => mockDs.insertProduct(any())).thenThrow(Exception('DB error'));
+
+      try {
+        await repo.addProduct(
+          name: 'Test',
+          price: 100.0,
+          stock: 10,
+          imagePath: '/temp/path.jpg',
+          imageThumbnailPath: '/temp/path_thumb.jpg',
+        );
+        fail('Should have thrown');
+      } catch (e) {
+        expect(e, isA<Exception>());
+      }
+
+      verify(() => mockImageService.deleteImages(any(), any())).called(1);
     });
 
     test('deleteProduct deletes images then delegates', () async {

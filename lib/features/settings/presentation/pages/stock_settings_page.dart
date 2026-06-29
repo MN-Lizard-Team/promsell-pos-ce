@@ -106,71 +106,98 @@ class StockSettingsPage extends StatelessWidget {
     Settings s,
     SettingsCubit cubit,
   ) {
-    final st = context.settingsTheme;
-    final ctrl = TextEditingController(text: s.lowStockThreshold.toString());
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.lowStockThreshold),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 280,
-              child: TextField(
-                controller: ctrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                autofocus: true,
-              ),
+      builder: (_) => _ThresholdDialog(settings: s, cubit: cubit),
+    );
+  }
+}
+
+class _ThresholdDialog extends StatefulWidget {
+  const _ThresholdDialog({required this.settings, required this.cubit});
+
+  final Settings settings;
+  final SettingsCubit cubit;
+
+  @override
+  State<_ThresholdDialog> createState() => _ThresholdDialogState();
+}
+
+class _ThresholdDialogState extends State<_ThresholdDialog> {
+  late final _ctrl = TextEditingController(
+    text: widget.settings.lowStockThreshold.toString(),
+  );
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final st = context.settingsTheme;
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.lowStockThreshold),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 280,
+            child: TextField(
+              controller: _ctrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              autofocus: true,
             ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [3, 5, 10, 20].map((preset) {
-                return ChoiceChip(
-                  label: Text('$preset'),
-                  selected: false,
-                  onSelected: (_) {
-                    ctrl.text = '$preset';
-                  },
-                  selectedColor: st.activeAccentContainer,
-                  backgroundColor: st.cardBackground,
-                  side: BorderSide(color: st.cardBorderColor),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(context.l10n.cancel),
           ),
-          FilledButton(
-            onPressed: () {
-              final n = int.tryParse(ctrl.text.trim());
-              if (n != null) {
-                cubit.updateField(
-                  (s) => s.copyWith(lowStockThreshold: n.clamp(1, 100)),
-                );
-              }
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(context.l10n.save),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [3, 5, 10, 20].map((preset) {
+              return ChoiceChip(
+                label: Text('$preset'),
+                selected: false,
+                onSelected: (_) {
+                  _ctrl.text = '$preset';
+                },
+                selectedColor: st.activeAccentContainer,
+                backgroundColor: st.cardBackground,
+                side: BorderSide(color: st.cardBorderColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
-    ).then((_) => ctrl.dispose());
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final n = int.tryParse(_ctrl.text.trim());
+            if (n != null) {
+              widget.cubit.updateField(
+                (s) => s.copyWith(lowStockThreshold: n.clamp(1, 100)),
+              );
+            }
+            Navigator.of(context).pop();
+          },
+          style: FilledButton.styleFrom(backgroundColor: st.softAccent),
+          child: Text(l10n.save),
+        ),
+      ],
+    );
   }
 }
 

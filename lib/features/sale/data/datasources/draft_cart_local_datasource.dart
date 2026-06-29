@@ -87,6 +87,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
                 qty: item.qty,
                 discountType: Value(item.discountType),
                 discountValue: Value(item.discountValue),
+                note: Value(item.note),
                 deviceId: Value(deviceId),
               ),
             );
@@ -129,6 +130,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             qty: r.qty,
             discountType: r.discountType,
             discountValue: r.discountValue,
+            note: r.note,
           ),
         )
         .toList();
@@ -182,6 +184,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           qty: row.qty,
           discountType: row.discountType,
           discountValue: row.discountValue,
+          note: row.note,
         ),
       );
     }

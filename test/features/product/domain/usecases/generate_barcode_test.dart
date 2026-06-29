@@ -84,6 +84,7 @@ void main() {
 
       await generateBarcode(prefix: '200');
 
+      verify(() => mockSettingsRepo.load()).called(2);
       verify(() => mockSettingsRepo.save(any())).called(1);
     });
   });

@@ -32,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -230,6 +230,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 18) {
         await _addColumnIfNotExists('products', 'barcode_image_path', 'TEXT');
+      }
+      if (from < 19) {
+        await _addColumnIfNotExists('sale_items', 'note', 'TEXT');
+        await _addColumnIfNotExists('draft_cart_items', 'note', 'TEXT');
       }
     },
     beforeOpen: (details) async {

@@ -50,14 +50,6 @@ class PaymentInputSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          TextFormField(
-            controller: referenceController,
-            decoration: InputDecoration(
-              labelText: context.l10n.paymentReferenceOptional,
-              prefixIcon: const Icon(Icons.tag_outlined),
-            ),
-            textInputAction: TextInputAction.next,
-          ),
         ],
       );
     }

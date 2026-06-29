@@ -67,7 +67,12 @@ class CashInputSection extends StatelessWidget {
             FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
           ],
           autofocus: true,
-          onChanged: (_) {},
+          onChanged: (value) {
+            final parsed = double.tryParse(value);
+            if (parsed != null) {
+              onReceivedChanged(parsed);
+            }
+          },
         ),
         const SizedBox(height: 10),
         ChangePreview(

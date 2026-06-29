@@ -15,7 +15,7 @@ void main() {
     });
 
     test('initial values are correct', () {
-      expect(controller.cartHeight.value, 280);
+      expect(controller.cartHeight.value, 360);
       expect(controller.cartWidth.value, 390);
       expect(controller.isDragging.value, isFalse);
     });
@@ -105,7 +105,7 @@ void main() {
           home: Builder(
             builder: (context) {
               final minH = controller.minCartHeight(context);
-              expect(minH, 320);
+              expect(minH, 360);
               return const SizedBox();
             },
           ),

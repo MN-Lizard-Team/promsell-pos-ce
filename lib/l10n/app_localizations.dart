@@ -194,6 +194,42 @@ abstract class AppLocalizations {
   /// **'ตะกร้า'**
   String get cartTitle;
 
+  /// No description provided for @cartEmpty.
+  ///
+  /// In th, this message translates to:
+  /// **'ตะกร้าว่าง'**
+  String get cartEmpty;
+
+  /// No description provided for @backToSale.
+  ///
+  /// In th, this message translates to:
+  /// **'กลับไปขายสินค้า'**
+  String get backToSale;
+
+  /// No description provided for @checkoutButton.
+  ///
+  /// In th, this message translates to:
+  /// **'ชำระเงิน'**
+  String get checkoutButton;
+
+  /// No description provided for @addItems.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มสินค้า'**
+  String get addItems;
+
+  /// No description provided for @itemRemoved.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบรายการแล้ว'**
+  String itemRemoved(String name);
+
+  /// No description provided for @undo.
+  ///
+  /// In th, this message translates to:
+  /// **'เรียกคืน'**
+  String get undo;
+
   /// No description provided for @allCategories.
   ///
   /// In th, this message translates to:
@@ -326,6 +362,12 @@ abstract class AppLocalizations {
   /// **'บันทึกการขายไม่สำเร็จ'**
   String get saleError;
 
+  /// No description provided for @saleTimeout.
+  ///
+  /// In th, this message translates to:
+  /// **'หมดเวลารอการชำระเงิน กรุณาลองอีกครั้ง'**
+  String get saleTimeout;
+
   /// No description provided for @insufficientCash.
   ///
   /// In th, this message translates to:
@@ -349,6 +391,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ค้นหาสินค้า...'**
   String get searchProducts;
+
+  /// No description provided for @recentSearches.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาล่าสุด'**
+  String get recentSearches;
 
   /// No description provided for @noProductsYet.
   ///
@@ -379,6 +427,36 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'คงเหลือ: {count}'**
   String stockLabel(int count);
+
+  /// No description provided for @stockRemaining.
+  ///
+  /// In th, this message translates to:
+  /// **'เหลือ: {count}'**
+  String stockRemaining(int count);
+
+  /// No description provided for @itemNoteLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'หมายเหตุสินค้า'**
+  String get itemNoteLabel;
+
+  /// No description provided for @itemNoteHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มหมายเหตุสำหรับสินค้านี้'**
+  String get itemNoteHint;
+
+  /// No description provided for @duplicateItem.
+  ///
+  /// In th, this message translates to:
+  /// **'คัดลอกรายการแล้ว'**
+  String get duplicateItem;
+
+  /// No description provided for @clear.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้าง'**
+  String get clear;
 
   /// No description provided for @edit.
   ///
@@ -1340,6 +1418,12 @@ abstract class AppLocalizations {
   /// **'ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)'**
   String get trackStockHint;
 
+  /// No description provided for @trackStockDisableConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'การปิดการติดตามสต็อกจะแช่แข็งค่าสต็อกปัจจุบัน คุณสามารถเปิดใหม่ได้ในภายหลังเพื่อติดตามต่อ'**
+  String get trackStockDisableConfirm;
+
   /// No description provided for @stockTrackingDisabled.
   ///
   /// In th, this message translates to:
@@ -1645,18 +1729,6 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ล้างตะกร้าแล้ว'**
   String get cartCleared;
-
-  /// No description provided for @undo.
-  ///
-  /// In th, this message translates to:
-  /// **'เรียกคืน'**
-  String get undo;
-
-  /// No description provided for @itemRemoved.
-  ///
-  /// In th, this message translates to:
-  /// **'ลบรายการแล้ว'**
-  String get itemRemoved;
 
   /// No description provided for @removeItem.
   ///
@@ -2120,6 +2192,12 @@ abstract class AppLocalizations {
   /// **'{count} รายการ'**
   String itemsCount(Object count);
 
+  /// No description provided for @totalDiscountLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดทั้งหมด'**
+  String get totalDiscountLabel;
+
   /// No description provided for @settingsReceiptSize.
   ///
   /// In th, this message translates to:
@@ -2147,7 +2225,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsCompactCartMode.
   ///
   /// In th, this message translates to:
-  /// **'โหมดตะกร้ากะทัดรัด'**
+  /// **'ตะกร้าแบบ Delivery'**
   String get settingsCompactCartMode;
 
   /// No description provided for @settingsUltraCompactMode.
@@ -2165,7 +2243,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsCompactModeSubtitle.
   ///
   /// In th, this message translates to:
-  /// **'แถวสินค้าเล็กลง มองเห็นได้มากขึ้น'**
+  /// **'แถบล่างแบบแอปส่งอาหาร; ปิด = พาเนลตะกร้าแบบเดิม'**
   String get settingsCompactModeSubtitle;
 
   /// No description provided for @settingsUltraModeOverrides.
@@ -3194,6 +3272,12 @@ abstract class AppLocalizations {
   /// **'ต้นทุน ({currency})'**
   String costLabel(String currency);
 
+  /// No description provided for @costHelper.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้คำนวณกำไรขั้นต้น'**
+  String get costHelper;
+
   /// No description provided for @outOfStockShort.
   ///
   /// In th, this message translates to:
@@ -3325,6 +3409,60 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ไม่พบบาร์โค้ดในรูป'**
   String get barcodeNotFoundInImage;
+
+  /// No description provided for @barcodeMustBeAlphanumeric.
+  ///
+  /// In th, this message translates to:
+  /// **'บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น'**
+  String get barcodeMustBeAlphanumeric;
+
+  /// No description provided for @scanningImage.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังสแกนรูป...'**
+  String get scanningImage;
+
+  /// No description provided for @continuousScan.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนต่อเนื่อง'**
+  String get continuousScan;
+
+  /// No description provided for @continuousScanHint.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนต่อเนื่องโดยไม่ปิดหน้าจอสแกน'**
+  String get continuousScanHint;
+
+  /// No description provided for @focusCamera.
+  ///
+  /// In th, this message translates to:
+  /// **'โฟกัส'**
+  String get focusCamera;
+
+  /// No description provided for @productFound.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่ม {name} แล้ว'**
+  String productFound(String name);
+
+  /// No description provided for @productNotFoundShort.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบสินค้า'**
+  String get productNotFoundShort;
+
+  /// No description provided for @scanCount.
+  ///
+  /// In th, this message translates to:
+  /// **'สแกนแล้ว {count} ชิ้น'**
+  String scanCount(int count);
+
+  /// No description provided for @done.
+  ///
+  /// In th, this message translates to:
+  /// **'เสร็จ'**
+  String get done;
 
   /// No description provided for @torchOn.
   ///
@@ -4093,6 +4231,132 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'สินค้าทั้งหมด'**
   String get totalProducts;
+
+  /// No description provided for @todayRevenue.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขายวันนี้'**
+  String get todayRevenue;
+
+  /// No description provided for @todaySalesCount.
+  ///
+  /// In th, this message translates to:
+  /// **'บิด'**
+  String get todaySalesCount;
+
+  /// No description provided for @cartItems.
+  ///
+  /// In th, this message translates to:
+  /// **'ชิ้น'**
+  String get cartItems;
+
+  /// No description provided for @sortDefault.
+  ///
+  /// In th, this message translates to:
+  /// **'ค่าเริ่มต้น'**
+  String get sortDefault;
+
+  /// No description provided for @sortNameAsc.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อ A-Z'**
+  String get sortNameAsc;
+
+  /// No description provided for @sortPriceLowHigh.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคา: ต่ำ-สูง'**
+  String get sortPriceLowHigh;
+
+  /// No description provided for @sortPriceHighLow.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคา: สูง-ต่ำ'**
+  String get sortPriceHighLow;
+
+  /// No description provided for @sortStockLowHigh.
+  ///
+  /// In th, this message translates to:
+  /// **'สต็อก: น้อย-มาก'**
+  String get sortStockLowHigh;
+
+  /// No description provided for @filterCategory.
+  ///
+  /// In th, this message translates to:
+  /// **'หมวดหมู่'**
+  String get filterCategory;
+
+  /// No description provided for @filterSort.
+  ///
+  /// In th, this message translates to:
+  /// **'เรียง'**
+  String get filterSort;
+
+  /// No description provided for @filterStock.
+  ///
+  /// In th, this message translates to:
+  /// **'สต็อก'**
+  String get filterStock;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In th, this message translates to:
+  /// **'ทั้งหมด'**
+  String get filterAll;
+
+  /// No description provided for @filterMore.
+  ///
+  /// In th, this message translates to:
+  /// **'กรอง'**
+  String get filterMore;
+
+  /// No description provided for @filterPageTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'กรองสินค้า'**
+  String get filterPageTitle;
+
+  /// No description provided for @filterReset.
+  ///
+  /// In th, this message translates to:
+  /// **'รีเซ็ต'**
+  String get filterReset;
+
+  /// No description provided for @filterShowResults.
+  ///
+  /// In th, this message translates to:
+  /// **'ดูผลลัพธ์'**
+  String get filterShowResults;
+
+  /// No description provided for @filterShowResultsCount.
+  ///
+  /// In th, this message translates to:
+  /// **'ดูผลลัพธ์ ({count})'**
+  String filterShowResultsCount(int count);
+
+  /// No description provided for @filterPriceRange.
+  ///
+  /// In th, this message translates to:
+  /// **'ช่วงราคา'**
+  String get filterPriceRange;
+
+  /// No description provided for @filterPriceMin.
+  ///
+  /// In th, this message translates to:
+  /// **'ต่ำสุด'**
+  String get filterPriceMin;
+
+  /// No description provided for @filterPriceMax.
+  ///
+  /// In th, this message translates to:
+  /// **'สูงสุด'**
+  String get filterPriceMax;
+
+  /// No description provided for @filterActiveCount.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้งาน {count}'**
+  String filterActiveCount(int count);
 }
 
 class _AppLocalizationsDelegate

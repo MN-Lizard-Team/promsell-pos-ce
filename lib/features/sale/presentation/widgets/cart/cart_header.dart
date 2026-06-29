@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_header/cart_header_dialogs.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_header/cart_header_menu.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
-class CartHeader extends StatefulWidget {
+class CartHeader extends StatelessWidget {
   const CartHeader({
     super.key,
     required this.cartState,
@@ -30,23 +28,10 @@ class CartHeader extends StatefulWidget {
   final ValueChanged<double>? onWidthPresetChanged;
 
   @override
-  State<CartHeader> createState() => _CartHeaderState();
-}
-
-class _CartHeaderState extends State<CartHeader> {
-  late final Future<int> _countFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _countFuture = sl<DraftCartRepository>().countDrafts();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final draftName = widget.draftState.activeDraftName?.isNotEmpty == true
-        ? widget.draftState.activeDraftName!
+    final draftName = draftState.activeDraftName?.isNotEmpty == true
+        ? draftState.activeDraftName!
         : null;
 
     return Column(
@@ -54,7 +39,7 @@ class _CartHeaderState extends State<CartHeader> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 4, 8, 4),
+          padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
           child: Row(
             children: [
               Icon(
@@ -65,43 +50,16 @@ class _CartHeaderState extends State<CartHeader> {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FutureBuilder<int>(
-                      future: _countFuture,
-                      builder: (_, snap) {
-                        final count = snap.hasError ? null : snap.data;
-                        final draftIndex =
-                            widget.draftState.activeDraftId != null &&
-                                count != null &&
-                                count > 0
-                            ? ' · 1/${count.clamp(1, 999)}'
-                            : snap.hasError
-                            ? ' · —'
-                            : '';
-                        return Text(
-                          '${draftName ?? context.l10n.cartTitle}$draftIndex',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        );
-                      },
-                    ),
-                    if (draftName != null)
-                      Text(
-                        context.l10n.cartTitle,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.secondary,
-                        ),
-                      ),
-                  ],
+                child: Text(
+                  draftName ?? context.l10n.cartTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (widget.onSizePresetChanged != null)
+              if (onSizePresetChanged != null)
                 SizedBox(
                   width: 100,
                   child: SliderTheme(
@@ -115,16 +73,20 @@ class _CartHeaderState extends State<CartHeader> {
                       ),
                     ),
                     child: Slider(
-                      value: widget.sizePreset ?? 0.0,
+                      value: sizePreset ?? 0.0,
                       min: 0.0,
                       max: 1.0,
-                      divisions: 1,
-                      label: (widget.sizePreset ?? 0.0) == 0.0 ? 'S' : 'L',
-                      onChanged: widget.onSizePresetChanged,
+                      divisions: 2,
+                      label: (sizePreset ?? 0.0) == 0.0
+                          ? 'S'
+                          : (sizePreset ?? 0.0) == 0.5
+                          ? 'M'
+                          : 'L',
+                      onChanged: onSizePresetChanged,
                     ),
                   ),
                 ),
-              if (widget.onWidthPresetChanged != null)
+              if (onWidthPresetChanged != null)
                 SizedBox(
                   width: 100,
                   child: SliderTheme(
@@ -138,17 +100,17 @@ class _CartHeaderState extends State<CartHeader> {
                       ),
                     ),
                     child: Slider(
-                      value: widget.widthPreset ?? 0.0,
+                      value: widthPreset ?? 0.0,
                       min: 0.0,
                       max: 1.0,
                       divisions: 1,
-                      label: (widget.widthPreset ?? 0.0) == 0.0 ? 'S' : 'L',
-                      onChanged: widget.onWidthPresetChanged,
+                      label: (widthPreset ?? 0.0) == 0.0 ? 'S' : 'L',
+                      onChanged: onWidthPresetChanged,
                     ),
                   ),
                 ),
               CartHeaderMenu(
-                cartState: widget.cartState,
+                cartState: cartState,
                 onToggleCompact: () {
                   final cubit = context.read<SettingsCubit>();
                   final isUltra = cubit.state.settings.ultraCompactMode;

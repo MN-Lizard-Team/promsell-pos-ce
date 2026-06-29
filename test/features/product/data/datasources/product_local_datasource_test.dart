@@ -118,5 +118,61 @@ void main() {
       final product = await datasource.getProductByBarcode('9999999999999');
       expect(product, isNull);
     });
+
+    test(
+      'barcodeExistsAnyStatus returns true for matching barcode regardless of isActive',
+      () async {
+        final id = IdGenerator.newId();
+        await datasource.insertProduct(
+          companion(id: id, name: 'Cola').copyWith(
+            barcode: const Value('1234567890123'),
+            isActive: const Value(false),
+          ),
+        );
+
+        expect(
+          await datasource.barcodeExistsAnyStatus('1234567890123'),
+          isTrue,
+        );
+      },
+    );
+
+    test('barcodeExistsAnyStatus respects excludeId', () async {
+      final id = IdGenerator.newId();
+      await datasource.insertProduct(
+        companion(
+          id: id,
+          name: 'Cola',
+        ).copyWith(barcode: const Value('1234567890123')),
+      );
+
+      expect(
+        await datasource.barcodeExistsAnyStatus('1234567890123', excludeId: id),
+        isFalse,
+      );
+      expect(
+        await datasource.barcodeExistsAnyStatus(
+          '1234567890123',
+          excludeId: 'other-id',
+        ),
+        isTrue,
+      );
+    });
+
+    test(
+      'bulkUpdateBarcodesWithImages updates barcode and barcodeImagePath',
+      () async {
+        final id = IdGenerator.newId();
+        await datasource.insertProduct(companion(id: id, name: 'Tea'));
+
+        await datasource.bulkUpdateBarcodesWithImages([
+          (id: id, barcode: 'ABC123', barcodeImagePath: '/path/to/img.png'),
+        ]);
+
+        final product = await datasource.getProductById(id);
+        expect(product!.barcode, 'ABC123');
+        expect(product.barcodeImagePath, '/path/to/img.png');
+      },
+    );
   });
 }

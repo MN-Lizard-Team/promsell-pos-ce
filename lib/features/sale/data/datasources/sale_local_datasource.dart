@@ -84,6 +84,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             subtotal: i.subtotal,
             discountAmount: i.discountAmount,
             vatAmount: i.vatAmount,
+            note: i.note,
             updatedAt: i.updatedAt,
             deletedAt: i.deletedAt,
             version: i.version,
@@ -212,6 +213,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
                 subtotal: item.subtotal,
                 discountAmount: Value(item.discountAmount),
                 vatAmount: Value(itemVatAmount),
+                note: Value(item.note),
                 deviceId: Value(deviceId),
               ),
             );

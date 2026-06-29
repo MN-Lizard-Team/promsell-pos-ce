@@ -102,40 +102,64 @@ class ReceiptContentSection extends StatelessWidget {
   }
 
   void _showNoteDialog(BuildContext context, Settings s) {
-    final l10n = context.l10n;
-    final st = context.settingsTheme;
-    final ctrl = TextEditingController(text: s.receiptNote);
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.settingsReceiptNote),
-        content: TextField(
-          controller: ctrl,
-          maxLines: 5,
-          minLines: 3,
-          maxLength: 200,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(
-            hintText: l10n.settingsReceiptNoteHint,
-            border: const OutlineInputBorder(),
-          ),
-          autofocus: true,
+      builder: (_) => _NoteDialog(settings: s, onUpdate: onUpdate),
+    );
+  }
+}
+
+class _NoteDialog extends StatefulWidget {
+  const _NoteDialog({required this.settings, required this.onUpdate});
+
+  final Settings settings;
+  final ValueChanged<Settings> onUpdate;
+
+  @override
+  State<_NoteDialog> createState() => _NoteDialogState();
+}
+
+class _NoteDialogState extends State<_NoteDialog> {
+  late final _ctrl = TextEditingController(text: widget.settings.receiptNote);
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final st = context.settingsTheme;
+    return AlertDialog(
+      title: Text(l10n.settingsReceiptNote),
+      content: TextField(
+        controller: _ctrl,
+        maxLines: 5,
+        minLines: 3,
+        maxLength: 200,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(
+          hintText: l10n.settingsReceiptNoteHint,
+          border: const OutlineInputBorder(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              onUpdate(s.copyWith(receiptNote: ctrl.text));
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(l10n.save),
-          ),
-        ],
+        autofocus: true,
       ),
-    ).then((_) => ctrl.dispose());
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            widget.onUpdate(widget.settings.copyWith(receiptNote: _ctrl.text));
+            Navigator.of(context).pop();
+          },
+          style: FilledButton.styleFrom(backgroundColor: st.softAccent),
+          child: Text(l10n.save),
+        ),
+      ],
+    );
   }
 }

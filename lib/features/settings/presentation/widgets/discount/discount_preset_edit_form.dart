@@ -254,58 +254,82 @@ class _AddValueChip extends StatelessWidget {
   }
 
   void _showAddDialog(BuildContext context) {
-    final l10n = context.l10n;
-    final st = context.settingsTheme;
-    final ctrl = TextEditingController();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.addPresetValue),
-        content: TextField(
-          controller: ctrl,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            labelText: type == 'PERCENT' ? '%' : '฿',
-            border: const OutlineInputBorder(),
-          ),
-          autofocus: true,
+      builder: (_) => _AddPresetDialog(type: type, onAdd: onAdd),
+    );
+  }
+}
+
+class _AddPresetDialog extends StatefulWidget {
+  const _AddPresetDialog({required this.type, required this.onAdd});
+
+  final String type;
+  final ValueChanged<double> onAdd;
+
+  @override
+  State<_AddPresetDialog> createState() => _AddPresetDialogState();
+}
+
+class _AddPresetDialogState extends State<_AddPresetDialog> {
+  late final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final st = context.settingsTheme;
+    return AlertDialog(
+      title: Text(l10n.addPresetValue),
+      content: TextField(
+        controller: _ctrl,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(
+          labelText: widget.type == 'PERCENT' ? '%' : '฿',
+          border: const OutlineInputBorder(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final val = double.tryParse(ctrl.text.trim());
-              if (val != null && val > 0) {
-                onAdd(val);
-                final addedLabel = type == 'PERCENT'
-                    ? '${val.toStringAsFixed(0)}%'
-                    : '฿${val.toStringAsFixed(2)}';
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.l10n.discountPresetAdded(addedLabel)),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.l10n.invalidValue),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-              Navigator.of(ctx).pop();
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(l10n.addPresetValue),
-          ),
-        ],
+        autofocus: true,
       ),
-    ).then((_) => ctrl.dispose());
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final val = double.tryParse(_ctrl.text.trim());
+            if (val != null && val > 0) {
+              widget.onAdd(val);
+              final addedLabel = widget.type == 'PERCENT'
+                  ? '${val.toStringAsFixed(0)}%'
+                  : '฿${val.toStringAsFixed(2)}';
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(context.l10n.discountPresetAdded(addedLabel)),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(context.l10n.invalidValue),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+            Navigator.of(context).pop();
+          },
+          style: FilledButton.styleFrom(backgroundColor: st.softAccent),
+          child: Text(l10n.addPresetValue),
+        ),
+      ],
+    );
   }
 }

@@ -141,3 +141,11 @@ class CartItemsReordered extends CartEvent {
   @override
   List<Object?> get props => [productIds];
 }
+
+class CartItemNoteChanged extends CartEvent {
+  const CartItemNoteChanged({required this.productId, this.note});
+  final String productId;
+  final String? note;
+  @override
+  List<Object?> get props => [productId, note];
+}

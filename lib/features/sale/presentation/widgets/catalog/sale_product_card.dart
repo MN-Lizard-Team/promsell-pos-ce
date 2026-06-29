@@ -1,18 +1,18 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/image/image_skeleton.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor;
-import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_card_shell.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/stock_indicator.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SaleProductCard extends StatelessWidget {
@@ -20,10 +20,12 @@ class SaleProductCard extends StatelessWidget {
     super.key,
     required this.product,
     required this.currency,
+    this.isGrid = false,
   });
 
   final Product product;
   final String currency;
+  final bool isGrid;
 
   @override
   Widget build(BuildContext context) {
@@ -41,102 +43,175 @@ class SaleProductCard extends StatelessWidget {
         .allowOversell;
     final canTap = !outOfStock || allowOversell;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      elevation: cartQty > 0 ? 2 : 0,
-      child: Opacity(
-        opacity: outOfStock && !allowOversell ? 0.4 : 1.0,
-        child: InkWell(
-          onTap: canTap
-              ? () {
-                  HapticFeedback.selectionClick();
-                  context.read<CartBloc>().add(
-                    CartProductAdded(product, allowOversell: allowOversell),
-                  );
-                  if (cartQty == 0) {
-                    AppSnackBar.info(
-                      context,
-                      context.l10n.productAddedToCart(product.name),
-                    );
-                  }
-                }
-              : null,
+    void onAdd() {
+      HapticFeedback.selectionClick();
+      context.read<CartBloc>().add(
+        CartProductAdded(product, allowOversell: allowOversell),
+      );
+      if (cartQty == 0) {
+        AppSnackBar.info(
+          context,
+          context.l10n.productAddedToCart(product.name),
+        );
+      }
+    }
+
+    if (isGrid) {
+      return Opacity(
+        opacity: outOfStock && !allowOversell ? 0.5 : 1.0,
+        child: ProductCardShell(
+          onTap: canTap ? onAdd : null,
           onLongPress: canTap
               ? () => _showQtyDialog(context, product, cartQty)
               : null,
-          child: Stack(
+          borderRadius: 12,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              SizedBox(
+                height: 120,
+                child: _SaleProductImage(
+                  imagePath: product.imagePath,
+                  imageThumbnailPath: product.imageThumbnailPath,
+                  imageUrl: product.imageUrl,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                ),
+              ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Center(
-                      child: ProductAvatar(
-                        imagePath: product.imagePath,
-                        imageThumbnailPath: product.imageThumbnailPath,
-                        imageUrl: product.imageUrl,
-                        size: 52,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CategoryNameText(
-                      categoryId: product.categoryId,
-                      noCategory: context.l10n.noCategory,
-                    ),
-                    const SizedBox(height: 2),
                     Text(
                       product.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleSmall?.copyWith(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        height: 1.3,
                       ),
                     ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: MoneyText(
-                            value: product.price,
-                            currency: currency,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                            color: theme.colorScheme.primary,
-                          ),
+                    if (cartQty > 0) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '${context.l10n.quantityLabel} $cartQty',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: theme.colorScheme.primary,
                         ),
-                        Text(
-                          product.trackStock
-                              ? product.stock == 0
-                                    ? context.l10n.outOfStock
-                                    : context.l10n.stockLabel(product.stock)
-                              : '\u221e',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: product.trackStock && product.stock == 0
-                                ? theme.colorScheme.error
-                                : product.trackStock && product.stock <= 5
-                                ? theme.colorScheme.tertiary
-                                : theme.colorScheme.secondary,
-                          ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    StockIndicator(
+                      stock: product.stock,
+                      trackStock: product.trackStock,
+                      compact: true,
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: MoneyText(
+                        value: product.price,
+                        currency: currency,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                          color: theme.colorScheme.onPrimaryContainer,
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              if (cartQty > 0)
-                Positioned(
-                  top: 6,
-                  right: 6,
-                  child: Badge(
-                    label: Text('$cartQty'),
-                    backgroundColor: theme.colorScheme.primary,
-                    textColor: theme.colorScheme.onPrimary,
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Opacity(
+      opacity: outOfStock && !allowOversell ? 0.5 : 1.0,
+      child: ProductCardShell(
+        onTap: canTap ? onAdd : null,
+        onLongPress: canTap
+            ? () => _showQtyDialog(context, product, cartQty)
+            : null,
+        borderRadius: 12,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            children: [
+              _SaleProductImage(
+                imagePath: product.imagePath,
+                imageThumbnailPath: product.imageThumbnailPath,
+                imageUrl: product.imageUrl,
+                width: 56,
+                height: 56,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        height: 1.3,
+                      ),
+                    ),
+                    if (cartQty > 0) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '${context.l10n.quantityLabel} $cartQty',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 4),
+                    StockIndicator(
+                      stock: product.stock,
+                      trackStock: product.trackStock,
+                      compact: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: MoneyText(
+                  value: product.price,
+                  currency: currency,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    color: theme.colorScheme.onPrimaryContainer,
                   ),
                 ),
+              ),
             ],
           ),
         ),
@@ -161,6 +236,128 @@ class SaleProductCard extends StatelessWidget {
           );
           AppSnackBar.info(snackCtx, l10n.productAddedToCart(product.name));
         },
+      ),
+    );
+  }
+}
+
+class _SaleProductImage extends StatefulWidget {
+  const _SaleProductImage({
+    this.imagePath,
+    this.imageThumbnailPath,
+    this.imageUrl,
+    this.width,
+    this.height,
+    this.borderRadius,
+  });
+
+  final String? imagePath;
+  final String? imageThumbnailPath;
+  final String? imageUrl;
+  final double? width;
+  final double? height;
+  final BorderRadius? borderRadius;
+
+  @override
+  State<_SaleProductImage> createState() => _SaleProductImageState();
+}
+
+class _SaleProductImageState extends State<_SaleProductImage> {
+  bool? _localExists;
+
+  String? get _thumbPath => widget.imageThumbnailPath;
+  String? get _fullPath => widget.imagePath;
+
+  String? get _effectiveLocalPath {
+    if (_thumbPath != null && _thumbPath!.isNotEmpty) return _thumbPath;
+    if (_fullPath != null && _fullPath!.isNotEmpty) return _fullPath;
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLocal();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SaleProductImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imagePath != widget.imagePath ||
+        oldWidget.imageThumbnailPath != widget.imageThumbnailPath) {
+      _localExists = null;
+      _checkLocal();
+    }
+  }
+
+  Future<void> _checkLocal() async {
+    final path = _effectiveLocalPath;
+    if (path == null) {
+      if (mounted) setState(() => _localExists = false);
+      return;
+    }
+    final exists = await File(path).exists();
+    if (mounted) setState(() => _localExists = exists);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final radius = widget.borderRadius ?? BorderRadius.circular(8);
+
+    Widget content;
+
+    if (_localExists == null) {
+      content = ImageSkeleton(
+        size: (widget.width ?? 100).clamp(40, 200),
+        borderRadius: radius,
+      );
+    } else if (_localExists == true && _effectiveLocalPath != null) {
+      content = Image.file(
+        File(_effectiveLocalPath!),
+        width: widget.width,
+        height: widget.height,
+        fit: BoxFit.cover,
+        errorBuilder: (ctx, err, st) => _placeholder(theme, radius),
+      );
+    } else if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
+      content = CachedNetworkImage(
+        imageUrl: widget.imageUrl!,
+        width: widget.width,
+        height: widget.height,
+        fit: BoxFit.cover,
+        placeholder: (ctx, url) => ImageSkeleton(
+          size: (widget.width ?? 100).clamp(40, 200),
+          borderRadius: radius,
+        ),
+        errorWidget: (ctx, url, err) => _placeholder(theme, radius),
+      );
+    } else {
+      content = _placeholder(theme, radius);
+    }
+
+    return ClipRRect(
+      borderRadius: radius,
+      child: SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: content,
+      ),
+    );
+  }
+
+  Widget _placeholder(ThemeData theme, BorderRadius radius) {
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: radius,
+      ),
+      child: Icon(
+        Icons.image_outlined,
+        color: theme.colorScheme.secondary,
+        size: 32,
       ),
     );
   }
@@ -233,62 +430,6 @@ class _QtyDialogState extends State<_QtyDialog> {
         ),
         FilledButton(onPressed: _save, child: Text(l10n.save)),
       ],
-    );
-  }
-}
-
-class _CategoryNameText extends StatelessWidget {
-  const _CategoryNameText({this.categoryId, required this.noCategory});
-  final String? categoryId;
-  final String noCategory;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    if (categoryId == null || categoryId!.isEmpty) {
-      return Text(
-        noCategory,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.secondary,
-        ),
-      );
-    }
-    return BlocBuilder<CategoryBloc, CategoryState>(
-      builder: (_, state) {
-        final cat = state.categories
-            .where((c) => c.id == categoryId)
-            .firstOrNull;
-        final name = cat?.name ?? categoryId!;
-        final catColor = parseCategoryColor(cat?.color);
-        final catIcon = parseCategoryIcon(cat?.iconName);
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                color: catColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Icon(catIcon, size: 10, color: catColor),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.secondary,
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }

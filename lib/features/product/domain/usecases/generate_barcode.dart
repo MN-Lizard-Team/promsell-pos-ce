@@ -11,6 +11,9 @@ class GenerateBarcode {
   final Ean13Generator _generator;
 
   Future<String> call({String? prefix, String? excludeId}) async {
+    final settings = await _settingsRepo.load();
+    _generator.initCounter(settings.barcodeLastCounter);
+
     for (var i = 0; i < 10; i++) {
       final barcode = _generator.generate(prefix: prefix);
       final exists = await _productRepo.barcodeExists(
