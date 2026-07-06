@@ -83,6 +83,31 @@ class CartItemCard extends StatelessWidget {
                         color: theme.colorScheme.secondary,
                       ),
                     ),
+                    if (item.selectedOptions.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: item.selectedOptions
+                              .map(
+                                (opt) => Chip(
+                                  visualDensity: VisualDensity.compact,
+                                  padding: EdgeInsets.zero,
+                                  labelPadding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                  ),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  label: Text(
+                                    opt.optionName,
+                                    style: theme.textTheme.labelSmall,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
                     if (item.discountAmount > 0) ...[
                       const SizedBox(height: 6),
                       Chip(
@@ -181,6 +206,7 @@ class CartItemCard extends StatelessWidget {
                 productId: item.product.id,
                 qty: qty,
                 allowOversell: allowOversell,
+                lineId: item.lineId,
               ),
             );
           }

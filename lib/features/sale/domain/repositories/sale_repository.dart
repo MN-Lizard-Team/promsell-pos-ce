@@ -15,6 +15,15 @@ abstract class SaleRepository {
     String? note,
     String? paymentReference,
     String? sendingBankCode,
+    String orderType = 'dinein',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    double serviceChargeAmount = 0.0,
+    String? customerId,
+    String? promotionId,
+    double promotionDiscountAmount = 0.0,
   });
 
   Future<List<Sale>> getSales({DateTime? from, DateTime? to});

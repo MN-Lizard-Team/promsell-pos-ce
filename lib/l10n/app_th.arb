@@ -4,7 +4,8 @@
   "appTagline": "ร้านค้าอัจฉริยะ",
   "loading": "กำลังโหลด...",
 
-  "navSale": "ขาย",
+  "navHome": "หน้าหลัก",
+  "navSale": "ขายสินค้า",
   "navProducts": "สินค้า",
   "navHistory": "ประวัติ",
   "navReport": "รายงาน",
@@ -866,5 +867,215 @@
   "filterActiveCount": "ใช้งาน {count}",
   "@filterActiveCount": {
     "placeholders": { "count": { "type": "int" } }
+  },
+
+  "businessType": "ประเภทธุรกิจ",
+  "businessTypeRetail": "ค้าปลีก",
+  "businessTypeRestaurant": "ร้านอาหาร",
+  "businessTypeSubtitle": "สลับระหว่างโหมดค้าปลีกและร้านอาหาร",
+  "serviceChargeRate": "อัตราค่าบริการ (%)",
+  "serviceChargeRateSubtitle": "อัตราค่าบริการเริ่มต้นสำหรับคำสั่งอาหาร",
+  "orderType": "ประเภทคำสั่ง",
+  "orderTypeDineIn": "ทานที่ร้าน",
+  "orderTypeTakeaway": "สั่งกลับบ้าน",
+  "orderTypeDelivery": "จัดส่ง",
+  "orderChannel": "ช่องทางสั่งซื้อ",
+  "orderChannelWalkIn": "เดินเข้าร้าน",
+  "orderChannelPhone": "โทรศัพท์",
+  "orderChannelOnline": "ออนไลน์",
+  "externalOrderRef": "เลขอ้างอิงการสั่งซื้อ",
+  "externalOrderRefHint": "หมายเลขคำสั่งซื้อจากแพลตฟอร์มจัดส่ง (ไม่บังคับ)",
+  "serviceCharge": "ค่าบริการ",
+  "tableNumber": "โต๊ะ",
+  "selectTable": "เลือกโต๊ะ",
+  "noTable": "ยังไม่ได้กำหนดโต๊ะ",
+  "restaurantSettings": "ตั้งค่าร้านอาหาร",
+  "tableManagement": "จัดการโต๊ะ",
+  "tableManagementSubtitle": "จัดการโต๊ะและโซนในร้าน",
+  "addTable": "เพิ่มโต๊ะ",
+  "editTable": "แก้ไขโต๊ะ",
+  "deleteTable": "ลบโต๊ะ",
+  "tableName": "ชื่อโต๊ะ",
+  "tableNameHint": "เช่น โต๊ะ 1, T-01",
+  "tableZone": "โซน",
+  "tableZoneHint": "เช่น ในร้าน, นอกร้าน, ระเบียง",
+  "tableSeats": "จำนวนที่นั่ง",
+  "tableSeatsHint": "จำนวนที่นั่งของโต๊ะ",
+  "tableStatusAvailable": "ว่าง",
+  "tableStatusOccupied": "ไม่ว่าง",
+  "tableStatusReserved": "จองแล้ว",
+  "noTablesYet": "ยังไม่มีโต๊ะ เพิ่มโต๊ะแรกของคุณ",
+  "confirmDeleteTable": "ลบโต๊ะนี้?",
+  "selectTableForDineIn": "เลือกโต๊ะสำหรับคำสั่งนี้",
+  "noTablesAvailable": "ยังไม่ได้ตั้งค่าโต๊ะ เพิ่มโต๊ะในเมนูจัดการโต๊ะ",
+  "optionGroups": "กลุ่มตัวเลือก",
+  "optionGroupsSubtitle": "เพิ่มตัวเลือกเช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด",
+  "addOptionGroup": "เพิ่มกลุ่มตัวเลือก",
+  "editOptionGroup": "แก้ไขกลุ่มตัวเลือก",
+  "optionGroupName": "ชื่อกลุ่ม",
+  "optionGroupNameHint": "เช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด",
+  "optionSelectionType": "ประเภทการเลือก",
+  "optionSelectionSingle": "เลือกได้อย่างเดียว",
+  "optionSelectionMultiple": "เลือกได้หลายอย่าง",
+  "optionRequired": "บังคับเลือก",
+  "optionOptional": "ไม่บังคับ",
+  "addOption": "เพิ่มตัวเลือก",
+  "editOption": "แก้ไขตัวเลือก",
+  "optionName": "ชื่อตัวเลือก",
+  "optionNameHint": "เช่น เล็ก, ช็อตเพิ่ม, ไม่ใส่น้ำแข็ง",
+  "optionPriceDelta": "ราคาเพิ่มเติม",
+  "optionPriceDeltaHint": "ราคาเพิ่มเติม (สามารถเป็น 0)",
+  "deleteOptionGroup": "ลบกลุ่มตัวเลือก",
+  "confirmDeleteOptionGroup": "ลบกลุ่มตัวเลือกนี้และตัวเลือกทั้งหมดในกลุ่ม?",
+  "deleteOption": "ลบตัวเลือก",
+  "confirmDeleteOption": "ลบตัวเลือกนี้?",
+  "noOptionGroups": "ยังไม่มีกลุ่มตัวเลือก",
+  "selectOptions": "เลือกตัวเลือก",
+  "optionsFor": "ตัวเลือกสำหรับ {product}",
+  "@optionsFor": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  },
+  "optionRequiredMessage": "กรุณาเลือกตัวเลือกสำหรับ {group}",
+  "@optionRequiredMessage": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+
+  "customersTitle": "ลูกค้า",
+  "customerSaved": "บันทึกลูกค้าแล้ว",
+  "addCustomer": "เพิ่มลูกค้า",
+  "editCustomerTitle": "แก้ไขลูกค้า",
+  "customerNameLabel": "ชื่อ",
+  "customerNameRequired": "กรุณากรอกชื่อ",
+  "customerPhoneLabel": "เบอร์โทร",
+  "customerEmailLabel": "อีเมล",
+  "customerNoteLabel": "บันทึก",
+  "customerNoteHint": "เพิ่มบันทึกเกี่ยวกับลูกค้ารายนี้...",
+  "customerInfoSection": "ข้อมูลลูกค้า",
+  "customerNotesSection": "บันทึก",
+  "customerStatisticsSection": "สถิติ",
+  "customerTotalVisits": "จำนวนการเข้าซื้อ",
+  "customerTotalSpent": "ยอดใช้จ่ายรวม",
+  "deleteCustomerTitle": "ลบลูกค้า",
+  "deleteCustomerConfirm": "คุณแน่ใจหรือว่าจะลบ \"{name}\"?",
+  "@deleteCustomerConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchCustomers": "ค้นหาลูกค้า...",
+  "noCustomersYet": "ยังไม่มีลูกค้า",
+  "noCustomersFound": "ไม่พบลูกค้า",
+  "addFirstCustomer": "เพิ่มลูกค้าคนแรกของคุณเพื่อติดตามการซื้อ",
+  "customerVisits": "เข้าซื้อ {count} ครั้ง",
+  "@customerVisits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "promotionsTitle": "โปรโมชัน",
+  "promotionSaved": "บันทึกโปรโมชันแล้ว",
+  "addPromotion": "เพิ่มโปรโมชัน",
+  "editPromotionTitle": "แก้ไขโปรโมชัน",
+  "promotionNameLabel": "ชื่อโปรโมชัน",
+  "promotionNameRequired": "กรุณากรอกชื่อ",
+  "promotionValueLabel": "ส่วนลด (%)",
+  "promotionAmountLabel": "มูลค่าส่วนลด",
+  "promotionValueRequired": "กรุณากรอกค่า",
+  "promotionValueInvalid": "กรุณากรอกค่าที่ถูกต้อง",
+  "promotionPercentMax": "เปอร์เซ็นต์ต้องไม่เกิน 100",
+  "promotionMinPurchaseLabel": "ยอดซื้อขั้นต่ำ",
+  "promotionMinPurchaseHint": "0 = ไม่มีขั้นต่ำ",
+  "promotionDetailsSection": "รายละเอียดโปรโมชัน",
+  "promotionScheduleSection": "กำหนดเวลา",
+  "promotionStatusSection": "สถานะ",
+  "promotionStartDate": "วันเริ่มต้น",
+  "promotionEndDate": "วันสิ้นสุด",
+  "promotionNoEndDate": "ไม่มีวันสิ้นสุด",
+  "promotionActive": "ใช้งานอยู่",
+  "promotionInactive": "ปิดใช้งาน",
+  "promotionActiveDesc": "โปรโมชันนี้กำลังใช้งานอยู่",
+  "promotionInactiveDesc": "โปรโมชันนี้ถูกปิดใช้งาน",
+  "promotionPercentage": "เปอร์เซ็นต์",
+  "promotionFixedAmount": "จำนวนเงินคงที่",
+  "deletePromotionTitle": "ลบโปรโมชัน",
+  "deletePromotionConfirm": "คุณแน่ใจหรือว่าจะลบ \"{name}\"?",
+  "@deletePromotionConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPromotions": "ค้นหาโปรโมชัน...",
+  "noPromotionsYet": "ยังไม่มีโปรโมชัน",
+  "noPromotionsFound": "ไม่พบโปรโมชัน",
+  "addFirstPromotion": "สร้างโปรโมชันแรกของคุณเพื่อให้ส่วนลด",
+  "promotionPercentOff": "ลด {value}%",
+  "@promotionPercentOff": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "promotionAmountOff": "ลด {value}",
+  "@promotionAmountOff": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "promotionMinPurchase": "ซื้อขั้นต่ำ: {amount}",
+  "@promotionMinPurchase": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homeGreeting": "สวัสดี, {shopName}",
+  "@homeGreeting": {
+    "placeholders": {
+      "shopName": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSubtitle": "เริ่มต้นวันให้ยอดปัง!",
+  "homeTodayRevenue": "ยอดขายวันนี้",
+  "homeVsYesterday": "เทียบกับเมื่อวาน",
+  "homeRevenue": "รายรับ",
+  "homeCost": "ต้นทุน",
+  "homeProfit": "กำไร",
+  "homeMainMenu": "เมนูหลัก",
+  "homeHistory": "ประวัติ",
+  "homeCloseDay": "ปิดยอดวัน",
+  "homePromotionBannerCta": "สร้างเลย",
+  "homeCreatePromotion": "สร้างโปรโมชั่น",
+  "homePromotionBannerSubtitle": "เพิ่มยอดขายได้ง่ายๆ",
+  "homeNoActivePromotion": "ไม่มีโปรโมชันที่ใช้งานอยู่",
+  "homePromotionOff": "ลด",
+  "homeFromBills": "จาก {count} บิล",
+  "@homeFromBills": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

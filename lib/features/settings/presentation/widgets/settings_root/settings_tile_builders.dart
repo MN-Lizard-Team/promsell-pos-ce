@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_list_page.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/pages/table_management_page.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/about_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_settings_page.dart';
@@ -306,13 +307,30 @@ class SettingsTileBuilders {
     ];
   }
 
-  static List<SettingsSectionData> allSections(
+  static List<SettingsTileData> restaurantTiles(
     BuildContext context,
     Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
     return [
+      SettingsTileData(
+        icon: Icons.table_restaurant_outlined,
+        title: l10n.tableManagement,
+        accent: st.softAccent,
+        subtitle: l10n.tableManagementSubtitle,
+        page: const TableManagementPage(),
+      ),
+    ];
+  }
+
+  static List<SettingsSectionData> allSections(
+    BuildContext context,
+    Settings s,
+    SettingsThemeExtension st,
+    AppLocalizations l10n,
+  ) {
+    final sections = <SettingsSectionData>[
       SettingsSectionData(
         title: l10n.settingsGeneral,
         tiles: generalTiles(context, s, st, l10n),
@@ -321,6 +339,16 @@ class SettingsTileBuilders {
         title: l10n.settingsStoreSales,
         tiles: storeTiles(context, s, st, l10n),
       ),
+    ];
+    if (s.isRestaurantMode) {
+      sections.add(
+        SettingsSectionData(
+          title: l10n.restaurantSettings,
+          tiles: restaurantTiles(context, s, st, l10n),
+        ),
+      );
+    }
+    sections.addAll([
       SettingsSectionData(
         title: l10n.settingsDiscounts,
         tiles: discountTiles(context, s, st, l10n),
@@ -337,6 +365,7 @@ class SettingsTileBuilders {
         title: l10n.settingsAbout,
         tiles: aboutTiles(context, s, st, l10n),
       ),
-    ];
+    ]);
+    return sections;
   }
 }

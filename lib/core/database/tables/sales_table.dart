@@ -13,6 +13,16 @@ class Sales extends Table {
   TextColumn get vatMode => text().withDefault(const Constant('NONE'))();
   RealColumn get vatRate => real().withDefault(const Constant(0))();
   RealColumn get vatAmount => real().withDefault(const Constant(0))();
+  TextColumn get orderType => text().withDefault(const Constant('dinein'))();
+  TextColumn get orderChannel => text().withDefault(const Constant('walkin'))();
+  TextColumn get externalOrderRef => text().nullable()();
+  TextColumn get tableId => text().nullable()();
+  RealColumn get serviceChargeRate => real().withDefault(const Constant(0))();
+  RealColumn get serviceChargeAmount => real().withDefault(const Constant(0))();
+  TextColumn get customerId => text().nullable()();
+  TextColumn get promotionId => text().nullable()();
+  RealColumn get promotionDiscountAmount =>
+      real().withDefault(const Constant(0))();
   TextColumn get paymentMethod => text()();
   RealColumn get amountReceived => real().nullable()();
   RealColumn get changeAmount => real().nullable()();

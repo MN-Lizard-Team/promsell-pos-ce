@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE v0.8.8
+# Technical Deep-Dive — Promsell POS CE v0.8.9
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 

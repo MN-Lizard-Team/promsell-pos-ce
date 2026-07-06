@@ -22,6 +22,15 @@ class CreateSale {
     String? note,
     String? paymentReference,
     String? sendingBankCode,
+    String orderType = 'dinein',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    double serviceChargeAmount = 0.0,
+    String? customerId,
+    String? promotionId,
+    double promotionDiscountAmount = 0.0,
   }) {
     Validators.nonEmptyCart(items);
     for (final item in items) {
@@ -41,6 +50,15 @@ class CreateSale {
       note: note,
       paymentReference: paymentReference,
       sendingBankCode: sendingBankCode,
+      orderType: orderType,
+      orderChannel: orderChannel,
+      externalOrderRef: externalOrderRef,
+      tableId: tableId,
+      serviceChargeRate: serviceChargeRate,
+      serviceChargeAmount: serviceChargeAmount,
+      customerId: customerId,
+      promotionId: promotionId,
+      promotionDiscountAmount: promotionDiscountAmount,
     );
   }
 }

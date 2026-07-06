@@ -44,7 +44,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
 
-> **Latest Release: v0.8.8** — Sale page redesign (`SaleDashboardHeader` + `SaleFilterBar` + delivery-style `SaleProductCard`); cart UI overhaul (`CartContent` + `CartBottomBar` with badge bounce/pull-up/velocity snap); barcode scanner upgrade (continuous scan + product overlay); product form hardening (Bugs A–D, 11 dialog disposal fixes); filter/payment/cart page fixes + `CartProductDetailSheet` enrichment. Test suite green: **1302 passing**, `flutter analyze` clean.
+> **Latest Release: v0.8.9** — Restaurant mode (order type/channel, table management, service charge); customer & promotion management with full CRUD; home dashboard redesign (hero card, stats row, promotion banner with gradient + floating animation); navbar floating center button with bounce animation; product modifiers/options; report/history merge. Test suite green: **1373 passing**, `flutter analyze` clean.
 
 ---
 
@@ -134,15 +134,17 @@ promsell-pos-ce/
 │   │   ├── utils/             # IdGenerator, payment_method, etc.
 │   │   └── widgets/           # shared UI primitives
 │   ├── features/
+│   │   ├── home/              # Home dashboard (hero card, stats, menu grid, promotion banner)
 │   │   ├── sale/              # Cart + checkout (CartBloc, DraftBloc, CheckoutBloc)
-│   │   ├── product/           # CRUD inventory, barcode + image generation, category management
+│   │   ├── product/           # CRUD inventory, barcode + image generation, category, option groups
+│   │   ├── customer/          # Customer CRUD (CustomerBloc, list/form pages)
+│   │   ├── promotion/         # Promotion CRUD (PromotionBloc, percent/fixed discount)
 │   │   ├── receipt/           # PDF receipt, labels, PromptPay QR
-│   │   ├── history/           # Sale history viewer + void dialog
-│   │   ├── report/            # Analytics dashboard (net revenue)
+│   │   ├── report/            # Analytics dashboard + history sub-tab (merged)
 │   │   ├── inventory/         # Inventory log viewer + stock adjust
-│   │   └── settings/          # Theme, locale, shop info, backup
-│   ├── l10n/                  # ARB files (app_th.arb, app_en.arb)
-│   └── main.dart              # App entry + 5-tab shell
+│   │   └── settings/          # Theme, locale, shop info, business type, backup
+│   ├── l10n/                  # ARB files (app_th.arb, app_en.arb) — 90+ keys
+│   └── main.dart              # App entry + 5-tab shell (Home, Product, Sale, Report, Settings)
 ├── docs/
 │   ├── ARCHITECTURE.md        # Architecture index → C4, deep-dive, ADRs
 │   ├── DATABASE.md            # Database index → schema, queries, ops
@@ -156,14 +158,14 @@ promsell-pos-ce/
 │   └── readme/                # Features, roadmap, testing (split from README)
 ├── android/                   # Android platform code
 ├── ios/                       # iOS platform code
-├── test/                      # 1302 tests (unit + widget + integration)
+├── test/                      # 1373 tests (unit + widget + integration)
 ├── pubspec.yaml
 ├── l10n.yaml
 ├── CODEBASE.md                # System overview, architecture, links
 ├── CONTRIBUTING.md            # Contribution guide
 ├── CODE_OF_CONDUCT.md
 ├── SECURITY.md
-├── CHANGELOG.md               # Current versions (v0.8.8) + archive links
+├── CHANGELOG.md               # Current versions (v0.8.9) + archive links
 ├── LICENSE
 └── README.md
 ```
@@ -175,7 +177,7 @@ promsell-pos-ce/
 │  BlocBuilder<SettingsCubit> (locale, theme, mode)    │
 │                                                      │
 │  ┌─── NavigationBar (5 tabs, lazy-loaded) ────────┐  │
-│  │  Sale    Product   History   Report   Settings │  │
+│  │  Home    Product   Sale   Report   Settings    │  │
 │  └────────────────────┬───────────────────────────┘  │
 │                       │                              │
 │    Overlay: Onboarding (6-step, first-launch)        │
@@ -219,9 +221,9 @@ features/<name>/
 
 > Screenshots captured via `adb screencap` on Android emulator (dev flavor).
 
-| Sale | Products | History | Report | Settings |
-|------|----------|---------|--------|----------|
-| ![Sale](screenshots/sale.png) | ![Products](screenshots/products.png) | ![History](screenshots/history.png) | ![Report](screenshots/report.png) | ![Settings](screenshots/settings.png) |
+| Home | Products | Sale | Report | Settings |
+|------|----------|------|--------|----------|
+| ![Home](screenshots/home.png) | ![Products](screenshots/products.png) | ![Sale](screenshots/sale.png) | ![Report](screenshots/report.png) | ![Settings](screenshots/settings.png) |
 
 ---
 
@@ -238,16 +240,16 @@ features/<name>/
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Build, signing, release checklist, smoke test |
 | [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md) | Privacy policy template for Play Store / App Store |
 | [`docs/STORE_SUBMISSION.md`](docs/STORE_SUBMISSION.md) | Store submission checklist: keystore, screenshots, build commands, console setup |
-| [`CHANGELOG.md`](CHANGELOG.md) | Current version history (v0.8.8) + archive links to older versions |
+| [`CHANGELOG.md`](CHANGELOG.md) | Current version history (v0.8.9) + archive links to older versions |
 | [`docs/changelog/`](docs/changelog/) | Archived changelogs by minor version (v0.1.x–v0.7.x) |
 
 ### Split references
 
 | Document | Contents |
 |----------|----------|
-| [`docs/readme/features.md`](docs/readme/features.md) | Full features table (16 features) + tech stack (12 layers) |
+| [`docs/readme/features.md`](docs/readme/features.md) | Full features table (22 features) + tech stack (12 layers) |
 | [`docs/readme/roadmap.md`](docs/readme/roadmap.md) | Phase 1 milestones (R3–R17) + future plans + release timeline |
-| [`docs/readme/testing.md`](docs/readme/testing.md) | 1302 tests across 9 layers + test pyramid + run commands |
+| [`docs/readme/testing.md`](docs/readme/testing.md) | 1373 tests across 9 layers + test pyramid + run commands |
 
 ---
 
@@ -286,6 +288,6 @@ Built by **[MN Lizard Team](https://github.com/MN-Lizard-Team)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.8.8 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.9 · AGPL-3.0</sub>
 
 </div>

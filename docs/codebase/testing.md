@@ -1,6 +1,6 @@
-# Testing — Promsell POS CE v0.8.8
+# Testing — Promsell POS CE v0.8.9
 
-1302 automated tests across 8 layers — 56% line coverage (11,978 / 21,392 lines). Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
+1373 automated tests across 9 layers — 56% line coverage (11,978 / 21,392 lines). Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 
@@ -110,4 +110,4 @@ test/
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Testing</sub>
+<sub>Promsell POS CE · v0.8.9 · Testing</sub>

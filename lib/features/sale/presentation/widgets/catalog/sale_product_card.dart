@@ -13,6 +13,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_ti
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/stock_indicator.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/product_option_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SaleProductCard extends StatelessWidget {
@@ -45,6 +46,26 @@ class SaleProductCard extends StatelessWidget {
 
     void onAdd() {
       HapticFeedback.selectionClick();
+      if (product.optionGroups.isNotEmpty) {
+        ProductOptionSheet.show(
+          context,
+          product: product,
+          onConfirm: (options) {
+            context.read<CartBloc>().add(
+              CartProductAdded(
+                product,
+                allowOversell: allowOversell,
+                selectedOptions: options,
+              ),
+            );
+            AppSnackBar.info(
+              context,
+              context.l10n.productAddedToCart(product.name),
+            );
+          },
+        );
+        return;
+      }
       context.read<CartBloc>().add(
         CartProductAdded(product, allowOversell: allowOversell),
       );

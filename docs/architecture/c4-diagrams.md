@@ -1,4 +1,4 @@
-# C4 Diagrams & Data Flows — Promsell POS CE v0.8.8
+# C4 Diagrams & Data Flows — Promsell POS CE v0.8.9
 
 System context, container diagram, component diagram, and data flow sequences for all stock-mutating operations.
 

@@ -22,13 +22,19 @@ class CartActions {
     final newQty = (item.qty + delta).clamp(1, 9999);
     if (newQty != item.qty) {
       HapticFeedback.selectionClick();
-      bloc.add(CartItemQtyChanged(productId: item.product.id, qty: newQty));
+      bloc.add(
+        CartItemQtyChanged(
+          productId: item.product.id,
+          qty: newQty,
+          lineId: item.lineId,
+        ),
+      );
     }
   }
 
   static void removeItem(BuildContext context, CartBloc bloc, CartItem item) {
     HapticFeedback.mediumImpact();
-    bloc.add(CartProductRemoved(item.product.id));
+    bloc.add(CartProductRemoved(item.product.id, lineId: item.lineId));
     AppSnackBar.withAction(
       context,
       context.l10n.itemRemoved(item.product.name),

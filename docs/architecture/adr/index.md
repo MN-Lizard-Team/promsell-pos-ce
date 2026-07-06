@@ -1,4 +1,4 @@
-# Architecture Decision Records (ADRs) — Promsell POS CE v0.8.8
+# Architecture Decision Records (ADRs) — Promsell POS CE v0.8.9
 
 All architecture decision records, ordered by ADR number.
 

@@ -1,4 +1,4 @@
-﻿# Architecture — Promsell POS CE v0.8.8
+﻿# Architecture — Promsell POS CE v0.8.9
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -16,7 +16,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 State management patterns (BLoC vs Cubit, singleton vs factory, stream lifecycle), dependency injection graph, transaction boundaries, error handling strategy, and performance & scaling characteristics.
 
 ### [Architecture Decision Records (ADRs)](architecture/adr/index.md)
-24 ADRs covering database ORM selection, state management, DI, transaction design, audit trail, settings architecture, widget decomposition, generated code management, dependency scanning, and widget folder standardization.
+26 ADRs covering database ORM selection, state management, DI, transaction design, audit trail, settings architecture, widget decomposition, generated code management, dependency scanning, widget folder standardization, restaurant mode, and customer/promotion entities.
 
 ---
 
@@ -34,14 +34,18 @@ Offline-first mobile POS system — Flutter, Drift SQLite, BLoC/Cubit, Material 
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │   lib/features/ — Feature modules                                               │
-│   sale/       — Cart, checkout, draft, discount                                 │        
+│   home/       — Home dashboard (hero card, stats, menu grid, promo banner)      │
+│   sale/       — Cart, checkout, draft, discount, restaurant order type/channel  │
+│               + table selector, service charge, product options in cart         │
 │   product/    — CRUD inventory, image service, barcode scan + image generation  │
 │               + ProductFormCubit (typed draft state, Hybrid Collapsible form)   │
 │               + product_navigation.dart (shared show/edit/preview/delete)       │
 │               + StatsDashboard (hero gradient: total products + inventory val)  │
-│   history/    — Sale history viewer                                             │
-│   report/     — Analytics dashboard                                             │
-│   settings/   — Locale, theme, shop info                                        │
+│               + ProductOptionGroup/ProductOption (modifiers, CRUD, cart sheet)  │
+│   customer/   — Customer CRUD, CustomerBloc, list/form pages with search        │
+│   promotion/  — Promotion CRUD, PromotionBloc, percent/fixed discount, dates    │
+│   report/     — Analytics dashboard + History sub-tab (TabBar, merged)          │
+│   settings/   — Locale, theme, shop info, business type, service charge         │
 └────────────────────────┬────────────────────────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -116,4 +120,4 @@ features/<name>/
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.8.9 · Architecture Document · Deep Technical Reference</sub>

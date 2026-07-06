@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
@@ -13,6 +15,7 @@ class CheckoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<TableBloc>().add(const TablesLoaded());
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.paymentTitle),
@@ -52,6 +55,7 @@ class CheckoutPage extends StatelessWidget {
           BlocProvider.value(value: context.read<CartBloc>()),
           BlocProvider.value(value: context.read<CheckoutBloc>()),
           BlocProvider.value(value: context.read<SettingsCubit>()),
+          BlocProvider.value(value: context.read<TableBloc>()),
         ],
         child: const CheckoutBody(),
       ),

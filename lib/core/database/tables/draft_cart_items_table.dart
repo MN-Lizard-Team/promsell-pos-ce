@@ -13,6 +13,7 @@ class DraftCartItems extends Table {
   TextColumn get discountType => text().nullable()();
   RealColumn get discountValue => real().nullable()();
   TextColumn get note => text().nullable()();
+  TextColumn get productOptionsJson => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get deletedAt => dateTime().nullable()();
   IntColumn get version => integer().withDefault(const Constant(1))();

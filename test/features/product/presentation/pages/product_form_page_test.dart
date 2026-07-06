@@ -99,9 +99,9 @@ void main() {
       );
 
       expect(find.byType(TabBar), findsNothing);
-      expect(find.byType(FormSectionCard), findsNWidgets(3));
+      expect(find.byType(FormSectionCard), findsNWidgets(4));
       expect(find.byType(StockStepper), findsOneWidget);
-      expect(find.byType(FilledButton), findsOneWidget);
+      expect(find.byType(StickyActionBar), findsOneWidget);
     });
 
     testWidgets('shows Add Product title in AppBar', (tester) async {
@@ -188,7 +188,7 @@ void main() {
         productFormCubit: productFormCubit,
       );
 
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.byType(StickyActionBar));
       await tester.pumpAndSettle();
 
       expect(find.text('Please enter product name'), findsOneWidget);
@@ -211,7 +211,7 @@ void main() {
       final priceField = find.byType(TextFormField).at(1);
       await tester.enterText(priceField, '10.00');
 
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.byType(StickyActionBar));
       await tester.pump(const Duration(milliseconds: 100));
 
       verify(
@@ -231,7 +231,7 @@ void main() {
       final nameField = find.byType(TextFormField).at(0);
       await tester.enterText(nameField, 'Test');
 
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.byType(StickyActionBar));
       await tester.pumpAndSettle();
 
       expect(find.text('Please enter price'), findsOneWidget);
@@ -261,7 +261,7 @@ void main() {
       await tester.ensureVisible(barcodeField);
       await tester.enterText(barcodeField, 'ABC-123!');
 
-      final saveBtn = find.byType(FilledButton);
+      final saveBtn = find.byType(StickyActionBar);
       await tester.ensureVisible(saveBtn);
       await tester.tap(saveBtn);
       await tester.pumpAndSettle();
@@ -334,7 +334,7 @@ void main() {
         productFormCubit: productFormCubit,
       );
 
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.byType(StickyActionBar));
       await tester.pump(const Duration(milliseconds: 500));
 
       verify(
@@ -400,7 +400,7 @@ void main() {
       final priceField = find.byType(TextFormField).at(1);
       await tester.enterText(priceField, '0.00');
 
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.byType(StickyActionBar));
       await tester.pumpAndSettle();
 
       expect(find.text('Price must be greater than 0'), findsOneWidget);
@@ -810,7 +810,7 @@ void main() {
         productFormCubit: productFormCubit,
       );
 
-      await tester.tap(find.byType(FilledButton), warnIfMissed: false);
+      await tester.tap(find.byType(StickyActionBar), warnIfMissed: false);
       await tester.pump(const Duration(milliseconds: 500));
 
       final captor = verify(() => mockProductBloc.add(captureAny())).captured;
@@ -847,7 +847,7 @@ void main() {
           productFormCubit: productFormCubit,
         );
 
-        await tester.tap(find.byType(FilledButton));
+        await tester.tap(find.byType(StickyActionBar));
         await tester.pump(const Duration(seconds: 1));
 
         final captor = verify(() => mockProductBloc.add(captureAny())).captured;
@@ -890,8 +890,8 @@ void main() {
       await tester.ensureVisible(costField);
       await tester.enterText(costField, '');
 
-      await tester.ensureVisible(find.byType(FilledButton));
-      await tester.tap(find.byType(FilledButton));
+      await tester.ensureVisible(find.byType(StickyActionBar));
+      await tester.tap(find.byType(StickyActionBar));
       await tester.pump(const Duration(seconds: 1));
 
       final captor = verify(() => mockProductBloc.add(captureAny())).captured;

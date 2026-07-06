@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/payment_config
 import 'package:promsell_pos_ce/features/settings/domain/entities/receipt_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/shop_info.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/barcode_config.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/business_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/stock_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/tax_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/ui_config.dart';
@@ -32,6 +33,7 @@ class Settings extends Equatable {
     this.backupConfig = const BackupConfig(),
     this.draftConfig = const DraftConfig(),
     this.barcodeConfig = const BarcodeConfig(),
+    this.businessConfig = const BusinessConfig(),
     this.onboardingCompleted = false,
   });
 
@@ -48,6 +50,7 @@ class Settings extends Equatable {
   final BackupConfig backupConfig;
   final DraftConfig draftConfig;
   final BarcodeConfig barcodeConfig;
+  final BusinessConfig businessConfig;
   final bool onboardingCompleted;
 
   // ─── Flat convenience getters (mirror former Settings facade) ───────────
@@ -113,6 +116,10 @@ class Settings extends Equatable {
   int get barcodeAutoOpenManualDelay => barcodeConfig.autoOpenManualDelay;
   int get barcodeLastCounter => barcodeConfig.lastCounter;
   bool get barcodeContinuousScan => barcodeConfig.continuousScan;
+  BusinessType get businessType => businessConfig.businessType;
+  bool get isRestaurantMode => businessConfig.isRestaurant;
+  double get defaultServiceChargeRate =>
+      businessConfig.defaultServiceChargeRate;
 
   // ─── Sub-entity-level copyWith ─────────────────────────────────────────────
 
@@ -130,6 +137,7 @@ class Settings extends Equatable {
     BackupConfig? backupConfig,
     DraftConfig? draftConfig,
     BarcodeConfig? barcodeConfig,
+    BusinessConfig? businessConfig,
     bool? onboardingCompleted,
   }) {
     return Settings(
@@ -146,6 +154,7 @@ class Settings extends Equatable {
       backupConfig: backupConfig ?? this.backupConfig,
       draftConfig: draftConfig ?? this.draftConfig,
       barcodeConfig: barcodeConfig ?? this.barcodeConfig,
+      businessConfig: businessConfig ?? this.businessConfig,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
     );
   }
@@ -206,6 +215,8 @@ class Settings extends Equatable {
     int? barcodeAutoOpenManualDelay,
     int? barcodeLastCounter,
     bool? barcodeContinuousScan,
+    BusinessType? businessType,
+    double? defaultServiceChargeRate,
   }) {
     return copyWithEntities(
       shopInfo: shopInfo.copyWith(
@@ -285,6 +296,10 @@ class Settings extends Equatable {
         lastCounter: barcodeLastCounter,
         continuousScan: barcodeContinuousScan,
       ),
+      businessConfig: businessConfig.copyWith(
+        businessType: businessType,
+        defaultServiceChargeRate: defaultServiceChargeRate,
+      ),
       onboardingCompleted: onboardingCompleted,
     );
   }
@@ -304,6 +319,7 @@ class Settings extends Equatable {
     backupConfig,
     draftConfig,
     barcodeConfig,
+    businessConfig,
     onboardingCompleted,
   ];
 }

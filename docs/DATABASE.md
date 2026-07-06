@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE v0.8.8
+# Database Handbook — Promsell POS CE v0.8.9
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
 
@@ -10,8 +10,8 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 19 |
-| **Tables** | 9 |
+| **Schema version** | 21 |
+| **Tables** | 12 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
 | **Foreign keys** | Enabled (`PRAGMA foreign_keys=ON`) |
@@ -31,6 +31,11 @@ erDiagram
     Sales ||--o{ InventoryLogs : "refSaleId (logical)"
     DraftCarts ||--|{ DraftCartItems : "cartId (CASCADE)"
     Products ||--o{ DraftCartItems : "productId (logical)"
+    Products ||--o{ ProductOptionGroups : "productId (CASCADE)"
+    ProductOptionGroups ||--|{ ProductOptions : "groupId (CASCADE)"
+    Customers ||--o{ Sales : "customerId (logical)"
+    Promotions ||--o{ Sales : "promotionId (logical)"
+    RestaurantTables ||--o{ Sales : "tableId (logical)"
 ```
 
 ### Table groupings
@@ -60,6 +65,19 @@ erDiagram
 │  ┌──────────────┐  1:1   ┌────────────────┐                                  │
 │  │  AppSettings │        │  DailyCloses   │                                  │
 │  └──────────────┘        └────────────────┘                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Restaurant & CRM (v0.8.9+)                                                  │
+│  ┌──────────────────┐  1:N  ┌─────────────────────┐                          │
+│  │ ProductOptionGrp │ ────▶│   ProductOptions    │                          │
+│  └──────────────────┘       └─────────────────────┘                          │
+│  ┌──────────────────┐       ┌─────────────────────┐                          │
+│  │    Customers     │       │    Promotions       │                          │
+│  └──────────────────┘       └─────────────────────┘                          │
+│  ┌──────────────────┐       ┌─────────────────────┐                          │
+│  │ RestaurantTables │       │                     │                          │
+│  └──────────────────┘       └─────────────────────┘                          │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -114,7 +132,7 @@ When a record is "deleted":
                               ▼
               ┌───────────────────────────────┐
               │  Local SQLite (WAL)           │
-              │  9 tables, all sync-ready     │
+              │  12 tables, all sync-ready    │
               └───────────────┬───────────────┘
                               │
              Phase 4 (future) │
@@ -143,6 +161,11 @@ v11         v12         v13         v14         v15         v16      v17       v
 Sync        Timestamp   Backfill    Category    Category    Unique   Auto-     Barcode  CartItem
 columns     INT ms      deviceId    FK + UUID   color/icon  barcode  dedup     images   note
 (6 tables)  conversion  (all rows)  backfill    presets     index    barcodes
+
+v20                                           v21
+│                                             │
+▼                                             ▼
+Customer + Promotion tables                   Restaurant tables + Product options
 ```
 
 ---
@@ -151,10 +174,10 @@ columns     INT ms      deviceId    FK + UUID   color/icon  barcode  dedup     i
 
 | Document | Content |
 |----------|---------|
-| [`docs/database/schema-reference.md`](database/schema-reference.md) | All 9 tables with column details, indexes, seed data, enum values |
+| [`docs/database/schema-reference.md`](database/schema-reference.md) | All 12 tables with column details, indexes, seed data, enum values |
 | [`docs/database/query-patterns.md`](database/query-patterns.md) | Drift query patterns: watch products, insert sale, void sale, date range, draft upsert |
-| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→v19), backup & restore, encrypted backups, performance notes, DB testing |
+| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→v21), backup & restore, encrypted backups, performance notes, DB testing |
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Schema v19 · 9 tables · UUIDv4</sub>
+<sub>Promsell POS CE · v0.8.9 · Schema v21 · 12 tables · UUIDv4</sub>

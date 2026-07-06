@@ -23,6 +23,15 @@ class SaleRepositoryImpl implements SaleRepository {
     String? note,
     String? paymentReference,
     String? sendingBankCode,
+    String orderType = 'dinein',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    double serviceChargeAmount = 0.0,
+    String? customerId,
+    String? promotionId,
+    double promotionDiscountAmount = 0.0,
   }) => _datasource.insertSaleWithItems(
     items: items,
     paymentMethod: paymentMethod,
@@ -36,6 +45,15 @@ class SaleRepositoryImpl implements SaleRepository {
     note: note,
     paymentReference: paymentReference,
     sendingBankCode: sendingBankCode,
+    orderType: orderType,
+    orderChannel: orderChannel,
+    externalOrderRef: externalOrderRef,
+    tableId: tableId,
+    serviceChargeRate: serviceChargeRate,
+    serviceChargeAmount: serviceChargeAmount,
+    customerId: customerId,
+    promotionId: promotionId,
+    promotionDiscountAmount: promotionDiscountAmount,
   );
 
   @override

@@ -72,6 +72,9 @@ Promsell is an **offline-first local app** with no network access by default:
 17. **Barcode image generation isolation** (v0.8.6+) — `BarcodeImageService` uses off-screen `RenderRepaintBoundary` for barcode image generation; no external rendering dependencies, no network calls, images saved locally to `/barcodes/` directory only
 18. **Ean13Generator instance isolation** (v0.8.6+) — refactored from static mutable counter to `@injectable` per-instance counter; eliminates cross-test counter contamination and ensures counter state isolation between concurrent operations
 19. **Cubit disposal guard** (v0.8.8+) — `ProductFormCubit._loadDraftFromStorage` checks `isClosed` before `emit` after async storage read; prevents dirty widget build scope errors and potential state leaks when navigating away during draft load
+20. **Customer & promotion data isolation** (v0.8.9+) — customer and promotion entities stored in separate SQLite tables with foreign key references on `sales`/`draft_carts`; no sensitive PII beyond name/phone/email (all user-entered, no automatic collection)
+21. **Restaurant mode feature flags** (v0.8.9+) — restaurant-specific UI (order type, channel, table, service charge) conditionally rendered via `BusinessConfig.isRestaurantMode`; no restaurant data exposed in retail mode
+22. **Navbar center button hit-test isolation** (v0.8.9+) — floating center button rendered in `Positioned` layer above bar `Row`; prevents touch event bleed-through to adjacent tab items
 
 ## Security changelog
 

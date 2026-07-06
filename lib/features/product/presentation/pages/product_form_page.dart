@@ -13,6 +13,8 @@ import 'package:promsell_pos_ce/features/product/data/services/product_image_ser
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_draft.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/product_option_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
@@ -64,6 +66,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   bool _submitted = false;
   bool _isPickingImage = false;
   bool _isGeneratingBarcode = false;
+  List<ProductOptionGroup> _optionGroups = [];
   final _barcodeFocusNode = FocusNode();
   final List<String> _tempImagePaths = [];
   Timer? _debounceTimer;
@@ -79,6 +82,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _imagePath = widget.product?.imagePath;
     _imageUrl = widget.product?.imageUrl;
     _imageThumbnailPath = widget.product?.imageThumbnailPath;
+    _optionGroups = List.of(widget.product?.optionGroups ?? []);
     _nameCtrl.addListener(_markDirty);
     _priceCtrl.addListener(_markDirty);
     _stockCtrl.addListener(_markDirty);
@@ -472,14 +476,30 @@ class _ProductFormPageState extends State<ProductFormPage> {
         BlocListener<ProductBloc, ProductState>(
           listenWhen: (prev, curr) =>
               (_submitted || _deleting) && prev.saveStatus != curr.saveStatus,
-          listener: (ctx, state) {
+          listener: (ctx, state) async {
             if (state.saveStatus == ProductSaveStatus.saved) {
               _submitTimeoutTimer?.cancel();
               if (!_isEditing) {
                 ctx.read<ProductFormCubit>().clearDraft();
               }
-              AppSnackBar.success(ctx, ctx.l10n.productSaved);
-              Navigator.pop(ctx, true);
+              final productId = _isEditing
+                  ? widget.product!.id
+                  : state.products.first.id;
+              try {
+                await sl<ProductOptionRepository>().saveOptionGroupsForProduct(
+                  productId,
+                  _optionGroups,
+                );
+              } catch (e) {
+                AppLogger.warning('Failed to save option groups', error: e);
+                if (ctx.mounted) {
+                  AppSnackBar.error(ctx, ctx.l10n.errorOccurred);
+                }
+              }
+              if (ctx.mounted) {
+                AppSnackBar.success(ctx, ctx.l10n.productSaved);
+                Navigator.pop(ctx, true);
+              }
             } else if (state.saveStatus == ProductSaveStatus.error) {
               _submitTimeoutTimer?.cancel();
               _submitted = false;
@@ -609,6 +629,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
               setState(() => _stockCtrl.text = v.toString());
             },
             onGenerateBarcode: _generateBarcode,
+            optionGroups: _optionGroups,
+            onOptionGroupsChanged: (groups) {
+              _markDirty();
+              setState(() => _optionGroups = groups);
+            },
           ),
         ),
       ),

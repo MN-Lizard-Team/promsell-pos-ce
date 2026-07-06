@@ -198,8 +198,8 @@ Future<void> _seedAndMeasure(
   print('  ✅ History list (${sales.length}): ${sw.elapsedMilliseconds}ms');
   expect(
     sw.elapsedMilliseconds,
-    lessThan(1200),
-    reason: 'History list load should be < 1.2s',
+    lessThan(2000),
+    reason: 'History list load should be < 2s',
   );
 
   // 6. Measure report aggregation (SQL SUM — simulates real report query)

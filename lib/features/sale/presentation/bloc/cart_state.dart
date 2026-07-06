@@ -10,6 +10,14 @@ class CartState extends Equatable {
     this.note = '',
     this.cartDiscountType,
     this.cartDiscountValue,
+    this.orderType = 'dinein',
+    this.orderChannel = 'walkin',
+    this.externalOrderRef,
+    this.tableId,
+    this.serviceChargeRate,
+    this.customerId,
+    this.promotionId,
+    this.promotionDiscountAmount = 0.0,
     this.stockWarning,
     this.errorMessage,
     this.errorNonce = 0,
@@ -19,6 +27,14 @@ class CartState extends Equatable {
   final String note;
   final String? cartDiscountType;
   final double? cartDiscountValue;
+  final String orderType;
+  final String orderChannel;
+  final String? externalOrderRef;
+  final String? tableId;
+  final double? serviceChargeRate;
+  final String? customerId;
+  final String? promotionId;
+  final double promotionDiscountAmount;
   final String? stockWarning;
   final String? errorMessage;
   final int errorNonce;
@@ -40,6 +56,14 @@ class CartState extends Equatable {
 
   double get total => MoneyUtils.round(itemsSubtotal - cartDiscountAmount);
 
+  double get serviceChargeAmount {
+    final rate = serviceChargeRate;
+    if (rate == null || rate <= 0) return 0.0;
+    return MoneyUtils.round(total * (rate / 100));
+  }
+
+  double get grandTotal => MoneyUtils.round(total + serviceChargeAmount);
+
   bool get isEmpty => items.isEmpty;
   int get itemCount => items.fold(0, (sum, i) => sum + i.qty);
   bool get hasCartDiscount =>
@@ -50,6 +74,14 @@ class CartState extends Equatable {
     String? note,
     Object? cartDiscountType = _unset,
     Object? cartDiscountValue = _unset,
+    String? orderType,
+    String? orderChannel,
+    Object? externalOrderRef = _unset,
+    Object? tableId = _unset,
+    Object? serviceChargeRate = _unset,
+    Object? customerId = _unset,
+    Object? promotionId = _unset,
+    double? promotionDiscountAmount,
     Object? stockWarning = _unset,
     Object? errorMessage = _unset,
     int? errorNonce,
@@ -62,6 +94,23 @@ class CartState extends Equatable {
     cartDiscountValue: identical(cartDiscountValue, _unset)
         ? this.cartDiscountValue
         : cartDiscountValue as double?,
+    orderType: orderType ?? this.orderType,
+    orderChannel: orderChannel ?? this.orderChannel,
+    externalOrderRef: identical(externalOrderRef, _unset)
+        ? this.externalOrderRef
+        : externalOrderRef as String?,
+    tableId: identical(tableId, _unset) ? this.tableId : tableId as String?,
+    serviceChargeRate: identical(serviceChargeRate, _unset)
+        ? this.serviceChargeRate
+        : serviceChargeRate as double?,
+    customerId: identical(customerId, _unset)
+        ? this.customerId
+        : customerId as String?,
+    promotionId: identical(promotionId, _unset)
+        ? this.promotionId
+        : promotionId as String?,
+    promotionDiscountAmount:
+        promotionDiscountAmount ?? this.promotionDiscountAmount,
     stockWarning: identical(stockWarning, _unset)
         ? this.stockWarning
         : stockWarning as String?,
@@ -77,6 +126,14 @@ class CartState extends Equatable {
     note,
     cartDiscountType,
     cartDiscountValue,
+    orderType,
+    orderChannel,
+    externalOrderRef,
+    tableId,
+    serviceChargeRate,
+    customerId,
+    promotionId,
+    promotionDiscountAmount,
     stockWarning,
     errorMessage,
     errorNonce,

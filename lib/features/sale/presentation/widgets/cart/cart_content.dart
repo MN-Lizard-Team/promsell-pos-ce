@@ -83,7 +83,9 @@ class _CartContentState extends State<CartContent> {
               ),
             ),
             onDismissed: (_) {
-              context.read<CartBloc>().add(CartProductRemoved(item.product.id));
+              context.read<CartBloc>().add(
+                CartProductRemoved(item.product.id, lineId: item.lineId),
+              );
             },
             child: Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -120,6 +122,7 @@ class _CartContentState extends State<CartContent> {
                     CartProductAdded(
                       item.product,
                       allowOversell: allowOversell,
+                      selectedOptions: item.selectedOptions,
                     ),
                   );
                   AppSnackBar.info(context, context.l10n.duplicateItem);
@@ -175,7 +178,11 @@ class _CartContentState extends State<CartContent> {
               onDuplicate: () {
                 final allowOversell = widget.settings.allowOversell;
                 bloc.add(
-                  CartProductAdded(item.product, allowOversell: allowOversell),
+                  CartProductAdded(
+                    item.product,
+                    allowOversell: allowOversell,
+                    selectedOptions: item.selectedOptions,
+                  ),
                 );
                 AppSnackBar.info(context, context.l10n.duplicateItem);
               },

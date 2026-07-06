@@ -212,7 +212,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(Expanded), findsNWidgets(5));
+      expect(find.byType(Expanded), findsNWidgets(4));
       expect(find.text('Sale'), findsOneWidget);
       expect(find.text('Products'), findsOneWidget);
       expect(find.text('History'), findsOneWidget);

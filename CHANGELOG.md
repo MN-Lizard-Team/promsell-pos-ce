@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.9] — 2026-07-06
+
+Restaurant operations, customer & promotion management, home dashboard redesign, navbar floating center button, product modifiers/options, report/history merge.
+
+### Added
+
+- **Restaurant mode** — `BusinessType` toggle (retail/restaurant) in Settings; `OrderTypeSelector` (dine-in/takeaway/delivery) + `OrderChannelSelector` (walk-in/phone/online) in checkout; configurable service charge.
+- **Table management** — `RestaurantTable` entity with `TableBloc`, floor plan UI with zone grouping and status indicators; table selector in checkout when dine-in.
+- **Product modifiers/options** — `ProductOptionGroup` + `ProductOption` entities with full CRUD; `OptionGroupsEditor` in product form; `ProductOptionSheet` bottom sheet for cart; price delta in subtotal.
+- **Customer management** — `Customer` entity, `CustomerBloc`, list/form pages with search, stats, and validation.
+- **Promotion management** — `Promotion` entity (`PromotionType` enum), `PromotionBloc`, list/form pages with `SegmentedButton` type selector and date pickers.
+- **Home dashboard** — `HomeHeader`, `HomeHeroDashboardCard` (revenue + sparkline), `HomeStatsRow`, `HomeMenuGrid` (6 buttons), `HomePromotionBanner` (gradient + floating animated image).
+- **Navbar floating center button** — diamond-shaped Sale button rising above bar with bounce animation; `RepaintBoundary` on regular items.
+- **Report/History merge** — `HistoryTabView` as sub-tab in `ReportPage` with `TabBar`.
+- **Schema v20→v21** — `customers`, `promotions`, `RestaurantTables`, `ProductOptionGroups`, `ProductOptions` tables; `customerId`, `promotionId`, `promotionDiscountAmount`, `order_type`, `order_channel`, `external_order_ref`, `table_id`, `service_charge_rate`, `service_charge_amount` columns on `sales`/`draft_carts`.
+- **Sale integration** — customer, promotion, restaurant, and option fields threaded through `CartState`, `CheckoutBloc`, `CreateSale`, repositories, and datasources.
+- **L10n** — 90+ new keys (EN + TH) for restaurant, home, customer, promotion, and navbar.
+- **Tests** — unit tests for `Customer`, `Promotion`, product options, table bloc, cart options, and restaurant cart state.
+
+### Changed
+
+- Navbar tab order: Home(0), Product(1), Sale(2), Report(3), Setting(4).
+- `HomePromotionBanner` → `StatefulWidget` with `Stack` layout, `LinearGradient` (`#157E83`→`#085F65`), `headlineSmall` title, faded subtitle.
+- `HomeStatsRow` — compact k/M formatting for values ≥ 1,000.
+- `HomeHeader` — greeting fallback to "ร้านค้าของฉัน" when shop name empty.
+- `HomePage` — merged duplicate `FutureBuilder`s, cached bloc refs, added error handling, removed unused `yesterdayRevenue` query.
+- `AppBottomNavigationBar` — solid surface + shadow replaces `BackdropFilter` blur; center button moved to `Positioned` in `Stack` to prevent overflow.
+- `CheckoutBody` — restaurant-specific fields conditionally rendered when `isRestaurantMode`.
+- `CartItem` — added `lineId` for targeting specific cart lines; `CartProductRemoved`/`CartItemQtyChanged` use `lineId` when available.
+- `ProductLocalDatasourceImpl.watchAllProducts` — loads option groups via `asyncMap` for all products on sale page.
+
+### Removed
+
+- `HistoryPage` from navbar (merged into `ReportPage`).
+- `BackdropFilter` blur, `yesterdayRevenue` field/query, `dart:ui` import.
+
+---
+
 ## [0.8.8] - 2026-06-29
 
 Sale page redesign + cart UI overhaul + barcode scanner upgrade + product form hardening + filter/payment/cart fixes + product preview enrichment.
@@ -498,6 +536,7 @@ Older versions are archived by minor version:
 
 ---
 
+[0.8.9]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.8...v0.8.9
 [0.8.8]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.7...v0.8.8
 [0.8.7]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.5...v0.8.6

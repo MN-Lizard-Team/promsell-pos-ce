@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
@@ -19,6 +20,7 @@ void main() {
   late MockCartBloc mockCartBloc;
   late MockCheckoutBloc mockCheckoutBloc;
   late MockSettingsCubit mockSettingsCubit;
+  late MockTableBloc mockTableBloc;
 
   final testProduct = Product(
     id: 'p1',
@@ -36,6 +38,8 @@ void main() {
     mockCheckoutBloc = MockCheckoutBloc();
     when(() => mockCheckoutBloc.state).thenReturn(const CheckoutState());
     mockSettingsCubit = MockSettingsCubit();
+    mockTableBloc = MockTableBloc();
+    when(() => mockTableBloc.state).thenReturn(const TableState());
     when(() => mockSettingsCubit.state).thenReturn(
       SettingsState(
         status: SettingsStatus.loaded,
@@ -60,6 +64,7 @@ void main() {
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
+        tableBloc: mockTableBloc,
       );
 
       expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
@@ -74,6 +79,7 @@ void main() {
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
+        tableBloc: mockTableBloc,
       );
 
       expect(find.text('2'), findsOneWidget);
@@ -89,6 +95,7 @@ void main() {
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
+        tableBloc: mockTableBloc,
       );
 
       await tester.tap(find.byIcon(Icons.shopping_cart_outlined));
@@ -105,6 +112,7 @@ void main() {
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
+        tableBloc: mockTableBloc,
       );
 
       expect(find.text('0'), findsNothing);

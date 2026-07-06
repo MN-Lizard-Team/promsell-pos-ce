@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
@@ -7,6 +8,7 @@ import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_s
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 abstract class SaleLocalDatasource {
@@ -23,6 +25,15 @@ abstract class SaleLocalDatasource {
     String? note,
     String? paymentReference,
     String? sendingBankCode,
+    String orderType = 'dinein',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    double serviceChargeAmount = 0.0,
+    String? customerId,
+    String? promotionId,
+    double promotionDiscountAmount = 0.0,
   });
 
   Future<List<Sale>> querySales({DateTime? from, DateTime? to});
@@ -62,6 +73,15 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     vatMode: s.vatMode,
     vatRate: s.vatRate,
     vatAmount: s.vatAmount,
+    orderType: s.orderType,
+    orderChannel: s.orderChannel,
+    externalOrderRef: s.externalOrderRef,
+    tableId: s.tableId,
+    serviceChargeRate: s.serviceChargeRate,
+    serviceChargeAmount: s.serviceChargeAmount,
+    customerId: s.customerId,
+    promotionId: s.promotionId,
+    promotionDiscountAmount: s.promotionDiscountAmount,
     totalAmount: s.totalAmount,
     paymentMethod: s.paymentMethod,
     amountReceived: s.amountReceived,
@@ -85,6 +105,7 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
             discountAmount: i.discountAmount,
             vatAmount: i.vatAmount,
             note: i.note,
+            selectedOptions: _parseSelectedOptions(i.productOptionsJson),
             updatedAt: i.updatedAt,
             deletedAt: i.deletedAt,
             version: i.version,
@@ -93,6 +114,23 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
         )
         .toList(),
   );
+
+  List<SelectedProductOption> _parseSelectedOptions(String? json) {
+    if (json == null || json.isEmpty) return const [];
+    try {
+      final list = jsonDecode(json) as List;
+      return list
+          .map((e) => SelectedProductOption.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  String? _serializeSelectedOptions(List<SelectedProductOption> options) {
+    if (options.isEmpty) return null;
+    return jsonEncode(options.map((o) => o.toJson()).toList());
+  }
 
   Future<List<SaleItemData>> _itemsForSale(String saleId) =>
       (_db.select(_db.saleItems)..where((t) => t.saleId.equals(saleId))).get();
@@ -111,6 +149,15 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     String? note,
     String? paymentReference,
     String? sendingBankCode,
+    String orderType = 'dinein',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    double serviceChargeAmount = 0.0,
+    String? customerId,
+    String? promotionId,
+    double promotionDiscountAmount = 0.0,
   }) async {
     final itemsSubtotal = MoneyUtils.round(
       items.fold(0.0, (sum, i) => sum + i.subtotal),
@@ -156,6 +203,15 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
               vatMode: Value(vatMode),
               vatRate: Value(vatRate),
               vatAmount: Value(vatAmount),
+              orderType: Value(orderType),
+              orderChannel: Value(orderChannel),
+              externalOrderRef: Value(externalOrderRef),
+              tableId: Value(tableId),
+              serviceChargeRate: Value(serviceChargeRate),
+              serviceChargeAmount: Value(serviceChargeAmount),
+              customerId: Value(customerId),
+              promotionId: Value(promotionId),
+              promotionDiscountAmount: Value(promotionDiscountAmount),
               paymentMethod: paymentMethod,
               amountReceived: Value(amountReceived),
               changeAmount: Value(changeAmount),
@@ -214,6 +270,9 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
                 discountAmount: Value(item.discountAmount),
                 vatAmount: Value(itemVatAmount),
                 note: Value(item.note),
+                productOptionsJson: Value(
+                  _serializeSelectedOptions(item.selectedOptions),
+                ),
                 deviceId: Value(deviceId),
               ),
             );

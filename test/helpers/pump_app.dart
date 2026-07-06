@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_history_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 extension PumpApp on WidgetTester {
@@ -25,6 +26,7 @@ extension PumpApp on WidgetTester {
     SettingsCubit? settingsCubit,
     SearchHistoryCubit? searchHistoryCubit,
     ProductFormCubit? productFormCubit,
+    TableBloc? tableBloc,
     Locale locale = const Locale('en'),
   }) async {
     final providers = <BlocProvider>[
@@ -44,6 +46,7 @@ extension PumpApp on WidgetTester {
         BlocProvider<SearchHistoryCubit>.value(value: searchHistoryCubit),
       if (productFormCubit != null)
         BlocProvider<ProductFormCubit>.value(value: productFormCubit),
+      if (tableBloc != null) BlocProvider<TableBloc>.value(value: tableBloc),
     ];
 
     final app = MaterialApp(

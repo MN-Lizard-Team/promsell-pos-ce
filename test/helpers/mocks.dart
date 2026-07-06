@@ -46,6 +46,9 @@ import 'package:promsell_pos_ce/features/inventory/domain/repositories/inventory
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_event.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_state.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_history_cubit.dart';
 
 // ── Repositories ──
@@ -127,6 +130,9 @@ class MockInventoryLogCubit extends MockCubit<InventoryLogState>
 
 class MockSearchHistoryCubit extends MockCubit<SearchHistoryState>
     implements SearchHistoryCubit {}
+
+class MockTableBloc extends MockBloc<TableEvent, TableState>
+    implements TableBloc {}
 
 // ── Services ──
 class MockProductImageService extends Mock implements ProductImageService {}

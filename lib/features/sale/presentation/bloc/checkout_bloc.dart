@@ -68,6 +68,12 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       changeAmount: event.changeAmount,
       note: event.note,
       paymentReference: event.paymentReference,
+      orderType: event.orderType,
+      orderChannel: event.orderChannel,
+      externalOrderRef: event.externalOrderRef,
+      tableId: event.tableId,
+      serviceChargeRate: event.serviceChargeRate,
+      serviceChargeAmount: event.serviceChargeAmount,
     );
   }
 
@@ -92,6 +98,12 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       note: pending.note,
       paymentReference: event.paymentReference ?? pending.paymentReference,
       sendingBankCode: event.sendingBankCode,
+      orderType: pending.orderType,
+      orderChannel: pending.orderChannel,
+      externalOrderRef: pending.externalOrderRef,
+      tableId: pending.tableId,
+      serviceChargeRate: pending.serviceChargeRate,
+      serviceChargeAmount: pending.serviceChargeAmount,
     );
   }
 
@@ -122,6 +134,12 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     String? note,
     String? paymentReference,
     String? sendingBankCode,
+    String orderType = 'dinein',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    double serviceChargeAmount = 0.0,
   }) async {
     final cartState = _cartBloc.state;
     emit(state.copyWith(status: CheckoutStatus.processing, errorMessage: null));
@@ -139,6 +157,15 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         note: note,
         paymentReference: paymentReference,
         sendingBankCode: sendingBankCode,
+        orderType: orderType,
+        orderChannel: orderChannel,
+        externalOrderRef: externalOrderRef,
+        tableId: tableId,
+        serviceChargeRate: serviceChargeRate,
+        serviceChargeAmount: serviceChargeAmount,
+        customerId: cartState.customerId,
+        promotionId: cartState.promotionId,
+        promotionDiscountAmount: cartState.promotionDiscountAmount,
       );
 
       _draftBloc.add(const DraftRotated());

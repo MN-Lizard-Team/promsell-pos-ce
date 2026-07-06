@@ -1,7 +1,7 @@
 name: promsell_pos_ce
 description: "PromSell POS Community Edition — Offline-first mobile POS for small businesses"
 publish_to: 'none'
-version: 0.8.8+1
+version: 0.8.9+1
 
 environment:
   sdk: ^3.11.1
@@ -40,6 +40,10 @@ dependencies:
   image: ^4.0.0
   cached_network_image: ^3.3.0
   image_cropper: ^12.0.0
+
+  # UI Animation
+  animated_flip_counter: ^0.3.4
+  shimmer: ^3.0.0
 
   # Merchant Tools
   share_plus: ^13.0.0
@@ -104,6 +108,7 @@ flutter:
     - assets/images/
     - assets/images/onboarding/
     - assets/images/demo/
+    - assets/images/home/
     - LICENSE
     - assets/icons/
     - assets/fonts/

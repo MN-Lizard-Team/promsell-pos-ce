@@ -13,6 +13,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/product_sliver_content.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/product_option_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/category_filter_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_dashboard_header.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_filter_bar.dart';
@@ -150,15 +151,33 @@ class SaleCatalog extends StatelessWidget {
                             .state
                             .settings
                             .allowOversell;
+                        final p = products[i];
+                        if (p.optionGroups.isNotEmpty) {
+                          ProductOptionSheet.show(
+                            context,
+                            product: p,
+                            onConfirm: (options) {
+                              context.read<CartBloc>().add(
+                                CartProductAdded(
+                                  p,
+                                  allowOversell: allowOversell,
+                                  selectedOptions: options,
+                                ),
+                              );
+                              AppSnackBar.info(
+                                context,
+                                context.l10n.productAddedToCart(p.name),
+                              );
+                            },
+                          );
+                          return;
+                        }
                         context.read<CartBloc>().add(
-                          CartProductAdded(
-                            products[i],
-                            allowOversell: allowOversell,
-                          ),
+                          CartProductAdded(p, allowOversell: allowOversell),
                         );
                         AppSnackBar.info(
                           context,
-                          context.l10n.productAddedToCart(products[i].name),
+                          context.l10n.productAddedToCart(p.name),
                         );
                       },
                     ),

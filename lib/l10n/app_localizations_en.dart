@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading => 'Loading...';
 
   @override
+  String get navHome => 'Home';
+
+  @override
   String get navSale => 'Sale';
 
   @override
@@ -2281,5 +2284,441 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String filterActiveCount(int count) {
     return '$count active';
+  }
+
+  @override
+  String get businessType => 'Business Type';
+
+  @override
+  String get businessTypeRetail => 'Retail';
+
+  @override
+  String get businessTypeRestaurant => 'Restaurant';
+
+  @override
+  String get businessTypeSubtitle =>
+      'Switch between retail and restaurant mode';
+
+  @override
+  String get serviceChargeRate => 'Service Charge Rate (%)';
+
+  @override
+  String get serviceChargeRateSubtitle =>
+      'Default service charge percentage for restaurant orders';
+
+  @override
+  String get orderType => 'Order Type';
+
+  @override
+  String get orderTypeDineIn => 'Dine In';
+
+  @override
+  String get orderTypeTakeaway => 'Takeaway';
+
+  @override
+  String get orderTypeDelivery => 'Delivery';
+
+  @override
+  String get orderChannel => 'Order Channel';
+
+  @override
+  String get orderChannelWalkIn => 'Walk-in';
+
+  @override
+  String get orderChannelPhone => 'Phone';
+
+  @override
+  String get orderChannelOnline => 'Online';
+
+  @override
+  String get externalOrderRef => 'External Order Ref';
+
+  @override
+  String get externalOrderRefHint =>
+      'Delivery platform order number (optional)';
+
+  @override
+  String get serviceCharge => 'Service Charge';
+
+  @override
+  String get tableNumber => 'Table';
+
+  @override
+  String get selectTable => 'Select Table';
+
+  @override
+  String get noTable => 'No table assigned';
+
+  @override
+  String get restaurantSettings => 'Restaurant Settings';
+
+  @override
+  String get tableManagement => 'Table Management';
+
+  @override
+  String get tableManagementSubtitle => 'Manage restaurant tables and zones';
+
+  @override
+  String get addTable => 'Add Table';
+
+  @override
+  String get editTable => 'Edit Table';
+
+  @override
+  String get deleteTable => 'Delete Table';
+
+  @override
+  String get tableName => 'Table Name';
+
+  @override
+  String get tableNameHint => 'e.g., Table 1, T-01';
+
+  @override
+  String get tableZone => 'Zone';
+
+  @override
+  String get tableZoneHint => 'e.g., Indoor, Outdoor, Terrace';
+
+  @override
+  String get tableSeats => 'Seats';
+
+  @override
+  String get tableSeatsHint => 'Number of seats';
+
+  @override
+  String get tableStatusAvailable => 'Available';
+
+  @override
+  String get tableStatusOccupied => 'Occupied';
+
+  @override
+  String get tableStatusReserved => 'Reserved';
+
+  @override
+  String get noTablesYet => 'No tables yet. Add your first table.';
+
+  @override
+  String get confirmDeleteTable => 'Delete this table?';
+
+  @override
+  String get selectTableForDineIn => 'Select a table for this order';
+
+  @override
+  String get noTablesAvailable =>
+      'No tables configured. Add tables in Table Management.';
+
+  @override
+  String get optionGroups => 'Option Groups';
+
+  @override
+  String get optionGroupsSubtitle =>
+      'Add modifiers like size, add-ons, or spice level';
+
+  @override
+  String get addOptionGroup => 'Add Option Group';
+
+  @override
+  String get editOptionGroup => 'Edit Option Group';
+
+  @override
+  String get optionGroupName => 'Group Name';
+
+  @override
+  String get optionGroupNameHint => 'e.g., Size, Add-ons, Spice Level';
+
+  @override
+  String get optionSelectionType => 'Selection Type';
+
+  @override
+  String get optionSelectionSingle => 'Single Choice';
+
+  @override
+  String get optionSelectionMultiple => 'Multiple Choice';
+
+  @override
+  String get optionRequired => 'Required';
+
+  @override
+  String get optionOptional => 'Optional';
+
+  @override
+  String get addOption => 'Add Option';
+
+  @override
+  String get editOption => 'Edit Option';
+
+  @override
+  String get optionName => 'Option Name';
+
+  @override
+  String get optionNameHint => 'e.g., Small, Extra Shot, No Ice';
+
+  @override
+  String get optionPriceDelta => 'Price Adjustment';
+
+  @override
+  String get optionPriceDeltaHint => 'Additional cost (can be 0)';
+
+  @override
+  String get deleteOptionGroup => 'Delete Option Group';
+
+  @override
+  String get confirmDeleteOptionGroup =>
+      'Delete this option group and all its options?';
+
+  @override
+  String get deleteOption => 'Delete Option';
+
+  @override
+  String get confirmDeleteOption => 'Delete this option?';
+
+  @override
+  String get noOptionGroups => 'No option groups yet.';
+
+  @override
+  String get selectOptions => 'Select Options';
+
+  @override
+  String optionsFor(String product) {
+    return 'Options for $product';
+  }
+
+  @override
+  String optionRequiredMessage(String group) {
+    return 'Please select an option for $group';
+  }
+
+  @override
+  String get customersTitle => 'Customers';
+
+  @override
+  String get customerSaved => 'Customer saved';
+
+  @override
+  String get addCustomer => 'Add Customer';
+
+  @override
+  String get editCustomerTitle => 'Edit Customer';
+
+  @override
+  String get customerNameLabel => 'Name';
+
+  @override
+  String get customerNameRequired => 'Name is required';
+
+  @override
+  String get customerPhoneLabel => 'Phone';
+
+  @override
+  String get customerEmailLabel => 'Email';
+
+  @override
+  String get customerNoteLabel => 'Notes';
+
+  @override
+  String get customerNoteHint => 'Add a note about this customer...';
+
+  @override
+  String get customerInfoSection => 'Customer Information';
+
+  @override
+  String get customerNotesSection => 'Notes';
+
+  @override
+  String get customerStatisticsSection => 'Statistics';
+
+  @override
+  String get customerTotalVisits => 'Total Visits';
+
+  @override
+  String get customerTotalSpent => 'Total Spent';
+
+  @override
+  String get deleteCustomerTitle => 'Delete Customer';
+
+  @override
+  String deleteCustomerConfirm(String name) {
+    return 'Are you sure you want to delete \"$name\"?';
+  }
+
+  @override
+  String get searchCustomers => 'Search customers...';
+
+  @override
+  String get noCustomersYet => 'No customers yet';
+
+  @override
+  String get noCustomersFound => 'No customers found';
+
+  @override
+  String get addFirstCustomer =>
+      'Add your first customer to track their purchases';
+
+  @override
+  String customerVisits(int count) {
+    return '$count visits';
+  }
+
+  @override
+  String get promotionsTitle => 'Promotions';
+
+  @override
+  String get promotionSaved => 'Promotion saved';
+
+  @override
+  String get addPromotion => 'Add Promotion';
+
+  @override
+  String get editPromotionTitle => 'Edit Promotion';
+
+  @override
+  String get promotionNameLabel => 'Promotion Name';
+
+  @override
+  String get promotionNameRequired => 'Name is required';
+
+  @override
+  String get promotionValueLabel => 'Discount (%)';
+
+  @override
+  String get promotionAmountLabel => 'Discount Amount';
+
+  @override
+  String get promotionValueRequired => 'Value is required';
+
+  @override
+  String get promotionValueInvalid => 'Enter a valid value';
+
+  @override
+  String get promotionPercentMax => 'Percentage cannot exceed 100';
+
+  @override
+  String get promotionMinPurchaseLabel => 'Minimum Purchase Amount';
+
+  @override
+  String get promotionMinPurchaseHint => '0 = no minimum';
+
+  @override
+  String get promotionDetailsSection => 'Promotion Details';
+
+  @override
+  String get promotionScheduleSection => 'Schedule';
+
+  @override
+  String get promotionStatusSection => 'Status';
+
+  @override
+  String get promotionStartDate => 'Start Date';
+
+  @override
+  String get promotionEndDate => 'End Date';
+
+  @override
+  String get promotionNoEndDate => 'No end date';
+
+  @override
+  String get promotionActive => 'Active';
+
+  @override
+  String get promotionInactive => 'Inactive';
+
+  @override
+  String get promotionActiveDesc => 'This promotion is currently active';
+
+  @override
+  String get promotionInactiveDesc => 'This promotion is disabled';
+
+  @override
+  String get promotionPercentage => 'Percentage';
+
+  @override
+  String get promotionFixedAmount => 'Fixed Amount';
+
+  @override
+  String get deletePromotionTitle => 'Delete Promotion';
+
+  @override
+  String deletePromotionConfirm(String name) {
+    return 'Are you sure you want to delete \"$name\"?';
+  }
+
+  @override
+  String get searchPromotions => 'Search promotions...';
+
+  @override
+  String get noPromotionsYet => 'No promotions yet';
+
+  @override
+  String get noPromotionsFound => 'No promotions found';
+
+  @override
+  String get addFirstPromotion =>
+      'Create your first promotion to offer discounts';
+
+  @override
+  String promotionPercentOff(String value) {
+    return '$value% off';
+  }
+
+  @override
+  String promotionAmountOff(String value) {
+    return '$value off';
+  }
+
+  @override
+  String promotionMinPurchase(String amount) {
+    return 'Min. purchase: $amount';
+  }
+
+  @override
+  String homeGreeting(String shopName) {
+    return 'Hello, $shopName';
+  }
+
+  @override
+  String get homeSubtitle => 'Let\'s make today a great sales day!';
+
+  @override
+  String get homeTodayRevenue => 'Today\'s Revenue';
+
+  @override
+  String get homeVsYesterday => 'vs yesterday';
+
+  @override
+  String get homeRevenue => 'Revenue';
+
+  @override
+  String get homeCost => 'Cost';
+
+  @override
+  String get homeProfit => 'Profit';
+
+  @override
+  String get homeMainMenu => 'Main Menu';
+
+  @override
+  String get homeHistory => 'History';
+
+  @override
+  String get homeCloseDay => 'Close Day';
+
+  @override
+  String get homePromotionBannerCta => 'Create Now';
+
+  @override
+  String get homeCreatePromotion => 'Create Promotion';
+
+  @override
+  String get homePromotionBannerSubtitle => 'Easily boost your sales';
+
+  @override
+  String get homeNoActivePromotion => 'No active promotions right now';
+
+  @override
+  String get homePromotionOff => 'OFF';
+
+  @override
+  String homeFromBills(int count) {
+    return 'from $count bills';
   }
 }

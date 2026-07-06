@@ -20,6 +20,9 @@ import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/chec
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_receipt_dialog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_receipt_preview.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_total_card.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/order_channel_selector.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/order_type_selector.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/table_selector.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/payment_input_section.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/payment_method_selector.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
@@ -34,9 +37,13 @@ class CheckoutBody extends StatefulWidget {
 
 class _CheckoutBodyState extends State<CheckoutBody> {
   String _method = 'cash';
+  String _orderType = 'dinein';
+  String _orderChannel = 'walkin';
+  String? _selectedTableId;
   final _receivedCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
   final _referenceCtrl = TextEditingController();
+  final _externalRefCtrl = TextEditingController();
   bool _submitted = false;
   bool _inPaymentFlow = false;
   double _effectiveTotal = 0;
@@ -66,6 +73,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
     _receivedCtrl.dispose();
     _noteCtrl.dispose();
     _referenceCtrl.dispose();
+    _externalRefCtrl.dispose();
     super.dispose();
   }
 
@@ -90,6 +98,13 @@ class _CheckoutBodyState extends State<CheckoutBody> {
           ].join('\n');
     final settings = context.read<SettingsCubit>().state.settings;
     final cartState = context.read<CartBloc>().state;
+    final isRestaurant = settings.isRestaurantMode;
+    final serviceChargeRate = isRestaurant
+        ? (cartState.serviceChargeRate ?? settings.defaultServiceChargeRate)
+        : 0.0;
+    final serviceChargeAmount = isRestaurant && serviceChargeRate > 0
+        ? (cartState.total * (serviceChargeRate / 100))
+        : 0.0;
     context.read<CheckoutBloc>().add(
       CheckoutConfirmed(
         paymentMethod: _method,
@@ -103,6 +118,18 @@ class _CheckoutBodyState extends State<CheckoutBody> {
         amountReceived: _method == 'cash' ? _received : _effectiveTotal,
         changeAmount: _method == 'cash' && _change >= 0 ? _change : 0,
         note: effectiveNote.isEmpty ? null : effectiveNote,
+        orderType: isRestaurant ? _orderType : 'dinein',
+        orderChannel: isRestaurant ? _orderChannel : 'walkin',
+        externalOrderRef: isRestaurant && _orderType == 'delivery'
+            ? (_externalRefCtrl.text.trim().isEmpty
+                  ? null
+                  : _externalRefCtrl.text.trim())
+            : null,
+        tableId: isRestaurant && _orderType == 'dinein'
+            ? _selectedTableId
+            : null,
+        serviceChargeRate: serviceChargeRate,
+        serviceChargeAmount: serviceChargeAmount,
       ),
     );
   }
@@ -251,12 +278,19 @@ class _CheckoutBodyState extends State<CheckoutBody> {
         builder: (_, cartState) {
           final settings = context.read<SettingsCubit>().state.settings;
           final currency = settings.currency;
+          final isRestaurant = settings.isRestaurantMode;
+          final cartServiceRate =
+              cartState.serviceChargeRate ?? settings.defaultServiceChargeRate;
+          final serviceChargeAmount = isRestaurant && cartServiceRate > 0
+              ? (cartState.total * (cartServiceRate / 100))
+              : 0.0;
           final vatInfo = sl<ReceiptPdfService>().calculateVat(
-            total: cartState.total,
+            total: cartState.total + serviceChargeAmount,
             rate: settings.vatRate,
             mode: settings.vatMode,
           );
-          _effectiveTotal = vatInfo?.totalWithVat ?? cartState.total;
+          _effectiveTotal =
+              vatInfo?.totalWithVat ?? (cartState.total + serviceChargeAmount);
 
           return SingleChildScrollView(
             padding: EdgeInsets.only(
@@ -269,6 +303,71 @@ class _CheckoutBodyState extends State<CheckoutBody> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (isRestaurant) ...[
+                  Text(
+                    context.l10n.orderType,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  OrderTypeSelector(
+                    orderType: _orderType,
+                    onChanged: (v) => setState(() => _orderType = v),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    context.l10n.orderChannel,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  OrderChannelSelector(
+                    orderChannel: _orderChannel,
+                    onChanged: (v) => setState(() => _orderChannel = v),
+                  ),
+                  if (_orderType == 'dinein') ...[
+                    const SizedBox(height: 12),
+                    TableSelector(
+                      selectedTableId: _selectedTableId,
+                      onSelected: (v) => setState(() => _selectedTableId = v),
+                    ),
+                  ],
+                  if (_orderType == 'delivery') ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _externalRefCtrl,
+                      decoration: InputDecoration(
+                        labelText: context.l10n.externalOrderRef,
+                        hintText: context.l10n.externalOrderRefHint,
+                        border: const OutlineInputBorder(),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (serviceChargeAmount > 0) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          context.l10n.serviceCharge,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        Text(
+                          '$currency ${serviceChargeAmount.toStringAsFixed(2)}',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                ],
                 CheckoutTotalCard(
                   itemsSubtotal: cartState.itemsSubtotal,
                   itemsDiscountTotal: cartState.items.fold(

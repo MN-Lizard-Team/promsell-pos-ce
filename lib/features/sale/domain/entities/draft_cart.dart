@@ -10,6 +10,14 @@ class DraftCart extends Equatable {
     this.note,
     this.cartDiscountType,
     this.cartDiscountValue,
+    this.orderType = 'dinein',
+    this.orderChannel = 'walkin',
+    this.externalOrderRef,
+    this.tableId,
+    this.serviceChargeRate,
+    this.customerId,
+    this.promotionId,
+    this.promotionDiscountAmount = 0.0,
     required this.updatedAt,
     this.deletedAt,
     this.version = 1,
@@ -21,6 +29,14 @@ class DraftCart extends Equatable {
   final String? note;
   final String? cartDiscountType;
   final double? cartDiscountValue;
+  final String orderType;
+  final String orderChannel;
+  final String? externalOrderRef;
+  final String? tableId;
+  final double? serviceChargeRate;
+  final String? customerId;
+  final String? promotionId;
+  final double promotionDiscountAmount;
   final DateTime updatedAt;
   final DateTime? deletedAt;
   final int version;
@@ -46,6 +62,14 @@ class DraftCart extends Equatable {
 
   double get total => MoneyUtils.round(_rawTotal - discountAmount);
 
+  double get serviceChargeAmount {
+    final rate = serviceChargeRate;
+    if (rate == null || rate <= 0) return 0.0;
+    return MoneyUtils.round(total * (rate / 100));
+  }
+
+  double get grandTotal => MoneyUtils.round(total + serviceChargeAmount);
+
   @override
   List<Object?> get props => [
     id,
@@ -54,6 +78,14 @@ class DraftCart extends Equatable {
     note,
     cartDiscountType,
     cartDiscountValue,
+    orderType,
+    orderChannel,
+    externalOrderRef,
+    tableId,
+    serviceChargeRate,
+    customerId,
+    promotionId,
+    promotionDiscountAmount,
     updatedAt,
     deletedAt,
     version,

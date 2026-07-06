@@ -18,7 +18,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get loading => 'กำลังโหลด...';
 
   @override
-  String get navSale => 'ขาย';
+  String get navHome => 'หน้าหลัก';
+
+  @override
+  String get navSale => 'ขายสินค้า';
 
   @override
   String get navProducts => 'สินค้า';
@@ -2272,5 +2275,438 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String filterActiveCount(int count) {
     return 'ใช้งาน $count';
+  }
+
+  @override
+  String get businessType => 'ประเภทธุรกิจ';
+
+  @override
+  String get businessTypeRetail => 'ค้าปลีก';
+
+  @override
+  String get businessTypeRestaurant => 'ร้านอาหาร';
+
+  @override
+  String get businessTypeSubtitle => 'สลับระหว่างโหมดค้าปลีกและร้านอาหาร';
+
+  @override
+  String get serviceChargeRate => 'อัตราค่าบริการ (%)';
+
+  @override
+  String get serviceChargeRateSubtitle =>
+      'อัตราค่าบริการเริ่มต้นสำหรับคำสั่งอาหาร';
+
+  @override
+  String get orderType => 'ประเภทคำสั่ง';
+
+  @override
+  String get orderTypeDineIn => 'ทานที่ร้าน';
+
+  @override
+  String get orderTypeTakeaway => 'สั่งกลับบ้าน';
+
+  @override
+  String get orderTypeDelivery => 'จัดส่ง';
+
+  @override
+  String get orderChannel => 'ช่องทางสั่งซื้อ';
+
+  @override
+  String get orderChannelWalkIn => 'เดินเข้าร้าน';
+
+  @override
+  String get orderChannelPhone => 'โทรศัพท์';
+
+  @override
+  String get orderChannelOnline => 'ออนไลน์';
+
+  @override
+  String get externalOrderRef => 'เลขอ้างอิงการสั่งซื้อ';
+
+  @override
+  String get externalOrderRefHint =>
+      'หมายเลขคำสั่งซื้อจากแพลตฟอร์มจัดส่ง (ไม่บังคับ)';
+
+  @override
+  String get serviceCharge => 'ค่าบริการ';
+
+  @override
+  String get tableNumber => 'โต๊ะ';
+
+  @override
+  String get selectTable => 'เลือกโต๊ะ';
+
+  @override
+  String get noTable => 'ยังไม่ได้กำหนดโต๊ะ';
+
+  @override
+  String get restaurantSettings => 'ตั้งค่าร้านอาหาร';
+
+  @override
+  String get tableManagement => 'จัดการโต๊ะ';
+
+  @override
+  String get tableManagementSubtitle => 'จัดการโต๊ะและโซนในร้าน';
+
+  @override
+  String get addTable => 'เพิ่มโต๊ะ';
+
+  @override
+  String get editTable => 'แก้ไขโต๊ะ';
+
+  @override
+  String get deleteTable => 'ลบโต๊ะ';
+
+  @override
+  String get tableName => 'ชื่อโต๊ะ';
+
+  @override
+  String get tableNameHint => 'เช่น โต๊ะ 1, T-01';
+
+  @override
+  String get tableZone => 'โซน';
+
+  @override
+  String get tableZoneHint => 'เช่น ในร้าน, นอกร้าน, ระเบียง';
+
+  @override
+  String get tableSeats => 'จำนวนที่นั่ง';
+
+  @override
+  String get tableSeatsHint => 'จำนวนที่นั่งของโต๊ะ';
+
+  @override
+  String get tableStatusAvailable => 'ว่าง';
+
+  @override
+  String get tableStatusOccupied => 'ไม่ว่าง';
+
+  @override
+  String get tableStatusReserved => 'จองแล้ว';
+
+  @override
+  String get noTablesYet => 'ยังไม่มีโต๊ะ เพิ่มโต๊ะแรกของคุณ';
+
+  @override
+  String get confirmDeleteTable => 'ลบโต๊ะนี้?';
+
+  @override
+  String get selectTableForDineIn => 'เลือกโต๊ะสำหรับคำสั่งนี้';
+
+  @override
+  String get noTablesAvailable =>
+      'ยังไม่ได้ตั้งค่าโต๊ะ เพิ่มโต๊ะในเมนูจัดการโต๊ะ';
+
+  @override
+  String get optionGroups => 'กลุ่มตัวเลือก';
+
+  @override
+  String get optionGroupsSubtitle =>
+      'เพิ่มตัวเลือกเช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด';
+
+  @override
+  String get addOptionGroup => 'เพิ่มกลุ่มตัวเลือก';
+
+  @override
+  String get editOptionGroup => 'แก้ไขกลุ่มตัวเลือก';
+
+  @override
+  String get optionGroupName => 'ชื่อกลุ่ม';
+
+  @override
+  String get optionGroupNameHint => 'เช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด';
+
+  @override
+  String get optionSelectionType => 'ประเภทการเลือก';
+
+  @override
+  String get optionSelectionSingle => 'เลือกได้อย่างเดียว';
+
+  @override
+  String get optionSelectionMultiple => 'เลือกได้หลายอย่าง';
+
+  @override
+  String get optionRequired => 'บังคับเลือก';
+
+  @override
+  String get optionOptional => 'ไม่บังคับ';
+
+  @override
+  String get addOption => 'เพิ่มตัวเลือก';
+
+  @override
+  String get editOption => 'แก้ไขตัวเลือก';
+
+  @override
+  String get optionName => 'ชื่อตัวเลือก';
+
+  @override
+  String get optionNameHint => 'เช่น เล็ก, ช็อตเพิ่ม, ไม่ใส่น้ำแข็ง';
+
+  @override
+  String get optionPriceDelta => 'ราคาเพิ่มเติม';
+
+  @override
+  String get optionPriceDeltaHint => 'ราคาเพิ่มเติม (สามารถเป็น 0)';
+
+  @override
+  String get deleteOptionGroup => 'ลบกลุ่มตัวเลือก';
+
+  @override
+  String get confirmDeleteOptionGroup =>
+      'ลบกลุ่มตัวเลือกนี้และตัวเลือกทั้งหมดในกลุ่ม?';
+
+  @override
+  String get deleteOption => 'ลบตัวเลือก';
+
+  @override
+  String get confirmDeleteOption => 'ลบตัวเลือกนี้?';
+
+  @override
+  String get noOptionGroups => 'ยังไม่มีกลุ่มตัวเลือก';
+
+  @override
+  String get selectOptions => 'เลือกตัวเลือก';
+
+  @override
+  String optionsFor(String product) {
+    return 'ตัวเลือกสำหรับ $product';
+  }
+
+  @override
+  String optionRequiredMessage(String group) {
+    return 'กรุณาเลือกตัวเลือกสำหรับ $group';
+  }
+
+  @override
+  String get customersTitle => 'ลูกค้า';
+
+  @override
+  String get customerSaved => 'บันทึกลูกค้าแล้ว';
+
+  @override
+  String get addCustomer => 'เพิ่มลูกค้า';
+
+  @override
+  String get editCustomerTitle => 'แก้ไขลูกค้า';
+
+  @override
+  String get customerNameLabel => 'ชื่อ';
+
+  @override
+  String get customerNameRequired => 'กรุณากรอกชื่อ';
+
+  @override
+  String get customerPhoneLabel => 'เบอร์โทร';
+
+  @override
+  String get customerEmailLabel => 'อีเมล';
+
+  @override
+  String get customerNoteLabel => 'บันทึก';
+
+  @override
+  String get customerNoteHint => 'เพิ่มบันทึกเกี่ยวกับลูกค้ารายนี้...';
+
+  @override
+  String get customerInfoSection => 'ข้อมูลลูกค้า';
+
+  @override
+  String get customerNotesSection => 'บันทึก';
+
+  @override
+  String get customerStatisticsSection => 'สถิติ';
+
+  @override
+  String get customerTotalVisits => 'จำนวนการเข้าซื้อ';
+
+  @override
+  String get customerTotalSpent => 'ยอดใช้จ่ายรวม';
+
+  @override
+  String get deleteCustomerTitle => 'ลบลูกค้า';
+
+  @override
+  String deleteCustomerConfirm(String name) {
+    return 'คุณแน่ใจหรือว่าจะลบ \"$name\"?';
+  }
+
+  @override
+  String get searchCustomers => 'ค้นหาลูกค้า...';
+
+  @override
+  String get noCustomersYet => 'ยังไม่มีลูกค้า';
+
+  @override
+  String get noCustomersFound => 'ไม่พบลูกค้า';
+
+  @override
+  String get addFirstCustomer => 'เพิ่มลูกค้าคนแรกของคุณเพื่อติดตามการซื้อ';
+
+  @override
+  String customerVisits(int count) {
+    return 'เข้าซื้อ $count ครั้ง';
+  }
+
+  @override
+  String get promotionsTitle => 'โปรโมชัน';
+
+  @override
+  String get promotionSaved => 'บันทึกโปรโมชันแล้ว';
+
+  @override
+  String get addPromotion => 'เพิ่มโปรโมชัน';
+
+  @override
+  String get editPromotionTitle => 'แก้ไขโปรโมชัน';
+
+  @override
+  String get promotionNameLabel => 'ชื่อโปรโมชัน';
+
+  @override
+  String get promotionNameRequired => 'กรุณากรอกชื่อ';
+
+  @override
+  String get promotionValueLabel => 'ส่วนลด (%)';
+
+  @override
+  String get promotionAmountLabel => 'มูลค่าส่วนลด';
+
+  @override
+  String get promotionValueRequired => 'กรุณากรอกค่า';
+
+  @override
+  String get promotionValueInvalid => 'กรุณากรอกค่าที่ถูกต้อง';
+
+  @override
+  String get promotionPercentMax => 'เปอร์เซ็นต์ต้องไม่เกิน 100';
+
+  @override
+  String get promotionMinPurchaseLabel => 'ยอดซื้อขั้นต่ำ';
+
+  @override
+  String get promotionMinPurchaseHint => '0 = ไม่มีขั้นต่ำ';
+
+  @override
+  String get promotionDetailsSection => 'รายละเอียดโปรโมชัน';
+
+  @override
+  String get promotionScheduleSection => 'กำหนดเวลา';
+
+  @override
+  String get promotionStatusSection => 'สถานะ';
+
+  @override
+  String get promotionStartDate => 'วันเริ่มต้น';
+
+  @override
+  String get promotionEndDate => 'วันสิ้นสุด';
+
+  @override
+  String get promotionNoEndDate => 'ไม่มีวันสิ้นสุด';
+
+  @override
+  String get promotionActive => 'ใช้งานอยู่';
+
+  @override
+  String get promotionInactive => 'ปิดใช้งาน';
+
+  @override
+  String get promotionActiveDesc => 'โปรโมชันนี้กำลังใช้งานอยู่';
+
+  @override
+  String get promotionInactiveDesc => 'โปรโมชันนี้ถูกปิดใช้งาน';
+
+  @override
+  String get promotionPercentage => 'เปอร์เซ็นต์';
+
+  @override
+  String get promotionFixedAmount => 'จำนวนเงินคงที่';
+
+  @override
+  String get deletePromotionTitle => 'ลบโปรโมชัน';
+
+  @override
+  String deletePromotionConfirm(String name) {
+    return 'คุณแน่ใจหรือว่าจะลบ \"$name\"?';
+  }
+
+  @override
+  String get searchPromotions => 'ค้นหาโปรโมชัน...';
+
+  @override
+  String get noPromotionsYet => 'ยังไม่มีโปรโมชัน';
+
+  @override
+  String get noPromotionsFound => 'ไม่พบโปรโมชัน';
+
+  @override
+  String get addFirstPromotion => 'สร้างโปรโมชันแรกของคุณเพื่อให้ส่วนลด';
+
+  @override
+  String promotionPercentOff(String value) {
+    return 'ลด $value%';
+  }
+
+  @override
+  String promotionAmountOff(String value) {
+    return 'ลด $value';
+  }
+
+  @override
+  String promotionMinPurchase(String amount) {
+    return 'ซื้อขั้นต่ำ: $amount';
+  }
+
+  @override
+  String homeGreeting(String shopName) {
+    return 'สวัสดี, $shopName';
+  }
+
+  @override
+  String get homeSubtitle => 'เริ่มต้นวันให้ยอดปัง!';
+
+  @override
+  String get homeTodayRevenue => 'ยอดขายวันนี้';
+
+  @override
+  String get homeVsYesterday => 'เทียบกับเมื่อวาน';
+
+  @override
+  String get homeRevenue => 'รายรับ';
+
+  @override
+  String get homeCost => 'ต้นทุน';
+
+  @override
+  String get homeProfit => 'กำไร';
+
+  @override
+  String get homeMainMenu => 'เมนูหลัก';
+
+  @override
+  String get homeHistory => 'ประวัติ';
+
+  @override
+  String get homeCloseDay => 'ปิดยอดวัน';
+
+  @override
+  String get homePromotionBannerCta => 'สร้างเลย';
+
+  @override
+  String get homeCreatePromotion => 'สร้างโปรโมชั่น';
+
+  @override
+  String get homePromotionBannerSubtitle => 'เพิ่มยอดขายได้ง่ายๆ';
+
+  @override
+  String get homeNoActivePromotion => 'ไม่มีโปรโมชันที่ใช้งานอยู่';
+
+  @override
+  String get homePromotionOff => 'ลด';
+
+  @override
+  String homeFromBills(int count) {
+    return 'จาก $count บิล';
   }
 }

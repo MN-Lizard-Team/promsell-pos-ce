@@ -23,7 +23,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tSaleItem.props.length, 14);
+      expect(tSaleItem.props.length, 15);
     });
   });
 
@@ -63,7 +63,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tSale.props.length, 21);
+      expect(tSale.props.length, 30);
     });
   });
 }

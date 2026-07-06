@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
+import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 
@@ -12,7 +13,10 @@ void main() {
 
   setUp(() {
     db = createInMemoryDatabase();
-    datasource = ProductLocalDatasourceImpl(db);
+    datasource = ProductLocalDatasourceImpl(
+      db,
+      ProductOptionDatasourceImpl(db),
+    );
   });
 
   tearDown(() => db.close());

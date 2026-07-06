@@ -8,7 +8,9 @@ import 'package:promsell_pos_ce/core/widgets/layout/modern_toggle_card.dart';
 import 'package:promsell_pos_ce/core/widgets/stock/stock_stepper.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/category_field.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/option_groups_editor.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_hero_image.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/shared/product_text_field.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -38,6 +40,8 @@ class ProductFormView extends StatelessWidget {
     required this.onActiveChanged,
     required this.onStockChanged,
     required this.onGenerateBarcode,
+    required this.optionGroups,
+    required this.onOptionGroupsChanged,
   });
 
   final GlobalKey<FormState> formKey;
@@ -62,6 +66,8 @@ class ProductFormView extends StatelessWidget {
   final ValueChanged<bool> onActiveChanged;
   final ValueChanged<int> onStockChanged;
   final VoidCallback onGenerateBarcode;
+  final List<ProductOptionGroup> optionGroups;
+  final ValueChanged<List<ProductOptionGroup>> onOptionGroupsChanged;
 
   bool get isEditing => product != null;
 
@@ -107,6 +113,11 @@ class ProductFormView extends StatelessWidget {
               skuCtrl: skuCtrl,
               costCtrl: costCtrl,
               currency: currency,
+            ),
+            const SizedBox(height: 16),
+            OptionGroupsEditor(
+              initialGroups: optionGroups,
+              onChanged: onOptionGroupsChanged,
             ),
             if (isEditing) ...[
               const SizedBox(height: 16),

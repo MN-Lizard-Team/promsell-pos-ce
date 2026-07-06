@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/draft_cart_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
@@ -20,7 +21,7 @@ void main() {
     db = createInMemoryDatabase();
     fakeSettingsRepo = FakeSettingsRepository();
     ds = DraftCartLocalDatasourceImpl(db, settingsRepo: fakeSettingsRepo);
-    productDs = ProductLocalDatasourceImpl(db);
+    productDs = ProductLocalDatasourceImpl(db, ProductOptionDatasourceImpl(db));
   });
 
   tearDown(() => db.close());

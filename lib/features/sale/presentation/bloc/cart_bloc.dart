@@ -33,6 +33,11 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<CartBulkItemDiscountsCleared>(_onBulkItemDiscountsCleared);
     on<CartItemsReordered>(_onCartItemsReordered);
     on<CartItemNoteChanged>(_onItemNoteChanged);
+    on<CartTableAssigned>(_onTableAssigned);
+    on<CartOrderTypeChanged>(_onOrderTypeChanged);
+    on<CartOrderChannelChanged>(_onOrderChannelChanged);
+    on<CartExternalOrderRefChanged>(_onExternalOrderRefChanged);
+    on<CartServiceChargeRateChanged>(_onServiceChargeRateChanged);
   }
 
   final ProductRepository _productRepo;
@@ -41,7 +46,13 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   void _onProductAdded(CartProductAdded event, Emitter<CartState> emit) {
     final p = event.product;
     final qtyToAdd = event.qty;
-    final existing = state.items.indexWhere((i) => i.product.id == p.id);
+    final options = event.selectedOptions;
+    final hasOptions = options.isNotEmpty;
+    final existing = hasOptions
+        ? -1
+        : state.items.indexWhere(
+            (i) => i.product.id == p.id && i.selectedOptions.isEmpty,
+          );
     final updated = List<CartItem>.from(state.items);
     final stockLimited = p.trackStock && !event.allowOversell;
     if (existing >= 0) {
@@ -62,25 +73,31 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         return;
       }
       final clampedQty = stockLimited ? qtyToAdd.clamp(1, p.stock) : qtyToAdd;
-      updated.add(CartItem(product: p, qty: clampedQty));
+      updated.add(
+        CartItem(product: p, qty: clampedQty, selectedOptions: options),
+      );
     }
     emit(state.copyWith(items: updated, errorMessage: null));
   }
 
   void _onProductRemoved(CartProductRemoved event, Emitter<CartState> emit) {
-    final updated = state.items
-        .where((i) => i.product.id != event.productId)
-        .toList();
+    final updated = state.items.where((i) {
+      if (event.lineId != null) return i.lineId != event.lineId;
+      return i.product.id != event.productId;
+    }).toList();
     emit(state.copyWith(items: updated, errorMessage: null));
   }
 
   void _onQtyChanged(CartItemQtyChanged event, Emitter<CartState> emit) {
     if (event.qty <= 0) {
-      add(CartProductRemoved(event.productId));
+      add(CartProductRemoved(event.productId, lineId: event.lineId));
       return;
     }
     final updated = state.items.map((i) {
-      if (i.product.id == event.productId) {
+      final matches = event.lineId != null
+          ? i.lineId == event.lineId
+          : i.product.id == event.productId;
+      if (matches) {
         final stockLimited = i.product.trackStock && !event.allowOversell;
         final clamped = stockLimited
             ? event.qty.clamp(1, i.product.stock)
@@ -311,5 +328,37 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       return i;
     }).toList();
     emit(state.copyWith(items: updated));
+  }
+
+  void _onTableAssigned(CartTableAssigned event, Emitter<CartState> emit) {
+    emit(state.copyWith(tableId: event.tableId));
+  }
+
+  void _onOrderTypeChanged(
+    CartOrderTypeChanged event,
+    Emitter<CartState> emit,
+  ) {
+    emit(state.copyWith(orderType: event.orderType));
+  }
+
+  void _onOrderChannelChanged(
+    CartOrderChannelChanged event,
+    Emitter<CartState> emit,
+  ) {
+    emit(state.copyWith(orderChannel: event.orderChannel));
+  }
+
+  void _onExternalOrderRefChanged(
+    CartExternalOrderRefChanged event,
+    Emitter<CartState> emit,
+  ) {
+    emit(state.copyWith(externalOrderRef: event.externalOrderRef));
+  }
+
+  void _onServiceChargeRateChanged(
+    CartServiceChargeRateChanged event,
+    Emitter<CartState> emit,
+  ) {
+    emit(state.copyWith(serviceChargeRate: event.rate));
   }
 }

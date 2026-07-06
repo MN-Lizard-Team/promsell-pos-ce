@@ -1,4 +1,4 @@
-# Query Patterns — Promsell POS CE v0.8.8
+# Query Patterns — Promsell POS CE v0.8.9
 
 Common Drift query patterns used in the datasource layer.
 

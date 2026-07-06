@@ -32,6 +32,7 @@
 - [x] **R18 — NavBar + Preview + Barcode Overhaul** (v0.8.6): NavBar overhaul (`AppBottomNavigationBar` with long-press actions, `NavSwipeHelper`); Product Preview redesign (`SliverAppBar` collapsing hero, `ProductPreviewImage`, `StickyActionBar`); persistent barcode images (`BarcodeImageService` via `RenderRepaintBoundary` 600×200 @ 3x, `barcodeImagePath` column); `Ean13Generator` refactored to `@injectable` instance; theme polish (WCAG AA light theme, dark mode surfaceContainer tokens); QuickEdit upgrade (validation, Set/Adjust dual-mode); category management overhaul (`category_icon_data.dart`, search, Semantics)
 - [x] **R19 — Product Form Redesign** (v0.8.7): Merged `AddProductPage` + `ProductFormPage` into unified `ProductFormPage` with Hybrid Collapsible layout (basic fields visible, advanced in `ExpansionTile`); `ProductFormCubit` with typed `ProductDraft` entity replacing raw `Map<String, dynamic>` draft; draft persistence fixes (data loss, `isClosed` guard); `TextEditingController` disposal fix (unfocus before pop, remove listeners before dispose); 31 widget + unit tests
 - [x] **R20 — Sale Page Redesign + Cart UI Overhaul + Barcode Scanner Upgrade** (v0.8.8): `SaleDashboardHeader` + `SaleFilterBar` (Category/Sort/Stock dropdowns) + `SaleProductCard` delivery-style; `CartContent` unified widget + `CartBottomBar` with badge bounce/pull-up/velocity snap; continuous scan mode + product overlay; product form hardening (Bugs A–D, 11 dialog disposal fixes); filter/payment/cart page fixes + `CartProductDetailSheet` enrichment; 1302 tests passing
+- [x] **R21 — Restaurant Operations + CRM + Home Dashboard + Navbar Redesign** (v0.8.9): Restaurant mode (order type/channel, table management, service charge); customer & promotion management with full CRUD; home dashboard redesign (hero card, stats row, menu grid, promotion banner with gradient + floating animation); navbar floating center button with bounce animation; product modifiers/options; report/history merge; schema v20-v21 (customer, promotion, restaurant tables, product options); 1373 tests passing
 
 ### Release timeline
 
@@ -55,9 +56,9 @@ Integrity  Discount  Cart UX   Data +          NavBar +
 - [ ] **[Pro]** Multi-shop support
 - [ ] **[Pro]** Cloud backup and restore
 - [x] CSV export for products and sales (v0.6.0)
-- [ ] **[CE]** Customer management and loyalty
+- [x] Customer management and loyalty (v0.8.9)
 - [ ] **[CE]** More languages (Lao, Khmer, Burmese, Vietnamese) — *Help wanted*
 
 ---
 
-<sub>Promsell POS Community Edition · v0.8.8 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.9 · AGPL-3.0</sub>

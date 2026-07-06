@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
@@ -6,6 +7,7 @@ import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
@@ -65,6 +67,14 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           note: Value(state.note.isEmpty ? null : state.note),
           cartDiscountType: Value(state.cartDiscountType),
           cartDiscountValue: Value(state.cartDiscountValue),
+          orderType: Value(state.orderType),
+          orderChannel: Value(state.orderChannel),
+          externalOrderRef: Value(state.externalOrderRef),
+          tableId: Value(state.tableId),
+          serviceChargeRate: Value(state.serviceChargeRate),
+          customerId: Value(state.customerId),
+          promotionId: Value(state.promotionId),
+          promotionDiscountAmount: Value(state.promotionDiscountAmount),
           updatedAt: Value(DateTime.now()),
           deviceId: Value(deviceId),
         ),
@@ -88,6 +98,9 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
                 discountType: Value(item.discountType),
                 discountValue: Value(item.discountValue),
                 note: Value(item.note),
+                productOptionsJson: Value(
+                  _serializeSelectedOptions(item.selectedOptions),
+                ),
                 deviceId: Value(deviceId),
               ),
             );
@@ -131,6 +144,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             discountType: r.discountType,
             discountValue: r.discountValue,
             note: r.note,
+            selectedOptions: _parseSelectedOptions(r.productOptionsJson),
           ),
         )
         .toList();
@@ -141,6 +155,14 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       note: cart.note,
       cartDiscountType: cart.cartDiscountType,
       cartDiscountValue: cart.cartDiscountValue,
+      orderType: cart.orderType,
+      orderChannel: cart.orderChannel,
+      externalOrderRef: cart.externalOrderRef,
+      tableId: cart.tableId,
+      serviceChargeRate: cart.serviceChargeRate,
+      customerId: cart.customerId,
+      promotionId: cart.promotionId,
+      promotionDiscountAmount: cart.promotionDiscountAmount,
       items: items,
       updatedAt: cart.updatedAt,
       deletedAt: cart.deletedAt,
@@ -185,6 +207,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           discountType: row.discountType,
           discountValue: row.discountValue,
           note: row.note,
+          selectedOptions: _parseSelectedOptions(row.productOptionsJson),
         ),
       );
     }
@@ -197,6 +220,14 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             note: cart.note,
             cartDiscountType: cart.cartDiscountType,
             cartDiscountValue: cart.cartDiscountValue,
+            orderType: cart.orderType,
+            orderChannel: cart.orderChannel,
+            externalOrderRef: cart.externalOrderRef,
+            tableId: cart.tableId,
+            serviceChargeRate: cart.serviceChargeRate,
+            customerId: cart.customerId,
+            promotionId: cart.promotionId,
+            promotionDiscountAmount: cart.promotionDiscountAmount,
             items: itemsByCartId[cart.id] ?? [],
             updatedAt: cart.updatedAt,
             deletedAt: cart.deletedAt,
@@ -265,4 +296,21 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
     createdAt: d.createdAt,
     updatedAt: d.updatedAt,
   );
+
+  List<SelectedProductOption> _parseSelectedOptions(String? json) {
+    if (json == null || json.isEmpty) return const [];
+    try {
+      final list = jsonDecode(json) as List;
+      return list
+          .map((e) => SelectedProductOption.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  String? _serializeSelectedOptions(List<SelectedProductOption> options) {
+    if (options.isEmpty) return null;
+    return jsonEncode(options.map((o) => o.toJson()).toList());
+  }
 }

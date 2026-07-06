@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
@@ -22,7 +23,7 @@ void main() {
   setUp(() {
     db = createInMemoryDatabase();
     fakeSettingsRepo = FakeSettingsRepository();
-    productDs = ProductLocalDatasourceImpl(db);
+    productDs = ProductLocalDatasourceImpl(db, ProductOptionDatasourceImpl(db));
     inventoryLogService = InventoryLogService(
       db,
       settingsRepo: fakeSettingsRepo,

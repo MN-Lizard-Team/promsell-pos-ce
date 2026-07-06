@@ -71,7 +71,9 @@ class _CartPanelState extends State<CartPanel> {
             child: Icon(Icons.delete_outline, color: theme.colorScheme.onError),
           ),
           onDismissed: (_) {
-            context.read<CartBloc>().add(CartProductRemoved(item.product.id));
+            context.read<CartBloc>().add(
+              CartProductRemoved(item.product.id, lineId: item.lineId),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),

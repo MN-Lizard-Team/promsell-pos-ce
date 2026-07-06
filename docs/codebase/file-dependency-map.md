@@ -1,4 +1,4 @@
-# File Dependency Map — Promsell POS CE v0.8.8
+# File Dependency Map — Promsell POS CE v0.8.9
 
 If you change a file, these are the files that must also be updated.
 

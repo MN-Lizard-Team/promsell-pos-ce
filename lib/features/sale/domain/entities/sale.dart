@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 
 class SaleItem extends Equatable {
   const SaleItem({
@@ -12,6 +13,7 @@ class SaleItem extends Equatable {
     this.discountAmount = 0.0,
     this.vatAmount = 0.0,
     this.note,
+    this.selectedOptions = const [],
     this.updatedAt,
     this.deletedAt,
     this.version = 1,
@@ -28,6 +30,7 @@ class SaleItem extends Equatable {
   final double discountAmount;
   final double vatAmount;
   final String? note;
+  final List<SelectedProductOption> selectedOptions;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
   final int version;
@@ -45,6 +48,7 @@ class SaleItem extends Equatable {
     discountAmount,
     vatAmount,
     note,
+    selectedOptions,
     updatedAt,
     deletedAt,
     version,
@@ -66,6 +70,15 @@ class Sale extends Equatable {
     this.vatMode = 'NONE',
     this.vatRate = 0.0,
     this.vatAmount = 0.0,
+    this.orderType = 'dinein',
+    this.orderChannel = 'walkin',
+    this.externalOrderRef,
+    this.tableId,
+    this.serviceChargeRate = 0.0,
+    this.serviceChargeAmount = 0.0,
+    this.customerId,
+    this.promotionId,
+    this.promotionDiscountAmount = 0.0,
     this.amountReceived,
     this.changeAmount,
     this.note,
@@ -87,6 +100,15 @@ class Sale extends Equatable {
   final String vatMode;
   final double vatRate;
   final double vatAmount;
+  final String orderType;
+  final String orderChannel;
+  final String? externalOrderRef;
+  final String? tableId;
+  final double serviceChargeRate;
+  final double serviceChargeAmount;
+  final String? customerId;
+  final String? promotionId;
+  final double promotionDiscountAmount;
   final double totalAmount;
   final String paymentMethod;
   final double? amountReceived;
@@ -113,6 +135,15 @@ class Sale extends Equatable {
     vatMode,
     vatRate,
     vatAmount,
+    orderType,
+    orderChannel,
+    externalOrderRef,
+    tableId,
+    serviceChargeRate,
+    serviceChargeAmount,
+    customerId,
+    promotionId,
+    promotionDiscountAmount,
     totalAmount,
     paymentMethod,
     amountReceived,

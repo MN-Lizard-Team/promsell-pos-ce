@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
@@ -27,7 +28,7 @@ void main() {
   setUp(() {
     db = createInMemoryDatabase();
     fakeSettingsRepo = FakeSettingsRepository();
-    productDs = ProductLocalDatasourceImpl(db);
+    productDs = ProductLocalDatasourceImpl(db, ProductOptionDatasourceImpl(db));
     settingsDs = SettingsLocalDatasourceImpl(db);
     settingsRepo = SettingsRepositoryImpl(settingsDs);
     saleDs = SaleLocalDatasourceImpl(

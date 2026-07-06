@@ -177,7 +177,7 @@ Both are reactive and easy to test.
 
 ## Testing
 
-Promsell has **1302 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
+Promsell has **1373 automated tests** covering domain logic, state management, data access, services, widgets, integration, stress testing, and localization parity.
 
 ### Running tests
 

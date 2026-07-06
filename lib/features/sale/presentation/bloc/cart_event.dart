@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 
 abstract class CartEvent extends Equatable {
   const CartEvent();
@@ -13,19 +14,22 @@ class CartProductAdded extends CartEvent {
     this.product, {
     this.qty = 1,
     this.allowOversell = false,
+    this.selectedOptions = const [],
   });
   final Product product;
   final int qty;
   final bool allowOversell;
+  final List<SelectedProductOption> selectedOptions;
   @override
-  List<Object?> get props => [product, qty, allowOversell];
+  List<Object?> get props => [product, qty, allowOversell, selectedOptions];
 }
 
 class CartProductRemoved extends CartEvent {
-  const CartProductRemoved(this.productId);
+  const CartProductRemoved(this.productId, {this.lineId});
   final String productId;
+  final String? lineId;
   @override
-  List<Object?> get props => [productId];
+  List<Object?> get props => [productId, lineId];
 }
 
 class CartItemQtyChanged extends CartEvent {
@@ -33,12 +37,14 @@ class CartItemQtyChanged extends CartEvent {
     required this.productId,
     required this.qty,
     this.allowOversell = false,
+    this.lineId,
   });
   final String productId;
   final int qty;
   final bool allowOversell;
+  final String? lineId;
   @override
-  List<Object?> get props => [productId, qty, allowOversell];
+  List<Object?> get props => [productId, qty, allowOversell, lineId];
 }
 
 class CartCleared extends CartEvent {
@@ -148,4 +154,39 @@ class CartItemNoteChanged extends CartEvent {
   final String? note;
   @override
   List<Object?> get props => [productId, note];
+}
+
+class CartTableAssigned extends CartEvent {
+  const CartTableAssigned(this.tableId);
+  final String? tableId;
+  @override
+  List<Object?> get props => [tableId];
+}
+
+class CartOrderTypeChanged extends CartEvent {
+  const CartOrderTypeChanged(this.orderType);
+  final String orderType;
+  @override
+  List<Object?> get props => [orderType];
+}
+
+class CartOrderChannelChanged extends CartEvent {
+  const CartOrderChannelChanged(this.orderChannel);
+  final String orderChannel;
+  @override
+  List<Object?> get props => [orderChannel];
+}
+
+class CartExternalOrderRefChanged extends CartEvent {
+  const CartExternalOrderRefChanged(this.externalOrderRef);
+  final String? externalOrderRef;
+  @override
+  List<Object?> get props => [externalOrderRef];
+}
+
+class CartServiceChargeRateChanged extends CartEvent {
+  const CartServiceChargeRateChanged(this.rate);
+  final double? rate;
+  @override
+  List<Object?> get props => [rate];
 }

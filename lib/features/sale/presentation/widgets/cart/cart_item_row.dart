@@ -155,6 +155,7 @@ class CartItemRow extends StatelessWidget {
                         productId: item.product.id,
                         qty: item.qty - 1,
                         allowOversell: allowOversell,
+                        lineId: item.lineId,
                       ),
                     );
                   }
@@ -166,6 +167,7 @@ class CartItemRow extends StatelessWidget {
                           productId: item.product.id,
                           qty: item.qty + 1,
                           allowOversell: allowOversell,
+                          lineId: item.lineId,
                         ),
                       ),
                 onQtyTap: () => CartItemQtyDialog.show(

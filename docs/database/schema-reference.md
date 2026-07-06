@@ -1,6 +1,6 @@
-# Schema Reference — Promsell POS CE v0.8.8
+# Schema Reference — Promsell POS CE v0.8.9
 
-Detailed column reference for all 9 database tables, indexes, seed data, and enum values.
+Detailed column reference for all 12 database tables, indexes, seed data, and enum values.
 
 > **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns
 

@@ -116,10 +116,16 @@ abstract class AppLocalizations {
   /// **'กำลังโหลด...'**
   String get loading;
 
+  /// No description provided for @navHome.
+  ///
+  /// In th, this message translates to:
+  /// **'หน้าหลัก'**
+  String get navHome;
+
   /// No description provided for @navSale.
   ///
   /// In th, this message translates to:
-  /// **'ขาย'**
+  /// **'ขายสินค้า'**
   String get navSale;
 
   /// No description provided for @navProducts.
@@ -4357,6 +4363,822 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ใช้งาน {count}'**
   String filterActiveCount(int count);
+
+  /// No description provided for @businessType.
+  ///
+  /// In th, this message translates to:
+  /// **'ประเภทธุรกิจ'**
+  String get businessType;
+
+  /// No description provided for @businessTypeRetail.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้าปลีก'**
+  String get businessTypeRetail;
+
+  /// No description provided for @businessTypeRestaurant.
+  ///
+  /// In th, this message translates to:
+  /// **'ร้านอาหาร'**
+  String get businessTypeRestaurant;
+
+  /// No description provided for @businessTypeSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'สลับระหว่างโหมดค้าปลีกและร้านอาหาร'**
+  String get businessTypeSubtitle;
+
+  /// No description provided for @serviceChargeRate.
+  ///
+  /// In th, this message translates to:
+  /// **'อัตราค่าบริการ (%)'**
+  String get serviceChargeRate;
+
+  /// No description provided for @serviceChargeRateSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'อัตราค่าบริการเริ่มต้นสำหรับคำสั่งอาหาร'**
+  String get serviceChargeRateSubtitle;
+
+  /// No description provided for @orderType.
+  ///
+  /// In th, this message translates to:
+  /// **'ประเภทคำสั่ง'**
+  String get orderType;
+
+  /// No description provided for @orderTypeDineIn.
+  ///
+  /// In th, this message translates to:
+  /// **'ทานที่ร้าน'**
+  String get orderTypeDineIn;
+
+  /// No description provided for @orderTypeTakeaway.
+  ///
+  /// In th, this message translates to:
+  /// **'สั่งกลับบ้าน'**
+  String get orderTypeTakeaway;
+
+  /// No description provided for @orderTypeDelivery.
+  ///
+  /// In th, this message translates to:
+  /// **'จัดส่ง'**
+  String get orderTypeDelivery;
+
+  /// No description provided for @orderChannel.
+  ///
+  /// In th, this message translates to:
+  /// **'ช่องทางสั่งซื้อ'**
+  String get orderChannel;
+
+  /// No description provided for @orderChannelWalkIn.
+  ///
+  /// In th, this message translates to:
+  /// **'เดินเข้าร้าน'**
+  String get orderChannelWalkIn;
+
+  /// No description provided for @orderChannelPhone.
+  ///
+  /// In th, this message translates to:
+  /// **'โทรศัพท์'**
+  String get orderChannelPhone;
+
+  /// No description provided for @orderChannelOnline.
+  ///
+  /// In th, this message translates to:
+  /// **'ออนไลน์'**
+  String get orderChannelOnline;
+
+  /// No description provided for @externalOrderRef.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขอ้างอิงการสั่งซื้อ'**
+  String get externalOrderRef;
+
+  /// No description provided for @externalOrderRefHint.
+  ///
+  /// In th, this message translates to:
+  /// **'หมายเลขคำสั่งซื้อจากแพลตฟอร์มจัดส่ง (ไม่บังคับ)'**
+  String get externalOrderRefHint;
+
+  /// No description provided for @serviceCharge.
+  ///
+  /// In th, this message translates to:
+  /// **'ค่าบริการ'**
+  String get serviceCharge;
+
+  /// No description provided for @tableNumber.
+  ///
+  /// In th, this message translates to:
+  /// **'โต๊ะ'**
+  String get tableNumber;
+
+  /// No description provided for @selectTable.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกโต๊ะ'**
+  String get selectTable;
+
+  /// No description provided for @noTable.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ได้กำหนดโต๊ะ'**
+  String get noTable;
+
+  /// No description provided for @restaurantSettings.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งค่าร้านอาหาร'**
+  String get restaurantSettings;
+
+  /// No description provided for @tableManagement.
+  ///
+  /// In th, this message translates to:
+  /// **'จัดการโต๊ะ'**
+  String get tableManagement;
+
+  /// No description provided for @tableManagementSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'จัดการโต๊ะและโซนในร้าน'**
+  String get tableManagementSubtitle;
+
+  /// No description provided for @addTable.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มโต๊ะ'**
+  String get addTable;
+
+  /// No description provided for @editTable.
+  ///
+  /// In th, this message translates to:
+  /// **'แก้ไขโต๊ะ'**
+  String get editTable;
+
+  /// No description provided for @deleteTable.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบโต๊ะ'**
+  String get deleteTable;
+
+  /// No description provided for @tableName.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อโต๊ะ'**
+  String get tableName;
+
+  /// No description provided for @tableNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น โต๊ะ 1, T-01'**
+  String get tableNameHint;
+
+  /// No description provided for @tableZone.
+  ///
+  /// In th, this message translates to:
+  /// **'โซน'**
+  String get tableZone;
+
+  /// No description provided for @tableZoneHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น ในร้าน, นอกร้าน, ระเบียง'**
+  String get tableZoneHint;
+
+  /// No description provided for @tableSeats.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนที่นั่ง'**
+  String get tableSeats;
+
+  /// No description provided for @tableSeatsHint.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนที่นั่งของโต๊ะ'**
+  String get tableSeatsHint;
+
+  /// No description provided for @tableStatusAvailable.
+  ///
+  /// In th, this message translates to:
+  /// **'ว่าง'**
+  String get tableStatusAvailable;
+
+  /// No description provided for @tableStatusOccupied.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ว่าง'**
+  String get tableStatusOccupied;
+
+  /// No description provided for @tableStatusReserved.
+  ///
+  /// In th, this message translates to:
+  /// **'จองแล้ว'**
+  String get tableStatusReserved;
+
+  /// No description provided for @noTablesYet.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีโต๊ะ เพิ่มโต๊ะแรกของคุณ'**
+  String get noTablesYet;
+
+  /// No description provided for @confirmDeleteTable.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบโต๊ะนี้?'**
+  String get confirmDeleteTable;
+
+  /// No description provided for @selectTableForDineIn.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกโต๊ะสำหรับคำสั่งนี้'**
+  String get selectTableForDineIn;
+
+  /// No description provided for @noTablesAvailable.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ได้ตั้งค่าโต๊ะ เพิ่มโต๊ะในเมนูจัดการโต๊ะ'**
+  String get noTablesAvailable;
+
+  /// No description provided for @optionGroups.
+  ///
+  /// In th, this message translates to:
+  /// **'กลุ่มตัวเลือก'**
+  String get optionGroups;
+
+  /// No description provided for @optionGroupsSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มตัวเลือกเช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด'**
+  String get optionGroupsSubtitle;
+
+  /// No description provided for @addOptionGroup.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มกลุ่มตัวเลือก'**
+  String get addOptionGroup;
+
+  /// No description provided for @editOptionGroup.
+  ///
+  /// In th, this message translates to:
+  /// **'แก้ไขกลุ่มตัวเลือก'**
+  String get editOptionGroup;
+
+  /// No description provided for @optionGroupName.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อกลุ่ม'**
+  String get optionGroupName;
+
+  /// No description provided for @optionGroupNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด'**
+  String get optionGroupNameHint;
+
+  /// No description provided for @optionSelectionType.
+  ///
+  /// In th, this message translates to:
+  /// **'ประเภทการเลือก'**
+  String get optionSelectionType;
+
+  /// No description provided for @optionSelectionSingle.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกได้อย่างเดียว'**
+  String get optionSelectionSingle;
+
+  /// No description provided for @optionSelectionMultiple.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกได้หลายอย่าง'**
+  String get optionSelectionMultiple;
+
+  /// No description provided for @optionRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'บังคับเลือก'**
+  String get optionRequired;
+
+  /// No description provided for @optionOptional.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่บังคับ'**
+  String get optionOptional;
+
+  /// No description provided for @addOption.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มตัวเลือก'**
+  String get addOption;
+
+  /// No description provided for @editOption.
+  ///
+  /// In th, this message translates to:
+  /// **'แก้ไขตัวเลือก'**
+  String get editOption;
+
+  /// No description provided for @optionName.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อตัวเลือก'**
+  String get optionName;
+
+  /// No description provided for @optionNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น เล็ก, ช็อตเพิ่ม, ไม่ใส่น้ำแข็ง'**
+  String get optionNameHint;
+
+  /// No description provided for @optionPriceDelta.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาเพิ่มเติม'**
+  String get optionPriceDelta;
+
+  /// No description provided for @optionPriceDeltaHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาเพิ่มเติม (สามารถเป็น 0)'**
+  String get optionPriceDeltaHint;
+
+  /// No description provided for @deleteOptionGroup.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบกลุ่มตัวเลือก'**
+  String get deleteOptionGroup;
+
+  /// No description provided for @confirmDeleteOptionGroup.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบกลุ่มตัวเลือกนี้และตัวเลือกทั้งหมดในกลุ่ม?'**
+  String get confirmDeleteOptionGroup;
+
+  /// No description provided for @deleteOption.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบตัวเลือก'**
+  String get deleteOption;
+
+  /// No description provided for @confirmDeleteOption.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบตัวเลือกนี้?'**
+  String get confirmDeleteOption;
+
+  /// No description provided for @noOptionGroups.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีกลุ่มตัวเลือก'**
+  String get noOptionGroups;
+
+  /// No description provided for @selectOptions.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกตัวเลือก'**
+  String get selectOptions;
+
+  /// No description provided for @optionsFor.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวเลือกสำหรับ {product}'**
+  String optionsFor(String product);
+
+  /// No description provided for @optionRequiredMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณาเลือกตัวเลือกสำหรับ {group}'**
+  String optionRequiredMessage(String group);
+
+  /// No description provided for @customersTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ลูกค้า'**
+  String get customersTitle;
+
+  /// No description provided for @customerSaved.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกลูกค้าแล้ว'**
+  String get customerSaved;
+
+  /// No description provided for @addCustomer.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มลูกค้า'**
+  String get addCustomer;
+
+  /// No description provided for @editCustomerTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'แก้ไขลูกค้า'**
+  String get editCustomerTitle;
+
+  /// No description provided for @customerNameLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อ'**
+  String get customerNameLabel;
+
+  /// No description provided for @customerNameRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกชื่อ'**
+  String get customerNameRequired;
+
+  /// No description provided for @customerPhoneLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'เบอร์โทร'**
+  String get customerPhoneLabel;
+
+  /// No description provided for @customerEmailLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'อีเมล'**
+  String get customerEmailLabel;
+
+  /// No description provided for @customerNoteLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึก'**
+  String get customerNoteLabel;
+
+  /// No description provided for @customerNoteHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มบันทึกเกี่ยวกับลูกค้ารายนี้...'**
+  String get customerNoteHint;
+
+  /// No description provided for @customerInfoSection.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลลูกค้า'**
+  String get customerInfoSection;
+
+  /// No description provided for @customerNotesSection.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึก'**
+  String get customerNotesSection;
+
+  /// No description provided for @customerStatisticsSection.
+  ///
+  /// In th, this message translates to:
+  /// **'สถิติ'**
+  String get customerStatisticsSection;
+
+  /// No description provided for @customerTotalVisits.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนการเข้าซื้อ'**
+  String get customerTotalVisits;
+
+  /// No description provided for @customerTotalSpent.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดใช้จ่ายรวม'**
+  String get customerTotalSpent;
+
+  /// No description provided for @deleteCustomerTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบลูกค้า'**
+  String get deleteCustomerTitle;
+
+  /// No description provided for @deleteCustomerConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'คุณแน่ใจหรือว่าจะลบ \"{name}\"?'**
+  String deleteCustomerConfirm(String name);
+
+  /// No description provided for @searchCustomers.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาลูกค้า...'**
+  String get searchCustomers;
+
+  /// No description provided for @noCustomersYet.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีลูกค้า'**
+  String get noCustomersYet;
+
+  /// No description provided for @noCustomersFound.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบลูกค้า'**
+  String get noCustomersFound;
+
+  /// No description provided for @addFirstCustomer.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มลูกค้าคนแรกของคุณเพื่อติดตามการซื้อ'**
+  String get addFirstCustomer;
+
+  /// No description provided for @customerVisits.
+  ///
+  /// In th, this message translates to:
+  /// **'เข้าซื้อ {count} ครั้ง'**
+  String customerVisits(int count);
+
+  /// No description provided for @promotionsTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'โปรโมชัน'**
+  String get promotionsTitle;
+
+  /// No description provided for @promotionSaved.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกโปรโมชันแล้ว'**
+  String get promotionSaved;
+
+  /// No description provided for @addPromotion.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มโปรโมชัน'**
+  String get addPromotion;
+
+  /// No description provided for @editPromotionTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'แก้ไขโปรโมชัน'**
+  String get editPromotionTitle;
+
+  /// No description provided for @promotionNameLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อโปรโมชัน'**
+  String get promotionNameLabel;
+
+  /// No description provided for @promotionNameRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกชื่อ'**
+  String get promotionNameRequired;
+
+  /// No description provided for @promotionValueLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลด (%)'**
+  String get promotionValueLabel;
+
+  /// No description provided for @promotionAmountLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'มูลค่าส่วนลด'**
+  String get promotionAmountLabel;
+
+  /// No description provided for @promotionValueRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกค่า'**
+  String get promotionValueRequired;
+
+  /// No description provided for @promotionValueInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกค่าที่ถูกต้อง'**
+  String get promotionValueInvalid;
+
+  /// No description provided for @promotionPercentMax.
+  ///
+  /// In th, this message translates to:
+  /// **'เปอร์เซ็นต์ต้องไม่เกิน 100'**
+  String get promotionPercentMax;
+
+  /// No description provided for @promotionMinPurchaseLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดซื้อขั้นต่ำ'**
+  String get promotionMinPurchaseLabel;
+
+  /// No description provided for @promotionMinPurchaseHint.
+  ///
+  /// In th, this message translates to:
+  /// **'0 = ไม่มีขั้นต่ำ'**
+  String get promotionMinPurchaseHint;
+
+  /// No description provided for @promotionDetailsSection.
+  ///
+  /// In th, this message translates to:
+  /// **'รายละเอียดโปรโมชัน'**
+  String get promotionDetailsSection;
+
+  /// No description provided for @promotionScheduleSection.
+  ///
+  /// In th, this message translates to:
+  /// **'กำหนดเวลา'**
+  String get promotionScheduleSection;
+
+  /// No description provided for @promotionStatusSection.
+  ///
+  /// In th, this message translates to:
+  /// **'สถานะ'**
+  String get promotionStatusSection;
+
+  /// No description provided for @promotionStartDate.
+  ///
+  /// In th, this message translates to:
+  /// **'วันเริ่มต้น'**
+  String get promotionStartDate;
+
+  /// No description provided for @promotionEndDate.
+  ///
+  /// In th, this message translates to:
+  /// **'วันสิ้นสุด'**
+  String get promotionEndDate;
+
+  /// No description provided for @promotionNoEndDate.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีวันสิ้นสุด'**
+  String get promotionNoEndDate;
+
+  /// No description provided for @promotionActive.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้งานอยู่'**
+  String get promotionActive;
+
+  /// No description provided for @promotionInactive.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดใช้งาน'**
+  String get promotionInactive;
+
+  /// No description provided for @promotionActiveDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'โปรโมชันนี้กำลังใช้งานอยู่'**
+  String get promotionActiveDesc;
+
+  /// No description provided for @promotionInactiveDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'โปรโมชันนี้ถูกปิดใช้งาน'**
+  String get promotionInactiveDesc;
+
+  /// No description provided for @promotionPercentage.
+  ///
+  /// In th, this message translates to:
+  /// **'เปอร์เซ็นต์'**
+  String get promotionPercentage;
+
+  /// No description provided for @promotionFixedAmount.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนเงินคงที่'**
+  String get promotionFixedAmount;
+
+  /// No description provided for @deletePromotionTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบโปรโมชัน'**
+  String get deletePromotionTitle;
+
+  /// No description provided for @deletePromotionConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'คุณแน่ใจหรือว่าจะลบ \"{name}\"?'**
+  String deletePromotionConfirm(String name);
+
+  /// No description provided for @searchPromotions.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาโปรโมชัน...'**
+  String get searchPromotions;
+
+  /// No description provided for @noPromotionsYet.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีโปรโมชัน'**
+  String get noPromotionsYet;
+
+  /// No description provided for @noPromotionsFound.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบโปรโมชัน'**
+  String get noPromotionsFound;
+
+  /// No description provided for @addFirstPromotion.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างโปรโมชันแรกของคุณเพื่อให้ส่วนลด'**
+  String get addFirstPromotion;
+
+  /// No description provided for @promotionPercentOff.
+  ///
+  /// In th, this message translates to:
+  /// **'ลด {value}%'**
+  String promotionPercentOff(String value);
+
+  /// No description provided for @promotionAmountOff.
+  ///
+  /// In th, this message translates to:
+  /// **'ลด {value}'**
+  String promotionAmountOff(String value);
+
+  /// No description provided for @promotionMinPurchase.
+  ///
+  /// In th, this message translates to:
+  /// **'ซื้อขั้นต่ำ: {amount}'**
+  String promotionMinPurchase(String amount);
+
+  /// No description provided for @homeGreeting.
+  ///
+  /// In th, this message translates to:
+  /// **'สวัสดี, {shopName}'**
+  String homeGreeting(String shopName);
+
+  /// No description provided for @homeSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เริ่มต้นวันให้ยอดปัง!'**
+  String get homeSubtitle;
+
+  /// No description provided for @homeTodayRevenue.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขายวันนี้'**
+  String get homeTodayRevenue;
+
+  /// No description provided for @homeVsYesterday.
+  ///
+  /// In th, this message translates to:
+  /// **'เทียบกับเมื่อวาน'**
+  String get homeVsYesterday;
+
+  /// No description provided for @homeRevenue.
+  ///
+  /// In th, this message translates to:
+  /// **'รายรับ'**
+  String get homeRevenue;
+
+  /// No description provided for @homeCost.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้นทุน'**
+  String get homeCost;
+
+  /// No description provided for @homeProfit.
+  ///
+  /// In th, this message translates to:
+  /// **'กำไร'**
+  String get homeProfit;
+
+  /// No description provided for @homeMainMenu.
+  ///
+  /// In th, this message translates to:
+  /// **'เมนูหลัก'**
+  String get homeMainMenu;
+
+  /// No description provided for @homeHistory.
+  ///
+  /// In th, this message translates to:
+  /// **'ประวัติ'**
+  String get homeHistory;
+
+  /// No description provided for @homeCloseDay.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดยอดวัน'**
+  String get homeCloseDay;
+
+  /// No description provided for @homePromotionBannerCta.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างเลย'**
+  String get homePromotionBannerCta;
+
+  /// No description provided for @homeCreatePromotion.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้างโปรโมชั่น'**
+  String get homeCreatePromotion;
+
+  /// No description provided for @homePromotionBannerSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มยอดขายได้ง่ายๆ'**
+  String get homePromotionBannerSubtitle;
+
+  /// No description provided for @homeNoActivePromotion.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีโปรโมชันที่ใช้งานอยู่'**
+  String get homeNoActivePromotion;
+
+  /// No description provided for @homePromotionOff.
+  ///
+  /// In th, this message translates to:
+  /// **'ลด'**
+  String get homePromotionOff;
+
+  /// No description provided for @homeFromBills.
+  ///
+  /// In th, this message translates to:
+  /// **'จาก {count} บิล'**
+  String homeFromBills(int count);
 }
 
 class _AppLocalizationsDelegate

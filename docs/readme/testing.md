@@ -4,7 +4,7 @@
 
 ---
 
-**1302 tests** covering every application layer — **56% line coverage** (11,978 / 21,392 executable lines across 387 files):
+**1373 tests** covering every application layer — **56% line coverage** (11,978 / 21,392 executable lines across 387 files):
 
 | Layer | What's tested | Count |
 |-------|--------------|-------|
@@ -88,4 +88,4 @@ Coverage measured via `flutter test --coverage --exclude-tags stress` (lcov.info
 
 ---
 
-<sub>Promsell POS Community Edition · v0.8.8 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.8.9 · AGPL-3.0</sub>

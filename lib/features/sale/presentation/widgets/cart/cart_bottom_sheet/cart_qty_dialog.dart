@@ -56,7 +56,9 @@ class _CartQtyDialogContentState extends State<_CartQtyDialogContent> {
     final qty = int.tryParse(_ctrl.text);
     if (qty == null || qty <= 0) {
       Navigator.pop(context);
-      widget.bloc.add(CartProductRemoved(widget.item.product.id));
+      widget.bloc.add(
+        CartProductRemoved(widget.item.product.id, lineId: widget.item.lineId),
+      );
       return;
     }
     final allowOversell = widget.settings.allowOversell;
@@ -71,6 +73,7 @@ class _CartQtyDialogContentState extends State<_CartQtyDialogContent> {
           productId: widget.item.product.id,
           qty: clamped,
           allowOversell: allowOversell,
+          lineId: widget.item.lineId,
         ),
       );
     }

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 
 const Object _unset = Object();
 
@@ -18,6 +19,7 @@ class Product extends Equatable {
     this.barcodeImagePath,
     required this.isActive,
     this.trackStock = true,
+    this.optionGroups = const [],
     required this.createdAt,
     required this.updatedAt,
   });
@@ -36,6 +38,7 @@ class Product extends Equatable {
   final String? barcodeImagePath;
   final bool isActive;
   final bool trackStock;
+  final List<ProductOptionGroup> optionGroups;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -59,6 +62,7 @@ class Product extends Equatable {
     Object? barcodeImagePath = _unset,
     bool? isActive,
     bool? trackStock,
+    List<ProductOptionGroup>? optionGroups,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -87,6 +91,7 @@ class Product extends Equatable {
           : barcodeImagePath as String?,
       isActive: isActive ?? this.isActive,
       trackStock: trackStock ?? this.trackStock,
+      optionGroups: optionGroups ?? this.optionGroups,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -108,6 +113,7 @@ class Product extends Equatable {
     barcodeImagePath,
     isActive,
     trackStock,
+    optionGroups,
     createdAt,
     updatedAt,
   ];

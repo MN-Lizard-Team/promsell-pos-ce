@@ -1,4 +1,4 @@
-# Core Modules & Feature Modules — Promsell POS CE v0.8.8
+# Core Modules & Feature Modules — Promsell POS CE v0.8.9
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 

@@ -11,6 +11,11 @@ import 'package:promsell_pos_ce/core/database/tables/inventory_logs_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/products_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/sale_items_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/sales_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/restaurant_tables_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/product_option_groups_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/product_options_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/customers_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/promotions_table.dart';
 
 part 'app_database.g.dart';
 
@@ -25,6 +30,11 @@ part 'app_database.g.dart';
     DraftCarts,
     DraftCartItems,
     DailyCloses,
+    RestaurantTables,
+    ProductOptionGroups,
+    ProductOptions,
+    Customers,
+    Promotions,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -32,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -234,6 +244,130 @@ class AppDatabase extends _$AppDatabase {
       if (from < 19) {
         await _addColumnIfNotExists('sale_items', 'note', 'TEXT');
         await _addColumnIfNotExists('draft_cart_items', 'note', 'TEXT');
+      }
+      if (from < 20) {
+        // Sales: order type, channel, external ref, table, service charge
+        await _addColumnIfNotExists(
+          'sales',
+          'order_type',
+          "TEXT NOT NULL DEFAULT 'dinein'",
+        );
+        await _addColumnIfNotExists(
+          'sales',
+          'order_channel',
+          "TEXT NOT NULL DEFAULT 'walkin'",
+        );
+        await _addColumnIfNotExists('sales', 'external_order_ref', 'TEXT');
+        await _addColumnIfNotExists('sales', 'table_id', 'TEXT');
+        await _addColumnIfNotExists(
+          'sales',
+          'service_charge_rate',
+          'REAL NOT NULL DEFAULT 0',
+        );
+        await _addColumnIfNotExists(
+          'sales',
+          'service_charge_amount',
+          'REAL NOT NULL DEFAULT 0',
+        );
+
+        // DraftCarts: order type, channel, external ref, table, service charge
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'order_type',
+          "TEXT NOT NULL DEFAULT 'dinein'",
+        );
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'order_channel',
+          "TEXT NOT NULL DEFAULT 'walkin'",
+        );
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'external_order_ref',
+          'TEXT',
+        );
+        await _addColumnIfNotExists('draft_carts', 'table_id', 'TEXT');
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'service_charge_rate',
+          'REAL',
+        );
+
+        // SaleItems + DraftCartItems: product options JSON snapshot
+        await _addColumnIfNotExists(
+          'sale_items',
+          'product_options_json',
+          'TEXT',
+        );
+        await _addColumnIfNotExists(
+          'draft_cart_items',
+          'product_options_json',
+          'TEXT',
+        );
+
+        // New tables for restaurant support
+        await m.createTable(restaurantTables);
+        await m.createTable(productOptionGroups);
+        await m.createTable(productOptions);
+
+        // Indexes for new tables
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_product_option_groups_product_id ON product_option_groups (product_id)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_product_options_group_id ON product_options (group_id)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_restaurant_tables_status ON restaurant_tables (status)',
+        );
+
+        // Seed default business type setting
+        await batch((b) {
+          b.insertAll(appSettings, [
+            AppSettingsCompanion.insert(key: 'businessType', value: 'retail'),
+            AppSettingsCompanion.insert(
+              key: 'defaultServiceChargeRate',
+              value: '0',
+            ),
+          ], mode: InsertMode.insertOrIgnore);
+        });
+      }
+      if (from < 21) {
+        // New tables: Customers + Promotions
+        await m.createTable(customers);
+        await m.createTable(promotions);
+
+        // Add customerId + promotionId columns to Sales
+        await _addColumnIfNotExists('sales', 'customer_id', 'TEXT');
+        await _addColumnIfNotExists('sales', 'promotion_id', 'TEXT');
+        await _addColumnIfNotExists(
+          'sales',
+          'promotion_discount_amount',
+          'REAL NOT NULL DEFAULT 0',
+        );
+
+        // Add customerId + promotionId columns to DraftCarts
+        await _addColumnIfNotExists('draft_carts', 'customer_id', 'TEXT');
+        await _addColumnIfNotExists('draft_carts', 'promotion_id', 'TEXT');
+        await _addColumnIfNotExists(
+          'draft_carts',
+          'promotion_discount_amount',
+          'REAL NOT NULL DEFAULT 0',
+        );
+
+        // Indexes
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_customers_name ON customers (name)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers (phone)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions (is_active)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_sales_customer_id ON sales (customer_id)',
+        );
       }
     },
     beforeOpen: (details) async {

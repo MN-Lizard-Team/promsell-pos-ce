@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/services/crash_log_service.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/history/presentation/pages/history_page.dart';
+import 'package:promsell_pos_ce/features/home/presentation/pages/home_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
@@ -96,6 +96,7 @@ class PromsellApp extends StatelessWidget {
                   ? const OnboardingPage()
                   : const _MainShell(),
             ),
+            navigatorObservers: [HomePage.routeObserver],
           );
         },
       ),
@@ -120,9 +121,9 @@ class _MainShellState extends State<_MainShell> {
   final Map<int, Widget> _cachedPages = {};
 
   static const _pageBuilders = <Widget Function()>[
-    SalePage.new,
+    HomePage.new,
     ProductListPage.new,
-    HistoryPage.new,
+    SalePage.new,
     ReportPage.new,
     SettingsPage.new,
   ];
@@ -159,7 +160,7 @@ class _MainShellState extends State<_MainShell> {
 
   void _onSaleLongPress(String key) {
     if (key == 'new_draft') {
-      if (_index != 0) setState(() => _index = 0);
+      if (_index != 2) setState(() => _index = 2);
       sl<DraftBloc>().add(const DraftCreated());
     }
   }
@@ -201,11 +202,9 @@ class _MainShellState extends State<_MainShell> {
     final l10n = context.l10n;
     final navItems = [
       NavItem(
-        icon: Icons.point_of_sale_outlined,
-        activeIcon: Icons.point_of_sale,
-        label: l10n.navSale,
-        longPressActions: {'new_draft': l10n.newDraft},
-        onLongPressAction: _onSaleLongPress,
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home,
+        label: l10n.navHome,
       ),
       NavItem(
         icon: Icons.inventory_2_outlined,
@@ -215,9 +214,11 @@ class _MainShellState extends State<_MainShell> {
         onLongPressAction: _onProductLongPress,
       ),
       NavItem(
-        icon: Icons.receipt_long_outlined,
-        activeIcon: Icons.receipt_long,
-        label: l10n.navHistory,
+        icon: Icons.point_of_sale_outlined,
+        activeIcon: Icons.point_of_sale,
+        label: l10n.navSale,
+        longPressActions: {'new_draft': l10n.newDraft},
+        onLongPressAction: _onSaleLongPress,
       ),
       NavItem(
         icon: Icons.bar_chart_outlined,

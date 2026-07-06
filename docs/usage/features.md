@@ -6,6 +6,13 @@
 
 ## Features walkthrough
 
+### Home tab
+
+- **Hero dashboard card** — Shows today's revenue with sparkline trend, flip counter animation, and cost/profit summary
+- **Stats row** — Revenue, cost, and profit cards with compact k/M formatting
+- **Menu grid** — 6 quick-action buttons for navigation to key features (Sale, Products, Customers, Promotions, Reports, Settings)
+- **Promotion banner** — Gradient card with floating animated image for active promotions
+
 ### Sale tab
 
 1. Use the search bar or category chips to narrow the product catalog
@@ -62,7 +69,9 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - Use the **search bar** (appears below the app bar) to filter by receipt number, payment method, or amount
 - Use the date-range picker (calendar icon) to filter history by period
 
-### Report tab
+### Report tab (with History sub-tab)
+
+- **TabBar** — Report page now includes a History sub-tab for merged report + history view
 
 - Tap the date icon or date filter chip to pick a custom range (default: last 30 days)
 - **Net Revenue** card — shows revenue from completed sales only (voided sales excluded)
@@ -176,7 +185,7 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 - **Description** — "Offline-first mobile POS for small businesses"
 - **Built with** — Tech stack summary (Flutter, Drift SQLite)
 - **Contact** — Support email (mnlizard.official@gmail.com)
-- **Privacy Policy** — Opens in-app `PrivacyPolicyPage` with 6 sections: Data Collection, Third-Party Services, Data Storage, Backup Encryption, Permissions, Contact
+- **Privacy Policy** — Opens in-app `PrivacyPolicyPage` with 7 sections: Data Collection, Third-Party Services, Data Storage, Backup Encryption, Customer Data, Permissions, Contact
 - **Open Source License** — Opens in-app `AppLicensePage` showing full AGPL-3.0 license text (loaded from `LICENSE` file, selectable for copy)
 - **Footer** — Copyright notice "© 2026 Promsell POS CE · AGPL-3.0"
 

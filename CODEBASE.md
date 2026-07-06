@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.8
+# CODEBASE.md — Promsell POS CE v0.8.9
 
 ## System overview
 
@@ -21,15 +21,19 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
                          ▼
 ┌───────────────────────────────────────────────────────────────────────────────────────┐
 │   lib/features/ — Feature modules                                                     │
-│   sale/       — Cart, checkout, draft, discount                                       │
-│   product/    — CRUD inventory, ProductBloc, image service, barcode scan + generation │
+│   sale/       — Cart, checkout, draft, discount, restaurant order type/channel        │
+│               + table selector, service charge, product options in cart               │
+│   product/    — CRUD inventory, ProductBloc, image service, barcode scan + gen        │
 │               + BarcodeImageService (RenderRepaintBoundary off-screen render)         │
 │               + ProductFormCubit (typed draft state, Hybrid Collapsible form)         │
-│               + product_navigation.dart (shared show/edit/preview/delete helpers)     │
-│               + StatsDashboard (hero gradient card: total products + inventory value) │
-│   history/    — Sale history viewer                                                   │
-│   report/     — Analytics dashboard                                                   │
-│   settings/   — Locale, theme, shop info                                              │
+│               + product_navigation.dart (shared show/edit/preview/delete)             │
+│               + StatsDashboard (hero gradient card: total products + value)           │
+│               + ProductOptionGroup/ProductOption (modifiers, CRUD, cart sheet)        │
+│   customer/   — Customer CRUD, CustomerBloc, list/form pages with search              │
+│   promotion/  — Promotion CRUD, PromotionBloc, percent/fixed discount, dates          │
+│   home/       — Home dashboard (hero card, stats row, menu grid, promo banner)        │
+│   report/     — Analytics dashboard + History sub-tab (TabBar, merged)                │
+│   settings/   — Locale, theme, shop info, business type, service charge               │
 └────────────────────────┬──────────────────────────────────────────────────────────────┘
                          ▼
 ┌───────────────────────────────────────────────────────────────────────────────┐
@@ -110,9 +114,9 @@ features/<name>/
 │                                           │  │                              │
 │  CartBloc    DraftBloc   CheckoutBloc     │  │  SettingsCubit               │
 │  ProductBloc CategoryBloc HistoryBloc     │  │  ReportCubit                 │
-│                                           │  │  InventoryLogCubit           │
-│  Events → States (Equatable)              │  │  ProductFormCubit            │
-│  @LazySingleton (shared instances)        │  │  Methods → States            │
+│  CustomerBloc PromotionBloc TableBloc     │  │  InventoryLogCubit           │
+│                                           │  │  ProductFormCubit            │
+│  Events → States (Equatable)              │  │  Methods → States            │
 │                                           │  │  @LazySingleton              │
 └───────────────────────────────────────────┘  └──────────────────────────────┘
 ```
@@ -126,10 +130,10 @@ features/<name>/
 │  ┌─── NavigationBar (5 tabs, lazy-loaded) ───────┐   │
 │  │                                               │   │
 │  │  Tab 1    Tab 2    Tab 3    Tab 4    Tab 5    │   │
-│  │  Sale    Product  History  Report  Settings   │   │
+│  │  Home    Product  Sale     Report  Settings   │   │
 │  │  │       │        │        │        │         │   │
 │  │  ▼       ▼        ▼        ▼        ▼         │   │
-│  │  Sale   Product   History  Report  Settings   │   │
+│  │  Home   Product   Sale    Report  Settings    │   │
 │  │  Page   List Page  Page    Page    Root Page  │   │
 │  │         │                                     │   │
 │  │         ├──▶ Product Preview Page             │   │
@@ -141,8 +145,12 @@ features/<name>/
 │  │  Sale Page → Checkout Page → Receipt Dialog   │   │
 │  │            ↕ Cart Review Page                 │   │
 │  │            ↕ PromptPay Payment Page           │   │
+│  │            ↕ Table Selector (restaurant)      │   │
 │  │                                               │   │
-│  │  Settings Root → 13 sub-pages (2-level)       │   │
+│  │  Home Page → Customer/Promotion Pages         │   │
+│  │            ↕ Menu Grid (6 buttons)            │   │
+│  │                                               │   │
+│  │  Settings Root → 15 sub-pages (2-level)       │   │
 │  └───────────────────────────────────────────────┘   │
 │                                                      │
 │  Overlay: Onboarding (6-step, first-launch)          │
@@ -176,13 +184,13 @@ features/<name>/
 
 | Document | Content |
 |----------|---------|
-| [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (52 entries) + Feature modules table (11 features) |
-| [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (13 group entities), Localization, DI, Code generation |
+| [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (60+ entries) + Feature modules table (16 features) |
+| [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (15 group entities), Localization, DI, Code generation |
 | [`docs/codebase/file-dependency-map.md`](docs/codebase/file-dependency-map.md) | If-you-change-X-update-Y rules for all entities, BLoCs, datasources |
-| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (1302 tests, 8 layers) + test layer techniques |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema v19 overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
+| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (1373 tests, 9 layers) + test layer techniques |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema v21 overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-024) + barcode DI graph |
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.8.9 · Codebase Reference</sub>

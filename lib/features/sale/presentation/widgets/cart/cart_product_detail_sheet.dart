@@ -71,6 +71,23 @@ class CartProductDetailSheet {
                 ],
               ),
               const SizedBox(height: 16),
+              if (item.selectedOptions.isNotEmpty) ...[
+                Text(
+                  l10n.selectOptions,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.secondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                for (final opt in item.selectedOptions)
+                  CartDetailRow(
+                    '${opt.groupName}: ${opt.optionName}',
+                    opt.priceDelta > 0
+                        ? '+$currency${opt.priceDelta.toStringAsFixed(2)}'
+                        : '-',
+                  ),
+                const SizedBox(height: 8),
+              ],
               CartDetailRow(
                 l10n.receiptLabelSubtotal,
                 '$currency${item.product.price.toStringAsFixed(2)} x ${item.qty}',

@@ -66,6 +66,7 @@ class _CartItemQtyDialogContentState extends State<_CartItemQtyDialogContent> {
           productId: widget.item.product.id,
           qty: clamped,
           allowOversell: widget.allowOversell,
+          lineId: widget.item.lineId,
         ),
       );
     }
@@ -122,6 +123,7 @@ class CartItemRemoveDialog {
                   productId: item.product.id,
                   qty: 0,
                   allowOversell: allowOversell,
+                  lineId: item.lineId,
                 ),
               );
               Navigator.pop(context);

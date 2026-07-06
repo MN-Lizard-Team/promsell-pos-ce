@@ -1,4 +1,4 @@
-# Conventions — Promsell POS CE v0.8.8
+# Conventions — Promsell POS CE v0.8.9
 
 State management, settings persistence, localization, dependency injection, and code generation conventions.
 

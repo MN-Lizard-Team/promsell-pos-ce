@@ -15,6 +15,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/shop_info.dart
 import 'package:promsell_pos_ce/features/settings/domain/entities/stock_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/tax_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/barcode_config.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/business_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/ui_config.dart';
 
 class SettingsMapper {
@@ -71,6 +72,8 @@ class SettingsMapper {
   static const _keyBarcodeAutoOpenManualDelay = 'barcodeAutoOpenManualDelay';
   static const _keyBarcodeLastCounter = 'barcodeLastCounter';
   static const _keyBarcodeContinuousScan = 'barcodeContinuousScan';
+  static const _keyBusinessType = 'businessType';
+  static const _keyDefaultServiceChargeRate = 'defaultServiceChargeRate';
 
   Map<String, String> toMap(Settings settings) {
     return {
@@ -142,6 +145,11 @@ class SettingsMapper {
           .toString(),
       _keyBarcodeLastCounter: settings.barcodeConfig.lastCounter.toString(),
       _keyBarcodeContinuousScan: settings.barcodeConfig.continuousScan
+          .toString(),
+      _keyBusinessType: settings.businessConfig.businessType.name,
+      _keyDefaultServiceChargeRate: settings
+          .businessConfig
+          .defaultServiceChargeRate
           .toString(),
     };
   }
@@ -224,6 +232,13 @@ class SettingsMapper {
         lastCounter: _parseInt(map[_keyBarcodeLastCounter], 0),
         continuousScan: _parseBool(map[_keyBarcodeContinuousScan], true),
       ),
+      businessConfig: BusinessConfig(
+        businessType: _parseBusinessType(map[_keyBusinessType]),
+        defaultServiceChargeRate: _parseDouble(
+          map[_keyDefaultServiceChargeRate],
+          0.0,
+        ),
+      ),
       onboardingCompleted: _parseBool(map[_keyOnboardingCompleted], false),
     );
   }
@@ -267,6 +282,11 @@ class SettingsMapper {
 
   static String? _nullIfEmpty(String? value) {
     return (value == null || value.isEmpty) ? null : value;
+  }
+
+  static BusinessType _parseBusinessType(String? raw) {
+    if (raw == null || raw.isEmpty) return BusinessType.retail;
+    return BusinessType.values.byName(raw);
   }
 
   static String _serializeDiscountPresets(List<DiscountPreset> presets) {

@@ -1,4 +1,4 @@
-# Migration & Operations — Promsell POS CE v0.8.8
+# Migration & Operations — Promsell POS CE v0.8.9
 
 Migration guide, backup & restore procedures, performance notes, and database testing.
 

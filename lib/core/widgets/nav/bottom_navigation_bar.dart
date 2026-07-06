@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/widgets/nav/bottom_navigation_bar/icon_with_badge.dart';
@@ -17,8 +15,9 @@ class AppBottomNavigationBar extends StatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
 
-  static const double _height = 64;
+  static const double _height = 72;
   static const double _labelFontSize = 11;
+  static const int _centerIndex = 2;
 
   @override
   State<AppBottomNavigationBar> createState() => _AppBottomNavigationBarState();
@@ -29,7 +28,6 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
   late final AnimationController _bounceCtrl;
   late final Animation<double> _bounceAnim;
   int _animatingIndex = -1;
-  int _pressedIndex = -1;
 
   @override
   void initState() {
@@ -42,13 +40,13 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
       TweenSequenceItem(
         tween: Tween(
           begin: 1.0,
-          end: 1.25,
+          end: 1.3,
         ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 40,
       ),
       TweenSequenceItem(
         tween: Tween(
-          begin: 1.25,
+          begin: 1.3,
           end: 1.0,
         ).chain(CurveTween(curve: Curves.bounceOut)),
         weight: 60,
@@ -121,7 +119,7 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
     );
   }
 
-  Widget _buildItem(
+  Widget _buildRegularItem(
     int index,
     NavItem item,
     ThemeData theme,
@@ -129,7 +127,6 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
   ) {
     final isActive = index == widget.selectedIndex;
     final isBouncing = index == _animatingIndex;
-    final isPressed = index == _pressedIndex;
 
     return Expanded(
       child: RepaintBoundary(
@@ -137,101 +134,158 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
           button: true,
           label: item.label,
           selected: isActive,
-          child: Tooltip(
-            message: item.label,
-            triggerMode: TooltipTriggerMode.manual,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _onTap(index),
-              onTapDown: (_) => setState(() => _pressedIndex = index),
-              onTapUp: (_) => setState(() => _pressedIndex = -1),
-              onTapCancel: () => setState(() => _pressedIndex = -1),
-              onLongPressStart: (details) =>
-                  _onLongPress(index, details.globalPosition),
-              child: Container(
-                height: AppBottomNavigationBar._height,
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: AnimatedOpacity(
-                  opacity: isPressed ? 0.7 : 1.0,
-                  duration: const Duration(milliseconds: 100),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOut,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _onTap(index),
+            onLongPressStart: (details) =>
+                _onLongPress(index, details.globalPosition),
+            child: Container(
+              height: AppBottomNavigationBar._height,
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isBouncing)
+                    AnimatedBuilder(
+                      animation: _bounceAnim,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _bounceAnim.value,
+                          child: child,
+                        );
+                      },
+                      child: IconWithBadge(
+                        icon: isActive ? item.activeIcon : item.icon,
+                        color: isActive
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.6,
+                              ),
+                        badgeCount: item.badgeCount,
+                        badgeColor: item.badgeColor ?? colorScheme.error,
+                        isActive: isActive,
+                      ),
+                    )
+                  else
+                    IconWithBadge(
+                      icon: isActive ? item.activeIcon : item.icon,
                       color: isActive
-                          ? colorScheme.primaryContainer
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      badgeCount: item.badgeCount,
+                      badgeColor: item.badgeColor ?? colorScheme.error,
+                      isActive: isActive,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (isBouncing)
-                          AnimatedBuilder(
-                            animation: _bounceAnim,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: _bounceAnim.value,
-                                child: child,
-                              );
-                            },
-                            child: IconWithBadge(
-                              icon: isActive ? item.activeIcon : item.icon,
-                              color: isActive
-                                  ? colorScheme.onPrimaryContainer
-                                  : colorScheme.onSurfaceVariant.withValues(
-                                      alpha: 0.55,
-                                    ),
-                              badgeCount: item.badgeCount,
-                              badgeColor: item.badgeColor ?? colorScheme.error,
-                              isActive: isActive,
-                            ),
-                          )
-                        else
-                          IconWithBadge(
-                            icon: isActive ? item.activeIcon : item.icon,
-                            color: isActive
-                                ? colorScheme.onPrimaryContainer
-                                : colorScheme.onSurfaceVariant.withValues(
-                                    alpha: 0.55,
-                                  ),
-                            badgeCount: item.badgeCount,
-                            badgeColor: item.badgeColor ?? colorScheme.error,
-                            isActive: isActive,
-                          ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.label,
-                          style: theme.textTheme.labelSmall!.copyWith(
-                            fontFamily: 'NotoSansThai',
-                            color: isActive
-                                ? colorScheme.onPrimaryContainer
-                                : colorScheme.onSurfaceVariant.withValues(
-                                    alpha: 0.55,
-                                  ),
-                            fontWeight: isActive
-                                ? FontWeight.w700
-                                : FontWeight.w600,
-                            fontSize: AppBottomNavigationBar._labelFontSize,
-                            height: 1,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                  const SizedBox(height: 4),
+                  Text(
+                    item.label,
+                    style: theme.textTheme.labelSmall!.copyWith(
+                      fontFamily: 'NotoSansThai',
+                      color: isActive
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                      fontSize: AppBottomNavigationBar._labelFontSize,
+                      height: 1,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCenterButton(
+    NavItem item,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    final isActive =
+        widget.selectedIndex == AppBottomNavigationBar._centerIndex;
+    final isBouncing = _animatingIndex == AppBottomNavigationBar._centerIndex;
+
+    return SizedBox(
+      width: 80,
+      height: AppBottomNavigationBar._height + 24,
+      child: Center(
+        child: GestureDetector(
+          onTap: () => _onTap(AppBottomNavigationBar._centerIndex),
+          onLongPressStart: (details) => _onLongPress(
+            AppBottomNavigationBar._centerIndex,
+            details.globalPosition,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isBouncing)
+                AnimatedBuilder(
+                  animation: _bounceAnim,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _bounceAnim.value,
+                      child: child,
+                    );
+                  },
+                  child: _buildCenterDiamond(item, colorScheme, isActive),
+                )
+              else
+                _buildCenterDiamond(item, colorScheme, isActive),
+              const SizedBox(height: 6),
+              Text(
+                item.label,
+                style: theme.textTheme.labelSmall!.copyWith(
+                  fontFamily: 'NotoSansThai',
+                  color: isActive
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: AppBottomNavigationBar._labelFontSize,
+                  height: 1,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCenterDiamond(
+    NavItem item,
+    ColorScheme colorScheme,
+    bool isActive,
+  ) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 56,
+      height: 56,
+      transform: Matrix4.rotationZ(0.785398),
+      transformAlignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.45),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Transform.rotate(
+        angle: -0.785398,
+        child: Icon(
+          isActive ? item.activeIcon : item.icon,
+          color: colorScheme.onPrimary,
+          size: 28,
         ),
       ),
     );
@@ -245,49 +299,72 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
 
     return GestureDetector(
       onHorizontalDragEnd: _handleNavbarSwipe,
-      child: ClipRect(
-        child: SizedBox(
-          height: AppBottomNavigationBar._height + bottomPadding,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface.withValues(alpha: 0.88),
-                      border: Border(
-                        top: BorderSide(
-                          color: colorScheme.outline.withValues(alpha: 0.2),
-                          width: 0.5,
-                        ),
-                      ),
+      child: SizedBox(
+        height: AppBottomNavigationBar._height + bottomPadding + 16,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: AppBottomNavigationBar._height + bottomPadding,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.shadow.withValues(alpha: 0.12),
+                      blurRadius: 16,
+                      offset: const Offset(0, -4),
                     ),
-                  ),
+                  ],
                 ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: AppBottomNavigationBar._height,
-                child: Row(
-                  children: widget.items
-                      .asMap()
-                      .entries
-                      .map(
-                        (entry) => _buildItem(
-                          entry.key,
-                          entry.value,
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                      for (
+                        int i = 0;
+                        i < AppBottomNavigationBar._centerIndex;
+                        i++
+                      )
+                        _buildRegularItem(
+                          i,
+                          widget.items[i],
                           theme,
                           colorScheme,
                         ),
+                      const SizedBox(width: 80),
+                      for (
+                        int i = AppBottomNavigationBar._centerIndex + 1;
+                        i < widget.items.length;
+                        i++
                       )
-                      .toList(),
+                        _buildRegularItem(
+                          i,
+                          widget.items[i],
+                          theme,
+                          colorScheme,
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: _buildCenterButton(
+                  widget.items[AppBottomNavigationBar._centerIndex],
+                  theme,
+                  colorScheme,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

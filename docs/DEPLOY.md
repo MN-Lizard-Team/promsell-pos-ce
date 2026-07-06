@@ -112,7 +112,7 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.8.7+1
+version: 0.8.9+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -134,7 +134,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 1302 tests pass
+- [ ] `flutter test` — all 1373 tests pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date (files not committed to git)
@@ -144,6 +144,13 @@ Update `CHANGELOG.md` with a new entry for every public release.
 - [ ] Tested on physical device
 - [ ] Sale flow smoke-tested on compact phone layout
 - [ ] Sale flow smoke-tested on tablet or expanded-width layout
+- [ ] Home dashboard verified (hero card, stats row, menu grid, promotion banner)
+- [ ] Navbar floating center button renders with bounce animation on tab change
+- [ ] Restaurant mode: order type/channel selector, table selector, service charge (if enabled)
+- [ ] Customer management: add/search/edit customer
+- [ ] Promotion management: create percent/fixed discount promotion with date range
+- [ ] Product options: add option groups, select options in cart, verify price delta
+- [ ] Report/History merged: verify TabBar sub-tabs in Report page
 - [ ] Product form and payment sheet checked for keyboard/overflow behavior
 - [ ] Light, dark, and system theme modes checked
 - [ ] Thai and English locale checked after `flutter gen-l10n`

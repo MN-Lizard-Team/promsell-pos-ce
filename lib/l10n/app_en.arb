@@ -4,6 +4,7 @@
   "appTagline": "Smart Retail",
   "loading": "Loading...",
 
+  "navHome": "Home",
   "navSale": "Sale",
   "navProducts": "Products",
   "navHistory": "History",
@@ -870,5 +871,215 @@
   "filterActiveCount": "{count} active",
   "@filterActiveCount": {
     "placeholders": { "count": { "type": "int" } }
+  },
+
+  "businessType": "Business Type",
+  "businessTypeRetail": "Retail",
+  "businessTypeRestaurant": "Restaurant",
+  "businessTypeSubtitle": "Switch between retail and restaurant mode",
+  "serviceChargeRate": "Service Charge Rate (%)",
+  "serviceChargeRateSubtitle": "Default service charge percentage for restaurant orders",
+  "orderType": "Order Type",
+  "orderTypeDineIn": "Dine In",
+  "orderTypeTakeaway": "Takeaway",
+  "orderTypeDelivery": "Delivery",
+  "orderChannel": "Order Channel",
+  "orderChannelWalkIn": "Walk-in",
+  "orderChannelPhone": "Phone",
+  "orderChannelOnline": "Online",
+  "externalOrderRef": "External Order Ref",
+  "externalOrderRefHint": "Delivery platform order number (optional)",
+  "serviceCharge": "Service Charge",
+  "tableNumber": "Table",
+  "selectTable": "Select Table",
+  "noTable": "No table assigned",
+  "restaurantSettings": "Restaurant Settings",
+  "tableManagement": "Table Management",
+  "tableManagementSubtitle": "Manage restaurant tables and zones",
+  "addTable": "Add Table",
+  "editTable": "Edit Table",
+  "deleteTable": "Delete Table",
+  "tableName": "Table Name",
+  "tableNameHint": "e.g., Table 1, T-01",
+  "tableZone": "Zone",
+  "tableZoneHint": "e.g., Indoor, Outdoor, Terrace",
+  "tableSeats": "Seats",
+  "tableSeatsHint": "Number of seats",
+  "tableStatusAvailable": "Available",
+  "tableStatusOccupied": "Occupied",
+  "tableStatusReserved": "Reserved",
+  "noTablesYet": "No tables yet. Add your first table.",
+  "confirmDeleteTable": "Delete this table?",
+  "selectTableForDineIn": "Select a table for this order",
+  "noTablesAvailable": "No tables configured. Add tables in Table Management.",
+  "optionGroups": "Option Groups",
+  "optionGroupsSubtitle": "Add modifiers like size, add-ons, or spice level",
+  "addOptionGroup": "Add Option Group",
+  "editOptionGroup": "Edit Option Group",
+  "optionGroupName": "Group Name",
+  "optionGroupNameHint": "e.g., Size, Add-ons, Spice Level",
+  "optionSelectionType": "Selection Type",
+  "optionSelectionSingle": "Single Choice",
+  "optionSelectionMultiple": "Multiple Choice",
+  "optionRequired": "Required",
+  "optionOptional": "Optional",
+  "addOption": "Add Option",
+  "editOption": "Edit Option",
+  "optionName": "Option Name",
+  "optionNameHint": "e.g., Small, Extra Shot, No Ice",
+  "optionPriceDelta": "Price Adjustment",
+  "optionPriceDeltaHint": "Additional cost (can be 0)",
+  "deleteOptionGroup": "Delete Option Group",
+  "confirmDeleteOptionGroup": "Delete this option group and all its options?",
+  "deleteOption": "Delete Option",
+  "confirmDeleteOption": "Delete this option?",
+  "noOptionGroups": "No option groups yet.",
+  "selectOptions": "Select Options",
+  "optionsFor": "Options for {product}",
+  "@optionsFor": {
+    "placeholders": {
+      "product": {
+        "type": "String"
+      }
+    }
+  },
+  "optionRequiredMessage": "Please select an option for {group}",
+  "@optionRequiredMessage": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+
+  "customersTitle": "Customers",
+  "customerSaved": "Customer saved",
+  "addCustomer": "Add Customer",
+  "editCustomerTitle": "Edit Customer",
+  "customerNameLabel": "Name",
+  "customerNameRequired": "Name is required",
+  "customerPhoneLabel": "Phone",
+  "customerEmailLabel": "Email",
+  "customerNoteLabel": "Notes",
+  "customerNoteHint": "Add a note about this customer...",
+  "customerInfoSection": "Customer Information",
+  "customerNotesSection": "Notes",
+  "customerStatisticsSection": "Statistics",
+  "customerTotalVisits": "Total Visits",
+  "customerTotalSpent": "Total Spent",
+  "deleteCustomerTitle": "Delete Customer",
+  "deleteCustomerConfirm": "Are you sure you want to delete \"{name}\"?",
+  "@deleteCustomerConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchCustomers": "Search customers...",
+  "noCustomersYet": "No customers yet",
+  "noCustomersFound": "No customers found",
+  "addFirstCustomer": "Add your first customer to track their purchases",
+  "customerVisits": "{count} visits",
+  "@customerVisits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "promotionsTitle": "Promotions",
+  "promotionSaved": "Promotion saved",
+  "addPromotion": "Add Promotion",
+  "editPromotionTitle": "Edit Promotion",
+  "promotionNameLabel": "Promotion Name",
+  "promotionNameRequired": "Name is required",
+  "promotionValueLabel": "Discount (%)",
+  "promotionAmountLabel": "Discount Amount",
+  "promotionValueRequired": "Value is required",
+  "promotionValueInvalid": "Enter a valid value",
+  "promotionPercentMax": "Percentage cannot exceed 100",
+  "promotionMinPurchaseLabel": "Minimum Purchase Amount",
+  "promotionMinPurchaseHint": "0 = no minimum",
+  "promotionDetailsSection": "Promotion Details",
+  "promotionScheduleSection": "Schedule",
+  "promotionStatusSection": "Status",
+  "promotionStartDate": "Start Date",
+  "promotionEndDate": "End Date",
+  "promotionNoEndDate": "No end date",
+  "promotionActive": "Active",
+  "promotionInactive": "Inactive",
+  "promotionActiveDesc": "This promotion is currently active",
+  "promotionInactiveDesc": "This promotion is disabled",
+  "promotionPercentage": "Percentage",
+  "promotionFixedAmount": "Fixed Amount",
+  "deletePromotionTitle": "Delete Promotion",
+  "deletePromotionConfirm": "Are you sure you want to delete \"{name}\"?",
+  "@deletePromotionConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPromotions": "Search promotions...",
+  "noPromotionsYet": "No promotions yet",
+  "noPromotionsFound": "No promotions found",
+  "addFirstPromotion": "Create your first promotion to offer discounts",
+  "promotionPercentOff": "{value}% off",
+  "@promotionPercentOff": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "promotionAmountOff": "{value} off",
+  "@promotionAmountOff": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "promotionMinPurchase": "Min. purchase: {amount}",
+  "@promotionMinPurchase": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "homeGreeting": "Hello, {shopName}",
+  "@homeGreeting": {
+    "placeholders": {
+      "shopName": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSubtitle": "Let's make today a great sales day!",
+  "homeTodayRevenue": "Today's Revenue",
+  "homeVsYesterday": "vs yesterday",
+  "homeRevenue": "Revenue",
+  "homeCost": "Cost",
+  "homeProfit": "Profit",
+  "homeMainMenu": "Main Menu",
+  "homeHistory": "History",
+  "homeCloseDay": "Close Day",
+  "homePromotionBannerCta": "Create Now",
+  "homeCreatePromotion": "Create Promotion",
+  "homePromotionBannerSubtitle": "Easily boost your sales",
+  "homeNoActivePromotion": "No active promotions right now",
+  "homePromotionOff": "OFF",
+  "homeFromBills": "from {count} bills",
+  "@homeFromBills": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

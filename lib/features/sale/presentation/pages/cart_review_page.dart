@@ -34,14 +34,20 @@ class CartReviewPage extends StatelessWidget {
     if (newQty != item.qty) {
       HapticFeedback.selectionClick();
       context.read<CartBloc>().add(
-        CartItemQtyChanged(productId: item.product.id, qty: newQty),
+        CartItemQtyChanged(
+          productId: item.product.id,
+          qty: newQty,
+          lineId: item.lineId,
+        ),
       );
     }
   }
 
   void _removeItem(BuildContext context, CartItem item) {
     HapticFeedback.mediumImpact();
-    context.read<CartBloc>().add(CartProductRemoved(item.product.id));
+    context.read<CartBloc>().add(
+      CartProductRemoved(item.product.id, lineId: item.lineId),
+    );
     AppSnackBar.withAction(
       context,
       context.l10n.itemRemoved(item.product.name),

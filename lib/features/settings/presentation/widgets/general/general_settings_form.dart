@@ -3,9 +3,11 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_appearance_tiles.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_business_type_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_info_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_language_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_reset_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_service_charge_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 
 class GeneralSettingsForm extends StatelessWidget {
@@ -30,6 +32,16 @@ class GeneralSettingsForm extends StatelessWidget {
           title: l10n.generalSettingsLanguageRegion,
           children: [
             GeneralLanguageTile(settings: settings, onUpdate: onUpdate),
+          ],
+        ),
+        const SizedBox(height: 24),
+        SettingsSectionCard(
+          title: l10n.businessType,
+          children: [
+            GeneralBusinessTypeTile(settings: settings, onUpdate: onUpdate),
+            if (settings.isRestaurantMode) ...[
+              GeneralServiceChargeTile(settings: settings, onUpdate: onUpdate),
+            ],
           ],
         ),
         const SizedBox(height: 24),

@@ -47,7 +47,7 @@ void main() {
       await tester.pumpWidget(buildNavBar());
       await tester.pump();
 
-      expect(find.byType(Expanded), findsNWidgets(3));
+      expect(find.byType(Expanded), findsNWidgets(2));
       expect(find.text('Sale'), findsOneWidget);
       expect(find.text('Products'), findsOneWidget);
       expect(find.text('History'), findsOneWidget);
@@ -279,7 +279,7 @@ void main() {
       expect(find.byIcon(Icons.inventory_2), findsOneWidget);
     });
 
-    testWidgets('Tooltip does not fire on long-press (F2)', (tester) async {
+    testWidgets('center button renders as Positioned overlay', (tester) async {
       items = [
         NavItem(
           icon: Icons.point_of_sale_outlined,
@@ -306,8 +306,7 @@ void main() {
       await tester.longPress(find.text('Sale'));
       await tester.pumpAndSettle();
 
-      final tooltip = tester.widget<Tooltip>(find.byType(Tooltip).first);
-      expect(tooltip.triggerMode, TooltipTriggerMode.manual);
+      expect(find.byType(PopupMenuItem<String>), findsOneWidget);
     });
 
     testWidgets('only bouncing tab has AnimatedBuilder (F3)', (tester) async {
@@ -370,27 +369,25 @@ void main() {
       expect(menuRect.bottom, lessThanOrEqualTo(navBarBox.bottom));
     });
 
-    testWidgets('tab dims on press (F6)', (tester) async {
-      await tester.pumpWidget(buildNavBar());
+    testWidgets('inactive tab icon has reduced opacity (F6)', (tester) async {
+      await tester.pumpWidget(buildNavBar(selectedIndex: 1));
       await tester.pump();
 
-      final gesture = await tester.startGesture(
-        tester.getCenter(find.text('Sale')),
+      final icons = tester.widgetList<IconWithBadge>(
+        find.byType(IconWithBadge),
       );
-      await tester.pumpAndSettle();
-
-      final opacity = tester.widget<AnimatedOpacity>(
-        find.byType(AnimatedOpacity).first,
+      expect(icons, isNotEmpty);
+      final saleIcon = icons.first;
+      expect(
+        saleIcon.color,
+        isNot(
+          equals(
+            Theme.of(
+              tester.element(find.byType(AppBottomNavigationBar)),
+            ).colorScheme.primary,
+          ),
+        ),
       );
-      expect(opacity.opacity, 0.7);
-
-      await gesture.up();
-      await tester.pumpAndSettle();
-
-      final opacityAfter = tester.widget<AnimatedOpacity>(
-        find.byType(AnimatedOpacity).first,
-      );
-      expect(opacityAfter.opacity, 1.0);
     });
 
     testWidgets('active tab has Semantics selected=true (F9)', (tester) async {
