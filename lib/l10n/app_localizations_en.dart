@@ -39,6 +39,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get salePageTitle => 'Sale';
 
   @override
+  String get salePageSubtitle => 'Add products and complete the sale';
+
+  @override
+  String get saleBillNoteTitle => 'Bill note';
+
+  @override
   String get dragToResizeCart => 'Drag to resize cart';
 
   @override
@@ -59,7 +65,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmClearCart => 'Clear the entire cart?';
 
   @override
-  String get cartTitle => 'Cart';
+  String get cartTitle => 'Bill';
 
   @override
   String get cartEmpty => 'Cart is empty';
@@ -68,14 +74,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backToSale => 'Back to Sale';
 
   @override
-  String get checkoutButton => 'Checkout';
+  String get checkoutButton => 'Pay';
 
   @override
   String get addItems => 'Add Items';
 
   @override
   String itemRemoved(String name) {
-    return 'Item removed';
+    return '$name removed';
   }
 
   @override
@@ -102,7 +108,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tapProductToAdd => 'Tap a product to add to cart';
+  String get tapProductToAdd => 'Tap a product to add to this bill';
 
   @override
   String get noMatchingProducts => 'No matching products';
@@ -122,7 +128,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentTitle => 'Payment';
 
   @override
-  String get totalAmount => 'Total';
+  String get totalAmount => 'Amount due';
 
   @override
   String get cash => 'Cash';
@@ -203,6 +209,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get duplicateItem => 'Item duplicated';
 
   @override
+  String get duplicateItemAction => 'Duplicate';
+
+  @override
   String get clear => 'Clear';
 
   @override
@@ -223,6 +232,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String confirmDeleteProduct(String name) {
     return 'Confirm delete \"$name\"?';
+  }
+
+  @override
+  String productDeactivateConfirm(String name) {
+    return 'Deactivate \"$name\"? This product will be hidden from the sales screen.';
+  }
+
+  @override
+  String productActivateConfirm(String name) {
+    return 'Activate \"$name\"? This product will be visible on the sales screen.';
   }
 
   @override
@@ -631,7 +650,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voidSaleConfirm => 'Void this sale? Stock will be restored.';
 
   @override
-  String get voidReasonHint => 'Reason for void (optional)';
+  String get voidReason => 'Void reason';
+
+  @override
+  String get voidReasonHint => 'Enter reason for void';
+
+  @override
+  String get voidReasonRequired => 'Please enter a void reason';
+
+  @override
+  String voidedAtLabel(String datetime) {
+    return 'Voided at $datetime';
+  }
 
   @override
   String get voidSuccess => 'Sale voided';
@@ -686,6 +716,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invLogTypeStockOut => 'Stock Out';
 
   @override
+  String get invLogReasonProductStockEdited => 'Product stock edited';
+
+  @override
+  String invLogSaleRef(String ref) {
+    return 'Sale · $ref';
+  }
+
+  @override
+  String productHistoryShowingLatest(int count) {
+    return 'Showing latest $count movements';
+  }
+
+  @override
+  String get productHistoryViewAll => 'View full history';
+
+  @override
   String get productFormSectionBasicInfo => 'Basic info';
 
   @override
@@ -696,6 +742,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tabStock => 'Stock';
+
+  @override
+  String get tabCodes => 'Codes';
 
   @override
   String get productFormSectionDetails => 'Details';
@@ -717,6 +766,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get stockTrackingDisabled =>
       'Stock tracking is disabled. Enable to manage stock quantity.';
+
+  @override
+  String get stockNotTracked => 'Not tracking stock';
 
   @override
   String get settingsStockPolicy => 'Stock Policy';
@@ -843,7 +895,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptCartDiscount => 'Cart Discount';
 
   @override
-  String get draftsTitle => 'Saved Bills';
+  String get draftsTitle => 'Open bills';
 
   @override
   String get newDraft => 'New bill';
@@ -883,16 +935,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchCartItems => 'Search items...';
 
   @override
-  String get searchDrafts => 'Search drafts...';
+  String get searchDrafts => 'Search bills...';
 
   @override
-  String get untitledDraft => 'Draft';
+  String get untitledDraft => 'Bill';
 
   @override
   String get noMatchingItems => 'No matching items';
 
   @override
   String get noMatchingDrafts => 'No drafts match your search';
+
+  @override
+  String get noSavedBills => 'No saved bills yet';
+
+  @override
+  String get noSavedBillsHint =>
+      'Park a bill from the sale screen to save it here';
 
   @override
   String get groupView => 'Group view';
@@ -1207,6 +1266,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsBackup => 'Backup';
 
   @override
+  String get settingsSetupReadiness => 'Store readiness';
+
+  @override
   String get settingsData => 'Data';
 
   @override
@@ -1322,7 +1384,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backupInfoDescription =>
-      'Back up regularly to protect your sales data, products, and settings.';
+      'Export backups regularly (encryption recommended, PIN at least 6 characters). In-app restore is same-device only while the SQLCipher key remains. Cross-device restore and key recovery are not available.';
 
   @override
   String get exportSuccess => 'Export successful';
@@ -1703,7 +1765,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get costHelper => 'Used to calculate profit margins';
+  String get costHelper => 'Used to calculate gross profit (optional)';
 
   @override
   String get outOfStockShort => 'Out';
@@ -1748,8 +1810,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get barcodeNotFound => 'No product found with this barcode';
 
   @override
-  String get duplicateBarcode =>
-      'This barcode already exists on another product';
+  String get duplicateBarcode => 'This barcode already exists';
 
   @override
   String get enterManually => 'Enter Manually';
@@ -2162,6 +2223,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productPreviewStockValue => 'Stock Value';
 
   @override
+  String get productPreviewStockValueSale => 'Total Sale Value';
+
+  @override
+  String get productPreviewPotentialProfit => 'Potential Profit';
+
+  @override
+  String get productPreviewTotalSold => 'Total Sold';
+
+  @override
+  String get productPreviewTotalIn => 'Total Restocked';
+
+  @override
+  String get productPreviewTotalOut => 'Total Adjusted Out';
+
+  @override
+  String get productPreviewLastUpdate => 'Last Stock Update';
+
+  @override
+  String get productPreviewRecentMoves => 'Recent Movements';
+
+  @override
+  String get productPreviewMarkup => 'Markup from Cost';
+
+  @override
+  String get productPreviewRoi => 'Return on Cost';
+
+  @override
+  String get productPreviewTotalRevenue => 'Total Stock Revenue';
+
+  @override
+  String get productPreviewTotalProfit => 'Total Stock Profit';
+
+  @override
   String get productPreviewStatus => 'Status';
 
   @override
@@ -2215,6 +2309,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryValue => 'Inventory value';
+
+  @override
+  String get currencyBaht => 'Baht';
+
+  @override
+  String get currencyDollar => 'Dollar';
+
+  @override
+  String get currencyEuro => 'Euro';
+
+  @override
+  String get currencyYen => 'Yen';
+
+  @override
+  String get stockOnHand => 'On hand';
+
+  @override
+  String get piecesLabel => 'pcs';
 
   @override
   String get totalProducts => 'Total products';
@@ -2560,6 +2672,102 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get selectCustomer => 'Select customer';
+
+  @override
+  String get clearCustomer => 'Clear customer';
+
+  @override
+  String get noCustomer => 'No customer';
+
+  @override
+  String get receiptLabelCustomer => 'Customer';
+
+  @override
+  String get selectPromotion => 'Select promotion';
+
+  @override
+  String get clearPromotion => 'Clear promotion';
+
+  @override
+  String get noActivePromotions => 'No active promotions';
+
+  @override
+  String get promotionNotFound => 'Promotion not found or inactive';
+
+  @override
+  String get receiptLabelPromotion => 'Promotion';
+
+  @override
+  String get receiptLabelPromotionDiscount => 'Promo discount';
+
+  @override
+  String get customerNotFound => 'Customer not found or deleted';
+
+  @override
+  String get insufficientStock => 'Insufficient stock available';
+
+  @override
+  String get productNotFound => 'Product not found';
+
+  @override
+  String get productInactive => 'Product is inactive';
+
+  @override
+  String get saleNotFound => 'Sale not found';
+
+  @override
+  String get saleAlreadyVoided => 'Sale already voided';
+
+  @override
+  String get notFound => 'Not Found';
+
+  @override
+  String get validationError => 'Validation Error';
+
+  @override
+  String get databaseError => 'Database Error';
+
+  @override
+  String get backupFailed => 'Backup failed';
+
+  @override
+  String get backupShareSubject => 'Promsell POS backup';
+
+  @override
+  String get backupPinTitle => 'Backup encryption PIN';
+
+  @override
+  String get backupPinHint => 'Enter PIN to encrypt backup';
+
+  @override
+  String get backupPinRequired => 'PIN is required when encryption is on';
+
+  @override
+  String get backupPinTooShort => 'PIN must be at least 6 characters';
+
+  @override
+  String get backupPinConfirmHint => 'Confirm PIN';
+
+  @override
+  String get backupPinMismatch => 'PINs do not match';
+
+  @override
+  String get backupEncryptionOffTitle => 'Turn off backup encryption?';
+
+  @override
+  String get backupEncryptionOffConfirm =>
+      'Backups shared without encryption are easier to copy if the file is taken. You can turn encryption back on later.';
+
+  @override
+  String customerSpentLabel(String amount) {
+    return 'Spent $amount';
+  }
+
+  @override
+  String get tryDifferentSearch => 'Try a different search term';
+
+  @override
   String get promotionsTitle => 'Promotions';
 
   @override
@@ -2709,6 +2917,102 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeCreatePromotion => 'Create Promotion';
 
   @override
+  String get importProducts => 'Import Products';
+
+  @override
+  String get productTabAll => 'All';
+
+  @override
+  String get productTabCategory => 'Category';
+
+  @override
+  String get productTabStock => 'Stock';
+
+  @override
+  String get productMenuEdit => 'Edit';
+
+  @override
+  String get productMenuPreview => 'Preview';
+
+  @override
+  String get importFromCsv => 'Import from CSV';
+
+  @override
+  String get selectCsvFile => 'Select CSV File';
+
+  @override
+  String get csvImportPreview => 'Preview data to import';
+
+  @override
+  String get confirmImport => 'Confirm Import';
+
+  @override
+  String importSuccess(int count) {
+    return 'Imported $count products';
+  }
+
+  @override
+  String get importError => 'Failed to import products';
+
+  @override
+  String get csvImportError => 'Failed to read CSV file';
+
+  @override
+  String get csvNoData => 'No data found in CSV file';
+
+  @override
+  String get csvInvalidFormat => 'Invalid file format';
+
+  @override
+  String csvFileTooLarge(int maxMb) {
+    return 'File is too large (max $maxMb MB)';
+  }
+
+  @override
+  String csvTooManyRows(int maxRows) {
+    return 'Too many rows (max $maxRows)';
+  }
+
+  @override
+  String csvRowErrorsSkipped(int count) {
+    return '$count row error(s) will be skipped';
+  }
+
+  @override
+  String csvImportPartialSuccess(int imported, int errors) {
+    return 'Imported $imported; $errors row(s) failed';
+  }
+
+  @override
+  String csvImportCategoriesCreated(int count) {
+    return '$count categories created';
+  }
+
+  @override
+  String get csvDownloadTemplate => 'Download template';
+
+  @override
+  String get csvColumnLegend =>
+      'Required: name, price. Optional: sku, barcode, cost, stock, category, track_stock';
+
+  @override
+  String get csvImporting => 'Importing…';
+
+  @override
+  String csvRowLabel(int row, String message) {
+    return 'Row $row: $message';
+  }
+
+  @override
+  String get csvTemplateShared => 'Template ready to share';
+
+  @override
+  String get csvParseErrorsTitle => 'Rows that will be skipped';
+
+  @override
+  String get csvPostImportErrorsTitle => 'Rows that failed to import';
+
+  @override
   String get homePromotionBannerSubtitle => 'Easily boost your sales';
 
   @override
@@ -2721,4 +3025,811 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeFromBills(int count) {
     return 'from $count bills';
   }
+
+  @override
+  String get productDetailTitle => 'Product Details';
+
+  @override
+  String get productTabInfo => 'Product Info';
+
+  @override
+  String get productTabHistory => 'History';
+
+  @override
+  String get productDescriptionLabel => 'Description';
+
+  @override
+  String get productDescriptionEmpty => 'No description';
+
+  @override
+  String get productUnitLabel => 'Unit';
+
+  @override
+  String get productUnitDefault => 'pcs';
+
+  @override
+  String get productTabPointOfSale => 'Point of Sale';
+
+  @override
+  String get productTabPriceStock => 'Price & Stock';
+
+  @override
+  String get productTabCodesMore => 'Codes & More';
+
+  @override
+  String get productRecommended => 'Recommended product';
+
+  @override
+  String get productUnitOther => 'Other';
+
+  @override
+  String get productCustomUnit => 'Custom unit';
+
+  @override
+  String get productTaxLabel => 'Tax';
+
+  @override
+  String get productWeightLabel => 'Weight';
+
+  @override
+  String get productSizeLabel => 'Size';
+
+  @override
+  String get productBrandLabel => 'Brand';
+
+  @override
+  String get productSupplierLabel => 'Supplier';
+
+  @override
+  String get copyBarcode => 'Copy Barcode';
+
+  @override
+  String get printBarcode => 'Print Barcode';
+
+  @override
+  String get productAdjustStock => 'Adjust Stock';
+
+  @override
+  String get productNoHistory => 'No stock movement history';
+
+  @override
+  String get normalProduct => 'Normal Product';
+
+  @override
+  String get readyToSell => 'Ready to Sell';
+
+  @override
+  String get retailPrice => 'Retail Price';
+
+  @override
+  String get averageCost => 'Average Cost';
+
+  @override
+  String get averageProfit => 'Average Profit';
+
+  @override
+  String get remainingStock => 'Remaining Stock';
+
+  @override
+  String get moveProduct => 'Move Product';
+
+  @override
+  String get editProduct => 'Edit Product';
+
+  @override
+  String pieces(int count) {
+    return '$count pcs';
+  }
+
+  @override
+  String resourceNotFound(String resource) {
+    return '$resource not found';
+  }
+
+  @override
+  String resourceNotFoundWithId(String resource, String id) {
+    return '$resource not found (ID: $id)';
+  }
+
+  @override
+  String get businessRuleViolation => 'Business Rule Violation';
+
+  @override
+  String get networkError => 'Network Error';
+
+  @override
+  String networkErrorDefault(int code) {
+    return 'Network error (status: $code)';
+  }
+
+  @override
+  String get fileSystemError => 'File System Error';
+
+  @override
+  String get permissionDenied => 'Permission Denied';
+
+  @override
+  String permissionDeniedMessage(String permission) {
+    return 'Please grant $permission permission';
+  }
+
+  @override
+  String get unexpectedError => 'Unexpected Error';
+
+  @override
+  String get invalidDiscount => 'Invalid discount value';
+
+  @override
+  String get negativePriceNotAllowed => 'Negative price is not allowed';
+
+  @override
+  String get homeLoadError => 'Failed to load data';
+
+  @override
+  String get productFormSectionGeneral => 'General';
+
+  @override
+  String get productFormSectionPricing => 'Price & cost';
+
+  @override
+  String get productFormSectionStock => 'Stock & unit';
+
+  @override
+  String get productFormSectionSettings => 'Settings';
+
+  @override
+  String get productFormSectionExtra => 'More details';
+
+  @override
+  String get profitMargin => 'Margin';
+
+  @override
+  String get notSpecified => 'Not specified';
+
+  @override
+  String get saveProduct => 'Save product';
+
+  @override
+  String get discardChanges => 'Don\'t save';
+
+  @override
+  String get unsavedChangesMessageCreate =>
+      'Leave without saving? You can restore this draft next time, or discard it.';
+
+  @override
+  String get unsavedChangesMessageEdit =>
+      'You have unsaved changes. Leave without saving?';
+
+  @override
+  String get costExceedsPriceWarning =>
+      'Cost is higher than selling price — negative profit';
+
+  @override
+  String get priceStockEstimateTitle => 'If all stock sells';
+
+  @override
+  String get priceStockEstimateRevenue => 'Est. revenue';
+
+  @override
+  String get priceStockEstimateProfit => 'Est. profit';
+
+  @override
+  String get editStockAdjustHint =>
+      'Change quantity with Adjust stock so the change is logged.';
+
+  @override
+  String lowStockThresholdHint(int n) {
+    return 'Low stock alert at $n';
+  }
+
+  @override
+  String get stockInventoryValueTitle => 'Inventory value';
+
+  @override
+  String get adjustModeAdd => 'Add';
+
+  @override
+  String get adjustModeRemove => 'Remove';
+
+  @override
+  String get adjustQtyAmountLabel => 'Amount';
+
+  @override
+  String adjustCurrentStock(String qty, String unit) {
+    return 'Current stock: $qty $unit';
+  }
+
+  @override
+  String adjustPreviewResult(String from, String to, String unit) {
+    return '$from → $to $unit';
+  }
+
+  @override
+  String get adjustWouldGoNegative => 'Not enough stock for this removal';
+
+  @override
+  String get adjustReasonRestock => 'Restock';
+
+  @override
+  String get adjustReasonDamaged => 'Damaged';
+
+  @override
+  String get adjustReasonLost => 'Lost / missing';
+
+  @override
+  String get adjustReasonCountCorrection => 'Count correction';
+
+  @override
+  String get adjustReasonReturn => 'Customer return';
+
+  @override
+  String get adjustReasonOther => 'Other';
+
+  @override
+  String get adjustReasonOtherHint => 'Describe the reason';
+
+  @override
+  String get editLowStockThreshold => 'Edit threshold';
+
+  @override
+  String get lowStockThresholdSaved => 'Low stock alert updated';
+
+  @override
+  String get createProductFromBarcode => 'Create product';
+
+  @override
+  String get scanAgainToAdd => 'Product saved — scan again to add to cart';
+
+  @override
+  String get productCreatedAddedToCart => 'Product created and added to cart';
+
+  @override
+  String get barcodeReplaceTitle => 'Replace barcode?';
+
+  @override
+  String barcodeReplaceMessage(String code) {
+    return 'Current code: $code. A new code will replace it.';
+  }
+
+  @override
+  String get barcodePreviewEmpty =>
+      'Preview appears when you enter or generate a barcode';
+
+  @override
+  String get scanModeContinuous => 'Continuous';
+
+  @override
+  String get scanModeSingle => 'Single';
+
+  @override
+  String get searchMatchName => 'Name';
+
+  @override
+  String get searchMatchSku => 'SKU';
+
+  @override
+  String get searchMatchBarcode => 'Barcode';
+
+  @override
+  String searchResultCount(int count) {
+    return '$count results';
+  }
+
+  @override
+  String get searchFiltersIgnoredHint =>
+      'Showing all matches (list filters not applied)';
+
+  @override
+  String searchShowingCount(int shown, int total) {
+    return 'Showing $shown of $total';
+  }
+
+  @override
+  String barcodeAmbiguousCount(int count) {
+    return '$count products share this barcode';
+  }
+
+  @override
+  String get cartBillDetails => 'Bill details';
+
+  @override
+  String get cartHoldBill => 'Saved bills';
+
+  @override
+  String cartItemCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String cartActiveBill(String name) {
+    return 'Bill: $name';
+  }
+
+  @override
+  String get heroNoBarcode => 'No barcode';
+
+  @override
+  String get setSellingPrice => 'Set price';
+
+  @override
+  String get showProductHint =>
+      'Visible in the product list and sale catalog when on';
+
+  @override
+  String get productRecommendedHint =>
+      'Highlighted first on the sale catalog and marked in the product list';
+
+  @override
+  String get productBrandHint => 'Optional brand or manufacturer name';
+
+  @override
+  String get productDescriptionHint =>
+      'Optional notes for staff (not shown on the sale catalog)';
+
+  @override
+  String get productFormSectionVisibility => 'Visibility';
+
+  @override
+  String get productSettingsOutcomeVisible => 'On sale';
+
+  @override
+  String get productSettingsOutcomeHidden => 'Hidden from sale';
+
+  @override
+  String get productSettingsOutcomeRecommended => 'Recommended';
+
+  @override
+  String get productSettingsOutcomeNotRecommended => 'Not recommended';
+
+  @override
+  String get productRecommendedNeedsVisible =>
+      'Recommended products should be visible. Turn on Show product, or turn off Recommended.';
+
+  @override
+  String get saleRecommendedFilter => 'Recommended';
+
+  @override
+  String get saleRecommendedFilterAll => 'All items';
+
+  @override
+  String get productSupplierHint => 'Who you buy this product from (optional)';
+
+  @override
+  String get productOptionsSummaryTitle => 'Options';
+
+  @override
+  String productOptionGroupSummary(String name, String detail, int count) {
+    return '$name · $detail · $count options';
+  }
+
+  @override
+  String get productFormCostEmptyHint => 'Add cost to see profit and markup';
+
+  @override
+  String get productFormMarkupFromCost => 'Set price from cost';
+
+  @override
+  String productFormPriceChanged(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String get clearFieldTitle => 'Clear text?';
+
+  @override
+  String get clearFieldConfirm =>
+      'This will remove the text in this field. Continue?';
+
+  @override
+  String get deleteProductConfirmTitle => 'Delete this product?';
+
+  @override
+  String get removeCartLineTitle => 'Remove this item from the bill?';
+
+  @override
+  String removeCartLineQty(int count) {
+    return 'Qty $count';
+  }
+
+  @override
+  String get removeCartLineConfirm => 'Remove item';
+
+  @override
+  String get datePresetToday => 'Today';
+
+  @override
+  String get datePresetYesterday => 'Yesterday';
+
+  @override
+  String get datePresetLast7Days => 'Last 7 days';
+
+  @override
+  String get datePresetThisMonth => 'This month';
+
+  @override
+  String get datePresetCustom => 'Custom';
+
+  @override
+  String get reportAverage => 'Average';
+
+  @override
+  String get reportRecent => 'Recent';
+
+  @override
+  String paymentMethodShare(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get closeDayToday => 'Close today';
+
+  @override
+  String get dailyCloseSummaryTitle => 'Summary';
+
+  @override
+  String get dailyCloseSalesCountLabel => 'Sales count';
+
+  @override
+  String get dailyCloseVoidedCountLabel => 'Voided count';
+
+  @override
+  String get dailyCloseGrossRevenue => 'Gross revenue';
+
+  @override
+  String get dailyCloseVoidedAmount => 'Voided amount';
+
+  @override
+  String get dailyCloseByPayment => 'By payment';
+
+  @override
+  String get dailyCloseVatCollected => 'VAT collected';
+
+  @override
+  String get dailyCloseDiscountsGiven => 'Discounts given';
+
+  @override
+  String get dailyCloseCashReconciliation => 'Cash reconciliation';
+
+  @override
+  String get dailyCloseOpeningCash => 'Opening cash';
+
+  @override
+  String get dailyCloseExpectedCash => 'Expected cash';
+
+  @override
+  String get dailyCloseCountedCash => 'Counted cash';
+
+  @override
+  String get dailyCloseOverShort => 'Over / Short';
+
+  @override
+  String get dailyCloseNoteOptional => 'Note (optional)';
+
+  @override
+  String get dailyCloseStatusOpen => 'Open';
+
+  @override
+  String get dailyCloseStatusClosed => 'Closed';
+
+  @override
+  String get dailyCloseStatusClosedBadge => 'CLOSED';
+
+  @override
+  String get dailyCloseStatusOpenBadge => 'OPEN';
+
+  @override
+  String get noCategoriesFound => 'No categories match your search';
+
+  @override
+  String get categorySaved => 'Category saved';
+
+  @override
+  String get categoryDeleted => 'Category deleted';
+
+  @override
+  String categoriesDeleted(int count) {
+    return '$count categories deleted';
+  }
+
+  @override
+  String get categoryReorderHint =>
+      'Drag to set the order shown on the POS catalog';
+
+  @override
+  String deleteCategoryProductsImpact(int count) {
+    return '$count products will be moved to the selected category (or Uncategorized).';
+  }
+
+  @override
+  String get categoryNameTooLong => 'Name must be at most 100 characters';
+
+  @override
+  String get goToSale => 'Go to Sale';
+
+  @override
+  String closeDayForDate(String date) {
+    return 'Close day $date';
+  }
+
+  @override
+  String get reportNoSalesInPeriod => 'No sales in this period';
+
+  @override
+  String get currentBill => 'Current bill';
+
+  @override
+  String currentBillWithCount(int count) {
+    return 'Bill ($count)';
+  }
+
+  @override
+  String get viewBill => 'Bill';
+
+  @override
+  String viewBillWithCount(int count) {
+    return 'Bill ($count)';
+  }
+
+  @override
+  String get draftNotFound => 'Open bill not found';
+
+  @override
+  String maxDraftsReached(int count) {
+    return 'Maximum open bills ($count) reached';
+  }
+
+  @override
+  String get addToCart => 'Add to cart';
+
+  @override
+  String get holdCurrentBill => 'Hold this bill';
+
+  @override
+  String get newBill => 'New bill';
+
+  @override
+  String get billHeld => 'Bill saved';
+
+  @override
+  String get newBillConfirm =>
+      'Save the current bill and start a new empty bill?';
+
+  @override
+  String get newBillStarted => 'New bill started';
+
+  @override
+  String get voidBlockedDayClosed =>
+      'Day is closed. Reopen the day to void this sale.';
+
+  @override
+  String get billParked => 'Bill set aside — ready for next customer.';
+
+  @override
+  String get receiptThankYouDefault => 'Thank you!';
+
+  @override
+  String get receiptNotTaxInvoice => 'Sale receipt — not a tax invoice';
+
+  @override
+  String get receiptReprint => 'REPRINT';
+
+  @override
+  String get receiptShareVoidBlocked =>
+      'Cannot share a voided sale as a normal receipt. Print shows VOID.';
+
+  @override
+  String get parkBill => 'Park bill';
+
+  @override
+  String get parkBillNameTitle => 'Name this bill (optional)';
+
+  @override
+  String currentBillNamed(String name, int count) {
+    return '$name ($count)';
+  }
+
+  @override
+  String get amountDue => 'Amount due';
+
+  @override
+  String payAmount(String amount) {
+    return 'Pay $amount';
+  }
+
+  @override
+  String get parkAndNext => 'Park & next';
+
+  @override
+  String openBillsCount(int count) {
+    return 'Open bills ($count)';
+  }
+
+  @override
+  String billItemsMissing(int count) {
+    return '$count line(s) missing (product removed)';
+  }
+
+  @override
+  String get splitTenderTitle => 'Split payment (cash + other)';
+
+  @override
+  String get splitTenderSubtitle =>
+      'Pay part in cash and the rest with QR/transfer/card';
+
+  @override
+  String get splitCashAmount => 'Cash amount';
+
+  @override
+  String get paymentMismatch => 'Payment amounts do not match the total';
+
+  @override
+  String get paymentMixed => 'Split payment';
+
+  @override
+  String get promptPayShareTitle => 'PromptPay share';
+
+  @override
+  String get promptPayShareHint =>
+      'Scan for the PromptPay portion only (not the full bill).';
+
+  @override
+  String get promptPayFullBillTitle => 'Pay with PromptPay';
+
+  @override
+  String settingsAttentionItemsCount(int count) {
+    return '$count setup items need attention';
+  }
+
+  @override
+  String get settingsAttentionShopTitle => 'Finish shop profile';
+
+  @override
+  String get settingsAttentionShopBody =>
+      'Add your shop name and phone so receipts look correct.';
+
+  @override
+  String get settingsAttentionPromptpayTitle => 'Set up PromptPay';
+
+  @override
+  String get settingsAttentionPromptpayBody =>
+      'Add a PromptPay ID to show QR at checkout.';
+
+  @override
+  String get settingsAttentionReview => 'Review';
+
+  @override
+  String get settingsDayClose => 'Day close';
+
+  @override
+  String get settingsBackupData => 'Backup & data';
+
+  @override
+  String settingsPreview(String section) {
+    return '$section preview';
+  }
+
+  @override
+  String get settingsModeLabel => 'Mode';
+
+  @override
+  String get settingsCatalogMode => 'Catalog';
+
+  @override
+  String get shopNamePlaceholder => 'Your shop name';
+
+  @override
+  String get shopAddressPlaceholder => 'No address set';
+
+  @override
+  String get shopPhonePlaceholder => 'No phone set';
+
+  @override
+  String get settingsDetails => 'Details';
+
+  @override
+  String get settingsPolicy => 'Policy';
+
+  @override
+  String get settingsOn => 'On';
+
+  @override
+  String get settingsOff => 'Off';
+
+  @override
+  String get cartPaymentInProgress =>
+      'Payment in progress — cart is locked until you finish or cancel';
+
+  @override
+  String get backupRestoreTitle => 'Restore backup (this device)';
+
+  @override
+  String get backupRestoreConfirmTitle => 'Restore backup?';
+
+  @override
+  String get backupRestoreConfirmMessage =>
+      'This replaces the current database on this device. A pre-restore copy is kept. Restart the app after restore. Same-device only (SQLCipher key must still exist).';
+
+  @override
+  String get backupRestoreSuccess =>
+      'Restore complete. Please fully close and reopen the app.';
+
+  @override
+  String get backupRestorePlainUnsupported =>
+      'Plain SQLite backups are not supported. Use a SQLCipher export from this app.';
+
+  @override
+  String get backupRestoreInvalid => 'Invalid backup file.';
+
+  @override
+  String get backupRestoreSourceMissing => 'Backup file not found.';
+
+  @override
+  String get backupConfirmExportTitle => 'Confirm backup export';
+
+  @override
+  String get backupConfirmRestoreTitle => 'Confirm backup restore';
+
+  @override
+  String get appLockTitle => 'Store PIN lock';
+
+  @override
+  String get appLockSubtitle => 'Protect void, backup, and PromptPay changes';
+
+  @override
+  String get appLockSectionTitle => 'Sensitive actions';
+
+  @override
+  String get appLockRequirePin => 'Require store PIN';
+
+  @override
+  String appLockRequirePinHint(int minutes) {
+    return 'When enabled, void, backup export/restore, and PromptPay ID changes require PIN (session grace $minutes min).';
+  }
+
+  @override
+  String get appLockCreatePin => 'Create store PIN';
+
+  @override
+  String get appLockEnterPin => 'Enter store PIN';
+
+  @override
+  String get appLockConfirmPin => 'Confirm PIN';
+
+  @override
+  String get appLockPinLabel => 'PIN';
+
+  @override
+  String get appLockUnlock => 'Unlock';
+
+  @override
+  String get appLockEnabled => 'Store PIN enabled';
+
+  @override
+  String get appLockDisabled => 'Store PIN disabled';
+
+  @override
+  String get appLockEnableFailed => 'Could not enable store PIN';
+
+  @override
+  String get appLockDisableNeedsPin => 'PIN required to disable';
+
+  @override
+  String appLockPinTooShort(int min) {
+    return 'PIN must be at least $min digits';
+  }
+
+  @override
+  String get appLockIncorrectPin => 'Incorrect PIN';
+
+  @override
+  String get appLockActionRequired => 'Action requires store PIN';
+
+  @override
+  String get appLockConfirmVoid => 'Confirm void with store PIN';
+
+  @override
+  String get appLockConfirmPromptPay => 'Confirm PromptPay change';
+
+  @override
+  String get appLockPinsMismatch => 'PINs do not match';
 }

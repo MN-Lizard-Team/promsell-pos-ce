@@ -7,6 +7,490 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - 2026-07-15
+
+### Highlights
+
+- **Money-path freeze (hard)** — Confirm freezes cart lines onto CheckoutState.frozenItems; CartPaymentLockChanged blocks live cart mutations during waitingPayment/processing; PromptPay UI prefers freeze over live cart; complete sale no longer falls back to live cart when snapshot is missing.
+- **Atomic stock SQL** — Sale deduct / void restore / inventory adjust use stock = stock +/- ? (with floor checks) and re-read balanceAfter for inventory logs (schema **v28** runtime).
+- **Same-device backup restore** — BackupRestoreService decrypts optional AES-GCM .enc, rejects plain SQLite, closes DB, keeps .pre_restore_*, replaces promsell_pos.db; Settings Backup UI restore CTA; export fails closed on wal_checkpoint failure.
+- **Store PIN lock** — AppLockService (hashed PIN in secure storage, session grace); re-auth for void, backup export/restore, PromptPay ID/biller changes; Settings to Backup and data to Store PIN lock.
+- **Release hygiene** — CI coverage floor **50%**; Android release build fails without keystore.properties (no debug-signed release); store/docs honesty for same-device restore; smoke checklist updated.
+
+### Fixed
+
+- PromptPay / payment wait could diverge from sale lines when cart mutated mid-wait (UI + bloc soft lock only).
+- Stock RMW absolute writes on sale/void/adjust (lost-update risk under concurrent TX).
+- Backup export continued after failed WAL checkpoint (inconsistent file risk).
+- Release signing silently fell back to debug when keystore missing.
+
+### Added
+
+- CartPaymentLockChanged / CartState.paymentLocked / CheckoutState.frozenItems.
+- BackupRestoreService, Settings restore flow, EN/TH backup restore + app lock l10n.
+- AppLockService, ensureAppUnlocked, AppLockSettingsPage.
+- Unit tests: payment lock, app lock session, backup restore validation; backup encryption suite retained.
+
+### Changed
+
+- docs/testing/RELEASE_0.9_SMOKE.md — restore + PIN cases; automated analyze/critical suite sign-off notes.
+- Schema docs / SECURITY / Fastlane copy aligned toward **v28** and same-device restore.
+
+### Known limitations
+
+- Cross-device restore and SQLCipher key recovery still not available.
+- Device/emulator manual smoke (cold start, full cashier path, restore round-trip) still required before store submit.
+- Full-tree Unreleased UX waves may still sit in the working tree alongside this trust cut — see Unreleased until fully folded.
+
+---
+
+## [Unreleased]
+
+### Highlights
+
+- **Cart as full page** — Counter path uses `openCartReviewPage` / `CartReviewPage` (named `sale_cart_review`); bottom bar, compact FAB, bill strip, and checkout cart icon all push the page; docked dual-pane cart removed from `SalePage`; retail Pay pops cart review before payment sheet.
+- **Cart Phase B/C** — Line action bottom sheet; qty long-press keypad; payment freeze banner; bulk/reorder by lineId; draft payableTotal SSOT; docs no longer claim swipe/reorder multi-select; park long-press names bill.
+- **Cart Phase A visual shell** — Payable-first footer hero; receipt-style line rows with discount badge; Park outline / Pay accent; denser list separators; bottom bar payable hierarchy.
+- **Settings root PromSell Index (visual redesign)** — Sentence-case section titles; card radius 20; denser icon wells (40); sectionGap 16; attention left bar; always-visible search under AppBar; tileMinHeight 64 kept.
+- **Settings UI align (S3)** — Shop info form uses `FormSectionCard` + `AppTextField` + `StickyActionBar` save (Customer-form family); dialog ListTile editors removed.
+- **Settings UI align (S2)** — Remaining leaves on `SettingsLeafChrome` (image/barcode/discount/about/backup); root search `AppEmptyState`; preview hardcodes l10n; remove dead `SettingsTextField`.
+- **Settings UI align (S1)** — Flat summary/preview cards (no SaaS gradients); `SettingsLeafChrome` maxWidth 720 on key leaves; settings snackbars via `AppSnackBar`; Backup Now uses accent orange.
+- **Settings Clean Index (root redesign PR1–PR3)** — Remove gradient dashboard hero and always-on setup checklist; risk-only status chips; single attention banner (backup › shop › PromptPay); dark cards use `AppColors.darkCard`; **Day close** section split from backup/DB; tablet root `maxWidth: 720`; locale/theme under **General** only.
+- **Settings Setup Readiness Wave (Sprint 4)** — (superseded on root by Clean Index) checklist replaced by attention banner + risk chips; biller ID masked like PromptPay; shared `maskSensitiveId` helper.
+- **Settings Receipt Size + Hardening Wave (Sprint 3)** — `receiptSize` (`80mm`/`A4`) drives PDF page format; paper size UI under **Receipt** settings; PromptPay IDs masked in lists (last 4); confirm dialog when turning **off** backup encryption.
+- **Settings UX + Policy Wave (Sprint 2)** — VAT/tax under **Sales** (not Receipt) + search keywords; backup PIN confirm + min length enforced in export/encrypt services; primary Backup CTA; cart/CreateSale clamp discount %/amount and VAT/SC rates against settings. (Root dashboard badges removed in Clean Index.)
+- **Settings Integrity Wave (Sprint 1 / Phases 0–2)** — Canonical settings keys + legacy dual-read; safe `businessType`/bool parse; barcode counter **patch** write (no full-document clobber); persistence save failures rethrow / surface to cubit; remove dead `autoPrintPrompt`; hide non-working `receiptSize` and `accessibilityMode` UI until wired.
+- **Receipt SSOT Wave (Sprint 1 / Phase 0–2)** — `ReceiptDocument` + `BuildReceiptDocument.fromSale` as printable money SSOT from **stored sale fields** (cart disc, promo amount, service charge, `vatAmount`/`subtotalAmount`/`totalAmount`); PDF + thermal/card previews share breakdown; net line items (no double-count item-discount row); VOID watermark + reason/time; history REPRINT + block share of voided sales; post-sale print/share error handling + loading + Done; thumbnail images + size cap; “sale receipt ≠ tax invoice” disclaimer + docs honesty.
+
+### Fixed
+
+- **Dialog TextEditingController / IME dispose races** — Shared `safe_text_controller` helpers (unfocus before pop; dispose after two frames). Applied to `AppTextDialog`, Settings text tile, backup PIN, PromptPay / biller / barcode prefix, cart qty, draft create, park name, discount dialogs, **bill rename** (`DraftTile` — was `ctrl.dispose()` right after `showDialog`), cart/line note dialogs (was `.whenComplete(dispose)`). Removes common `used after being disposed` + `_dependents.isEmpty` crashes when closing dialogs with keyboard open.
+- **Saved Bills → Pay lost CartBloc** — After popping bills, `navigateToCheckout` ran on root navigator context (above Sale providers). Capture blocs before pop and pass them into checkout helper; unfocus search before dispose.
+- **Settings root triple chrome** — Gradient dashboard hero + always-on readiness checklist + decorative chips stacked the same status three ways; Clean Index keeps list + risk chips + single attention banner.
+- **Shop complete rule mismatch** — Root shop chip + attention use `ShopInfo.isComplete` (name **and** phone), not name-only.
+- **Settings dark cards looked GitHub-like** — `SettingsThemeExtension.dark` surfaces now `AppColors.darkCard` / `darkOutline` (`#242424` / `#3D3D3D`).
+- **Backup overdue was chip-only** — Settings root shows tappable attention when `BackupConfig.isOverdue` (and shop/PP gaps).
+- **Biller ID shown in full on PromptPay settings** — Masked like PromptPay ID (`••••` + last 4).
+- **Receipt paper size was cosmetic** — PDF always used roll80; now maps settings `receiptSize` to `PdfPageFormat.roll80` / `a4` via `ReceiptDocument`.
+- **PromptPay full ID on settings lists** — Root tile subtitle and PromptPay ID tile show masked form (`••••1234`); full value still editable in dialog.
+- **VAT findability** — Tax section moved from Receipt settings to Sales; root search matches `vat` / `tax` / `ภาษี`.
+- **Backup PIN UI-only enforcement** — Min length ≥6 enforced in `BackupExportService` and `BackupEncryptionService.encryptFile`; PIN confirm field + mismatch snack.
+- **Discount policy UI-only gap** — `CartBloc` clamps item/cart discount to settings max %/amount; `CreateSale` clamps VAT rate, cart discount, and service charge rate.
+- **Settings seed/mapper key mismatch** — `_seedDefaultSettings` used snake_case (`shop_name`, `vat_rate`, …) while `SettingsMapper` read camelCase; seeds were ignored. Seeds now camelCase; `fromMap` dual-reads legacy keys for upgrades.
+- **Settings load crash on bad `businessType`** — invalid values fall back to `retail` instead of throwing.
+- **Settings bool defaults** — empty/garbage values use fallback (not force-false); case-insensitive `true`/`false`/`0`/`1`.
+- **Barcode generation clobber race** — `GenerateBarcode` / `BatchGenerateBarcodes` call `saveBarcodeLastCounter` only (no full `Settings.save`).
+- **Silent settings save failure** — `SettingsPersistenceService` rethrows on immediate save; debounced failures notify cubit via `onDebouncedSaveError`.
+- **Receipt totals vs cart** — PDF no longer reverse-engineers VAT from payable alone; SC and promotion amount lines were missing so restaurant/promo bills could not reconcile. Uses persisted sale money.
+- **Receipt item discount double-count** — Net line subtotals no longer paired with a full aggregate item-discount row that made lines not sum to totals.
+- **Voided sale clean PDF/share** — Voided sales print with VOIDED banner; share is blocked with l10n warning (history + post-sale).
+- **Post-sale print/share silent failure** — Dialog keeps open, shows progress, try/catch + snackbar (parity with history); primary close is **Done** (not Cancel).
+- **Sale/Product full search back** — With `PopScope(canPop: false)`, exit used `maybePop()` which never left the route; cleanup now force-`pop()`s when a previous route exists (history save is best-effort).
+- **Search AppBar field overflow** — Reduced dense `TextField` vertical padding to stop ~9px bottom `RenderFlex` overflow under keyboard/IME.
+- **Sale dashboard cart total** — Uses `payableTotals` (VAT/SC-aware) instead of raw `CartState.total`.
+
+### Added
+
+- **`SettingsAttentionBanner`** — Single root attention for backup overdue, incomplete shop, empty PromptPay; multi-issue summary + deep-link to highest priority page.
+- **Settings attention l10n (EN/TH)** — `settingsAttentionItemsCount`, shop/PromptPay titles & bodies, `settingsAttentionReview`.
+- **Settings IA section labels (EN/TH)** — `settingsDayClose`, `settingsBackupData` (split from `settingsSystemData` on root).
+- **`SettingsTileBuilders.maskSensitiveId`** — Shared mask for PromptPay + biller list subtitles.
+- **Receipt paper size control** — Receipt content section: choose 80mm thermal or A4; root Receipt tile subtitle shows size.
+- **Backup encryption off confirm** — EN/TH `backupEncryptionOffTitle`, `backupEncryptionOffConfirm`.
+- **Settings search keywords** — Sales tile indexes VAT/tax/ภาษี and related terms.
+- **Backup PIN confirm** — EN/TH `backupPinConfirmHint`, `backupPinMismatch`.
+- **`SettingsRepository.saveBarcodeLastCounter`** — Partial write for EAN sequence without rewriting the full settings document.
+- **`SettingsMapper` unit tests** — Legacy snake_case dual-read, bool/businessType edge cases, no `autoPrintPrompt` on write.
+- **`ReceiptDocument` / `BuildReceiptDocument`** — Domain model + builder under `lib/features/receipt/domain/` mapping `Sale` + `Settings` + `ReceiptLabels` (void/reprint/disclaimer flags).
+- **Receipt preview breakdown** — Thermal/card support cart discount, promotion discount, service charge, void/reprint chrome, optional not-tax-invoice disclaimer.
+- **Receipt l10n (EN/TH)** — `receiptThankYouDefault`, `receiptNotTaxInvoice`, `receiptReprint`, `receiptShareVoidBlocked`.
+- **Receipt document unit tests** — `build_receipt_document_test` asserts SC/promo/VAT/void SSOT; PDF suite covers void + stored-field builds; removed duplicate `test/core/services/receipt_pdf_service_test.dart`.
+
+### Changed
+
+- **Sale cart host** — Default cart is full-page `CartReviewPage` via `openCartReviewPage` (replaces modal `showCartSheet`); expanded-width docked cart panel removed — catalog + bottom bar/FAB on all widths.
+- **Backup Now CTA accent** — Primary backup action uses `AppColors.accent` (orange work CTA).
+- **Settings root Clean Index** — No dashboard hero; no permanent readiness checklist; root chips only for incomplete shop, unset PromptPay, backup risk, oversell, disabled barcode; list stagger animation removed; `sectionGap` 32→24; root list capped at 720dp width.
+- **Settings root IA** — Order: General → Store & Sales → Restaurant? → Discounts → Payments → **Day close** → **Backup & data** → About (Daily Close no longer under System & Data).
+- **`SettingsThemeExtension.dark`** — Card/border/text tokens aligned with app `AppColors` dark stack.
+- **`ReceiptPdfService` page format** — Uses document `receiptSize` (default 80mm).
+- **Backup Now** — Full-width primary CTA on backup page (not only a list row).
+- **Sales settings form** — Includes tax/VAT section; receipt form is content + preview + paper size.
+- **Settings honesty** — Removed `autoPrintPrompt` from domain/mapper; General `accessibilityMode` UI still deferred; paper size lives under Receipt (not Shop).
+- **`SettingsPersistenceService`** — Immediate save failures propagate; dispose flush is fail-safe; optional `onDebouncedSaveError` for UI.
+- **`ReceiptPdfService`** — Builds via `ReceiptDocument`; money formatting uses `CurrencyFormatter.formatGroupedWithSymbol`; `calculateVat` retained for legacy/pre-sale mocks only (completed sales use stored fields).
+- **History reprint** — Print marks `isReprint`; share of voided sales refused; product images prefer thumbnail + ~400KB cap.
+- **SearchSurfaceConfig (Phase A)** — Policy factories for catalog vs sale search surfaces (`resultCap`, `includeInactive`, pause-filters, barcode gate); pages stay separate (no unified multi-mode search).
+- **Sale catalog item hierarchy (P0)** — List/grid cards show one meta line (SKU if present, else `CategoryCue` label/dot); list row 92 / grid extent 200 to fit meta without bottom overflow; OOS/cart/add gestures unchanged.
+- **Sale search tile chrome (P1)** — When `showAddAffordance`, tile uses list-like shell, 56 rounded avatar, cart qty on avatar, filled add disc; product search defaults unchanged.
+- **Full-screen search AppBar field** — Shared compact `SearchAppBarField` (white fill, radius 12, bodyMedium, dense icons) on Sale + Product search pages so chrome matches the Sale shell search strip.
+- **Bill hardening Wave A–C (partial)** — Schema **v27** unique `sales.receipt_number` (dedupe migration) + receipt reseed from disk; insert retries unique races; non-cash tender normalized to payable; line VAT allocated to match header; void filters soft-deleted sale/items; checkout freezes cart on **all** payment methods; draft park/newBill capacity check before save; named create waits for success before clear cart; draft autosave flush on bloc close. Money INTEGER Phase M still deferred (REAL baht on disk).
+
+### Security
+
+- **Backup encryption off friction** — Turning off encryption requires explicit confirm.
+- **PromptPay shoulder-surf reduction** — Masked IDs on settings root and PromptPay tile.
+- **Backup PIN service gate** — Short/empty PIN rejected outside UI (`PIN_TOO_SHORT` / `PIN_REQUIRED`).
+- **Void share integrity** — Cannot share a voided sale as a normal paid receipt; print path always watermarks VOIDED.
+- **Receipt disclaimer** — On-paper / preview copy states sale receipt is not a Thai tax invoice (full tax-invoice fields still deferred).
+
+### Documentation
+
+- **`docs/readme/features.md`** — Receipt PDF: 80mm thermal as current; A4/logo/PromptPay-on-receipt/barcode planned; stored-field totals; VOID watermark; not-tax-invoice disclaimer.
+
+### Highlights (continued)
+
+- **Bill UX P1** — Park CTAs catalog + cart footer only; open-bills list hides empty drafts; badge/chip = `openBillCount` (bills with items); Pay from list (switch + checkout); max-drafts snack opens Saved Bills; unify `parkAndNext` copy.
+- **Saved Bills full page** — Replaces drafts bottom sheet with `SavedBillsPage` (AppBar list + search + park + named create); open from Sale AppBar, mode chip, cart menu; root-nav push after cart modal pop; empty-state copy; smoke widget tests.
+- **Sale Bill UX B-UX0** — Catalog shows current bill name + count; one-tap park from catalog (optional name on **parked** draft); drafts sheet park-only (no duplicate New bill row); cart footer park + pay (drafts via header/chip); unify `parkBill` copy.
+- **Bill/Sale Test Wave T0–T1** — Checkout: mixed PromptPay stamps ref on PP tender, cart freeze after `waitingPayment`, DayClosed/PaymentMismatch keys, ignore confirm while processing. Draft: park max/save fail atomic, named newBill, empty blackout vs non-empty autosave. CreateSale payments forward + VAT/discount/SC clamps; `computeWithServiceChargeAmount`; CloseDay expected cash from cash tender lines; datasource multi-tender edges.
+- **Bill R1 multi-tender** — `sale_payments` table (schema v28); create/load tender lines; checkout split cash+other; mixed+PromptPay opens QR for PP share only; History/receipt payment breakdown; daily close/report sums tender amounts.
+- **Bill R0 + one-tap park** — Cart footer Park; named create uses park+name (no data loss); empty new-bill no-op; autosave blackout only when cart empty; draft error snack dedupe; post-sale draft name `B-#####`.
+- **Sale Residual Wave** — Park bill = save + new empty draft + clear (awaitable); atomic New bill (no clear on fail); draft list payable totals; day-closed banner on Sale.
+- **Sale Integrity P0** — Shared `SalesDayLock`; CreateSale/VoidSale block when day closed (void needs reopen); checkout helper uses same rule; history maps `DayClosed`; reopen clears `lastClosedDate` only when it matches reopened date.
+- **Sale UX Wave 1** — Cart chrome SSOT (docked header clear/drafts); drafts sheet Hold this bill / New bill speed actions; checkout customer/promo dense when attached; docs use `payment_sheet.dart`.
+- **Sale UX Wave 0.5** — Named checkout routes + safer shell pop; processing timeout no longer unlocks double-submit; catalog add hit target 48dp + semantics; retail payment file `payment_sheet.dart` (compat export from redesign name).
+- **Sale UX Wave 0** — Bottom bar / ultra FAB open cart (not pay); mode switcher is current bill + drafts (no dead checkout chip); hold CTA = saved bills; cart totals use `SalePayableCalculator` (VAT-aware); promo/SC/VAT in breakdown + checkout total card; draft errors snack + l10n; cash exact prefill; restaurant order/table seed from cart; remove dead `SaleStatusStrip` / `CategoryFilterSheet`.
+
+- **Payable SSOT (Wave A)** — `SalePayableCalculator` (Money satang): cart bottom bar / review / FAB / status strip and checkout confirm share the same SC default + VAT (EXCLUSIVE/INCLUSIVE/NONE) as `insertSaleWithItems`.
+- **Stock integrity (Wave B)** — Commit honors `allowOversell`; conditional stock update when oversell off; cart aggregates qty by product for options; barcode merges empty-options lines only; `ProductNotAvailable` → productInactive.
+- **PromptPay cart freeze (Wave C)** — Snapshot cart at `waitingPayment`; complete uses freeze not live cart; processing timeout no longer unlocks double-submit.
+- **Search / add races (Wave D)** — Pop re-entry guard on Sale/Product search; option sheet captures `CartBloc` before close.
+- **Security/DB hygiene (Wave F/G partial)** — Crash logs sanitized on write; backup PIN verify deletes temp plaintext; default backup encryption on; sale_items/draft load filter soft-delete.
+- **Payment sticky CTA** — Confirm bar outside scroll; sheet single keyboard inset; cash autofocus off.
+- **Stock commit tests** — `allowOversell` / `InsufficientStock` / multi-line aggregate at datasource.
+- **Backup PIN min length 6** + image delete path sandbox under app `images/`.
+- **Cart concurrency** — `bloc_concurrency` sequential on barcode / promo set / recompute.
+- **Schema v26** — unique `daily_closes(close_date)` with dedupe migration; draft delete in one transaction.
+- **Sale full-screen POS search** — Tappable Sale search opens `SaleProductSearchPage` (ranked name/SKU/barcode, `sale_search_history`, cart-first tap stay-on-add, wedge + camera scan); shared `saleAddToCart`; clears query on exit (not sticky catalog search).
+- **Sale search polish** — Enter exact unique barcode adds to cart; OOS feedback via `SaleAddResult`; in-cart qty badge + add affordance on results; history only after commit (add/submit with hits); stock-limit increment emits `outOfStock`; widget tests for search page + open-from-Sale.
+- **Product search polish** — Enter exact unique barcode opens preview; history only after commit; includes inactive with label/opacity; scan icon gated by `barcodeScanEnabled`; sticky query still preserved on exit; Sale-matching primary AppBar + filled search field chrome.
+- **Product Preview hardening** — Post-create opens preview (list/search/barcode create); form create returns `Product`; header radius 24 + subtitle; summary card elevation/avatar cache + unit (no hard-coded pcs); history virtualized list; currency `select` rebuild scope.
+- **Sale category/filter chrome** — Unified filter card (categories + recommended + filter pill + list/grid toggle); mock-style category pills (filled primary, icon/dot accents); polished filter sheet header + summary chips + apply CTA.
+- **Sale mockup alignment (rounds 1–3)** — Product `+` button; barcode in search field; dual sale|drafts switcher with `draftCount`; cart header clear-all; cart line thumbs; bill discount/note tiles; filled teal category chips; AppBar subtitle; Pay footer arrow + hold outline.
+- **Sale visual redesign (Home/Product tone)** — `PosThemeExtension`; branded primary AppBar + embedded search; cart status strip; product cards radius 16 + in-cart badge/border; orange Pay CTA on bar/footer/FAB/checkout; cart sheet polish; checkout `FormSectionCard` groups; tablet split catalog|cart at ≥840 (phone sheet path unchanged).
+- **Report Wave 0.5** — ReportCubit period SSOT under Report shell (History sync); Close CTA uses filter end date; clear sales on range change; empty period CTA; PromptPay currency/locale bank/newest-first; top products ฿ secondary.
+- **Payment PAY1–PAY3** — Checkout stores `paymentReference` as its own column (not stuffed into note); post-sale receipt when preview is on; PromptPay cancel pops one route; double-confirm blocked while processing/waiting; transfer uses bank icon.
+- **Sale History SH1–SH2 + Wave 0** — Factory `HistoryBloc`; thin `HistoryPage` → tab view (today + presets); void keeps list visible (`voidingSaleId`) + AppDialogShell; required void reason + voided reason/time; Close Day uses History filter end date; Report AppBar follows tab; empty CTAs.
+- **Create-missing product CM1–CM3** — Sale not-found → create → auto-add cart with correct snack; product list/search scan offers create CTA + barcode prefill; scan-create skips draft restore and opens Info with name focus.
+- **Product inventory History PH1–PH3** — Factory `InventoryLogCubit`; soft-delete filter + 200-row cap; localized stock-edit reason; shared log row (sale ref); Stock → full History jump.
+- **Batch barcode BG1–BG3** — Success/none/error snacks; count matches full catalog (active+inactive without barcode); `isBatchGenerating` + double-tap guard; stream refresh after batch.
+- **History Wave 0** — Close Day uses History filter end date; void requires reason and shows reason/voidedAt; Report AppBar follows Report/History tab; empty CTAs (clear search / go to sale).
+- **Manage Category Wave 1** — Soft-delete categories (`deletedAt`); CSV import creates categories via `AddCategory` (unique + max+1, returns id); Sale catalog selects categories only (no saveStatus fanout).
+- **Manage Category Wave 0** — New categories append (`sortOrder` max+1); search empty ≠ true empty; success snacks; clearer delete product impact; reorder POS hint; name max 100; bulk cancel keeps selection.
+- **Report / ปอดยอด Wave 0** — Shared `SalesPeriodTotals` for Report, Daily Close, Home, Sale header; default range **today** + date presets; payment count/%; History range visible; Daily Close + PromptPay l10n.
+- **CSV product import Wave 0** — Isolated `importStatus` (no race with catalog stream); UTF-8/BOM decode; 2MB / 2000-row caps; correct error l10n keys; template share; empty-state + bottom-bar import CTA.
+- **Unified product search** — Shared ranked matcher (barcode/SKU/name); catalog sticky search matches full search page (list filters paused while querying); sale ranks matches inside filters; result cap 80; inactive excluded from catalog search.
+- **Promotion on the POS path** — Attach/clear active promo on cart + checkout (`CartPromotionSet` + `PromotionSelector`); amount from `Promotion.discountFor` with recompute on cart changes; sale fails closed if promo missing/inactive; receipt shows promo name; home banner shows real active promo.
+- **Customer on the POS path** — Attach/clear customer on cart + checkout (`CartCustomerSet` + `CustomerSelector`); draft keeps `customerId`; receipt PDF shows customer name; sale fails closed if customer missing/soft-deleted; CRM list/form i18n + `MoneyText`.
+- **System P0 money & ops** — Real **Backup Now** (WAL checkpoint → DB copy → optional AES-GCM encrypt + PIN → share); promotion discount in cart/sale totals; checkout maps business errors to l10n keys.
+- **POS counter path (Sale + Cart)** — Counter-first sale catalog; cart sheet/review redesign; money trust: sale `totalAmount` includes service charge.
+- **Product form, dialogs & catalog trust** — Hero + 4 tabs; visibility/recommended; price insights (Money); shared confirm shell (D1/EP); filter isolation Sale↔Products; stock inventory logs; list pagination window 20+20; filter chips show selected category/stock.
+- **Codes tab Extra** — Supplier card split from options; preview supplier + options summary.
+- **Catalog & barcode ops (v0.9 track)** — Form tabs Info→Price→Stock→Codes; sale scan not-found → create; HID wedge; brand/unit/supplier/recommended (schema v25).
+- **Platform** — SQLCipher; Money VO; E2E; typed `AppError`; InventoryRepository.
+
+### Added
+
+- **Sale POS theme** — `PosThemeExtension` (light/dark) + `context.posTheme`; `SaleStatusStrip` cart summary card; optional `ProductCardShell.borderColor` / `elevation`.
+- **Report Wave 0.5** — `TopProductStat` + revenue secondary; HistoryTabView `syncWithReport` / initial range; EN/TH `closeDayForDate`, `reportNoSalesInPeriod`; cubit clears sales on range change.
+- **Payment / History / create-from-scan l10n** — `productCreatedAddedToCart`; inventory history keys (`invLogReasonProductStockEdited`, `invLogSaleRef`, `productHistoryShowingLatest`, `productHistoryViewAll`); History void/empty CTA keys as in Wave 0.
+- **Product inventory log row** — Shared `InventoryLogRow` for preview History + full inventory log page; sale ref short display; quantity compact.
+- **Batch barcode eligibility** — `productNeedsBarcode` / `countProductsNeedingBarcode`; `ProductRepository.getAllProducts` for full-catalog batch.
+- **History Wave 0** — Required void reason UI; voided bill shows reason + time; EN/TH keys (`voidReason`, `voidReasonRequired`, `voidedAtLabel`, `goToSale`); HistoryBloc tests for not-found/generic void, concurrent guard, reason passthrough, date-range args.
+- **Manage Category Wave 1** — Soft-delete on category remove/bulk disposition; `CategoryRepository.addCategory` returns id; `ImportProducts` depends on `AddCategory`; import unit tests for create/reuse category.
+- **Manage Category Wave 0** — `AddCategory` auto `sortOrder = max+1`; reorder hint banner; EN/TH keys (`noCategoriesFound`, `categorySaved`/`Deleted`, `categoryReorderHint`, `deleteCategoryProductsImpact`, `categoryNameTooLong`); unit tests for uniqueness, bulk delete bloc path, delete disposition.
+- **Report Wave 0** — `SalesPeriodTotals` (sale domain); date preset chips (today / yesterday / 7d / month); payment method count + share %; Report “Close today” CTA; History presets + visible range label; EN/TH keys for presets, PromptPay average/recent, daily-close summary/recon strings.
+- **CSV import Wave 0** — `ProductImportStatus` on product state; file size/row caps; template download + column legend; EN/TH keys for file size, too many rows, partial success, categories created, parse/post-import error titles; empty catalog import CTA; bottom bar import button.
+- **Product search core** — `matchProducts` / `resolveExactBarcodeMatches` / `sortProductsBySearchRank` under `product/domain/utils`; catalog list banner when filters paused; search page loading state, result cap + “showing N of M”, history on open result; shared barcode exact resolve (0/1/N).
+- **Promotion attach on sale** — `CartPromotionSet` / `CartPromotionRecompute`; `PromotionSelector` on cart + checkout; receipt promotion labels; home banner binds active promo.
+- **Customer attach on sale** — `CartCustomerSet`; `CustomerSelector` on cart + checkout; receipt customer name; draft `customerId`.
+- **Backup export service** — Real DB export/encrypt/share (no stub success).
+- **Dialog system** — `AppDialogShell` + `showAppConfirm` / `showAppUnsaved`; product/customer/table/daily-close/settings binary confirms; cart line remove title/detail/qty keys.
+- **Product form / preview** — Hero metrics + tab jumps; sellability chips; Visibility section; price insights + markup chips; Codes supplier + options subtitle; form tab icons.
+- **Product list** — Recommended star; pinned clear-filters control; compact stock qty (K/M); `ProductListPaging` constants.
+- **Price tab P1** — `ProductPricingInsights`; empty-cost honesty; edit price/cost delta strip.
+- **Text field clear confirm** — Confirm when trimmed length ≥ 8.
+- **l10n (EN/TH)** — Promo/customer/sale/backup keys; visibility/recommended; price form keys; `removeCartLine*`; `deleteProductConfirmTitle`; clear-field keys.
+
+### Changed
+
+- **Sale chrome** — Primary AppBar (bottom radius 24) + surface search field; catalog tool strip card; denser-but-polished list/grid cards with `ProductAvatar` and in-cart qty badge; floating cart bar elevation + accent Pay; unified CTA colors; checkout sections in `FormSectionCard`; expanded width docks cart beside catalog.
+- **Checkout payment reference** — Transfer/card/cash optional ref persists on `sales.paymentReference`; note field stays free-form only.
+- **Checkout post-sale UX** — When post-sale preview is enabled, success shows `SaleReceiptDialog` after closing payment routes; PromptPay cancel/timeout pops only the PromptPay route.
+- **Payment method chrome** — Transfer uses bank icon (not QR); PromptPay remains wallet/QR.
+- **History surface** — Single UX via `HistoryTabView` (today + presets); legacy `HistoryPage` is a thin shell.
+- **History void UX** — AppDialogShell confirm; row-level void spinner (`voidingSaleId`) instead of full-list loader; errors map to l10n keys.
+- **Product form scan-create** — Opens Info tab with name focus (barcode still prefilled); does not offer draft restore over scan prefill.
+- **Batch barcode generate** — Targets all products without barcode (active + inactive); UI count matches use case.
+- **Inventory log watch** — Soft-deleted rows excluded; per-product watch capped at 200 latest movements.
+- **Product CSV import** — Full-page flow (review list, sticky confirm, block back while importing) instead of `AlertDialog`; same parser/limits/`ProductsImported` contract; partial errors stay on page.
+- **Product list pagination** — First paint **20** rows, load-more **+20**, throttled scroll, clamp to filtered length, spinner footer (not fake product skeletons).
+- **Product list filters F1** — Toolbar category chip shows selected name + icon with per-chip clear; stock chip labels Low/Out; sort icon badges when non-default; full clear X still full reset; category/stock sheets remain for pick/clear.
+- **Product list filters** — Clear filters always visible (pinned right); chips reflect real category/stock filters; category/stock sheets no longer clear sibling filters on open.
+- **Confirmation dialog chrome** — Centered circular icon, twin pills radius 12 (soft cancel + accent confirm), optional detail/footnote.
+- **Text field clear** — Short fields (price/qty) clear immediately; long text still confirms.
+- **Product form tab bar** — Icon + label (Info/Price/Stock/Codes).
+- **Price insights** — Shared Money math; empty cost shows `—` + hint.
+- **Sale catalog R1** — List default, denser tiles, search via sale cards.
+- **Cart review R1+R2** — Dense lines; expandable bill; SC + grandTotal; clear confirm; qty−@1 removes with undo.
+- **Product Info / Codes UX** — Visibility section; supplier separated from options.
+- **Recommended hint copy** — Describes real sale/list behavior.
+- **CartItem equality** — `lineId` in `props`.
+
+### Fixed
+
+- **Report / History dual date ranges** — Under Report shell, History seeds from ReportCubit and chips sync both ways (`syncWithReport`).
+- **Report Close Day always today** — CTA closes filter end day (`state.to`); label uses `closeDayForDate` when not today.
+- **Report stale totals while loading** — `changeDateRange` clears sales so previous period cannot render as success.
+- **Report empty period** — Page-level empty + go to Sale CTA.
+- **PromptPay report metrics** — Real currency on tiles; bank name follows locale; recent list newest-first.
+- **Top products money secondary** — Qty rank kept; line shows revenue from item subtotals.
+- **Payment PAY1–PAY3** — Checkout sends `paymentReference` as its own column (not merged into note); post-sale receipt when preview enabled; PromptPay cancel pops one route only; bloc ignores double confirm while processing/waitingPayment; transfer icon is bank (not QR).
+- **Sale catalog `context.select` assert** — Category list / settings watched from `State.build`, not parent context inside `BlocBuilder` (fixes Provider “outside build” crash on Sale).
+- **History Close Day always today** — FAB opens Daily Close for the end day of the active History date filter (`state.to`).
+- **History void reason optional / invisible** — Confirm requires non-empty reason; expanded voided tiles show reason and voided time.
+- **Report AppBar always “Report” on History tab** — Title switches to sale history when History tab is active.
+- **History empty states had no CTA** — Clear search when querying; go to Sale when no bills.
+- **Create-missing product CM1–CM3** — Sale post-create snack says product created and added to cart (auto-scan, not “scan again”); product list/search scan offers create CTA with barcode prefill; scan-create skips draft restore and opens Info with name focus.
+- **Sale History SH1–SH2** — `HistoryBloc` factory-scoped; `HistoryPage` thin-wraps tab view (today + presets); void uses `voidingSaleId` (list stays visible) + AppDialogShell confirm; errors map to l10n (`saleAlreadyVoided` / `saleNotFound`).
+- **Product preview History PH1–PH3** — `InventoryLogCubit` factory-scoped (not app singleton); inventory watch filters soft-deleted rows and caps at 200; stock-edit reason is l10n key; shared log row shows sale ref + localized reason; Stock tab “view full history” jumps to History.
+- **Sale catalog rebuild on category saveStatus** — Chips/filters use `context.select` on categories list only.
+- **CSV import bypassed category uniqueness** — Creates categories through `AddCategory` instead of raw repository insert + stream poll.
+- **Category hard delete** — Soft-delete via `deletedAt`; watch hides deleted rows.
+- **Category create always sortOrder 0** — New categories append after max order (aligned with CSV import).
+- **Category search empty mislabeled** — Search miss uses “no match” + clear search, not “no categories yet”.
+- **Category silent save** — Success snackbars for create/edit/delete (reorder stays quiet).
+- **Bulk delete cancel cleared selection** — Selection preserved unless delete confirmed.
+- **Category name length** — Form enforces max 100 characters.
+- **Batch barcode generate BG1–BG3** — Success/none/error snacks on product list + barcode settings; confirm count matches full catalog (active+inactive without barcode); `isBatchGenerating` progress + double-tap guard; ensure product stream subscribed after batch so list refreshes.
+- **Home H0 safety & money trust** — Home Sell/Products/Settings/Report use shell tabs (no silent `CartCleared` / duplicate Sale push); long-press new draft confirms when cart non-empty; dead notification icon removed; dashboard load error is fail-closed with Retry (not fake ฿0 day); cost/profit show `—` until product catalog is ready; day-close lock syncs `SettingsCubit` after close/reopen; `DailyCloseConfig.copyWith` can clear `lastClosedDate`.
+- **Report vs Daily Close payment/revenue drift** — Single `SalesPeriodTotals` + shared `normalizePaymentMethod`; CloseDay no longer uses private payment normalizer or `status == COMPLETED` only.
+- **Report default 30-day range** — Opens on **today**; presets for common ranges.
+- **History date range invisible** — Shows formatted from–to + presets (default today).
+- **Daily Close / PromptPay English hardcodes** — Localized summary, cash recon, open/closed badges, PromptPay Average/Recent; currency from settings.
+- **CSV import race with product stream** — Dialog listens to `importStatus` only; catalog `ProductStatus` updates no longer close/mis-handle import UI.
+- **CSV import UTF-8 / BOM** — Uses `utf8.decode` + BOM strip; Thai headers and track_stock aliases work.
+- **CSV import error mapping** — Maps `csvNoData` / `csvInvalidFormat` / size/row caps instead of generic `csvImportError`.
+- **Product search dual semantics** — Sticky list search no longer re-applies category/stock/price on top of ranked query (same set as full search page).
+- **Search result SKU hardcode** — Uses `skuLabel` l10n instead of English `SKU:`.
+- **Product UX U1** — Filter sheets keep sibling filters; clear includes price range; recommended blocked while product hidden; info tab Visible/Hidden + Recommended/Not; delete shows loading while waiting for bloc.
+- **Product bugs B1** — `ProductSurfaceEntered` filter snapshots (Sale↔Products); swipe/preview delete awaits success; stock changes always inventory-log (incl. quick-edit); form blocks back while save/delete in flight; delete snackbar uses `productDeleted`; search trims.
+- **Product preview after edit** — Bloc merges updated product into `products` on save; preview reloads when edit returns `true`.
+- **Stock on-hand display** — List/grid stock values use compact K/M (`formatQuantityCompact`).
+- **Backup Now was a stub** — Now exports a real file.
+- **Promotion discount ignored in totals** — Cart/sale totals subtract promo amount before SC/VAT.
+- **Promotion / customer attach on sale** — Selectors + fail-closed create when missing/inactive.
+- **Home promotion banner** — Shows active promo when present.
+- **Checkout swallowed errors** — Maps errors to stable l10n keys.
+- **Customer `copyWith` contact clear** — Sentinel pattern for phone/email/note.
+- **Customer CRM hardcodes** — List/form use l10n + `MoneyText`.
+- **Product / customer / promotion delete** — Shared destructive dialogs; side-effects after confirm.
+- **Preview price loss display** — Unclamped profit when cost > price.
+- **Service charge in sale ledger** — SC included in pre-tax base before VAT.
+- **Create product ignored `isActive`** — Persisted on insert.
+- **New draft kept previous cart** — Draft create clears cart session.
+- **Draft line identity** — Persist/restore `CartItem.lineId`.
+- **Cart duplicate menu label** — Uses `duplicateItemAction`.
+
+### Added (earlier unreleased)
+
+- **Product metadata fields (schema v25)** — Added nullable Brand, Unit, and Supplier fields plus an `isRecommended` flag to products, with an additive migration from v24 for existing databases.
+- **AppTextField** — Core filled-dense text field (`lib/core/widgets/primitives/app_text_field.dart`) with optional clear, suffix actions, and theme-driven decoration for POS forms.
+- **Unit picker bottom sheet** — `showUnitPicker` with preset retail units + custom unit; `UnitField` opens sheet instead of dropdown.
+- **Adjust stock bottom sheet** — `showAdjustStockSheet` (qty delta + required reason) replaces AlertDialog; `showAdjustStockDialog` delegates to the sheet for stable call sites.
+- **Option edit bottom sheets** — `showOptionGroupEditSheet` / `showOptionEditSheet` with AppTextField; option deletes use `showConfirmationDialog`.
+- **Product form price insights** — Full-width selling price & cost fields; live profit, margin %, markup %; soft warning when cost ≥ price (`costExceedsPriceWarning`); stock sell-out estimate (`priceStockEstimate*`) when tracking stock.
+- **Product form stock tab insights** — Status banner (in / low / out) using `Settings.lowStockThreshold`; qty with thousand separators + unit; edit-mode adjust hint; inventory value card (cost · sale · potential profit) when stock > 0; shared `stock_status_resolver`.
+- **Adjust stock sheet redesign** — Add/Remove high-contrast mode buttons, amount field (no signed typing), solid current-stock + preview cards, reason chips with primary selected state, **orange accent Save**, returns new balance so product form stock field updates after save.
+- **Editable low-stock threshold on product form** — Stock status banner opens a sheet to change app-wide `lowStockThreshold` (presets 3/5/10/20 + custom); persists via `SettingsCubit` like Stock settings.
+- **Grouped money formatting** — `CurrencyFormatter.formatGrouped` / `formatGroupedWithSymbol` / `formatGroupedInt` (thousand separators); `MoneyText` and product price insights use readable grouped amounts (e.g. `฿1,500.00`).
+- **Product form hero card** — Slim `ProductFormHeroCard` under `DetailHeader`: image picker, live name, sellability + category chips (no SKU/barcode mirror lines); low-stock uses settings threshold (not hardcode 5).
+- **Product form top tabs** — Pill `TabBar` + `IndexedStack`: **Info → Price → Stock → Codes** (`tabCodes`); fields stay mounted for full-form validate; save jumps to first invalid tab (price→1, barcode→3).
+- **StickyActionBar side-by-side mode** — Optional `sideBySide`, `primaryColor`, and `primaryKey` for cancel + primary action row (product form uses accent orange save).
+- **Product form l10n** — EN/TH: section keys, `tabCodes`, `profitMargin`, `notSpecified`, `saveProduct`, `discardChanges`, unsaved messages, `costExceedsPriceWarning`, `priceStockEstimateTitle` / `Revenue` / `Profit`, `editStockAdjustHint`, `lowStockThresholdHint`, `stockInventoryValueTitle`.
+- **Category clear on product form** — Clear (X) on category field; empty-id “none” normalized to null on submit; lookup does not restore category after user clear.
+- **Text field clear** — `AppTextField` / product fields show clear when non-empty (`product-text-field-clear`).
+- **Audited stock adjustment from Product Edit** — Edit mode shows stock read-only and opens adjust-stock bottom sheet (signed qty + required reason) instead of overwriting stock on product save.
+- **SQLCipher encryption** — `sqlcipher_flutter_libs` (0.6.0) for AES-256-CBC full-database encryption; `flutter_secure_storage` (10.3.1) for secure key storage; `EncryptedDatabaseOpener` with transparent migration from plain SQLite.
+- **Money value object** — `Money` class with `fromDouble`, `zero`, arithmetic operators (+, -, *, /), comparison operators, and `MoneyConverter` for Drift type safety across 81 money fields in 14 entity files (Product, Sale, CartState, DraftCart, Customer, Promotion, DailyClose).
+- **Runtime data integrity validations** — barcode uniqueness check before product insert/update; product delete guard checks sale_items and draft_cart_items references to prevent orphaned foreign keys.
+- **Database indexes (schema v24)** — conditional unique index on products.barcode (allows NULL/empty), performance index on sale_items.product_id for reports, sales.created_at index (redundant but ensured).
+- **InventoryRepository** — Clean Architecture compliance: domain interface + data implementation, replaces direct database access in `AdjustStock` usecase.
+- **Product description field (schema v22)** — nullable `description` column in `products` table, `Product` entity, `ProductDraft` entity, `ProductAdded` event, `AddProduct` usecase, `ProductRepository`, and `ProductFormCubit`.
+- **Typed error system** — `AppError` sealed class hierarchy (ValidationError, NotFoundError, BusinessRuleError, DatabaseError, NetworkError, FileSystemError, PermissionDeniedError, UnknownError); `ErrorDisplay` widget with consistent icon/message/retry UI; `AppErrorDisplay` extension for localized messages; migrated `ProductState` and `ProductBloc` from `String? errorMessage` to `AppError? error`.
+- **E2E Test Suite** — 30 integration tests covering 5 critical user journeys using Robot pattern; in-memory test database with realistic fixtures (20 products, 5 categories, 3 tables, 2 promotions); CI integration ready; `flutter_driver` dependency added.
+- **API Documentation** — Comprehensive API reference (1,544 lines): `docs/api/CORE_MODULES.md` (Money, AppError, ID generators), `docs/api/FEATURE_MODULES.md` (Product, Sale, Customer, Promotion APIs), `docs/api/DATABASE_API.md` (Drift query patterns, transaction strategies, repository pattern).
+- **Performance Analysis** — Identified 3 critical bottlenecks: N+1 query pattern in product loading (~150ms overhead), cart state recomputation (~10ms overhead), widget rebuild inefficiencies (~10-30ms overhead). Optimization roadmap documented with 2-5x expected performance gains.
+- **Security Audit** — Completed dependency vulnerability scan (169 packages); zero critical CVEs found; SQLCipher encryption validated; phased dependency update strategy documented (Phase A: 11 safe patches ready, Phase B: Drift upgrade path).
+- **CONTRIBUTING.md enhancements** — Added Performance Guidelines (checklist, benchmarks, query patterns), E2E Test Requirements (when to add, Robot pattern examples, coverage checklist), target metrics (product list <100ms, cart update <5ms, scroll 60fps).
+- **Product search bar** — `ProductSearchBar` widget with persistent search input and integrated barcode scanner button.
+- **Product stats dashboard** — `ProductStatsRow` with 4 colored stat cards (blue/orange/red/green backgrounds, white text) for total, low stock, out of stock, and inventory value; tap-to-filter with selected border highlight.
+- **Tab-based category filters** — `ProductFilterTabs` with underline indicator tab bar (All / Category / Stock) and sort `PopupMenuButton` with check mark on active sort option.
+- **Rich product tiles** — `RichProductListTile` with shadow card, 60px rounded-square avatar, name + price on same row, SKU/barcode subtitle, category pill + stock indicator + ⋮ menu at bottom; `RichProductGridCard` grid variant.
+- **Bottom action bar** — `ProductBottomBar` with CSV import and add product buttons, replacing the old FAB.
+- **CSV import** — `CsvProductParser` (supports EN + TH column headers), `CsvProductRow`/`CsvImportResult` domain models, `ImportProducts` usecase with duplicate barcode skipping, `ProductsImported` bloc event with loading/success states, `CsvImportDialog` with file picker → preview → confirm flow.
+- **Product preview tabs** — `InfoTab` (product info card with category, unit, description, dates + `CodesCard`), `StockTab` (stock status, stock value, stock summary, recent movements, adjust button), `PriceTab` (selling price, cost, profit, margin %, markup %, ROI bar, total stock revenue/profit), `HistoryTab` (inventory log list via `InventoryLogCubit`).
+- **InfoListItem widget** — shared `InfoListItem` in `shared_widgets.dart` with icon, label, value, optional `valueColor`, `onTap`, and `trailingIcon` (defaults to chevron, supports copy icon).
+- **Stock tab enhancements** — stock summary section with total sold, total restocked, total adjusted out (from `InventoryLog` stream), last stock update date, and 3 most recent stock movements.
+- **Price tab enhancements** — Markup % (profit/cost × 100), ROI bar (`LinearProgressIndicator`), total stock revenue (stock × price), total stock profit (stock × profit).
+- **L10n** — 16 new keys (EN + TH) for product redesign UI texts; 15 new keys for product detail page; 12 new keys for stock/price tab enhancements (stock value, sale value, potential profit, total sold/in/out, last update, recent moves, status, markup, ROI, total revenue/profit).
+- **Tests** — 10 CSV parser unit tests, 2 new bloc tests (tab change + import); 3 new Product description entity tests, 7 new ProductDraft description tests; updated preview page tests for tab-based layout.
+- **Preview page widget tests** — 7 InfoTab tests (category, dates, description, CodesCard, removed fields); 9 StockTab tests (stock status, stock value, adjust button, recent moves); 8 PriceTab tests (selling price, cost, profit, margin, markup, ROI, total revenue); 4 HistoryTab tests (loading, empty, log list, error retry); 4 ProductPreviewPage interaction tests (delete via menu dialog, delete via menu dispatch, toggle active, bottom bar 2 actions).
+- **ProductTextField** — added `maxLines` parameter for multiline support; added `suffixText` parameter for unit labels.
+- **ProductAvatar** — added `shape` parameter for rounded square image support.
+- **Product search page** — Dedicated full-screen `ProductSearchPage` with auto-focus search field, search history (persisted via `SearchHistoryCubit` with key `'product_search_history'`), recent searches overlay with `ActionChip` UI, `SearchResultTile` with query highlight and match type chip (Name/SKU/Barcode), `SearchEmptyState` for no-results; tap result opens `ProductPreviewPage`; search icon added to `ProductListPage` AppBar actions (inline search bar retained for quick filter).
+- **Product search page tests** — 7 widget tests covering empty state, filtered results, no matches, recent searches display, recent search tap, back button, and search field hint.
+
+### Added
+
+- **Sale cart bottom sheet** — `showCartSheet` / `CartReviewBody` shared with page fallback; bar + compact FAB open sheet instead of full-page cart by default.
+- **Retail payment sheet** — `showPaymentSheet` wires providers into payment shell; `navigateToCheckout` forks retail → sheet, restaurant → `CheckoutPage` + `TableBloc`.
+- **Sale category chips** — Horizontal `CategoryFilterChips` on catalog; advanced filters open as bottom sheet (stock/sort/price only).
+- **Sale barcode not-found recovery** — Snack **Create product** + in-scanner CTA (`onCreateProductFromBarcode`) opens form with prefilled barcode (`lastFailedBarcode` / `ProductFormPage.initialBarcode`); optional re-scan into cart after save.
+- **HID keyboard-wedge listener on Sale** — `BarcodeWedgeListener` buffers rapid alnum + Enter/Tab into `CartBarcodeScanned` when barcode scan is enabled and no text field is focused.
+- **Barcode scan debounce** — Identical code within 1s ignored (camera continuous + HID double-fire); not-found path allows immediate re-scan after create.
+- **Product form barcode live strip** — Codes tab: compact glyph preview + type chip + copy; empty-state hint; confirm before generate/scan replaces an existing code; shared `resolveBarcodeSymbology`.
+- **Product preview barcode polish** — Symbology type chip on Codes row + label card; action buttons show icon **and** label (copy / view / save / print) with higher contrast.
+- **Barcode scanner UX redesign** — Aiming cutout is visual-only; status/result/manual/error in bottom scrim panel (IME-safe); slim app bar with continuous/single mode chip + torch + overflow (focus/gallery); slower laser; create-product CTA uses accent orange; high-contrast white header chrome.
+- **Scanner result price** — Found-product price uses grouped currency symbol (e.g. `฿1,500.00`).
+- **Product list trust & findability** — Low-stock uses `settings.lowStockThreshold` across list stats/filter/tiles/preview (`stock_level` helper, `filteredProducts`); sticky search after leaving search page; list scan opens preview on exact barcode match; ⋮ menu adds batch barcode generate; CSV import shows parse/import row errors; create product uses `showProductCreatePage`.
+- **Product search page upgrade** — Hydrates sticky query on open; query-only results via `productsMatchingQuery` (ignores list category/stock filters) with banner when filters active; in-page barcode scan; ranked matches (exact barcode/SKU first); result count; l10n match chips; SKU/barcode subtitle highlight; history saved on all back paths.
+- **StableListenableBuilder** — Stable `Listenable.merge` identity for multi-controller form insights (avoids dispose races).
+
+### Fixed
+
+- **Draft cart restore incomplete** — `CartRestored` + sale load path now restore note, order type/channel, table, service charge, customer, promo (not only items + cart discount); clear-cart undo uses full session snapshot.
+- **Draft auto-save missed meta-only edits** — Sale autosave listens for discount/note/table/order/customer/promo changes, not only line items.
+- **Sale low-stock hardcode** — Filter preview, product cards, cart detail sheet use `settings.lowStockThreshold`.
+- **Product form controller dispose race** — Live price/stock insights no longer recreate `Listenable.merge` every rebuild (`StableListenableBuilder`); form unfocuses before disposing controllers to avoid `TextEditingController was used after being disposed` cascades on IME/route exit.
+- **Adjust stock from product form** — After a successful inventory adjustment the form stock field refreshes to the new balance (without marking the product draft dirty).
+- **Product list barcode scan button** — Scan icon is no longer under `AbsorbPointer`; opens camera scanner (with settings) and filters the list.
+- **Sale barcode outOfStock snack** — Maps `outOfStock` to l10n instead of raw key.
+- **Product form barcode scan** — Single-shot scanner result is applied to the field (was dropped because `onScanned` only runs in continuous mode).
+- **Product list / preview low-stock hardcode** — Replaced magic `stock <= 5` with settings threshold (default 5 when SettingsCubit absent in tests).
+- **Product list search bar contrast** — White filled field + dark text on primary app bar; clear/scan as light icon buttons (not primary-on-primary).
+- **Barcode scanner header contrast** — Forced white title/icons/foreground on dark scanner AppBar.
+
+### Changed
+
+- **Sale catalog density** — Denser grid (`mainAxisExtent` ~200, image ~96); quieter add (haptic + qty badge, no snack spam); dashboard header hidden in ultra-compact mode.
+- **Database opener** — Replaced `drift_flutter.driftDatabase()` with `LazyDatabase` + `EncryptedDatabaseOpener.open()` for async key fetch from secure storage; schema bumped v21 → v24.
+- **Product form Preview-aligned layout** — Shell: `extendBodyBehindAppBar` + `DetailHeader` + slim hero + pill tabs; footer **Cancel | Save product** (accent); delete via header ⋮ (edit only); single image action on hero.
+- **Product form IA regroup (4 tabs kept)** — **Info → Price → Stock → Codes**; supplier + option groups on Codes; **isActive only on Product/Settings** (no header eye on form); validation jump price→1, barcode→3.
+- **Product form label cleanup** — Tab labels text-only; section titles text-only via optional `FormSectionCard.icon`.
+- **FormSectionCard** — `icon` optional; title uses primary color without icon.
+- **Input decoration (filled denser)** — Light/dark theme: fill `surfaceContainerLow` / `darkInputFill`, denser padding (14×12), error borders, **teal focus** (not accent orange).
+- **ProductTextField** — wrapper over `AppTextField` (`showIcon` default false); customer form uses `AppTextField`.
+- **Stock quantity entry** — Create-flow `showStockDialog` is a bottom sheet + AppTextField (inline stepper unchanged).
+- **Option groups editor** — Bottom sheets for add/edit; FormSectionCard; `showConfirmationDialog` for delete.
+- **DetailHeader** — `onToggleActive` optional (hidden when null); `onMenu` optional.
+- **Product form tests** — Tab order/labels, price insights, stock status/value, barcode live strip, menu delete, invalid-tab reveal (**45+** form page tests).
+- **ProductSearchBar (list)** — White search surface on teal app bar; sticky query display + clear; scan uses settings + single-shot; exact barcode opens preview.
+- **ProductState filtering** — `filteredProducts(lowStockThreshold:)` and `productsMatchingQuery` for list trust vs search isolation.
+- **PreviewCard & DetailHeader extensions** — optional `trailing` on PreviewCard/SectionHeader for expand/collapse support.
+- **Test fixes** — `CategoryField` test updated to expect `keyboard_arrow_down_outlined` icon (matching actual code); `GeneralAppearanceTiles` test updated to expect 2 ListTiles + 1 Switch (compact cart tile removed in earlier refactor); stock/preview tests tolerate missing SettingsCubit (threshold default 5).
+- **Dependencies Updated (Phase A)** — Updated 8 safe dependencies with no breaking changes: audioplayers 6.2.0→6.8.1, equatable 2.0.7→2.1.0, image 4.0.0→4.9.1, image_picker 1.2.2→1.2.3, path_provider 2.1.5→2.1.6, pdf 3.11.3→3.13.0, printing 5.14.1→5.15.0, build_runner 2.4.15→2.15.1. All 1,404 tests passing.
+- **Removed `drift_flutter`** — Replaced with manual `LazyDatabase` setup for SQLCipher compatibility.
+- **Removed `sqlite3_flutter_libs` from dependencies** — Moved to `dev_dependencies` for test-only usage; production builds use `sqlcipher_flutter_libs` exclusively.
+- **CartState refactor** — migrated from `double` to `Money` value object for all monetary calculations (itemsSubtotal, cartDiscountAmount, total, serviceChargeAmount, grandTotal); updated all presentation widgets (CartDottedLineRow, cart_review_page, cart_bottom_bar, cart_summary_footer, cart_total_bar, compact_cart_fab).
+- **Money migration across 14 entities** — `Product` (price, cost, profit), `Sale` (subtotal, discount, tax, serviceCharge, grandTotal, paidAmount, changeAmount), `CartState` (all monetary fields), `DraftCart` (subtotal, discount, serviceCharge, grandTotal), `CartItem` (price, itemDiscount, subtotal), `Customer` (totalSpent), `Promotion` (discountValue, maxDiscount, minPurchase), `DailyClose` (totalSales, totalCash, totalPromptpay, totalOther, expenses, finalCash).
+- **AdjustStock usecase** — refactored from direct database access to repository pattern, removes Drift dependency from domain layer.
+- **InventoryLogLocalDatasource** — added `insertLog`, `watchLogsByProduct`, `getLogsByDateRange` methods for repository support; kept legacy `watchLogs` for backward compatibility.
+- **CI Pipeline** — Added integration test step for E2E test execution; analyzer artifacts captured for debugging.
+- **ProductListPage** — full refactor: removed old search toggle, integrated `ProductSearchBar`, `ProductStatsRow`, `ProductFilterTabs`, and `ProductBottomBar`; view mode toggle (list/grid) now always visible on all tabs; `CustomScrollView` uses new widgets.
+- **ProductStatsRow** — changed from subtle tinted backgrounds to solid colored card backgrounds matching design.
+- **ProductFilterTabs** — changed from `SegmentedButton` to underline tab bar with sort dropdown.
+- **RichProductListTile** — changed from bordered outline card to shadow card with cleaner layout (name + price same row, consolidated subtitle); removed `IgnorePointer` on inactive products so they can be tapped to open preview; `Opacity(0.55)` visual dimming retained.
+- **ProductSearchBar** — changed fill color from `surfaceContainerHigh` to `surfaceContainerLow` for lighter appearance.
+- **ProductSliverContent** — uses `RichProductListTile` and `RichProductGridCard` instead of `ModernProductTile`.
+- **ProductNavigation** — added `showProductOptionsMenu` modal bottom sheet with Edit and Preview actions.
+- **ProductPreviewPage** — refactored from `CustomScrollView` with inline cards to `NestedScrollView` with `TabBar` + `TabBarView` (4 tabs); bottom action bar secondary button label changed from "Stock" to "Adjust Stock"; tab labels enlarged with `FittedBox` and icons; passes `sl<WatchInventoryLogs>()` to `StockTab` constructor.
+- **ProductPreviewPage refactor (ADR-024)** — extracted 4 subcomponent files from 955-line God File to `widgets/product_preview/`: `DetailHeader`, `SummaryCard` (+ `StatItem`, `SummaryChip`, `SellabilityStatus` in `summary_widgets.dart`), `BottomActionBar`; page reduced to ~391 lines; replaced `context.watch<SettingsCubit>()` and `context.watch<CategoryBloc>()` with `BlocSelector` for targeted rebuilds; `GenerateBarcode` and `WatchInventoryLogs` now injected via constructor params instead of `sl<>()` calls inside build methods; `showProductPreviewPage` passes `sl<>()` from the call site.
+- **ImageSkeleton** — added optional `color` parameter for custom shimmer base color (defaults to `surfaceContainerHighest`).
+- **ProductFormPage** — added `_descriptionCtrl` controller with listener, dispose, restore, and sync; passes `description` in both `ProductAdded` and `ProductUpdated` events.
+- **ProductFormView** — added `descriptionCtrl` parameter; `_AdvancedSection` now includes multiline description field and auto-expands when description has content.
+- **ProductFormCubit.syncDraftFromControllers** — added `description` parameter.
+- **InfoTab** — refactored to use shared `InfoListItem` from `shared_widgets.dart`; dividers changed to faded `outlineVariant` with 0.3 alpha; category item tappable only when category exists; description right-aligned; removed empty `onTap` on category `InfoListItem`; removed fields with no data (Brand, Tax, Weight, Size) since `Product` entity has no corresponding fields.
+- **StockTab** — refactored from old icon container + badge header to `InfoListItem` structure; uses `StreamBuilder` with `WatchInventoryLogs` for stock summary; `WatchInventoryLogs` now injected via constructor instead of calling `sl<>()` directly in build method (dependency inversion); `_labelForType` parameter changed from `dynamic` to `AppLocalizations` for type safety.
+- **PriceTab** — refactored from `MiniStat` cards to `InfoListItem` structure with multiple `PreviewCard`s.
+- **CodesCard** — refactored from `_CopyableRow` to `InfoListItem` with `trailingIcon: Icons.copy`; barcode image separated into its own `PreviewCard`; replaced raw `SnackBar` with `AppSnackBar.info()` for consistent toast styling.
+- **shared_widgets.dart** — `PreviewCard` and `SectionHeader` icons made optional; title color changed to `#034554`; added `InfoListItem` widget.
+- **_PreviewError** — localized hardcoded `'Retry'` text to `context.l10n.retry`.
+- **_SummaryCard** — replaced `CircularProgressIndicator` loading spinner with shared `ImageSkeleton` from `core/image/` (was `_ImageShimmer`, now removed).
+- **_BottomActionBar** — removed duplicate `onMove` action (was identical to `onEdit`); removed Delete button from bottom bar (Delete still accessible via ⋮ menu); bottom bar now has 2 actions (Adjust Stock, Edit); refactored to use `_buildAction` helper with `InkWell` for larger tap targets.
+- **DI** — `ImportProducts` usecase registered in `BlocModule`; `MockImportProducts` added to test mocks.
+
+### Documentation
+
+- **New:** `docs/api/CORE_MODULES.md` — Money class, AppError system, ID generators.
+- **New:** `docs/api/FEATURE_MODULES.md` — Product, Sale, Customer, Promotion module APIs.
+- **New:** `docs/api/DATABASE_API.md` — Drift query patterns, transaction strategies, repository pattern.
+- **New:** `docs/testing/E2E_TEST_GUIDE.md` — Comprehensive E2E test guide with Robot pattern.
+- **Updated:** `docs/codebase/testing.md` — Added integration test section.
+- **Updated:** `docs/DATABASE.md` — SQLCipher encryption section, schema v22-v24 migrations.
+- **Updated:** `docs/database/schema-reference.md` — Product description field, conditional barcode index, performance indexes.
+- **Updated:** `docs/database/migration-and-ops.md` — v22-v24 migration details, barcode deduplication strategy.
+- **Updated:** `CONTRIBUTING.md` — Performance guidelines (checklist, benchmarks, query patterns), E2E test requirements (Robot pattern, coverage checklist), target metrics.
+- **Updated:** `.gitignore` — Added `lib/core/database/database_opener.dart` to exclude generated encryption setup.
+
+### Removed
+
+- **Product form wizard widgets** — `product_form_stepper.dart`, `product_form_basic_step.dart`, `product_form_inventory_step.dart`, `product_form_advanced_step.dart`, `product_form_preview_card.dart` (replaced by flattened `ProductFormView` + `ProductFormHeroCard`).
+- `drift_flutter` dependency (0.2.4) — replaced with manual `LazyDatabase` setup for SQLCipher compatibility.
+- `sqlite3_flutter_libs` from main dependencies — moved to `dev_dependencies` for test-only usage (production uses `sqlcipher_flutter_libs`).
+- `system_info_card.dart` — dead code (was not imported anywhere).
+- `price_card.dart` and `stock_card.dart` — replaced by tab-based `InfoListItem` structure in `InfoTab`, `StockTab`, and `PriceTab`.
+- `system_info_card_test.dart`, `price_card_test.dart`, `stock_card_test.dart` — stale test files referencing deleted widgets.
+- iOS camera usage description keys — removed obsolete `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`, `NSPhotoLibraryAddUsageDescription` from `ios/Runner/Info.plist` (now handled by permission_handler).
+- `_ImageShimmer` — private widget in `product_preview_page.dart`; replaced by shared `ImageSkeleton` from `core/image/`.
+- `_formatCompact` — private method in `product_preview_page.dart`; replaced by `CurrencyFormatter.formatCompactWithSymbol`.
+- Inline subcomponents from `product_preview_page.dart` — `_DetailHeader`, `_SummaryCard`, `_StatItem`, `_Chip`, `_SellabilityStatus`, `_BottomActionBar` extracted to public files in `widgets/product_preview/`.
+
+### Fixed
+
+- **Product form unsaved dialog** — Exit uses "Don't save" / "ไม่บันทึก" (not "Discard Draft"); edit vs create messages; discard on create clears draft; clearer restore-draft dialog.
+- **Product form save validation with tabs** — Failed validate jumps to first invalid tab (name → Info, price/cost → Price, barcode → Codes) and re-validates so errors are visible.
+- **Category clear on product form** — User clear is not overwritten by category lookup; empty-id “none” → null on submit.
+- **SQLCipher class collision (critical)** — `sqlite3_flutter_libs` and `sqlcipher_flutter_libs` both provide `sqlite3.dart` classes; moved `sqlite3_flutter_libs` to `dev_dependencies` and use `sqlcipher_flutter_libs` in production builds only.
+- **Inactive product tiles not tappable** — removed `IgnorePointer` wrapper; inactive products now tappable to open preview with visual dimming retained.
+- **Delete button duplicate** — removed Delete button from preview bottom bar (still accessible via ⋮ menu to prevent accidental deletion).
+- **StockTab DI violation** — `WatchInventoryLogs` now injected via constructor instead of direct `sl<>()` call in build method.
+- **confirmDeleteProduct bug (critical)** — `Navigator.pop(context, false)` on confirm changed to `true`; added `popOnConfirm` parameter so callers can control post-delete navigation (preview page pops itself after delete).
+- **ProductPreviewPage DI violation** — `sl<GenerateBarcode>()` and `sl<WatchInventoryLogs>()` removed from build method; now passed via constructor from `showProductPreviewPage` call site.
+- **ProductPreviewPage rebuild scope** — `context.watch` caused full page rebuild on any Settings or Category state change; replaced with `BlocSelector` to rebuild only when `currency` or matching `Category` changes.
+- **_formatCompact duplication** — removed local `_formatCompact` method; replaced with shared `CurrencyFormatter.formatCompactWithSymbol`.
+- **Type safety** — `_labelForType` parameter changed from `dynamic` to `AppLocalizations`.
+- **Localization** — Hardcoded `'Retry'` text replaced with `context.l10n.retry`.
+- **Loading UX** — Preview page shimmer animation matches `ProductPreviewImage` style; no more inconsistent `CircularProgressIndicator`.
+- **Empty state fields** — Hidden fields (Brand, Tax, Weight, Size) that have no corresponding `Product` entity properties.
+- **Money precision** — Floating-point errors eliminated with `Money` value object (e.g., 0.1 + 0.2 now correctly equals 0.3).
+- **Sale delivery cart flow** — Cart review now receives the shared checkout and draft providers; successful checkout clears the cart and resets checkout state; cart review supports stock-aware quantity changes, line discounts, notes, duplication, and clear/undo actions, with a constrained responsive layout and labeled controls.
+
+### Security
+
+- **Full-database encryption (Phase 2a)** — SQLCipher AES-256-CBC encryption protects all data at rest with transparent migration from plain SQLite; encryption key stored in iOS Keychain / Android Keystore (hardware-backed on supported devices); never written to disk in plain text.
+- **Runtime data integrity** — Barcode uniqueness validation prevents duplicate barcodes across active products; product delete guard checks foreign key references before deletion.
+- **Zero critical CVEs** — All 169 dependencies scanned; no critical vulnerabilities found; Phase B (major version upgrades) documented for Drift and sqlite3_flutter_libs.
+- **Backup encryption default on** — Missing `backupEncryptionEnabled` key now defaults to **on** (aligned with `BackupConfig`); PIN min length 6 for new encrypted exports.
+- **Crash log PII** — Sanitized on write (not only export).
+- **Image path sandbox** — Delete only under app `images/` directory.
+
+### Breaking / migration
+
+- **Schema auto-upgrade to v26** — v25 product brand/unit/supplier/`is_recommended`; v26 unique `daily_closes(close_date)` with dedupe.
+- **SQLCipher key loss** — Losing the device secure-storage key (or uninstall without backup) makes the local DB unrecoverable. There is **no** key recovery in 0.9.0.
+- **Backup encryption default** — New installs / missing settings key enable encryption; existing stored false remains false.
+
+### Known limitations
+
+- **In-app backup restore** is deferred (export + share works; restore = manual file replace / offline decrypt). Target 0.9.1+.
+- **No SQLCipher key recovery / multi-device key export** (Phase 2b).
+- **Money storage** remains SQLite `REAL` baht on disk; domain math uses integer satang via `Money` VO (Phase M INTEGER columns deferred).
+- **CI** integration tests may be non-blocking (`continue-on-error`); unit + analyze are the gate.
+
+---
+
 ## [0.8.9] — 2026-07-06
 
 Restaurant operations, customer & promotion management, home dashboard redesign, navbar floating center button, product modifiers/options, report/history merge.

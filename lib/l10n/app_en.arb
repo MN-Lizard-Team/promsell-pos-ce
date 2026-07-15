@@ -3,32 +3,40 @@
   "appTitle": "Promsell POS",
   "appTagline": "Smart Retail",
   "loading": "Loading...",
-
   "navHome": "Home",
   "navSale": "Sale",
   "navProducts": "Products",
   "navHistory": "History",
   "navReport": "Report",
   "navSettings": "Settings",
-
   "salePageTitle": "Sale",
+  "salePageSubtitle": "Add products and complete the sale",
+  "saleBillNoteTitle": "Bill note",
   "dragToResizeCart": "Drag to resize cart",
   "exitCompactMode": "Exit Compact Mode",
   "exitCompactModeConfirm": "Switch to normal cart view?",
   "autoConfirmingIn": "Auto-confirming in {secs}...",
   "@autoConfirmingIn": {
-    "placeholders": { "secs": { "type": "int" } }
+    "placeholders": {
+      "secs": {
+        "type": "int"
+      }
+    }
   },
   "clearCart": "Clear",
   "confirmClearCart": "Clear the entire cart?",
-  "cartTitle": "Cart",
+  "cartTitle": "Bill",
   "cartEmpty": "Cart is empty",
   "backToSale": "Back to Sale",
-  "checkoutButton": "Checkout",
+  "checkoutButton": "Pay",
   "addItems": "Add Items",
   "itemRemoved": "{name} removed",
   "@itemRemoved": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "undo": "Undo",
   "allCategories": "All",
@@ -38,25 +46,36 @@
   "saleSavedSuccess": "Sale saved successfully",
   "productAddedToCart": "{name} added",
   "@productAddedToCart": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
-  "tapProductToAdd": "Tap a product to add to cart",
+  "tapProductToAdd": "Tap a product to add to this bill",
   "noMatchingProducts": "No matching products",
   "stockLimitReached": "Stock limit reached",
   "cartTotal": "Total",
   "checkout": "Checkout ({count})",
   "@checkout": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "paymentTitle": "Payment",
-  "totalAmount": "Total",
+  "totalAmount": "Amount due",
   "cash": "Cash",
   "transfer": "Transfer",
   "card": "Card",
   "receivedAmount": "Amount received ({currency})",
   "@receivedAmount": {
-    "placeholders": { "currency": { "type": "String" } }
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
   },
   "change": "Change",
   "confirmPayment": "Confirm Payment",
@@ -66,7 +85,6 @@
   "saleTimeout": "Payment timed out, please try again",
   "insufficientCash": "Insufficient cash received",
   "remainingAmount": "Remaining",
-
   "productsTitle": "Products",
   "searchProducts": "Search products...",
   "recentSearches": "Recent searches",
@@ -76,15 +94,24 @@
   "noCategory": "No category",
   "stockLabel": "Stock: {count}",
   "@stockLabel": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "stockRemaining": "Left: {count}",
   "@stockRemaining": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "itemNoteLabel": "Item note",
   "itemNoteHint": "Add a note for this item",
   "duplicateItem": "Item duplicated",
+  "duplicateItemAction": "Duplicate",
   "clear": "Clear",
   "edit": "Edit",
   "delete": "Delete",
@@ -93,10 +120,29 @@
   "deleteProduct": "Delete Product",
   "confirmDeleteProduct": "Confirm delete \"{name}\"?",
   "@confirmDeleteProduct": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "productDeactivateConfirm": "Deactivate \"{name}\"? This product will be hidden from the sales screen.",
+  "@productDeactivateConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "productActivateConfirm": "Activate \"{name}\"? This product will be visible on the sales screen.",
+  "@productActivateConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "cancel": "Cancel",
-
   "addProduct": "Add Product",
   "editProductTitle": "Edit Product",
   "productNameLabel": "Product name *",
@@ -118,7 +164,11 @@
   "quickEditPriceInvalid": "Invalid price",
   "priceLabel": "Price ({currency}) *",
   "@priceLabel": {
-    "placeholders": { "currency": { "type": "String" } }
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
   },
   "priceRequired": "Please enter price",
   "invalidPrice": "Invalid price",
@@ -143,30 +193,39 @@
   "productAddError": "Failed to add product",
   "productDeleteError": "Failed to delete product",
   "stockZeroWarning": "Product won't appear in sale when stock is 0",
-
   "historyTitle": "Sale History",
   "searchHistoryHint": "Search receipt, payment, amount…",
-  "noSearchResults": "No matching sales found",
+  "noSearchResults": "No settings found",
   "noSalesYet": "No sales yet",
   "noDailyClosesYet": "No daily closes yet",
   "noteLabel": "Note: {note}",
   "@noteLabel": {
-    "placeholders": { "note": { "type": "String" } }
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
   },
-
   "reportTitle": "Report",
   "totalRevenue": "Total Revenue",
   "salesCount": "{count} sales",
   "@salesCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "byPaymentMethod": "By Payment Method",
   "topProducts": "Top Selling (Top 5)",
   "units": "{count} units",
   "@units": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "settingsTitle": "Settings",
   "searchSettings": "Search settings...",
   "pressBackAgainToExit": "Press back again to exit",
@@ -224,7 +283,11 @@
   "receiptLabelVat": "VAT",
   "receiptLabelVatIncluded": "VAT {rate}% (included)",
   "@receiptLabelVatIncluded": {
-    "placeholders": { "rate": { "type": "Object" } }
+    "placeholders": {
+      "rate": {
+        "type": "Object"
+      }
+    }
   },
   "receiptLabelSubtotal": "Subtotal",
   "settingsAutoPrintPrompt": "Ask to print receipt after sale",
@@ -240,48 +303,80 @@
   "vatModeNone": "None",
   "vatModeInclusive": "Inclusive",
   "vatModeExclusive": "Exclusive",
-
   "voided": "VOIDED",
   "voidSale": "Void Sale",
   "voidSaleConfirm": "Void this sale? Stock will be restored.",
-  "voidReasonHint": "Reason for void (optional)",
+  "voidReason": "Void reason",
+  "voidReasonHint": "Enter reason for void",
+  "voidReasonRequired": "Please enter a void reason",
+  "voidedAtLabel": "Voided at {datetime}",
+  "@voidedAtLabel": {
+    "placeholders": {
+      "datetime": {
+        "type": "String"
+      }
+    }
+  },
   "voidSuccess": "Sale voided",
   "voidedSalesCount": "{count} voided",
   "@voidedSalesCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "voidedTotal": "Voided Total",
   "netRevenue": "Net Revenue",
-
   "adjustStock": "Adjust Stock",
   "adjustStockTitle": "Adjust Stock: {name}",
   "@adjustStockTitle": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "adjustQtyLabel": "Quantity change (+/-)",
   "adjustReasonLabel": "Reason *",
   "adjustReasonRequired": "Please enter a reason",
   "adjustSuccess": "Stock adjusted",
-
   "inventoryLog": "Inventory Log",
   "noInventoryLogs": "No inventory logs",
-
   "invLogTypeSale": "Sale",
   "invLogTypeVoidReversal": "Void Reversal",
   "invLogTypeStockIn": "Stock In",
   "invLogTypeStockOut": "Stock Out",
-
+  "invLogReasonProductStockEdited": "Product stock edited",
+  "invLogSaleRef": "Sale · {ref}",
+  "@invLogSaleRef": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "productHistoryShowingLatest": "Showing latest {count} movements",
+  "@productHistoryShowingLatest": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productHistoryViewAll": "View full history",
   "productFormSectionBasicInfo": "Basic info",
   "tabInfo": "Info",
   "tabPrice": "Price",
   "tabStock": "Stock",
+  "tabCodes": "Codes",
   "productFormSectionDetails": "Details",
   "productFormImageUrlLabel": "Image URL (optional)",
-
-  "trackStock": "Track stock",
+  "trackStock": "Track Stock",
   "trackStockHint": "Turn off for service items (no stock deduction)",
   "trackStockDisableConfirm": "Disabling stock tracking will freeze the current stock value. You can re-enable it later to resume tracking.",
   "stockTrackingDisabled": "Stock tracking is disabled. Enable to manage stock quantity.",
+  "stockNotTracked": "Not tracking stock",
   "settingsStockPolicy": "Stock Policy",
   "allowOversell": "Allow overselling",
   "allowOversellHint": "Allow adding items beyond available stock",
@@ -289,14 +384,17 @@
   "lowStockWarning": "Low stock",
   "inStock": "In stock",
   "codesCardTitle": "SKU & Barcode",
-
   "discountSectionLabel": "Discount",
   "discountDialogTitle": "Apply Discount",
   "discountTypePercent": "Percent (%)",
   "discountTypeAmount": "Amount (฿)",
   "discountPreview": "After discount: {amount}",
   "@discountPreview": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "discountApply": "Apply",
   "discountClear": "Clear discount",
@@ -304,7 +402,11 @@
   "applyCartDiscount": "Apply cart discount",
   "discountLabel": "-{amount}",
   "@discountLabel": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "discountValueRequired": "Please enter a discount value",
   "discountValueInvalid": "Invalid discount value",
@@ -329,8 +431,7 @@
   "addPresetValue": "Add value",
   "receiptItemDiscounts": "Item Discounts",
   "receiptCartDiscount": "Cart Discount",
-
-  "draftsTitle": "Saved Bills",
+  "draftsTitle": "Open bills",
   "newDraft": "New bill",
   "renameDraft": "Rename",
   "deleteDraft": "Delete bill",
@@ -339,17 +440,16 @@
   "activeDraftLabel": "Active",
   "draftNameHint": "Bill name (optional)",
   "switchDraft": "Switch to this bill",
-
   "cartCleared": "Cart cleared",
-  "undo": "Undo",
-  "itemRemoved": "Item removed",
   "removeItem": "Remove item",
   "itemsLabel": "items",
   "searchCartItems": "Search items...",
-  "searchDrafts": "Search drafts...",
-  "untitledDraft": "Draft",
+  "searchDrafts": "Search bills...",
+  "untitledDraft": "Bill",
   "noMatchingItems": "No matching items",
   "noMatchingDrafts": "No drafts match your search",
+  "noSavedBills": "No saved bills yet",
+  "noSavedBillsHint": "Park a bill from the sale screen to save it here",
   "groupView": "Group view",
   "listView": "List view",
   "gridView": "Grid view",
@@ -362,30 +462,60 @@
   "atStockLimit": "Stock limit reached",
   "justNow": "Just now",
   "timeAgoMinutes": "{m} min ago",
-  "@timeAgoMinutes": {"placeholders": {"m": {"type": "int"}}},
+  "@timeAgoMinutes": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
   "timeAgoHours": "{h} h ago",
-  "@timeAgoHours": {"placeholders": {"h": {"type": "int"}}},
+  "@timeAgoHours": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
   "timeAgoDays": "{d} d ago",
-  "@timeAgoDays": {"placeholders": {"d": {"type": "int"}}},
+  "@timeAgoDays": {
+    "placeholders": {
+      "d": {
+        "type": "int"
+      }
+    }
+  },
   "searchResultsCount": "{n} results",
-  "@searchResultsCount": {"placeholders": {"n": {"type": "int"}}},
+  "@searchResultsCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "confirmPaymentAmount": "Confirm {currency}{amount}",
   "@confirmPaymentAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "amount": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "discountPreviewPercent": "After discount: {value}%",
   "@discountPreviewPercent": {
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
-
   "pickImageGallery": "Choose from Gallery",
   "pickImageCamera": "Take a Photo",
   "removeImage": "Remove Image",
   "imagePickError": "Unable to pick image",
-
   "promptpay": "PromptPay",
   "settingsPromptpayId": "PromptPay ID",
   "settingsPromptpayIdHint": "Phone number or Citizen ID",
@@ -437,11 +567,9 @@
   "itemsCount": "{count} items",
   "totalDiscountLabel": "Total discount",
   "@totalDiscountLabel": {},
-
   "settingsReceiptSize": "Receipt Size",
   "receiptSize80mm": "80mm (Thermal)",
   "receiptSizeA4": "A4",
-
   "settingsMaxDrafts": "Max Drafts",
   "settingsCompactCartMode": "Delivery-style Cart",
   "settingsUltraCompactMode": "Ultra Compact Mode",
@@ -465,6 +593,7 @@
   "imageQualityOriginal": "Original",
   "imageExample": "Example",
   "settingsBackup": "Backup",
+  "settingsSetupReadiness": "Store readiness",
   "settingsData": "Data",
   "exportDatabase": "Export Database (Full Backup)",
   "exportSalesCsv": "Export Sales (CSV)",
@@ -477,7 +606,11 @@
   "backupReminderTitle": "Backup Recommended",
   "backupReminderMessage": "No backup for more than {days} days",
   "@backupReminderMessage": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "settingsBackupReminderDays": "Backup reminder (days, 0=off)",
   "backupWeekly": "Weekly",
@@ -490,7 +623,11 @@
   "backupYesterday": "Yesterday",
   "backupDaysAgo": "{days} days ago",
   "@backupDaysAgo": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "backupStatusSafe": "Up to date",
   "backupStatusWarning": "Due soon",
@@ -501,24 +638,31 @@
   "backupFrequency": "Frequency",
   "backupEveryNDays": "Every {n} days",
   "@backupEveryNDays": {
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "backupOff": "Off",
   "backupActionTitle": "Manual backup",
   "backupActionSubtitle": "Tap to record that you have backed up your data",
-  "backupEncryptionTitle": "Backup encryption",
+  "backupEncryptionTitle": "Backup Encryption (Optional)",
   "backupEncryptionLabel": "Encrypt backups",
   "backupEncryptionDesc": "Protect backup files with AES-256-GCM encryption (PIN required)",
-  "backupInfoDescription": "Back up regularly to protect your sales data, products, and settings.",
+  "backupInfoDescription": "Export backups regularly (encryption recommended, PIN at least 6 characters). In-app restore is same-device only while the SQLCipher key remains. Cross-device restore and key recovery are not available.",
   "exportSuccess": "Export successful",
   "bulkSelected": "{count} selected",
   "@bulkSelected": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "bulkClearDiscount": "Clear Discount",
   "bulkDelete": "Delete",
   "reorderItem": "Drag to reorder",
-
   "dailyCloseTitle": "Daily Close",
   "dailyCloseHistoryTitle": "Daily Close History",
   "closeToday": "Close Today",
@@ -529,8 +673,6 @@
   "reopenDayConfirmTitle": "Reopen Day?",
   "reopenDayConfirmMessage": "This will unlock the day. Sales will count toward a new close.",
   "confirm": "Confirm",
-  "cancel": "Cancel",
-
   "dbHealthTitle": "Database Health",
   "dbHealthFileSize": "Database file size",
   "dbHealthLarge": "LARGE",
@@ -540,7 +682,6 @@
   "dbHealthRowCounts": "Row counts",
   "dbHealthVacuum": "Vacuum Database",
   "dbHealthVacuumDescription": "Vacuum rebuilds the database file to reclaim unused space and reduce fragmentation.",
-
   "onboardingWelcome": "Welcome",
   "onboardingShopInfoTitle": "Shop Info",
   "onboardingShopNameLabel": "Shop name",
@@ -579,18 +720,29 @@
   "onboardingNone": "None",
   "onboardingInclusive": "Inclusive",
   "onboardingExclusive": "Exclusive",
-
   "dailyCloseLoadError": "Error: {message}",
   "@dailyCloseLoadError": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "dailyCloseSales": "Sales: {count}",
   "@dailyCloseSales": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "dailyCloseVoids": "Voids: {count}",
   "@dailyCloseVoids": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "settingsDailyCloseTitle": "Daily Close",
   "settingsDailyCloseSubtitle": "End of day reconciliation",
@@ -601,11 +753,19 @@
   "dbHealthVacuumSuccess": "Database vacuumed successfully",
   "dbHealthVacuumFailed": "Vacuum failed: {error}",
   "@dbHealthVacuumFailed": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "dbHealthError": "Error: {message}",
   "@dbHealthError": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "dayClosedMessage": "Day closed. Reopen to continue.",
   "tapToSet": "Tap to set",
@@ -616,7 +776,6 @@
   "@addressHint": {},
   "phoneHint": "081-234-5678",
   "@phoneHint": {},
-
   "categoryManagementTitle": "Manage Categories",
   "noCategoriesYet": "No categories yet",
   "uncategorized": "Uncategorized",
@@ -627,11 +786,19 @@
   "deleteCategory": "Delete Category",
   "confirmDeleteCategory": "Are you sure you want to delete \"{name}\"?",
   "@confirmDeleteCategory": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "bulkDeleteConfirm": "Delete {count} categories?",
   "@bulkDeleteConfirm": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "categoryName": "Category name",
   "categoryNameRequired": "Please enter category name",
@@ -653,7 +820,6 @@
   "tryDifferentKeyword": "Try a different keyword",
   "clearSearch": "Clear search",
   "inactive": "Inactive",
-  "noCategory": "No category",
   "tapToZoom": "Tap to zoom",
   "@tapToZoom": {},
   "imageError": "Image error",
@@ -667,9 +833,13 @@
   "barcodeLabel": "Barcode",
   "costLabel": "Cost ({currency})",
   "@costLabel": {
-    "placeholders": { "currency": { "type": "String" } }
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
   },
-  "costHelper": "Used to calculate profit margins",
+  "costHelper": "Used to calculate gross profit (optional)",
   "outOfStockShort": "Out",
   "productsCount": "Products",
   "lowStock": "Low stock",
@@ -684,7 +854,7 @@
   "scanBarcode": "Scan Barcode",
   "barcodeScannerHint": "Align barcode within the frame",
   "barcodeNotFound": "No product found with this barcode",
-  "duplicateBarcode": "This barcode already exists on another product",
+  "duplicateBarcode": "This barcode already exists",
   "enterManually": "Enter Manually",
   "enterBarcodeManually": "Enter barcode manually",
   "cameraPermissionDenied": "Camera permission is required to scan barcodes. Please grant camera access in settings.",
@@ -699,12 +869,20 @@
   "focusCamera": "Focus",
   "productFound": "{name} added",
   "@productFound": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "productNotFoundShort": "Product not found",
   "scanCount": "{count} scanned",
   "@scanCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "done": "Done",
   "torchOn": "Turn on flashlight",
@@ -758,7 +936,6 @@
   "barcodeHelpNoBarcodeBody": "If the product doesn't have a barcode, you can generate one automatically in the product form (Advanced tab). This lets you scan it later at the checkout.",
   "barcodeHelper": "Scan or type the barcode on the product packaging. If none, tap Generate Barcode.",
   "skuHelper": "Internal product code (optional). Example: SHIRT-RED-L",
-  "save": "Save",
   "imagePicked": "Image added",
   "imagePickFailed": "Could not add image. Please try again.",
   "storagePermissionDenied": "Storage permission is required to pick images. Please grant storage access in settings.",
@@ -799,7 +976,6 @@
   "thirdPartyServicesBody": "We do not use analytics, advertising, or cloud services. The app works entirely offline.",
   "dataStorage": "Data Storage",
   "dataStorageBody": "Your data remains on your device. You can export or delete it at any time via the Backup/Restore feature. Product images are stored locally in the app's private directory and are subject to automatic LRU cache eviction (50MB limit) to prevent excessive disk usage.",
-  "backupEncryptionTitle": "Backup Encryption (Optional)",
   "backupEncryptionBody": "Promsell offers optional AES-256-GCM encryption for database backups. If enabled, backups are encrypted with a key derived from a user-supplied PIN via PBKDF2. The PIN is never stored on the device or transmitted anywhere. Forgetting the PIN makes the backup unrecoverable — we cannot reset or recover it.",
   "permissionsTitle": "Permissions",
   "permissionsCamera": "Camera: Used for taking product photos and scanning product barcodes. No photos or scans are transmitted off-device.",
@@ -809,11 +985,9 @@
   "crashLoggingBody": "If the app crashes, a local crash log entry is written to your device containing the error message, stack trace, and timestamp. Sensitive data (phone numbers, PromptPay IDs, citizen IDs) is automatically sanitized before storage. Crash logs are never transmitted off-device. You can view, export, and clear crash logs in Settings → About → Crash Logs.",
   "contactTitle": "Contact",
   "contactBody": "For questions: mnlizard.official@gmail.com",
-  "noSearchResults": "No settings found",
   "productPreviewSystemInfo": "System Info",
   "sellingPrice": "Selling Price",
   "profit": "Profit",
-  "trackStock": "Track Stock",
   "dateCreated": "Created",
   "dateUpdated": "Updated",
   "barcodeViewFull": "View",
@@ -821,6 +995,17 @@
   "barcodePrint": "Print",
   "productPreviewMargin": "Margin",
   "productPreviewStockValue": "Stock Value",
+  "productPreviewStockValueSale": "Total Sale Value",
+  "productPreviewPotentialProfit": "Potential Profit",
+  "productPreviewTotalSold": "Total Sold",
+  "productPreviewTotalIn": "Total Restocked",
+  "productPreviewTotalOut": "Total Adjusted Out",
+  "productPreviewLastUpdate": "Last Stock Update",
+  "productPreviewRecentMoves": "Recent Movements",
+  "productPreviewMarkup": "Markup from Cost",
+  "productPreviewRoi": "Return on Cost",
+  "productPreviewTotalRevenue": "Total Stock Revenue",
+  "productPreviewTotalProfit": "Total Stock Profit",
   "productPreviewStatus": "Status",
   "productPreviewActive": "Active",
   "productPreviewCost": "Cost",
@@ -831,11 +1016,19 @@
   "invalidValue": "Invalid value",
   "discountPresetAdded": "Added {label}",
   "@discountPresetAdded": {
-    "placeholders": { "label": { "type": "String" } }
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
   },
   "discountPresetRemoved": "Removed {label}",
   "@discountPresetRemoved": {
-    "placeholders": { "label": { "type": "String" } }
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
   },
   "unsupportedFormat": "Unsupported format",
   "barcodeSavedSuccess": "Barcode saved successfully",
@@ -844,6 +1037,12 @@
   "barcodeSaveError": "Failed to save barcode",
   "barcodePrintError": "Failed to print barcode",
   "inventoryValue": "Inventory value",
+  "currencyBaht": "Baht",
+  "currencyDollar": "Dollar",
+  "currencyEuro": "Euro",
+  "currencyYen": "Yen",
+  "stockOnHand": "On hand",
+  "piecesLabel": "pcs",
   "totalProducts": "Total products",
   "todayRevenue": "Today's Revenue",
   "todaySalesCount": "Sales",
@@ -863,16 +1062,23 @@
   "filterShowResults": "Show Results",
   "filterShowResultsCount": "Show Results ({count})",
   "@filterShowResultsCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterPriceRange": "Price Range",
   "filterPriceMin": "Min",
   "filterPriceMax": "Max",
   "filterActiveCount": "{count} active",
   "@filterActiveCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "businessType": "Business Type",
   "businessTypeRetail": "Retail",
   "businessTypeRestaurant": "Restaurant",
@@ -951,7 +1157,6 @@
       }
     }
   },
-
   "customersTitle": "Customers",
   "customerSaved": "Customer saved",
   "addCustomer": "Add Customer",
@@ -988,7 +1193,44 @@
       }
     }
   },
-
+  "selectCustomer": "Select customer",
+  "clearCustomer": "Clear customer",
+  "noCustomer": "No customer",
+  "receiptLabelCustomer": "Customer",
+  "selectPromotion": "Select promotion",
+  "clearPromotion": "Clear promotion",
+  "noActivePromotions": "No active promotions",
+  "promotionNotFound": "Promotion not found or inactive",
+  "receiptLabelPromotion": "Promotion",
+  "receiptLabelPromotionDiscount": "Promo discount",
+  "customerNotFound": "Customer not found or deleted",
+  "insufficientStock": "Insufficient stock available",
+  "productNotFound": "Product not found",
+  "productInactive": "Product is inactive",
+  "saleNotFound": "Sale not found",
+  "saleAlreadyVoided": "Sale already voided",
+  "notFound": "Not Found",
+  "validationError": "Validation Error",
+  "databaseError": "Database Error",
+  "backupFailed": "Backup failed",
+  "backupShareSubject": "Promsell POS backup",
+  "backupPinTitle": "Backup encryption PIN",
+  "backupPinHint": "Enter PIN to encrypt backup",
+  "backupPinRequired": "PIN is required when encryption is on",
+  "backupPinTooShort": "PIN must be at least 6 characters",
+  "backupPinConfirmHint": "Confirm PIN",
+  "backupPinMismatch": "PINs do not match",
+  "backupEncryptionOffTitle": "Turn off backup encryption?",
+  "backupEncryptionOffConfirm": "Backups shared without encryption are easier to copy if the file is taken. You can turn encryption back on later.",
+  "customerSpentLabel": "Spent {amount}",
+  "@customerSpentLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "tryDifferentSearch": "Try a different search term",
   "promotionsTitle": "Promotions",
   "promotionSaved": "Promotion saved",
   "addPromotion": "Add Promotion",
@@ -1051,7 +1293,6 @@
       }
     }
   },
-
   "homeGreeting": "Hello, {shopName}",
   "@homeGreeting": {
     "placeholders": {
@@ -1071,6 +1312,88 @@
   "homeCloseDay": "Close Day",
   "homePromotionBannerCta": "Create Now",
   "homeCreatePromotion": "Create Promotion",
+  "importProducts": "Import Products",
+  "productTabAll": "All",
+  "productTabCategory": "Category",
+  "productTabStock": "Stock",
+  "productMenuEdit": "Edit",
+  "productMenuPreview": "Preview",
+  "importFromCsv": "Import from CSV",
+  "selectCsvFile": "Select CSV File",
+  "csvImportPreview": "Preview data to import",
+  "confirmImport": "Confirm Import",
+  "importSuccess": "Imported {count} products",
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importError": "Failed to import products",
+  "csvImportError": "Failed to read CSV file",
+  "csvNoData": "No data found in CSV file",
+  "csvInvalidFormat": "Invalid file format",
+  "csvFileTooLarge": "File is too large (max {maxMb} MB)",
+  "@csvFileTooLarge": {
+    "placeholders": {
+      "maxMb": {
+        "type": "int"
+      }
+    }
+  },
+  "csvTooManyRows": "Too many rows (max {maxRows})",
+  "@csvTooManyRows": {
+    "placeholders": {
+      "maxRows": {
+        "type": "int"
+      }
+    }
+  },
+  "csvRowErrorsSkipped": "{count} row error(s) will be skipped",
+  "@csvRowErrorsSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "csvImportPartialSuccess": "Imported {imported}; {errors} row(s) failed",
+  "@csvImportPartialSuccess": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "errors": {
+        "type": "int"
+      }
+    }
+  },
+  "csvImportCategoriesCreated": "{count} categories created",
+  "@csvImportCategoriesCreated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "csvDownloadTemplate": "Download template",
+  "csvColumnLegend": "Required: name, price. Optional: sku, barcode, cost, stock, category, track_stock",
+  "csvImporting": "Importing…",
+  "csvRowLabel": "Row {row}: {message}",
+  "@csvRowLabel": {
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "csvTemplateShared": "Template ready to share",
+  "csvParseErrorsTitle": "Rows that will be skipped",
+  "csvPostImportErrorsTitle": "Rows that failed to import",
   "homePromotionBannerSubtitle": "Easily boost your sales",
   "homeNoActivePromotion": "No active promotions right now",
   "homePromotionOff": "OFF",
@@ -1081,5 +1404,492 @@
         "type": "int"
       }
     }
-  }
+  },
+  "productDetailTitle": "Product Details",
+  "productTabInfo": "Product Info",
+  "productTabHistory": "History",
+  "productDescriptionLabel": "Description",
+  "productDescriptionEmpty": "No description",
+  "productUnitLabel": "Unit",
+  "productUnitDefault": "pcs",
+  "productTabPointOfSale": "Point of Sale",
+  "productTabPriceStock": "Price & Stock",
+  "productTabCodesMore": "Codes & More",
+  "productRecommended": "Recommended product",
+  "productUnitOther": "Other",
+  "productCustomUnit": "Custom unit",
+  "productTaxLabel": "Tax",
+  "productWeightLabel": "Weight",
+  "productSizeLabel": "Size",
+  "productBrandLabel": "Brand",
+  "productSupplierLabel": "Supplier",
+  "copyBarcode": "Copy Barcode",
+  "printBarcode": "Print Barcode",
+  "productAdjustStock": "Adjust Stock",
+  "productNoHistory": "No stock movement history",
+  "normalProduct": "Normal Product",
+  "readyToSell": "Ready to Sell",
+  "retailPrice": "Retail Price",
+  "averageCost": "Average Cost",
+  "averageProfit": "Average Profit",
+  "remainingStock": "Remaining Stock",
+  "moveProduct": "Move Product",
+  "editProduct": "Edit Product",
+  "pieces": "{count} pcs",
+  "@pieces": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resourceNotFound": "{resource} not found",
+  "@resourceNotFound": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  },
+  "resourceNotFoundWithId": "{resource} not found (ID: {id})",
+  "@resourceNotFoundWithId": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "businessRuleViolation": "Business Rule Violation",
+  "networkError": "Network Error",
+  "networkErrorDefault": "Network error (status: {code})",
+  "@networkErrorDefault": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "fileSystemError": "File System Error",
+  "permissionDenied": "Permission Denied",
+  "permissionDeniedMessage": "Please grant {permission} permission",
+  "@permissionDeniedMessage": {
+    "placeholders": {
+      "permission": {
+        "type": "String"
+      }
+    }
+  },
+  "unexpectedError": "Unexpected Error",
+  "invalidDiscount": "Invalid discount value",
+  "negativePriceNotAllowed": "Negative price is not allowed",
+  "homeLoadError": "Failed to load data",
+  "productFormSectionGeneral": "General",
+  "productFormSectionPricing": "Price & cost",
+  "productFormSectionStock": "Stock & unit",
+  "productFormSectionSettings": "Settings",
+  "productFormSectionExtra": "More details",
+  "profitMargin": "Margin",
+  "notSpecified": "Not specified",
+  "saveProduct": "Save product",
+  "discardChanges": "Don't save",
+  "unsavedChangesMessageCreate": "Leave without saving? You can restore this draft next time, or discard it.",
+  "unsavedChangesMessageEdit": "You have unsaved changes. Leave without saving?",
+  "costExceedsPriceWarning": "Cost is higher than selling price — negative profit",
+  "priceStockEstimateTitle": "If all stock sells",
+  "priceStockEstimateRevenue": "Est. revenue",
+  "priceStockEstimateProfit": "Est. profit",
+  "editStockAdjustHint": "Change quantity with Adjust stock so the change is logged.",
+  "lowStockThresholdHint": "Low stock alert at {n}",
+  "@lowStockThresholdHint": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "stockInventoryValueTitle": "Inventory value",
+  "adjustModeAdd": "Add",
+  "adjustModeRemove": "Remove",
+  "adjustQtyAmountLabel": "Amount",
+  "adjustCurrentStock": "Current stock: {qty} {unit}",
+  "@adjustCurrentStock": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustPreviewResult": "{from} → {to} {unit}",
+  "@adjustPreviewResult": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustWouldGoNegative": "Not enough stock for this removal",
+  "adjustReasonRestock": "Restock",
+  "adjustReasonDamaged": "Damaged",
+  "adjustReasonLost": "Lost / missing",
+  "adjustReasonCountCorrection": "Count correction",
+  "adjustReasonReturn": "Customer return",
+  "adjustReasonOther": "Other",
+  "adjustReasonOtherHint": "Describe the reason",
+  "editLowStockThreshold": "Edit threshold",
+  "lowStockThresholdSaved": "Low stock alert updated",
+  "createProductFromBarcode": "Create product",
+  "scanAgainToAdd": "Product saved — scan again to add to cart",
+  "productCreatedAddedToCart": "Product created and added to cart",
+  "barcodeReplaceTitle": "Replace barcode?",
+  "barcodeReplaceMessage": "Current code: {code}. A new code will replace it.",
+  "@barcodeReplaceMessage": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "barcodePreviewEmpty": "Preview appears when you enter or generate a barcode",
+  "scanModeContinuous": "Continuous",
+  "scanModeSingle": "Single",
+  "searchMatchName": "Name",
+  "searchMatchSku": "SKU",
+  "searchMatchBarcode": "Barcode",
+  "searchResultCount": "{count} results",
+  "@searchResultCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchFiltersIgnoredHint": "Showing all matches (list filters not applied)",
+  "searchShowingCount": "Showing {shown} of {total}",
+  "@searchShowingCount": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "barcodeAmbiguousCount": "{count} products share this barcode",
+  "@barcodeAmbiguousCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartBillDetails": "Bill details",
+  "cartHoldBill": "Saved bills",
+  "cartItemCount": "{count} items",
+  "@cartItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartActiveBill": "Bill: {name}",
+  "@cartActiveBill": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "heroNoBarcode": "No barcode",
+  "setSellingPrice": "Set price",
+  "showProductHint": "Visible in the product list and sale catalog when on",
+  "productRecommendedHint": "Highlighted first on the sale catalog and marked in the product list",
+  "productBrandHint": "Optional brand or manufacturer name",
+  "productDescriptionHint": "Optional notes for staff (not shown on the sale catalog)",
+  "productFormSectionVisibility": "Visibility",
+  "productSettingsOutcomeVisible": "On sale",
+  "productSettingsOutcomeHidden": "Hidden from sale",
+  "productSettingsOutcomeRecommended": "Recommended",
+  "productSettingsOutcomeNotRecommended": "Not recommended",
+  "productRecommendedNeedsVisible": "Recommended products should be visible. Turn on Show product, or turn off Recommended.",
+  "saleRecommendedFilter": "Recommended",
+  "saleRecommendedFilterAll": "All items",
+  "productSupplierHint": "Who you buy this product from (optional)",
+  "productOptionsSummaryTitle": "Options",
+  "productOptionGroupSummary": "{name} · {detail} · {count} options",
+  "@productOptionGroupSummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productFormCostEmptyHint": "Add cost to see profit and markup",
+  "productFormMarkupFromCost": "Set price from cost",
+  "productFormPriceChanged": "{from} → {to}",
+  "@productFormPriceChanged": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "clearFieldTitle": "Clear text?",
+  "clearFieldConfirm": "This will remove the text in this field. Continue?",
+  "deleteProductConfirmTitle": "Delete this product?",
+  "removeCartLineTitle": "Remove this item from the bill?",
+  "removeCartLineQty": "Qty {count}",
+  "@removeCartLineQty": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "removeCartLineConfirm": "Remove item",
+  "datePresetToday": "Today",
+  "datePresetYesterday": "Yesterday",
+  "datePresetLast7Days": "Last 7 days",
+  "datePresetThisMonth": "This month",
+  "datePresetCustom": "Custom",
+  "reportAverage": "Average",
+  "reportRecent": "Recent",
+  "paymentMethodShare": "{percent}%",
+  "@paymentMethodShare": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "closeDayToday": "Close today",
+  "dailyCloseSummaryTitle": "Summary",
+  "dailyCloseSalesCountLabel": "Sales count",
+  "dailyCloseVoidedCountLabel": "Voided count",
+  "dailyCloseGrossRevenue": "Gross revenue",
+  "dailyCloseVoidedAmount": "Voided amount",
+  "dailyCloseByPayment": "By payment",
+  "dailyCloseVatCollected": "VAT collected",
+  "dailyCloseDiscountsGiven": "Discounts given",
+  "dailyCloseCashReconciliation": "Cash reconciliation",
+  "dailyCloseOpeningCash": "Opening cash",
+  "dailyCloseExpectedCash": "Expected cash",
+  "dailyCloseCountedCash": "Counted cash",
+  "dailyCloseOverShort": "Over / Short",
+  "dailyCloseNoteOptional": "Note (optional)",
+  "dailyCloseStatusOpen": "Open",
+  "dailyCloseStatusClosed": "Closed",
+  "dailyCloseStatusClosedBadge": "CLOSED",
+  "dailyCloseStatusOpenBadge": "OPEN",
+  "noCategoriesFound": "No categories match your search",
+  "categorySaved": "Category saved",
+  "categoryDeleted": "Category deleted",
+  "categoriesDeleted": "{count} categories deleted",
+  "@categoriesDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryReorderHint": "Drag to set the order shown on the POS catalog",
+  "deleteCategoryProductsImpact": "{count} products will be moved to the selected category (or Uncategorized).",
+  "@deleteCategoryProductsImpact": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryNameTooLong": "Name must be at most 100 characters",
+  "goToSale": "Go to Sale",
+  "closeDayForDate": "Close day {date}",
+  "@closeDayForDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reportNoSalesInPeriod": "No sales in this period",
+  "currentBill": "Current bill",
+  "currentBillWithCount": "Bill ({count})",
+  "@currentBillWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewBill": "Bill",
+  "viewBillWithCount": "Bill ({count})",
+  "@viewBillWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftNotFound": "Open bill not found",
+  "maxDraftsReached": "Maximum open bills ({count}) reached",
+  "@maxDraftsReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addToCart": "Add to cart",
+  "holdCurrentBill": "Hold this bill",
+  "newBill": "New bill",
+  "billHeld": "Bill saved",
+  "newBillConfirm": "Save the current bill and start a new empty bill?",
+  "newBillStarted": "New bill started",
+  "voidBlockedDayClosed": "Day is closed. Reopen the day to void this sale.",
+  "billParked": "Bill set aside — ready for next customer.",
+  "receiptThankYouDefault": "Thank you!",
+  "receiptNotTaxInvoice": "Sale receipt — not a tax invoice",
+  "receiptReprint": "REPRINT",
+  "receiptShareVoidBlocked": "Cannot share a voided sale as a normal receipt. Print shows VOID.",
+  "parkBill": "Park bill",
+  "parkBillNameTitle": "Name this bill (optional)",
+  "currentBillNamed": "{name} ({count})",
+  "@currentBillNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "amountDue": "Amount due",
+  "payAmount": "Pay {amount}",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "parkAndNext": "Park & next",
+  "openBillsCount": "Open bills ({count})",
+  "@openBillsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billItemsMissing": "{count} line(s) missing (product removed)",
+  "@billItemsMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "splitTenderTitle": "Split payment (cash + other)",
+  "splitTenderSubtitle": "Pay part in cash and the rest with QR/transfer/card",
+  "splitCashAmount": "Cash amount",
+  "paymentMismatch": "Payment amounts do not match the total",
+  "paymentMixed": "Split payment",
+  "promptPayShareTitle": "PromptPay share",
+  "promptPayShareHint": "Scan for the PromptPay portion only (not the full bill).",
+  "promptPayFullBillTitle": "Pay with PromptPay",
+  "settingsAttentionItemsCount": "{count} setup items need attention",
+  "@settingsAttentionItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAttentionShopTitle": "Finish shop profile",
+  "settingsAttentionShopBody": "Add your shop name and phone so receipts look correct.",
+  "settingsAttentionPromptpayTitle": "Set up PromptPay",
+  "settingsAttentionPromptpayBody": "Add a PromptPay ID to show QR at checkout.",
+  "settingsAttentionReview": "Review",
+  "settingsDayClose": "Day close",
+  "settingsBackupData": "Backup & data",
+  "settingsPreview": "{section} preview",
+  "@settingsPreview": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsModeLabel": "Mode",
+  "settingsCatalogMode": "Catalog",
+  "shopNamePlaceholder": "Your shop name",
+  "shopAddressPlaceholder": "No address set",
+  "shopPhonePlaceholder": "No phone set",
+  "settingsDetails": "Details",
+  "settingsPolicy": "Policy",
+  "settingsOn": "On",
+  "settingsOff": "Off",
+  "cartPaymentInProgress": "Payment in progress — cart is locked until you finish or cancel",
+  "backupRestoreTitle": "Restore backup (this device)",
+  "backupRestoreConfirmTitle": "Restore backup?",
+  "backupRestoreConfirmMessage": "This replaces the current database on this device. A pre-restore copy is kept. Restart the app after restore. Same-device only (SQLCipher key must still exist).",
+  "backupRestoreSuccess": "Restore complete. Please fully close and reopen the app.",
+  "backupRestorePlainUnsupported": "Plain SQLite backups are not supported. Use a SQLCipher export from this app.",
+  "backupRestoreInvalid": "Invalid backup file.",
+  "backupRestoreSourceMissing": "Backup file not found.",
+  "backupConfirmExportTitle": "Confirm backup export",
+  "backupConfirmRestoreTitle": "Confirm backup restore",
+  "appLockTitle": "Store PIN lock",
+  "appLockSubtitle": "Protect void, backup, and PromptPay changes",
+  "appLockSectionTitle": "Sensitive actions",
+  "appLockRequirePin": "Require store PIN",
+  "appLockRequirePinHint": "When enabled, void, backup export/restore, and PromptPay ID changes require PIN (session grace {minutes} min).",
+  "@appLockRequirePinHint": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "appLockCreatePin": "Create store PIN",
+  "appLockEnterPin": "Enter store PIN",
+  "appLockConfirmPin": "Confirm PIN",
+  "appLockPinLabel": "PIN",
+  "appLockUnlock": "Unlock",
+  "appLockEnabled": "Store PIN enabled",
+  "appLockDisabled": "Store PIN disabled",
+  "appLockEnableFailed": "Could not enable store PIN",
+  "appLockDisableNeedsPin": "PIN required to disable",
+  "appLockPinTooShort": "PIN must be at least {min} digits",
+  "@appLockPinTooShort": {
+    "placeholders": {
+      "min": { "type": "int" }
+    }
+  },
+  "appLockIncorrectPin": "Incorrect PIN",
+  "appLockActionRequired": "Action requires store PIN",
+  "appLockConfirmVoid": "Confirm void with store PIN",
+  "appLockConfirmPromptPay": "Confirm PromptPay change",
+  "appLockPinsMismatch": "PINs do not match"
 }

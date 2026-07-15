@@ -1,8 +1,8 @@
-# Schema Reference — Promsell POS CE v0.8.9
+# Schema Reference — Promsell POS CE (schema v27)
 
-Detailed column reference for all 12 database tables, indexes, seed data, and enum values.
+Detailed column reference for all 14 database tables, indexes, seed data, and enum values.
 
-> **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns
+> **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
 
 ---
 
@@ -17,15 +17,20 @@ Source: `lib/core/database/tables/products_table.dart`
 | `id` | TEXT | No | — | **PK**, UUIDv4 |
 | `name` | TEXT | No | — | length 1–200 |
 | `sku` | TEXT | Yes | — | |
-| `barcode` | TEXT | Yes | — | **UNIQUE** (schema v16, auto-dedup v17); normalized to uppercase on save and lookup |
-| `price` | REAL | No | — | |
+| `barcode` | TEXT | Yes | — | Partial unique index (v24) when non-null/non-empty; uppercase on save/lookup; runtime uniqueness for active products |
+| `price` | REAL | No | — | Baht on disk; domain maps via `Money` |
 | `cost` | REAL | Yes | — | |
 | `stock` | INTEGER | No | `0` | |
 | `categoryId` | TEXT | Yes | — | Logical ref → categories |
 | `imageUrl` | TEXT | Yes | — | Network URL for future online sync |
 | `imagePath` | TEXT | Yes | — | Local file path from gallery/camera pick |
 | `imageThumbnailPath` | TEXT | Yes | — | Local thumbnail path (200px) for small avatar display |
-| `barcodeImagePath` | TEXT | Yes | — | Local barcode image (PNG or JPEG) generated from `barcode` text via `BarcodeImageService` off-screen `RenderRepaintBoundary` rendering (600×200 @ 3x pixel ratio); auto-generated on product add/update |
+| `barcodeImagePath` | TEXT | Yes | — | Local barcode image (PNG/JPEG) via `BarcodeImageService` |
+| `description` | TEXT | Yes | — | Optional long-form description (v22) |
+| `brand` | TEXT | Yes | — | Product brand (schema **v25**) |
+| `unit` | TEXT | Yes | — | Sell unit label (schema **v25**) |
+| `supplier` | TEXT | Yes | — | Supplier name (schema **v25**) |
+| `isRecommended` | BOOLEAN | No | `false` | Catalog “recommended” flag (schema **v25**) |
 | `trackStock` | BOOLEAN | No | `true` | `false` = service item: skip stock check, no deduction, show ∞ in UI |
 | `isActive` | BOOLEAN | No | `true` | |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
@@ -51,6 +56,15 @@ Source: `lib/core/database/tables/sales_table.dart`
 | `vatMode` | TEXT | No | `'NONE'` | `NONE` \| `INCLUSIVE` \| `EXCLUSIVE` |
 | `vatRate` | REAL | No | `0` | |
 | `vatAmount` | REAL | No | `0` | |
+| `orderType` | TEXT | No | `'dinein'` | `dinein` \| `takeaway` \| `delivery` (added v20) |
+| `orderChannel` | TEXT | No | `'walkin'` | `walkin` \| `online` \| `phone` (added v20) |
+| `externalOrderRef` | TEXT | Yes | — | External order ID / delivery reference (added v20) |
+| `tableId` | TEXT | Yes | — | Logical ref → restaurant_tables (added v20) |
+| `serviceChargeRate` | REAL | No | `0` | Service charge % (added v20) |
+| `serviceChargeAmount` | REAL | No | `0` | Computed service charge amount (added v20) |
+| `customerId` | TEXT | Yes | — | Logical ref → customers (added v21) |
+| `promotionId` | TEXT | Yes | — | Logical ref → promotions (added v21) |
+| `promotionDiscountAmount` | REAL | No | `0` | Promotion discount applied (added v21) |
 | `paymentMethod` | TEXT | No | — | `cash` \| `transfer` \| `card` \| `promptpay` |
 | `amountReceived` | REAL | Yes | — | |
 | `changeAmount` | REAL | Yes | — | |
@@ -80,6 +94,8 @@ Source: `lib/core/database/tables/sale_items_table.dart`
 | `discountAmount` | REAL | No | `0` | |
 | `vatAmount` | REAL | No | `0` | |
 | `subtotal` | REAL | No | — | `price × qty − discount` |
+| `note` | TEXT | Yes | — | Per-item note (added v19) |
+| `productOptionsJson` | TEXT | Yes | — | JSON snapshot of selected product options at time of sale (added v20) |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
 | `deletedAt` | DATETIME | Yes | — | Soft delete |
 | `version` | INTEGER | No | `1` | Sync |
@@ -148,6 +164,14 @@ Source: `lib/core/database/tables/draft_carts_table.dart`
 | `note` | TEXT | Yes | — | |
 | `cartDiscountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `cartDiscountValue` | REAL | Yes | — | |
+| `orderType` | TEXT | No | `'dinein'` | `dinein` \| `takeaway` \| `delivery` (added v20) |
+| `orderChannel` | TEXT | No | `'walkin'` | `walkin` \| `online` \| `phone` (added v20) |
+| `externalOrderRef` | TEXT | Yes | — | External order ID / delivery reference (added v20) |
+| `tableId` | TEXT | Yes | — | Logical ref → restaurant_tables (added v20) |
+| `serviceChargeRate` | REAL | Yes | — | Carries through to sale creation (added v20) |
+| `customerId` | TEXT | Yes | — | Logical ref → customers (added v21) |
+| `promotionId` | TEXT | Yes | — | Logical ref → promotions (added v21) |
+| `promotionDiscountAmount` | REAL | No | `0` | Carries through to sale creation (added v21) |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
 | `isArchived` | BOOLEAN | No | `false` | Auto-archive after 7 days |
@@ -169,6 +193,8 @@ Source: `lib/core/database/tables/draft_cart_items_table.dart`
 | `qty` | INTEGER | No | — | |
 | `discountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `discountValue` | REAL | Yes | — | |
+| `note` | TEXT | Yes | — | Per-item note (added v19) |
+| `productOptionsJson` | TEXT | Yes | — | JSON snapshot of selected product options (added v20) |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
 | `deletedAt` | DATETIME | Yes | — | Soft delete |
 | `version` | INTEGER | No | `1` | Sync |
@@ -200,6 +226,100 @@ Source: `lib/core/database/tables/daily_closes_table.dart`
 | `deletedAt` | DATETIME | Yes | — | Soft delete |
 | `version` | INTEGER | No | `1` | Sync |
 
+### RestaurantTables
+
+Source: `lib/core/database/tables/restaurant_tables_table.dart` — added schema v20
+
+| Column | Type | Nullable | Default | Constraint |
+|--------|------|----------|---------|------------|
+| `id` | TEXT | No | — | **PK**, UUIDv4 |
+| `name` | TEXT | No | — | length 1–100 |
+| `zone` | TEXT | Yes | — | Section/zone label (e.g. "Main Hall") |
+| `seats` | INTEGER | Yes | — | Seat capacity |
+| `status` | TEXT | No | `'available'` | `available` \| `occupied` \| `reserved` |
+| `sortOrder` | INTEGER | No | `0` | Display order |
+| `createdAt` | DATETIME | No | `currentDateAndTime` | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
+
+### ProductOptionGroups
+
+Source: `lib/core/database/tables/product_option_groups_table.dart` — added schema v20
+
+| Column | Type | Nullable | Default | Constraint |
+|--------|------|----------|---------|------------|
+| `id` | TEXT | No | — | **PK**, UUIDv4 |
+| `productId` | TEXT | No | — | **FK → products.id** (CASCADE) |
+| `name` | TEXT | No | — | length 1–100 (e.g. "Size", "Topping") |
+| `selectionType` | TEXT | No | `'single'` | `single` \| `multiple` |
+| `isRequired` | BOOLEAN | No | `false` | Forces selection before checkout |
+| `sortOrder` | INTEGER | No | `0` | |
+| `createdAt` | DATETIME | No | `currentDateAndTime` | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
+
+### ProductOptions
+
+Source: `lib/core/database/tables/product_options_table.dart` — added schema v20
+
+| Column | Type | Nullable | Default | Constraint |
+|--------|------|----------|---------|------------|
+| `id` | TEXT | No | — | **PK**, UUIDv4 |
+| `groupId` | TEXT | No | — | **FK → product_option_groups.id** (CASCADE) |
+| `name` | TEXT | No | — | length 1–100 (e.g. "Large", "Extra Cheese") |
+| `priceDelta` | REAL | No | `0` | Price adjustment added to item price |
+| `sortOrder` | INTEGER | No | `0` | |
+| `createdAt` | DATETIME | No | `currentDateAndTime` | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
+
+### Customers
+
+Source: `lib/core/database/tables/customers_table.dart` — added schema v21
+
+| Column | Type | Nullable | Default | Constraint |
+|--------|------|----------|---------|------------|
+| `id` | TEXT | No | — | **PK**, UUIDv4 |
+| `name` | TEXT | No | — | length 1–200 |
+| `phone` | TEXT | Yes | — | |
+| `email` | TEXT | Yes | — | |
+| `note` | TEXT | Yes | — | |
+| `totalSpent` | REAL | No | `0` | Lifetime spend — updated automatically on each sale/void |
+| `visitCount` | INTEGER | No | `0` | Number of completed sales — updated automatically |
+| `createdAt` | DATETIME | No | `currentDateAndTime` | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
+
+> `totalSpent` and `visitCount` are maintained atomically inside the sale/void transaction by `SaleLocalDatasource`. They are **read-only** from the customer form — do not overwrite them manually.
+
+### Promotions
+
+Source: `lib/core/database/tables/promotions_table.dart` — added schema v21
+
+| Column | Type | Nullable | Default | Constraint |
+|--------|------|----------|---------|------------|
+| `id` | TEXT | No | — | **PK**, UUIDv4 |
+| `name` | TEXT | No | — | length 1–200 |
+| `type` | TEXT | No | `'PERCENT'` | `PERCENT` \| `AMOUNT` |
+| `value` | REAL | No | `0` | Discount value (percent or fixed amount) |
+| `minPurchaseAmount` | REAL | No | `0` | Minimum cart total to activate |
+| `startDate` | DATETIME | No | `currentDateAndTime` | |
+| `endDate` | DATETIME | Yes | — | `null` = no expiry |
+| `isActive` | BOOLEAN | No | `true` | |
+| `createdAt` | DATETIME | No | `currentDateAndTime` | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
+
 ---
 
 ## Indexes
@@ -210,14 +330,27 @@ Created in `_createIndexes()` during `onCreate` and `onUpgrade`.
 |-------|-------|-----------|---------|
 | `idx_products_category_id` | products | `category_id` | Filter products by category |
 | `idx_products_is_active` | products | `is_active` | Filter active products for sale catalog |
-| `idx_products_barcode` | products | `barcode` | Barcode lookup for scan/generate |
-| `idx_products_barcode_unique` | products | `barcode` | **UNIQUE** constraint preventing duplicate barcodes (schema v16, auto-dedup v17) |
+| `idx_products_barcode_unique` | products | `barcode` (partial) | **UNIQUE** where `barcode IS NOT NULL AND barcode != ''` (schema **v24**) |
 | `idx_sales_created_at` | sales | `created_at` | Date-range queries in history/reports |
 | `idx_sales_status` | sales | `status` | Filter completed vs voided sales |
 | `idx_sale_items_sale_id` | sale_items | `sale_id` | Fetch items for a specific sale |
 | `idx_inventory_logs_product_id` | inventory_logs | `product_id` | Product stock audit trail |
 | `idx_draft_cart_items_cart_id` | draft_cart_items | `cart_id` | Fetch items for a draft cart |
-| `idx_daily_closes_close_date` | daily_closes | `close_date` | Lookup close by date |
+| `idx_daily_closes_close_date_unique` | daily_closes | `close_date` | **UNIQUE** one close row per business day (schema **v28**) |
+| `idx_sales_receipt_number_unique` | sales | `receipt_number` | **UNIQUE** where non-null/non-empty (schema **v27**) |
+| `idx_product_option_groups_product_id` | product_option_groups | `product_id` | Fetch option groups for a product (v20) |
+| `idx_product_options_group_id` | product_options | `group_id` | Fetch options for a group (v20) |
+| `idx_restaurant_tables_status` | restaurant_tables | `status` | Filter tables by availability (v20) |
+| `idx_customers_name` | customers | `name` | Customer search by name (v21) |
+| `idx_customers_phone` | customers | `phone` | Customer lookup by phone (v21) |
+| `idx_promotions_active` | promotions | `is_active` | Filter active promotions (v21) |
+| `idx_sales_customer_id` | sales | `customer_id` | Customer purchase history (v21) |
+
+### Barcode uniqueness (current · v0.9.0)
+
+- **DB:** partial unique index `idx_products_barcode_unique` on `products(barcode)` where barcode is non-null and non-empty (schema **v24**).
+- **Runtime:** `ProductLocalDatasource` validates uniqueness for active products (case-insensitive), excludes soft-deleted rows, length 1–50 when set.
+- Empty/null barcodes are allowed on multiple products.
 
 ---
 
@@ -307,4 +440,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Schema Reference · 9 tables</sub>
+<sub>Promsell POS CE · v0.9.0 · schema v28 · 14 tables · SQLCipher AES-256</sub>

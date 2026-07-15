@@ -39,6 +39,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get salePageTitle => 'ขายสินค้า';
 
   @override
+  String get salePageSubtitle => 'เพิ่มสินค้าและทำรายการขาย';
+
+  @override
+  String get saleBillNoteTitle => 'หมายเหตุบิล';
+
+  @override
   String get dragToResizeCart => 'ลากเพื่อปรับขนาดตะกร้า';
 
   @override
@@ -59,7 +65,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get confirmClearCart => 'ยืนยันล้างตะกร้าทั้งหมด?';
 
   @override
-  String get cartTitle => 'ตะกร้า';
+  String get cartTitle => 'บิล';
 
   @override
   String get cartEmpty => 'ตะกร้าว่าง';
@@ -75,11 +81,11 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String itemRemoved(String name) {
-    return 'ลบรายการแล้ว';
+    return 'ลบ $name แล้ว';
   }
 
   @override
-  String get undo => 'เรียกคืน';
+  String get undo => 'ยกเลิก';
 
   @override
   String get allCategories => 'ทั้งหมด';
@@ -102,7 +108,7 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
-  String get tapProductToAdd => 'แตะสินค้าเพื่อเพิ่มลงตะกร้า';
+  String get tapProductToAdd => 'แตะสินค้าเพื่อเพิ่มในบิลนี้';
 
   @override
   String get noMatchingProducts => 'ไม่พบสินค้าที่ตรงกัน';
@@ -122,7 +128,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get paymentTitle => 'ชำระเงิน';
 
   @override
-  String get totalAmount => 'ยอดรวม';
+  String get totalAmount => 'ยอดชำระ';
 
   @override
   String get cash => 'เงินสด';
@@ -203,6 +209,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get duplicateItem => 'คัดลอกรายการแล้ว';
 
   @override
+  String get duplicateItemAction => 'คัดลอกรายการ';
+
+  @override
   String get clear => 'ล้าง';
 
   @override
@@ -223,6 +232,16 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String confirmDeleteProduct(String name) {
     return 'ยืนยันการลบ \"$name\"?';
+  }
+
+  @override
+  String productDeactivateConfirm(String name) {
+    return 'ปิดการใช้งาน \"$name\"? สินค้านี้จะถูกซ่อนจากหน้าขาย';
+  }
+
+  @override
+  String productActivateConfirm(String name) {
+    return 'เปิดใช้งาน \"$name\"? สินค้านี้จะแสดงบนหน้าขาย';
   }
 
   @override
@@ -627,7 +646,18 @@ class AppLocalizationsTh extends AppLocalizations {
   String get voidSaleConfirm => 'ยกเลิกบิลนี้? สต็อกจะถูกคืน';
 
   @override
-  String get voidReasonHint => 'เหตุผลในการยกเลิก (ไม่บังคับ)';
+  String get voidReason => 'เหตุผลที่ยกเลิก';
+
+  @override
+  String get voidReasonHint => 'ระบุเหตุผลที่ยกเลิก';
+
+  @override
+  String get voidReasonRequired => 'กรุณาระบุเหตุผลที่ยกเลิก';
+
+  @override
+  String voidedAtLabel(String datetime) {
+    return 'ยกเลิกเมื่อ $datetime';
+  }
 
   @override
   String get voidSuccess => 'ยกเลิกบิลแล้ว';
@@ -682,16 +712,35 @@ class AppLocalizationsTh extends AppLocalizations {
   String get invLogTypeStockOut => 'ตัดสต็อก';
 
   @override
+  String get invLogReasonProductStockEdited => 'แก้ไขสต็อกสินค้า';
+
+  @override
+  String invLogSaleRef(String ref) {
+    return 'บิล · $ref';
+  }
+
+  @override
+  String productHistoryShowingLatest(int count) {
+    return 'แสดง $count รายการล่าสุด';
+  }
+
+  @override
+  String get productHistoryViewAll => 'ดูประวัติทั้งหมด';
+
+  @override
   String get productFormSectionBasicInfo => 'ข้อมูลพื้นฐาน';
 
   @override
-  String get tabInfo => 'ข้อมูล';
+  String get tabInfo => 'สินค้า';
 
   @override
   String get tabPrice => 'ราคา';
 
   @override
   String get tabStock => 'สต็อก';
+
+  @override
+  String get tabCodes => 'รหัส';
 
   @override
   String get productFormSectionDetails => 'รายละเอียด';
@@ -712,6 +761,9 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get stockTrackingDisabled =>
       'การติดตามสต็อกปิดอยู่ เปิดเพื่อจัดการจำนวนสต็อก';
+
+  @override
+  String get stockNotTracked => 'ไม่ติดตามสต็อก';
 
   @override
   String get settingsStockPolicy => 'นโยบายสต็อค';
@@ -838,7 +890,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get receiptCartDiscount => 'ส่วนลดบิล';
 
   @override
-  String get draftsTitle => 'บิลที่บันทึก';
+  String get draftsTitle => 'บิลเปิด';
 
   @override
   String get newDraft => 'บิลใหม่';
@@ -880,13 +932,19 @@ class AppLocalizationsTh extends AppLocalizations {
   String get searchDrafts => 'ค้นหาบิล...';
 
   @override
-  String get untitledDraft => 'บิลใหม่';
+  String get untitledDraft => 'บิล';
 
   @override
   String get noMatchingItems => 'ไม่พบสินค้าที่ตรงกัน';
 
   @override
   String get noMatchingDrafts => 'ไม่พบบิลที่ตรงกัน';
+
+  @override
+  String get noSavedBills => 'ยังไม่มีบิลที่บันทึก';
+
+  @override
+  String get noSavedBillsHint => 'พักบิลจากหน้าขายเพื่อเก็บไว้ที่นี่';
 
   @override
   String get groupView => 'มุมมองแบบกลุ่ม';
@@ -1201,6 +1259,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get settingsBackup => 'สำรองข้อมูล';
 
   @override
+  String get settingsSetupReadiness => 'ความพร้อมร้าน';
+
+  @override
   String get settingsData => 'ข้อมูล';
 
   @override
@@ -1315,7 +1376,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get backupInfoDescription =>
-      'สำรองข้อมูลเป็นประจำเพื่อป้องกันข้อมูลการขาย สินค้า และการตั้งค่าของคุณ';
+      'ส่งออกสำรองข้อมูลเป็นประจำ (แนะนำเข้ารหัส PIN อย่างน้อย 6 ตัว) กู้คืนบนเครื่องเดิมได้เมื่อยังมีคีย์เข้ารหัส ห้ามใช้ข้ามเครื่องหลังถอนแอป';
 
   @override
   String get exportSuccess => 'ส่งออกสำเร็จ';
@@ -1695,7 +1756,7 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
-  String get costHelper => 'ใช้คำนวณกำไรขั้นต้น';
+  String get costHelper => 'ใช้คำนวณกำไรขั้นต้น (ไม่บังคับ)';
 
   @override
   String get outOfStockShort => 'หมด';
@@ -1740,7 +1801,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get barcodeNotFound => 'ไม่พบสินค้าที่มีบาร์โค้ดนี้';
 
   @override
-  String get duplicateBarcode => 'บาร์โค้ดนี้มีอยู่แล้วในสินค้าอื่น';
+  String get duplicateBarcode => 'บาร์โค้ดนี้มีอยู่แล้ว';
 
   @override
   String get enterManually => 'ป้อนด้วยตนเอง';
@@ -2153,6 +2214,39 @@ class AppLocalizationsTh extends AppLocalizations {
   String get productPreviewStockValue => 'มูลค่าสต็อก';
 
   @override
+  String get productPreviewStockValueSale => 'มูลค่าขายทั้งหมด';
+
+  @override
+  String get productPreviewPotentialProfit => 'กำไรหากขายหมด';
+
+  @override
+  String get productPreviewTotalSold => 'ยอดขายรวม';
+
+  @override
+  String get productPreviewTotalIn => 'รับเข้ารวม';
+
+  @override
+  String get productPreviewTotalOut => 'ปรับลดรวม';
+
+  @override
+  String get productPreviewLastUpdate => 'อัปเดตสต็อกล่าสุด';
+
+  @override
+  String get productPreviewRecentMoves => 'การเคลื่อนไหวล่าสุด';
+
+  @override
+  String get productPreviewMarkup => 'เพิ่มราคาจากต้นทุน';
+
+  @override
+  String get productPreviewRoi => 'ผลตอบแทนต่อต้นทุน';
+
+  @override
+  String get productPreviewTotalRevenue => 'ราคารวมสต็อกทั้งหมด';
+
+  @override
+  String get productPreviewTotalProfit => 'กำไรรวมจากสต็อก';
+
+  @override
   String get productPreviewStatus => 'สถานะ';
 
   @override
@@ -2206,6 +2300,24 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get inventoryValue => 'มูลค่าคงคลัง';
+
+  @override
+  String get currencyBaht => 'บาท';
+
+  @override
+  String get currencyDollar => 'ดอลลาร์';
+
+  @override
+  String get currencyEuro => 'ยูโร';
+
+  @override
+  String get currencyYen => 'เยน';
+
+  @override
+  String get stockOnHand => 'คงเหลือ';
+
+  @override
+  String get piecesLabel => 'ชิ้น';
 
   @override
   String get totalProducts => 'สินค้าทั้งหมด';
@@ -2549,6 +2661,102 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get selectCustomer => 'เลือกลูกค้า';
+
+  @override
+  String get clearCustomer => 'ล้างลูกค้า';
+
+  @override
+  String get noCustomer => 'ไม่มีลูกค้า';
+
+  @override
+  String get receiptLabelCustomer => 'ลูกค้า';
+
+  @override
+  String get selectPromotion => 'เลือกโปรโมชัน';
+
+  @override
+  String get clearPromotion => 'ล้างโปรโมชัน';
+
+  @override
+  String get noActivePromotions => 'ไม่มีโปรโมชันที่ใช้งานอยู่';
+
+  @override
+  String get promotionNotFound => 'ไม่พบโปรโมชันหรือหมดอายุแล้ว';
+
+  @override
+  String get receiptLabelPromotion => 'โปรโมชัน';
+
+  @override
+  String get receiptLabelPromotionDiscount => 'ส่วนลดโปร';
+
+  @override
+  String get customerNotFound => 'ไม่พบลูกค้าหรือถูกลบแล้ว';
+
+  @override
+  String get insufficientStock => 'สต็อกไม่เพียงพอ';
+
+  @override
+  String get productNotFound => 'ไม่พบสินค้า';
+
+  @override
+  String get productInactive => 'สินค้าไม่ได้เปิดใช้งาน';
+
+  @override
+  String get saleNotFound => 'ไม่พบรายการขาย';
+
+  @override
+  String get saleAlreadyVoided => 'รายการนี้ถูกยกเลิกแล้ว';
+
+  @override
+  String get notFound => 'ไม่พบข้อมูล';
+
+  @override
+  String get validationError => 'ข้อมูลไม่ถูกต้อง';
+
+  @override
+  String get databaseError => 'ข้อผิดพลาดฐานข้อมูล';
+
+  @override
+  String get backupFailed => 'สำรองข้อมูลล้มเหลว';
+
+  @override
+  String get backupShareSubject => 'ไฟล์สำรอง Promsell POS';
+
+  @override
+  String get backupPinTitle => 'PIN เข้ารหัสสำรองข้อมูล';
+
+  @override
+  String get backupPinHint => 'กรอก PIN เพื่อเข้ารหัสไฟล์สำรอง';
+
+  @override
+  String get backupPinRequired => 'ต้องใส่ PIN เมื่อเปิดการเข้ารหัส';
+
+  @override
+  String get backupPinTooShort => 'PIN ต้องมีอย่างน้อย 6 ตัวอักษร';
+
+  @override
+  String get backupPinConfirmHint => 'ยืนยัน PIN';
+
+  @override
+  String get backupPinMismatch => 'PIN ไม่ตรงกัน';
+
+  @override
+  String get backupEncryptionOffTitle => 'ปิดการเข้ารหัสสำรองข้อมูล?';
+
+  @override
+  String get backupEncryptionOffConfirm =>
+      'ไฟล์สำรองที่ไม่ได้เข้ารหัสเสี่ยงถูกคัดลอกได้ง่ายขึ้นหากมีคนได้ไฟล์ คุณเปิดการเข้ารหัสใหม่ได้ภายหลัง';
+
+  @override
+  String customerSpentLabel(String amount) {
+    return 'ใช้ไป $amount';
+  }
+
+  @override
+  String get tryDifferentSearch => 'ลองคำค้นหาอื่น';
+
+  @override
   String get promotionsTitle => 'โปรโมชัน';
 
   @override
@@ -2697,6 +2905,102 @@ class AppLocalizationsTh extends AppLocalizations {
   String get homeCreatePromotion => 'สร้างโปรโมชั่น';
 
   @override
+  String get importProducts => 'นำเข้าสินค้า';
+
+  @override
+  String get productTabAll => 'ทั้งหมด';
+
+  @override
+  String get productTabCategory => 'หมวดหมู่';
+
+  @override
+  String get productTabStock => 'คลังสินค้า';
+
+  @override
+  String get productMenuEdit => 'แก้ไข';
+
+  @override
+  String get productMenuPreview => 'ดูตัวอย่าง';
+
+  @override
+  String get importFromCsv => 'นำเข้าจาก CSV';
+
+  @override
+  String get selectCsvFile => 'เลือกไฟล์ CSV';
+
+  @override
+  String get csvImportPreview => 'ตัวอย่างข้อมูลที่จะนำเข้า';
+
+  @override
+  String get confirmImport => 'ยืนยันนำเข้า';
+
+  @override
+  String importSuccess(int count) {
+    return 'นำเข้าสินค้า $count รายการแล้ว';
+  }
+
+  @override
+  String get importError => 'นำเข้าสินค้าไม่สำเร็จ';
+
+  @override
+  String get csvImportError => 'อ่านไฟล์ CSV ไม่สำเร็จ';
+
+  @override
+  String get csvNoData => 'ไม่พบข้อมูลในไฟล์ CSV';
+
+  @override
+  String get csvInvalidFormat => 'รูปแบบไฟล์ไม่ถูกต้อง';
+
+  @override
+  String csvFileTooLarge(int maxMb) {
+    return 'ไฟล์ใหญ่เกินไป (สูงสุด $maxMb MB)';
+  }
+
+  @override
+  String csvTooManyRows(int maxRows) {
+    return 'มีแถวมากเกินไป (สูงสุด $maxRows แถว)';
+  }
+
+  @override
+  String csvRowErrorsSkipped(int count) {
+    return 'จะข้าม $count แถวที่มีข้อผิดพลาด';
+  }
+
+  @override
+  String csvImportPartialSuccess(int imported, int errors) {
+    return 'นำเข้า $imported รายการ; ล้มเหลว $errors แถว';
+  }
+
+  @override
+  String csvImportCategoriesCreated(int count) {
+    return 'สร้างหมวดหมู่ $count รายการ';
+  }
+
+  @override
+  String get csvDownloadTemplate => 'ดาวน์โหลดเทมเพลต';
+
+  @override
+  String get csvColumnLegend =>
+      'จำเป็น: ชื่อ, ราคา. ไม่บังคับ: รหัสสินค้า, บาร์โค้ด, ต้นทุน, สต็อก, หมวดหมู่, ติดตามสต็อก';
+
+  @override
+  String get csvImporting => 'กำลังนำเข้า…';
+
+  @override
+  String csvRowLabel(int row, String message) {
+    return 'แถว $row: $message';
+  }
+
+  @override
+  String get csvTemplateShared => 'เทมเพลตพร้อมแชร์แล้ว';
+
+  @override
+  String get csvParseErrorsTitle => 'แถวที่จะถูกข้าม';
+
+  @override
+  String get csvPostImportErrorsTitle => 'แถวที่นำเข้าไม่สำเร็จ';
+
+  @override
   String get homePromotionBannerSubtitle => 'เพิ่มยอดขายได้ง่ายๆ';
 
   @override
@@ -2709,4 +3013,802 @@ class AppLocalizationsTh extends AppLocalizations {
   String homeFromBills(int count) {
     return 'จาก $count บิล';
   }
+
+  @override
+  String get productDetailTitle => 'รายละเอียดสินค้า';
+
+  @override
+  String get productTabInfo => 'ข้อมูลสินค้า';
+
+  @override
+  String get productTabHistory => 'ประวัติ';
+
+  @override
+  String get productDescriptionLabel => 'รายละเอียด';
+
+  @override
+  String get productDescriptionEmpty => 'ไม่มีรายละเอียด';
+
+  @override
+  String get productUnitLabel => 'หน่วยนับ';
+
+  @override
+  String get productUnitDefault => 'ชิ้น';
+
+  @override
+  String get productTabPointOfSale => 'ขายหน้าร้าน';
+
+  @override
+  String get productTabPriceStock => 'ราคาและสต็อก';
+
+  @override
+  String get productTabCodesMore => 'รหัสและเพิ่มเติม';
+
+  @override
+  String get productRecommended => 'สินค้าแนะนำ';
+
+  @override
+  String get productUnitOther => 'อื่น ๆ';
+
+  @override
+  String get productCustomUnit => 'ระบุหน่วยนับ';
+
+  @override
+  String get productTaxLabel => 'ภาษี';
+
+  @override
+  String get productWeightLabel => 'น้ำหนัก';
+
+  @override
+  String get productSizeLabel => 'ขนาดสินค้า';
+
+  @override
+  String get productBrandLabel => 'แบรนด์';
+
+  @override
+  String get productSupplierLabel => 'ผู้จัดจำหน่าย';
+
+  @override
+  String get copyBarcode => 'คัดลอกบาร์โค้ด';
+
+  @override
+  String get printBarcode => 'พิมพ์บาร์โค้ด';
+
+  @override
+  String get productAdjustStock => 'ปรับสต็อก';
+
+  @override
+  String get productNoHistory => 'ไม่มีประวัติการเคลื่อนไหวสต็อก';
+
+  @override
+  String get normalProduct => 'สินค้าปกติ';
+
+  @override
+  String get readyToSell => 'พร้อมขาย';
+
+  @override
+  String get retailPrice => 'ราคาขายปลีก';
+
+  @override
+  String get averageCost => 'ต้นทุนเฉลี่ย';
+
+  @override
+  String get averageProfit => 'กำไรต่อชิ้น';
+
+  @override
+  String get remainingStock => 'สต็อกคงเหลือ';
+
+  @override
+  String get moveProduct => 'ย้ายสินค้า';
+
+  @override
+  String get editProduct => 'แก้ไขสินค้า';
+
+  @override
+  String pieces(int count) {
+    return '$count ชิ้น';
+  }
+
+  @override
+  String resourceNotFound(String resource) {
+    return 'ไม่พบ$resource';
+  }
+
+  @override
+  String resourceNotFoundWithId(String resource, String id) {
+    return 'ไม่พบ$resource (ID: $id)';
+  }
+
+  @override
+  String get businessRuleViolation => 'ละเมิดกฎทางธุรกิจ';
+
+  @override
+  String get networkError => 'ข้อผิดพลาดเครือข่าย';
+
+  @override
+  String networkErrorDefault(int code) {
+    return 'ข้อผิดพลาดเครือข่าย (สถานะ: $code)';
+  }
+
+  @override
+  String get fileSystemError => 'ข้อผิดพลาดระบบไฟล์';
+
+  @override
+  String get permissionDenied => 'ไม่ได้รับอนุญาต';
+
+  @override
+  String permissionDeniedMessage(String permission) {
+    return 'กรุณาอนุญาตการเข้าถึง$permission';
+  }
+
+  @override
+  String get unexpectedError => 'เกิดข้อผิดพลาดที่ไม่คาดคิด';
+
+  @override
+  String get invalidDiscount => 'ส่วนลดไม่ถูกต้อง';
+
+  @override
+  String get negativePriceNotAllowed => 'ไม่อนุญาตให้ใส่ราคาติดลบ';
+
+  @override
+  String get homeLoadError => 'โหลดข้อมูลไม่สำเร็จ';
+
+  @override
+  String get productFormSectionGeneral => 'ข้อมูลทั่วไป';
+
+  @override
+  String get productFormSectionPricing => 'ราคา & ต้นทุน';
+
+  @override
+  String get productFormSectionStock => 'สต็อก & หน่วยนับ';
+
+  @override
+  String get productFormSectionSettings => 'การตั้งค่า';
+
+  @override
+  String get productFormSectionExtra => 'ข้อมูลเพิ่มเติม';
+
+  @override
+  String get profitMargin => 'อัตรากำไร';
+
+  @override
+  String get notSpecified => 'ไม่ระบุ';
+
+  @override
+  String get saveProduct => 'บันทึกสินค้า';
+
+  @override
+  String get discardChanges => 'ไม่บันทึก';
+
+  @override
+  String get unsavedChangesMessageCreate =>
+      'ออกโดยไม่บันทึกสินค้า? ร่างจะถูกเก็บไว้ให้กู้คืนครั้งถัดไป หรือเลือกทิ้งร่าง';
+
+  @override
+  String get unsavedChangesMessageEdit =>
+      'มีการแก้ไขที่ยังไม่บันทึก ต้องการออกโดยไม่บันทึกหรือไม่?';
+
+  @override
+  String get costExceedsPriceWarning => 'ต้นทุนสูงกว่าราคาขาย — กำไรติดลบ';
+
+  @override
+  String get priceStockEstimateTitle => 'ถ้าขายหมดสต็อก';
+
+  @override
+  String get priceStockEstimateRevenue => 'รายได้โดยประมาณ';
+
+  @override
+  String get priceStockEstimateProfit => 'กำไรโดยประมาณ';
+
+  @override
+  String get editStockAdjustHint =>
+      'แก้จำนวนผ่านปุ่มปรับสต็อก เพื่อให้มีประวัติการเคลื่อนไหว';
+
+  @override
+  String lowStockThresholdHint(int n) {
+    return 'เตือนสต็อกต่ำที่ $n';
+  }
+
+  @override
+  String get stockInventoryValueTitle => 'มูลค่าคลัง';
+
+  @override
+  String get adjustModeAdd => 'เพิ่ม';
+
+  @override
+  String get adjustModeRemove => 'ลด';
+
+  @override
+  String get adjustQtyAmountLabel => 'จำนวน';
+
+  @override
+  String adjustCurrentStock(String qty, String unit) {
+    return 'สต็อกปัจจุบัน: $qty $unit';
+  }
+
+  @override
+  String adjustPreviewResult(String from, String to, String unit) {
+    return '$from → $to $unit';
+  }
+
+  @override
+  String get adjustWouldGoNegative => 'สต็อกไม่พอสำหรับจำนวนที่ลด';
+
+  @override
+  String get adjustReasonRestock => 'รับเข้า / เติมสต็อก';
+
+  @override
+  String get adjustReasonDamaged => 'ชำรุด / เสียหาย';
+
+  @override
+  String get adjustReasonLost => 'สูญหาย';
+
+  @override
+  String get adjustReasonCountCorrection => 'แก้จากนับสต็อก';
+
+  @override
+  String get adjustReasonReturn => 'รับคืนจากลูกค้า';
+
+  @override
+  String get adjustReasonOther => 'อื่นๆ';
+
+  @override
+  String get adjustReasonOtherHint => 'ระบุเหตุผล';
+
+  @override
+  String get editLowStockThreshold => 'แก้เกณฑ์เตือน';
+
+  @override
+  String get lowStockThresholdSaved => 'อัปเดตเกณฑ์เตือนสต็อกต่ำแล้ว';
+
+  @override
+  String get createProductFromBarcode => 'สร้างสินค้า';
+
+  @override
+  String get scanAgainToAdd => 'บันทึกแล้ว — สแกนอีกครั้งเพื่อใส่ตะกร้า';
+
+  @override
+  String get productCreatedAddedToCart => 'สร้างสินค้าและใส่ตะกร้าแล้ว';
+
+  @override
+  String get barcodeReplaceTitle => 'แทนที่บาร์โค้ด?';
+
+  @override
+  String barcodeReplaceMessage(String code) {
+    return 'รหัสปัจจุบัน: $code — รหัสใหม่จะแทนที่ของเดิม';
+  }
+
+  @override
+  String get barcodePreviewEmpty => 'พรีวิวจะแสดงเมื่อพิมพ์หรือสร้างบาร์โค้ด';
+
+  @override
+  String get scanModeContinuous => 'ต่อเนื่อง';
+
+  @override
+  String get scanModeSingle => 'ครั้งเดียว';
+
+  @override
+  String get searchMatchName => 'ชื่อ';
+
+  @override
+  String get searchMatchSku => 'SKU';
+
+  @override
+  String get searchMatchBarcode => 'บาร์โค้ด';
+
+  @override
+  String searchResultCount(int count) {
+    return 'พบ $count รายการ';
+  }
+
+  @override
+  String get searchFiltersIgnoredHint =>
+      'แสดงทุกรายการที่ตรงคำค้น (ไม่ใช้ตัวกรองรายการ)';
+
+  @override
+  String searchShowingCount(int shown, int total) {
+    return 'แสดง $shown จาก $total';
+  }
+
+  @override
+  String barcodeAmbiguousCount(int count) {
+    return 'มีสินค้า $count รายการใช้บาร์โค้ดนี้';
+  }
+
+  @override
+  String get cartBillDetails => 'รายละเอียดบิล';
+
+  @override
+  String get cartHoldBill => 'บิลที่บันทึก';
+
+  @override
+  String cartItemCount(int count) {
+    return '$count รายการ';
+  }
+
+  @override
+  String cartActiveBill(String name) {
+    return 'บิล: $name';
+  }
+
+  @override
+  String get heroNoBarcode => 'ไม่มีบาร์โค้ด';
+
+  @override
+  String get setSellingPrice => 'ตั้งราคาขาย';
+
+  @override
+  String get showProductHint => 'เปิดแล้วแสดงในรายการสินค้าและหน้าขาย';
+
+  @override
+  String get productRecommendedHint => 'ไฮไลต์บนหน้าขายและมีป้ายในรายการสินค้า';
+
+  @override
+  String get productBrandHint => 'แบรนด์หรือผู้ผลิต (ไม่บังคับ)';
+
+  @override
+  String get productDescriptionHint =>
+      'หมายเหตุสำหรับพนักงาน (ไม่แสดงบนหน้าขาย)';
+
+  @override
+  String get productFormSectionVisibility => 'การแสดงผล';
+
+  @override
+  String get productSettingsOutcomeVisible => 'แสดงบนขาย';
+
+  @override
+  String get productSettingsOutcomeHidden => 'ซ่อนจากขาย';
+
+  @override
+  String get productSettingsOutcomeRecommended => 'แนะนำ';
+
+  @override
+  String get productSettingsOutcomeNotRecommended => 'ไม่แนะนำ';
+
+  @override
+  String get productRecommendedNeedsVisible =>
+      'สินค้าแนะนำควรเปิดแสดง — เปิดแสดงสินค้า หรือปิดแนะนำ';
+
+  @override
+  String get saleRecommendedFilter => 'แนะนำ';
+
+  @override
+  String get saleRecommendedFilterAll => 'ทั้งหมด';
+
+  @override
+  String get productSupplierHint => 'แหล่งที่ซื้อสินค้า (ไม่บังคับ)';
+
+  @override
+  String get productOptionsSummaryTitle => 'ตัวเลือกเพิ่ม';
+
+  @override
+  String productOptionGroupSummary(String name, String detail, int count) {
+    return '$name · $detail · $count ตัวเลือก';
+  }
+
+  @override
+  String get productFormCostEmptyHint => 'ใส่ต้นทุนเพื่อดูกำไรและมาร์กอัป';
+
+  @override
+  String get productFormMarkupFromCost => 'ตั้งราคาจากต้นทุน';
+
+  @override
+  String productFormPriceChanged(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String get clearFieldTitle => 'ล้างข้อความ?';
+
+  @override
+  String get clearFieldConfirm => 'จะลบข้อความในช่องนี้ แน่ใจหรือไม่?';
+
+  @override
+  String get deleteProductConfirmTitle => 'ลบสินค้านี้ออกจากรายการ?';
+
+  @override
+  String get removeCartLineTitle => 'ลบรายการนี้ออกจากบิล?';
+
+  @override
+  String removeCartLineQty(int count) {
+    return 'จำนวน $count ชิ้น';
+  }
+
+  @override
+  String get removeCartLineConfirm => 'ลบรายการ';
+
+  @override
+  String get datePresetToday => 'วันนี้';
+
+  @override
+  String get datePresetYesterday => 'เมื่อวาน';
+
+  @override
+  String get datePresetLast7Days => '7 วัน';
+
+  @override
+  String get datePresetThisMonth => 'เดือนนี้';
+
+  @override
+  String get datePresetCustom => 'กำหนดเอง';
+
+  @override
+  String get reportAverage => 'เฉลี่ย';
+
+  @override
+  String get reportRecent => 'ล่าสุด';
+
+  @override
+  String paymentMethodShare(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get closeDayToday => 'ปิดยอดวันนี้';
+
+  @override
+  String get dailyCloseSummaryTitle => 'สรุป';
+
+  @override
+  String get dailyCloseSalesCountLabel => 'จำนวนบิล';
+
+  @override
+  String get dailyCloseVoidedCountLabel => 'จำนวนยกเลิก';
+
+  @override
+  String get dailyCloseGrossRevenue => 'ยอดรวมก่อนหักยกเลิก';
+
+  @override
+  String get dailyCloseVoidedAmount => 'ยอดยกเลิก';
+
+  @override
+  String get dailyCloseByPayment => 'แยกตามวิธีชำระ';
+
+  @override
+  String get dailyCloseVatCollected => 'ภาษีมูลค่าเพิ่ม';
+
+  @override
+  String get dailyCloseDiscountsGiven => 'ส่วนลดที่ให้';
+
+  @override
+  String get dailyCloseCashReconciliation => 'กระทบยอดเงินสด';
+
+  @override
+  String get dailyCloseOpeningCash => 'เงินสดเปิดลิ้นชัก';
+
+  @override
+  String get dailyCloseExpectedCash => 'เงินสดที่ควรมี';
+
+  @override
+  String get dailyCloseCountedCash => 'เงินสดที่นับได้';
+
+  @override
+  String get dailyCloseOverShort => 'เกิน / ขาด';
+
+  @override
+  String get dailyCloseNoteOptional => 'หมายเหตุ (ถ้ามี)';
+
+  @override
+  String get dailyCloseStatusOpen => 'เปิดอยู่';
+
+  @override
+  String get dailyCloseStatusClosed => 'ปิดแล้ว';
+
+  @override
+  String get dailyCloseStatusClosedBadge => 'ปิดแล้ว';
+
+  @override
+  String get dailyCloseStatusOpenBadge => 'เปิด';
+
+  @override
+  String get noCategoriesFound => 'ไม่พบหมวดหมู่ที่ตรงกับการค้นหา';
+
+  @override
+  String get categorySaved => 'บันทึกหมวดหมู่แล้ว';
+
+  @override
+  String get categoryDeleted => 'ลบหมวดหมู่แล้ว';
+
+  @override
+  String categoriesDeleted(int count) {
+    return 'ลบ $count หมวดหมู่แล้ว';
+  }
+
+  @override
+  String get categoryReorderHint => 'ลากเพื่อจัดลำดับหมวดหมู่ที่แสดงบนหน้าขาย';
+
+  @override
+  String deleteCategoryProductsImpact(int count) {
+    return 'สินค้า $count รายการจะถูกย้ายไปหมวดหมู่ที่เลือก (หรือไม่มีหมวดหมู่)';
+  }
+
+  @override
+  String get categoryNameTooLong => 'ชื่อต้องไม่เกิน 100 ตัวอักษร';
+
+  @override
+  String get goToSale => 'ไปหน้าขาย';
+
+  @override
+  String closeDayForDate(String date) {
+    return 'ปิดยอดวันที่ $date';
+  }
+
+  @override
+  String get reportNoSalesInPeriod => 'ไม่มียอดขายในช่วงนี้';
+
+  @override
+  String get currentBill => 'บิลปัจจุบัน';
+
+  @override
+  String currentBillWithCount(int count) {
+    return 'บิล ($count)';
+  }
+
+  @override
+  String get viewBill => 'บิล';
+
+  @override
+  String viewBillWithCount(int count) {
+    return 'บิล ($count)';
+  }
+
+  @override
+  String get draftNotFound => 'ไม่พบบิลเปิด';
+
+  @override
+  String maxDraftsReached(int count) {
+    return 'บิลเปิดครบจำนวนสูงสุด ($count)';
+  }
+
+  @override
+  String get addToCart => 'เพิ่มลงตะกร้า';
+
+  @override
+  String get holdCurrentBill => 'พักบิลนี้';
+
+  @override
+  String get newBill => 'บิลใหม่';
+
+  @override
+  String get billHeld => 'บันทึกบิลแล้ว';
+
+  @override
+  String get newBillConfirm => 'บันทึกบิลปัจจุบันแล้วเริ่มบิลว่างใหม่?';
+
+  @override
+  String get newBillStarted => 'เริ่มบิลใหม่แล้ว';
+
+  @override
+  String get voidBlockedDayClosed => 'ปิดยอดแล้ว เปิดวันก่อนเพื่อยกเลิกบิลนี้';
+
+  @override
+  String get billParked => 'พักบิลแล้ว — พร้อมลูกค้าถัดไป';
+
+  @override
+  String get receiptThankYouDefault => 'ขอบคุณครับ/ค่ะ!';
+
+  @override
+  String get receiptNotTaxInvoice => 'ใบเสร็จการขาย — ไม่ใช่ใบกำกับภาษี';
+
+  @override
+  String get receiptReprint => 'พิมพ์ซ้ำ';
+
+  @override
+  String get receiptShareVoidBlocked =>
+      'ไม่สามารถแชร์บิลที่ยกเลิกเป็นใบเสร็จปกติได้ — พิมพ์จะมีเครื่องหมายยกเลิก';
+
+  @override
+  String get parkBill => 'พักบิล';
+
+  @override
+  String get parkBillNameTitle => 'ตั้งชื่อบิล (ไม่บังคับ)';
+
+  @override
+  String currentBillNamed(String name, int count) {
+    return '$name ($count)';
+  }
+
+  @override
+  String get amountDue => 'ยอดชำระ';
+
+  @override
+  String payAmount(String amount) {
+    return 'ชำระ $amount';
+  }
+
+  @override
+  String get parkAndNext => 'พักแล้วคิวถัดไป';
+
+  @override
+  String openBillsCount(int count) {
+    return 'บิลเปิด ($count)';
+  }
+
+  @override
+  String billItemsMissing(int count) {
+    return 'ไม่พบ $count รายการ (สินค้าอาจถูกลบ)';
+  }
+
+  @override
+  String get splitTenderTitle => 'แบ่งชำระ (เงินสด + อื่น)';
+
+  @override
+  String get splitTenderSubtitle => 'จ่ายบางส่วนเงินสด ที่เหลือโอน/QR/บัตร';
+
+  @override
+  String get splitCashAmount => 'จำนวนเงินสด';
+
+  @override
+  String get paymentMismatch => 'ยอดชำระไม่ตรงกับยอดบิล';
+
+  @override
+  String get paymentMixed => 'แบ่งชำระ';
+
+  @override
+  String get promptPayShareTitle => 'ส่วน PromptPay';
+
+  @override
+  String get promptPayShareHint => 'สแกนเฉพาะส่วน PromptPay (ไม่ใช่ยอดบิลเต็ม)';
+
+  @override
+  String get promptPayFullBillTitle => 'ชำระด้วย PromptPay';
+
+  @override
+  String settingsAttentionItemsCount(int count) {
+    return 'มี $count รายการที่ควรตั้งค่า';
+  }
+
+  @override
+  String get settingsAttentionShopTitle => 'ตั้งค่าข้อมูลร้านให้ครบ';
+
+  @override
+  String get settingsAttentionShopBody =>
+      'ใส่ชื่อร้านและเบอร์โทรเพื่อใบเสร็จที่ถูกต้อง';
+
+  @override
+  String get settingsAttentionPromptpayTitle => 'ตั้งค่าพร้อมเพย์';
+
+  @override
+  String get settingsAttentionPromptpayBody =>
+      'เพิ่มเลขพร้อมเพย์เพื่อแสดง QR ตอนชำระเงิน';
+
+  @override
+  String get settingsAttentionReview => 'ดูรายการ';
+
+  @override
+  String get settingsDayClose => 'ปิดวัน';
+
+  @override
+  String get settingsBackupData => 'สำรองและข้อมูล';
+
+  @override
+  String settingsPreview(String section) {
+    return 'ตัวอย่าง$section';
+  }
+
+  @override
+  String get settingsModeLabel => 'โหมด';
+
+  @override
+  String get settingsCatalogMode => 'แคตตาล็อก';
+
+  @override
+  String get shopNamePlaceholder => 'ชื่อร้านของคุณ';
+
+  @override
+  String get shopAddressPlaceholder => 'ยังไม่ได้ตั้งที่อยู่';
+
+  @override
+  String get shopPhonePlaceholder => 'ยังไม่ได้ตั้งเบอร์โทร';
+
+  @override
+  String get settingsDetails => 'รายละเอียด';
+
+  @override
+  String get settingsPolicy => 'นโยบาย';
+
+  @override
+  String get settingsOn => 'เปิด';
+
+  @override
+  String get settingsOff => 'ปิด';
+
+  @override
+  String get cartPaymentInProgress =>
+      'กำลังชำระเงิน — ล็อกตะกร้าจนกว่าจะเสร็จหรือยกเลิก';
+
+  @override
+  String get backupRestoreTitle => 'กู้คืนสำรอง (เครื่องนี้เท่านั้น)';
+
+  @override
+  String get backupRestoreConfirmTitle => 'กู้คืนสำรองข้อมูล?';
+
+  @override
+  String get backupRestoreConfirmMessage =>
+      'จะแทนที่ฐานข้อมูลปัจจุบันบนเครื่องนี้ ระบบจะเก็บสำเนาก่อนกู้คืน หลังกู้คืนให้ปิดแอปแล้วเปิดใหม่ ใช้ได้เฉพาะเครื่องเดิม (คีย์ SQLCipher ต้องยังอยู่)';
+
+  @override
+  String get backupRestoreSuccess =>
+      'กู้คืนสำเร็จ กรุณาปิดแอปให้สนิทแล้วเปิดใหม่';
+
+  @override
+  String get backupRestorePlainUnsupported =>
+      'ไม่รองรับไฟล์ SQLite แบบไม่เข้ารหัส ใช้ไฟล์ที่ส่งออกจากแอปนี้';
+
+  @override
+  String get backupRestoreInvalid => 'ไฟล์สำรองไม่ถูกต้อง';
+
+  @override
+  String get backupRestoreSourceMissing => 'ไม่พบไฟล์สำรอง';
+
+  @override
+  String get backupConfirmExportTitle => 'ยืนยันการส่งออกสำรอง';
+
+  @override
+  String get backupConfirmRestoreTitle => 'ยืนยันการกู้คืนสำรอง';
+
+  @override
+  String get appLockTitle => 'ล็อก PIN ร้าน';
+
+  @override
+  String get appLockSubtitle =>
+      'ป้องกันการยกเลิกบิล สำรองข้อมูล และแก้ PromptPay';
+
+  @override
+  String get appLockSectionTitle => 'การกระทำที่เสี่ยง';
+
+  @override
+  String get appLockRequirePin => 'ต้องใช้ PIN ร้าน';
+
+  @override
+  String appLockRequirePinHint(int minutes) {
+    return 'เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง และแก้ PromptPay (ผ่อนผัน $minutes นาที)';
+  }
+
+  @override
+  String get appLockCreatePin => 'สร้าง PIN ร้าน';
+
+  @override
+  String get appLockEnterPin => 'กรอก PIN ร้าน';
+
+  @override
+  String get appLockConfirmPin => 'ยืนยัน PIN';
+
+  @override
+  String get appLockPinLabel => 'PIN';
+
+  @override
+  String get appLockUnlock => 'ปลดล็อก';
+
+  @override
+  String get appLockEnabled => 'เปิดใช้ PIN ร้านแล้ว';
+
+  @override
+  String get appLockDisabled => 'ปิด PIN ร้านแล้ว';
+
+  @override
+  String get appLockEnableFailed => 'เปิดใช้ PIN ไม่สำเร็จ';
+
+  @override
+  String get appLockDisableNeedsPin => 'ต้องใช้ PIN เพื่อปิด';
+
+  @override
+  String appLockPinTooShort(int min) {
+    return 'PIN ต้องมีอย่างน้อย $min หลัก';
+  }
+
+  @override
+  String get appLockIncorrectPin => 'PIN ไม่ถูกต้อง';
+
+  @override
+  String get appLockActionRequired => 'ต้องใช้ PIN ร้าน';
+
+  @override
+  String get appLockConfirmVoid => 'ยืนยันยกเลิกบิลด้วย PIN ร้าน';
+
+  @override
+  String get appLockConfirmPromptPay => 'ยืนยันการเปลี่ยน PromptPay';
+
+  @override
+  String get appLockPinsMismatch => 'PIN ไม่ตรงกัน';
 }

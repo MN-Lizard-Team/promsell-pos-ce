@@ -1,6 +1,6 @@
-# Database Handbook — Promsell POS CE v0.8.9
+# Database Handbook — Promsell POS CE (v0.9.0)
 
-Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup, and performance.
+Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup export, and performance.
 
 ---
 
@@ -9,14 +9,17 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 | Property | Value |
 |----------|-------|
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
-| **File** | `promsell_pos.db` (platform default app directory) |
-| **Schema version** | 21 |
-| **Tables** | 12 |
+| **Encryption** | SQLCipher AES-256 (full-database encryption, Phase 2a) |
+| **File** | `promsell_pos.db` (platform default app directory, encrypted at rest) |
+| **Schema version** | **28** (v26 unique `daily_closes.close_date`; **v27** unique `sales.receipt_number` where non-null) |
+| **Tables** | 14 |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
 | **Foreign keys** | Enabled (`PRAGMA foreign_keys=ON`) |
 | **Code location** | `lib/core/database/` |
 | **Generated file** | `app_database.g.dart` — **do not edit** (not committed to git; run `build_runner build` to generate) |
+| **Encryption key** | Mobile: platform secure storage (Keystore/Keychain). Debug desktop may use a fixed dev key — not for production. |
+| **Money on disk** | Amount columns are SQLite **REAL** (baht). Domain `Money` uses integer satang in memory. |
 
 ---
 
@@ -132,7 +135,7 @@ When a record is "deleted":
                               ▼
               ┌───────────────────────────────┐
               │  Local SQLite (WAL)           │
-              │  12 tables, all sync-ready    │
+              │  14 tables, all sync-ready    │
               └───────────────┬───────────────┘
                               │
              Phase 4 (future) │
@@ -162,11 +165,59 @@ Sync        Timestamp   Backfill    Category    Category    Unique   Auto-     B
 columns     INT ms      deviceId    FK + UUID   color/icon  barcode  dedup     images   note
 (6 tables)  conversion  (all rows)  backfill    presets     index    barcodes
 
-v20                                           v21
-│                                             │
-▼                                             ▼
-Customer + Promotion tables                   Restaurant tables + Product options
-```
+v20                                           v21                                v22
+│                                             │                                  │
+▼                                             ▼                                  ▼
+Restaurant tables + Product options           Customer + Promotion tables        Product
++ order type/channel/service charge           + customer/promotion refs          description
+
+v23                                           v24
+	│                                             │
+	▼                                             ▼
+	Runtime validations: barcode uniqueness       Partial unique barcode index
+	barcode length constraints                    (WHERE barcode NOT NULL / not empty)
+	
+	v25                                           v26
+	│                                             │
+	▼                                             ▼
+	Products brand / unit / supplier              Dedupe daily_closes by close_date
+	+ is_recommended                              Unique index on close_date
+	```
+	
+	---
+	
+	## Security & Encryption (Phase 2a)
+	
+	Promsell POS CE uses **SQLCipher** for full-database encryption at rest.
+	
+	| Feature | Implementation (app code) |
+	|---------|---------------------------|
+	| **Open path** | `EncryptedDatabaseOpener` + `DbKeyStore` (`lib/core/database/`) |
+	| **Key PRAGMA** | `PRAGMA key="x'<hex>'"` only (library defaults for other cipher settings) |
+	| **Key storage** | Mobile secure storage; debug desktop may use a fixed dev key |
+	| **Plain → encrypted** | One-time migrate via `sqlcipher_export` when opening a legacy plain file |
+	| **Dependencies** | `sqlcipher_flutter_libs: ^0.6.0`, `sqlite3`, `flutter_secure_storage` |
+	
+	### Key management flow
+	
+	```
+	First launch (mobile)
+	    ↓
+	Generate secure random key → store in secure storage
+	    ↓
+	Open NativeDatabase + PRAGMA key
+	    ↓
+	If plain legacy DB exists → encrypt migrate → ready
+	```
+	
+	### Backup export (not full restore UI)
+	
+	- **CSV exports**: Plaintext (user-controlled)
+	- **Full DB export**: WAL checkpoint → copy → optional **AES-256-GCM** package with PIN (≥ 6) via Settings → Backup
+	- **In-app restore**: **Yes (same-device)t shipped in 0.9.0** (export + share only; manual offline replace)
+	- **Cloud sync**: not in CE 0.9
+	
+	> **Note**: Losing the SQLCipher key (uninstall / keystore wipe) without an export means **permanent data loss**. Key recovery is not available in 0.9.0 (Phase 2b deferred).
 
 ---
 
@@ -174,10 +225,24 @@ Customer + Promotion tables                   Restaurant tables + Product option
 
 | Document | Content |
 |----------|---------|
-| [`docs/database/schema-reference.md`](database/schema-reference.md) | All 12 tables with column details, indexes, seed data, enum values |
+| [`docs/database/schema-reference.md`](database/schema-reference.md) | All 14 tables with column details, indexes, seed data, enum values |
 | [`docs/database/query-patterns.md`](database/query-patterns.md) | Drift query patterns: watch products, insert sale, void sale, date range, draft upsert |
-| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→v21), backup & restore, encrypted backups, performance notes, DB testing |
+| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→v27), backup export, encrypted backups, performance notes, DB testing |
 
 ---
 
-<sub>Promsell POS CE · v0.8.9 · Schema v21 · 12 tables · UUIDv4</sub>
+### Schema v25–v27
+
+| Version | Changes |
+|---------|---------|
+| **v25** | Products: nullable `brand`, `unit`, `supplier`; `is_recommended` |
+| **v26** | Unique index on `daily_closes(close_date)` after dedupe (one close per business day) |
+| **v27** | Unique partial index on `sales(receipt_number)` after dedupe; receipt sequence reseeds from max on disk |
+
+**Money on disk:** amount columns remain SQLite **REAL** (baht). Domain code uses the `Money` value object (integer satang) and maps at the data layer. Integer column storage is deferred (Phase M).
+
+**Backup:** Export + optional AES-GCM (PIN ≥ 6). **In-app restore is not shipped in 0.9.0** — replace the DB file offline after decrypt if needed. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup.
+
+---
+
+<sub>Promsell POS CE · Schema v27 · UUIDv4 · SQLCipher AES-256</sub>

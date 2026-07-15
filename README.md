@@ -44,7 +44,7 @@
  
 **Promsell POS Community Edition** is an open-source point-of-sale application designed for small shops, market stalls, and local merchants who need a fast, reliable, and offline-capable cash register on their phone or tablet. Built with Flutter and Drift SQLite, it works without an internet connection, supports Thai and English with live language switching, and provides full sales tracking, inventory management, and reporting.
 
-> **Latest Release: v0.8.9** — Restaurant mode (order type/channel, table management, service charge); customer & promotion management with full CRUD; home dashboard redesign (hero card, stats row, promotion banner with gradient + floating animation); navbar floating center button with bounce animation; product modifiers/options; report/history merge. Test suite green: **1373 passing**, `flutter analyze` clean.
+> **v0.9.0** — SQLCipher AES-256 at rest · Money VO (satang math) · Payable SSOT · stock integrity · PromptPay cart freeze · schema **v28** · offline-first POS. See [CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -158,14 +158,14 @@ promsell-pos-ce/
 │   └── readme/                # Features, roadmap, testing (split from README)
 ├── android/                   # Android platform code
 ├── ios/                       # iOS platform code
-├── test/                      # 1373 tests (unit + widget + integration)
+├── test/                      # tests (see CI / `flutter test`) (unit + widget + integration)
 ├── pubspec.yaml
 ├── l10n.yaml
 ├── CODEBASE.md                # System overview, architecture, links
 ├── CONTRIBUTING.md            # Contribution guide
 ├── CODE_OF_CONDUCT.md
 ├── SECURITY.md
-├── CHANGELOG.md               # Current versions (v0.8.9) + archive links
+├── CHANGELOG.md               # Current versions (v0.9.0) + archive links
 ├── LICENSE
 └── README.md
 ```
@@ -223,7 +223,7 @@ features/<name>/
 
 | Home | Products | Sale | Report | Settings |
 |------|----------|------|--------|----------|
-| ![Home](screenshots/home.png) | ![Products](screenshots/products.png) | ![Sale](screenshots/sale.png) | ![Report](screenshots/report.png) | ![Settings](screenshots/settings.png) |
+| ![Products](screenshots/products.png) | ![Sale](screenshots/sale.png) | ![Report](screenshots/report.png) | ![History](screenshots/history.png) | ![Settings](screenshots/settings.png) |
 
 ---
 
@@ -235,12 +235,12 @@ features/<name>/
 |----------|----------|
 | [`CODEBASE.md`](CODEBASE.md) | System overview, architecture diagrams, layer structure, UI notes, links to core modules, conventions, file deps, testing |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-024) |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Database index → overview, ERD, sync columns → schema, queries, migration & ops |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Database index → overview, ERD, sync columns, SQLCipher encryption → schema, queries, migration & ops |
 | [`docs/USAGE.md`](docs/USAGE.md) | Usage index → install, build, run → features, development reference |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Build, signing, release checklist, smoke test |
 | [`docs/PRIVACY_POLICY.md`](docs/PRIVACY_POLICY.md) | Privacy policy template for Play Store / App Store |
 | [`docs/STORE_SUBMISSION.md`](docs/STORE_SUBMISSION.md) | Store submission checklist: keystore, screenshots, build commands, console setup |
-| [`CHANGELOG.md`](CHANGELOG.md) | Current version history (v0.8.9) + archive links to older versions |
+| [`CHANGELOG.md`](CHANGELOG.md) | Current version history (v0.9.0) + archive links to older versions |
 | [`docs/changelog/`](docs/changelog/) | Archived changelogs by minor version (v0.1.x–v0.7.x) |
 
 ### Split references
@@ -249,7 +249,7 @@ features/<name>/
 |----------|----------|
 | [`docs/readme/features.md`](docs/readme/features.md) | Full features table (22 features) + tech stack (12 layers) |
 | [`docs/readme/roadmap.md`](docs/readme/roadmap.md) | Phase 1 milestones (R3–R17) + future plans + release timeline |
-| [`docs/readme/testing.md`](docs/readme/testing.md) | 1373 tests across 9 layers + test pyramid + run commands |
+| [`docs/readme/testing.md`](docs/readme/testing.md) | tests (see CI / `flutter test`) across 9 layers + test pyramid + run commands |
 
 ---
 
@@ -288,6 +288,6 @@ Built by **[MN Lizard Team](https://github.com/MN-Lizard-Team)**
 **Contributors:**
 [@FrameHandsomez](https://github.com/FrameHandsomez)
 
-<sub>Promsell POS Community Edition · v0.8.9 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.0 · AGPL-3.0</sub>
 
 </div>
