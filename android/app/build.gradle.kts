@@ -68,11 +68,14 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            // Fail closed: never ship a debug-signed "release" artifact.
+            if (!keystorePropertiesFile.exists()) {
+                throw GradleException(
+                    "Release signing requires android/app/keystore.properties. " +
+                        "See docs/STORE_SUBMISSION.md"
+                )
             }
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
         }
