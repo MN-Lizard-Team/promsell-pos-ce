@@ -1,6 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/create_sale.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
@@ -8,6 +12,21 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.d
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+
+/// Frozen cart fields at confirm time (all payment methods).
+class _CartSnapshot {
+  const _CartSnapshot({
+    required this.items,
+    this.customerId,
+    this.promotionId,
+    this.promotionDiscountAmount = 0,
+  });
+
+  final List<CartItem> items;
+  final String? customerId;
+  final String? promotionId;
+  final double promotionDiscountAmount;
+}
 
 @lazySingleton
 class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
@@ -30,11 +49,26 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   final DraftBloc _draftBloc;
 
   CheckoutConfirmed? _pendingSaleEvent;
+  _CartSnapshot? _frozenCart;
+
+  void _clearPending() {
+    _pendingSaleEvent = null;
+    _frozenCart = null;
+    if (_cartBloc.state.paymentLocked) {
+      _cartBloc.add(const CartPaymentLockChanged(false));
+    }
+  }
 
   Future<void> _onConfirmed(
     CheckoutConfirmed event,
     Emitter<CheckoutState> emit,
   ) async {
+    // Block re-entry while a sale is writing or PromptPay is already open.
+    if (state.status == CheckoutStatus.processing ||
+        state.status == CheckoutStatus.waitingPayment) {
+      return;
+    }
+
     if (_cartBloc.state.isEmpty) {
       emit(
         state.copyWith(
@@ -45,20 +79,46 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       return;
     }
 
-    if (event.paymentMethod == 'promptpay') {
-      _pendingSaleEvent = event;
+    // Freeze cart at confirm for every method so live edits cannot change
+    // the sale lines after the cashier taps pay.
+    final cart = _cartBloc.state;
+    final frozenItems = cart.items
+        .map(
+          (i) => i.copyWith(
+            product: i.product,
+            qty: i.qty,
+            selectedOptions: List.of(i.selectedOptions),
+          ),
+        )
+        .toList(growable: false);
+    _frozenCart = _CartSnapshot(
+      items: frozenItems,
+      customerId: cart.customerId,
+      promotionId: cart.promotionId,
+      promotionDiscountAmount: cart.promotionDiscountAmount,
+    );
+    _pendingSaleEvent = event;
+    _cartBloc.add(const CartPaymentLockChanged(true));
+
+    // Any PromptPay tender (full bill or split share) opens QR flow first.
+    final needsPromptPay = _needsPromptPayQr(event);
+    if (needsPromptPay) {
       emit(
         state.copyWith(
           status: CheckoutStatus.waitingPayment,
           errorMessage: null,
+          promptPayAmount: _promptPayAmountFrom(event),
+          frozenItems: frozenItems,
         ),
       );
       return;
     }
 
+    final frozen = _frozenCart;
     await _completeSale(
       emit,
       paymentMethod: event.paymentMethod,
+      payments: event.payments,
       vatMode: event.vatMode,
       vatRate: event.vatRate,
       cartDiscountType: event.cartDiscountType,
@@ -74,20 +134,61 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       tableId: event.tableId,
       serviceChargeRate: event.serviceChargeRate,
       serviceChargeAmount: event.serviceChargeAmount,
+      cartSnapshot: frozen,
     );
+  }
+
+  static bool _needsPromptPayQr(CheckoutConfirmed event) {
+    if (event.paymentMethod == 'promptpay') return true;
+    final pays = event.payments;
+    if (pays == null || pays.isEmpty) return false;
+    return pays.any((p) => p.method.trim().toLowerCase() == 'promptpay');
+  }
+
+  static double? _promptPayAmountFrom(CheckoutConfirmed event) {
+    final pays = event.payments;
+    if (pays == null || pays.isEmpty) return null;
+    final pp = pays.where((p) => p.method.trim().toLowerCase() == 'promptpay');
+    if (pp.isEmpty) return null;
+    var sum = 0.0;
+    for (final p in pp) {
+      sum += p.amount.value;
+    }
+    return sum;
   }
 
   Future<void> _onPaymentConfirmed(
     CheckoutPaymentConfirmed event,
     Emitter<CheckoutState> emit,
   ) async {
+    if (state.status == CheckoutStatus.processing) return;
     final pending = _pendingSaleEvent;
     if (pending == null) return;
+    final frozen = _frozenCart;
     _pendingSaleEvent = null;
-
+    final ref = event.paymentReference ?? pending.paymentReference;
+    // Stamp PromptPay tender line with slip ref when cashier confirms QR.
+    final payments = pending.payments == null
+        ? null
+        : [
+            for (final p in pending.payments!)
+              p.method.trim().toLowerCase() == 'promptpay' &&
+                      (ref != null && ref.isNotEmpty)
+                  ? SalePayment(
+                      method: p.method,
+                      amount: p.amount,
+                      reference: ref,
+                      sendingBankCode:
+                          event.sendingBankCode ?? p.sendingBankCode,
+                      sortOrder: p.sortOrder,
+                    )
+                  : p,
+          ];
+    // Keep freeze until complete uses it, then clear.
     await _completeSale(
       emit,
       paymentMethod: pending.paymentMethod,
+      payments: payments,
       vatMode: pending.vatMode,
       vatRate: pending.vatRate,
       cartDiscountType: pending.cartDiscountType,
@@ -96,7 +197,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       amountReceived: pending.amountReceived,
       changeAmount: pending.changeAmount,
       note: pending.note,
-      paymentReference: event.paymentReference ?? pending.paymentReference,
+      paymentReference: ref,
       sendingBankCode: event.sendingBankCode,
       orderType: pending.orderType,
       orderChannel: pending.orderChannel,
@@ -104,19 +205,28 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       tableId: pending.tableId,
       serviceChargeRate: pending.serviceChargeRate,
       serviceChargeAmount: pending.serviceChargeAmount,
+      cartSnapshot: frozen,
     );
+    _frozenCart = null;
   }
 
   void _onPaymentCancelled(
     CheckoutPaymentCancelled event,
     Emitter<CheckoutState> emit,
   ) {
-    _pendingSaleEvent = null;
-    emit(state.copyWith(status: CheckoutStatus.idle, errorMessage: null));
+    _clearPending();
+    emit(
+      state.copyWith(
+        status: CheckoutStatus.idle,
+        errorMessage: null,
+        promptPayAmount: null,
+        frozenItems: null,
+      ),
+    );
   }
 
   void _onReset(CheckoutReset event, Emitter<CheckoutState> emit) {
-    _pendingSaleEvent = null;
+    _clearPending();
     _cartBloc.add(const CartCleared());
     emit(const CheckoutState());
   }
@@ -128,24 +238,46 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     required double vatRate,
     String? cartDiscountType,
     double? cartDiscountValue,
-    double? cartDiscountAmount,
-    double? amountReceived,
-    double? changeAmount,
+    Money? cartDiscountAmount,
+    Money? amountReceived,
+    Money? changeAmount,
     String? note,
     String? paymentReference,
     String? sendingBankCode,
-    String orderType = 'dinein',
+    List<SalePayment>? payments,
+    String orderType = 'delivery',
     String orderChannel = 'walkin',
     String? externalOrderRef,
     String? tableId,
     double serviceChargeRate = 0.0,
-    double serviceChargeAmount = 0.0,
+    Money serviceChargeAmount = Money.zero,
+    _CartSnapshot? cartSnapshot,
   }) async {
-    final cartState = _cartBloc.state;
-    emit(state.copyWith(status: CheckoutStatus.processing, errorMessage: null));
+    // Money path must use confirm-time freeze — never fall back to live cart.
+    if (cartSnapshot == null) {
+      emit(
+        state.copyWith(
+          status: CheckoutStatus.failure,
+          errorMessage: 'saleError',
+        ),
+      );
+      return;
+    }
+    final items = cartSnapshot.items;
+    final customerId = cartSnapshot.customerId;
+    final promotionId = cartSnapshot.promotionId;
+    final promotionDiscountAmount = cartSnapshot.promotionDiscountAmount;
+
+    emit(
+      state.copyWith(
+        status: CheckoutStatus.processing,
+        errorMessage: null,
+        frozenItems: items,
+      ),
+    );
     try {
       final sale = await _createSale(
-        items: cartState.items,
+        items: items,
         paymentMethod: paymentMethod,
         vatMode: vatMode,
         vatRate: vatRate,
@@ -157,18 +289,21 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         note: note,
         paymentReference: paymentReference,
         sendingBankCode: sendingBankCode,
+        payments: payments,
         orderType: orderType,
         orderChannel: orderChannel,
         externalOrderRef: externalOrderRef,
         tableId: tableId,
         serviceChargeRate: serviceChargeRate,
         serviceChargeAmount: serviceChargeAmount,
-        customerId: cartState.customerId,
-        promotionId: cartState.promotionId,
-        promotionDiscountAmount: cartState.promotionDiscountAmount,
+        customerId: customerId,
+        promotionId: promotionId,
+        promotionDiscountAmount: Money.fromDouble(promotionDiscountAmount),
       );
 
+      _cartBloc.add(const CartCleared());
       _draftBloc.add(const DraftRotated());
+      _clearPending();
 
       emit(state.copyWith(status: CheckoutStatus.success, lastSale: sale));
     } catch (e, stack) {
@@ -177,13 +312,49 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         error: e,
         stack: stack,
       );
-      emit(state.copyWith(status: CheckoutStatus.failure, errorMessage: null));
+      emit(
+        state.copyWith(
+          status: CheckoutStatus.failure,
+          errorMessage: _mapCheckoutError(e),
+        ),
+      );
     }
+  }
+
+  /// Stable keys for UI → l10n (never raw exception strings).
+  static String _mapCheckoutError(Object e) {
+    if (e is BusinessRuleError) {
+      return switch (e.rule) {
+        'InsufficientStock' => 'insufficientStock',
+        'ProductInactive' => 'productInactive',
+        'ProductNotAvailable' => 'productInactive',
+        'SaleAlreadyVoided' => 'saleAlreadyVoided',
+        'DayClosed' => 'dayClosed',
+        'PaymentMismatch' => 'paymentMismatch',
+        _ => e.rule,
+      };
+    }
+    if (e is NotFoundError) {
+      return switch (e.resource) {
+        'Customer' => 'customerNotFound',
+        'Promotion' => 'promotionNotFound',
+        'Product' => 'productNotFound',
+        'Sale' => 'saleNotFound',
+        _ => 'notFound',
+      };
+    }
+    if (e is ValidationError) return 'validationError';
+    if (e is DatabaseError) return 'databaseError';
+    return 'saleError';
   }
 
   @override
   Future<void> close() async {
     _pendingSaleEvent = null;
+    _frozenCart = null;
+    if (_cartBloc.state.paymentLocked) {
+      _cartBloc.add(const CartPaymentLockChanged(false));
+    }
     return super.close();
   }
 }
