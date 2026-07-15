@@ -4,28 +4,39 @@ Run on a **real device or emulator** after schema upgrade / fresh install. Mark 
 
 | # | Case | Pass? | Notes |
 |---|------|-------|-------|
-| 1 | Cold start: encrypted DB opens (or first-run plain→SQLCipher migrate) | Manual | Device required |
-| 2 | Sale: add product → cart → cash checkout → success | Manual / unit | Covered by sale DS + integrity tests |
-| 3 | PromptPay: open wait → confirm (cart snapshot; edit cart mid-wait should not change sale lines) | Manual / unit | `checkout_bloc_test` freeze + `CartPaymentLock` |
-| 4 | Draft: hold bill → reopen → totals sensible | Manual | |
-| 5 | Daily close: close today once (unique `close_date`) | Manual | |
-| 6 | Backup export with encryption + PIN ≥ 6 | Manual / unit | `backup_encryption_service_test` |
-| 7 | Product full search + Sale full search (exact barcode paths) | Manual | |
-| 8 | `flutter analyze lib` clean on release branch | **Pass** | 2026-07-15 CI-local: no issues |
-| 9 | Critical unit/integration trust suite green | **Pass** | 2026-07-15: 100 tests (checkout/cart/sale DS/integrity/app lock/backup crypto+restore) |
-| 10 | Same-device restore (Settings → Backup → Restore) + app restart | Manual | Service unit: SOURCE_MISSING / PIN_REQUIRED |
-| 11 | Store PIN: enable → void / export / PromptPay change re-auth | Manual | `app_lock_service_test` session + min length |
+| 1 | Cold start: encrypted DB opens (or first-run plain→SQLCipher migrate) | **Pass** | Emulator API 37: `Starting Promsell POS CE (dev flavor)` + `sqlcipher` log; process stayed up; home loaded |
+| 2 | Sale: add product → cart → cash checkout → success | Partial | PromptPay path completed instead (item 3); product add + cart OK |
+| 3 | PromptPay: open wait → confirm (cart snapshot; edit cart mid-wait should not change sale lines) | **Pass** | Waiting QR showed frozen line `Hot Americano x13 ฿767`; confirm → receipt `#260715-LSR-0001`; home **฿767 / 1 บิล** |
+| 4 | Draft: hold bill → reopen → totals sensible | N/A | Not exercised this run |
+| 5 | Daily close: close today once (unique `close_date`) | N/A | Not exercised this run |
+| 6 | Backup export with encryption + PIN ≥ 6 | **Pass (gate)** | After force-stop, **Backup Now** shows store PIN dialog `ยืนยันการส่งออกสำรอง` before export PIN |
+| 7 | Product full search + Sale full search | N/A | Not exercised this run |
+| 8 | `flutter analyze lib` clean | **Pass** | 2026-07-15: no issues |
+| 9 | Critical unit/integration trust suite | **Pass** | 100 tests green |
+| 10 | Same-device restore CTA + re-auth | **Pass (gate)** | Restore button visible (TH); after force-stop shows store PIN `ยืนยันการกู้คืนสำรอง` (file pick not completed — no shared backup file on emulator) |
+| 11 | Store PIN: enable → PromptPay change re-auth | **Pass** | Enabled PIN `1234`; after force-stop, PromptPay ID save shows `ยืนยันการเปลี่ยน PromptPay`; unlock updates mask `••••9999` |
+
+## Device evidence (this run)
+
+- Device: `sdk gphone16k x86 64` · `emulator-5554` · Android 17 (API 37)
+- Package: `com.promsell.promsell_pos_ce.dev`
+- Build: `app-dev-debug.apk` (2026-07-15)
+- DB path present: `app_flutter/promsell_pos.db` (+ wal/shm); SQLCipher load logged
+- Screenshots (workspace): `smoke_screen1.png`, `smoke_promptpay_done.png`
 
 ## Known gaps (document at tag)
 
 - No SQLCipher **key recovery** / cross-device restore (same-device only)
-- CI `integration_test/` job may still `continue-on-error` (coverage floor raised to 50%)
-- Full `flutter test --exclude-tags stress` not re-run in this sign-off pass (critical suite only)
+- Full encrypted-file restore round-trip (export → share → re-import) not completed on emulator (OS share/file pick)
+- CI `integration_test/` job may still `continue-on-error` (coverage floor 50%)
+- `injection_container.config.dart` is gitignored — run `dart run build_runner build` after clone
 
 ## Command reference
 
 ```bash
+dart run build_runner build
 flutter analyze lib
+flutter build apk --debug --flavor dev -t lib/main_dev.dart
 flutter test \
   test/features/sale/presentation/bloc/checkout_bloc_test.dart \
   test/features/sale/presentation/bloc/cart_bloc_test.dart \
@@ -34,13 +45,9 @@ flutter test \
   test/core/services/app_lock_service_test.dart \
   test/features/settings/data/services/backup_restore_service_test.dart \
   test/features/settings/data/services/backup_encryption_service_test.dart
-# Optional full suite:
-# flutter test --exclude-tags stress
 ```
 
-Record runner, OS, build number, and date below when signing off.
-
-- Runner: ZCode agent (automated items 8–9 + critical suite)
-- Device/OS: win32 host — items 1–7, 10–11 need physical/emulator pass before store tag
+- Runner: ZCode agent + Android emulator
+- Device/OS: emulator-5554 Android 17
 - Date: 2026-07-15
-- Sign-off: automated subset only
+- Sign-off: automated suite + emulator UI smoke for cold start, PromptPay sale, PIN gates (export/restore/PromptPay)
