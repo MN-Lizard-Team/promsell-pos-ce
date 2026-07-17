@@ -68,10 +68,19 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            // Fail closed only when a *Release* task is requested (not at config
+            // time for debug/dev APKs).
+            val buildingRelease = gradle.startParameter.taskNames.any {
+                it.contains("Release", ignoreCase = true)
+            }
+            if (buildingRelease && !keystorePropertiesFile.exists()) {
+                throw GradleException(
+                    "Release signing requires android/app/keystore.properties. " +
+                        "See docs/STORE_SUBMISSION.md"
+                )
+            }
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
             }
             isMinifyEnabled = false
             isShrinkResources = false

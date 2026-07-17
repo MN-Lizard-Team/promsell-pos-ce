@@ -24,19 +24,9 @@ class AboutHeaderCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            st.softAccent.withValues(alpha: 0.35),
-            st.softAccent.withValues(alpha: 0.10),
-          ],
-        ),
+        color: st.cardBackground,
         borderRadius: BorderRadius.circular(st.cardRadius),
-        border: Border.all(
-          color: st.softAccent.withValues(alpha: 0.50),
-          width: 1,
-        ),
+        border: Border.all(color: st.cardBorderColor, width: 0.8),
       ),
       child: Column(
         children: [

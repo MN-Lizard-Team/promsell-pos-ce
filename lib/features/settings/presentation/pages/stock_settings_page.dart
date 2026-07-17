@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_switch_tile.dart';
 
@@ -19,34 +20,30 @@ class StockSettingsPage extends StatelessWidget {
         final l10n = context.l10n;
         final accent = context.settingsTheme.softAccent;
 
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.settingsStockPolicy)),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            children: [
-              _StockPreviewCard(
-                allowOversell: s.allowOversell,
-                lowStockThreshold: s.lowStockThreshold,
-              ),
-              const SizedBox(height: 24),
-              SettingsSectionCard(
-                title: 'Policy',
-                children: [
-                  SettingsSwitchTile(
-                    icon: Icons.shopping_cart_outlined,
-                    title: l10n.allowOversell,
-                    subtitle: l10n.allowOversellHint,
-                    accentColor: accent,
-                    value: s.allowOversell,
-                    onChanged: (v) {
-                      cubit.updateField((s) => s.copyWith(allowOversell: v));
-                    },
-                  ),
-                  _buildThresholdTile(context, s, cubit),
-                ],
-              ),
-            ],
+        return SettingsLeafChrome(
+          title: l10n.settingsStockPolicy,
+          header: _StockPreviewCard(
+            allowOversell: s.allowOversell,
+            lowStockThreshold: s.lowStockThreshold,
           ),
+          children: [
+            SettingsSectionCard(
+              title: l10n.settingsPolicy,
+              children: [
+                SettingsSwitchTile(
+                  icon: Icons.shopping_cart_outlined,
+                  title: l10n.allowOversell,
+                  subtitle: l10n.allowOversellHint,
+                  accentColor: accent,
+                  value: s.allowOversell,
+                  onChanged: (v) {
+                    cubit.updateField((s) => s.copyWith(allowOversell: v));
+                  },
+                ),
+                _buildThresholdTile(context, s, cubit),
+              ],
+            ),
+          ],
         );
       },
     );

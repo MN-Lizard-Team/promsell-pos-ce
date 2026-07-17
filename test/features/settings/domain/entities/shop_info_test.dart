@@ -40,7 +40,7 @@ void main() {
     test('has default values', () {
       const config = BackupConfig();
       expect(config.reminderDays, 7);
-      expect(config.encryptionEnabled, isFalse);
+      expect(config.encryptionEnabled, isTrue);
     });
 
     test('copyWith updates fields', () {
@@ -115,6 +115,15 @@ void main() {
       );
       expect(updated.dailyCloseLock, isTrue);
       expect(updated.lastClosedDate, '2024-01-01');
+    });
+
+    test('copyWith can clear lastClosedDate with null', () {
+      const config = DailyCloseConfig(lastClosedDate: '2024-01-01');
+      final cleared = config.copyWith(lastClosedDate: null);
+      expect(cleared.lastClosedDate, isNull);
+      // Omitted field keeps previous value.
+      final kept = config.copyWith(dailyCloseLock: true);
+      expect(kept.lastClosedDate, '2024-01-01');
     });
   });
 }

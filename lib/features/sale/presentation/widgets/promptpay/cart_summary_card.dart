@@ -102,7 +102,7 @@ class CartSummaryCard extends StatelessWidget {
                     Expanded(
                       flex: 2,
                       child: MoneyText(
-                        value: item.subtotal,
+                        value: item.subtotal.value,
                         currency: currency,
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.end,

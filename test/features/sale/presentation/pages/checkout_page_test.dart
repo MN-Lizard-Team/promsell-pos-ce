@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/checkout_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -19,13 +21,14 @@ import '../../../../helpers/pump_app.dart';
 void main() {
   late MockCartBloc mockCartBloc;
   late MockCheckoutBloc mockCheckoutBloc;
+  late MockDraftBloc mockDraftBloc;
   late MockSettingsCubit mockSettingsCubit;
   late MockTableBloc mockTableBloc;
 
   final testProduct = Product(
     id: 'p1',
     name: 'Water',
-    price: 10.0,
+    price: Money.fromDouble(10),
     stock: 100,
     imageThumbnailPath: null,
     isActive: true,
@@ -37,6 +40,8 @@ void main() {
     mockCartBloc = MockCartBloc();
     mockCheckoutBloc = MockCheckoutBloc();
     when(() => mockCheckoutBloc.state).thenReturn(const CheckoutState());
+    mockDraftBloc = MockDraftBloc();
+    when(() => mockDraftBloc.state).thenReturn(const DraftState());
     mockSettingsCubit = MockSettingsCubit();
     mockTableBloc = MockTableBloc();
     when(() => mockTableBloc.state).thenReturn(const TableState());
@@ -63,6 +68,7 @@ void main() {
         buildSubject(),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
+        draftBloc: mockDraftBloc,
         settingsCubit: mockSettingsCubit,
         tableBloc: mockTableBloc,
       );
@@ -78,6 +84,7 @@ void main() {
         buildSubject(),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
+        draftBloc: mockDraftBloc,
         settingsCubit: mockSettingsCubit,
         tableBloc: mockTableBloc,
       );
@@ -94,6 +101,7 @@ void main() {
         buildSubject(),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
+        draftBloc: mockDraftBloc,
         settingsCubit: mockSettingsCubit,
         tableBloc: mockTableBloc,
       );
@@ -111,6 +119,7 @@ void main() {
         buildSubject(),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
+        draftBloc: mockDraftBloc,
         settingsCubit: mockSettingsCubit,
         tableBloc: mockTableBloc,
       );

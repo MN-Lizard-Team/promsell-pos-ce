@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/customer/domain/entities/customer.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/bloc/customer_bloc.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/bloc/customer_event.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/bloc/customer_state.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/pages/customer_form_page.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CustomerListPage extends StatelessWidget {
   const CustomerListPage({super.key});
@@ -50,13 +53,14 @@ class _CustomerListViewState extends State<_CustomerListView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return BlocListener<CustomerBloc, CustomerState>(
       listenWhen: (prev, curr) =>
           curr.status == CustomerStatus.failure &&
           prev.status != CustomerStatus.failure,
       listener: (ctx, state) {
-        AppSnackBar.error(ctx, state.errorMessage ?? 'Error');
+        AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.errorOccurred);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -65,7 +69,7 @@ class _CustomerListViewState extends State<_CustomerListView> {
                   controller: _searchController,
                   autofocus: true,
                   decoration: InputDecoration(
-                    hintText: 'Search customers...',
+                    hintText: l10n.searchCustomers,
                     border: InputBorder.none,
                     hintStyle: TextStyle(
                       color: theme.colorScheme.onSurfaceVariant,
@@ -76,7 +80,7 @@ class _CustomerListViewState extends State<_CustomerListView> {
                     CustomerSearchChanged(q),
                   ),
                 )
-              : const Text('Customers'),
+              : Text(l10n.customersTitle),
           actions: [
             IconButton(
               icon: Icon(_isSearching ? Icons.close : Icons.search),
@@ -129,21 +133,18 @@ class _CustomerListViewState extends State<_CustomerListView> {
 
   Future<void> _showAddForm(BuildContext context) async {
     final bloc = context.read<CustomerBloc>();
-    final result = await Navigator.push<bool>(
+    await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) =>
             BlocProvider.value(value: bloc, child: const CustomerFormPage()),
       ),
     );
-    if (result == true && context.mounted) {
-      AppSnackBar.success(context, 'Customer saved');
-    }
   }
 
   Future<void> _showEditForm(BuildContext context, Customer customer) async {
     final bloc = context.read<CustomerBloc>();
-    final result = await Navigator.push<bool>(
+    await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
@@ -152,9 +153,6 @@ class _CustomerListViewState extends State<_CustomerListView> {
         ),
       ),
     );
-    if (result == true && context.mounted) {
-      AppSnackBar.success(context, 'Customer saved');
-    }
   }
 }
 
@@ -166,6 +164,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -179,14 +178,12 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              hasSearch ? 'No customers found' : 'No customers yet',
+              hasSearch ? l10n.noCustomersFound : l10n.noCustomersYet,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              hasSearch
-                  ? 'Try a different search term'
-                  : 'Add your first customer to track their purchases',
+              hasSearch ? l10n.tryDifferentSearch : l10n.addFirstCustomer,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -197,7 +194,7 @@ class _EmptyState extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.person_add),
-                label: const Text('Add Customer'),
+                label: Text(l10n.addCustomer),
               ),
             ],
           ],
@@ -215,6 +212,8 @@ class _CustomerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final currency = context.watch<SettingsCubit>().state.settings.currency;
     final initials = _getInitials(customer.name);
 
     return Card(
@@ -279,7 +278,7 @@ class _CustomerTile extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${customer.visitCount} visits',
+                    l10n.customerVisits(customer.visitCount),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.outline,
                     ),
@@ -291,8 +290,9 @@ class _CustomerTile extends StatelessWidget {
                     color: theme.colorScheme.outline,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    'Spent ${customer.totalSpent.toStringAsFixed(2)}',
+                  MoneyText(
+                    value: customer.totalSpent.value,
+                    currency: currency,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.outline,
                     ),

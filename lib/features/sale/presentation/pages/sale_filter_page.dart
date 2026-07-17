@@ -2,16 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 
 class SaleFilterPage extends StatefulWidget {
-  const SaleFilterPage({super.key, this.currency = '฿'});
+  const SaleFilterPage({
+    super.key,
+    this.currency = '฿',
+    this.asSheet = false,
+    this.lowStockThreshold = 5,
+  });
 
   final String currency;
+
+  /// When true, renders sheet chrome (no full Scaffold app bar).
+  final bool asSheet;
+
+  final int lowStockThreshold;
 
   @override
   State<SaleFilterPage> createState() => _SaleFilterPageState();
@@ -45,24 +56,30 @@ class _SaleFilterPageState extends State<SaleFilterPage> {
       }
     }
     if (_stockFilter == StockFilter.lowStock) {
+      final threshold = widget.lowStockThreshold < 1
+          ? 1
+          : widget.lowStockThreshold;
       result = result
-          .where((p) => p.trackStock && p.stock > 0 && p.stock <= 5)
+          .where((p) => p.trackStock && p.stock > 0 && p.stock <= threshold)
           .toList();
     } else if (_stockFilter == StockFilter.outOfStock) {
       result = result.where((p) => p.trackStock && p.stock == 0).toList();
     }
     if (_priceRange.min != null) {
-      result = result.where((p) => p.price >= _priceRange.min!).toList();
+      result = result.where((p) => p.price.value >= _priceRange.min!).toList();
     }
     if (_priceRange.max != null) {
-      result = result.where((p) => p.price <= _priceRange.max!).toList();
+      result = result.where((p) => p.price.value <= _priceRange.max!).toList();
     }
     return result.length;
   }
 
   void _applyFilters() {
     final bloc = context.read<ProductBloc>();
-    bloc.add(ProductCategoryFilterChanged(_selectedCategory));
+    // Category is owned by horizontal chips on sale catalog.
+    if (!widget.asSheet) {
+      bloc.add(ProductCategoryFilterChanged(_selectedCategory));
+    }
     bloc.add(ProductStockFilterChanged(_stockFilter));
     bloc.add(ProductSortChanged(_productSort));
     bloc.add(
@@ -73,7 +90,9 @@ class _SaleFilterPageState extends State<SaleFilterPage> {
 
   void _resetAll() {
     setState(() {
-      _selectedCategory = null;
+      if (!widget.asSheet) {
+        _selectedCategory = null;
+      }
       _stockFilter = StockFilter.all;
       _productSort = ProductSort.default_;
       _priceRange = const PriceRange();
@@ -81,7 +100,7 @@ class _SaleFilterPageState extends State<SaleFilterPage> {
   }
 
   bool get _hasActiveFilters =>
-      _selectedCategory != null ||
+      (!widget.asSheet && _selectedCategory != null) ||
       _stockFilter != StockFilter.all ||
       _productSort != ProductSort.default_ ||
       _priceRange.isActive;
@@ -90,7 +109,7 @@ class _SaleFilterPageState extends State<SaleFilterPage> {
     final theme = Theme.of(context);
     final chips = <Widget>[];
 
-    if (_selectedCategory != null) {
+    if (!widget.asSheet && _selectedCategory != null) {
       final name = _selectedCategory == kNoCategoryFilter
           ? l10n.noCategory
           : categories
@@ -139,19 +158,192 @@ class _SaleFilterPageState extends State<SaleFilterPage> {
   }
 
   Widget _summaryChip(ThemeData theme, String label, VoidCallback onRemove) {
-    return Chip(
-      label: Text(label, style: theme.textTheme.labelSmall),
-      deleteIcon: const Icon(Icons.close, size: 16),
+    return InputChip(
+      label: Text(
+        label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: theme.colorScheme.onSecondaryContainer,
+        ),
+      ),
+      deleteIcon: Icon(
+        Icons.close,
+        size: 16,
+        color: theme.colorScheme.onSecondaryContainer,
+      ),
       onDeleted: onRemove,
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      backgroundColor: theme.colorScheme.secondaryContainer,
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final categories = context.watch<CategoryBloc>().state.categories;
+    final categories = context.select<CategoryBloc, List<Category>>(
+      (b) => b.state.categories,
+    );
+    final body = Column(
+      children: [
+        if (_hasActiveFilters)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: _activeFilterChips(l10n, categories),
+            ),
+          ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            children: [
+              if (!widget.asSheet) ...[
+                _SectionTitle(title: l10n.filterCategory),
+                _CategorySelector(
+                  categories: categories,
+                  selectedId: _selectedCategory,
+                  onSelected: (id) => setState(() => _selectedCategory = id),
+                ),
+                const Divider(height: 32),
+              ],
+              _SectionTitle(title: l10n.filterSort),
+              RadioGroup<ProductSort>(
+                groupValue: _productSort,
+                onChanged: (v) =>
+                    setState(() => _productSort = v ?? ProductSort.default_),
+                child: Column(
+                  children: ProductSort.values
+                      .map(
+                        (sort) => _RadioList<ProductSort>(
+                          value: sort,
+                          label: _sortLabel(sort, l10n),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+              const Divider(height: 32),
+              _SectionTitle(title: l10n.filterStock),
+              RadioGroup<StockFilter>(
+                groupValue: _stockFilter,
+                onChanged: (v) =>
+                    setState(() => _stockFilter = v ?? StockFilter.all),
+                child: Column(
+                  children: StockFilter.values
+                      .map(
+                        (filter) => _RadioList<StockFilter>(
+                          value: filter,
+                          label: _stockLabel(filter, l10n),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+              const Divider(height: 32),
+              _SectionTitle(title: l10n.filterPriceRange),
+              _PriceRangeEditor(
+                priceRange: _priceRange,
+                currency: widget.currency,
+                onChanged: (range) => setState(() => _priceRange = range),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: BlocBuilder<ProductBloc, ProductState>(
+              buildWhen: (prev, curr) => prev.products != curr.products,
+              builder: (ctx, state) {
+                final theme = Theme.of(ctx);
+                return FilledButton(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    textStyle: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: _applyFilters,
+                  child: Text(
+                    l10n.filterShowResultsCount(_filteredCount(state.products)),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (widget.asSheet) {
+      final theme = Theme.of(context);
+      return Column(
+        children: [
+          const SizedBox(height: 10),
+          Container(
+            width: 44,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.tune_rounded,
+                    size: 20,
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.filterPageTitle,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _hasActiveFilters ? _resetAll : null,
+                  child: Text(l10n.filterReset),
+                ),
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+          Expanded(child: body),
+        ],
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -160,92 +352,7 @@ class _SaleFilterPageState extends State<SaleFilterPage> {
           TextButton(onPressed: _resetAll, child: Text(l10n.filterReset)),
         ],
       ),
-      body: Column(
-        children: [
-          if (_hasActiveFilters)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: _activeFilterChips(l10n, categories),
-              ),
-            ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                _SectionTitle(title: l10n.filterCategory),
-                _CategorySelector(
-                  categories: categories,
-                  selectedId: _selectedCategory,
-                  onSelected: (id) => setState(() => _selectedCategory = id),
-                ),
-                const Divider(height: 32),
-                _SectionTitle(title: l10n.filterSort),
-                RadioGroup<ProductSort>(
-                  groupValue: _productSort,
-                  onChanged: (v) =>
-                      setState(() => _productSort = v ?? ProductSort.default_),
-                  child: Column(
-                    children: ProductSort.values
-                        .map(
-                          (sort) => _RadioList<ProductSort>(
-                            value: sort,
-                            label: _sortLabel(sort, l10n),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-                const Divider(height: 32),
-                _SectionTitle(title: l10n.filterStock),
-                RadioGroup<StockFilter>(
-                  groupValue: _stockFilter,
-                  onChanged: (v) =>
-                      setState(() => _stockFilter = v ?? StockFilter.all),
-                  child: Column(
-                    children: StockFilter.values
-                        .map(
-                          (filter) => _RadioList<StockFilter>(
-                            value: filter,
-                            label: _stockLabel(filter, l10n),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-                const Divider(height: 32),
-                _SectionTitle(title: l10n.filterPriceRange),
-                _PriceRangeEditor(
-                  priceRange: _priceRange,
-                  currency: widget.currency,
-                  onChanged: (range) => setState(() => _priceRange = range),
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: BlocBuilder<ProductBloc, ProductState>(
-                buildWhen: (prev, curr) => prev.products != curr.products,
-                builder: (ctx, state) {
-                  return FilledButton(
-                    onPressed: _applyFilters,
-                    child: Text(
-                      l10n.filterShowResultsCount(
-                        _filteredCount(state.products),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: body,
     );
   }
 
@@ -276,12 +383,13 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
       child: Text(
         title,
         style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           color: theme.colorScheme.primary,
+          letterSpacing: 0.1,
         ),
       ),
     );

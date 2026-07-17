@@ -34,21 +34,6 @@ class SalesDisplaySection extends StatelessWidget {
             children: [
               SalesSharedWidgets.buildSwitchTile(
                 context: context,
-                icon: Icons.view_compact_outlined,
-                title: l10n.settingsCompactCartMode,
-                subtitle: l10n.settingsCompactModeSubtitle,
-                value: settings.cartCompactMode,
-                onChanged: (v) =>
-                    onUpdate(settings.copyWith(cartCompactMode: v)),
-              ),
-              Divider(
-                height: 1,
-                indent: st.dividerIndent,
-                endIndent: st.dividerIndent,
-                color: st.cardBorderColor.withValues(alpha: 0.5),
-              ),
-              SalesSharedWidgets.buildSwitchTile(
-                context: context,
                 icon: Icons.density_small,
                 title: l10n.settingsUltraCompactMode,
                 subtitle: l10n.settingsUltraModeSubtitle,

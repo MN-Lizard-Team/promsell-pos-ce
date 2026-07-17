@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 
 import '../../../../helpers/fixtures.dart';
@@ -10,7 +11,7 @@ void main() {
       final b = Product(
         id: 'prod-0001-0001-0001-000000000001',
         name: 'Test Product',
-        price: 100.0,
+        price: Money.fromDouble(100.0),
         stock: 50,
         categoryId: 'Drinks',
         imageUrl: null,
@@ -32,9 +33,12 @@ void main() {
     });
 
     test('copyWith returns a new Product with updated fields', () {
-      final updated = tProduct.copyWith(name: 'Updated', price: 200.0);
+      final updated = tProduct.copyWith(
+        name: 'Updated',
+        price: Money.fromDouble(200.0),
+      );
       expect(updated.name, 'Updated');
-      expect(updated.price, 200.0);
+      expect(updated.price.value, 200.0);
       expect(updated.id, tProduct.id);
     });
 
@@ -46,7 +50,22 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tProduct.props.length, 17);
+      expect(tProduct.props.length, 22);
+    });
+
+    test('description is null by default', () {
+      expect(tProduct.description, isNull);
+    });
+
+    test('copyWith updates description', () {
+      final withDesc = tProduct.copyWith(description: 'A test product');
+      expect(withDesc.description, 'A test product');
+    });
+
+    test('copyWith can set description to null', () {
+      final withDesc = tProduct.copyWith(description: 'A test product');
+      final cleared = withDesc.copyWith(description: null);
+      expect(cleared.description, isNull);
     });
   });
 }

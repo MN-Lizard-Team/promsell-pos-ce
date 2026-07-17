@@ -16,6 +16,7 @@ class PromptPayLayout extends StatelessWidget {
     required this.theme,
     required this.items,
     required this.total,
+    this.billTotal,
     required this.currency,
     required this.promptpayId,
     required this.settings,
@@ -32,6 +33,7 @@ class PromptPayLayout extends StatelessWidget {
   final ThemeData theme;
   final List<CartItem> items;
   final double total;
+  final double? billTotal;
   final String currency;
   final String promptpayId;
   final Settings settings;
@@ -105,16 +107,52 @@ class PromptPayLayout extends StatelessWidget {
   }
 
   Widget _buildCartSummary() {
-    return CartSummaryCard(
-      items: items,
-      total: total,
-      currency: currency,
-      isExpanded: cartExpanded,
-      onToggleExpand: onToggleExpand,
-      cartLabel: l10n.cart,
-      totalLabel: l10n.total,
-      showMoreLabel: l10n.showMore,
-      showLessLabel: l10n.showLess,
+    final isShare = billTotal != null && (billTotal! - total).abs() > 0.009;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (isShare)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Material(
+              color: theme.colorScheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.promptPayShareTitle,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.promptPayShareHint,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        CartSummaryCard(
+          items: items,
+          total: total,
+          currency: currency,
+          isExpanded: cartExpanded,
+          onToggleExpand: onToggleExpand,
+          cartLabel: l10n.cart,
+          totalLabel: isShare ? l10n.promptPayShareTitle : l10n.total,
+          showMoreLabel: l10n.showMore,
+          showLessLabel: l10n.showLess,
+        ),
+      ],
     );
   }
 

@@ -1,19 +1,26 @@
 import 'dart:typed_data';
 
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_document.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
+import 'package:promsell_pos_ce/features/receipt/domain/services/build_receipt_document.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 @lazySingleton
 class ReceiptPdfService {
-  ReceiptPdfService();
+  ReceiptPdfService({BuildReceiptDocument? documentBuilder})
+    : _documentBuilder = documentBuilder ?? const BuildReceiptDocument();
+
+  final BuildReceiptDocument _documentBuilder;
 
   pw.Font? _baseFont;
   pw.Font? _boldFont;
@@ -32,12 +39,20 @@ class ReceiptPdfService {
     required Settings settings,
     required ReceiptLabels labels,
     Map<String, Uint8List>? productImages,
+    bool isReprint = false,
+    String? thankYouFallback,
+    String? notTaxInvoiceDisclaimer,
   }) async {
     await _ensureFonts();
     final doc = _buildDocument(
-      sale: sale,
-      settings: settings,
-      labels: labels,
+      document: _documentBuilder.fromSale(
+        sale: sale,
+        settings: settings,
+        labels: labels,
+        isReprint: isReprint,
+        thankYouFallback: thankYouFallback,
+        notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
+      ),
       baseFont: _baseFont,
       boldFont: _boldFont,
       productImages: productImages,
@@ -50,27 +65,49 @@ class ReceiptPdfService {
     required Settings settings,
     required ReceiptLabels labels,
     Map<String, Uint8List>? productImages,
+    bool isReprint = false,
+    String? thankYouFallback,
+    String? notTaxInvoiceDisclaimer,
   }) async {
     await _ensureFonts();
-    final doc = _buildDocument(
+    final document = _documentBuilder.fromSale(
       sale: sale,
       settings: settings,
       labels: labels,
+      isReprint: isReprint,
+      thankYouFallback: thankYouFallback,
+      notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
+    );
+    final pdf = _buildDocument(
+      document: document,
       baseFont: _baseFont,
       boldFont: _boldFont,
       productImages: productImages,
     );
-    final number = sale.receiptNumber ?? sale.id;
+    final number = document.receiptNumber;
     await Printing.sharePdf(
-      bytes: await doc.save(),
+      bytes: await pdf.save(),
       filename: 'receipt_$number.pdf',
     );
   }
 
+  /// Builds a PDF from a pre-built [ReceiptDocument] (tests / advanced callers).
+  pw.Document buildFromDocument(
+    ReceiptDocument document, {
+    Map<String, Uint8List>? productImages,
+    pw.Font? baseFont,
+    pw.Font? boldFont,
+  }) {
+    return _buildDocument(
+      document: document,
+      baseFont: baseFont,
+      boldFont: boldFont,
+      productImages: productImages,
+    );
+  }
+
   pw.Document _buildDocument({
-    required Sale sale,
-    required Settings settings,
-    required ReceiptLabels labels,
+    required ReceiptDocument document,
     pw.Font? baseFont,
     pw.Font? boldFont,
     Map<String, Uint8List>? productImages,
@@ -78,47 +115,92 @@ class ReceiptPdfService {
     final doc = pw.Document(
       theme: pw.ThemeData.withFont(base: baseFont, bold: boldFont),
     );
-    final number = sale.receiptNumber ?? sale.id;
-    final footer = settings.receiptNote.isNotEmpty
-        ? settings.receiptNote
-        : 'Thank you!';
-    final vatInfo = calculateVat(
-      total: sale.totalAmount,
-      rate: settings.vatRate,
-      mode: settings.vatMode,
-      isTotalPreTax: false,
-    );
+    final labels = document.labels;
+    final currency = document.currency;
+
+    String money(Money m) =>
+        CurrencyFormatter.formatGroupedWithSymbol(m.value, currency);
+
+    final pageFormat = _pageFormatFor(document.receiptSize);
 
     doc.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.roll80,
+        pageFormat: pageFormat,
         build: (ctx) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.stretch,
           children: [
+            if (document.isVoided) ...[
+              pw.Center(
+                child: pw.Text(
+                  labels.voided ?? 'VOIDED',
+                  style: const pw.TextStyle(
+                    fontSize: 20,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (document.voidReason != null &&
+                  document.voidReason!.isNotEmpty)
+                pw.Center(
+                  child: pw.Text(
+                    '${labels.voidReason ?? 'Reason'}: ${document.voidReason}',
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+              if (document.voidedAt != null)
+                pw.Center(
+                  child: pw.Text(
+                    '${labels.voidedAt ?? 'Voided at'}: ${_formatDate(document.voidedAt!, document.dateFormat)}',
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+              pw.SizedBox(height: 4),
+            ],
+            if (document.isReprint)
+              pw.Center(
+                child: pw.Text(
+                  labels.reprint ?? 'REPRINT',
+                  style: const pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
             pw.Center(
               child: pw.Text(
-                settings.shopName,
-                style: pw.TextStyle(
+                document.shopName,
+                style: const pw.TextStyle(
                   fontSize: 16,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
             ),
-            if (settings.showShopInfoOnReceipt) ...[
-              if (settings.address.isNotEmpty)
+            if (document.showShopInfo) ...[
+              if (document.address.isNotEmpty)
                 pw.Center(
                   child: pw.Text(
-                    settings.address,
+                    document.address,
                     style: const pw.TextStyle(fontSize: 9),
                   ),
                 ),
-              if (settings.phone.isNotEmpty)
+              if (document.phone.isNotEmpty)
                 pw.Center(
                   child: pw.Text(
-                    settings.phone,
+                    document.phone,
                     style: const pw.TextStyle(fontSize: 9),
                   ),
                 ),
+            ],
+            if (document.notTaxInvoiceDisclaimer != null &&
+                document.notTaxInvoiceDisclaimer!.isNotEmpty) ...[
+              pw.SizedBox(height: 2),
+              pw.Center(
+                child: pw.Text(
+                  document.notTaxInvoiceDisclaimer!,
+                  style: const pw.TextStyle(fontSize: 8),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ),
             ],
             pw.SizedBox(height: 4),
             pw.Divider(),
@@ -128,23 +210,48 @@ class ReceiptPdfService {
               children: [
                 pw.Expanded(
                   child: pw.Text(
-                    '${labels.receipt} #$number',
+                    '${labels.receipt} #${document.receiptNumber}',
                     style: const pw.TextStyle(fontSize: 10),
                   ),
                 ),
                 pw.Text(
-                  _formatDate(sale.createdAt, settings.dateFormat),
+                  _formatDate(document.createdAt, document.dateFormat),
                   style: const pw.TextStyle(fontSize: 9),
                 ),
               ],
             ),
-            pw.Text(
-              '${labels.payment}: ${labels.paymentMethodLabel}',
-              style: const pw.TextStyle(fontSize: 10),
-            ),
+            if (document.paymentLines.isNotEmpty)
+              ...document.paymentLines.map(
+                (line) => pw.Text(
+                  '${labels.payment}: $line',
+                  style: const pw.TextStyle(fontSize: 10),
+                ),
+              )
+            else
+              pw.Text(
+                '${labels.payment}: ${document.paymentMethodLabel}',
+                style: const pw.TextStyle(fontSize: 10),
+              ),
+            if (labels.customer != null &&
+                document.customerName != null &&
+                document.customerName!.isNotEmpty)
+              pw.Text(
+                '${labels.customer}: ${document.customerName}',
+                style: const pw.TextStyle(fontSize: 10),
+              ),
+            if (labels.promotion != null &&
+                document.promotionName != null &&
+                document.promotionName!.isNotEmpty)
+              pw.Text(
+                document.promotionDiscount.isPositive &&
+                        labels.promotionDiscount != null
+                    ? '${labels.promotion}: ${document.promotionName} (${money(document.promotionDiscount)})'
+                    : '${labels.promotion}: ${document.promotionName}',
+                style: const pw.TextStyle(fontSize: 10),
+              ),
             pw.SizedBox(height: 6),
             pw.Divider(),
-            ...sale.items.map((item) {
+            ...document.items.map((item) {
               final imgBytes = productImages?[item.productId];
               return pw.Padding(
                 padding: const pw.EdgeInsets.symmetric(vertical: 2),
@@ -165,12 +272,12 @@ class ReceiptPdfService {
                     ],
                     pw.Expanded(
                       child: pw.Text(
-                        '${item.productName} x${item.qty}',
+                        '${item.name} x${item.qty}',
                         style: const pw.TextStyle(fontSize: 10),
                       ),
                     ),
                     pw.Text(
-                      '${settings.currency}${item.subtotal.toStringAsFixed(2)}',
+                      money(item.lineTotal),
                       style: const pw.TextStyle(fontSize: 10),
                     ),
                   ],
@@ -178,49 +285,54 @@ class ReceiptPdfService {
               );
             }),
             pw.Divider(),
-            if (sale.items.any((i) => i.discountAmount > 0)) ...[
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(labels.itemDiscounts),
-                  pw.Text(
-                    '-${settings.currency}${sale.items.fold(0.0, (s, i) => s + i.discountAmount).toStringAsFixed(2)}',
-                  ),
-                ],
-              ),
-            ],
-            if (sale.discountAmount > 0) ...[
+            // Net lines only — no aggregate item-discount row (avoids double-count).
+            if (document.cartDiscount.isPositive)
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text(labels.cartDiscount),
-                  pw.Text(
-                    '-${settings.currency}${sale.discountAmount.toStringAsFixed(2)}',
-                  ),
+                  pw.Text('-${money(document.cartDiscount)}'),
                 ],
               ),
-            ],
-            if (vatInfo != null) ...[
+            if (document.promotionDiscount.isPositive)
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    labels.promotionDiscount ?? labels.promotion ?? 'Promotion',
+                  ),
+                  pw.Text('-${money(document.promotionDiscount)}'),
+                ],
+              ),
+            if (document.serviceCharge.isPositive)
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    document.serviceChargeRate > 0
+                        ? '${labels.serviceCharge ?? 'Service charge'} ${document.serviceChargeRate.toStringAsFixed(0)}%'
+                        : (labels.serviceCharge ?? 'Service charge'),
+                  ),
+                  pw.Text(money(document.serviceCharge)),
+                ],
+              ),
+            if (document.hasVat) ...[
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text(labels.subtotal),
-                  pw.Text(
-                    '${settings.currency}${vatInfo.subtotal.toStringAsFixed(2)}',
-                  ),
+                  pw.Text(money(document.pretaxOrNetOfVat)),
                 ],
               ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text(
-                    vatInfo.isInclusive
+                    document.isVatInclusive
                         ? labels.vatIncluded
-                        : '${labels.vat} ${settings.vatRate}%',
+                        : '${labels.vat} ${document.vatRate}%',
                   ),
-                  pw.Text(
-                    '${settings.currency}${vatInfo.vatAmount.toStringAsFixed(2)}',
-                  ),
+                  pw.Text(money(document.vatAmount)),
                 ],
               ),
             ],
@@ -229,44 +341,43 @@ class ReceiptPdfService {
               children: [
                 pw.Text(
                   labels.total,
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                 ),
                 pw.Text(
-                  '${settings.currency}${vatInfo?.totalWithVat.toStringAsFixed(2) ?? sale.totalAmount.toStringAsFixed(2)}',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  money(document.total),
+                  style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                 ),
               ],
             ),
-            if (sale.amountReceived != null) ...[
+            if (document.amountReceived != null) ...[
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text(labels.received),
-                  pw.Text(
-                    '${settings.currency}${sale.amountReceived!.toStringAsFixed(2)}',
-                  ),
+                  pw.Text(money(document.amountReceived!)),
                 ],
               ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Text(labels.change),
-                  pw.Text(
-                    '${settings.currency}${(sale.changeAmount ?? 0).toStringAsFixed(2)}',
-                  ),
+                  pw.Text(money(document.changeAmount ?? Money.zero)),
                 ],
               ),
             ],
-            if (sale.note != null && sale.note!.isNotEmpty) ...[
+            if (document.note != null && document.note!.isNotEmpty) ...[
               pw.SizedBox(height: 4),
               pw.Text(
-                '${labels.note}: ${sale.note}',
+                '${labels.note}: ${document.note}',
                 style: const pw.TextStyle(fontSize: 9),
               ),
             ],
             pw.SizedBox(height: 8),
             pw.Center(
-              child: pw.Text(footer, style: const pw.TextStyle(fontSize: 10)),
+              child: pw.Text(
+                document.footer,
+                style: const pw.TextStyle(fontSize: 10),
+              ),
             ),
           ],
         ),
@@ -275,20 +386,34 @@ class ReceiptPdfService {
     return doc;
   }
 
+  /// Test seam: builds PDF from sale using stored-field SSOT.
   pw.Document buildDocumentForTest({
     required Sale sale,
     required Settings settings,
     required ReceiptLabels labels,
     Map<String, Uint8List>? productImages,
-  }) => _buildDocument(
-    sale: sale,
-    settings: settings,
-    labels: labels,
-    baseFont: null,
-    boldFont: null,
-    productImages: productImages,
-  );
+    bool isReprint = false,
+    String? thankYouFallback,
+    String? notTaxInvoiceDisclaimer,
+  }) {
+    final document = _documentBuilder.fromSale(
+      sale: sale,
+      settings: settings,
+      labels: labels,
+      isReprint: isReprint,
+      thankYouFallback: thankYouFallback,
+      notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
+    );
+    return _buildDocument(
+      document: document,
+      baseFont: null,
+      boldFont: null,
+      productImages: productImages,
+    );
+  }
 
+  /// Legacy helper for settings mocks / pre-sale only.
+  /// Prefer [BuildReceiptDocument] + stored sale fields for completed sales.
   ({double subtotal, double vatAmount, double totalWithVat, bool isInclusive})?
   calculateVat({
     required double total,
@@ -308,7 +433,6 @@ class ReceiptPdfService {
         isInclusive: true,
       );
     }
-    // EXCLUSIVE
     if (isTotalPreTax) {
       final vatAmount = double.parse((total * r).toStringAsFixed(2));
       return (
@@ -318,7 +442,6 @@ class ReceiptPdfService {
         isInclusive: false,
       );
     }
-    // total already includes VAT (e.g. sale.totalAmount from DB)
     final vatAmount = double.parse((total * r / (1 + r)).toStringAsFixed(2));
     final subtotal = double.parse((total - vatAmount).toStringAsFixed(2));
     return (
@@ -335,6 +458,17 @@ class ReceiptPdfService {
     } catch (e) {
       AppLogger.warning('ReceiptPdfService._formatDate fallback', error: e);
       return DateFormat('dd/MM/yyyy HH:mm').format(dt);
+    }
+  }
+
+  /// Maps settings `receiptSize` to PDF page format.
+  static PdfPageFormat _pageFormatFor(String receiptSize) {
+    switch (receiptSize.trim().toUpperCase()) {
+      case 'A4':
+        return PdfPageFormat.a4;
+      case '80MM':
+      default:
+        return PdfPageFormat.roll80;
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/discount_prese
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 
 class DiscountPresetDialogs {
   DiscountPresetDialogs._();
@@ -48,13 +49,7 @@ class DiscountPresetDialogs {
                     discountPresets: [...s.discountPresets, preset],
                   ),
                 );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.addDiscountPreset),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                AppSnackBar.success(context, l10n.addDiscountPreset);
               }
             },
             style: FilledButton.styleFrom(backgroundColor: st.softAccent),
@@ -97,13 +92,7 @@ class DiscountPresetDialogs {
                   activeDiscountPresetId: newActiveId,
                 );
               });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.deleteDiscountPreset),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              AppSnackBar.success(context, l10n.deleteDiscountPreset);
             },
             child: Text(
               l10n.deleteDiscountPreset,

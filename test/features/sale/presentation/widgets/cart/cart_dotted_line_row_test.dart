@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_dotted_line_row.dart';
 
 import '../../../../../helpers/pump_app.dart';
@@ -8,9 +9,9 @@ void main() {
   group('CartDottedLineRow', () {
     testWidgets('renders label text', (tester) async {
       await tester.pumpApp(
-        const CartDottedLineRow(
+        CartDottedLineRow(
           label: 'Subtotal',
-          value: 100.0,
+          value: Money.fromDouble(100.0),
           currency: 'THB',
         ),
       );
@@ -20,9 +21,9 @@ void main() {
 
     testWidgets('renders value with currency', (tester) async {
       await tester.pumpApp(
-        const CartDottedLineRow(
+        CartDottedLineRow(
           label: 'Discount',
-          value: 25.5,
+          value: Money.fromDouble(25.5),
           currency: 'THB',
         ),
       );
@@ -32,9 +33,9 @@ void main() {
 
     testWidgets('uses custom valueColor when provided', (tester) async {
       await tester.pumpApp(
-        const CartDottedLineRow(
+        CartDottedLineRow(
           label: 'Total',
-          value: 100.0,
+          value: Money.fromDouble(100.0),
           currency: 'THB',
           valueColor: Colors.red,
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
@@ -7,7 +8,7 @@ void main() {
   final product = Product(
     id: 'p1',
     name: 'Coffee',
-    price: 50,
+    price: Money.fromDouble(50),
     stock: 10,
     isActive: true,
     createdAt: DateTime(2024, 1, 1),
@@ -17,7 +18,7 @@ void main() {
   final product2 = Product(
     id: 'p2',
     name: 'Tea',
-    price: 30,
+    price: Money.fromDouble(30),
     stock: 5,
     isActive: true,
     createdAt: DateTime(2024, 1, 1),
@@ -52,12 +53,12 @@ void main() {
           CartItem(product: product2, qty: 1),
         ],
       );
-      expect(state.itemsSubtotal, 130.0);
+      expect(state.itemsSubtotal, Money.fromDouble(130.0));
     });
 
     test('cartDiscountAmount is 0 when no discount', () {
       final state = CartState(items: [CartItem(product: product, qty: 1)]);
-      expect(state.cartDiscountAmount, 0.0);
+      expect(state.cartDiscountAmount, Money.zero);
     });
 
     test('cartDiscountAmount calculates for PERCENT', () {
@@ -66,7 +67,7 @@ void main() {
         cartDiscountType: 'PERCENT',
         cartDiscountValue: 10,
       );
-      expect(state.cartDiscountAmount, 10.0);
+      expect(state.cartDiscountAmount, Money.fromDouble(10.0));
     });
 
     test('cartDiscountAmount calculates for AMOUNT', () {
@@ -75,7 +76,7 @@ void main() {
         cartDiscountType: 'AMOUNT',
         cartDiscountValue: 30,
       );
-      expect(state.cartDiscountAmount, 30.0);
+      expect(state.cartDiscountAmount, Money.fromDouble(30.0));
     });
 
     test('total subtracts cart discount', () {
@@ -84,7 +85,7 @@ void main() {
         cartDiscountType: 'PERCENT',
         cartDiscountValue: 10,
       );
-      expect(state.total, 90.0);
+      expect(state.total, Money.fromDouble(90.0));
     });
 
     test('hasCartDiscount is true when discount value > 0', () {

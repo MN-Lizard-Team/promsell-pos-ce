@@ -14,6 +14,7 @@ class BackupEncryptionService {
   static const _nonceLength = 12; // 96 bits for GCM
   static const _v1 = 0x01;
   static const _v2 = 0x02;
+  static const minPinLength = 6;
 
   /// Encrypts a file using AES-256-GCM with a PIN-derived key.
   ///
@@ -24,6 +25,14 @@ class BackupEncryptionService {
     required String pin,
     String? outputPath,
   }) async {
+    final trimmed = pin.trim();
+    if (trimmed.isEmpty) {
+      throw StateError('PIN_REQUIRED');
+    }
+    if (trimmed.length < minPinLength) {
+      throw StateError('PIN_TOO_SHORT');
+    }
+
     final sourceFile = File(sourcePath);
     if (!await sourceFile.exists()) {
       throw StateError('Source file not found: $sourcePath');
@@ -31,7 +40,7 @@ class BackupEncryptionService {
 
     final salt = _generateRandomBytes(_saltLength);
     final nonce = _generateRandomBytes(_nonceLength);
-    final key = _deriveKey(pin, salt, _v2);
+    final key = _deriveKey(trimmed, salt, _v2);
 
     final plaintext = await sourceFile.readAsBytes();
     final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
@@ -115,16 +124,26 @@ class BackupEncryptionService {
   }
 
   /// Verifies a PIN against an encrypted file by attempting decryption.
+  ///
+  /// Always deletes any temporary restored plaintext after the attempt.
   Future<bool> verifyPin({
     required String sourcePath,
     required String pin,
   }) async {
+    String? restoredPath;
     try {
-      await decryptFile(sourcePath: sourcePath, pin: pin);
+      restoredPath = await decryptFile(sourcePath: sourcePath, pin: pin);
       return true;
     } catch (e) {
       AppLogger.warning('Backup PIN verification failed', error: e);
       return false;
+    } finally {
+      if (restoredPath != null) {
+        try {
+          final f = File(restoredPath);
+          if (await f.exists()) await f.delete();
+        } catch (_) {}
+      }
     }
   }
 

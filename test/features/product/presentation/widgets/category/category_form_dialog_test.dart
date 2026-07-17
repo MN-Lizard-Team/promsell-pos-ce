@@ -66,7 +66,7 @@ void main() {
     testWidgets('icon picker has Semantics labels (C8)', (tester) async {
       await tester.pumpApp(const CategoryFormDialog());
 
-      expect(find.bySemanticsLabel('folder_outlined'), findsOneWidget);
+      expect(find.bySemanticsLabel('Icon folder_outlined'), findsOneWidget);
     });
 
     testWidgets('_presetColors is const (C9)', (tester) async {

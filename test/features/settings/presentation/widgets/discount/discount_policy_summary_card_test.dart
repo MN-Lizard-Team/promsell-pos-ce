@@ -19,8 +19,8 @@ void main() {
       );
 
       expect(find.byIcon(Icons.local_offer_outlined), findsOneWidget);
-      expect(find.text('ON'), findsOneWidget);
-      expect(find.text('OFF'), findsOneWidget);
+      expect(find.text('On'), findsOneWidget);
+      expect(find.text('Off'), findsOneWidget);
     });
 
     testWidgets('renders percent label', (tester) async {

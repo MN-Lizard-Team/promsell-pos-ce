@@ -7,7 +7,9 @@ class AddCategory {
   const AddCategory(this._repository);
   final CategoryRepository _repository;
 
-  Future<void> call({
+  /// [sortOrder] `0` means auto-append (`max(existing)+1`), matching CSV import.
+  /// Returns the new category id.
+  Future<String> call({
     required String name,
     int sortOrder = 0,
     String? color,
@@ -18,9 +20,16 @@ class AddCategory {
     if (categories.any((c) => c.name.toLowerCase() == lowerName)) {
       throw const CategoryNameExistsException();
     }
+    final nextSortOrder = sortOrder != 0
+        ? sortOrder
+        : categories.fold<int>(
+                0,
+                (highest, c) => c.sortOrder > highest ? c.sortOrder : highest,
+              ) +
+              1;
     return _repository.addCategory(
       name: name.trim(),
-      sortOrder: sortOrder,
+      sortOrder: nextSortOrder,
       color: color,
       iconName: iconName,
     );

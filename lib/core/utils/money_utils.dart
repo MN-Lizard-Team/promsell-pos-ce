@@ -1,12 +1,17 @@
-/// Centralized money rounding utility.
-///
-/// All monetary calculations MUST use [MoneyUtils.round] before storing
-/// or displaying to avoid floating-point drift (e.g. 33.335 → 33.34).
+import 'package:promsell_pos_ce/core/domain/money.dart';
+
+/// Centralized money utility helpers.
 class MoneyUtils {
   MoneyUtils._();
 
-  /// Round [value] to 2 decimal places (half-up) for currency.
+  /// Legacy: rounds a double to 2 decimal places (half-up) for currency.
+  ///
+  /// @deprecated Use [Money] value object for new code.
   static double round(double value) {
     return double.parse(value.toStringAsFixed(2));
   }
+
+  /// Sums an iterable of [Money] values. Returns [Money.zero] for empty input.
+  static Money sum(Iterable<Money> values) =>
+      values.fold(Money.zero, (a, b) => a + b);
 }

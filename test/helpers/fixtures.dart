@@ -1,3 +1,4 @@
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
@@ -9,7 +10,7 @@ final tNow = DateTime(2025, 1, 15, 10, 30);
 final tProduct = Product(
   id: 'prod-0001-0001-0001-000000000001',
   name: 'Test Product',
-  price: 100.0,
+  price: Money.fromDouble(100.0),
   stock: 50,
   categoryId: 'Drinks',
   imageUrl: null,
@@ -24,7 +25,7 @@ final tProduct = Product(
 final tProduct2 = Product(
   id: 'prod-0002-0002-0002-000000000002',
   name: 'Another Product',
-  price: 250.5,
+  price: Money.fromDouble(250.5),
   stock: 10,
   categoryId: 'Food',
   imageUrl: null,
@@ -39,7 +40,7 @@ final tProduct2 = Product(
 final tInactiveProduct = Product(
   id: 'prod-0003-0003-0003-000000000003',
   name: 'Inactive Product',
-  price: 50.0,
+  price: Money.fromDouble(50.0),
   stock: 0,
   categoryId: null,
   imageUrl: null,
@@ -54,7 +55,7 @@ final tInactiveProduct = Product(
 final tServiceProduct = Product(
   id: 'prod-0004-0004-0004-000000000004',
   name: 'Service Item',
-  price: 200.0,
+  price: Money.fromDouble(200.0),
   stock: 0,
   categoryId: null,
   imageUrl: null,
@@ -70,7 +71,7 @@ final tProductWithBarcode = Product(
   id: 'prod-0005-0005-0005-000000000005',
   name: 'Barcoded Product',
   barcode: '1234567890123',
-  price: 150.0,
+  price: Money.fromDouble(150.0),
   stock: 20,
   categoryId: null,
   imageUrl: null,
@@ -86,35 +87,35 @@ final tCartItem = CartItem(product: tProduct, qty: 2);
 
 final tCartItem2 = CartItem(product: tProduct2, qty: 1);
 
-const tSaleItem = SaleItem(
+final tSaleItem = SaleItem(
   id: 'si-00000001-0001-0001-000000000001',
   saleId: 'sale-0001-0001-0001-000000000001',
   productId: 'prod-0001-0001-0001-000000000001',
   productName: 'Test Product',
-  price: 100.0,
+  price: Money.fromDouble(100.0),
   qty: 2,
-  subtotal: 200.0,
-  discountAmount: 0.0,
-  vatAmount: 0.0,
+  subtotal: Money.fromDouble(200.0),
+  discountAmount: Money.zero,
+  vatAmount: Money.zero,
   version: 1,
 );
 
 final tSale = Sale(
   id: 'sale-0001-0001-0001-000000000001',
-  totalAmount: 200.0,
-  subtotalAmount: 200.0,
+  totalAmount: Money.fromDouble(200.0),
+  subtotalAmount: Money.fromDouble(200.0),
   discountType: null,
   discountValue: null,
-  discountAmount: 0.0,
+  discountAmount: Money.zero,
   vatMode: 'NONE',
   vatRate: 0.0,
-  vatAmount: 0.0,
+  vatAmount: Money.zero,
   paymentMethod: 'cash',
-  amountReceived: 500.0,
-  changeAmount: 300.0,
+  amountReceived: Money.fromDouble(500.0),
+  changeAmount: Money.fromDouble(300.0),
   note: null,
   createdAt: tNow,
-  items: const [tSaleItem],
+  items: [tSaleItem],
 );
 
 final tAppSettings = const Settings();

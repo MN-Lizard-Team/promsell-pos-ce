@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:shimmer/shimmer.dart';
@@ -10,12 +11,20 @@ class HomeStatsRow extends StatelessWidget {
     required this.cost,
     required this.profit,
     this.isLoading = false,
+    this.metricsUnknown = false,
+    this.costUnknown = false,
   });
 
-  final double revenue;
-  final double cost;
-  final double profit;
+  final Money revenue;
+  final Money cost;
+  final Money profit;
   final bool isLoading;
+
+  /// Load failed — do not present zeros as a quiet day.
+  final bool metricsUnknown;
+
+  /// Product catalog not ready — cost/profit would be fake.
+  final bool costUnknown;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +42,7 @@ class HomeStatsRow extends StatelessWidget {
               icon: Icons.payments_outlined,
               iconColor: cs.primary,
               isLoading: isLoading,
+              showPlaceholder: metricsUnknown,
             ),
           ),
           const SizedBox(width: 4),
@@ -43,6 +53,7 @@ class HomeStatsRow extends StatelessWidget {
               icon: Icons.account_balance_wallet_outlined,
               iconColor: cs.secondary,
               isLoading: isLoading,
+              showPlaceholder: metricsUnknown || costUnknown,
             ),
           ),
           const SizedBox(width: 4),
@@ -53,7 +64,8 @@ class HomeStatsRow extends StatelessWidget {
               icon: Icons.savings_outlined,
               iconColor: cs.tertiary,
               isLoading: isLoading,
-              valueColor: profit < 0 ? cs.error : cs.onSurface,
+              showPlaceholder: metricsUnknown || costUnknown,
+              valueColor: profit.isNegative ? cs.error : cs.onSurface,
             ),
           ),
         ],
@@ -69,23 +81,26 @@ class _StatCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     this.isLoading = false,
+    this.showPlaceholder = false,
     this.valueColor,
   });
 
   final String label;
-  final double value;
+  final Money value;
   final IconData icon;
   final Color iconColor;
   final bool isLoading;
+  final bool showPlaceholder;
   final Color? valueColor;
 
-  String _formatCompact(double v) {
-    if (v.abs() >= 1000000) {
-      return '฿${(v / 1000000).toStringAsFixed(1)}M';
-    } else if (v.abs() >= 1000) {
-      return '฿${(v / 1000).toStringAsFixed(1)}k';
+  String _formatCompact(Money v) {
+    final abs = v.value.abs();
+    if (abs >= 1000000) {
+      return '฿${(v.value / 1000000).toStringAsFixed(1)}M';
+    } else if (abs >= 1000) {
+      return '฿${(v.value / 1000).toStringAsFixed(1)}k';
     } else {
-      return CurrencyFormatter.format(v);
+      return CurrencyFormatter.format(v.value);
     }
   }
 
@@ -93,9 +108,10 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final display = showPlaceholder ? '—' : _formatCompact(value);
 
     return Semantics(
-      label: '$label ${_formatCompact(value)}',
+      label: '$label $display',
       child: Card(
         elevation: 8,
         shadowColor: cs.shadow.withValues(alpha: 0.3),
@@ -137,10 +153,12 @@ class _StatCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          _formatCompact(value),
+                          display,
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w800,
-                            color: valueColor ?? cs.onSurface,
+                            color: showPlaceholder
+                                ? cs.onSurfaceVariant
+                                : (valueColor ?? cs.onSurface),
                           ),
                         ),
                       ),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
@@ -29,20 +30,18 @@ class SaleDashboardHeader extends StatelessWidget {
       stream: sl<SaleRepository>().watchSales(from: todayStart, to: todayEnd),
       builder: (ctx, snapshot) {
         final sales = snapshot.data ?? const [];
-        final completed = sales.where((s) => s.status == 'COMPLETED').toList();
-        final revenue = completed.fold<double>(
-          0,
-          (sum, s) => sum + s.totalAmount,
-        );
-        final salesCount = completed.length;
+        final totals = SalesPeriodTotals.from(sales);
+        final revenue = totals.netRevenue.value;
+        final salesCount = totals.salesCount;
         final cartCount = cartState.itemCount;
-        final cartTotal = cartState.total;
+        // Payable SSOT (VAT + default SC) — not CartState.total/grandTotal.
+        final cartTotal = cartState.payableTotals(settings).payableTotal;
 
         final revenueStr = revenue.toStringAsFixed(
           revenue == revenue.roundToDouble() ? 0 : 2,
         );
-        final cartTotalStr = cartTotal.toStringAsFixed(
-          cartTotal == cartTotal.roundToDouble() ? 0 : 2,
+        final cartTotalStr = cartTotal.value.toStringAsFixed(
+          cartTotal.value == cartTotal.value.roundToDouble() ? 0 : 2,
         );
 
         return Padding(

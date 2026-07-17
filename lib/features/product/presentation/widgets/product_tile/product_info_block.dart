@@ -107,7 +107,7 @@ class ProductInfoBlock extends StatelessWidget {
             onTap: onPriceTap,
             borderRadius: BorderRadius.circular(6),
             child: MoneyText(
-              value: product.price,
+              value: product.price.value,
               currency: currency,
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
@@ -175,7 +175,7 @@ class ProductInfoBlock extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: MoneyText(
-                    value: product.price,
+                    value: product.price.value,
                     currency: currency,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w800,

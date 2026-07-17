@@ -32,7 +32,6 @@ void main() {
       expect(settings.shopInfo.name, '');
       expect(settings.paymentConfig.currency, '฿');
       expect(settings.receiptConfig.showShopInfo, isTrue);
-      expect(settings.receiptConfig.autoPrintPrompt, isTrue);
       expect(settings.taxConfig.vatRate, 7.0);
       expect(settings.taxConfig.vatMode, 'NONE');
       expect(settings.receiptConfig.receiptPreviewStyle, 'thermal');
@@ -58,7 +57,6 @@ void main() {
       expect(settings.shopInfo.name, 'My Shop');
       expect(settings.paymentConfig.currency, '\$');
       expect(settings.receiptConfig.showShopInfo, isFalse);
-      expect(settings.receiptConfig.autoPrintPrompt, isTrue);
       expect(settings.taxConfig.vatRate, 7.0);
       expect(settings.taxConfig.vatMode, 'NONE');
       expect(settings.receiptConfig.receiptPreviewStyle, 'thermal');
@@ -80,7 +78,6 @@ void main() {
           receiptPreviewStyle: 'card',
           receiptNote: 'Thank you!',
           showShopInfo: false,
-          autoPrintPrompt: false,
           showPreSalePreview: false,
           showPostSalePreview: false,
         ),
@@ -107,7 +104,7 @@ void main() {
       expect(captured['dateFormat'], 'yyyy-MM-dd');
       expect(captured['receiptNote'], 'Thank you!');
       expect(captured['showShopInfo'], 'false');
-      expect(captured['autoPrintPrompt'], 'false');
+      expect(captured.containsKey('autoPrintPrompt'), isFalse);
       expect(captured['vatRate'], '10.0');
       expect(captured['vatMode'], 'INCLUSIVE');
       expect(captured['receiptPreviewStyle'], 'card');

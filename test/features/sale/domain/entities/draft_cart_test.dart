@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
@@ -7,7 +8,7 @@ void main() {
   final tProduct = Product(
     id: 'p1',
     name: 'Coffee',
-    price: 50,
+    price: Money.fromDouble(50),
     stock: 10,
     isActive: true,
     createdAt: DateTime(2025, 1, 1),
@@ -31,7 +32,7 @@ void main() {
         items: [CartItem(product: tProduct, qty: 1)],
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.displayName, 'Draft');
+      expect(draft.displayName, '');
     });
 
     test('displayName returns Draft when name is empty', () {
@@ -41,7 +42,7 @@ void main() {
         name: '',
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.displayName, 'Draft');
+      expect(draft.displayName, '');
     });
 
     test('itemCount sums quantities', () {
@@ -62,7 +63,7 @@ void main() {
         items: [CartItem(product: tProduct, qty: 2)],
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.total, 100.0);
+      expect(draft.total, Money.fromDouble(100));
     });
 
     test('total with percent discount', () {
@@ -73,7 +74,7 @@ void main() {
         cartDiscountValue: 10,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.total, 90.0);
+      expect(draft.total, Money.fromDouble(90));
     });
 
     test('total with amount discount', () {
@@ -84,7 +85,7 @@ void main() {
         cartDiscountValue: 15,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.total, 85.0);
+      expect(draft.total, Money.fromDouble(85));
     });
 
     test('discountAmount clamps to raw total for amount discount', () {
@@ -95,8 +96,8 @@ void main() {
         cartDiscountValue: 200,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.total, 0.0);
-      expect(draft.discountAmount, 50.0);
+      expect(draft.total, Money.zero);
+      expect(draft.cartDiscountAmount, Money.fromDouble(50));
     });
 
     test('discountAmount is 0 when cartDiscountValue is 0', () {
@@ -107,8 +108,8 @@ void main() {
         cartDiscountValue: 0,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.discountAmount, 0.0);
-      expect(draft.total, 100.0);
+      expect(draft.cartDiscountAmount, Money.zero);
+      expect(draft.total, Money.fromDouble(100));
     });
 
     test('discountAmount is 0 when no discount type', () {
@@ -118,22 +119,37 @@ void main() {
         cartDiscountValue: 10,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.discountAmount, 0.0);
-      expect(draft.total, 100.0);
+      expect(draft.cartDiscountAmount, Money.zero);
+      expect(draft.total, Money.fromDouble(100));
     });
 
     test('supports equality', () {
       final draft1 = DraftCart(
         id: 'd1',
-        items: [CartItem(product: tProduct, qty: 1)],
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'line-1')],
         updatedAt: DateTime(2025, 1, 1),
       );
       final draft2 = DraftCart(
         id: 'd1',
-        items: [CartItem(product: tProduct, qty: 1)],
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'line-1')],
         updatedAt: DateTime(2025, 1, 1),
       );
       expect(draft1, draft2);
+    });
+
+    test('payableTotal subtracts promo (unlike legacy total)', () {
+      final draft = DraftCart(
+        id: 'd1',
+        items: [CartItem(product: tProduct, qty: 2)],
+        promotionDiscountAmount: Money.fromDouble(20),
+        updatedAt: DateTime(2025, 1, 1),
+      );
+      // total = items − cart disc only (100)
+      expect(draft.total, Money.fromDouble(100));
+      // payableTotal uses SalePayableCalculator (promo applied)
+      expect(draft.payableTotal(), Money.fromDouble(80));
+      // legacy grandTotal also subtracts promo when recomputed
+      expect(draft.grandTotal, Money.fromDouble(80));
     });
   });
 }

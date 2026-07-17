@@ -1,4 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+
+const Object _unset = Object();
 
 class ProductDraft extends Equatable {
   const ProductDraft({
@@ -14,6 +17,12 @@ class ProductDraft extends Equatable {
     this.imageThumbnailPath,
     this.trackStock = true,
     this.isActive = true,
+    this.isRecommended = false,
+    this.description = '',
+    this.brand = '',
+    this.unit = '',
+    this.supplier = '',
+    this.optionGroups = const [],
   });
 
   final String name;
@@ -28,6 +37,12 @@ class ProductDraft extends Equatable {
   final String? imageThumbnailPath;
   final bool trackStock;
   final bool isActive;
+  final bool isRecommended;
+  final String description;
+  final String brand;
+  final String unit;
+  final String supplier;
+  final List<ProductOptionGroup> optionGroups;
 
   bool get isEmpty =>
       name.isEmpty &&
@@ -36,7 +51,13 @@ class ProductDraft extends Equatable {
       barcode.isEmpty &&
       cost.isEmpty &&
       categoryId == null &&
-      imagePath == null;
+      imagePath == null &&
+      description.isEmpty &&
+      brand.isEmpty &&
+      unit.isEmpty &&
+      supplier.isEmpty &&
+      !isRecommended &&
+      optionGroups.isEmpty;
 
   Map<String, dynamic> toJson() => {
     'name': name,
@@ -51,22 +72,41 @@ class ProductDraft extends Equatable {
     'imageThumbnailPath': imageThumbnailPath,
     'trackStock': trackStock,
     'isActive': isActive,
+    'isRecommended': isRecommended,
+    'description': description,
+    'brand': brand,
+    'unit': unit,
+    'supplier': supplier,
+    'optionGroups': optionGroups.map((group) => group.toJson()).toList(),
   };
 
-  factory ProductDraft.fromJson(Map<String, dynamic> json) => ProductDraft(
-    name: json['name'] as String? ?? '',
-    price: json['price'] as String? ?? '',
-    stock: json['stock'] as String? ?? '0',
-    sku: json['sku'] as String? ?? '',
-    barcode: json['barcode'] as String? ?? '',
-    cost: json['cost'] as String? ?? '',
-    categoryId: json['categoryId'] as String?,
-    categoryName: json['categoryName'] as String?,
-    imagePath: json['imagePath'] as String?,
-    imageThumbnailPath: json['imageThumbnailPath'] as String?,
-    trackStock: json['trackStock'] as bool? ?? true,
-    isActive: json['isActive'] as bool? ?? true,
-  );
+  factory ProductDraft.fromJson(Map<String, dynamic> json) {
+    final optionGroupValues =
+        json['optionGroups'] as List<dynamic>? ?? const [];
+    return ProductDraft(
+      name: json['name'] as String? ?? '',
+      price: json['price'] as String? ?? '',
+      stock: json['stock'] as String? ?? '0',
+      sku: json['sku'] as String? ?? '',
+      barcode: json['barcode'] as String? ?? '',
+      cost: json['cost'] as String? ?? '',
+      categoryId: json['categoryId'] as String?,
+      categoryName: json['categoryName'] as String?,
+      imagePath: json['imagePath'] as String?,
+      imageThumbnailPath: json['imageThumbnailPath'] as String?,
+      trackStock: json['trackStock'] as bool? ?? true,
+      isActive: json['isActive'] as bool? ?? true,
+      isRecommended: json['isRecommended'] as bool? ?? false,
+      description: json['description'] as String? ?? '',
+      brand: json['brand'] as String? ?? '',
+      unit: json['unit'] as String? ?? '',
+      supplier: json['supplier'] as String? ?? '',
+      optionGroups: optionGroupValues
+          .whereType<Map<String, dynamic>>()
+          .map(ProductOptionGroup.fromJson)
+          .toList(),
+    );
+  }
 
   ProductDraft copyWith({
     String? name,
@@ -75,12 +115,18 @@ class ProductDraft extends Equatable {
     String? sku,
     String? barcode,
     String? cost,
-    String? categoryId,
-    String? categoryName,
-    String? imagePath,
-    String? imageThumbnailPath,
+    Object? categoryId = _unset,
+    Object? categoryName = _unset,
+    Object? imagePath = _unset,
+    Object? imageThumbnailPath = _unset,
     bool? trackStock,
     bool? isActive,
+    bool? isRecommended,
+    String? description,
+    String? brand,
+    String? unit,
+    String? supplier,
+    List<ProductOptionGroup>? optionGroups,
   }) {
     return ProductDraft(
       name: name ?? this.name,
@@ -89,12 +135,26 @@ class ProductDraft extends Equatable {
       sku: sku ?? this.sku,
       barcode: barcode ?? this.barcode,
       cost: cost ?? this.cost,
-      categoryId: categoryId ?? this.categoryId,
-      categoryName: categoryName ?? this.categoryName,
-      imagePath: imagePath ?? this.imagePath,
-      imageThumbnailPath: imageThumbnailPath ?? this.imageThumbnailPath,
+      categoryId: identical(categoryId, _unset)
+          ? this.categoryId
+          : categoryId as String?,
+      categoryName: identical(categoryName, _unset)
+          ? this.categoryName
+          : categoryName as String?,
+      imagePath: identical(imagePath, _unset)
+          ? this.imagePath
+          : imagePath as String?,
+      imageThumbnailPath: identical(imageThumbnailPath, _unset)
+          ? this.imageThumbnailPath
+          : imageThumbnailPath as String?,
       trackStock: trackStock ?? this.trackStock,
       isActive: isActive ?? this.isActive,
+      isRecommended: isRecommended ?? this.isRecommended,
+      description: description ?? this.description,
+      brand: brand ?? this.brand,
+      unit: unit ?? this.unit,
+      supplier: supplier ?? this.supplier,
+      optionGroups: optionGroups ?? this.optionGroups,
     );
   }
 
@@ -112,5 +172,11 @@ class ProductDraft extends Equatable {
     imageThumbnailPath,
     trackStock,
     isActive,
+    isRecommended,
+    description,
+    brand,
+    unit,
+    supplier,
+    optionGroups,
   ];
 }

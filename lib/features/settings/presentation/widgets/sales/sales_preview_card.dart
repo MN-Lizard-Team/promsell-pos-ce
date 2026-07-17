@@ -7,7 +7,6 @@ class SalesPreviewCard extends StatelessWidget {
     required this.currency,
     required this.dateFormat,
     required this.maxDrafts,
-    required this.cartCompactMode,
     required this.ultraCompactMode,
     super.key,
   });
@@ -15,19 +14,16 @@ class SalesPreviewCard extends StatelessWidget {
   final String currency;
   final String dateFormat;
   final int maxDrafts;
-  final bool cartCompactMode;
   final bool ultraCompactMode;
 
-  IconData get _modeIcon {
-    if (ultraCompactMode) return Icons.density_small;
-    if (cartCompactMode) return Icons.shopping_bag_outlined;
-    return Icons.shopping_cart_outlined;
-  }
+  IconData get _modeIcon =>
+      ultraCompactMode ? Icons.density_small : Icons.shopping_bag_outlined;
 
   String _modeLabel(BuildContext context) {
-    if (ultraCompactMode) return 'Ultra Compact';
-    if (cartCompactMode) return 'Delivery';
-    return 'Classic';
+    final l10n = context.l10n;
+    return ultraCompactMode
+        ? l10n.settingsUltraCompactMode
+        : l10n.settingsCatalogMode;
   }
 
   @override
@@ -57,7 +53,7 @@ class SalesPreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '${context.l10n.settingsSales} Preview',
+            context.l10n.settingsPreview(context.l10n.settingsSales),
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               fontSize: 18,
@@ -85,7 +81,7 @@ class SalesPreviewCard extends StatelessWidget {
           ),
           _buildRow(
             icon: _modeIcon,
-            label: 'Mode',
+            label: context.l10n.settingsModeLabel,
             value: _modeLabel(context),
             st: st,
           ),

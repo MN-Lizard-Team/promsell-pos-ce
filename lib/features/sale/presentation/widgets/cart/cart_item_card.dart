@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_bottom_sheet/cart_qty_dialog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_qty_button.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
+/// Receipt-style cart line: name · discount badge · qty · line total.
 class CartItemCard extends StatelessWidget {
   const CartItemCard({
     super.key,
@@ -19,6 +21,7 @@ class CartItemCard extends StatelessWidget {
     required this.onDecrement,
     required this.onIncrement,
     required this.onDelete,
+    this.onMoreActions,
   });
 
   final CartItem item;
@@ -28,155 +31,158 @@ class CartItemCard extends StatelessWidget {
   final VoidCallback onDecrement;
   final VoidCallback onIncrement;
   final VoidCallback onDelete;
+  final Widget? onMoreActions;
+
+  void _openQtyDialog(BuildContext context) {
+    final allowOversell = context
+        .read<SettingsCubit>()
+        .state
+        .settings
+        .allowOversell;
+    CartQtyDialog.show(
+      context,
+      bloc: context.read<CartBloc>(),
+      item: item,
+      allowOversell: allowOversell,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      elevation: 1,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    final optionsLabel = item.selectedOptions
+        .map((o) => o.optionName)
+        .join(' · ');
+    final hasDisc = item.discountAmount.value > 0;
+    final unitLabel =
+        '${item.qty} × ${CurrencyFormatter.formatGroupedWithSymbol(item.product.price.value, currency)}';
+
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: onRowTap,
-        borderRadius: BorderRadius.circular(14),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
                 onTap: onImageTap,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: theme.colorScheme.primaryContainer,
-                      width: 2,
-                    ),
-                  ),
-                  child: ProductAvatar(
-                    imagePath: item.product.imagePath,
-                    imageThumbnailPath: item.product.imageThumbnailPath,
-                    imageUrl: item.product.imageUrl,
-                    size: 48,
-                  ),
+                child: ProductAvatar(
+                  imagePath: item.product.imagePath,
+                  imageThumbnailPath: item.product.imageThumbnailPath,
+                  imageUrl: item.product.imageUrl,
+                  size: 40,
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      item.product.name,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${item.qty} x $currency${item.product.price.toStringAsFixed(2)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.secondary,
-                      ),
-                    ),
-                    if (item.selectedOptions.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: item.selectedOptions
-                              .map(
-                                (opt) => Chip(
-                                  visualDensity: VisualDensity.compact,
-                                  padding: EdgeInsets.zero,
-                                  labelPadding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  label: Text(
-                                    opt.optionName,
-                                    style: theme.textTheme.labelSmall,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                    if (item.discountAmount > 0) ...[
-                      const SizedBox(height: 6),
-                      Chip(
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                        backgroundColor: theme.colorScheme.errorContainer,
-                        side: BorderSide.none,
-                        avatar: Icon(
-                          Icons.local_offer_outlined,
-                          size: 14,
-                          color: theme.colorScheme.error,
-                        ),
-                        label: Text(
-                          '-$currency${item.discountAmount.toStringAsFixed(2)}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.error,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 8),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CartQtyButton(
-                          icon: Icons.remove,
-                          onPressed: onDecrement,
-                        ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => _showQtyDialog(context),
+                        Expanded(
                           child: Text(
-                            '${item.qty}',
+                            item.product.name,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
+                              fontSize: 15,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        CartQtyButton(icon: Icons.add, onPressed: onIncrement),
-                        const Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          color: theme.colorScheme.error,
-                          tooltip: context.l10n.removeItem,
-                          onPressed: onDelete,
-                          iconSize: 20,
-                          visualDensity: VisualDensity.compact,
+                        MoneyText(
+                          value: item.subtotal.value,
+                          currency: currency,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontFamily: 'NotoSansThai',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                          color: theme.colorScheme.onSurface,
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 0,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    MoneyText(
-                      value: item.subtotal,
-                      currency: currency,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontFamily: 'NotoSansThai',
-                        fontWeight: FontWeight.w700,
+                    if (optionsLabel.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        optionsLabel,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.secondary,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      color: theme.colorScheme.onSurface,
+                    ],
+                    if (item.note != null && item.note!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        context.l10n.noteLabel(item.note!),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        if (hasDisc) ...[
+                          _DiscountBadge(
+                            label:
+                                '-${CurrencyFormatter.formatGroupedWithSymbol(item.discountAmount.value, currency)}',
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Expanded(
+                          child: Text(
+                            unitLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        CartQtyButton(
+                          icon: Icons.remove,
+                          tooltip: context.l10n.quantityLabel,
+                          onPressed: onDecrement,
+                        ),
+                        InkWell(
+                          onTap: () => _openQtyDialog(context),
+                          onLongPress: () => _openQtyDialog(context),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${item.qty}',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                        CartQtyButton(
+                          icon: Icons.add,
+                          tooltip: context.l10n.quantityLabel,
+                          onPressed: onIncrement,
+                        ),
+                        ?onMoreActions,
+                      ],
                     ),
                   ],
                 ),
@@ -187,101 +193,30 @@ class CartItemCard extends StatelessWidget {
       ),
     );
   }
-
-  void _showQtyDialog(BuildContext context) {
-    final allowOversell = context
-        .read<SettingsCubit>()
-        .state
-        .settings
-        .allowOversell;
-    showDialog(
-      context: context,
-      builder: (_) => _CartItemQtyDialog(
-        item: item,
-        allowOversell: allowOversell,
-        onSaved: (qty) {
-          if (qty != item.qty) {
-            context.read<CartBloc>().add(
-              CartItemQtyChanged(
-                productId: item.product.id,
-                qty: qty,
-                allowOversell: allowOversell,
-                lineId: item.lineId,
-              ),
-            );
-          }
-        },
-      ),
-    );
-  }
 }
 
-class _CartItemQtyDialog extends StatefulWidget {
-  const _CartItemQtyDialog({
-    required this.item,
-    required this.allowOversell,
-    required this.onSaved,
-  });
+class _DiscountBadge extends StatelessWidget {
+  const _DiscountBadge({required this.label});
 
-  final CartItem item;
-  final bool allowOversell;
-  final ValueChanged<int> onSaved;
-
-  @override
-  State<_CartItemQtyDialog> createState() => _CartItemQtyDialogState();
-}
-
-class _CartItemQtyDialogState extends State<_CartItemQtyDialog> {
-  late final TextEditingController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = TextEditingController(text: '${widget.item.qty}');
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _save() {
-    final qty = int.tryParse(_ctrl.text);
-    if (qty == null || qty <= 0) return;
-    var clamped = qty;
-    if (widget.item.product.trackStock && !widget.allowOversell) {
-      clamped = qty.clamp(0, widget.item.product.stock);
-    }
-    Navigator.pop(context);
-    if (clamped != widget.item.qty) {
-      widget.onSaved(clamped);
-    }
-  }
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(widget.item.product.name),
-      content: TextField(
-        controller: _ctrl,
-        autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(signed: true),
-        decoration: InputDecoration(
-          labelText: l10n.quantityLabel,
-          suffixText: widget.item.product.trackStock
-              ? l10n.stockLabel(widget.item.product.stock)
-              : null,
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.error.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.error,
+          fontWeight: FontWeight.w700,
+          fontSize: 11,
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(onPressed: _save, child: Text(l10n.save)),
-      ],
     );
   }
 }

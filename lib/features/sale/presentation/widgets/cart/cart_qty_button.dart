@@ -1,48 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class CartQtyButton extends StatefulWidget {
-  const CartQtyButton({super.key, required this.icon, required this.onPressed});
+class CartQtyButton extends StatelessWidget {
+  const CartQtyButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
 
   final IconData icon;
+  final String tooltip;
   final VoidCallback onPressed;
-
-  @override
-  State<CartQtyButton> createState() => _CartQtyButtonState();
-}
-
-class _CartQtyButtonState extends State<CartQtyButton> {
-  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) {
-        setState(() => _pressed = false);
-        HapticFeedback.selectionClick();
-        widget.onPressed();
-      },
-      onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedScale(
-        scale: _pressed ? 0.85 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutBack,
-        child: Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: _pressed
-                ? theme.colorScheme.surfaceContainerHighest
-                : theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.7,
-                  ),
-            borderRadius: BorderRadius.circular(16),
+    return Semantics(
+      button: true,
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: () {
+          HapticFeedback.selectionClick();
+          onPressed();
+        },
+        style: IconButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          padding: EdgeInsets.zero,
+          backgroundColor: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.7,
           ),
-          child: Icon(widget.icon, size: 18, color: theme.colorScheme.primary),
         ),
+        icon: Icon(icon, size: 20, color: theme.colorScheme.primary),
       ),
     );
   }

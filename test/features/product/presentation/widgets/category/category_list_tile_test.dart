@@ -99,7 +99,8 @@ void main() {
       expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
     });
 
-    testWidgets('opens delete confirmation dialog', (tester) async {
+    testWidgets('calls delete request directly', (tester) async {
+      var deleted = false;
       await tester.pumpApp(
         CategoryListTile(
           category: Category(
@@ -109,16 +110,14 @@ void main() {
             createdAt: DateTime(2024, 1, 1),
             updatedAt: DateTime(2024, 1, 1),
           ),
-          onDelete: () {},
+          onDelete: () => deleted = true,
         ),
       );
 
       await tester.tap(find.byIcon(Icons.delete_outline));
       await tester.pump();
 
-      expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
-      expect(find.text('Delete'), findsOneWidget);
+      expect(deleted, isTrue);
     });
   });
 
@@ -176,8 +175,7 @@ void main() {
       expect(find.byType(Semantics), findsWidgets);
     });
 
-    testWidgets('delete dialog uses dialogContext safely (C4)', (tester) async {
-      var deleted = false;
+    testWidgets('exposes selected semantics in selection mode', (tester) async {
       await tester.pumpApp(
         CategoryListTile(
           category: Category(
@@ -187,19 +185,13 @@ void main() {
             createdAt: DateTime(2024, 1, 1),
             updatedAt: DateTime(2024, 1, 1),
           ),
-          onDelete: () => deleted = true,
+          selectionMode: true,
+          selected: true,
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.delete_outline));
-      await tester.pump();
-
-      expect(find.byType(AlertDialog), findsOneWidget);
-      await tester.tap(find.text('Delete'));
-      await tester.pump();
-
-      expect(deleted, isTrue);
-      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(Semantics), findsWidgets);
+      expect(find.byIcon(Icons.check_circle), findsOneWidget);
     });
   });
 }

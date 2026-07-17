@@ -58,7 +58,7 @@ class ShopPreviewCard extends StatelessWidget {
             )
           else
             Text(
-              'Your shop name',
+              context.l10n.shopNamePlaceholder,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
@@ -84,7 +84,7 @@ class ShopPreviewCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                'No address set',
+                context.l10n.shopAddressPlaceholder,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: st.mutedText,
                   fontSize: 14,
@@ -109,7 +109,7 @@ class ShopPreviewCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                'No phone set',
+                context.l10n.shopPhonePlaceholder,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: st.mutedText,
                   fontSize: 14,

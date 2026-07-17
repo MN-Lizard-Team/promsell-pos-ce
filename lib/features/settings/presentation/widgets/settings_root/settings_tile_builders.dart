@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/features/restaurant_table/presentation/pages/tab
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/about_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_settings_page.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/pages/app_lock_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/barcode_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/db_health_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/discount_policy_settings_page.dart';
@@ -23,6 +24,13 @@ import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 class SettingsTileBuilders {
   SettingsTileBuilders._();
+
+  /// Mask phone / citizen-style IDs for list display (show last 4).
+  static String maskSensitiveId(String raw) {
+    final digits = raw.replaceAll(RegExp(r'\D'), '');
+    if (digits.length <= 4) return '••••';
+    return '••••${digits.substring(digits.length - 4)}';
+  }
 
   static String localeLabel(BuildContext context, Settings s) {
     final l10n = context.l10n;
@@ -89,6 +97,22 @@ class SettingsTileBuilders {
     return (label: l10n.backupStatusOverdue, color: AppColors.error);
   }
 
+  /// Risk chips only: overdue / warning. Safe and Off → null (subtitle carries info).
+  static Widget? backupRiskChip(
+    BuildContext context,
+    Settings s,
+    SettingsThemeExtension st,
+  ) {
+    if (s.backupReminderDays == 0) return null;
+    final backup = backupStatus(context, s);
+    final l10n = context.l10n;
+    final isRisk =
+        backup.label == l10n.backupStatusOverdue ||
+        backup.label == l10n.backupStatusWarning;
+    if (!isRisk) return null;
+    return SettingsStatusChip(label: backup.label, color: backup.color, st: st);
+  }
+
   static List<SettingsTileData> generalTiles(
     BuildContext context,
     Settings s,
@@ -101,11 +125,6 @@ class SettingsTileBuilders {
         title: l10n.settingsGeneral,
         accent: st.softAccent,
         subtitle: '${localeLabel(context, s)} · ${themeLabel(context, s)}',
-        statusChip: SettingsStatusChip(
-          label: s.locale.languageCode.toUpperCase(),
-          color: st.softAccent,
-          st: st,
-        ),
         page: const GeneralSettingsPage(),
       ),
       SettingsTileData(
@@ -113,24 +132,19 @@ class SettingsTileBuilders {
         title: l10n.settingsImages,
         accent: st.softAccent,
         subtitle: '${s.imageMaxWidth}px · ${s.imageQuality}%',
-        statusChip: SettingsStatusChip(
-          label: '${s.imageMaxWidth}px',
-          color: st.softAccent,
-          st: st,
-        ),
         page: const ImageSettingsPage(),
       ),
       SettingsTileData(
         icon: Icons.qr_code_scanner_outlined,
         title: l10n.barcodeSettings,
         accent: st.softAccent,
-        statusChip: SettingsStatusChip(
-          label: s.barcodeScanEnabled
-              ? l10n.settingsStatusActive
-              : l10n.settingsStatusNotSet,
-          color: s.barcodeScanEnabled ? AppColors.success : st.mutedText,
-          st: st,
-        ),
+        statusChip: s.barcodeScanEnabled
+            ? null
+            : SettingsStatusChip(
+                label: l10n.settingsStatusNotSet,
+                color: st.mutedText,
+                st: st,
+              ),
         page: const BarcodeSettingsPage(),
       ),
     ];
@@ -142,53 +156,65 @@ class SettingsTileBuilders {
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
-    final shopComplete = s.shopName.isNotEmpty && s.phone.isNotEmpty;
+    final shopComplete = s.shopInfo.isComplete;
     return [
       SettingsTileData(
         icon: Icons.store_outlined,
         title: l10n.settingsShopInfo,
         accent: st.softAccent,
         subtitle: s.shopName.isNotEmpty ? s.shopName : null,
-        statusChip: SettingsStatusChip(
-          label: shopComplete
-              ? l10n.settingsStatusComplete
-              : l10n.settingsStatusIncomplete,
-          color: shopComplete ? AppColors.success : AppColors.warning,
-          st: st,
-        ),
+        statusChip: shopComplete
+            ? null
+            : SettingsStatusChip(
+                label: l10n.settingsStatusIncomplete,
+                color: AppColors.warning,
+                st: st,
+              ),
         page: const ShopInfoSettingsPage(),
       ),
       SettingsTileData(
         icon: Icons.point_of_sale_outlined,
         title: l10n.settingsSales,
         accent: st.softAccent,
-        statusChip: SettingsStatusChip(
-          label: s.currency,
-          color: st.softAccent,
-          st: st,
-        ),
+        subtitle: '${s.currency} · ${s.vatMode}',
+        searchKeywords: const [
+          'vat',
+          'tax',
+          'ภาษี',
+          'vat rate',
+          'service charge',
+          'currency',
+        ],
         page: const SalesSettingsPage(),
       ),
       SettingsTileData(
         icon: Icons.receipt_long_outlined,
         title: l10n.settingsReceipt,
         accent: st.softAccent,
-        statusChip: SettingsStatusChip(
-          label: s.receiptSize,
-          color: st.softAccent,
-          st: st,
-        ),
+        subtitle: s.receiptSize,
+        searchKeywords: const [
+          'receipt',
+          'preview',
+          'ใบเสร็จ',
+          'thermal',
+          'a4',
+          '80mm',
+          'paper',
+        ],
         page: const ReceiptSettingsPage(),
       ),
       SettingsTileData(
         icon: Icons.inventory_2_outlined,
         title: l10n.settingsStockPolicy,
         accent: st.softAccent,
-        statusChip: SettingsStatusChip(
-          label: s.allowOversell ? 'ON' : '${s.lowStockThreshold}',
-          color: s.allowOversell ? AppColors.error : st.softAccent,
-          st: st,
-        ),
+        subtitle: '${s.lowStockThreshold}',
+        statusChip: s.allowOversell
+            ? SettingsStatusChip(
+                label: l10n.settingsOn,
+                color: AppColors.error,
+                st: st,
+              )
+            : null,
         page: const StockSettingsPage(),
       ),
     ];
@@ -207,11 +233,6 @@ class SettingsTileBuilders {
         accent: st.softAccent,
         subtitle:
             '${s.discountPresets.length} ${l10n.discountPresetsTitle.toLowerCase()}',
-        statusChip: SettingsStatusChip(
-          label: s.activeDiscountPreset.name,
-          color: st.softAccent,
-          st: st,
-        ),
         page: const DiscountPolicySettingsPage(),
       ),
     ];
@@ -228,39 +249,46 @@ class SettingsTileBuilders {
         icon: Icons.qr_code_2_outlined,
         title: l10n.promptpay,
         accent: st.softAccent,
-        subtitle: s.promptpayId.isNotEmpty ? s.promptpayId : null,
-        statusChip: SettingsStatusChip(
-          label: s.promptpayId.isNotEmpty
-              ? l10n.settingsStatusActive
-              : l10n.settingsStatusNotSet,
-          color: s.promptpayId.isNotEmpty ? AppColors.success : st.mutedText,
-          st: st,
-        ),
+        subtitle: s.promptpayId.isNotEmpty
+            ? maskSensitiveId(s.promptpayId)
+            : null,
+        statusChip: s.promptpayId.isNotEmpty
+            ? null
+            : SettingsStatusChip(
+                label: l10n.settingsStatusNotSet,
+                color: st.mutedText,
+                st: st,
+              ),
         page: const PromptpaySettingsPage(),
       ),
     ];
   }
 
-  static List<SettingsTileData> systemTiles(
+  /// End-of-day ops (not mixed into backup/DB).
+  static List<SettingsTileData> dayCloseTiles(
     BuildContext context,
     Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
-    final backup = backupStatus(context, s);
     return [
       SettingsTileData(
         icon: Icons.lock_clock_outlined,
         title: l10n.settingsDailyCloseTitle,
         accent: st.softAccent,
         subtitle: l10n.settingsDailyCloseSubtitle,
-        statusChip: SettingsStatusChip(
-          label: l10n.closeDay,
-          color: st.softAccent,
-          st: st,
-        ),
         page: const DailyCloseListPage(),
       ),
+    ];
+  }
+
+  static List<SettingsTileData> backupDataTiles(
+    BuildContext context,
+    Settings s,
+    SettingsThemeExtension st,
+    AppLocalizations l10n,
+  ) {
+    return [
       SettingsTileData(
         icon: Icons.backup_outlined,
         title: l10n.settingsBackup,
@@ -268,25 +296,36 @@ class SettingsTileBuilders {
         subtitle: s.backupReminderDays == 0
             ? l10n.backupOff
             : l10n.backupEveryNDays(s.backupReminderDays),
-        statusChip: SettingsStatusChip(
-          label: backup.label,
-          color: backup.color,
-          st: st,
-        ),
+        statusChip: backupRiskChip(context, s, st),
         page: const BackupSettingsPage(),
+      ),
+      SettingsTileData(
+        icon: Icons.pin_outlined,
+        title: l10n.appLockTitle,
+        accent: st.softAccent,
+        subtitle: l10n.appLockSubtitle,
+        page: const AppLockSettingsPage(),
       ),
       SettingsTileData(
         icon: Icons.storage_outlined,
         title: l10n.settingsDbHealthTitle,
         accent: st.softAccent,
         subtitle: l10n.settingsDbHealthSubtitle,
-        statusChip: SettingsStatusChip(
-          label: l10n.dbHealthTitle,
-          color: st.softAccent,
-          st: st,
-        ),
         page: const DbHealthPage(),
       ),
+    ];
+  }
+
+  /// @Deprecated Prefer [dayCloseTiles] + [backupDataTiles].
+  static List<SettingsTileData> systemTiles(
+    BuildContext context,
+    Settings s,
+    SettingsThemeExtension st,
+    AppLocalizations l10n,
+  ) {
+    return [
+      ...dayCloseTiles(context, s, st, l10n),
+      ...backupDataTiles(context, s, st, l10n),
     ];
   }
 
@@ -324,6 +363,9 @@ class SettingsTileBuilders {
     ];
   }
 
+  /// Clean Index IA:
+  /// General → Store & Sales → Restaurant? → Discounts → Payments
+  /// → Day close → Backup & data → About
   static List<SettingsSectionData> allSections(
     BuildContext context,
     Settings s,
@@ -358,8 +400,12 @@ class SettingsTileBuilders {
         tiles: paymentTiles(context, s, st, l10n),
       ),
       SettingsSectionData(
-        title: l10n.settingsSystemData,
-        tiles: systemTiles(context, s, st, l10n),
+        title: l10n.settingsDayClose,
+        tiles: dayCloseTiles(context, s, st, l10n),
+      ),
+      SettingsSectionData(
+        title: l10n.settingsBackupData,
+        tiles: backupDataTiles(context, s, st, l10n),
       ),
       SettingsSectionData(
         title: l10n.settingsAbout,

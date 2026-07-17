@@ -135,6 +135,85 @@ When working on presentation code:
 
 ---
 
+## Performance Guidelines
+
+### Before Submitting PR
+
+Performance checklist:
+- [ ] No N+1 database query patterns (use batch loading for related data)
+- [ ] Heavy widgets use `RepaintBoundary` to prevent unnecessary repaints
+- [ ] Use `BlocSelector` instead of `BlocBuilder` when rebuilding on specific state fields
+- [ ] Add `const` constructors where possible (use `flutter analyze` to find opportunities)
+- [ ] Cache computed values in state classes (avoid repeated fold/map operations)
+- [ ] Verify scroll performance (use Flutter DevTools Performance tab)
+
+### Performance Benchmarks
+
+Target metrics:
+- Product list load: <100ms (for 100 items)
+- Cart update: <5ms (for 20 items)
+- Scroll frame time: <16ms (60fps)
+
+See [docs/api/DATABASE_API.md](docs/api/DATABASE_API.md) for query optimization patterns.
+
+---
+
+## E2E Test Requirements
+
+### When to Add Integration Tests
+
+Add E2E tests for:
+- User-facing features (flows that users interact with)
+- Critical business logic (sales, payments, inventory)
+- Data persistence scenarios (cart recovery, draft saves)
+- Error handling and validation flows
+
+### Running E2E Tests
+
+```bash
+# Run all integration tests
+flutter test integration_test/
+
+# Run specific journey
+flutter test integration_test/sale_happy_path_test.dart
+
+# Analyze test code
+flutter analyze integration_test/
+```
+
+### E2E Test Coverage Checklist
+
+- [ ] Happy path scenario (normal user flow)
+- [ ] Error handling (validation errors, business rule violations)
+- [ ] Edge cases (empty states, maximum values, zero quantities)
+- [ ] State consistency (database and UI stay in sync)
+- [ ] Offline behavior (if applicable)
+
+### Writing E2E Tests
+
+Use Robot pattern for maintainable tests:
+
+```dart
+testWidgets('User can complete a sale', (tester) async {
+  await tester.pumpWidget(createTestApp());
+  
+  final saleRobot = SaleRobot(tester);
+  final checkoutRobot = CheckoutRobot(tester);
+  
+  await saleRobot.openSalePage();
+  await saleRobot.addProductToCart('Coffee');
+  await saleRobot.proceedToCheckout();
+  await checkoutRobot.selectPaymentMethod('cash');
+  await checkoutRobot.completeSale();
+  
+  saleRobot.verifyCartIsEmpty();
+});
+```
+
+See [docs/testing/E2E_TEST_GUIDE.md](docs/testing/E2E_TEST_GUIDE.md) for detailed guide.
+
+---
+
 ## Testing
 
 ### Required tests
@@ -149,7 +228,7 @@ When working on presentation code:
 
 ### Running tests
 
-The project has **1373 automated tests**. All must pass before submitting a PR.
+The project has **automated tests** (run `flutter test --exclude-tags stress`; count drifts with the suite). All must pass before submitting a PR.
 
 ```bash
 # Run all tests (includes stress tests)
@@ -181,7 +260,7 @@ dart format --output=none --set-exit-if-changed lib test
 | **Domain** | Unit test (pure Dart) | `test/features/*/domain/` |
 | **BLoC / Cubit** | `bloc_test` + mocked use cases | `test/features/*/presentation/bloc/` |
 | **Repository** | `mocktail` mocked datasources | `test/features/*/data/repositories/` |
-| **Datasource** | In-memory Drift DB (`sqlite3_flutter_libs`) | `test/features/*/data/datasources/` |
+| **Datasource** | In-memory Drift DB (`sqlcipher_flutter_libs (production) / in-memory Drift for tests`) | `test/features/*/data/datasources/` |
 | **Widget** | `pumpApp` helper + `MockBloc` | `test/features/*/presentation/pages/` |
 | **Services** | Unit test (real DB) | `test/features/*/data/services/` |
 | **Integration** | End-to-end data layer | `test/integration/` |
@@ -244,7 +323,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.8.9) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.9.0) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)

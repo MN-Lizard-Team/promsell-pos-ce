@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+import 'package:promsell_pos_ce/features/product/domain/utils/csv_product_parser.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 
 abstract class ProductEvent extends Equatable {
@@ -25,6 +27,13 @@ class ProductAdded extends ProductEvent {
     this.imagePath,
     this.imageThumbnailPath,
     this.trackStock = true,
+    this.isActive = true,
+    this.description,
+    this.brand,
+    this.unit,
+    this.supplier,
+    this.isRecommended = false,
+    this.optionGroups = const [],
   });
   final String name;
   final String? sku;
@@ -37,6 +46,13 @@ class ProductAdded extends ProductEvent {
   final String? imagePath;
   final String? imageThumbnailPath;
   final bool trackStock;
+  final bool isActive;
+  final String? description;
+  final String? brand;
+  final String? unit;
+  final String? supplier;
+  final bool isRecommended;
+  final List<ProductOptionGroup> optionGroups;
 
   @override
   List<Object?> get props => [
@@ -51,15 +67,23 @@ class ProductAdded extends ProductEvent {
     imagePath,
     imageThumbnailPath,
     trackStock,
+    isActive,
+    description,
+    brand,
+    unit,
+    supplier,
+    isRecommended,
+    optionGroups,
   ];
 }
 
 class ProductUpdated extends ProductEvent {
-  const ProductUpdated(this.product);
+  const ProductUpdated(this.product, {this.optionGroups});
   final Product product;
+  final List<ProductOptionGroup>? optionGroups;
 
   @override
-  List<Object?> get props => [product];
+  List<Object?> get props => [product, optionGroups];
 }
 
 class ProductDeleted extends ProductEvent {
@@ -94,6 +118,11 @@ class BarcodesBatchGenerated extends ProductEvent {
   List<Object?> get props => [prefix];
 }
 
+/// Clears [ProductState.batchResultMessage] after UI has shown the snack.
+class ProductBatchResultConsumed extends ProductEvent {
+  const ProductBatchResultConsumed();
+}
+
 class ProductStockFilterChanged extends ProductEvent {
   const ProductStockFilterChanged(this.filter);
   final StockFilter filter;
@@ -116,4 +145,36 @@ class ProductPriceRangeChanged extends ProductEvent {
 
   @override
   List<Object?> get props => [priceRange];
+}
+
+class ProductTabChanged extends ProductEvent {
+  const ProductTabChanged(this.tab);
+  final ProductTabFilter tab;
+
+  @override
+  List<Object?> get props => [tab];
+}
+
+class ProductsImported extends ProductEvent {
+  const ProductsImported(this.rows);
+  final List<CsvProductRow> rows;
+
+  @override
+  List<Object?> get props => [rows];
+}
+
+class ProductFiltersCleared extends ProductEvent {
+  const ProductFiltersCleared();
+}
+
+/// Which shell tab is consuming shared [ProductBloc] filters.
+enum ProductSurface { catalog, sale }
+
+/// Switches filter snapshot between product list and sale catalog.
+class ProductSurfaceEntered extends ProductEvent {
+  const ProductSurfaceEntered(this.surface);
+  final ProductSurface surface;
+
+  @override
+  List<Object?> get props => [surface];
 }

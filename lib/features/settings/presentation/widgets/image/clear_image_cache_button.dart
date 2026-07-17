@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/clear_orphaned_images.dart';
 
@@ -20,24 +21,16 @@ class ClearImageCacheButton extends StatelessWidget {
         minimumSize: const Size(double.infinity, 48),
       ),
       onPressed: () async {
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.clearImageCache),
-            content: Text(l10n.clearImageCacheConfirm),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.delete),
-              ),
-            ],
-          ),
+        final confirmed = await showAppConfirm(
+          context,
+          title: l10n.clearImageCache,
+          message: l10n.clearImageCacheConfirm,
+          confirmLabel: l10n.delete,
+          cancelLabel: l10n.cancel,
+          destructive: true,
+          confirmIcon: Icons.cleaning_services_outlined,
         );
-        if (confirmed != true) return;
+        if (!confirmed) return;
         final usecase = GetIt.I<ClearOrphanedImages>();
         final deleted = await usecase();
         if (context.mounted) {

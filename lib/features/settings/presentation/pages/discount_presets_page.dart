@@ -7,6 +7,8 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/settings/presentation/pages/discount_preset_edit_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/discount_preset_list_tile.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
 class DiscountPresetsPage extends StatelessWidget {
   const DiscountPresetsPage({super.key});
@@ -59,13 +61,7 @@ class DiscountPresetsPage extends StatelessWidget {
       );
       return s.copyWith(discountPresets: [...s.discountPresets, preset]);
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.addDiscountPreset),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppSnackBar.success(context, context.l10n.addDiscountPreset);
   }
 
   void _deletePreset(BuildContext context, int index) {
@@ -111,13 +107,7 @@ class DiscountPresetsPage extends StatelessWidget {
         activeDiscountPresetId: newActiveId,
       );
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.deleteDiscountPreset),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppSnackBar.success(context, l10n.deleteDiscountPreset);
   }
 
   void _pushEditPage(
@@ -165,82 +155,86 @@ class DiscountPresetsPage extends StatelessWidget {
           orElse: () => s.discountPresets.first,
         );
 
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.discountPresetsTitle)),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            children: [
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: st.activeAccentContainer,
-                  borderRadius: BorderRadius.circular(st.cardRadius),
-                  border: Border.all(color: st.cardBorderColor),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.local_offer_outlined,
-                      color: st.softAccent,
-                      size: 24,
+        return SettingsLeafChrome(
+          title: l10n.discountPresetsTitle,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: st.activeAccentContainer,
+                      borderRadius: BorderRadius.circular(st.cardRadius),
+                      border: Border.all(color: st.cardBorderColor),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${s.discountPresets.length} ${l10n.discountPresetsTitle.toLowerCase()}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                              color: st.softTextPrimary,
-                            ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.local_offer_outlined,
+                          color: st.softAccent,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${s.discountPresets.length} ${l10n.discountPresetsTitle.toLowerCase()}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  color: st.softTextPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${l10n.activeDiscountPreset}: ${activePreset.name}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: st.softTextSecondary,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${l10n.activeDiscountPreset}: ${activePreset.name}',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: st.softTextSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              ...s.discountPresets.asMap().entries.map((entry) {
-                final index = entry.key;
-                final preset = entry.value;
-                final isActive = preset.id == s.activeDiscountPresetId;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: DiscountPresetListTile(
-                    preset: preset,
-                    isActive: isActive,
-                    canDelete: s.discountPresets.length > 1,
-                    onTap: () => _pushEditPage(
-                      context,
-                      index,
-                      preset,
-                      isActive,
-                      s.discountPresets.length > 1,
-                    ),
-                    onDelete: () => _deletePreset(context, index),
                   ),
-                );
-              }),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: () => _addPreset(context),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.addDiscountPreset),
+                  ...s.discountPresets.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final preset = entry.value;
+                    final isActive = preset.id == s.activeDiscountPresetId;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: DiscountPresetListTile(
+                        preset: preset,
+                        isActive: isActive,
+                        canDelete: s.discountPresets.length > 1,
+                        onTap: () => _pushEditPage(
+                          context,
+                          index,
+                          preset,
+                          isActive,
+                          s.discountPresets.length > 1,
+                        ),
+                        onDelete: () => _deletePreset(context, index),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _addPreset(context),
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.addDiscountPreset),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
@@ -39,17 +40,17 @@ class DailyCloseRepositoryImpl implements DailyCloseRepository {
     return DailyClose(
       id: data.id,
       closeDate: data.closeDate,
-      openingCash: data.openingCash,
-      expectedCash: data.expectedCash,
-      countedCash: data.countedCash,
-      overShortAmount: data.overShortAmount,
-      totalRevenue: data.totalRevenue,
-      totalVoid: data.totalVoid,
+      openingCash: Money.fromDouble(data.openingCash),
+      expectedCash: Money.fromDouble(data.expectedCash),
+      countedCash: Money.fromDouble(data.countedCash),
+      overShortAmount: Money.fromDouble(data.overShortAmount),
+      totalRevenue: Money.fromDouble(data.totalRevenue),
+      totalVoid: Money.fromDouble(data.totalVoid),
       salesCount: data.salesCount,
       voidCount: data.voidCount,
       paymentBreakdown: _parsePaymentBreakdown(data.paymentBreakdown),
-      vatAmount: data.vatAmount,
-      discountAmount: data.discountAmount,
+      vatAmount: Money.fromDouble(data.vatAmount),
+      discountAmount: Money.fromDouble(data.discountAmount),
       note: data.note,
       closedAt: data.closedAt,
       deviceId: data.deviceId,
@@ -63,17 +64,17 @@ class DailyCloseRepositoryImpl implements DailyCloseRepository {
     return DailyCloseData(
       id: entity.id,
       closeDate: entity.closeDate,
-      openingCash: entity.openingCash,
-      expectedCash: entity.expectedCash,
-      countedCash: entity.countedCash,
-      overShortAmount: entity.overShortAmount,
-      totalRevenue: entity.totalRevenue,
-      totalVoid: entity.totalVoid,
+      openingCash: entity.openingCash.value,
+      expectedCash: entity.expectedCash.value,
+      countedCash: entity.countedCash.value,
+      overShortAmount: entity.overShortAmount.value,
+      totalRevenue: entity.totalRevenue.value,
+      totalVoid: entity.totalVoid.value,
       salesCount: entity.salesCount,
       voidCount: entity.voidCount,
       paymentBreakdown: jsonEncode(entity.paymentBreakdown),
-      vatAmount: entity.vatAmount,
-      discountAmount: entity.discountAmount,
+      vatAmount: entity.vatAmount.value,
+      discountAmount: entity.discountAmount.value,
       note: entity.note,
       closedAt: entity.closedAt,
       deviceId: entity.deviceId,

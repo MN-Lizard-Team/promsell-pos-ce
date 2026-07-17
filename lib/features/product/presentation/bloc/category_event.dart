@@ -39,6 +39,16 @@ class CategoryDeleted extends CategoryEvent {
   List<Object?> get props => [id];
 }
 
+class CategoriesDeleted extends CategoryEvent {
+  const CategoriesDeleted(this.ids, {this.moveProductsToCategoryId});
+
+  final List<String> ids;
+  final String? moveProductsToCategoryId;
+
+  @override
+  List<Object?> get props => [ids, moveProductsToCategoryId];
+}
+
 class CategoriesReordered extends CategoryEvent {
   const CategoriesReordered(this.orderedIds);
   final List<String> orderedIds;

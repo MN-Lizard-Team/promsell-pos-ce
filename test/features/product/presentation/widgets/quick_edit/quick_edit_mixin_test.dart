@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
@@ -42,7 +43,7 @@ void main() {
   final tProduct = Product(
     id: 'p1',
     name: 'Coffee',
-    price: 80.0,
+    price: Money.fromDouble(80.0),
     stock: 10,
     isActive: true,
     trackStock: true,
@@ -129,12 +130,11 @@ void main() {
     }
   }
 
-  void expectSnackBar(WidgetTester tester, {required bool expected}) {
-    if (expected) {
-      expect(find.byType(SnackBar), findsOneWidget);
-    } else {
-      expect(find.byType(SnackBar), findsNothing);
-    }
+  void expectFeedbackToast(WidgetTester tester, {required bool expected}) {
+    final toastFinder = find.byWidgetPredicate(
+      (widget) => widget is Semantics && widget.properties.liveRegion == true,
+    );
+    expect(toastFinder, expected ? findsOneWidget : findsNothing);
   }
 
   group('QuickEditMixin', () {
@@ -153,7 +153,7 @@ void main() {
         await tapSave(tester);
 
         expectDispatched(expected: true);
-        expectSnackBar(tester, expected: true);
+        expectFeedbackToast(tester, expected: true);
       });
 
       testWidgets('no dispatch when cancelled', (tester) async {
@@ -166,7 +166,7 @@ void main() {
         await tapCancel(tester);
 
         expectDispatched(expected: false);
-        expectSnackBar(tester, expected: false);
+        expectFeedbackToast(tester, expected: false);
       });
     });
 
@@ -185,7 +185,7 @@ void main() {
         await tapSave(tester);
 
         expectDispatched(expected: true);
-        expectSnackBar(tester, expected: true);
+        expectFeedbackToast(tester, expected: true);
       });
 
       testWidgets('no dispatch when cancelled', (tester) async {
@@ -198,7 +198,7 @@ void main() {
         await tapCancel(tester);
 
         expectDispatched(expected: false);
-        expectSnackBar(tester, expected: false);
+        expectFeedbackToast(tester, expected: false);
       });
     });
 
@@ -217,7 +217,7 @@ void main() {
         await tapSave(tester);
 
         expectDispatched(expected: true);
-        expectSnackBar(tester, expected: true);
+        expectFeedbackToast(tester, expected: true);
       });
 
       testWidgets('no dispatch when cancelled', (tester) async {
@@ -230,7 +230,7 @@ void main() {
         await tapCancel(tester);
 
         expectDispatched(expected: false);
-        expectSnackBar(tester, expected: false);
+        expectFeedbackToast(tester, expected: false);
       });
 
       testWidgets('stock Adjust mode — add delta dispatches ProductUpdated', (
@@ -250,7 +250,7 @@ void main() {
         await tapSave(tester);
 
         expectDispatched(expected: true);
-        expectSnackBar(tester, expected: true);
+        expectFeedbackToast(tester, expected: true);
       });
 
       testWidgets(

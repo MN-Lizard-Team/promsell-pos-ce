@@ -78,11 +78,12 @@ void main() {
   group('getAll', () {
     test('returns seeded defaults', () async {
       final all = await datasource.getAll();
-      expect(all, containsPair('shop_name', ''));
-      expect(all, containsPair('vat_rate', '7'));
-      expect(all, containsPair('vat_mode', 'NONE'));
-      expect(all, containsPair('currency_symbol', '฿'));
-      expect(all, containsPair('receipt_footer', ''));
+      // Canonical camelCase keys (aligned with SettingsMapper).
+      expect(all, containsPair('shopName', ''));
+      expect(all, containsPair('vatRate', '7'));
+      expect(all, containsPair('vatMode', 'NONE'));
+      expect(all, containsPair('currency', '฿'));
+      expect(all, containsPair('receiptNote', ''));
     });
 
     test('includes custom keys', () async {

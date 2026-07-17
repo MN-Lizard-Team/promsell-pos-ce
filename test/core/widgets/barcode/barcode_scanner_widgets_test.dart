@@ -56,5 +56,53 @@ void main() {
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
       expect(find.text('Success'), findsOneWidget);
     });
+
+    testWidgets('formats found price with currency symbol', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: BarcodeScanResult(
+              scannedValue: '885',
+              successLabel: 'Found',
+              productName: 'Coffee',
+              productPrice: 1500,
+              currency: '฿',
+              isFound: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Coffee'), findsOneWidget);
+      expect(find.text('฿1,500.00'), findsOneWidget);
+    });
+
+    testWidgets('shows create CTA when not found and action provided', (
+      tester,
+    ) async {
+      var tapped = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BarcodeScanResult(
+              scannedValue: '000',
+              successLabel: 'Missing',
+              isFound: false,
+              notFoundLabel: 'Not found',
+              notFoundActionLabel: 'Create product',
+              onNotFoundAction: () => tapped = true,
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.byKey(const ValueKey('scanner-create-product')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('scanner-create-product')));
+      await tester.pump();
+      expect(tapped, isTrue);
+    });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 import '../../../../helpers/fixtures.dart';
@@ -6,17 +7,23 @@ import '../../../../helpers/fixtures.dart';
 void main() {
   group('CartItem', () {
     test('supports value equality', () {
-      final a = CartItem(product: tProduct, qty: 2);
-      final b = CartItem(product: tProduct, qty: 2);
+      final a = CartItem(product: tProduct, qty: 2, lineId: 'line-1');
+      final b = CartItem(product: tProduct, qty: 2, lineId: 'line-1');
       expect(a, equals(b));
     });
 
+    test('different lineId are not equal', () {
+      final a = CartItem(product: tProduct, qty: 2, lineId: 'line-1');
+      final b = CartItem(product: tProduct, qty: 2, lineId: 'line-2');
+      expect(a, isNot(equals(b)));
+    });
+
     test('subtotal is price * qty rounded to 2 decimals', () {
-      expect(tCartItem.subtotal, 200.0);
+      expect(tCartItem.subtotal, Money.fromDouble(200.0));
     });
 
     test('subtotal with fractional prices', () {
-      expect(tCartItem2.subtotal, 250.5);
+      expect(tCartItem2.subtotal, Money.fromDouble(250.5));
     });
 
     test('copyWith updates qty', () {
@@ -31,16 +38,25 @@ void main() {
       expect(updated.qty, tCartItem.qty);
     });
 
-    test('props contains product and qty', () {
-      expect(tCartItem.props, [tProduct, 2, null, null, null, const []]);
+    test('props contains lineId, product and qty', () {
+      expect(tCartItem.props, [
+        tCartItem.lineId,
+        tProduct,
+        2,
+        null,
+        null,
+        null,
+        const [],
+        true,
+      ]);
     });
 
     test('rawSubtotal is price * qty', () {
-      expect(tCartItem.rawSubtotal, 200.0);
+      expect(tCartItem.rawSubtotal, Money.fromDouble(200.0));
     });
 
     test('discountAmount is 0 when no discount', () {
-      expect(tCartItem.discountAmount, 0.0);
+      expect(tCartItem.discountAmount, Money.zero);
     });
 
     test('discountAmount for PERCENT type', () {
@@ -50,7 +66,7 @@ void main() {
         discountType: 'PERCENT',
         discountValue: 10,
       );
-      expect(item.discountAmount, 20.0);
+      expect(item.discountAmount, Money.fromDouble(20.0));
     });
 
     test('discountAmount for AMOUNT type', () {
@@ -60,7 +76,7 @@ void main() {
         discountType: 'AMOUNT',
         discountValue: 30,
       );
-      expect(item.discountAmount, 30.0);
+      expect(item.discountAmount, Money.fromDouble(30.0));
     });
 
     test('discountAmount clamps AMOUNT to rawSubtotal', () {
@@ -70,7 +86,7 @@ void main() {
         discountType: 'AMOUNT',
         discountValue: 200,
       );
-      expect(item.discountAmount, 100.0);
+      expect(item.discountAmount, Money.fromDouble(100.0));
     });
 
     test('subtotal subtracts discount', () {
@@ -80,7 +96,7 @@ void main() {
         discountType: 'PERCENT',
         discountValue: 10,
       );
-      expect(item.subtotal, 180.0);
+      expect(item.subtotal, Money.fromDouble(180.0));
     });
 
     test('discountAmount is 0 when discountValue is 0', () {
@@ -90,7 +106,7 @@ void main() {
         discountType: 'PERCENT',
         discountValue: 0,
       );
-      expect(item.discountAmount, 0.0);
+      expect(item.discountAmount, Money.zero);
     });
 
     test('clearDiscount removes discount fields', () {

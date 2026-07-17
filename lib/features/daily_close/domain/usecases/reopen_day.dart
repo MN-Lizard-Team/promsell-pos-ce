@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
 
@@ -19,8 +20,8 @@ class ReopenDay {
 
     final reopened = existing.copyWith(
       closedAt: null,
-      countedCash: 0,
-      overShortAmount: 0,
+      countedCash: Money.zero,
+      overShortAmount: Money.zero,
       note: null,
     );
 

@@ -83,7 +83,7 @@ void main() {
         ),
       );
 
-      expect(find.text('GENERAL'), findsOneWidget);
+      expect(find.text('General'), findsOneWidget);
       expect(find.text('Child 1'), findsOneWidget);
       expect(find.text('Child 2'), findsOneWidget);
     });

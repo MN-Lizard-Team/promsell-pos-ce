@@ -11,8 +11,8 @@ void main() {
     test('swipe right at index > 0 calls onTap with previous index', () {
       NavSwipeHelper.handleSwipe(
         DragEndDetails(
-          velocity: const Velocity(pixelsPerSecond: Offset(500, 0)),
-          primaryVelocity: 500,
+          velocity: const Velocity(pixelsPerSecond: Offset(700, 0)),
+          primaryVelocity: 700,
         ),
         2,
         5,
@@ -25,8 +25,8 @@ void main() {
     test('swipe left at index < last calls onTap with next index', () {
       NavSwipeHelper.handleSwipe(
         DragEndDetails(
-          velocity: const Velocity(pixelsPerSecond: Offset(-500, 0)),
-          primaryVelocity: -500,
+          velocity: const Velocity(pixelsPerSecond: Offset(-700, 0)),
+          primaryVelocity: -700,
         ),
         1,
         5,
@@ -39,8 +39,8 @@ void main() {
     test('swipe right at index 0 does not call onTap', () {
       NavSwipeHelper.handleSwipe(
         DragEndDetails(
-          velocity: const Velocity(pixelsPerSecond: Offset(500, 0)),
-          primaryVelocity: 500,
+          velocity: const Velocity(pixelsPerSecond: Offset(700, 0)),
+          primaryVelocity: 700,
         ),
         0,
         5,
@@ -53,8 +53,8 @@ void main() {
     test('swipe left at last index does not call onTap', () {
       NavSwipeHelper.handleSwipe(
         DragEndDetails(
-          velocity: const Velocity(pixelsPerSecond: Offset(-500, 0)),
-          primaryVelocity: -500,
+          velocity: const Velocity(pixelsPerSecond: Offset(-700, 0)),
+          primaryVelocity: -700,
         ),
         4,
         5,
@@ -67,8 +67,8 @@ void main() {
     test('slow swipe below threshold does not call onTap', () {
       NavSwipeHelper.handleSwipe(
         DragEndDetails(
-          velocity: const Velocity(pixelsPerSecond: Offset(100, 0)),
-          primaryVelocity: 100,
+          velocity: const Velocity(pixelsPerSecond: Offset(300, 0)),
+          primaryVelocity: 300,
         ),
         1,
         5,
@@ -79,7 +79,7 @@ void main() {
     });
 
     test(
-      'swipe exactly at threshold fires (abs < threshold is false at 300)',
+      'swipe exactly at threshold fires (abs < threshold is false at 600)',
       () {
         NavSwipeHelper.handleSwipe(
           DragEndDetails(

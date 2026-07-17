@@ -7,6 +7,7 @@ class SettingsTileData {
     required this.accent,
     this.subtitle,
     this.statusChip,
+    this.searchKeywords = const [],
     required this.page,
   });
 
@@ -15,6 +16,9 @@ class SettingsTileData {
   final Color accent;
   final String? subtitle;
   final Widget? statusChip;
+
+  /// Extra tokens for root search (e.g. VAT / ภาษี).
+  final List<String> searchKeywords;
   final Widget page;
 }
 

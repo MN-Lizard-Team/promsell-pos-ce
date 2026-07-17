@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
-import 'package:promsell_pos_ce/core/utils/money_utils.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 
@@ -9,9 +9,10 @@ class CartItem extends Equatable {
     required this.product,
     required this.qty,
     this.discountType,
-    this.discountValue,
+    this.discountValue, // Raw value — can be % or flat amount
     this.note,
     this.selectedOptions = const [],
+    this.isAvailable = true,
     String? lineId,
   }) : lineId = lineId ?? IdGenerator.newId();
 
@@ -22,24 +23,26 @@ class CartItem extends Equatable {
   final double? discountValue;
   final String? note;
   final List<SelectedProductOption> selectedOptions;
+  final bool isAvailable;
 
-  double get rawSubtotal =>
-      MoneyUtils.round((product.price + _optionsPriceDelta) * qty);
+  Money get _optionsPriceDelta =>
+      selectedOptions.fold(Money.zero, (sum, o) => sum + o.priceDelta);
 
-  double get _optionsPriceDelta =>
-      selectedOptions.fold(0.0, (sum, o) => sum + o.priceDelta);
+  Money get rawSubtotal => (product.price + _optionsPriceDelta) * qty;
 
-  double get discountAmount {
+  Money get discountAmount {
     if (discountType == null || discountValue == null || discountValue! <= 0) {
-      return 0.0;
+      return Money.zero;
     }
     if (discountType == 'PERCENT') {
-      return MoneyUtils.round(rawSubtotal * (discountValue! / 100));
+      return rawSubtotal * (discountValue! / 100);
     }
-    return MoneyUtils.round(discountValue!.clamp(0.0, rawSubtotal));
+    // Flat amount — clamp to rawSubtotal
+    final disc = Money.fromDouble(discountValue!);
+    return disc <= rawSubtotal ? disc : rawSubtotal;
   }
 
-  double get subtotal => MoneyUtils.round(rawSubtotal - discountAmount);
+  Money get subtotal => rawSubtotal - discountAmount;
 
   CartItem copyWith({
     Product? product,
@@ -48,6 +51,7 @@ class CartItem extends Equatable {
     Object? discountValue = _unset,
     Object? note = _unset,
     List<SelectedProductOption>? selectedOptions,
+    bool? isAvailable,
   }) => CartItem(
     product: product ?? this.product,
     qty: qty ?? this.qty,
@@ -60,6 +64,7 @@ class CartItem extends Equatable {
         : discountValue as double?,
     note: identical(note, _unset) ? this.note : note as String?,
     selectedOptions: selectedOptions ?? this.selectedOptions,
+    isAvailable: isAvailable ?? this.isAvailable,
   );
 
   CartItem clearDiscount() => CartItem(
@@ -68,16 +73,19 @@ class CartItem extends Equatable {
     note: note,
     lineId: lineId,
     selectedOptions: selectedOptions,
+    isAvailable: isAvailable,
   );
 
   @override
   List<Object?> get props => [
+    lineId,
     product,
     qty,
     discountType,
     discountValue,
     note,
     selectedOptions,
+    isAvailable,
   ];
 }
 

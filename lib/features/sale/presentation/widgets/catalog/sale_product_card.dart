@@ -1,19 +1,18 @@
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/image/image_skeleton.dart';
-import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_cue.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_card_shell.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/stock_indicator.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/product_option_sheet.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/utils/sale_add_to_cart.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SaleProductCard extends StatelessWidget {
@@ -31,6 +30,7 @@ class SaleProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pos = context.posTheme;
     final cartQty = context.select<CartBloc, int>(
       (bloc) => bloc.state.items
           .where((item) => item.product.id == product.id)
@@ -43,193 +43,199 @@ class SaleProductCard extends StatelessWidget {
         .settings
         .allowOversell;
     final canTap = !outOfStock || allowOversell;
+    final lowStockThreshold = context
+        .read<SettingsCubit>()
+        .state
+        .settings
+        .lowStockThreshold;
+    final inCart = cartQty > 0;
+    final radius = pos.productCardRadius;
 
-    void onAdd() {
-      HapticFeedback.selectionClick();
-      if (product.optionGroups.isNotEmpty) {
-        ProductOptionSheet.show(
-          context,
-          product: product,
-          onConfirm: (options) {
-            context.read<CartBloc>().add(
-              CartProductAdded(
-                product,
-                allowOversell: allowOversell,
-                selectedOptions: options,
-              ),
-            );
-            AppSnackBar.info(
-              context,
-              context.l10n.productAddedToCart(product.name),
-            );
-          },
-        );
-        return;
-      }
-      context.read<CartBloc>().add(
-        CartProductAdded(product, allowOversell: allowOversell),
-      );
-      if (cartQty == 0) {
-        AppSnackBar.info(
-          context,
-          context.l10n.productAddedToCart(product.name),
-        );
-      }
-    }
+    void onAdd() => saleAddToCart(context, product);
 
-    if (isGrid) {
-      return Opacity(
-        opacity: outOfStock && !allowOversell ? 0.5 : 1.0,
+    return BlocSelector<CategoryBloc, CategoryState, Category?>(
+      selector: (state) =>
+          state.categories.where((c) => c.id == product.categoryId).firstOrNull,
+      builder: (context, category) {
+        if (isGrid) {
+          return _buildGrid(
+            context: context,
+            theme: theme,
+            pos: pos,
+            category: category,
+            cartQty: cartQty,
+            outOfStock: outOfStock,
+            allowOversell: allowOversell,
+            canTap: canTap,
+            lowStockThreshold: lowStockThreshold,
+            inCart: inCart,
+            radius: radius,
+            onAdd: onAdd,
+          );
+        }
+        return _buildList(
+          context: context,
+          theme: theme,
+          pos: pos,
+          category: category,
+          cartQty: cartQty,
+          outOfStock: outOfStock,
+          allowOversell: allowOversell,
+          canTap: canTap,
+          lowStockThreshold: lowStockThreshold,
+          inCart: inCart,
+          radius: radius,
+          onAdd: onAdd,
+        );
+      },
+    );
+  }
+
+  Widget _buildGrid({
+    required BuildContext context,
+    required ThemeData theme,
+    required PosThemeExtension pos,
+    required Category? category,
+    required int cartQty,
+    required bool outOfStock,
+    required bool allowOversell,
+    required bool canTap,
+    required int lowStockThreshold,
+    required bool inCart,
+    required double radius,
+    required VoidCallback onAdd,
+  }) {
+    return RepaintBoundary(
+      child: Opacity(
+        opacity: outOfStock && !allowOversell ? 0.55 : 1.0,
         child: ProductCardShell(
           onTap: canTap ? onAdd : null,
           onLongPress: canTap
-              ? () => _showQtyDialog(context, product, cartQty)
+              ? () => saleAddToCartWithQtyDialog(
+                  context,
+                  product,
+                  currentCartQty: cartQty,
+                )
               : null,
-          borderRadius: 12,
+          borderRadius: radius,
+          borderColor: inCart ? pos.selectedProductBorder : null,
+          elevation: inCart ? 2 : 0.5,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                height: 120,
-                child: _SaleProductImage(
-                  imagePath: product.imagePath,
-                  imageThumbnailPath: product.imageThumbnailPath,
-                  imageUrl: product.imageUrl,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                height: 88,
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Text(
-                      product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        height: 1.3,
+                    ProductAvatar(
+                      imagePath: product.imagePath,
+                      imageThumbnailPath: product.imageThumbnailPath,
+                      imageUrl: product.imageUrl,
+                      size: 200,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(radius),
                       ),
                     ),
-                    if (cartQty > 0) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        '${context.l10n.quantityLabel} $cartQty',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: theme.colorScheme.primary,
+                    if (product.isRecommended)
+                      Positioned(
+                        top: 6,
+                        left: 6,
+                        child: Icon(
+                          Icons.star_rounded,
+                          size: 18,
+                          color: theme.colorScheme.tertiary,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 4,
+                              color: theme.colorScheme.shadow.withValues(
+                                alpha: 0.45,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 6),
-                    StockIndicator(
-                      stock: product.stock,
-                      trackStock: product.trackStock,
-                      compact: true,
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                    if (inCart)
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: _CartQtyBadge(qty: cartQty, pos: pos),
                       ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
+                    if (outOfStock)
+                      Positioned(
+                        bottom: 6,
+                        left: 6,
+                        child: _OutOfStockChip(theme: theme),
                       ),
-                      child: MoneyText(
-                        value: product.price,
-                        currency: currency,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                          color: theme.colorScheme.onPrimaryContainer,
+                    if (category != null &&
+                        (product.sku == null || product.sku!.isEmpty))
+                      Positioned(
+                        bottom: 6,
+                        right: 6,
+                        child: CategoryCue(
+                          category: category,
+                          style: CategoryCueStyle.dot,
+                          compact: true,
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Opacity(
-      opacity: outOfStock && !allowOversell ? 0.5 : 1.0,
-      child: ProductCardShell(
-        onTap: canTap ? onAdd : null,
-        onLongPress: canTap
-            ? () => _showQtyDialog(context, product, cartQty)
-            : null,
-        borderRadius: 12,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Row(
-            children: [
-              _SaleProductImage(
-                imagePath: product.imagePath,
-                imageThumbnailPath: product.imageThumbnailPath,
-                imageUrl: product.imageUrl,
-                width: 56,
-                height: 56,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        height: 1.3,
-                      ),
-                    ),
-                    if (cartQty > 0) ...[
-                      const SizedBox(height: 2),
+                child: Padding(
+                  // Tighter body so meta + stock + add fit mainAxisExtent 200.
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        '${context.l10n.quantityLabel} $cartQty',
-                        style: theme.textTheme.labelSmall?.copyWith(
+                        product.name,
+                        // Meta steals a line inside fixed mainAxisExtent.
+                        maxLines: _hasMeta(product, category) ? 1 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: theme.colorScheme.primary,
+                          height: 1.15,
                         ),
                       ),
+                      if (_hasMeta(product, category)) ...[
+                        const SizedBox(height: 2),
+                        _MetaLine(
+                          product: product,
+                          category: category,
+                          compact: true,
+                        ),
+                      ],
+                      const Spacer(),
+                      // Stack footer: stock on its own line so price+add
+                      // never fight for width on narrow grid cells.
+                      StockIndicator(
+                        stock: product.stock,
+                        trackStock: product.trackStock,
+                        compact: true,
+                        lowStockThreshold: lowStockThreshold,
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: MoneyText(
+                              value: product.price.value,
+                              currency: currency,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                          if (canTap) ...[
+                            const SizedBox(width: 4),
+                            _AddButton(onPressed: onAdd, compact: true),
+                          ],
+                        ],
+                      ),
                     ],
-                    const SizedBox(height: 4),
-                    StockIndicator(
-                      stock: product.stock,
-                      trackStock: product.trackStock,
-                      compact: true,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: MoneyText(
-                  value: product.price,
-                  currency: currency,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                    color: theme.colorScheme.onPrimaryContainer,
                   ),
                 ),
               ),
@@ -240,217 +246,319 @@ class SaleProductCard extends StatelessWidget {
     );
   }
 
-  void _showQtyDialog(BuildContext context, Product product, int currentQty) {
-    final l10n = context.l10n;
-    final settings = context.read<SettingsCubit>().state.settings;
-    final allowOversell = settings.allowOversell;
-    final saleBloc = context.read<CartBloc>();
-    final snackCtx = context;
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => _QtyDialog(
-        product: product,
-        allowOversell: allowOversell,
-        onSaved: (qty) {
-          saleBloc.add(
-            CartProductAdded(product, qty: qty, allowOversell: allowOversell),
-          );
-          AppSnackBar.info(snackCtx, l10n.productAddedToCart(product.name));
-        },
+  Widget _buildList({
+    required BuildContext context,
+    required ThemeData theme,
+    required PosThemeExtension pos,
+    required Category? category,
+    required int cartQty,
+    required bool outOfStock,
+    required bool allowOversell,
+    required bool canTap,
+    required int lowStockThreshold,
+    required bool inCart,
+    required double radius,
+    required VoidCallback onAdd,
+  }) {
+    final hasMeta = _hasMeta(product, category);
+    // Catalog list row is fixed height — one name line when meta is present.
+    final nameMaxLines = hasMeta ? 1 : 2;
+
+    return RepaintBoundary(
+      child: Opacity(
+        opacity: outOfStock && !allowOversell ? 0.55 : 1.0,
+        child: ProductCardShell(
+          onTap: canTap ? onAdd : null,
+          onLongPress: canTap
+              ? () => saleAddToCartWithQtyDialog(
+                  context,
+                  product,
+                  currentCartQty: cartQty,
+                )
+              : null,
+          borderRadius: radius,
+          borderColor: inCart ? pos.selectedProductBorder : null,
+          elevation: inCart ? 2 : 0.5,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ProductAvatar(
+                      imagePath: product.imagePath,
+                      imageThumbnailPath: product.imageThumbnailPath,
+                      imageUrl: product.imageUrl,
+                      size: 56,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    if (inCart)
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: _CartQtyBadge(qty: cartQty, pos: pos),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              product.name,
+                              maxLines: nameMaxLines,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                height: 1.15,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          if (product.isRecommended)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Icon(
+                                Icons.star_rounded,
+                                size: 16,
+                                color: theme.colorScheme.tertiary,
+                              ),
+                            ),
+                        ],
+                      ),
+                      if (hasMeta) ...[
+                        const SizedBox(height: 2),
+                        _MetaLine(product: product, category: category),
+                      ],
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: StockIndicator(
+                                    stock: product.stock,
+                                    trackStock: product.trackStock,
+                                    compact: true,
+                                    lowStockThreshold: lowStockThreshold,
+                                  ),
+                                ),
+                                if (outOfStock) ...[
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    context.l10n.outOfStock,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: theme.colorScheme.error,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          MoneyText(
+                            value: product.price.value,
+                            currency: currency,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                              height: 1.1,
+                            ),
+                            color: theme.colorScheme.primary,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Wireframe trailing: hamburger menu (≡), not + button.
+                PopupMenuButton<String>(
+                  tooltip: context.l10n.productRowMenu,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 40,
+                  ),
+                  icon: Icon(
+                    Icons.menu,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  onSelected: (value) {
+                    if (!canTap) return;
+                    if (value == 'add') {
+                      onAdd();
+                    } else if (value == 'qty') {
+                      saleAddToCartWithQtyDialog(
+                        context,
+                        product,
+                        currentCartQty: cartQty,
+                      );
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    PopupMenuItem(
+                      value: 'add',
+                      enabled: canTap,
+                      child: Text(context.l10n.productRowMenuAdd),
+                    ),
+                    PopupMenuItem(
+                      value: 'qty',
+                      enabled: canTap,
+                      child: Text(context.l10n.productRowMenuQty),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _SaleProductImage extends StatefulWidget {
-  const _SaleProductImage({
-    this.imagePath,
-    this.imageThumbnailPath,
-    this.imageUrl,
-    this.width,
-    this.height,
-    this.borderRadius,
+bool _hasMeta(Product product, Category? category) {
+  final sku = product.sku?.trim() ?? '';
+  if (sku.isNotEmpty) return true;
+  return category != null;
+}
+
+/// One secondary line: SKU if present, else category cue. Never both.
+class _MetaLine extends StatelessWidget {
+  const _MetaLine({
+    required this.product,
+    required this.category,
+    this.compact = false,
   });
 
-  final String? imagePath;
-  final String? imageThumbnailPath;
-  final String? imageUrl;
-  final double? width;
-  final double? height;
-  final BorderRadius? borderRadius;
-
-  @override
-  State<_SaleProductImage> createState() => _SaleProductImageState();
-}
-
-class _SaleProductImageState extends State<_SaleProductImage> {
-  bool? _localExists;
-
-  String? get _thumbPath => widget.imageThumbnailPath;
-  String? get _fullPath => widget.imagePath;
-
-  String? get _effectiveLocalPath {
-    if (_thumbPath != null && _thumbPath!.isNotEmpty) return _thumbPath;
-    if (_fullPath != null && _fullPath!.isNotEmpty) return _fullPath;
-    return null;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkLocal();
-  }
-
-  @override
-  void didUpdateWidget(covariant _SaleProductImage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.imagePath != widget.imagePath ||
-        oldWidget.imageThumbnailPath != widget.imageThumbnailPath) {
-      _localExists = null;
-      _checkLocal();
-    }
-  }
-
-  Future<void> _checkLocal() async {
-    final path = _effectiveLocalPath;
-    if (path == null) {
-      if (mounted) setState(() => _localExists = false);
-      return;
-    }
-    final exists = await File(path).exists();
-    if (mounted) setState(() => _localExists = exists);
-  }
+  final Product product;
+  final Category? category;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final radius = widget.borderRadius ?? BorderRadius.circular(8);
-
-    Widget content;
-
-    if (_localExists == null) {
-      content = ImageSkeleton(
-        size: (widget.width ?? 100).clamp(40, 200),
-        borderRadius: radius,
-      );
-    } else if (_localExists == true && _effectiveLocalPath != null) {
-      content = Image.file(
-        File(_effectiveLocalPath!),
-        width: widget.width,
-        height: widget.height,
-        fit: BoxFit.cover,
-        errorBuilder: (ctx, err, st) => _placeholder(theme, radius),
-      );
-    } else if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
-      content = CachedNetworkImage(
-        imageUrl: widget.imageUrl!,
-        width: widget.width,
-        height: widget.height,
-        fit: BoxFit.cover,
-        placeholder: (ctx, url) => ImageSkeleton(
-          size: (widget.width ?? 100).clamp(40, 200),
-          borderRadius: radius,
+    final sku = product.sku?.trim() ?? '';
+    if (sku.isNotEmpty) {
+      return Text(
+        '${context.l10n.skuLabel}: $sku',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+          fontSize: compact ? 10 : 11,
+          fontWeight: FontWeight.w600,
         ),
-        errorWidget: (ctx, url, err) => _placeholder(theme, radius),
       );
-    } else {
-      content = _placeholder(theme, radius);
     }
-
-    return ClipRRect(
-      borderRadius: radius,
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height,
-        child: content,
-      ),
-    );
-  }
-
-  Widget _placeholder(ThemeData theme, BorderRadius radius) {
-    return Container(
-      width: widget.width,
-      height: widget.height,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: radius,
-      ),
-      child: Icon(
-        Icons.image_outlined,
-        color: theme.colorScheme.secondary,
-        size: 32,
-      ),
-    );
+    if (category != null) {
+      return CategoryCue(
+        category: category!,
+        style: CategoryCueStyle.label,
+        compact: compact,
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
 
-class _QtyDialog extends StatefulWidget {
-  const _QtyDialog({
-    required this.product,
-    required this.allowOversell,
-    required this.onSaved,
-  });
+class _AddButton extends StatelessWidget {
+  const _AddButton({required this.onPressed, this.compact = false});
 
-  final Product product;
-  final bool allowOversell;
-  final ValueChanged<int> onSaved;
-
-  @override
-  State<_QtyDialog> createState() => _QtyDialogState();
-}
-
-class _QtyDialogState extends State<_QtyDialog> {
-  late final TextEditingController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = TextEditingController(text: '1');
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _save() {
-    final qty = int.tryParse(_ctrl.text);
-    if (qty == null || qty <= 0) {
-      Navigator.pop(context);
-      return;
-    }
-    var clamped = qty;
-    if (widget.product.trackStock && !widget.allowOversell) {
-      clamped = qty.clamp(1, widget.product.stock);
-    }
-    Navigator.pop(context);
-    widget.onSaved(clamped);
-  }
+  final VoidCallback onPressed;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(widget.product.name),
-      content: TextField(
-        controller: _ctrl,
-        autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(signed: true),
-        decoration: InputDecoration(
-          labelText: l10n.quantityLabel,
-          suffixText: widget.product.trackStock
-              ? l10n.stockLabel(widget.product.stock)
-              : null,
+    final theme = Theme.of(context);
+    // List row budget ~92 tall; keep a large disc without overflowing.
+    final hit = compact ? 32.0 : 36.0;
+    return Semantics(
+      button: true,
+      label: context.l10n.addToCart,
+      child: Material(
+        color: theme.colorScheme.primaryContainer,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onPressed,
+          child: SizedBox(
+            width: hit,
+            height: hit,
+            child: Center(
+              child: Icon(
+                Icons.add,
+                size: compact ? 20 : 22,
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+            ),
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
+    );
+  }
+}
+
+class _CartQtyBadge extends StatelessWidget {
+  const _CartQtyBadge({required this.qty, required this.pos});
+
+  final int qty;
+  final PosThemeExtension pos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: pos.qtyBadgeBackground,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: pos.selectedProductBorder, width: 1),
+      ),
+      child: Text(
+        '×$qty',
+        style: TextStyle(
+          color: pos.qtyBadgeForeground,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          fontFamily: 'NotoSansThai',
         ),
-        FilledButton(onPressed: _save, child: Text(l10n.save)),
-      ],
+      ),
+    );
+  }
+}
+
+class _OutOfStockChip extends StatelessWidget {
+  const _OutOfStockChip({required this.theme});
+
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        context.l10n.outOfStock,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onErrorContainer,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

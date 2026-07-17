@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/confirmation_dialog.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 class CartQtyDialog {
   CartQtyDialog._();
@@ -12,12 +13,15 @@ class CartQtyDialog {
     BuildContext context, {
     required CartBloc bloc,
     required CartItem item,
-    required Settings settings,
+    required bool allowOversell,
   }) {
     showDialog(
       context: context,
-      builder: (_) =>
-          _CartQtyDialogContent(bloc: bloc, item: item, settings: settings),
+      builder: (_) => _CartQtyDialogContent(
+        bloc: bloc,
+        item: item,
+        allowOversell: allowOversell,
+      ),
     );
   }
 }
@@ -26,12 +30,12 @@ class _CartQtyDialogContent extends StatefulWidget {
   const _CartQtyDialogContent({
     required this.bloc,
     required this.item,
-    required this.settings,
+    required this.allowOversell,
   });
 
   final CartBloc bloc;
   final CartItem item;
-  final Settings settings;
+  final bool allowOversell;
 
   @override
   State<_CartQtyDialogContent> createState() => _CartQtyDialogContentState();
@@ -48,31 +52,55 @@ class _CartQtyDialogContentState extends State<_CartQtyDialogContent> {
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    disposeTextEditingControllerAfterFrame(_ctrl);
     super.dispose();
   }
 
-  void _save() {
+  void _pop() {
+    unfocusForDialogClose();
+    Navigator.pop(context);
+  }
+
+  Future<void> _save() async {
     final qty = int.tryParse(_ctrl.text);
-    if (qty == null || qty <= 0) {
-      Navigator.pop(context);
-      widget.bloc.add(
-        CartProductRemoved(widget.item.product.id, lineId: widget.item.lineId),
+    if (qty == null) return;
+
+    if (qty <= 0) {
+      final l10n = context.l10n;
+      final confirmed = await showConfirmationDialog(
+        context,
+        title: l10n.removeCartLineTitle,
+        message: '',
+        detail: widget.item.product.name,
+        footnote: l10n.removeCartLineQty(widget.item.qty),
+        confirmLabel: l10n.removeCartLineConfirm,
+        cancelLabel: l10n.cancel,
+        destructive: true,
+        confirmIcon: Icons.delete_outline_rounded,
       );
+      if (confirmed && mounted) {
+        _pop();
+        widget.bloc.add(
+          CartProductRemoved(
+            widget.item.product.id,
+            lineId: widget.item.lineId,
+          ),
+        );
+      }
       return;
     }
-    final allowOversell = widget.settings.allowOversell;
+
     var clamped = qty;
-    if (widget.item.product.trackStock && !allowOversell) {
+    if (widget.item.product.trackStock && !widget.allowOversell) {
       clamped = qty.clamp(1, widget.item.product.stock);
     }
-    Navigator.pop(context);
+    _pop();
     if (clamped != widget.item.qty) {
       widget.bloc.add(
         CartItemQtyChanged(
           productId: widget.item.product.id,
           qty: clamped,
-          allowOversell: allowOversell,
+          allowOversell: widget.allowOversell,
           lineId: widget.item.lineId,
         ),
       );
@@ -94,12 +122,10 @@ class _CartQtyDialogContentState extends State<_CartQtyDialogContent> {
               ? l10n.stockLabel(widget.item.product.stock)
               : null,
         ),
+        onSubmitted: (_) => _save(),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
+        TextButton(onPressed: _pop, child: Text(l10n.cancel)),
         FilledButton(onPressed: _save, child: Text(l10n.save)),
       ],
     );

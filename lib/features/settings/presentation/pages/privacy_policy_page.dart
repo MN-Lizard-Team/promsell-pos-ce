@@ -43,6 +43,13 @@ class PrivacyPolicyPage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           SettingsSectionCard(
+            title: l10n.customerDataTitle,
+            children: [
+              _PolicyBody(text: l10n.customerDataBody, st: st, theme: theme),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SettingsSectionCard(
             title: l10n.backupEncryptionTitle,
             children: [
               _PolicyBody(

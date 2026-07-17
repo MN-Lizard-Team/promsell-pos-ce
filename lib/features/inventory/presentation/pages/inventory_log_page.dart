@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_cubit.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/inventory_log_row.dart';
 
 class InventoryLogPage extends StatelessWidget {
   const InventoryLogPage({super.key, this.productId});
@@ -53,80 +53,19 @@ class _InventoryLogView extends StatelessWidget {
             );
           }
 
-          final theme = Theme.of(context);
-          final fmt = DateFormat('yyyy-MM-dd HH:mm');
-
           return ListView.separated(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             itemCount: state.logs.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (_, i) {
-              final log = state.logs[i];
-              final isPositive = log.isPositive;
-
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: isPositive
-                      ? theme.colorScheme.primaryContainer
-                      : theme.colorScheme.errorContainer,
-                  child: Icon(
-                    _iconForType(log.type),
-                    color: isPositive
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.error,
-                    size: 20,
-                  ),
-                ),
-                title: Text(
-                  '${isPositive ? '+' : ''}${log.qtyChange}  →  ${log.balanceAfter}',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isPositive
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.error,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _labelForType(context, log.type),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    if (log.reason != null)
-                      Text(
-                        log.reason!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                  ],
-                ),
-                trailing: Text(
-                  fmt.format(log.createdAt),
-                  style: theme.textTheme.labelSmall,
-                ),
-              );
-            },
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+            itemBuilder: (_, i) => InventoryLogRow(log: state.logs[i]),
           );
         },
       ),
     );
   }
-
-  IconData _iconForType(String type) => switch (type) {
-    'SALE' => Icons.shopping_cart_outlined,
-    'VOID_REVERSAL' => Icons.undo,
-    'ADJUSTMENT_IN' => Icons.add_circle_outline,
-    'ADJUSTMENT_OUT' => Icons.remove_circle_outline,
-    _ => Icons.help_outline,
-  };
-
-  String _labelForType(BuildContext context, String type) => switch (type) {
-    'SALE' => context.l10n.invLogTypeSale,
-    'VOID_REVERSAL' => context.l10n.invLogTypeVoidReversal,
-    'ADJUSTMENT_IN' => context.l10n.invLogTypeStockIn,
-    'ADJUSTMENT_OUT' => context.l10n.invLogTypeStockOut,
-    _ => type,
-  };
 }

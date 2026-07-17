@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
@@ -7,7 +8,7 @@ void main() {
   final tProduct = Product(
     id: 'p1',
     name: 'Coffee',
-    price: 50,
+    price: Money.fromDouble(50),
     stock: 10,
     isActive: true,
     createdAt: DateTime(2025, 1, 1),
@@ -15,13 +16,13 @@ void main() {
   );
 
   group('DraftCart restaurant fields', () {
-    test('default orderType is dinein', () {
+    test('default orderType is delivery', () {
       final draft = DraftCart(
         id: 'd1',
         items: [CartItem(product: tProduct, qty: 1)],
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.orderType, 'dinein');
+      expect(draft.orderType, 'delivery');
       expect(draft.orderChannel, 'walkin');
     });
 
@@ -31,7 +32,7 @@ void main() {
         items: [CartItem(product: tProduct, qty: 2)],
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.serviceChargeAmount, 0.0);
+      expect(draft.serviceChargeAmount, Money.zero);
     });
 
     test('serviceChargeAmount calculates from rate', () {
@@ -41,8 +42,8 @@ void main() {
         serviceChargeRate: 10.0,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.total, 100.0);
-      expect(draft.serviceChargeAmount, 10.0);
+      expect(draft.total, Money.fromDouble(100));
+      expect(draft.serviceChargeAmount, Money.fromDouble(10));
     });
 
     test('grandTotal includes service charge', () {
@@ -52,7 +53,7 @@ void main() {
         serviceChargeRate: 10.0,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.grandTotal, 110.0);
+      expect(draft.grandTotal, Money.fromDouble(110));
     });
 
     test('grandTotal equals total when no service charge', () {
@@ -91,14 +92,14 @@ void main() {
     test('equality includes restaurant fields', () {
       final a = DraftCart(
         id: 'd1',
-        items: [CartItem(product: tProduct, qty: 1)],
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'line-1')],
         orderType: 'delivery',
         serviceChargeRate: 10.0,
         updatedAt: DateTime(2025, 1, 1),
       );
       final b = DraftCart(
         id: 'd1',
-        items: [CartItem(product: tProduct, qty: 1)],
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'line-1')],
         orderType: 'delivery',
         serviceChargeRate: 10.0,
         updatedAt: DateTime(2025, 1, 1),

@@ -9,6 +9,8 @@ class ProductCardShell extends StatelessWidget {
     this.margin,
     this.isActive = true,
     this.borderRadius = 16,
+    this.borderColor,
+    this.elevation = 0,
   });
 
   final Widget child;
@@ -17,32 +19,36 @@ class ProductCardShell extends StatelessWidget {
   final EdgeInsets? margin;
   final bool isActive;
   final double borderRadius;
+  final Color? borderColor;
+  final double elevation;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final sideColor =
+        borderColor ?? theme.colorScheme.outlineVariant.withValues(alpha: 0.5);
 
-    return Container(
-      margin: margin ?? EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLowest,
+    final card = Material(
+      color: theme.colorScheme.surfaceContainerLowest,
+      elevation: elevation,
+      shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.12),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-          width: 1,
+        side: BorderSide(
+          color: sideColor,
+          width: borderColor != null ? 1.5 : 1,
         ),
       ),
-      child: Material(
-        color: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(borderRadius),
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: isActive ? child : Opacity(opacity: 0.55, child: child),
-        ),
+        child: isActive ? child : Opacity(opacity: 0.55, child: child),
       ),
     );
+
+    if (margin == null) return card;
+    return Padding(padding: margin!, child: card);
   }
 }

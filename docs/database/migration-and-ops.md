@@ -1,8 +1,10 @@
-# Migration & Operations — Promsell POS CE v0.8.9
+# Migration & Operations — Promsell POS CE (v0.9.0)
 
-Migration guide, backup & restore procedures, performance notes, and database testing.
+Migration guide, backup **export**, performance notes, and database testing.
 
-> **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns
+> **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
+
+**Current schema: v28** (15 tables including `sale_payments`). **Same-device in-app restore** is shipped (Settings → Backup). Cross-device / key recovery is **not** (Phase 2b).
 
 ---
 
@@ -32,9 +34,18 @@ onUpgrade: (m, from, to) async {
 },
 ```
 
-### Incremental migrations (v2 → v19)
+### Latest steps (v0.9.0)
 
-Schema versions 2 through 19 use incremental migration:
+| Version | Changes |
+|---------|---------|
+| **v25** | Products: `brand`, `unit`, `supplier`, `is_recommended` |
+| **v26** | Dedupe `daily_closes` by `close_date`, unique index on `close_date` |
+| **v27** | Dedupe non-null `sales.receipt_number`, unique partial index; receipt reseed from sales |
+| **v28** | Create `sale_payments` (multi-tender) + index `idx_sale_payments_sale_id` |
+
+### Incremental migrations (v2 → v24, historical)
+
+Schema versions 2 through 24 use incremental migration:
 
 ```dart
 onUpgrade: (m, from, to) async {
@@ -96,6 +107,38 @@ onUpgrade: (m, from, to) async {
     // Add barcodeImagePath column to products table
     // Stores a generated PNG barcode image for each product that has a barcode
   }
+  if (from < 19) {
+    // Add note column to sale_items and draft_cart_items tables
+    // Allows per-item notes (e.g. "No ice", "Extra spicy")
+  }
+  if (from < 20) {
+    // Restaurant mode: orderType, orderChannel, externalOrderRef, tableId, serviceChargeRate, serviceChargeAmount
+    // Add columns to sales and draft_carts tables
+    // Add productOptionsJson to sale_items and draft_cart_items
+    // Create restaurant_tables, product_option_groups, product_options tables
+    // Create indexes: idx_product_option_groups_product_id, idx_product_options_group_id, idx_restaurant_tables_status
+    // Seed businessType and defaultServiceChargeRate settings
+  }
+  if (from < 21) {
+    // Customer & promotion management
+    // Create customers and promotions tables
+    // Add customerId, promotionId, promotionDiscountAmount to sales and draft_carts
+    // Create indexes: idx_customers_name, idx_customers_phone, idx_promotions_active, idx_sales_customer_id
+  }
+  if (from < 22) {
+    // Add description column to products table for long-form product descriptions
+  }
+  if (from < 23) {
+    // Runtime barcode validation: drop UNIQUE constraint on products.barcode
+    // Implement application-level uniqueness check via ProductLocalDatasource._validateBarcodeUnique()
+    // Barcode length constraint: 1-50 characters when non-null
+    // Reason: UNIQUE constraint conflicts with sync soft-delete pattern (multiple deleted products can have same barcode)
+  }
+  if (from < 24) {
+    // Add compound index: idx_products_barcode_deletedAt (barcode, deleted_at)
+    // Improves performance for barcode uniqueness queries that filter by deletedAt IS NULL
+    // Replaces old idx_products_barcode_unique from v16-v22
+  }
 },
 ```
 
@@ -138,7 +181,7 @@ await customStatement(
 
 | Platform | Path |
 |----------|------|
-| Android | `/data/data/com.mnlizard.promsell/databases/promsell_pos.db` |
+| Android | `/data/data/com.promsell.promsell_pos_ce/databases/promsell_pos.db` |
 | iOS | `<app_sandbox>/Documents/promsell_pos.db` |
 | Desktop (dev) | Working directory or platform default |
 
@@ -166,6 +209,17 @@ Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2-HMAC-SHA256
 
 > Encrypted backups have `.enc` extension. The PIN is never stored — forgotten PIN = unrecoverable backup.
 
+### SQLCipher database encryption (Phase 2a)
+
+Full-database encryption at rest using SQLCipher:
+
+- **Cipher:** AES-256-CBC with PBKDF2-HMAC-SHA512 (256k iterations)
+- **Key storage:** Platform secure storage (iOS Keychain / Android Keystore)
+- **First launch:** Auto-generates 256-bit encryption key
+- **Backup:** Database file remains encrypted; restore requires same key
+
+> **Important:** SQLCipher encryption is transparent after initial setup. Losing the encryption key means **permanent data loss**. Key recovery mechanisms are planned for Phase 2b.
+
 ### Restore
 
 1. Close the database connection
@@ -176,8 +230,9 @@ Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2-HMAC-SHA256
 
 ### Cautions
 
-- **Version mismatch:** Restoring a pre-v2 backup on v19+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
-- **Encrypted backups:** Restoring an encrypted backup without the PIN is impossible.
+- **Version mismatch:** Restoring a pre-v2 backup on v24+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
+- **PIN-encrypted backups:** Restoring an encrypted backup without the PIN is impossible.
+- **SQLCipher encryption:** Database files are encrypted at rest. Losing the platform-stored key requires data recovery from unencrypted backup.
 - **CSV export** (v0.6.0): Export sales and products data as CSV via `csv` + `share_plus`.
 
 ---
@@ -243,7 +298,7 @@ AppDatabase createInMemoryDatabase() {
 }
 ```
 
-Requires `sqlite3_flutter_libs` in `dev_dependencies` for FFI on desktop test runners.
+Requires `sqlcipher_flutter_libs` in `dev_dependencies` for FFI on desktop test runners (replaced `sqlite3_flutter_libs` in Phase 2a).
 
 ### Test fixtures
 
@@ -286,4 +341,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Migration & Operations</sub>
+<sub>Promsell POS CE · v0.9.0 · Migration & Operations · SQLCipher AES-256</sub>

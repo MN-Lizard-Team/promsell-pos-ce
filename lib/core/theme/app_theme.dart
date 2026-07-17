@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class AppTheme {
@@ -310,22 +311,54 @@ class AppTheme {
     iconButtonTheme: IconButtonThemeData(
       style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
     ),
+    // Filled denser POS inputs — focus stays primary teal (not accent orange).
     inputDecorationTheme: InputDecorationTheme(
+      isDense: true,
+      filled: true,
+      fillColor: AppColors.surfaceContainerLow,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.55)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.55)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
       ),
-      filled: true,
-      fillColor: AppColors.surface,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+      ),
+      labelStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 14,
+        color: AppColors.textSecondary,
+      ),
+      floatingLabelStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 12,
+        color: AppColors.primary,
+      ),
+      hintStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 14,
+        color: AppColors.textHint,
+      ),
+      helperStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 12,
+        color: AppColors.textSecondary,
+      ),
+      prefixIconColor: AppColors.textSecondary,
+      suffixIconColor: AppColors.textSecondary,
     ),
     chipTheme: ChipThemeData(
       selectedColor: AppColors.accent,
@@ -355,7 +388,7 @@ class AppTheme {
       backgroundColor: AppColors.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
       titleTextStyle: TextStyle(
         fontFamily: _fontFamily,
@@ -448,7 +481,10 @@ class AppTheme {
         return AppColors.border;
       }),
     ),
-    extensions: const <ThemeExtension<dynamic>>[SettingsThemeExtension.light],
+    extensions: const <ThemeExtension<dynamic>>[
+      SettingsThemeExtension.light,
+      PosThemeExtension.light,
+    ],
   );
 
   static ThemeData get dark => ThemeData(
@@ -561,6 +597,10 @@ class AppTheme {
       style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
     ),
     inputDecorationTheme: InputDecorationTheme(
+      isDense: true,
+      filled: true,
+      fillColor: AppColors.darkInputFill,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppColors.darkBorder),
@@ -573,12 +613,39 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(
           color: AppColors.darkPrimaryContainer,
-          width: 2,
+          width: 1.5,
         ),
       ),
-      filled: true,
-      fillColor: AppColors.darkInputFill,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+      ),
+      labelStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 14,
+        color: AppColors.darkTextSecondary,
+      ),
+      floatingLabelStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 12,
+        color: AppColors.darkOnPrimaryContainer,
+      ),
+      hintStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 14,
+        color: AppColors.darkTextSecondary,
+      ),
+      helperStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 12,
+        color: AppColors.darkTextSecondary,
+      ),
+      prefixIconColor: AppColors.darkTextSecondary,
+      suffixIconColor: AppColors.darkTextSecondary,
     ),
     chipTheme: ChipThemeData(
       selectedColor: AppColors.accent,
@@ -608,7 +675,7 @@ class AppTheme {
       backgroundColor: AppColors.darkSurface,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
       titleTextStyle: TextStyle(
         fontFamily: _fontFamily,
@@ -701,6 +768,9 @@ class AppTheme {
         return AppColors.darkBorder;
       }),
     ),
-    extensions: const <ThemeExtension<dynamic>>[SettingsThemeExtension.dark],
+    extensions: const <ThemeExtension<dynamic>>[
+      SettingsThemeExtension.dark,
+      PosThemeExtension.dark,
+    ],
   );
 }

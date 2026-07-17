@@ -13,12 +13,16 @@ class ProductAvatar extends StatelessWidget {
     this.imageThumbnailPath,
     this.imageUrl,
     this.size = 52,
+    this.shape = BoxShape.circle,
+    this.borderRadius,
   });
 
   final String? imagePath;
   final String? imageThumbnailPath;
   final String? imageUrl;
   final double size;
+  final BoxShape shape;
+  final BorderRadius? borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +31,8 @@ class ProductAvatar extends StatelessWidget {
       thumbnailPath: imageThumbnailPath,
       networkUrl: imageUrl,
       size: size,
-      shape: BoxShape.circle,
+      shape: shape,
+      borderRadius: borderRadius,
     );
   }
 }

@@ -13,9 +13,9 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.d
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_product_search_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_bottom_bar.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
-import 'package:promsell_pos_ce/features/settings/domain/entities/ui_config.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
@@ -46,10 +46,7 @@ void main() {
     when(() => mockCheckoutBloc.state).thenReturn(const CheckoutState());
     when(() => mockDraftBloc.state).thenReturn(const DraftState());
     when(() => mockSettingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.loaded,
-        settings: Settings(uiConfig: UiConfig(cartCompactMode: true)),
-      ),
+      const SettingsState(status: SettingsStatus.loaded, settings: Settings()),
     );
     when(() => mockProductBloc.state).thenReturn(
       const ProductState(status: ProductStatus.success, products: []),
@@ -93,6 +90,13 @@ void main() {
 
     final mockDraftRepo = MockDraftCartRepository();
     when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 0);
+    when(
+      () => mockDraftRepo.listDrafts(
+        includeArchived: any(named: 'includeArchived'),
+      ),
+    ).thenAnswer((_) async => []);
+    // Some call sites omit named arg.
+    when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
     if (GetIt.I.isRegistered<DraftCartRepository>()) {
       GetIt.I.unregister<DraftCartRepository>();
     }
@@ -135,7 +139,7 @@ void main() {
   });
 
   group('SalePage landscape layout', () {
-    testWidgets('uses expanded layout in landscape with width >= 600', (
+    testWidgets('uses the delivery cart entry point in landscape', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 400);
@@ -153,12 +157,15 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
+      expect(find.byType(CartBottomBar), findsOneWidget);
       expect(
         find.byWidgetPredicate(
           (w) =>
-              w is MouseRegion && w.cursor == SystemMouseCursors.resizeColumn,
+              w is MouseRegion &&
+              (w.cursor == SystemMouseCursors.resizeColumn ||
+                  w.cursor == SystemMouseCursors.resizeRow),
         ),
-        findsOneWidget,
+        findsNothing,
       );
     });
 
@@ -179,18 +186,12 @@ void main() {
       );
 
       expect(find.byType(CartBottomBar), findsOneWidget);
+      expect(find.byKey(const ValueKey('sale-open-search')), findsOneWidget);
     });
 
-    testWidgets('uses classic compact layout when cartCompactMode is false', (
+    testWidgets('opens SaleProductSearchPage from sale-open-search', (
       tester,
     ) async {
-      when(() => mockSettingsCubit.state).thenReturn(
-        const SettingsState(
-          status: SettingsStatus.loaded,
-          settings: Settings(uiConfig: UiConfig(cartCompactMode: false)),
-        ),
-      );
-
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -206,12 +207,11 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is MouseRegion && w.cursor == SystemMouseCursors.resizeRow,
-        ),
-        findsOneWidget,
-      );
+      await tester.tap(find.byKey(const ValueKey('sale-open-search')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SaleProductSearchPage), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
     });
   });
 }

@@ -23,7 +23,9 @@ void main() {
     mockSettingsRepo = MockSettingsRepository();
     generator = Ean13Generator();
     when(() => mockSettingsRepo.load()).thenAnswer((_) async => tAppSettings);
-    when(() => mockSettingsRepo.save(any())).thenAnswer((_) async {});
+    when(
+      () => mockSettingsRepo.saveBarcodeLastCounter(any()),
+    ).thenAnswer((_) async {});
     batchGenerate = BatchGenerateBarcodes(
       mockProductRepo,
       mockSettingsRepo,
@@ -34,7 +36,7 @@ void main() {
   group('BatchGenerateBarcodes', () {
     test('returns 0 when all products have barcodes', () async {
       when(
-        () => mockProductRepo.getActiveProducts(),
+        () => mockProductRepo.getAllProducts(),
       ).thenAnswer((_) async => [tProductWithBarcode]);
 
       final count = await batchGenerate(prefix: '200');
@@ -44,7 +46,7 @@ void main() {
 
     test('generates barcodes for products without one', () async {
       when(
-        () => mockProductRepo.getActiveProducts(),
+        () => mockProductRepo.getAllProducts(),
       ).thenAnswer((_) async => [tProductWithBarcode, tProduct]);
       when(
         () => mockProductRepo.barcodeExists(
@@ -59,12 +61,36 @@ void main() {
       final count = await batchGenerate(prefix: '200');
       expect(count, 1);
       verify(() => mockProductRepo.bulkUpdateBarcodes(any())).called(1);
-      verify(() => mockSettingsRepo.save(any())).called(1);
+      verify(() => mockSettingsRepo.saveBarcodeLastCounter(any())).called(1);
+    });
+
+    test('includes inactive products without barcodes (policy A)', () async {
+      when(
+        () => mockProductRepo.getAllProducts(),
+      ).thenAnswer((_) async => [tProductWithBarcode, tInactiveProduct]);
+      when(
+        () => mockProductRepo.barcodeExists(
+          any(),
+          excludeId: any(named: 'excludeId'),
+        ),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockProductRepo.bulkUpdateBarcodes(any()),
+      ).thenAnswer((_) async {});
+
+      final count = await batchGenerate(prefix: '200');
+      expect(count, 1);
+      final captured =
+          verify(
+                () => mockProductRepo.bulkUpdateBarcodes(captureAny()),
+              ).captured.single
+              as List<({String id, String barcode})>;
+      expect(captured.single.id, tInactiveProduct.id);
     });
 
     test('skips products when no unique barcode can be generated', () async {
       when(
-        () => mockProductRepo.getActiveProducts(),
+        () => mockProductRepo.getAllProducts(),
       ).thenAnswer((_) async => [tProduct]);
       when(
         () => mockProductRepo.barcodeExists(
@@ -78,36 +104,23 @@ void main() {
       verifyNever(() => mockProductRepo.bulkUpdateBarcodes(any()));
     });
 
-    test(
-      'persists counter to settings after batch generation (Issue 2+3)',
-      () async {
-        when(
-          () => mockProductRepo.getActiveProducts(),
-        ).thenAnswer((_) async => [tProductWithBarcode, tProduct]);
-        when(
-          () => mockProductRepo.barcodeExists(
-            any(),
-            excludeId: any(named: 'excludeId'),
-          ),
-        ).thenAnswer((_) async => false);
-        when(
-          () => mockProductRepo.bulkUpdateBarcodes(any()),
-        ).thenAnswer((_) async {});
-
-        await batchGenerate(prefix: '200');
-
-        verify(() => mockSettingsRepo.save(any())).called(1);
-      },
-    );
-
-    test('does not persist counter when no barcodes generated', () async {
+    test('persists counter to settings after batch generation', () async {
       when(
-        () => mockProductRepo.getActiveProducts(),
-      ).thenAnswer((_) async => [tProductWithBarcode]);
+        () => mockProductRepo.getAllProducts(),
+      ).thenAnswer((_) async => [tProductWithBarcode, tProduct]);
+      when(
+        () => mockProductRepo.barcodeExists(
+          any(),
+          excludeId: any(named: 'excludeId'),
+        ),
+      ).thenAnswer((_) async => false);
+      when(
+        () => mockProductRepo.bulkUpdateBarcodes(any()),
+      ).thenAnswer((_) async {});
 
       await batchGenerate(prefix: '200');
 
-      verifyNever(() => mockSettingsRepo.save(any()));
+      verify(() => mockSettingsRepo.saveBarcodeLastCounter(any())).called(1);
     });
   });
 }

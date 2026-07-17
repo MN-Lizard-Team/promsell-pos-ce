@@ -51,14 +51,19 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
             children: [
               TextFormField(
                 controller: _nameCtrl,
+                maxLength: 100,
                 decoration: InputDecoration(
                   labelText: context.l10n.categoryName,
                   prefixIcon: const Icon(Icons.folder_outlined),
+                  counterText: '',
                 ),
                 textInputAction: TextInputAction.done,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return context.l10n.categoryNameRequired;
+                  }
+                  if (value.trim().length > 100) {
+                    return context.l10n.categoryNameTooLong;
                   }
                   return null;
                 },
@@ -78,14 +83,15 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                   final color = Color(int.parse('FF$hex', radix: 16));
                   final selected = _selectedColor == hex;
                   return Semantics(
-                    label: 'Color $hex',
+                    label: '${context.l10n.categoryColor} $hex',
                     button: true,
+                    selected: selected,
                     child: InkWell(
                       onTap: () => setState(() => _selectedColor = hex),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                       child: Container(
-                        width: 36,
-                        height: 36,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: color,
                           shape: BoxShape.circle,
@@ -124,8 +130,9 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
                 children: _presetIcons.map((item) {
                   final selected = _selectedIcon == item.value;
                   return Semantics(
-                    label: item.value,
+                    label: '${context.l10n.categoryIcon} ${item.value}',
                     button: true,
+                    selected: selected,
                     child: InkWell(
                       onTap: () => setState(() => _selectedIcon = item.value),
                       borderRadius: BorderRadius.circular(10),

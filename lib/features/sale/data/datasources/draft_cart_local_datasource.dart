@@ -3,17 +3,22 @@ import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 abstract class DraftCartLocalDatasource {
   Future<String> createDraft({String? name});
-  Future<void> upsertDraft(String cartId, CartState state, {String? name});
+  Future<void> upsertDraft(
+    String cartId,
+    CartSnapshot snapshot, {
+    String? name,
+  });
   Future<DraftCart?> loadDraft(String cartId);
   Future<List<DraftCart>> listDrafts({bool includeArchived = false});
   Future<void> deleteDraft(String cartId);
@@ -54,7 +59,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   @override
   Future<void> upsertDraft(
     String cartId,
-    CartState state, {
+    CartSnapshot snapshot, {
     String? name,
   }) async {
     final deviceId = await _getDeviceId();
@@ -64,17 +69,17 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       )..where((t) => t.id.equals(cartId))).write(
         DraftCartsCompanion(
           name: name != null ? Value(name) : const Value.absent(),
-          note: Value(state.note.isEmpty ? null : state.note),
-          cartDiscountType: Value(state.cartDiscountType),
-          cartDiscountValue: Value(state.cartDiscountValue),
-          orderType: Value(state.orderType),
-          orderChannel: Value(state.orderChannel),
-          externalOrderRef: Value(state.externalOrderRef),
-          tableId: Value(state.tableId),
-          serviceChargeRate: Value(state.serviceChargeRate),
-          customerId: Value(state.customerId),
-          promotionId: Value(state.promotionId),
-          promotionDiscountAmount: Value(state.promotionDiscountAmount),
+          note: Value(snapshot.note.isEmpty ? null : snapshot.note),
+          cartDiscountType: Value(snapshot.cartDiscountType),
+          cartDiscountValue: Value(snapshot.cartDiscountValue),
+          orderType: Value(snapshot.orderType),
+          orderChannel: Value(snapshot.orderChannel),
+          externalOrderRef: Value(snapshot.externalOrderRef),
+          tableId: Value(snapshot.tableId),
+          serviceChargeRate: Value(snapshot.serviceChargeRate),
+          customerId: Value(snapshot.customerId),
+          promotionId: Value(snapshot.promotionId),
+          promotionDiscountAmount: Value(snapshot.promotionDiscountAmount),
           updatedAt: Value(DateTime.now()),
           deviceId: Value(deviceId),
         ),
@@ -84,16 +89,17 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
         _db.draftCartItems,
       )..where((t) => t.cartId.equals(cartId))).go();
 
-      for (final item in state.items) {
+      for (final item in snapshot.items) {
         await _db
             .into(_db.draftCartItems)
             .insert(
               DraftCartItemsCompanion.insert(
-                id: IdGenerator.newId(),
+                // Persist stable cart line identity across save/load.
+                id: item.lineId,
                 cartId: cartId,
                 productId: item.product.id,
                 productName: item.product.name,
-                price: item.product.price,
+                price: item.product.price.value,
                 qty: item.qty,
                 discountType: Value(item.discountType),
                 discountValue: Value(item.discountValue),
@@ -110,9 +116,10 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
 
   @override
   Future<DraftCart?> loadDraft(String cartId) async {
-    final cart = await (_db.select(
-      _db.draftCarts,
-    )..where((t) => t.id.equals(cartId))).getSingleOrNull();
+    final cart =
+        await (_db.select(_db.draftCarts)
+              ..where((t) => t.id.equals(cartId) & t.deletedAt.isNull()))
+            .getSingleOrNull();
     if (cart == null) return null;
 
     final itemRows = await (_db.select(
@@ -145,11 +152,12 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             discountValue: r.discountValue,
             note: r.note,
             selectedOptions: _parseSelectedOptions(r.productOptionsJson),
+            lineId: r.id,
           ),
         )
         .toList();
 
-    return DraftCart(
+    return DraftCart.withCache(
       id: cart.id,
       name: cart.name,
       note: cart.note,
@@ -162,11 +170,12 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       serviceChargeRate: cart.serviceChargeRate,
       customerId: cart.customerId,
       promotionId: cart.promotionId,
-      promotionDiscountAmount: cart.promotionDiscountAmount,
+      promotionDiscountAmount: Money.fromDouble(cart.promotionDiscountAmount),
       items: items,
       updatedAt: cart.updatedAt,
       deletedAt: cart.deletedAt,
       version: cart.version,
+      skippedItemCount: missingProductIds.length,
     );
   }
 
@@ -208,13 +217,14 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           discountValue: row.discountValue,
           note: row.note,
           selectedOptions: _parseSelectedOptions(row.productOptionsJson),
+          lineId: row.id,
         ),
       );
     }
 
     return carts
         .map(
-          (cart) => DraftCart(
+          (cart) => DraftCart.withCache(
             id: cart.id,
             name: cart.name,
             note: cart.note,
@@ -227,7 +237,9 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             serviceChargeRate: cart.serviceChargeRate,
             customerId: cart.customerId,
             promotionId: cart.promotionId,
-            promotionDiscountAmount: cart.promotionDiscountAmount,
+            promotionDiscountAmount: Money.fromDouble(
+              cart.promotionDiscountAmount,
+            ),
             items: itemsByCartId[cart.id] ?? [],
             updatedAt: cart.updatedAt,
             deletedAt: cart.deletedAt,
@@ -240,12 +252,19 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   @override
   Future<void> deleteDraft(String cartId) async {
     final now = DateTime.now();
-    await (_db.update(_db.draftCartItems)
-          ..where((t) => t.cartId.equals(cartId)))
-        .write(DraftCartItemsCompanion(deletedAt: Value(now)));
-    await (_db.update(_db.draftCarts)..where((t) => t.id.equals(cartId))).write(
-      DraftCartsCompanion(deletedAt: Value(now), isArchived: const Value(true)),
-    );
+    await _db.transaction(() async {
+      await (_db.update(_db.draftCartItems)
+            ..where((t) => t.cartId.equals(cartId)))
+          .write(DraftCartItemsCompanion(deletedAt: Value(now)));
+      await (_db.update(
+        _db.draftCarts,
+      )..where((t) => t.id.equals(cartId))).write(
+        DraftCartsCompanion(
+          deletedAt: Value(now),
+          isArchived: const Value(true),
+        ),
+      );
+    });
   }
 
   @override
@@ -285,7 +304,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   Product _productFromData(ProductData d) => Product(
     id: d.id,
     name: d.name,
-    price: d.price,
+    price: Money.fromDouble(d.price),
     stock: d.stock,
     categoryId: d.categoryId,
     imageUrl: d.imageUrl,

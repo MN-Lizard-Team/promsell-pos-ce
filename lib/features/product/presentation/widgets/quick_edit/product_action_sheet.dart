@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/confirm_delete_dialog.dart';
 
 class ProductActionSheet extends StatelessWidget {
   const ProductActionSheet({super.key, required this.product});
@@ -93,28 +94,8 @@ class ProductActionSheet extends StatelessWidget {
     );
   }
 
-  Future<bool> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(context.l10n.deleteProduct),
-        content: Text(context.l10n.confirmDeleteProduct(product.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              context.l10n.delete,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    return confirmed ?? false;
+  Future<bool> _confirmDelete(BuildContext context) {
+    return showConfirmDeleteDialog(context, product.name);
   }
 }
 

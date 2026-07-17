@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 
 class DiscountConfig extends Equatable {
@@ -6,7 +7,7 @@ class DiscountConfig extends Equatable {
     this.enableItemDiscount = true,
     this.enableCartDiscount = true,
     this.maxDiscountPercent = 100.0,
-    this.maxDiscountAmount = 0.0,
+    this.maxDiscountAmount = Money.zero,
     this.defaultDiscountType = 'PERCENT',
     this.discountPresets = const [
       DiscountPreset(
@@ -21,8 +22,8 @@ class DiscountConfig extends Equatable {
 
   final bool enableItemDiscount;
   final bool enableCartDiscount;
-  final double maxDiscountPercent;
-  final double maxDiscountAmount;
+  final double maxDiscountPercent; // Rate/percentage — stays double
+  final Money maxDiscountAmount;
   final String defaultDiscountType;
   final List<DiscountPreset> discountPresets;
   final String activeDiscountPresetId;
@@ -44,7 +45,7 @@ class DiscountConfig extends Equatable {
     bool? enableItemDiscount,
     bool? enableCartDiscount,
     double? maxDiscountPercent,
-    double? maxDiscountAmount,
+    Money? maxDiscountAmount,
     String? defaultDiscountType,
     List<DiscountPreset>? discountPresets,
     String? activeDiscountPresetId,

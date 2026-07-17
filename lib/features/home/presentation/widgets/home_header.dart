@@ -66,14 +66,6 @@ class HomeHeader extends StatelessWidget {
               ],
             ),
           ),
-          Badge(
-            label: Text(
-              '3',
-              style: theme.textTheme.labelSmall?.copyWith(color: cs.onError),
-            ),
-            backgroundColor: cs.error,
-            child: Icon(Icons.notifications_none_outlined, color: onPrimary),
-          ),
         ],
       ),
     );

@@ -6,7 +6,8 @@ import 'package:promsell_pos_ce/features/inventory/domain/entities/inventory_log
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
 
-@lazySingleton
+/// Factory scope — each History / InventoryLog screen owns its own subscription.
+@injectable
 class InventoryLogCubit extends Cubit<InventoryLogState> {
   InventoryLogCubit({required WatchInventoryLogs watchInventoryLogs})
     : _watchInventoryLogs = watchInventoryLogs,

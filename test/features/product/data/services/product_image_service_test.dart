@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as img_lib;
@@ -13,12 +14,25 @@ import '../../../../helpers/mocks.dart';
 class MockImagePicker extends Mock implements ImagePicker {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late ProductImageServiceImpl service;
   late MockSettingsRepository mockSettingsRepo;
   late Directory tempDir;
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('promsell_test_');
+    final imagesDir = Directory(p.join(tempDir.path, 'images'));
+    await imagesDir.create(recursive: true);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async {
+            if (call.method == 'getApplicationDocumentsDirectory') {
+              return tempDir.path;
+            }
+            return null;
+          },
+        );
     mockSettingsRepo = MockSettingsRepository();
     when(
       () => mockSettingsRepo.load(),
@@ -34,7 +48,7 @@ void main() {
 
   group('deleteImage', () {
     test('deletes existing file', () async {
-      final file = File('${tempDir.path}/test.jpg');
+      final file = File('${tempDir.path}/images/test.jpg');
       await file.writeAsBytes([1, 2, 3]);
       expect(await file.exists(), isTrue);
 
@@ -54,8 +68,8 @@ void main() {
 
   group('deleteImages', () {
     test('deletes both full and thumbnail', () async {
-      final full = File('${tempDir.path}/full.jpg');
-      final thumb = File('${tempDir.path}/thumb.jpg');
+      final full = File('${tempDir.path}/images/full.jpg');
+      final thumb = File('${tempDir.path}/images/thumb.jpg');
       await full.writeAsBytes([1, 2, 3]);
       await thumb.writeAsBytes([1, 2, 3]);
 
@@ -70,7 +84,7 @@ void main() {
     });
 
     test('deletes only existing file when one is null', () async {
-      final full = File('${tempDir.path}/full.jpg');
+      final full = File('${tempDir.path}/images/full.jpg');
       await full.writeAsBytes([1, 2, 3]);
 
       await service.deleteImages(full.path, null);

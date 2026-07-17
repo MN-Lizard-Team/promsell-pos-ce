@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/widgets/nav/bottom_navigation_bar/icon_with_badge.dart';
@@ -16,8 +18,7 @@ class AppBottomNavigationBar extends StatefulWidget {
   final ValueChanged<int> onTap;
 
   static const double _height = 72;
-  static const double _labelFontSize = 11;
-  static const int _centerIndex = 2;
+  static const double _labelFontSize = 12;
 
   @override
   State<AppBottomNavigationBar> createState() => _AppBottomNavigationBarState();
@@ -28,6 +29,8 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
   late final AnimationController _bounceCtrl;
   late final Animation<double> _bounceAnim;
   int _animatingIndex = -1;
+
+  int get _centerIndex => widget.items.length ~/ 2;
 
   @override
   void initState() {
@@ -75,12 +78,23 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
     super.dispose();
   }
 
+  Widget _withBounce(bool isBouncing, Widget child) {
+    if (!isBouncing) return child;
+    return AnimatedBuilder(
+      animation: _bounceAnim,
+      builder: (context, child) {
+        return Transform.scale(scale: _bounceAnim.value, child: child);
+      },
+      child: child,
+    );
+  }
+
   void _onTap(int index) {
     HapticFeedback.lightImpact();
     widget.onTap(index);
   }
 
-  void _onLongPress(int index, Offset globalPosition) {
+  void _onLongPress(int index) {
     HapticFeedback.mediumImpact();
     final item = widget.items[index];
     final entries = item.longPressActions;
@@ -134,28 +148,22 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
           button: true,
           label: item.label,
           selected: isActive,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => _onTap(index),
-            onLongPressStart: (details) =>
-                _onLongPress(index, details.globalPosition),
-            child: Container(
-              height: AppBottomNavigationBar._height,
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (isBouncing)
-                    AnimatedBuilder(
-                      animation: _bounceAnim,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _bounceAnim.value,
-                          child: child,
-                        );
-                      },
-                      child: IconWithBadge(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _onTap(index),
+              onLongPress: () => _onLongPress(index),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                height: AppBottomNavigationBar._height,
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _withBounce(
+                      isBouncing,
+                      IconWithBadge(
                         icon: isActive ? item.activeIcon : item.icon,
                         color: isActive
                             ? colorScheme.primary
@@ -166,33 +174,28 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
                         badgeColor: item.badgeColor ?? colorScheme.error,
                         isActive: isActive,
                       ),
-                    )
-                  else
-                    IconWithBadge(
-                      icon: isActive ? item.activeIcon : item.icon,
-                      color: isActive
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                      badgeCount: item.badgeCount,
-                      badgeColor: item.badgeColor ?? colorScheme.error,
-                      isActive: isActive,
                     ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.label,
-                    style: theme.textTheme.labelSmall!.copyWith(
-                      fontFamily: 'NotoSansThai',
-                      color: isActive
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                      fontSize: AppBottomNavigationBar._labelFontSize,
-                      height: 1,
+                    const SizedBox(height: 4),
+                    Text(
+                      item.label,
+                      style: theme.textTheme.labelSmall!.copyWith(
+                        fontFamily: 'NotoSansThai',
+                        color: isActive
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.6,
+                              ),
+                        fontWeight: isActive
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        fontSize: AppBottomNavigationBar._labelFontSize,
+                        height: 1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -206,52 +209,45 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
     ThemeData theme,
     ColorScheme colorScheme,
   ) {
-    final isActive =
-        widget.selectedIndex == AppBottomNavigationBar._centerIndex;
-    final isBouncing = _animatingIndex == AppBottomNavigationBar._centerIndex;
+    final isActive = widget.selectedIndex == _centerIndex;
+    final isBouncing = _animatingIndex == _centerIndex;
 
     return SizedBox(
       width: 80,
       height: AppBottomNavigationBar._height + 24,
       child: Center(
-        child: GestureDetector(
-          onTap: () => _onTap(AppBottomNavigationBar._centerIndex),
-          onLongPressStart: (details) => _onLongPress(
-            AppBottomNavigationBar._centerIndex,
-            details.globalPosition,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isBouncing)
-                AnimatedBuilder(
-                  animation: _bounceAnim,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _bounceAnim.value,
-                      child: child,
-                    );
-                  },
-                  child: _buildCenterDiamond(item, colorScheme, isActive),
-                )
-              else
-                _buildCenterDiamond(item, colorScheme, isActive),
-              const SizedBox(height: 6),
-              Text(
-                item.label,
-                style: theme.textTheme.labelSmall!.copyWith(
-                  fontFamily: 'NotoSansThai',
-                  color: isActive
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                  fontSize: AppBottomNavigationBar._labelFontSize,
-                  height: 1,
+        child: Semantics(
+          button: true,
+          label: item.label,
+          selected: isActive,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _onTap(_centerIndex),
+            onLongPress: () => _onLongPress(_centerIndex),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _withBounce(
+                  isBouncing,
+                  _buildCenterDiamond(item, colorScheme, isActive),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  item.label,
+                  style: theme.textTheme.labelSmall!.copyWith(
+                    fontFamily: 'NotoSansThai',
+                    color: isActive
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: AppBottomNavigationBar._labelFontSize,
+                    height: 1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -263,25 +259,24 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
     ColorScheme colorScheme,
     bool isActive,
   ) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return Container(
       width: 56,
       height: 56,
-      transform: Matrix4.rotationZ(0.785398),
+      transform: Matrix4.rotationZ(math.pi / 4),
       transformAlignment: Alignment.center,
       decoration: BoxDecoration(
         color: colorScheme.primary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.primary.withValues(alpha: 0.45),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Transform.rotate(
-        angle: -0.785398,
+        angle: -math.pi / 4,
         child: Icon(
           isActive ? item.activeIcon : item.icon,
           color: colorScheme.onPrimary,
@@ -297,10 +292,10 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
     final colorScheme = theme.colorScheme;
     final bottomPadding = MediaQuery.viewPaddingOf(context).bottom;
 
-    return GestureDetector(
-      onHorizontalDragEnd: _handleNavbarSwipe,
-      child: SizedBox(
-        height: AppBottomNavigationBar._height + bottomPadding + 16,
+    return SizedBox(
+      height: AppBottomNavigationBar._height + bottomPadding + 4,
+      child: GestureDetector(
+        onHorizontalDragEnd: _handleNavbarSwipe,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -309,45 +304,46 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
               right: 0,
               bottom: 0,
               height: AppBottomNavigationBar._height + bottomPadding,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorScheme.shadow.withValues(alpha: 0.12),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
+              child: ClipRRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface.withValues(alpha: 0.8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.shadow.withValues(alpha: 0.12),
+                          blurRadius: 16,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Row(
-                    children: [
-                      for (
-                        int i = 0;
-                        i < AppBottomNavigationBar._centerIndex;
-                        i++
-                      )
-                        _buildRegularItem(
-                          i,
-                          widget.items[i],
-                          theme,
-                          colorScheme,
-                        ),
-                      const SizedBox(width: 80),
-                      for (
-                        int i = AppBottomNavigationBar._centerIndex + 1;
-                        i < widget.items.length;
-                        i++
-                      )
-                        _buildRegularItem(
-                          i,
-                          widget.items[i],
-                          theme,
-                          colorScheme,
-                        ),
-                    ],
+                    child: SafeArea(
+                      top: false,
+                      child: Row(
+                        children: [
+                          for (int i = 0; i < _centerIndex; i++)
+                            _buildRegularItem(
+                              i,
+                              widget.items[i],
+                              theme,
+                              colorScheme,
+                            ),
+                          const SizedBox(width: 80),
+                          for (
+                            int i = _centerIndex + 1;
+                            i < widget.items.length;
+                            i++
+                          )
+                            _buildRegularItem(
+                              i,
+                              widget.items[i],
+                              theme,
+                              colorScheme,
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -357,10 +353,12 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
               left: 0,
               right: 0,
               child: Center(
-                child: _buildCenterButton(
-                  widget.items[AppBottomNavigationBar._centerIndex],
-                  theme,
-                  colorScheme,
+                child: RepaintBoundary(
+                  child: _buildCenterButton(
+                    widget.items[_centerIndex],
+                    theme,
+                    colorScheme,
+                  ),
                 ),
               ),
             ),

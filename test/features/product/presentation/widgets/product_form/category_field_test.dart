@@ -55,13 +55,34 @@ void main() {
       expect(find.text('Drinks'), findsOneWidget);
     });
 
-    testWidgets('shows chevron icon', (tester) async {
+    testWidgets('shows chevron when no category selected', (tester) async {
       await tester.pumpApp(
-        CategoryField(selectedCategory: testCategory, onChanged: (_) {}),
+        CategoryField(selectedCategory: null, onChanged: (_) {}),
         categoryBloc: mockCategoryBloc,
       );
 
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_down_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.clear), findsNothing);
+    });
+
+    testWidgets('shows clear icon when category selected and clears on tap', (
+      tester,
+    ) async {
+      Category? captured = testCategory;
+      await tester.pumpApp(
+        CategoryField(
+          selectedCategory: testCategory,
+          onChanged: (cat) => captured = cat,
+        ),
+        categoryBloc: mockCategoryBloc,
+      );
+
+      expect(find.byIcon(Icons.clear), findsOneWidget);
+      await tester.tap(
+        find.byKey(const ValueKey('product-form-category-clear')),
+      );
+      await tester.pumpAndSettle();
+      expect(captured, isNull);
     });
 
     testWidgets('calls onChanged with null when None is selected', (

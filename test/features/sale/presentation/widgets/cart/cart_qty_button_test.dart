@@ -9,7 +9,11 @@ void main() {
     testWidgets('calls onPressed when tapped', (tester) async {
       var pressed = false;
       await tester.pumpApp(
-        CartQtyButton(icon: Icons.add, onPressed: () => pressed = true),
+        CartQtyButton(
+          icon: Icons.add,
+          tooltip: 'Add item',
+          onPressed: () => pressed = true,
+        ),
       );
 
       await tester.tap(find.byType(CartQtyButton));
@@ -19,7 +23,13 @@ void main() {
     });
 
     testWidgets('renders icon', (tester) async {
-      await tester.pumpApp(CartQtyButton(icon: Icons.remove, onPressed: () {}));
+      await tester.pumpApp(
+        CartQtyButton(
+          icon: Icons.remove,
+          tooltip: 'Remove item',
+          onPressed: () {},
+        ),
+      );
 
       expect(find.byIcon(Icons.remove), findsOneWidget);
     });

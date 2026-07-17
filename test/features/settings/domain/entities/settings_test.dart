@@ -68,12 +68,6 @@ void main() {
       expect(updated.allowOversell, isTrue);
     });
 
-    test('updates cartCompactMode', () {
-      const settings = Settings();
-      final updated = settings.copyWith(cartCompactMode: true);
-      expect(updated.cartCompactMode, isTrue);
-    });
-
     test('updates accessibilityMode', () {
       const settings = Settings();
       final updated = settings.copyWith(accessibilityMode: true);

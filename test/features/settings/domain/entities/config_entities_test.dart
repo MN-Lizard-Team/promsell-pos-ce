@@ -13,7 +13,6 @@ void main() {
       expect(config.receiptSize, '80mm');
       expect(config.receiptPreviewStyle, 'thermal');
       expect(config.showShopInfo, isTrue);
-      expect(config.autoPrintPrompt, isTrue);
     });
 
     test('copyWith updates fields', () {
@@ -50,7 +49,6 @@ void main() {
       const config = UiConfig();
       expect(config.locale, 'th');
       expect(config.themeMode, 'system');
-      expect(config.cartCompactMode, isTrue);
     });
 
     test('copyWith updates fields', () {

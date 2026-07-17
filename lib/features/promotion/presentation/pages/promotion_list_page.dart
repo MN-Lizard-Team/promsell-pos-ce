@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dart';
 import 'package:promsell_pos_ce/features/promotion/presentation/bloc/promotion_bloc.dart';
@@ -50,13 +51,14 @@ class _PromotionListViewState extends State<_PromotionListView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
 
     return BlocListener<PromotionBloc, PromotionState>(
       listenWhen: (prev, curr) =>
           curr.status == PromotionStatus.failure &&
           prev.status != PromotionStatus.failure,
       listener: (ctx, state) {
-        AppSnackBar.error(ctx, state.errorMessage ?? 'Error');
+        AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.errorOccurred);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -65,7 +67,7 @@ class _PromotionListViewState extends State<_PromotionListView> {
                   controller: _searchController,
                   autofocus: true,
                   decoration: InputDecoration(
-                    hintText: 'Search promotions...',
+                    hintText: l10n.searchPromotions,
                     border: InputBorder.none,
                     hintStyle: TextStyle(
                       color: theme.colorScheme.onSurfaceVariant,
@@ -76,7 +78,7 @@ class _PromotionListViewState extends State<_PromotionListView> {
                     PromotionSearchChanged(q),
                   ),
                 )
-              : const Text('Promotions'),
+              : Text(l10n.promotionsTitle),
           actions: [
             IconButton(
               icon: Icon(_isSearching ? Icons.close : Icons.search),
@@ -129,21 +131,18 @@ class _PromotionListViewState extends State<_PromotionListView> {
 
   Future<void> _showAddForm(BuildContext context) async {
     final bloc = context.read<PromotionBloc>();
-    final result = await Navigator.push<bool>(
+    await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) =>
             BlocProvider.value(value: bloc, child: const PromotionFormPage()),
       ),
     );
-    if (result == true && context.mounted) {
-      AppSnackBar.success(context, 'Promotion saved');
-    }
   }
 
   Future<void> _showEditForm(BuildContext context, Promotion promotion) async {
     final bloc = context.read<PromotionBloc>();
-    final result = await Navigator.push<bool>(
+    await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
@@ -152,9 +151,6 @@ class _PromotionListViewState extends State<_PromotionListView> {
         ),
       ),
     );
-    if (result == true && context.mounted) {
-      AppSnackBar.success(context, 'Promotion saved');
-    }
   }
 }
 
@@ -166,6 +162,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -179,14 +176,12 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              hasSearch ? 'No promotions found' : 'No promotions yet',
+              hasSearch ? l10n.noPromotionsFound : l10n.noPromotionsYet,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              hasSearch
-                  ? 'Try a different search term'
-                  : 'Create your first promotion to offer discounts',
+              hasSearch ? l10n.tryDifferentSearch : l10n.addFirstPromotion,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -197,7 +192,7 @@ class _EmptyState extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.add),
-                label: const Text('Add Promotion'),
+                label: Text(l10n.addPromotion),
               ),
             ],
           ],
@@ -215,7 +210,14 @@ class _PromotionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final isActive = promotion.isCurrentlyActive;
+    final valueLabel = promotion.type == PromotionType.percent
+        ? l10n.promotionPercentOff(promotion.value.toStringAsFixed(0))
+        : l10n.promotionAmountOff(promotion.value.toStringAsFixed(2));
+    final endLabel = promotion.endDate != null
+        ? _formatDate(promotion.endDate!)
+        : l10n.promotionNoEndDate;
 
     return Card(
       elevation: 0,
@@ -259,36 +261,24 @@ class _PromotionTile extends StatelessWidget {
                 ),
               ),
             ),
-            if (isActive)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Active',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Inactive',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.outline,
-                    fontWeight: FontWeight.w600,
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? theme.colorScheme.primaryContainer
+                    : theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                isActive ? l10n.promotionActive : l10n.promotionInactive,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isActive
+                      ? theme.colorScheme.onPrimaryContainer
+                      : theme.colorScheme.outline,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
           ],
         ),
         subtitle: Column(
@@ -296,18 +286,18 @@ class _PromotionTile extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             Text(
-              promotion.type == PromotionType.percent
-                  ? '${promotion.value.toStringAsFixed(0)}% off'
-                  : '${promotion.value.toStringAsFixed(2)} off',
+              valueLabel,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (promotion.minPurchaseAmount > 0) ...[
+            if (promotion.minPurchaseAmount.isPositive) ...[
               const SizedBox(height: 2),
               Text(
-                'Min. purchase: ${promotion.minPurchaseAmount.toStringAsFixed(2)}',
+                l10n.promotionMinPurchase(
+                  promotion.minPurchaseAmount.value.toStringAsFixed(2),
+                ),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -315,7 +305,7 @@ class _PromotionTile extends StatelessWidget {
             ],
             const SizedBox(height: 2),
             Text(
-              '${_formatDate(promotion.startDate)} - ${promotion.endDate != null ? _formatDate(promotion.endDate!) : "No end"}',
+              '${_formatDate(promotion.startDate)} - $endLabel',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

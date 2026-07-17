@@ -1,0 +1,790 @@
+# Database API Reference
+
+Complete guide to Drift database access patterns, repository implementations, and query techniques.
+
+---
+
+## Table of Contents
+
+1. [Database Setup](#database-setup)
+2. [Query Patterns](#query-patterns)
+3. [Transaction Patterns](#transaction-patterns)
+4. [Repository Pattern](#repository-pattern)
+5. [Drift Type Converters](#drift-type-converters)
+6. [Stream Patterns](#stream-patterns)
+7. [Migration Strategy](#migration-strategy)
+
+---
+
+## Database Setup
+
+### AppDatabase Class
+
+**Location:** `lib/core/database/app_database.dart`
+
+```dart
+@DriftDatabase(tables: [
+  Products,
+  Categories,
+  Sales,
+  SaleItems,
+  Customers,
+  Promotions,
+  RestaurantTables,
+  ProductOptionGroups,
+  ProductOptions,
+  InventoryLogs,
+  DraftCarts,
+  DraftCartItems,
+  DailyCloses,
+  AppSettings,
+])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(_openConnection());
+
+  @override
+  int get schemaVersion => 28;  // Current schema version (v0.9.0)
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+      await _createIndexes();
+      await _seedDefaultSettings();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      // Incremental steps — see app_database.dart for full history
+      if (from < 24) { /* partial unique barcode + indexes */ }
+      if (from < 25) { /* products brand/unit/supplier/is_recommended */ }
+      if (from < 26) { /* daily_closes unique close_date + dedupe */ }
+    },
+  );
+}
+```
+
+### Connection Setup (production · SQLCipher)
+
+Production does **not** open a plain `NativeDatabase` without a key. Use the encrypted opener:
+
+```dart
+// lib/core/database/database_opener.dart (conceptual)
+// 1) DbKeyStore loads/creates key (secure storage on mobile)
+// 2) EncryptedDatabaseOpener.open(file) → NativeDatabase + PRAGMA key
+// 3) Optional one-time plain → encrypted migrate via sqlcipher_export
+
+// Tests may use:
+// AppDatabase.forTesting(NativeDatabase.memory());
+```
+
+See `lib/core/database/database_opener.dart` and `db_key_store.dart` for the real implementation.
+
+### Configuration
+
+```dart
+// After open, migration beforeOpen (and app setup) enables:
+// PRAGMA journal_mode=WAL
+// PRAGMA foreign_keys=ON
+// (SQLCipher: only PRAGMA key is set by the app; other cipher defaults are library-side)
+
+QueryExecutor _openConnection() {
+  return LazyDatabase(() async {
+    final db = await EncryptedDatabaseOpener.open(/* path + key */);
+    
+    // Enable foreign keys
+    await db.customStatement('PRAGMA foreign_keys=ON');
+    
+    return db;
+  });
+}
+```
+
+---
+
+## Query Patterns
+
+### Basic Queries
+
+#### Select All
+
+```dart
+// Get all products
+Future<List<ProductData>> getAllProducts() {
+  return select(products).get();
+}
+
+// With condition
+Future<List<ProductData>> getActiveProducts() {
+  return (select(products)
+    ..where((p) => p.isActive.equals(true))
+  ).get();
+}
+
+// With ordering
+Future<List<ProductData>> getProductsByPrice() {
+  return (select(products)
+    ..orderBy([(p) => OrderingTerm(expression: p.price, mode: OrderingMode.desc)])
+  ).get();
+}
+```
+
+#### Select Single
+
+```dart
+// By primary key
+Future<ProductData?> getProductById(String id) {
+  return (select(products)
+    ..where((p) => p.id.equals(id))
+  ).getSingleOrNull();
+}
+
+// With multiple conditions
+Future<ProductData?> getProductByBarcode(String barcode) {
+  return (select(products)
+    ..where((p) => p.barcode.lower().equals(barcode.toLowerCase()))
+    ..where((p) => p.isActive.equals(true))
+  ).getSingleOrNull();
+}
+```
+
+### Watch Queries (Streams)
+
+```dart
+// Watch all products (reactive)
+Stream<List<ProductData>> watchAllProducts() {
+  return select(products).watch();
+}
+
+// Watch with condition
+Stream<List<ProductData>> watchActiveProducts() {
+  return (select(products)
+    ..where((p) => p.isActive.equals(true))
+    ..orderBy([(p) => OrderingTerm.asc(p.name)])
+  ).watch();
+}
+
+// Watch single entity
+Stream<ProductData?> watchProductById(String id) {
+  return (select(products)
+    ..where((p) => p.id.equals(id))
+  ).watchSingleOrNull();
+}
+```
+
+### Joins
+
+#### One-to-Many
+
+```dart
+// Products with their categories
+Stream<List<ProductWithCategory>> watchProductsWithCategories() {
+  final query = select(products).join([
+    leftOuterJoin(
+      categories,
+      categories.id.equalsExp(products.categoryId),
+    ),
+  ]);
+  
+  return query.watch().map((rows) {
+    return rows.map((row) {
+      final product = row.readTable(products);
+      final category = row.readTableOrNull(categories);
+      return ProductWithCategory(product, category);
+    }).toList();
+  });
+}
+```
+
+#### With asyncMap for Related Data
+
+```dart
+// Products with option groups loaded separately
+Stream<List<ProductData>> watchAllProductsWithOptions() {
+  return select(products).watch().asyncMap((products) async {
+    // Load option groups for each product
+    for (final product in products) {
+      final groups = await (select(productOptionGroups)
+        ..where((g) => g.productId.equals(product.id))
+      ).get();
+      
+      // Store in product (if Product has optionGroups field)
+      // or handle separately
+    }
+    return products;
+  });
+}
+```
+
+### Aggregations
+
+```dart
+// Count products
+Future<int> countProducts() async {
+  final query = selectOnly(products)
+    ..addColumns([products.id.count()]);
+  
+  final result = await query.getSingle();
+  return result.read(products.id.count()) ?? 0;
+}
+
+// Sum of inventory value
+Future<double> getTotalInventoryValue() async {
+  final query = selectOnly(products)
+    ..addColumns([
+      (products.price * products.stock).sum(),
+    ]);
+  
+  final result = await query.getSingle();
+  return result.read((products.price * products.stock).sum()) ?? 0.0;
+}
+
+// Group by category
+Future<Map<String, int>> getProductCountByCategory() async {
+  final query = selectOnly(products)
+    ..addColumns([
+      products.categoryId,
+      products.id.count(),
+    ])
+    ..groupBy([products.categoryId]);
+  
+  final results = await query.get();
+  return {
+    for (final row in results)
+      row.read(products.categoryId) ?? 'uncategorized':
+        row.read(products.id.count()) ?? 0,
+  };
+}
+```
+
+### Date Range Queries
+
+```dart
+// Sales in date range
+Future<List<SaleData>> getSalesByDateRange(
+  DateTime start,
+  DateTime end,
+) {
+  return (select(sales)
+    ..where((s) => s.createdAt.isBiggerOrEqualValue(start))
+    ..where((s) => s.createdAt.isSmallerOrEqualValue(end))
+    ..where((s) => s.voidedAt.isNull())  // Exclude voided sales
+    ..orderBy([(s) => OrderingTerm.desc(s.createdAt)])
+  ).get();
+}
+```
+
+---
+
+## Transaction Patterns
+
+### Single Insert
+
+```dart
+Future<void> insertProduct(ProductsCompanion product) {
+  return into(products).insert(product);
+}
+```
+
+### Batch Insert
+
+```dart
+Future<void> insertProducts(List<ProductsCompanion> productList) {
+  return batch((batch) {
+    batch.insertAll(products, productList);
+  });
+}
+```
+
+### Update
+
+```dart
+// Update entire row
+Future<void> updateProduct(ProductData product) {
+  return update(products).replace(product);
+}
+
+// Update specific columns
+Future<void> updateProductStock(String productId, double newStock) {
+  return (update(products)
+    ..where((p) => p.id.equals(productId))
+  ).write(ProductsCompanion(
+    stock: Value(newStock),
+    updatedAt: Value(DateTime.now()),
+    version: Value(currentVersion + 1),  // Optimistic locking
+  ));
+}
+```
+
+### Delete
+
+```dart
+// Hard delete
+Future<void> deleteProduct(String id) {
+  return (delete(products)
+    ..where((p) => p.id.equals(id))
+  ).go();
+}
+
+// Soft delete
+Future<void> softDeleteProduct(String id) {
+  return (update(products)
+    ..where((p) => p.id.equals(id))
+  ).write(ProductsCompanion(
+    deletedAt: Value(DateTime.now()),
+    updatedAt: Value(DateTime.now()),
+  ));
+}
+```
+
+### Complex Transactions
+
+```dart
+Future<void> createSaleWithInventoryDecrement(
+  SalesCompanion sale,
+  List<SaleItemsCompanion> items,
+) async {
+  await transaction(() async {
+    // 1. Insert sale
+    await into(sales).insert(sale);
+    
+    // 2. Insert sale items
+    await batch((batch) {
+      batch.insertAll(saleItems, items);
+    });
+    
+    // 3. Decrement inventory for each item
+    for (final item in items) {
+      final productId = item.productId.value;
+      final qty = item.quantity.value;
+      
+      // Read current stock
+      final product = await (select(products)
+        ..where((p) => p.id.equals(productId))
+      ).getSingle();
+      
+      // Update stock
+      await (update(products)
+        ..where((p) => p.id.equals(productId))
+      ).write(ProductsCompanion(
+        stock: Value(product.stock - qty),
+        updatedAt: Value(DateTime.now()),
+      ));
+      
+      // Insert inventory log
+      await into(inventoryLogs).insert(InventoryLogsCompanion.insert(
+        id: IdGenerator.newId(),
+        productId: productId,
+        type: 'out',
+        quantity: -qty,
+        reason: 'sale',
+        refSaleId: Value(sale.id.value),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+    }
+  });
+}
+```
+
+### Void Sale Transaction
+
+```dart
+Future<void> voidSaleWithInventoryReversal(String saleId) async {
+  await transaction(() async {
+    // 1. Get sale items
+    final items = await (select(saleItems)
+      ..where((i) => i.saleId.equals(saleId))
+    ).get();
+    
+    // 2. Mark sale as voided
+    await (update(sales)
+      ..where((s) => s.id.equals(saleId))
+    ).write(SalesCompanion(
+      voidedAt: Value(DateTime.now()),
+      updatedAt: Value(DateTime.now()),
+    ));
+    
+    // 3. Restore inventory for each item
+    for (final item in items) {
+      final product = await (select(products)
+        ..where((p) => p.id.equals(item.productId))
+      ).getSingle();
+      
+      await (update(products)
+        ..where((p) => p.id.equals(item.productId))
+      ).write(ProductsCompanion(
+        stock: Value(product.stock + item.quantity),
+        updatedAt: Value(DateTime.now()),
+      ));
+      
+      // Log reversal
+      await into(inventoryLogs).insert(InventoryLogsCompanion.insert(
+        id: IdGenerator.newId(),
+        productId: item.productId,
+        type: 'in',
+        quantity: item.quantity.toDouble(),
+        reason: 'void_sale',
+        refSaleId: Value(saleId),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ));
+    }
+  });
+}
+```
+
+---
+
+## Repository Pattern
+
+### Datasource Layer
+
+**Path:** `lib/features/product/data/datasources/product_local_datasource.dart`
+
+```dart
+abstract class ProductLocalDatasource {
+  Stream<List<ProductData>> watchAllProducts();
+  Future<ProductData?> getProductById(String id);
+  Future<void> insertProduct(ProductsCompanion product);
+  Future<void> updateProduct(ProductData product);
+  Future<void> deleteProduct(String id);
+}
+
+@LazySingleton(as: ProductLocalDatasource)
+class ProductLocalDatasourceImpl implements ProductLocalDatasource {
+  ProductLocalDatasourceImpl(this._db);
+  
+  final AppDatabase _db;
+  
+  @override
+  Stream<List<ProductData>> watchAllProducts() {
+    return (_db.select(_db.products)
+      ..where((p) => p.deletedAt.isNull())
+      ..orderBy([(p) => OrderingTerm.asc(p.name)])
+    ).watch();
+  }
+  
+  @override
+  Future<ProductData?> getProductById(String id) {
+    return (_db.select(_db.products)
+      ..where((p) => p.id.equals(id))
+      ..where((p) => p.deletedAt.isNull())
+    ).getSingleOrNull();
+  }
+  
+  @override
+  Future<void> insertProduct(ProductsCompanion product) {
+    return _db.into(_db.products).insert(product);
+  }
+  
+  @override
+  Future<void> updateProduct(ProductData product) {
+    return _db.update(_db.products).replace(product);
+  }
+  
+  @override
+  Future<void> deleteProduct(String id) {
+    return (_db.update(_db.products)
+      ..where((p) => p.id.equals(id))
+    ).write(ProductsCompanion(
+      deletedAt: Value(DateTime.now()),
+      updatedAt: Value(DateTime.now()),
+    ));
+  }
+}
+```
+
+### Repository Implementation
+
+**Path:** `lib/features/product/data/repositories/product_repository_impl.dart`
+
+```dart
+@LazySingleton(as: ProductRepository)
+class ProductRepositoryImpl implements ProductRepository {
+  ProductRepositoryImpl(this._localDatasource);
+  
+  final ProductLocalDatasource _localDatasource;
+  
+  @override
+  Stream<List<Product>> watchAllProducts() {
+    return _localDatasource.watchAllProducts().map((dataList) {
+      return dataList.map((data) => _mapToEntity(data)).toList();
+    });
+  }
+  
+  @override
+  Future<Product?> getById(String id) async {
+    final data = await _localDatasource.getProductById(id);
+    return data != null ? _mapToEntity(data) : null;
+  }
+  
+  @override
+  Future<void> insertProduct(Product product) async {
+    final companion = _mapToCompanion(product);
+    await _localDatasource.insertProduct(companion);
+  }
+  
+  // Map database model to domain entity
+  Product _mapToEntity(ProductData data) {
+    return Product(
+      id: data.id,
+      name: data.name,
+      price: Money.fromDouble(data.price),
+      // ... other fields
+    );
+  }
+  
+  // Map domain entity to Drift companion
+  ProductsCompanion _mapToCompanion(Product entity) {
+    return ProductsCompanion.insert(
+      id: entity.id,
+      name: entity.name,
+      price: entity.price.value,
+      // ... other fields
+    );
+  }
+}
+```
+
+---
+
+## Drift Type Converters
+
+### MoneyConverter
+
+**Location:** `lib/core/database/money_converter.dart`
+
+**v0.9.0 reality:** Converter maps `Money` ↔ **`double` baht** (not integer satang). Table definitions still use plain `real()` columns; datasources convert manually. **Integer satang columns are Phase M (deferred).**
+
+```dart
+// Conceptual — see money_converter.dart for the REAL baht implementation
+class MoneyConverter extends TypeConverter<Money, double> {
+  const MoneyConverter();
+  // fromSql: baht double → Money.fromDouble
+  // toSql: Money.value (baht)
+}
+```
+
+**Current table style:**
+
+```dart
+class Products extends Table {
+  RealColumn get price => real()();
+  RealColumn get cost => real().nullable()();
+}
+```
+
+### DateTimeConverter (if custom format needed)
+
+```dart
+class MillisecondsDateConverter extends TypeConverter<DateTime, int> {
+  const MillisecondsDateConverter();
+  
+  @override
+  DateTime fromSql(int fromDb) {
+    return DateTime.fromMillisecondsSinceEpoch(fromDb, isUtc: true);
+  }
+  
+  @override
+  int toSql(DateTime value) {
+    return value.millisecondsSinceEpoch;
+  }
+}
+```
+
+---
+
+## Stream Patterns
+
+### BLoC Integration
+
+```dart
+class ProductBloc extends Bloc<ProductEvent, ProductState> {
+  ProductBloc(this._repository) : super(ProductState.initial()) {
+    // Watch products stream
+    _productsSubscription = _repository.watchAllProducts().listen(
+      (products) => add(ProductsLoaded(products)),
+    );
+  }
+  
+  final ProductRepository _repository;
+  StreamSubscription<List<Product>>? _productsSubscription;
+  
+  @override
+  Future<void> close() {
+    _productsSubscription?.cancel();
+    return super.close();
+  }
+}
+```
+
+### Multiple Stream Sources
+
+```dart
+Stream<CartState> _mapLoadedToState() async* {
+  // Combine multiple streams
+  await for (final products in _productRepository.watchAllProducts()) {
+    final activeProducts = products.where((p) => p.isActive).toList();
+    
+    // Get current cart items and validate stock
+    final validatedItems = _validateStock(state.items, activeProducts);
+    
+    yield state.copyWith(
+      items: validatedItems,
+      availableProducts: activeProducts,
+    );
+  }
+}
+```
+
+---
+
+## Migration Strategy
+
+### Schema Version Tracking
+
+```dart
+@override
+int get schemaVersion => 28;  // Increment on each schema change
+```
+
+### Migration Pattern
+
+```dart
+@override
+MigrationStrategy get migration => MigrationStrategy(
+  onCreate: (Migrator m) async {
+    await m.createAll();
+    await _seedDefaults();
+  },
+  
+  onUpgrade: (Migrator m, int from, int to) async {
+    // Migration #17: Add barcode unique index
+    if (from < 17) {
+      await customStatement('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique
+        ON products(barcode)
+        WHERE barcode IS NOT NULL AND barcode != ''
+      ''');
+    }
+    
+    // Migration #22: Add product description
+    if (from < 22) {
+      await m.addColumn(products, products.description);
+    }
+    
+    // Migration #24: Add barcode indexes
+    if (from < 24) {
+      await customStatement('''
+        CREATE INDEX IF NOT EXISTS idx_sale_items_product_id
+        ON sale_items(product_id)
+      ''');
+      await customStatement('''
+        CREATE INDEX IF NOT EXISTS idx_sales_created_at
+        ON sales(created_at DESC)
+      ''');
+    }
+  },
+);
+```
+
+### Safe Column Addition
+
+```dart
+Future<void> _addColumnIfNotExists(
+  Migrator m,
+  String tableName,
+  String columnName,
+  String columnDef,
+) async {
+  // Check if column exists
+  final result = await customSelect(
+    'PRAGMA table_info($tableName)',
+  ).get();
+  
+  final columnExists = result.any((row) => row.data['name'] == columnName);
+  
+  if (!columnExists) {
+    await customStatement(
+      'ALTER TABLE $tableName ADD COLUMN $columnName $columnDef',
+    );
+  }
+}
+```
+
+### Data Backfill Migration
+
+```dart
+// Example: Backfill deviceId on existing rows
+if (from < 13) {
+  final deviceId = await _settingsRepository.getDeviceId();
+  
+  await customStatement('''
+    UPDATE products
+    SET device_id = ?
+    WHERE device_id IS NULL
+  ''', [deviceId]);
+  
+  // Repeat for other tables...
+}
+```
+
+---
+
+## Performance Tips
+
+### 1. Use Indexes
+
+```dart
+// Add index for frequently queried columns
+await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_sales_created_at
+  ON sales(created_at DESC)
+''');
+```
+
+### 2. Batch Operations
+
+```dart
+// GOOD: Single batch
+await batch((batch) {
+  for (final product in products) {
+    batch.insert(db.products, product);
+  }
+});
+
+// BAD: Multiple transactions
+for (final product in products) {
+  await into(db.products).insert(product);  // N transactions
+}
+```
+
+### 3. Limit Joined Queries
+
+```dart
+// Avoid N+1 queries
+// BAD:
+final products = await select(db.products).get();
+for (final product in products) {
+  final category = await _getCategory(product.categoryId);  // N queries
+}
+
+// GOOD: Use join or asyncMap
+final query = select(db.products).join([
+  leftOuterJoin(categories, categories.id.equalsExp(products.categoryId)),
+]);
+```
+
+### 4. Use WAL Mode
+
+```dart
+await customStatement('PRAGMA journal_mode=WAL');
+```
+
+Benefits:
+- Better concurrency (readers don't block writers)
+- Faster writes
+- No rollback journal overhead
+
+---
+
+<sub>Promsell POS CE · v0.9.0 · Database API Reference</sub>

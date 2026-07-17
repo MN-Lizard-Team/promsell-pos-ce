@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 class FormSectionCard extends StatelessWidget {
   const FormSectionCard({
     super.key,
-    required this.icon,
+    this.icon,
     required this.title,
+    this.subtitle,
     required this.child,
     this.trailing,
   });
 
-  final IconData icon;
+  /// Optional leading icon. Omit for text-only section titles.
+  final IconData? icon;
   final String title;
+  final String? subtitle;
   final Widget child;
   final Widget? trailing;
 
@@ -34,27 +37,47 @@ class FormSectionCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
+              crossAxisAlignment: subtitle == null
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 20,
-                    color: theme.colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+                if (icon != null) ...[
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    child: Icon(
+                      icon,
+                      size: 20,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 ...[trailing].whereType<Widget>(),

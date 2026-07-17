@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/shell/main_shell_scope.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/pages/customer_list_page.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_page.dart';
 import 'package:promsell_pos_ce/features/home/presentation/widgets/home_header.dart';
@@ -12,19 +15,15 @@ import 'package:promsell_pos_ce/features/home/presentation/widgets/home_stats_ro
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
 import 'package:promsell_pos_ce/features/promotion/presentation/bloc/promotion_bloc.dart';
 import 'package:promsell_pos_ce/features/promotion/presentation/bloc/promotion_event.dart';
 import 'package:promsell_pos_ce/features/promotion/presentation/bloc/promotion_state.dart';
 import 'package:promsell_pos_ce/features/promotion/presentation/pages/promotion_list_page.dart';
 import 'package:promsell_pos_ce/features/report/presentation/pages/report_page.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -87,20 +86,20 @@ class _HomePageState extends State<HomePage> with RouteAware {
       saleRepo.getSales(from: weekStart, to: todayEnd),
     ]);
 
+    final todayTotals = SalesPeriodTotals.from(results[0]);
     final todayCompleted = results[0].where((s) => !s.isVoided).toList();
 
-    final todayRevenue = todayCompleted.fold(
-      0.0,
-      (sum, s) => sum + s.totalAmount,
-    );
-
     final trendData = _buildTrendData(results[1], todayStart);
+    final todayCost = _calculateCost(todayCompleted, _productBloc.state);
 
+    final catalogReady = _isCatalogReady(_productBloc.state);
     return _HomeData(
-      todayRevenue: todayRevenue,
+      todayRevenue: todayTotals.netRevenue,
       trendData: trendData,
       todaySales: todayCompleted,
-      todaySalesCount: todayCompleted.length,
+      todaySalesCount: todayTotals.salesCount,
+      todayCost: todayCost,
+      costReady: catalogReady,
     );
   }
 
@@ -118,68 +117,73 @@ class _HomePageState extends State<HomePage> with RouteAware {
           )
           .inDays;
       if (dayDiff >= 0 && dayDiff < 7) {
-        dailyRevenue[6 - dayDiff] += sale.totalAmount;
+        dailyRevenue[6 - dayDiff] += sale.totalAmount.value;
       }
     }
     return dailyRevenue;
   }
 
-  static double _calculateCost(
+  /// Catalog has settled (success/failure) so cost join is intentional, not a race.
+  static bool _isCatalogReady(ProductState productState) {
+    return productState.status == ProductStatus.success ||
+        productState.status == ProductStatus.failure;
+  }
+
+  static Money _calculateCost(
     List<Sale> todaySales,
     ProductState productState,
   ) {
-    final costById = <String, double>{};
+    final costById = <String, Money>{};
     for (final p in productState.products) {
       costById[p.id] = p.cost;
     }
-    double totalCost = 0.0;
+    var totalCost = Money.zero;
     for (final sale in todaySales) {
       for (final item in sale.items) {
-        final cost = costById[item.productId] ?? 0.0;
-        totalCost += cost * item.qty;
+        final cost = costById[item.productId] ?? Money.zero;
+        totalCost = totalCost + cost * item.qty;
       }
     }
     return totalCost;
   }
 
-  void _onMenuTap(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        sl<DraftBloc>().add(const DraftCreated());
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SalePage()),
-        );
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ProductListPage()),
-        );
-      case 2:
+  void _retryLoad() {
+    _dataFuture = _loadHomeData();
+    setState(() {});
+  }
+
+  void _onMenuTap(HomeMenuItem item, BuildContext context) {
+    final shell = MainShellScope.maybeOf(context);
+    switch (item) {
+      case HomeMenuItem.sell:
+        // Same as bottom-nav Sale: switch tab, keep cart (no silent clear).
+        shell?.goToTab(2);
+      case HomeMenuItem.products:
+        shell?.goToTab(1);
+      case HomeMenuItem.customers:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const CustomerListPage()),
         );
-      case 3:
+      case HomeMenuItem.promotions:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const PromotionListPage()),
         );
-      case 4:
+      case HomeMenuItem.history:
+        // Keep push so History opens Report sales tab (shell tab is overview).
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => const ReportPage(initialTabIndex: 1),
           ),
         );
-      case 5:
+      case HomeMenuItem.closeDay:
         final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => DailyClosePage(date: today)),
         );
-      default:
-        break;
     }
   }
 
@@ -215,10 +219,9 @@ class _HomePageState extends State<HomePage> with RouteAware {
                   right: 0,
                   child: HomeHeader(
                     shopName: settings.shopName,
-                    onMenuTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SettingsPage()),
-                    ),
+                    onMenuTap: () {
+                      MainShellScope.maybeOf(context)?.goToTab(4);
+                    },
                   ),
                 ),
                 Column(
@@ -230,68 +233,92 @@ class _HomePageState extends State<HomePage> with RouteAware {
                       builder: (context, snapshot) {
                         final data = snapshot.data;
                         final isLoading =
-                            snapshot.connectionState == ConnectionState.waiting;
-                        final hasError = snapshot.hasError;
+                            snapshot.connectionState ==
+                                ConnectionState.waiting &&
+                            data == null;
+                        final hasError = snapshot.hasError && data == null;
+                        final l10n = context.l10n;
+                        final catalogReady = _isCatalogReady(
+                          _productBloc.state,
+                        );
+                        final costReady =
+                            (data?.costReady ?? false) || catalogReady;
 
-                        return BlocBuilder<ProductBloc, ProductState>(
-                          bloc: _productBloc,
-                          builder: (context, productState) {
-                            final revenue = data?.todayRevenue ?? 0;
-                            final cost = data != null
-                                ? _calculateCost(data.todaySales, productState)
-                                : 0.0;
-                            final profit = revenue - cost;
+                        // Fail-closed: never paint ฿0 as a real quiet day on error.
+                        final revenue = hasError
+                            ? Money.zero
+                            : (data?.todayRevenue ?? Money.zero);
+                        final cost = hasError
+                            ? Money.zero
+                            : (data?.todayCost ?? Money.zero);
+                        final profit = revenue.subtractUnclamped(cost);
+                        final metricsUnknown = hasError;
+                        final costUnknown = !hasError && !costReady;
 
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                HomeHeroDashboardCard(
-                                  todayRevenue: revenue,
-                                  todaySalesCount: data?.todaySalesCount ?? 0,
-                                  trendData:
-                                      data?.trendData ?? [0, 0, 0, 0, 0, 0, 0],
-                                  isLoading: isLoading,
-                                  onTap: () => WidgetsBinding.instance
-                                      .addPostFrameCallback(
-                                        (_) => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const ReportPage(),
-                                          ),
-                                        ),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            HomeHeroDashboardCard(
+                              todayRevenue: revenue,
+                              todaySalesCount: hasError
+                                  ? 0
+                                  : (data?.todaySalesCount ?? 0),
+                              trendData: hasError
+                                  ? const [0, 0, 0, 0, 0, 0, 0]
+                                  : (data?.trendData ??
+                                        const [0, 0, 0, 0, 0, 0, 0]),
+                              isLoading: isLoading || hasError,
+                              onTap: () => WidgetsBinding.instance
+                                  .addPostFrameCallback((_) {
+                                    MainShellScope.maybeOf(context)?.goToTab(3);
+                                  }),
+                            ),
+                            const SizedBox(height: 8),
+                            HomeStatsRow(
+                              revenue: revenue,
+                              cost: cost,
+                              profit: profit,
+                              isLoading: isLoading,
+                              metricsUnknown: metricsUnknown,
+                              costUnknown: costUnknown,
+                            ),
+                            if (hasError)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  24,
+                                  8,
+                                  24,
+                                  0,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        l10n.homeLoadError,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.error,
+                                            ),
                                       ),
-                                ),
-                                const SizedBox(height: 8),
-                                HomeStatsRow(
-                                  revenue: revenue,
-                                  cost: cost,
-                                  profit: profit,
-                                  isLoading: isLoading,
-                                ),
-                                if (hasError)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: Text(
-                                      'Failed to load data',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.error,
-                                          ),
                                     ),
-                                  ),
-                              ],
-                            );
-                          },
+                                    TextButton(
+                                      onPressed: _retryLoad,
+                                      child: Text(l10n.retry),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         );
                       },
                     ),
                     const SizedBox(height: 16),
                     HomeMenuGridTapHandler(
-                      onTap: (i) => _onMenuTap(i, context),
+                      onTap: (item) => _onMenuTap(item, context),
                       child: const HomeMenuGrid(),
                     ),
                     const SizedBox(height: 16),
@@ -331,10 +358,16 @@ class _HomeData {
     required this.trendData,
     required this.todaySales,
     required this.todaySalesCount,
+    required this.todayCost,
+    required this.costReady,
   });
 
-  final double todayRevenue;
+  final Money todayRevenue;
   final List<double> trendData;
   final List<Sale> todaySales;
   final int todaySalesCount;
+  final Money todayCost;
+
+  /// False while product catalog is still loading — cost/profit must not show as 0.
+  final bool costReady;
 }

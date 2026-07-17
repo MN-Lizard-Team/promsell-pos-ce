@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
@@ -13,17 +15,23 @@ abstract final class AppSnackBar {
       message,
       duration: duration,
       backgroundColor: AppColors.success,
+      foregroundColor: AppColors.onSuccess,
       icon: Icons.check_circle,
     );
   }
 
-  static void error(BuildContext context, String message) {
+  static void error(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(seconds: 4),
+  }) {
     if (!context.mounted) return;
     _show(
       context,
       message,
-      duration: const Duration(seconds: 4),
+      duration: duration,
       backgroundColor: AppColors.error,
+      foregroundColor: AppColors.onError,
       icon: Icons.error,
     );
   }
@@ -39,6 +47,7 @@ abstract final class AppSnackBar {
       message,
       duration: duration,
       backgroundColor: AppColors.warning,
+      foregroundColor: AppColors.onWarning,
       icon: Icons.warning,
     );
   }
@@ -46,7 +55,7 @@ abstract final class AppSnackBar {
   static void info(
     BuildContext context,
     String message, {
-    Duration duration = const Duration(milliseconds: 1200),
+    Duration duration = const Duration(milliseconds: 2000),
   }) {
     if (!context.mounted) return;
     _show(
@@ -54,6 +63,7 @@ abstract final class AppSnackBar {
       message,
       duration: duration,
       backgroundColor: AppColors.info,
+      foregroundColor: AppColors.onInfo,
       icon: Icons.info,
     );
   }
@@ -63,7 +73,7 @@ abstract final class AppSnackBar {
     String message, {
     required String actionLabel,
     required VoidCallback onAction,
-    Duration duration = const Duration(seconds: 3),
+    Duration duration = const Duration(seconds: 5),
   }) {
     if (!context.mounted) return;
     final overlay = Overlay.of(context);
@@ -81,6 +91,7 @@ abstract final class AppSnackBar {
     String message, {
     required Duration duration,
     required Color backgroundColor,
+    required Color foregroundColor,
     IconData? icon,
   }) {
     final overlay = Overlay.of(context);
@@ -88,6 +99,7 @@ abstract final class AppSnackBar {
       message: message,
       duration: duration,
       backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
       icon: icon,
     );
     overlay.insert(entry.overlayEntry);
@@ -100,6 +112,7 @@ class _SimpleEntry {
     required this.message,
     required this.duration,
     required this.backgroundColor,
+    required this.foregroundColor,
     this.icon,
   }) {
     overlayEntry = OverlayEntry(builder: (_) => _SimpleToast(state: this));
@@ -108,6 +121,7 @@ class _SimpleEntry {
   final String message;
   final Duration duration;
   final Color backgroundColor;
+  final Color foregroundColor;
   final IconData? icon;
   late final OverlayEntry overlayEntry;
 
@@ -129,6 +143,7 @@ class _SimpleToastState extends State<_SimpleToast>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _opacity;
+  late final Timer _dismissTimer;
 
   static const _fadeIn = Duration(milliseconds: 150);
   static const _fadeOut = Duration(milliseconds: 200);
@@ -139,7 +154,7 @@ class _SimpleToastState extends State<_SimpleToast>
     _ctrl = AnimationController(vsync: this, duration: _fadeIn);
     _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
     _ctrl.forward();
-    Future.delayed(widget.state.duration, _dismiss);
+    _dismissTimer = Timer(widget.state.duration, _dismiss);
   }
 
   Future<void> _dismiss() async {
@@ -151,6 +166,7 @@ class _SimpleToastState extends State<_SimpleToast>
 
   @override
   void dispose() {
+    _dismissTimer.cancel();
     _ctrl.dispose();
     super.dispose();
   }
@@ -159,53 +175,52 @@ class _SimpleToastState extends State<_SimpleToast>
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final topPadding = MediaQuery.of(context).padding.top;
-    final bg = widget.state.backgroundColor;
+    final state = widget.state;
+    final fg = state.foregroundColor;
 
     return Positioned(
       top: topPadding + 16,
       left: 0,
       right: 0,
-      child: GestureDetector(
-        onTap: _dismiss,
-        child: Center(
-          child: FadeTransition(
-            opacity: _opacity,
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: bg,
-                  borderRadius: BorderRadius.circular(100),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).colorScheme.shadow,
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (widget.state.icon != null) ...[
-                      Icon(
-                        widget.state.icon,
-                        size: 18,
-                        color: AppColors.onSuccess,
+      child: Semantics(
+        liveRegion: true,
+        label: state.message,
+        child: GestureDetector(
+          onTap: _dismiss,
+          child: Center(
+            child: FadeTransition(
+              opacity: _opacity,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: state.backgroundColor,
+                    borderRadius: BorderRadius.circular(100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).colorScheme.shadow,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                      const SizedBox(width: 8),
                     ],
-                    Text(
-                      widget.state.message,
-                      style: textTheme.labelLarge?.copyWith(
-                        color: AppColors.onSuccess,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (state.icon != null) ...[
+                        Icon(state.icon, size: 18, color: fg),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        state.message,
+                        style: textTheme.labelLarge?.copyWith(color: fg),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -251,6 +266,7 @@ class _ActionToastState extends State<_ActionToast>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _opacity;
+  late final Timer _dismissTimer;
 
   static const _fadeIn = Duration(milliseconds: 150);
   static const _fadeOut = Duration(milliseconds: 200);
@@ -261,7 +277,7 @@ class _ActionToastState extends State<_ActionToast>
     _ctrl = AnimationController(vsync: this, duration: _fadeIn);
     _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
     _ctrl.forward();
-    Future.delayed(widget.state.duration, _dismiss);
+    _dismissTimer = Timer(widget.state.duration, _dismiss);
   }
 
   Future<void> _dismiss() async {
@@ -273,6 +289,7 @@ class _ActionToastState extends State<_ActionToast>
 
   @override
   void dispose() {
+    _dismissTimer.cancel();
     _ctrl.dispose();
     super.dispose();
   }
@@ -287,60 +304,69 @@ class _ActionToastState extends State<_ActionToast>
       bottom: bottomPadding + 96,
       left: 12,
       right: 12,
-      child: FadeTransition(
-        opacity: _opacity,
-        child: Material(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          elevation: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.outline, width: 1.5),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.state.message,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () {
-                      widget.state.onAction();
-                      _dismiss();
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: colorScheme.primary.withValues(
-                        alpha: 0.12,
-                      ),
-                      foregroundColor: colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
-                      ),
-                      minimumSize: const Size(72, 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: colorScheme.primary.withValues(alpha: 0.4),
+      child: Semantics(
+        liveRegion: true,
+        label: '${widget.state.message}, ${widget.state.actionLabel}',
+        child: FadeTransition(
+          opacity: _opacity,
+          child: Material(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppColors.dialogRadius),
+            elevation: 4,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppColors.dialogRadius),
+                border: Border.all(color: colorScheme.outline, width: 1.5),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.state.message,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ),
-                    child: Text(
-                      widget.state.actionLabel,
-                      style: textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () {
+                        widget.state.onAction();
+                        _dismiss();
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: colorScheme.primary.withValues(
+                          alpha: 0.12,
+                        ),
+                        foregroundColor: colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        minimumSize: const Size(72, 40),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppColors.dialogActionRadius,
+                          ),
+                          side: BorderSide(
+                            color: colorScheme.primary.withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        widget.state.actionLabel,
+                        style: textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
+import 'package:promsell_pos_ce/features/report/domain/extensions/report_calculator.dart';
 
 class ReportTopProductsCard extends StatelessWidget {
-  const ReportTopProductsCard({super.key, required this.topProducts});
+  const ReportTopProductsCard({
+    super.key,
+    required this.topProducts,
+    required this.currency,
+  });
 
-  final Map<String, int> topProducts;
+  final List<TopProductStat> topProducts;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +32,7 @@ class ReportTopProductsCard extends StatelessWidget {
                 title: context.l10n.noSalesYet,
               )
             else
-              ...topProducts.entries.toList().asMap().entries.map((entry) {
+              ...topProducts.asMap().entries.map((entry) {
                 final rank = entry.key + 1;
                 final e = entry.value;
                 return Padding(
@@ -44,10 +51,22 @@ class ReportTopProductsCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(e.key)),
-                      Text(
-                        context.l10n.units(e.value),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Expanded(child: Text(e.displayName)),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            context.l10n.units(e.qty),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          MoneyText(
+                            value: e.revenue,
+                            currency: currency,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

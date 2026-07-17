@@ -11,7 +11,6 @@ void main() {
         const GeneralSummaryCard(
           locale: Locale('en'),
           themeMode: ThemeMode.light,
-          accessibilityMode: false,
         ),
       );
 
@@ -19,28 +18,16 @@ void main() {
       expect(find.byIcon(Icons.language_outlined), findsOneWidget);
     });
 
-    testWidgets('shows ON for accessibility enabled', (tester) async {
+    testWidgets('does not show accessibility ON/OFF badges', (tester) async {
       await tester.pumpApp(
         const GeneralSummaryCard(
           locale: Locale('th'),
           themeMode: ThemeMode.dark,
-          accessibilityMode: true,
         ),
       );
 
-      expect(find.text('ON'), findsOneWidget);
-    });
-
-    testWidgets('shows OFF for accessibility disabled', (tester) async {
-      await tester.pumpApp(
-        const GeneralSummaryCard(
-          locale: Locale('en'),
-          themeMode: ThemeMode.system,
-          accessibilityMode: false,
-        ),
-      );
-
-      expect(find.text('OFF'), findsOneWidget);
+      expect(find.text('ON'), findsNothing);
+      expect(find.text('OFF'), findsNothing);
     });
 
     testWidgets('renders correct theme icons', (tester) async {
@@ -48,7 +35,6 @@ void main() {
         const GeneralSummaryCard(
           locale: Locale('en'),
           themeMode: ThemeMode.light,
-          accessibilityMode: false,
         ),
       );
       expect(find.byIcon(Icons.wb_sunny), findsOneWidget);
@@ -57,7 +43,6 @@ void main() {
         const GeneralSummaryCard(
           locale: Locale('en'),
           themeMode: ThemeMode.dark,
-          accessibilityMode: false,
         ),
       );
       expect(find.byIcon(Icons.nights_stay), findsOneWidget);
@@ -66,7 +51,6 @@ void main() {
         const GeneralSummaryCard(
           locale: Locale('en'),
           themeMode: ThemeMode.system,
-          accessibilityMode: false,
         ),
       );
       expect(find.byIcon(Icons.brightness_auto), findsOneWidget);

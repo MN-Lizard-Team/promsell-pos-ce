@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
@@ -9,13 +10,13 @@ import 'package:promsell_pos_ce/features/product/presentation/pages/product_form
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
-import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/modern_toggle_card.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/sticky_action_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/stock/stock_stepper.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/stock_config.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_draft.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/category_field.dart';
@@ -24,6 +25,50 @@ import 'dart:convert';
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
+
+/// Helper: pump the form and settle.
+Future<void> _pumpForm(
+  WidgetTester tester,
+  Widget page,
+  MockProductBloc productBloc,
+  MockCategoryBloc categoryBloc,
+  MockSettingsCubit settingsCubit,
+  ProductFormCubit formCubit,
+) async {
+  await tester.pumpApp(
+    page,
+    productBloc: productBloc,
+    categoryBloc: categoryBloc,
+    settingsCubit: settingsCubit,
+    productFormCubit: formCubit,
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Helper: switch form tab (0=Info/Product, 1=Price, 2=Stock, 3=Codes).
+Future<void> _goToFormTab(WidgetTester tester, int index) async {
+  final labels = ['Info', 'Price', 'Stock', 'Codes'];
+  final tab = find.text(labels[index]);
+  await tester.ensureVisible(tab);
+  await tester.tap(tab);
+  await tester.pumpAndSettle();
+}
+
+/// Helper: find Track Stock toggle among status toggles.
+Finder _trackStockToggle() {
+  return find.ancestor(
+    of: find.text('Track Stock'),
+    matching: find.byType(ModernToggleCard),
+  );
+}
+
+Finder _saveButton() => find.byKey(const ValueKey('product-form-save'));
+
+Future<void> _openDeleteMenu(WidgetTester tester) async {
+  // DetailHeader more button (same pattern as Product Preview).
+  await tester.tap(find.byIcon(Icons.more_vert));
+  await tester.pumpAndSettle();
+}
 
 class _MockSettingsLocalDatasource extends Mock
     implements SettingsLocalDatasource {}
@@ -75,7 +120,7 @@ void main() {
         Product(
           id: 'fallback',
           name: '',
-          price: 0,
+          price: Money.zero,
           stock: 0,
           imageThumbnailPath: null,
           isActive: true,
@@ -87,42 +132,48 @@ void main() {
   });
 
   group('ProductFormPage (add mode)', () {
-    testWidgets('renders single-scroll form with basic fields visible', (
+    testWidgets('renders form with tabs, info fields and sticky bar', (
       tester,
     ) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      expect(find.byType(TabBar), findsNothing);
-      expect(find.byType(FormSectionCard), findsNWidgets(4));
-      expect(find.byType(StockStepper), findsOneWidget);
       expect(find.byType(StickyActionBar), findsOneWidget);
+      expect(find.byType(TabBar), findsOneWidget);
+      expect(find.byType(CategoryField), findsOneWidget);
+      expect(find.text('Info'), findsOneWidget);
+      expect(find.text('Price'), findsOneWidget);
+      expect(find.text('Stock'), findsOneWidget);
+      expect(find.text('Codes'), findsOneWidget);
     });
 
-    testWidgets('shows Add Product title in AppBar', (tester) async {
-      await tester.pumpApp(
+    testWidgets('shows Add Product title in header', (tester) async {
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      expect(find.text('Add Product'), findsNWidgets(2));
+      expect(find.text('Add Product'), findsWidgets);
     });
 
     testWidgets('does not show DangerZoneCard in add mode', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
       expect(find.byType(StickyActionBar), findsOneWidget);
@@ -130,65 +181,66 @@ void main() {
     });
 
     testWidgets('shows ProductHeroImage and CategoryField', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      expect(find.byType(ProductHeroImage), findsOneWidget);
+      expect(find.byType(ProductHeroImage), findsWidgets);
       expect(find.byType(CategoryField), findsOneWidget);
     });
 
-    testWidgets('Advanced section collapsed by default hides advanced fields', (
+    testWidgets('extra section collapsed by default hides supplier field', (
       tester,
     ) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      expect(find.byIcon(Icons.expand_more), findsOneWidget);
-      expect(find.text('SKU'), findsNothing);
-      expect(find.text('Cost (THB)'), findsNothing);
+      expect(find.text('Supplier'), findsNothing);
     });
 
-    testWidgets('expanding advanced section shows SKU, Barcode, Cost fields', (
+    testWidgets('pricing tab shows retail price and average cost', (
       tester,
     ) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final expandBtn = find.byIcon(Icons.expand_more);
-      await tester.ensureVisible(expandBtn);
-      await tester.tap(expandBtn);
-      await tester.pumpAndSettle();
+      await _goToFormTab(tester, 1);
+      expect(find.text('Selling Price'), findsOneWidget);
+      expect(find.text('Cost'), findsOneWidget);
+      expect(find.text('Markup from Cost'), findsOneWidget);
 
+      await _goToFormTab(tester, 3);
       expect(find.text('SKU'), findsOneWidget);
-      expect(find.text('Barcode'), findsOneWidget);
-      expect(find.text('Generate Barcode'), findsOneWidget);
     });
 
     testWidgets('shows validation error when name is empty', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      await tester.tap(find.byType(StickyActionBar));
+      await tester.tap(_saveButton());
       await tester.pumpAndSettle();
 
       expect(find.text('Please enter product name'), findsOneWidget);
@@ -197,21 +249,23 @@ void main() {
     testWidgets('dispatches ProductAdded on valid submit', (tester) async {
       when(() => mockProductBloc.add(any())).thenReturn(null);
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final nameField = find.byType(TextFormField).at(0);
+      final nameField = find.byKey(const ValueKey('product-form-name'));
       await tester.enterText(nameField, 'Water');
 
-      final priceField = find.byType(TextFormField).at(1);
+      await _goToFormTab(tester, 1);
+      final priceField = find.byKey(const ValueKey('product-form-price'));
       await tester.enterText(priceField, '10.00');
 
-      await tester.tap(find.byType(StickyActionBar));
+      await tester.tap(_saveButton());
       await tester.pump(const Duration(milliseconds: 100));
 
       verify(
@@ -220,48 +274,54 @@ void main() {
     });
 
     testWidgets('shows error when price is empty', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final nameField = find.byType(TextFormField).at(0);
+      final nameField = find.byKey(const ValueKey('product-form-name'));
       await tester.enterText(nameField, 'Test');
 
-      await tester.tap(find.byType(StickyActionBar));
+      await tester.tap(_saveButton());
       await tester.pumpAndSettle();
 
+      // Jumps to Price tab so the error is visible.
       expect(find.text('Please enter price'), findsOneWidget);
+      expect(find.text('Selling Price'), findsOneWidget);
     });
 
     testWidgets('shows error when barcode has special characters', (
       tester,
     ) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final nameField = find.byType(TextFormField).at(0);
-      await tester.enterText(nameField, 'Test');
-
-      final priceField = find.byType(TextFormField).at(1);
-      await tester.enterText(priceField, '10.00');
-
-      final barcodeField = find.ancestor(
-        of: find.text('Barcode'),
-        matching: find.byType(TextFormField),
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-name')),
+        'Test',
       );
+      await _goToFormTab(tester, 1);
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-price')),
+        '10.00',
+      );
+
+      await _goToFormTab(tester, 3);
+      final barcodeField = find.byKey(const ValueKey('product-form-barcode'));
       await tester.ensureVisible(barcodeField);
       await tester.enterText(barcodeField, 'ABC-123!');
 
-      final saveBtn = find.byType(StickyActionBar);
+      final saveBtn = _saveButton();
       await tester.ensureVisible(saveBtn);
       await tester.tap(saveBtn);
       await tester.pumpAndSettle();
@@ -272,15 +332,55 @@ void main() {
       );
     });
 
-    testWidgets('stock stepper increments when + tapped', (tester) async {
-      await tester.pumpApp(
+    testWidgets('shows live barcode strip and copy when barcode entered', (
+      tester,
+    ) async {
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
+      await _goToFormTab(tester, 3);
+      expect(
+        find.byKey(const ValueKey('product-form-barcode-live-strip')),
+        findsNothing,
+      );
+      expect(
+        find.text('Preview appears when you enter or generate a barcode'),
+        findsOneWidget,
+      );
+
+      final barcodeField = find.byKey(const ValueKey('product-form-barcode'));
+      await tester.ensureVisible(barcodeField);
+      await tester.enterText(barcodeField, '1234567890123');
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('product-form-barcode-live-strip')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('product-form-barcode-copy')),
+        findsOneWidget,
+      );
+      expect(find.text('EAN-13'), findsOneWidget);
+    });
+
+    testWidgets('stock stepper increments when + tapped', (tester) async {
+      await _pumpForm(
+        tester,
+        const ProductFormPage(),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      await _goToFormTab(tester, 2);
       expect(find.byType(StockStepper), findsOneWidget);
       final stepper = find.byType(StockStepper);
       await tester.ensureVisible(stepper);
@@ -295,11 +395,61 @@ void main() {
     });
   });
 
+  group('ProductFormPage responsive layout', () {
+    testWidgets('renders flattened form on a compact viewport', (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.binding.setSurfaceSize(const Size(500, 900));
+      await _pumpForm(
+        tester,
+        const ProductFormPage(),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      expect(find.byType(StickyActionBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('renders flattened form on a medium viewport', (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.binding.setSurfaceSize(const Size(700, 900));
+      await _pumpForm(
+        tester,
+        const ProductFormPage(),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      expect(find.byType(StickyActionBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('renders flattened form on a wide viewport', (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.binding.setSurfaceSize(const Size(900, 900));
+      await _pumpForm(
+        tester,
+        const ProductFormPage(),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+      expect(find.byType(StickyActionBar), findsOneWidget);
+      expect(find.byType(TabBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('ProductFormPage (edit mode)', () {
     final existingProduct = Product(
       id: 'prod-0001-0001-0001-000000000001',
       name: 'Water',
-      price: 10.0,
+      price: Money.fromDouble(10.0),
       stock: 100,
       categoryId: 'drinks-001',
       imageThumbnailPath: null,
@@ -309,32 +459,34 @@ void main() {
     );
 
     testWidgets('pre-fills fields with existing product', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: existingProduct),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      expect(find.text('Water'), findsOneWidget);
-      expect(find.text('10.00'), findsOneWidget);
-      expect(find.byType(StockStepper), findsOneWidget);
-      expect(find.text('Delete'), findsOneWidget);
+      expect(find.text('Water'), findsWidgets);
+      await _goToFormTab(tester, 1);
+      expect(find.text('10.00'), findsWidgets);
+      expect(find.byIcon(Icons.more_vert), findsOneWidget);
     });
 
     testWidgets('dispatches ProductUpdated on edit submit', (tester) async {
       when(() => mockProductBloc.add(any())).thenReturn(null);
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: existingProduct),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      await tester.tap(find.byType(StickyActionBar));
+      await tester.tap(_saveButton());
       await tester.pump(const Duration(milliseconds: 500));
 
       verify(
@@ -342,13 +494,14 @@ void main() {
       ).called(1);
     });
 
-    testWidgets('shows Edit Product title in AppBar', (tester) async {
-      await tester.pumpApp(
+    testWidgets('shows Edit Product title in header', (tester) async {
+      await _pumpForm(
+        tester,
         ProductFormPage(product: existingProduct),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
       expect(find.text('Edit Product'), findsOneWidget);
@@ -357,12 +510,13 @@ void main() {
     testWidgets(
       'shows showProduct toggle outside advanced section when editing',
       (tester) async {
-        await tester.pumpApp(
+        await _pumpForm(
+          tester,
           ProductFormPage(product: existingProduct),
-          productBloc: mockProductBloc,
-          categoryBloc: mockCategoryBloc,
-          settingsCubit: mockSettingsCubit,
-          productFormCubit: productFormCubit,
+          mockProductBloc,
+          mockCategoryBloc,
+          mockSettingsCubit,
+          productFormCubit,
         );
 
         expect(find.text('Show product'), findsOneWidget);
@@ -371,36 +525,43 @@ void main() {
   });
 
   group('UI-BUG-11 regression: stock=0 warning', () {
-    testWidgets('shows stock stepper in basic section', (tester) async {
-      await tester.pumpApp(
+    testWidgets('shows stock stepper on stock tab', (tester) async {
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
+      await _goToFormTab(tester, 2);
       expect(find.byType(StockStepper), findsOneWidget);
     });
   });
 
   group('T4: price=0 validation', () {
     testWidgets('shows error when price is 0', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final nameField = find.byType(TextFormField).at(0);
-      await tester.enterText(nameField, 'Test');
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-name')),
+        'Test',
+      );
+      await _goToFormTab(tester, 1);
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-price')),
+        '0.00',
+      );
 
-      final priceField = find.byType(TextFormField).at(1);
-      await tester.enterText(priceField, '0.00');
-
-      await tester.tap(find.byType(StickyActionBar));
+      await tester.tap(_saveButton());
       await tester.pumpAndSettle();
 
       expect(find.text('Price must be greater than 0'), findsOneWidget);
@@ -409,17 +570,19 @@ void main() {
 
   group('T5: trackStock toggle', () {
     testWidgets('hides stock stepper when trackStock is off', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
+      await _goToFormTab(tester, 2);
       expect(find.byType(StockStepper), findsOneWidget);
 
-      final toggle = find.byType(ModernToggleCard);
+      final toggle = _trackStockToggle();
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);
       await tester.pumpAndSettle();
@@ -433,15 +596,17 @@ void main() {
     testWidgets('shows stock stepper when trackStock is toggled back on', (
       tester,
     ) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final toggle = find.byType(ModernToggleCard);
+      await _goToFormTab(tester, 2);
+      final toggle = _trackStockToggle();
       await tester.ensureVisible(toggle);
       await tester.tap(toggle);
       await tester.pumpAndSettle();
@@ -460,7 +625,7 @@ void main() {
     final existingProduct = Product(
       id: 'prod-0001-0001-0001-000000000001',
       name: 'Water',
-      price: 10.0,
+      price: Money.fromDouble(10.0),
       stock: 100,
       imageThumbnailPath: null,
       isActive: true,
@@ -468,22 +633,22 @@ void main() {
       updatedAt: DateTime(2024),
     );
 
-    testWidgets('tapping delete in StickyActionBar shows confirm dialog', (
+    testWidgets('tapping delete in app bar menu shows confirm dialog', (
       tester,
     ) async {
       when(() => mockProductBloc.add(any())).thenReturn(null);
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: existingProduct),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final deleteBtn = find.text('Delete');
-      await tester.ensureVisible(deleteBtn);
-      await tester.tap(deleteBtn);
+      await _openDeleteMenu(tester);
+      await tester.tap(find.text('Delete Product'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -492,22 +657,26 @@ void main() {
     testWidgets('confirming delete dispatches ProductDeleted', (tester) async {
       when(() => mockProductBloc.add(any())).thenReturn(null);
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: existingProduct),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final deleteBtn = find.text('Delete');
-      await tester.ensureVisible(deleteBtn);
-      await tester.tap(deleteBtn);
+      await _openDeleteMenu(tester);
+      await tester.tap(find.text('Delete Product'));
       await tester.pumpAndSettle();
 
       final dialog = find.byType(AlertDialog);
+      // Twin pills: Cancel + Delete — confirm is the last FilledButton.
       await tester.tap(
-        find.descendant(of: dialog, matching: find.byType(FilledButton)),
+        find.descendant(
+          of: dialog,
+          matching: find.widgetWithText(FilledButton, 'Delete'),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -519,22 +688,25 @@ void main() {
     testWidgets('cancelling delete does not dispatch event', (tester) async {
       when(() => mockProductBloc.add(any())).thenReturn(null);
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: existingProduct),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final deleteBtn = find.text('Delete');
-      await tester.ensureVisible(deleteBtn);
-      await tester.tap(deleteBtn);
+      await _openDeleteMenu(tester);
+      await tester.tap(find.text('Delete Product'));
       await tester.pumpAndSettle();
 
       final dialog = find.byType(AlertDialog);
       await tester.tap(
-        find.descendant(of: dialog, matching: find.byType(TextButton)),
+        find.descendant(
+          of: dialog,
+          matching: find.widgetWithText(FilledButton, 'Cancel'),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -555,14 +727,14 @@ void main() {
         _MockGenerateBarcode(),
       );
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: localCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        localCubit,
       );
-      await tester.pumpAndSettle();
 
       expect(find.text('Restore draft?'), findsOneWidget);
       expect(find.text('Restore'), findsOneWidget);
@@ -581,14 +753,14 @@ void main() {
       final mockDs = _MockSettingsLocalDatasourceWithDraft(draftJson);
       final localCubit = ProductFormCubit(mockDs, _MockGenerateBarcode());
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: localCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        localCubit,
       );
-      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Discard Draft'));
       await tester.pumpAndSettle();
@@ -613,20 +785,21 @@ void main() {
         _MockGenerateBarcode(),
       );
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: localCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        localCubit,
       );
-      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Restore'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Saved Draft'), findsOneWidget);
-      expect(find.text('15.00'), findsOneWidget);
+      expect(find.text('Saved Draft'), findsWidgets);
+      await _goToFormTab(tester, 1);
+      expect(find.text('15.00'), findsWidgets);
 
       await localCubit.close();
     });
@@ -644,7 +817,7 @@ void main() {
       final product = Product(
         id: 'prod-0001-0001-0001-000000000001',
         name: 'Existing',
-        price: 5.0,
+        price: Money.fromDouble(5.0),
         stock: 10,
         imageThumbnailPath: null,
         isActive: true,
@@ -652,14 +825,14 @@ void main() {
         updatedAt: DateTime(2024),
       );
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: product),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: localCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        localCubit,
       );
-      await tester.pumpAndSettle();
 
       expect(find.text('Restore draft?'), findsNothing);
 
@@ -709,56 +882,57 @@ void main() {
       final product = Product(
         id: '1',
         name: 'Test',
-        price: 10.0,
-        cost: 5.0,
+        price: Money.fromDouble(10.0),
+        cost: Money.fromDouble(5.0),
         stock: 0,
         isActive: true,
         createdAt: DateTime(2024),
         updatedAt: DateTime(2024),
       );
       final updated = product.copyWith(name: 'Updated');
-      expect(updated.cost, 5.0);
+      expect(updated.cost, Money.fromDouble(5.0));
     });
 
     test('copyWith with explicit null cost sets cost to 0.0', () {
       final product = Product(
         id: '1',
         name: 'Test',
-        price: 10.0,
-        cost: 5.0,
+        price: Money.fromDouble(10.0),
+        cost: Money.fromDouble(5.0),
         stock: 0,
         isActive: true,
         createdAt: DateTime(2024),
         updatedAt: DateTime(2024),
       );
       final updated = product.copyWith(cost: null);
-      expect(updated.cost, 0.0);
+      expect(updated.cost, Money.zero);
     });
 
     test('copyWith with new cost value updates cost', () {
       final product = Product(
         id: '1',
         name: 'Test',
-        price: 10.0,
-        cost: 5.0,
+        price: Money.fromDouble(10.0),
+        cost: Money.fromDouble(5.0),
         stock: 0,
         isActive: true,
         createdAt: DateTime(2024),
         updatedAt: DateTime(2024),
       );
-      final updated = product.copyWith(cost: 8.0);
-      expect(updated.cost, 8.0);
+      final updated = product.copyWith(cost: Money.fromDouble(8.0));
+      expect(updated.cost, Money.fromDouble(8.0));
     });
   });
 
   group('Unsaved changes dialog', () {
     testWidgets('shows Save, Discard, and Cancel buttons', (tester) async {
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         const ProductFormPage(),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
       final nameField = find.byType(TextFormField).at(0);
@@ -772,8 +946,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Save'), findsOneWidget);
-      expect(find.text('Discard Draft'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text("Don't save"), findsOneWidget);
+      // StickyActionBar also shows Cancel; dialog Cancel is present too.
+      expect(find.text('Cancel'), findsWidgets);
     });
   });
 
@@ -784,9 +959,9 @@ void main() {
       final originalProduct = Product(
         id: 'prod-0001-0001-0001-000000000001',
         name: 'Original',
-        price: 10.0,
+        price: Money.fromDouble(10.0),
         stock: 100,
-        cost: 5.0,
+        cost: Money.fromDouble(5.0),
         imageThumbnailPath: null,
         isActive: true,
         createdAt: DateTime(2024),
@@ -794,7 +969,7 @@ void main() {
       );
       final latestProduct = originalProduct.copyWith(
         name: 'Updated Elsewhere',
-        price: 20.0,
+        price: Money.fromDouble(20.0),
       );
 
       when(() => mockProductBloc.state).thenReturn(
@@ -802,21 +977,22 @@ void main() {
       );
       when(() => mockProductBloc.add(any())).thenReturn(null);
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: originalProduct),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      await tester.tap(find.byType(StickyActionBar), warnIfMissed: false);
+      await tester.tap(_saveButton(), warnIfMissed: false);
       await tester.pump(const Duration(milliseconds: 500));
 
       final captor = verify(() => mockProductBloc.add(captureAny())).captured;
       final event = captor.first as ProductUpdated;
       expect(event.product.name, 'Original');
-      expect(event.product.price, 10.0);
+      expect(event.product.price, Money.fromDouble(10.0));
     });
 
     testWidgets(
@@ -825,7 +1001,7 @@ void main() {
         final product = Product(
           id: 'prod-0001-0001-0001-000000000001',
           name: 'Test',
-          price: 10.0,
+          price: Money.fromDouble(10.0),
           stock: 100,
           categoryId: 'cat-123',
           imageThumbnailPath: null,
@@ -839,15 +1015,16 @@ void main() {
         );
         when(() => mockProductBloc.add(any())).thenReturn(null);
 
-        await tester.pumpApp(
+        await _pumpForm(
+          tester,
           ProductFormPage(product: product),
-          productBloc: mockProductBloc,
-          categoryBloc: mockCategoryBloc,
-          settingsCubit: mockSettingsCubit,
-          productFormCubit: productFormCubit,
+          mockProductBloc,
+          mockCategoryBloc,
+          mockSettingsCubit,
+          productFormCubit,
         );
 
-        await tester.tap(find.byType(StickyActionBar));
+        await tester.tap(_saveButton());
         await tester.pump(const Duration(seconds: 1));
 
         final captor = verify(() => mockProductBloc.add(captureAny())).captured;
@@ -857,6 +1034,151 @@ void main() {
     );
   });
 
+  group('Price tab insights', () {
+    testWidgets('shows loss warning when cost exceeds price', (tester) async {
+      await _pumpForm(
+        tester,
+        const ProductFormPage(),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-name')),
+        'Test',
+      );
+      await _goToFormTab(tester, 1);
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-price')),
+        '100',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-cost')),
+        '120',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('product-form-cost-warning')),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Cost is higher than selling price'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows empty-cost hint when price set without cost', (
+      tester,
+    ) async {
+      await _pumpForm(
+        tester,
+        const ProductFormPage(),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      await _goToFormTab(tester, 1);
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-price')),
+        '50',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('product-form-cost-empty-hint')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Add cost to see profit'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('product-form-cost-warning')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('markup chip +50% sets price from cost', (tester) async {
+      await _pumpForm(
+        tester,
+        const ProductFormPage(),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      await _goToFormTab(tester, 1);
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-cost')),
+        '30',
+      );
+      await tester.pumpAndSettle();
+
+      final chip50 = find.byKey(const ValueKey('product-form-markup-chip-50'));
+      await tester.ensureVisible(chip50);
+      await tester.pumpAndSettle();
+      await tester.tap(chip50);
+      await tester.pumpAndSettle();
+
+      final priceField = tester.widget<TextField>(
+        find.descendant(
+          of: find.byKey(const ValueKey('product-form-price')),
+          matching: find.byType(TextField),
+        ),
+      );
+      expect(priceField.controller?.text, '45.00');
+    });
+
+    testWidgets('edit mode shows price delta when price changes', (
+      tester,
+    ) async {
+      final product = Product(
+        id: 'prod-0001-0001-0001-000000000099',
+        name: 'Priced',
+        price: Money.fromDouble(100.0),
+        stock: 10,
+        cost: Money.fromDouble(60.0),
+        imageThumbnailPath: null,
+        isActive: true,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+      );
+
+      when(() => mockProductBloc.state).thenReturn(
+        ProductState(status: ProductStatus.success, products: [product]),
+      );
+
+      await _pumpForm(
+        tester,
+        ProductFormPage(product: product),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      await _goToFormTab(tester, 1);
+      expect(
+        find.byKey(const ValueKey('product-form-price-delta')),
+        findsNothing,
+      );
+
+      await tester.enterText(
+        find.byKey(const ValueKey('product-form-price')),
+        '120',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('product-form-price-delta')),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('Edit mode: cost clearing', () {
     testWidgets('clearing cost field sends null cost to copyWith', (
       tester,
@@ -864,9 +1186,9 @@ void main() {
       final product = Product(
         id: 'prod-0001-0001-0001-000000000001',
         name: 'Test',
-        price: 10.0,
+        price: Money.fromDouble(10.0),
         stock: 100,
-        cost: 5.0,
+        cost: Money.fromDouble(5.0),
         imageThumbnailPath: null,
         isActive: true,
         createdAt: DateTime(2024),
@@ -878,25 +1200,27 @@ void main() {
       );
       when(() => mockProductBloc.add(any())).thenReturn(null);
 
-      await tester.pumpApp(
+      await _pumpForm(
+        tester,
         ProductFormPage(product: product),
-        productBloc: mockProductBloc,
-        categoryBloc: mockCategoryBloc,
-        settingsCubit: mockSettingsCubit,
-        productFormCubit: productFormCubit,
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
       );
 
-      final costField = find.byType(TextFormField).last;
+      await _goToFormTab(tester, 1);
+      final costField = find.byKey(const ValueKey('product-form-cost'));
       await tester.ensureVisible(costField);
       await tester.enterText(costField, '');
 
-      await tester.ensureVisible(find.byType(StickyActionBar));
-      await tester.tap(find.byType(StickyActionBar));
+      await tester.ensureVisible(_saveButton());
+      await tester.tap(_saveButton());
       await tester.pump(const Duration(seconds: 1));
 
       final captor = verify(() => mockProductBloc.add(captureAny())).captured;
       final event = captor.first as ProductUpdated;
-      expect(event.product.cost, 0.0);
+      expect(event.product.cost, Money.zero);
     });
   });
 
@@ -907,7 +1231,7 @@ void main() {
         final product = Product(
           id: 'prod-0001-0001-0001-000000000001',
           name: 'Test',
-          price: 10.0,
+          price: Money.fromDouble(10.0),
           stock: 50,
           trackStock: false,
           imageThumbnailPath: null,
@@ -920,14 +1244,16 @@ void main() {
           ProductState(status: ProductStatus.success, products: [product]),
         );
 
-        await tester.pumpApp(
+        await _pumpForm(
+          tester,
           ProductFormPage(product: product),
-          productBloc: mockProductBloc,
-          categoryBloc: mockCategoryBloc,
-          settingsCubit: mockSettingsCubit,
-          productFormCubit: productFormCubit,
+          mockProductBloc,
+          mockCategoryBloc,
+          mockSettingsCubit,
+          productFormCubit,
         );
 
+        await _goToFormTab(tester, 2);
         expect(find.byType(StockStepper), findsNothing);
 
         final toggle = find.ancestor(
@@ -938,10 +1264,159 @@ void main() {
         await tester.tap(toggle);
         await tester.pump(const Duration(seconds: 1));
 
-        expect(find.byType(StockStepper), findsOneWidget);
-        expect(find.text('50'), findsWidgets);
+        // In edit mode with trackStock toggled on, stock shows as read-only with adjust button
+        expect(find.byType(StockStepper), findsNothing);
+        expect(find.textContaining('50'), findsWidgets);
+        expect(find.text('Adjust Stock'), findsOneWidget);
+        expect(
+          find.textContaining('Change quantity with Adjust stock'),
+          findsOneWidget,
+        );
       },
     );
+  });
+
+  group('Stock tab status and value', () {
+    testWidgets(
+      'create mode shows stock status and in-stock after qty > threshold',
+      (tester) async {
+        when(() => mockSettingsCubit.state).thenReturn(
+          const SettingsState(
+            status: SettingsStatus.loaded,
+            settings: Settings(stockConfig: StockConfig(lowStockThreshold: 5)),
+          ),
+        );
+
+        await _pumpForm(
+          tester,
+          const ProductFormPage(),
+          mockProductBloc,
+          mockCategoryBloc,
+          mockSettingsCubit,
+          productFormCubit,
+        );
+
+        await _goToFormTab(tester, 2);
+        expect(
+          find.byKey(const ValueKey('product-form-stock-status')),
+          findsOneWidget,
+        );
+        // Default stock 0 → out of stock
+        expect(find.textContaining('Out of stock'), findsWidgets);
+
+        final stepper = find.byType(StockStepper);
+        await tester.ensureVisible(stepper);
+        final incBtn = find.descendant(
+          of: stepper,
+          matching: find.byIcon(Icons.add),
+        );
+        // 0 → 1 still low stock (threshold 5)
+        await tester.tap(incBtn);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('Low stock'), findsWidgets);
+        // Raise above threshold
+        for (var i = 0; i < 5; i++) {
+          await tester.tap(incBtn);
+          await tester.pumpAndSettle();
+        }
+        expect(find.textContaining('In stock'), findsWidgets);
+        expect(find.textContaining('Low stock alert at 5'), findsOneWidget);
+      },
+    );
+
+    testWidgets('edit mode out of stock shows status and adjust controls', (
+      tester,
+    ) async {
+      final product = Product(
+        id: 'prod-0001-0001-0001-000000000099',
+        name: 'Empty Stock',
+        price: Money.fromDouble(100.0),
+        cost: Money.fromDouble(40.0),
+        stock: 0,
+        trackStock: true,
+        unit: 'pcs',
+        imageThumbnailPath: null,
+        isActive: true,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+      );
+
+      when(() => mockProductBloc.state).thenReturn(
+        ProductState(status: ProductStatus.success, products: [product]),
+      );
+      when(() => mockSettingsCubit.state).thenReturn(
+        const SettingsState(
+          status: SettingsStatus.loaded,
+          settings: Settings(stockConfig: StockConfig(lowStockThreshold: 5)),
+        ),
+      );
+
+      await _pumpForm(
+        tester,
+        ProductFormPage(product: product),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      await _goToFormTab(tester, 2);
+      expect(find.byType(StockStepper), findsNothing);
+      expect(
+        find.byKey(const ValueKey('product-form-adjust-stock')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Out of stock'), findsWidgets);
+      expect(
+        find.textContaining('Change quantity with Adjust stock'),
+        findsOneWidget,
+      );
+      // stock 0 → value card hidden
+      expect(
+        find.byKey(const ValueKey('product-form-stock-value')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('edit mode with stock shows inventory value card', (
+      tester,
+    ) async {
+      final product = Product(
+        id: 'prod-0001-0001-0001-000000000098',
+        name: 'Valued',
+        price: Money.fromDouble(100.0),
+        cost: Money.fromDouble(40.0),
+        stock: 10,
+        trackStock: true,
+        unit: 'box',
+        imageThumbnailPath: null,
+        isActive: true,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+      );
+
+      when(() => mockProductBloc.state).thenReturn(
+        ProductState(status: ProductStatus.success, products: [product]),
+      );
+
+      await _pumpForm(
+        tester,
+        ProductFormPage(product: product),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      await _goToFormTab(tester, 2);
+      expect(
+        find.byKey(const ValueKey('product-form-stock-value')),
+        findsOneWidget,
+      );
+      expect(find.text('Inventory value'), findsOneWidget);
+      expect(find.textContaining('10'), findsWidgets);
+      expect(find.textContaining('box'), findsWidgets);
+    });
   });
 }
 

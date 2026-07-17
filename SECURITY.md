@@ -1,13 +1,13 @@
-﻿# Security Policy
+# Security Policy
 
 ## Supported versions
 
 | Version | Supported |
 |---------|-----------|
-| 0.8.x   | Active |
-| 0.7.x   | Security fixes only |
-| 0.6.x   | No longer supported |
-| < 0.6   | No longer supported |
+| **0.9.x** | Active |
+| 0.8.x   | Security fixes only |
+| 0.7.x   | No longer supported |
+| < 0.7   | No longer supported |
 
 ## Reporting a vulnerability
 
@@ -17,12 +17,7 @@
 
 1. Go to the [Security tab](https://github.com/teeprakorn1/promsell-pos-ce/security)
 2. Click "Report a vulnerability"
-3. Include:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Affected versions
-   - Potential impact
-   - Suggested fix (if any)
+3. Include: description, steps to reproduce, affected versions, impact, suggested fix if any
 
 ### Response timeline
 
@@ -36,46 +31,60 @@
 ## What we consider security issues
 
 - **SQL injection** via unsanitized Drift query inputs
-- **Path traversal** in file read/write operations (PDF, image)
+- **Path traversal** in file read/write (PDF, images, backup)
 - **Insecure local storage** of sensitive shop or payment data
-- **Void/refund bypass** — circumventing atomic void flow to manipulate stock or revenue
-- **Inventory log tampering** — modifying audit trail records outside application flow
+- **Void/refund bypass** — circumventing atomic void to manipulate stock or revenue
+- **Inventory log tampering** — modifying audit trail outside app flow
+- **SQLCipher key exposure** or bypass of at-rest encryption
 - **Dependency vulnerabilities** in third-party packages
 
 ## What we do NOT consider security issues
 
 - UI bugs or UX issues
-- Missing features
+- Missing features (including **cross-device** restore / SQLCipher key export — Phase 2b)
 - Configuration errors by the user
-- Device-level security (screen lock, etc.) — outside app scope
+- Device-level security (screen lock, full-disk encryption) — outside app scope
+- Data loss after **user-initiated** uninstall or keystore wipe without a backup
 
-## Security architecture
+## Security architecture (v0.9)
 
-Promsell is an **offline-first local app** with no network access by default:
+Promsell is an **offline-first local app** with no required network for core POS:
 
-1. **Local-only storage** — all data stays on device via SQLite
-2. **No server communication** — no API keys, no remote calls in core flow
-3. **App settings table** (Drift-backed) — stores non-sensitive settings (locale, theme, shop name, VAT mode, stock policy); also stores receipt sequence counter and device prefix
-4. **Atomic transactions** — sale creation, void, and stock adjustments run inside Drift DB transactions to prevent partial writes
-5. **Inventory audit trail** — all stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) are logged immutably in `inventory_logs` table
-6. **Backup encryption v2** (v0.7.5+) — AES-256-GCM with PIN-derived PBKDF2-HMAC-SHA256 at 100,000 iterations (RFC 2898). v1 format (weak ~3 HMAC rounds) still decrypts for backward compatibility but new backups use v2. Toggle in Settings → Backup
-7. **Image format validation** (v0.7.5+) — `ProductImageService._isValidImage()` rejects non-image files (`.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.bmp`, `.heic` only); prevents malicious file upload via picker
-8. **Image cache eviction** (v0.7.5+) — `ImageCacheService` enforces 50MB LRU limit on `/images/` directory; prevents disk space exhaustion from uncompressed product photos
-9. **PDF generation** — local only, no upload
-10. **Orphaned image cleanup** (v0.8.0+) — `ProductFormPage` tracks temp image paths and deletes orphaned files on dispose/discard; `ClearOrphanedImages` usecase removes unused images from `/images/` directory. Prevents disk space exhaustion from abandoned temp files
-11. **Dependency hygiene** — keep `flutter pub upgrade` current; CI runs `tool/check_outdated.dart` to flag direct dependencies behind by ≥ 1 major version; Dependabot opens PRs for security + version updates (see `.github/dependabot.yml`)
-12. **Barcode case normalization** (v0.8.1+) — barcodes normalized to uppercase on save and lookup; prevents case-mismatch bypass of duplicate detection and lookup
-13. **Barcode manual entry validation** (v0.8.1+) — inline alphanumeric validation before submission; prevents unhandled `ArgumentError` from reaching downstream use cases
-14. **Crash log PII sanitization** (v0.8.3+) — `CrashLogService` sanitizes phone numbers, PromptPay IDs, and citizen IDs in crash logs before persistence; prevents accidental PII leakage in exported crash reports
-15. **Barcode deduplication migration** (v0.8.3+) — schema v17 automatically clears duplicate barcodes before unique index creation; prevents `StateError` crash on barcode scan when pre-migration duplicates exist
-16. **Dev/prod flavor separation** (v0.8.3+) — separate entry points (`main_dev.dart`, `main_prod.dart`) prevent development configurations from leaking into production builds
-17. **Barcode image generation isolation** (v0.8.6+) — `BarcodeImageService` uses off-screen `RenderRepaintBoundary` for barcode image generation; no external rendering dependencies, no network calls, images saved locally to `/barcodes/` directory only
-18. **Ean13Generator instance isolation** (v0.8.6+) — refactored from static mutable counter to `@injectable` per-instance counter; eliminates cross-test counter contamination and ensures counter state isolation between concurrent operations
-19. **Cubit disposal guard** (v0.8.8+) — `ProductFormCubit._loadDraftFromStorage` checks `isClosed` before `emit` after async storage read; prevents dirty widget build scope errors and potential state leaks when navigating away during draft load
-20. **Customer & promotion data isolation** (v0.8.9+) — customer and promotion entities stored in separate SQLite tables with foreign key references on `sales`/`draft_carts`; no sensitive PII beyond name/phone/email (all user-entered, no automatic collection)
-21. **Restaurant mode feature flags** (v0.8.9+) — restaurant-specific UI (order type, channel, table, service charge) conditionally rendered via `BusinessConfig.isRestaurantMode`; no restaurant data exposed in retail mode
-22. **Navbar center button hit-test isolation** (v0.8.9+) — floating center button rendered in `Positioned` layer above bar `Row`; prevents touch event bleed-through to adjacent tab items
+1. **Local-only storage** — sales, catalog, drafts via Drift/SQLite
+2. **SQLCipher at rest (Phase 2a)** — database file encrypted; key in platform secure storage (Keystore / Keychain) on mobile; debug desktop may use a fixed dev key (never for production builds)
+3. **Key loss = data loss** — there is **no** key recovery or multi-device key export in 0.9.0. Uninstall, factory reset, or secure-storage wipe without an export backup makes the DB unreadable
+4. **Atomic transactions** — sale create, void, stock adjust inside DB transactions
+5. **Inventory audit trail** — stock changes logged in `inventory_logs`
+6. **Backup export** — WAL checkpoint → DB copy → optional AES-256-GCM (PBKDF2 PIN, min length 6). Default encryption **on** when the setting key is missing (v0.9). Turning encryption off requires store PIN (if enabled) + confirmation
+7. **Backup restore (same-device)** — Settings → Backup can restore a `.enc` / SQLCipher `.db` export on **this device** (needs the existing SQLCipher key in secure storage). Cross-device / after uninstall is **not** supported. Plain SQLite files are rejected
+8. **Store PIN lock** — optional PIN (min **6**) with PBKDF2 hashing + attempt lockout **persisted in secure storage** (survives cold start); gates void, backup export/restore, stock adjust, CSV import, PromptPay edits, and disabling backup encryption
+9. **Crash logs** — PII patterns sanitized **on write**
+10. **Image sandbox** — product image delete restricted under app `images/` directory
+11. **No server by default** — no remote API keys in core flow
+12. **Dependency hygiene** — CI outdated check + Dependabot
 
-## Security changelog
+## Backup & recovery (honest limits)
 
-For the full fix history, see [CHANGELOG.md](CHANGELOG.md) (current versions 0.8.x). Older versions archived in [`docs/changelog/`](docs/changelog/).
+**SSOT:** Same-device in-app restore **yes**; cross-device / key recovery **no**; key loss without export = permanent data loss.
+
+| Capability | 0.9.0 |
+|------------|--------|
+| Export encrypted/plain DB | Yes (encrypt default on) |
+| Share via OS sheet | Yes |
+| In-app restore UI | **Yes (same-device only)** |
+| Cross-device restore / key export | **No** (Phase 2b) |
+| SQLCipher key backup | **No** |
+| Survive app uninstall without export | **No** |
+
+**Recommended practice:** keep backup encryption on, use a strong PIN (≥ 6), export regularly, store the file off-device. Same-device restore still needs this device’s SQLCipher key.
+
+## Security changelog (recent)
+
+- **0.9.0** — SQLCipher production path; backup encrypt default on; **same-device in-app restore**; store PIN min 6 + PBKDF2 + lockout; crash sanitize on write; image delete sandbox; schema **v28**
+- **0.8.x** — See prior SECURITY entries and CHANGELOG (barcode uniqueness, orphaned images, crash export sanitize, restaurant/CRM isolation)
+
+## Security testing expectations
+
+- Unit/widget tests on CI; integration suite may be non-blocking
+- Manual smoke: encrypted open, cash/PromptPay sale, void, draft, daily close, backup export/restore (see `docs/testing/RELEASE_0.9_SMOKE.md`)
+- CI: unit/widget coverage floor 50%; money-path fail-closed via `.github/workflows/release-trust.yml`; optional signed AAB via `release-aab.yml` when keystore secrets are set

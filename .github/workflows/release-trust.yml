@@ -1,0 +1,81 @@
+# Release trust gate — fail-closed money path (sale / draft / integrity).
+# Does NOT soft-fail. Use before tags / store cut; main CI still soft-fails
+# full device `integration_test/` (emulator-dependent).
+name: Release Trust
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+  # Optional: block merges that claim release readiness on main
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lib/features/sale/**'
+      - 'lib/features/daily_close/**'
+      - 'lib/core/domain/**'
+      - 'lib/core/services/app_lock_service.dart'
+      - 'lib/features/settings/data/services/backup_*.dart'
+      - 'test/integration/**'
+      - 'test/features/sale/**'
+      - '.github/workflows/release-trust.yml'
+      - '.github/workflows/release-aab.yml'
+
+concurrency:
+  group: release-trust-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  money-path:
+    name: Money path (fail-closed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.4
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate l10n
+        run: flutter gen-l10n
+
+      - name: Generate Drift / injectable code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze (blocking)
+        run: flutter analyze
+
+      - name: Trust suite — sale / draft / lock / backup (fail-closed)
+        # No continue-on-error. These are host `flutter test` paths (no emulator).
+        # Device `integration_test/` remains optional/soft on main CI only.
+        run: |
+          set -euo pipefail
+          flutter test \
+            test/features/sale/data/datasources/sale_local_datasource_test.dart \
+            test/features/sale/data/datasources/sale_write_helpers_test.dart \
+            test/integration/sale_integrity_test.dart \
+            test/integration/checkout_flow_test.dart \
+            test/features/sale/domain/usecases/create_sale_test.dart \
+            test/features/sale/domain/usecases/void_sale_test.dart \
+            test/features/sale/domain/services/sale_payable_calculator_test.dart \
+            test/features/sale/domain/services/sales_day_lock_test.dart \
+            test/features/sale/presentation/bloc/cart_bloc_test.dart \
+            test/features/sale/presentation/bloc/checkout_bloc_test.dart \
+            test/features/sale/presentation/bloc/draft_bloc_test.dart \
+            test/core/services/app_lock_service_test.dart \
+            test/features/settings/data/services/backup_encryption_service_test.dart \
+            test/features/settings/data/services/backup_restore_service_test.dart \
+            test/features/daily_close
+
+      - name: Format check (lib + test)
+        run: dart format --set-exit-if-changed lib/ test/

@@ -2,413 +2,221 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/modern_toggle_card.dart';
-import 'package:promsell_pos_ce/core/widgets/stock/stock_stepper.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/category_field.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/option_groups_editor.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_hero_image.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_shared.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_price_section.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_stock_section.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_visibility_strip.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_view_model.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/shared/product_text_field.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
-class ProductFormView extends StatelessWidget {
-  const ProductFormView({
-    super.key,
-    required this.formKey,
-    required this.product,
-    required this.nameCtrl,
-    required this.priceCtrl,
-    required this.stockCtrl,
-    required this.skuCtrl,
-    required this.barcodeCtrl,
-    required this.barcodeFocusNode,
-    required this.costCtrl,
-    required this.selectedCategory,
-    required this.imageUrl,
-    required this.imagePath,
-    required this.isActive,
-    required this.trackStock,
-    required this.isPickingImage,
-    required this.isGeneratingBarcode,
-    required this.onCategoryChanged,
-    required this.onImageTap,
-    required this.onTrackStockChanged,
-    required this.onActiveChanged,
-    required this.onStockChanged,
-    required this.onGenerateBarcode,
-    required this.optionGroups,
-    required this.onOptionGroupsChanged,
-  });
+/// Product form body: pill TabBar + pages under pinned hero.
+/// Tab order: Product → Price → Stock → Codes (POS workflow).
+class ProductFormView extends StatefulWidget {
+  const ProductFormView({super.key, required this.model});
 
-  final GlobalKey<FormState> formKey;
-  final Product? product;
-  final TextEditingController nameCtrl;
-  final TextEditingController priceCtrl;
-  final TextEditingController stockCtrl;
-  final TextEditingController skuCtrl;
-  final TextEditingController barcodeCtrl;
-  final FocusNode barcodeFocusNode;
-  final TextEditingController costCtrl;
-  final Category? selectedCategory;
-  final String? imageUrl;
-  final String? imagePath;
-  final bool isActive;
-  final bool trackStock;
-  final bool isPickingImage;
-  final bool isGeneratingBarcode;
-  final ValueChanged<Category?> onCategoryChanged;
-  final VoidCallback onImageTap;
-  final ValueChanged<bool> onTrackStockChanged;
-  final ValueChanged<bool> onActiveChanged;
-  final ValueChanged<int> onStockChanged;
-  final VoidCallback onGenerateBarcode;
-  final List<ProductOptionGroup> optionGroups;
-  final ValueChanged<List<ProductOptionGroup>> onOptionGroupsChanged;
-
-  bool get isEditing => product != null;
+  final ProductFormViewModel model;
 
   @override
-  Widget build(BuildContext context) {
-    final currency = context.watch<SettingsCubit>().state.settings.currency;
-
-    return Form(
-      key: formKey,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ProductHeroImage(
-              imagePath: imagePath,
-              imageUrl: imageUrl,
-              categoryName: selectedCategory?.name,
-              isLoading: isPickingImage,
-              onTap: onImageTap,
-            ),
-            const SizedBox(height: 20),
-            _BasicSection(
-              nameCtrl: nameCtrl,
-              priceCtrl: priceCtrl,
-              currency: currency,
-              selectedCategory: selectedCategory,
-              onCategoryChanged: onCategoryChanged,
-              barcodeCtrl: barcodeCtrl,
-              barcodeFocusNode: barcodeFocusNode,
-              isGeneratingBarcode: isGeneratingBarcode,
-              onGenerateBarcode: onGenerateBarcode,
-            ),
-            const SizedBox(height: 16),
-            _StockSection(
-              stockCtrl: stockCtrl,
-              trackStock: trackStock,
-              onStockChanged: onStockChanged,
-              onTrackStockChanged: onTrackStockChanged,
-            ),
-            const SizedBox(height: 16),
-            _AdvancedSection(
-              skuCtrl: skuCtrl,
-              costCtrl: costCtrl,
-              currency: currency,
-            ),
-            const SizedBox(height: 16),
-            OptionGroupsEditor(
-              initialGroups: optionGroups,
-              onChanged: onOptionGroupsChanged,
-            ),
-            if (isEditing) ...[
-              const SizedBox(height: 16),
-              _VisibilitySection(
-                isActive: isActive,
-                onActiveChanged: onActiveChanged,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  State<ProductFormView> createState() => ProductFormViewState();
 }
 
-class _BasicSection extends StatelessWidget {
-  const _BasicSection({
-    required this.nameCtrl,
-    required this.priceCtrl,
-    required this.currency,
-    required this.selectedCategory,
-    required this.onCategoryChanged,
-    required this.barcodeCtrl,
-    required this.barcodeFocusNode,
-    required this.isGeneratingBarcode,
-    required this.onGenerateBarcode,
-  });
+class ProductFormViewState extends State<ProductFormView>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
 
-  final TextEditingController nameCtrl;
-  final TextEditingController priceCtrl;
-  final String currency;
-  final Category? selectedCategory;
-  final ValueChanged<Category?> onCategoryChanged;
-  final TextEditingController barcodeCtrl;
-  final FocusNode barcodeFocusNode;
-  final bool isGeneratingBarcode;
-  final VoidCallback onGenerateBarcode;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return FormSectionCard(
-      icon: Icons.badge_outlined,
-      title: l10n.productFormSectionBasicInfo,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ProductTextField(
-            controller: nameCtrl,
-            labelText: l10n.productNameLabel,
-            icon: Icons.badge_outlined,
-            validator: (value) => (value == null || value.trim().isEmpty)
-                ? l10n.productNameRequired
-                : null,
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 12),
-          CategoryField(
-            selectedCategory: selectedCategory,
-            onChanged: onCategoryChanged,
-          ),
-          const SizedBox(height: 12),
-          ProductTextField(
-            controller: priceCtrl,
-            labelText: l10n.priceLabel(currency),
-            icon: Icons.sell_outlined,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-            ],
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.priceRequired;
-              }
-              final parsed = double.tryParse(value);
-              if (parsed == null) {
-                return l10n.invalidPrice;
-              }
-              if (parsed <= 0) {
-                return l10n.priceMustBePositive;
-              }
-              return null;
-            },
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 12),
-          _BarcodeField(
-            barcodeCtrl: barcodeCtrl,
-            barcodeFocusNode: barcodeFocusNode,
-            isGeneratingBarcode: isGeneratingBarcode,
-            onGenerateBarcode: onGenerateBarcode,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BarcodeField extends StatelessWidget {
-  const _BarcodeField({
-    required this.barcodeCtrl,
-    required this.barcodeFocusNode,
-    required this.isGeneratingBarcode,
-    required this.onGenerateBarcode,
-  });
-
-  final TextEditingController barcodeCtrl;
-  final FocusNode barcodeFocusNode;
-  final bool isGeneratingBarcode;
-  final VoidCallback onGenerateBarcode;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final settings = context.read<SettingsCubit>().state.settings;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ProductTextField(
-          controller: barcodeCtrl,
-          focusNode: barcodeFocusNode,
-          labelText: l10n.barcodeLabel,
-          helperText: l10n.barcodeHelper,
-          icon: Icons.qr_code_scanner,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) return null;
-            if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value.trim())) {
-              return l10n.invalidBarcode;
-            }
-            return null;
-          },
-          suffix: IconButton(
-            icon: const Icon(Icons.camera_alt_outlined),
-            tooltip: l10n.scanBarcode,
-            onPressed: () async {
-              await showProductBarcodeScanner(
-                context,
-                beepOnScan: settings.barcodeBeepOnScan,
-                formats: barcodeFormatsFromNames(
-                  settings.barcodeEnabledFormats,
-                ),
-                autoOpenManualDelay: settings.barcodeAutoOpenManualDelay,
-                continuousScan: settings.barcodeContinuousScan,
-                onScanned: (barcode) {
-                  barcodeCtrl.text = barcode.toUpperCase();
-                },
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 6),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: isGeneratingBarcode ? null : onGenerateBarcode,
-            icon: isGeneratingBarcode
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.auto_fix_high_outlined, size: 18),
-            label: Text(l10n.generateBarcode),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StockSection extends StatelessWidget {
-  const _StockSection({
-    required this.stockCtrl,
-    required this.trackStock,
-    required this.onStockChanged,
-    required this.onTrackStockChanged,
-  });
-
-  final TextEditingController stockCtrl;
-  final bool trackStock;
-  final ValueChanged<int> onStockChanged;
-  final ValueChanged<bool> onTrackStockChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-
-    return FormSectionCard(
-      icon: Icons.inventory_2_outlined,
-      title: l10n.quantityLabel,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (trackStock)
-            StockStepper(
-              value: int.tryParse(stockCtrl.text) ?? 0,
-              onChanged: onStockChanged,
-              onQtyTap: () => _showStockDialog(
-                context,
-                current: int.tryParse(stockCtrl.text) ?? 0,
-                onChanged: onStockChanged,
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                l10n.stockTrackingDisabled,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          const SizedBox(height: 12),
-          ModernToggleCard(
-            icon: Icons.inventory_2,
-            title: l10n.trackStock,
-            subtitle: l10n.trackStockHint,
-            value: trackStock,
-            onChanged: onTrackStockChanged,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AdvancedSection extends StatefulWidget {
-  const _AdvancedSection({
-    required this.skuCtrl,
-    required this.costCtrl,
-    required this.currency,
-  });
-
-  final TextEditingController skuCtrl;
-  final TextEditingController costCtrl;
-  final String currency;
-
-  @override
-  State<_AdvancedSection> createState() => _AdvancedSectionState();
-}
-
-class _AdvancedSectionState extends State<_AdvancedSection> {
-  bool _expanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _expanded =
-        widget.skuCtrl.text.isNotEmpty || widget.costCtrl.text.isNotEmpty;
+  /// 0=Product, 1=Price, 2=Stock, 3=Codes
+  void goToTab(int index) {
+    if (index < 0 || index >= _tabController.length) return;
+    _tabController.animateTo(index);
+    setState(() {});
   }
 
-  @override
-  void didUpdateWidget(covariant _AdvancedSection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!_expanded &&
-        (widget.skuCtrl.text.isNotEmpty || widget.costCtrl.text.isNotEmpty)) {
-      _expanded = true;
+  /// After [FormState.validate] fails, show the first tab with invalid fields.
+  void revealFirstInvalidTab() {
+    final c = widget.model.controllers;
+    if (c.nameCtrl.text.trim().isEmpty) {
+      goToTab(0);
+      return;
+    }
+    final price = double.tryParse(c.priceCtrl.text);
+    if (c.priceCtrl.text.isEmpty || price == null || price <= 0) {
+      goToTab(1);
+      return;
+    }
+    final costText = c.costCtrl.text.trim();
+    if (costText.isNotEmpty) {
+      final cost = double.tryParse(costText);
+      if (cost == null || cost < 0) {
+        goToTab(1);
+        return;
+      }
+    }
+    final barcode = c.barcodeCtrl.text.trim();
+    if (barcode.isNotEmpty && !RegExp(r'^[a-zA-Z0-9]+$').hasMatch(barcode)) {
+      goToTab(3);
+      return;
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final settings = context.watch<SettingsCubit>().state.settings;
+    final currency = settings.currency;
+    final lowStockThreshold = settings.lowStockThreshold;
+    final c = widget.model.controllers;
+    final s = widget.model.state;
+    final cb = widget.model.callbacks;
+    final isEditing = widget.model.isEditing;
+    final currencySuffix = currency.trim().isEmpty
+        ? l10n.currencyBaht
+        : currency;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
-    return FormSectionCard(
-      icon: Icons.tune_outlined,
-      title: l10n.advanced,
-      trailing: IconButton(
-        icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-        onPressed: () => setState(() => _expanded = !_expanded),
-      ),
-      child: _expanded
-          ? Column(
+    // 0 Product | 1 Price | 2 Stock | 3 Codes
+    final pages = <Widget>[
+      // —— Product ——
+      _scroll(
+        children: [
+          FormSectionCard(
+            title: l10n.productFormSectionGeneral,
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ProductTextField(
-                  controller: widget.skuCtrl,
-                  labelText: l10n.skuLabel,
-                  helperText: l10n.skuHelper,
-                  icon: Icons.qr_code,
+                  key: const ValueKey('product-form-name'),
+                  controller: c.nameCtrl,
+                  focusNode: c.nameFocusNode,
+                  labelText: l10n.productNameLabel,
+                  icon: Icons.badge_outlined,
+                  maxLength: 200,
+                  validator: (value) => (value == null || value.trim().isEmpty)
+                      ? l10n.productNameRequired
+                      : null,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 12),
+                CategoryField(
+                  key: const ValueKey('product-form-category'),
+                  selectedCategory: s.selectedCategory,
+                  onChanged: cb.onCategoryChanged,
+                ),
+                const SizedBox(height: 12),
+                ProductTextField(
+                  controller: c.brandCtrl,
+                  labelText: l10n.productBrandLabel,
+                  icon: Icons.business_outlined,
+                  helperText: l10n.productBrandHint,
+                  maxLength: 100,
                   textInputAction: TextInputAction.next,
                 ),
                 const SizedBox(height: 12),
                 ProductTextField(
-                  controller: widget.costCtrl,
-                  labelText: l10n.costLabel(widget.currency),
-                  helperText: l10n.costHelper,
-                  icon: Icons.price_change_outlined,
+                  controller: c.descriptionCtrl,
+                  labelText: l10n.productDescriptionLabel,
+                  icon: Icons.description_outlined,
+                  helperText: l10n.productDescriptionHint,
+                  maxLines: 3,
+                  maxLength: 500,
+                  textInputAction: TextInputAction.newline,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          FormSectionCard(
+            title: l10n.productFormSectionVisibility,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ModernToggleCard(
+                  icon: Icons.visibility_outlined,
+                  title: l10n.showProduct,
+                  subtitle: l10n.showProductHint,
+                  value: s.isActive,
+                  onChanged: (v) {
+                    if (!v && s.isRecommended) {
+                      AppSnackBar.warning(
+                        context,
+                        l10n.productRecommendedNeedsVisible,
+                      );
+                    }
+                    cb.onActiveChanged(v);
+                  },
+                ),
+                const SizedBox(height: 12),
+                ModernToggleCard(
+                  icon: Icons.star_outline,
+                  title: l10n.productRecommended,
+                  subtitle: l10n.productRecommendedHint,
+                  value: s.isRecommended,
+                  onChanged: (v) {
+                    if (v && !s.isActive) {
+                      AppSnackBar.warning(
+                        context,
+                        l10n.productRecommendedNeedsVisible,
+                      );
+                      return; // hard block until product is visible
+                    }
+                    cb.onRecommendedChanged(v);
+                  },
+                ),
+                const SizedBox(height: 12),
+                ProductFormVisibilityOutcomeStrip(
+                  isActive: s.isActive,
+                  isRecommended: s.isRecommended,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      // —— Price ——
+      _scroll(
+        children: [
+          FormSectionCard(
+            title: l10n.productFormSectionPricing,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ProductFormPriceDeltaStrip(
+                  priceCtrl: c.priceCtrl,
+                  costCtrl: c.costCtrl,
+                  baselinePrice: widget.model.product?.price,
+                  baselineCost: widget.model.product?.cost,
+                  currency: currencySuffix,
+                ),
+                ProductTextField(
+                  key: const ValueKey('product-form-price'),
+                  controller: c.priceCtrl,
+                  labelText: l10n.sellingPrice,
+                  icon: Icons.sell_outlined,
+                  showIcon: false,
+                  suffixText: currencySuffix,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
@@ -417,9 +225,43 @@ class _AdvancedSectionState extends State<_AdvancedSection> {
                       RegExp(r'^\d+\.?\d{0,2}'),
                     ),
                   ],
-                  textInputAction: TextInputAction.done,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) return null;
+                    if (value == null || value.isEmpty) {
+                      return l10n.priceRequired;
+                    }
+                    final parsed = double.tryParse(value);
+                    if (parsed == null) {
+                      return l10n.invalidPrice;
+                    }
+                    if (parsed <= 0) {
+                      return l10n.priceMustBePositive;
+                    }
+                    return null;
+                  },
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 12),
+                ProductTextField(
+                  key: const ValueKey('product-form-cost'),
+                  controller: c.costCtrl,
+                  labelText: l10n.productPreviewCost,
+                  helperText: l10n.costHelper,
+                  icon: Icons.price_change_outlined,
+                  showIcon: false,
+                  suffixText: currencySuffix,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
+                    ),
+                  ],
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return null;
+                    }
                     final parsed = double.tryParse(value);
                     if (parsed == null || parsed < 0) {
                       return l10n.invalidPrice;
@@ -427,97 +269,226 @@ class _AdvancedSectionState extends State<_AdvancedSection> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 10),
+                ProductFormMarkupPresetChips(
+                  priceCtrl: c.priceCtrl,
+                  costCtrl: c.costCtrl,
+                ),
+                const SizedBox(height: 12),
+                ProductFormPriceInsights(
+                  priceCtrl: c.priceCtrl,
+                  costCtrl: c.costCtrl,
+                  stockCtrl: c.stockCtrl,
+                  trackStock: s.trackStock,
+                  currency: currencySuffix,
+                ),
               ],
-            )
-          : const SizedBox(width: double.infinity, height: 0),
+            ),
+          ),
+        ],
+      ),
+      // —— Stock ——
+      _scroll(
+        children: [
+          FormSectionCard(
+            title: l10n.productFormSectionStock,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                UnitField(controller: c.unitCtrl),
+                const SizedBox(height: 12),
+                ProductFormStockQuantitySection(
+                  stockCtrl: c.stockCtrl,
+                  unitCtrl: c.unitCtrl,
+                  trackStock: s.trackStock,
+                  isEditing: isEditing,
+                  lowStockThreshold: lowStockThreshold,
+                  onStockChanged: cb.onStockChanged,
+                  onAdjustStock: cb.onAdjustStock,
+                ),
+                const SizedBox(height: 12),
+                ModernToggleCard(
+                  icon: Icons.inventory_2,
+                  title: l10n.trackStock,
+                  subtitle: l10n.trackStockHint,
+                  value: s.trackStock,
+                  onChanged: cb.onTrackStockChanged,
+                ),
+              ],
+            ),
+          ),
+          if (s.trackStock) ...[
+            const SizedBox(height: 16),
+            ProductFormStockValueCard(
+              priceCtrl: c.priceCtrl,
+              costCtrl: c.costCtrl,
+              stockCtrl: c.stockCtrl,
+              currency: currencySuffix,
+            ),
+          ],
+        ],
+      ),
+      // —— Codes ——
+      _scroll(
+        children: [
+          FormSectionCard(
+            title: l10n.barcodeLabel,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                BarcodeField(
+                  barcodeCtrl: c.barcodeCtrl,
+                  barcodeFocusNode: c.barcodeFocusNode,
+                  isGeneratingBarcode: s.isGeneratingBarcode,
+                  onGenerateBarcode: cb.onGenerateBarcode,
+                ),
+                const SizedBox(height: 12),
+                ProductTextField(
+                  key: const ValueKey('product-form-sku'),
+                  controller: c.skuCtrl,
+                  labelText: l10n.skuLabel,
+                  helperText: l10n.skuHelper,
+                  icon: Icons.qr_code,
+                  showIcon: false,
+                  textInputAction: TextInputAction.next,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          FormSectionCard(
+            key: const ValueKey('product-form-supplier-section'),
+            icon: Icons.local_shipping_outlined,
+            title: l10n.productSupplierLabel,
+            child: ProductTextField(
+              controller: c.supplierCtrl,
+              labelText: l10n.productSupplierLabel,
+              helperText: l10n.productSupplierHint,
+              icon: Icons.local_shipping_outlined,
+              showIcon: false,
+              maxLength: 100,
+              textInputAction: TextInputAction.next,
+            ),
+          ),
+          const SizedBox(height: 16),
+          OptionGroupsEditor(
+            key: const ValueKey('product-form-options-section'),
+            initialGroups: widget.model.optionGroups,
+            onChanged: widget.model.onOptionGroupsChanged,
+          ),
+        ],
+      ),
+    ];
+
+    return Form(
+      key: widget.model.formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: cs.outlineVariant.withValues(alpha: 0.35),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: TabBar(
+                  controller: _tabController,
+                  tabAlignment: TabAlignment.fill,
+                  dividerColor: Colors.transparent,
+                  indicator: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: cs.onPrimaryContainer,
+                  unselectedLabelColor: cs.onSurfaceVariant,
+                  labelStyle: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                  unselectedLabelStyle: theme.textTheme.labelLarge,
+                  tabs: [
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.article_outlined, size: 16),
+                            const SizedBox(width: 4),
+                            Text(l10n.tabInfo),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.price_check_outlined, size: 16),
+                            const SizedBox(width: 4),
+                            Text(l10n.tabPrice),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.inventory_2_outlined, size: 16),
+                            const SizedBox(width: 4),
+                            Text(l10n.tabStock),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Tab(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.qr_code_2_outlined, size: 16),
+                            const SizedBox(width: 4),
+                            Text(l10n.tabCodes),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: IndexedStack(index: _tabController.index, children: pages),
+          ),
+        ],
+      ),
     );
   }
-}
 
-class _VisibilitySection extends StatelessWidget {
-  const _VisibilitySection({
-    required this.isActive,
-    required this.onActiveChanged,
-  });
-
-  final bool isActive;
-  final ValueChanged<bool> onActiveChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    return FormSectionCard(
-      icon: Icons.visibility_outlined,
-      title: l10n.productVisibility,
-      child: ModernToggleCard(
-        icon: Icons.visibility,
-        title: l10n.showProduct,
-        value: isActive,
-        onChanged: onActiveChanged,
-        activeColor: theme.colorScheme.primary,
+  Widget _scroll({required List<Widget> children}) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
       ),
     );
   }
 }
 
-class _StockDialog extends StatefulWidget {
-  const _StockDialog({required this.current, required this.onChanged});
-
-  final int current;
-  final ValueChanged<int> onChanged;
-
-  @override
-  State<_StockDialog> createState() => _StockDialogState();
-}
-
-class _StockDialogState extends State<_StockDialog> {
-  late final _ctrl = TextEditingController(text: '${widget.current}');
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return AlertDialog(
-      title: Text(l10n.quantityLabel),
-      content: TextField(
-        controller: _ctrl,
-        autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(signed: true),
-        decoration: InputDecoration(labelText: l10n.quantityLabel),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () {
-            final qty = int.tryParse(_ctrl.text);
-            if (qty != null && qty >= 0) {
-              Navigator.pop(context);
-              widget.onChanged(qty);
-            }
-          },
-          child: Text(l10n.save),
-        ),
-      ],
-    );
-  }
-}
-
-void _showStockDialog(
-  BuildContext context, {
-  required int current,
-  required ValueChanged<int> onChanged,
-}) {
-  showDialog(
-    context: context,
-    builder: (_) => _StockDialog(current: current, onChanged: onChanged),
-  );
-}
+/// Qty + unit + status chip + edit adjust hint (Stock tab body).

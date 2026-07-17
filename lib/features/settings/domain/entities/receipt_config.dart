@@ -6,16 +6,15 @@ class ReceiptConfig extends Equatable {
     this.receiptPreviewStyle = 'thermal',
     this.receiptNote = '',
     this.showShopInfo = true,
-    this.autoPrintPrompt = true,
     this.showPreSalePreview = true,
     this.showPostSalePreview = true,
   });
 
+  /// Stored for future PDF paper size; UI hidden until PDF honors it.
   final String receiptSize;
   final String receiptPreviewStyle;
   final String receiptNote;
   final bool showShopInfo;
-  final bool autoPrintPrompt;
   final bool showPreSalePreview;
   final bool showPostSalePreview;
 
@@ -24,7 +23,6 @@ class ReceiptConfig extends Equatable {
     String? receiptPreviewStyle,
     String? receiptNote,
     bool? showShopInfo,
-    bool? autoPrintPrompt,
     bool? showPreSalePreview,
     bool? showPostSalePreview,
   }) {
@@ -33,7 +31,6 @@ class ReceiptConfig extends Equatable {
       receiptPreviewStyle: receiptPreviewStyle ?? this.receiptPreviewStyle,
       receiptNote: receiptNote ?? this.receiptNote,
       showShopInfo: showShopInfo ?? this.showShopInfo,
-      autoPrintPrompt: autoPrintPrompt ?? this.autoPrintPrompt,
       showPreSalePreview: showPreSalePreview ?? this.showPreSalePreview,
       showPostSalePreview: showPostSalePreview ?? this.showPostSalePreview,
     );
@@ -45,7 +42,6 @@ class ReceiptConfig extends Equatable {
     receiptPreviewStyle,
     receiptNote,
     showShopInfo,
-    autoPrintPrompt,
     showPreSalePreview,
     showPostSalePreview,
   ];

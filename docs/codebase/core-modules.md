@@ -1,4 +1,4 @@
-# Core Modules & Feature Modules — Promsell POS CE v0.8.9
+# Core Modules & Feature Modules — Promsell POS CE (v0.9.0)
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 
@@ -10,7 +10,7 @@
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#0D5D6B` primary Teal, `#FF6B00` accent Orange, `#0D1B2A` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, schema v19, 9 tables, UUID PKs, WAL + FK pragma, batch seed. Sync columns (`updatedAt`, `deletedAt`, `version`, `deviceId`) on all 6 core tables. v13 backfills `deviceId`; v15 adds `color`/`iconName` to `Categories`; v16 adds `UNIQUE INDEX` on `barcode` with duplicate-safe migration; v17 auto-deduplicates barcodes before index creation; v18 adds `barcodeImagePath` to `Products` for generated barcode PNGs; v19 adds `note` to `CartItems` |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, **schema v28** (**15 tables**), UUID PKs, WAL + FK pragma, batch seed, SQLCipher open path. Sync columns on core tables. Notable: v24 barcode unique; v25 product brand/unit/supplier/`is_recommended`; **v26 unique `daily_closes(close_date)`**; **v27 unique `sales.receipt_number`**; **v28 `sale_payments` multi-tender**. Money amounts stored as REAL baht (domain `Money` satang in memory). |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -53,20 +53,23 @@
 
 ## Feature modules
 
-| Feature | BLoC / Cubit | Key files |
-|---------|-------------|-----------|
-| Sale | `CartBloc`, `DraftBloc`, `CheckoutBloc` | `sale_page.dart`, `checkout_page.dart`, `payment_sheet_redesign.dart`, `promptpay_payment_page.dart`; widgets: `CheckoutBody`, `CartReviewPage`, `DiscountDialog`, `SaleCatalog`, `SaleProductCard`, `CartHeader`, `CartItemRow` (single-row 3-zone), `CartTotalBar`, `DraftsBottomSheet`, `SaleReceiptDialog`, `CartPanel`, `CartBottomSheet` (draggable sheet), `CartQtyStepper` (press-scale haptic), `ChangePreview`, `PaymentTotalRow`, `PaymentMethodCard`, `ImageViewerDialog`, `CompactCartFab`, `CartItemCard`, `CartDetailRow`, `CartQtyButton`, `CartDottedLineRow`, `SlipScannerDialog` |
-| Product | `ProductBloc`, `CategoryBloc`, `ProductFormCubit` | `product_list_page.dart`, `product_form_page.dart`, `product_preview_page.dart`, `category_management_page.dart`, `category_picker_page.dart`; widgets organized into subfolders: `category/` (CategoryListTile, CategoryFormDialog, CategoryPickerListView, CategoryPickerBottomSheet, CategoryFilterBar), `product_tile/` (ModernProductTile, ModernProductGridCard, ProductCardShell, ProductInfoBlock, ProductAvatar, ProductFormAvatar, ProductHeroImage, ProductImageContainer, StockBadge, StockIndicator, product_navigation.dart — shared show/edit/preview/delete helpers), `product_form/` (ProductFormView, ConfirmDeleteDialog, UnsavedChangesDialog, CategoryField, FormSectionCard), `product_list/` (StatsDashboard, CategoryFilterChips, ProductSliverContent, BatchGenerateDialog), `product_preview/` (HeroSection, PriceCard, StockCard, CodesCard, SystemInfoCard, shared_widgets), `quick_edit/` (QuickEditSheet, QuickEditMixin, ProductActionSheet), `shared/` (ProductTextField, BarcodeImageWidget); services: `ProductImageService`; usecases: `AddProduct`, `UpdateProduct`, `DeleteProduct`, `ClearOrphanedImages`, `ReorderCategories` |
-| History | `HistoryBloc` | `history_page.dart`; widgets: `SaleExpansionTile`, `VoidSaleDialog` |
-| Report | `ReportCubit` (lazySingleton) | `report_page.dart`; widgets: `SummaryCard`, `ReportDateRangeCard`, `ReportPaymentMethodCard`, `ReportTopProductsCard`; domain: `ReportCalculator` extension |
-| Settings | `SettingsCubit` | Pages: 2-level hierarchy — `settings_root_page.dart` (flat section list), `general_settings_page.dart`, `shop_info_settings_page.dart`, `sales_settings_page.dart`, `receipt_settings_page.dart`, `discount_policy_settings_page.dart` (merged with presets), `stock_settings_page.dart`, `image_settings_page.dart`, `barcode_settings_page.dart`, `backup_settings_page.dart`, `promptpay_settings_page.dart`, `db_health_page.dart`, `about_page.dart`, `privacy_policy_page.dart`, `license_page.dart`. Widgets: `SettingsCategoryTile`, `SettingsSectionCard`, `SettingsSwitchTile`, `SettingsTextTile`, `SettingsDropdownTile`, `SettingsValuePreview`, `GeneralSummaryCard`, `GeneralSettingsForm`, `ShopPreviewCard`, `ShopInfoForm`, `SettingsThemeExtension`, `AppTextDialog`, `ImagePreviewCard`, `DemoImagePreview`, `BackupStatusCard`, `BackupInfoCard`, `PromptpayPreviewCard`, `PromptpayInfoCard`; domain: `SettingsMapper`, `SettingsPersistenceService`, `Settings` aggregate root with 13 typed group entities |
-| Inventory | `InventoryLogCubit` | `inventory_log_page.dart`, `adjust_stock_dialog.dart`; domain: `InventoryLog`, `InventoryLogRepository`, `WatchInventoryLogs`; data: `InventoryLogLocalDatasource`, `InventoryLogService`, `AdjustStock` |
-| Receipt | `ReceiptPdfService` (lazySingleton) | `receipt_pdf_service.dart`, `receipt_labels.dart`; data services + domain entities |
-| Draft Cart | `DraftBloc` | `DraftCartLocalDatasource`, `DraftCartRepositoryImpl`, `draft_cart_repository.dart` |
-| Daily Close | `DailyCloseCubit` | `daily_close_page.dart`, `daily_close_list_page.dart`; widgets: `DailyCloseDateCard`, `DailyCloseSummaryCard`, `DailyCloseReconciliationCard`, `DailyCloseSummaryRow`, `DailyCloseReadOnlyRow`; domain: `DailyClose`, `CloseDay`, `ReopenDay`, `GetDailyCloseByDate`, `GetDailyCloseList` |
-| Onboarding | (stateless wizard) | `onboarding_page.dart` — 6-step first-launch flow; widgets: `OnboardingHeroSection`, `OnboardingSection`, `GreenChoiceChip`, `OnboardingSheetOption` |
-| DB Health | (stateful page) | `db_health_page.dart` — file size, row counts, vacuum |
+**13 features** under `lib/features/` (source of truth):
 
----
+| Feature | Path |
+|---------|------|
+| customer | `lib/features/customer/` |
+| daily_close | `lib/features/daily_close/` |
+| history | `lib/features/history/` |
+| home | `lib/features/home/` |
+| inventory | `lib/features/inventory/` |
+| onboarding | `lib/features/onboarding/` |
+| product | `lib/features/product/` |
+| promotion | `lib/features/promotion/` |
+| receipt | `lib/features/receipt/` |
+| report | `lib/features/report/` |
+| restaurant_table | `lib/features/restaurant_table/` |
+| sale | `lib/features/sale/` (includes cart, checkout, drafts) |
+| settings | `lib/features/settings/` |
 
-<sub>Promsell POS CE · v0.8.8 · Core & Feature Modules</sub>
+Draft cart is **not** a top-level feature package — it lives under `sale/`.
+

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
@@ -22,7 +23,9 @@ class ReceiptNumberService {
   /// Example: `260527-A1-0001`
   ///
   /// **MUST be called inside the caller's transaction** to guarantee
-  /// sequential uniqueness.
+  /// sequential uniqueness against [sales.receipt_number] unique index.
+  ///
+  /// Reseeds from existing sales for the day when settings lag (restore).
   Future<String> nextReceiptNumber() async {
     final now = DateTime.now();
     final dateKey = DateFormat('yyMMdd').format(now);
@@ -41,12 +44,64 @@ class ReceiptNumberService {
     final devicePrefix = _cachedPrefix ?? await _generateDevicePrefix();
     _cachedPrefix = devicePrefix;
 
-    final newSeq = (lastDate == isoDate) ? lastSeq + 1 : 1;
+    var newSeq = (lastDate == isoDate) ? lastSeq + 1 : 1;
+
+    // After backup restore, settings may be behind max receipt on disk.
+    final maxOnDisk = await _maxSeqForDay(
+      dateKey: dateKey,
+      devicePrefix: devicePrefix,
+    );
+    if (maxOnDisk >= newSeq) {
+      newSeq = maxOnDisk + 1;
+    }
 
     await _writeSetting(_keySequence, newSeq.toString());
     await _writeSetting(_keySequenceDate, isoDate);
 
-    return '$dateKey-$devicePrefix-${newSeq.toString().padLeft(4, '0')}';
+    return formatReceiptNumber(
+      dateKey: dateKey,
+      devicePrefix: devicePrefix,
+      seq: newSeq,
+    );
+  }
+
+  /// Bump sequence after a unique-constraint collision and return a new number.
+  Future<String> bumpAfterConflict() => nextReceiptNumber();
+
+  static String formatReceiptNumber({
+    required String dateKey,
+    required String devicePrefix,
+    required int seq,
+  }) {
+    return '$dateKey-$devicePrefix-${seq.toString().padLeft(4, '0')}';
+  }
+
+  /// Parse trailing seq from `YYMMDD-PREFIX-0001`. Returns null if malformed.
+  static int? parseSeq(String? receiptNumber) {
+    if (receiptNumber == null || receiptNumber.isEmpty) return null;
+    final parts = receiptNumber.split('-');
+    if (parts.length < 3) return null;
+    return int.tryParse(parts.last);
+  }
+
+  Future<int> _maxSeqForDay({
+    required String dateKey,
+    required String devicePrefix,
+  }) async {
+    final prefix = '$dateKey-$devicePrefix-';
+    final rows =
+        await (_db.select(_db.sales)..where(
+              (s) =>
+                  s.receiptNumber.isNotNull() &
+                  s.receiptNumber.like('$prefix%'),
+            ))
+            .get();
+    var maxSeq = 0;
+    for (final row in rows) {
+      final seq = parseSeq(row.receiptNumber);
+      if (seq != null && seq > maxSeq) maxSeq = seq;
+    }
+    return maxSeq;
   }
 
   Future<Map<String, String?>> _readSettings(List<String> keys) async {

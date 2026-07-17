@@ -44,9 +44,9 @@ class DailyCloseListPage extends StatelessWidget {
               final formattedDate = DateFormat(
                 'dd/MM/yyyy',
               ).format(DateTime.parse(item.closeDate));
-              final overShortColor = item.overShortAmount > 0
+              final overShortColor = item.overShortAmount.isPositive
                   ? AppColors.success
-                  : item.overShortAmount < 0
+                  : item.overShortAmount.isNegative
                   ? AppColors.error
                   : null;
               return ListTile(
@@ -59,9 +59,9 @@ class DailyCloseListPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    MoneyText(value: item.totalRevenue, currency: '฿'),
+                    MoneyText(value: item.totalRevenue.value, currency: '฿'),
                     Text(
-                      '${item.overShortAmount >= 0 ? '+' : ''}${item.overShortAmount.toStringAsFixed(2)}',
+                      '${!item.overShortAmount.isNegative ? '+' : ''}${item.overShortAmount.value.toStringAsFixed(2)}',
                       style: TextStyle(color: overShortColor, fontSize: 12),
                     ),
                   ],

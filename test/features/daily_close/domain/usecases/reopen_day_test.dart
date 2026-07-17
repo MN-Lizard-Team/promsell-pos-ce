@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.dart';
@@ -26,8 +27,8 @@ void main() {
         id: '1',
         closeDate: '2026-06-05',
         closedAt: DateTime(2026, 6, 5, 22),
-        countedCash: 500,
-        overShortAmount: 20,
+        countedCash: Money.fromDouble(500),
+        overShortAmount: Money.fromDouble(20),
         note: 'All good',
       );
 
@@ -41,8 +42,8 @@ void main() {
       final result = await usecase('2026-06-05');
 
       expect(result.isClosed, isFalse);
-      expect(result.countedCash, 0);
-      expect(result.overShortAmount, 0);
+      expect(result.countedCash, Money.zero);
+      expect(result.overShortAmount, Money.zero);
       expect(result.note, isNull);
     });
 

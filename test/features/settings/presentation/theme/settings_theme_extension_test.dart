@@ -1,18 +1,28 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 void main() {
   group('SettingsThemeExtension', () {
     test('light has expected defaults', () {
-      expect(SettingsThemeExtension.light.cardRadius, 16);
-      expect(SettingsThemeExtension.light.dividerIndent, 16);
+      expect(SettingsThemeExtension.light.cardRadius, 20);
+      expect(SettingsThemeExtension.light.dividerIndent, 68);
       expect(SettingsThemeExtension.light.tileMinHeight, 64);
-      expect(SettingsThemeExtension.light.iconSize, 48);
+      expect(SettingsThemeExtension.light.iconSize, 40);
+      expect(SettingsThemeExtension.light.sectionGap, 16);
     });
 
-    test('dark has expected defaults', () {
-      expect(SettingsThemeExtension.dark.cardRadius, 16);
-      expect(SettingsThemeExtension.dark.dividerIndent, 16);
+    test('dark uses AppColors surface stack', () {
+      expect(SettingsThemeExtension.dark.cardRadius, 20);
+      expect(SettingsThemeExtension.dark.dividerIndent, 68);
+      expect(SettingsThemeExtension.dark.cardBackground, AppColors.darkCard);
+      expect(
+        SettingsThemeExtension.dark.cardBorderColor,
+        AppColors.darkOutline,
+      );
+      expect(SettingsThemeExtension.dark.sectionGap, 16);
+      expect(SettingsThemeExtension.dark.tileMinHeight, 64);
+      expect(SettingsThemeExtension.dark.iconSize, 40);
     });
 
     test('copyWith updates fields', () {

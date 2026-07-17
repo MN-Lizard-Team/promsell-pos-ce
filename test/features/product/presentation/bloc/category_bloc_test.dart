@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_category.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/delete_categories.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/reorder_categories.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_category.dart';
@@ -19,6 +20,8 @@ class MockUpdateCategory extends Mock implements UpdateCategory {}
 
 class MockDeleteCategory extends Mock implements DeleteCategory {}
 
+class MockDeleteCategories extends Mock implements DeleteCategories {}
+
 class MockReorderCategories extends Mock implements ReorderCategories {}
 
 void main() {
@@ -26,6 +29,7 @@ void main() {
   late MockAddCategory mockAdd;
   late MockUpdateCategory mockUpdate;
   late MockDeleteCategory mockDelete;
+  late MockDeleteCategories mockDeleteCategories;
   late MockReorderCategories mockReorder;
 
   final tCategory = Category(
@@ -51,6 +55,7 @@ void main() {
     mockAdd = MockAddCategory();
     mockUpdate = MockUpdateCategory();
     mockDelete = MockDeleteCategory();
+    mockDeleteCategories = MockDeleteCategories();
     mockReorder = MockReorderCategories();
 
     when(() => mockWatch()).thenAnswer((_) => const Stream.empty());
@@ -61,6 +66,7 @@ void main() {
     addCategory: mockAdd,
     updateCategory: mockUpdate,
     deleteCategory: mockDelete,
+    deleteCategories: mockDeleteCategories,
     reorderCategories: mockReorder,
   );
 
@@ -73,6 +79,7 @@ void main() {
         addCategory: mockAdd,
         updateCategory: mockUpdate,
         deleteCategory: mockDelete,
+        deleteCategories: mockDeleteCategories,
         reorderCategories: mockReorder,
       );
     },
@@ -91,7 +98,7 @@ void main() {
           color: any(named: 'color'),
           iconName: any(named: 'iconName'),
         ),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => 'new-cat-id');
       bloc.add(const CategoryAdded(name: 'Snacks'));
     },
     wait: const Duration(milliseconds: 150),
@@ -167,6 +174,51 @@ void main() {
     ],
   );
 
+  blocTest<CategoryBloc, CategoryState>(
+    'CategoriesDeleted emits saving then saved',
+    build: buildBloc,
+    act: (bloc) {
+      when(
+        () => mockDeleteCategories(
+          any(),
+          moveProductsToCategoryId: any(named: 'moveProductsToCategoryId'),
+        ),
+      ).thenAnswer((_) async {});
+      bloc.add(
+        const CategoriesDeleted(['cat-001'], moveProductsToCategoryId: null),
+      );
+    },
+    wait: const Duration(milliseconds: 150),
+    expect: () => [
+      const CategoryState(saveStatus: CategorySaveStatus.saving),
+      const CategoryState(saveStatus: CategorySaveStatus.saved),
+    ],
+  );
+
+  blocTest<CategoryBloc, CategoryState>(
+    'CategoriesDeleted emits error on failure',
+    build: buildBloc,
+    act: (bloc) {
+      when(
+        () => mockDeleteCategories(
+          any(),
+          moveProductsToCategoryId: any(named: 'moveProductsToCategoryId'),
+        ),
+      ).thenThrow(Exception('bulk failed'));
+      bloc.add(
+        const CategoriesDeleted(['cat-001'], moveProductsToCategoryId: 'c2'),
+      );
+    },
+    wait: const Duration(milliseconds: 150),
+    expect: () => [
+      const CategoryState(saveStatus: CategorySaveStatus.saving),
+      const CategoryState(
+        saveStatus: CategorySaveStatus.error,
+        errorMessage: 'Exception: bulk failed',
+      ),
+    ],
+  );
+
   group('CategoryEvent equality', () {
     test('CategoryAdded props', () {
       const a = CategoryAdded(name: 'A', sortOrder: 1);
@@ -200,6 +252,14 @@ void main() {
       const a = CategoriesReordered(['c1', 'c2']);
       const b = CategoriesReordered(['c1', 'c2']);
       const c = CategoriesReordered(['c2', 'c1']);
+      expect(a, equals(b));
+      expect(a, isNot(equals(c)));
+    });
+
+    test('CategoriesDeleted props', () {
+      const a = CategoriesDeleted(['c1'], moveProductsToCategoryId: 'c2');
+      const b = CategoriesDeleted(['c1'], moveProductsToCategoryId: 'c2');
+      const c = CategoriesDeleted(['c1']);
       expect(a, equals(b));
       expect(a, isNot(equals(c)));
     });

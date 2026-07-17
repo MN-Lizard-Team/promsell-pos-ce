@@ -4,6 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/data/services/barcode_image_service.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -21,6 +22,9 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<List<Product>> getActiveProducts() => _datasource.getActiveProducts();
+
+  @override
+  Future<List<Product>> getAllProducts() => _datasource.getAllProducts();
 
   @override
   Future<Product?> getProductById(String id) => _datasource.getProductById(id);
@@ -54,6 +58,13 @@ class ProductRepositoryImpl implements ProductRepository {
     String? imagePath,
     String? imageThumbnailPath,
     bool trackStock = true,
+    bool isActive = true,
+    String? description,
+    String? brand,
+    String? unit,
+    String? supplier,
+    bool isRecommended = false,
+    List<ProductOptionGroup> optionGroups = const [],
   }) async {
     final id = IdGenerator.newId();
     final now = DateTime.now();
@@ -71,6 +82,14 @@ class ProductRepositoryImpl implements ProductRepository {
     String? barcodeImagePath;
     final normalizedBarcode = barcode?.toUpperCase().trim();
     if (normalizedBarcode != null && normalizedBarcode.isNotEmpty) {
+      // Check barcode uniqueness before generating image
+      final exists = await _datasource.barcodeExistsAnyStatus(
+        normalizedBarcode,
+      );
+      if (exists) {
+        throw Exception('Barcode already exists: $normalizedBarcode');
+      }
+
       barcodeImagePath = await _barcodeImageService.generate(
         barcode: normalizedBarcode,
         productId: id,
@@ -78,25 +97,37 @@ class ProductRepositoryImpl implements ProductRepository {
     }
 
     try {
-      await _datasource.insertProduct(
-        ProductsCompanion.insert(
-          id: id,
-          name: name,
-          sku: Value(sku),
-          barcode: Value(normalizedBarcode),
-          price: price,
-          cost: Value(cost),
-          stock: Value(stock),
-          categoryId: Value(categoryId),
-          imageUrl: Value(imageUrl),
-          imagePath: Value(finalImagePath),
-          imageThumbnailPath: Value(finalThumbPath),
-          barcodeImagePath: Value(barcodeImagePath),
-          trackStock: Value(trackStock),
-          createdAt: Value(now),
-          updatedAt: Value(now),
-        ),
+      final companion = ProductsCompanion.insert(
+        id: id,
+        name: name,
+        sku: Value(sku),
+        barcode: Value(normalizedBarcode),
+        price: price,
+        cost: Value(cost),
+        stock: Value(stock),
+        categoryId: Value(categoryId),
+        imageUrl: Value(imageUrl),
+        imagePath: Value(finalImagePath),
+        imageThumbnailPath: Value(finalThumbPath),
+        barcodeImagePath: Value(barcodeImagePath),
+        trackStock: Value(trackStock),
+        isActive: Value(isActive),
+        description: Value(description),
+        brand: Value(brand),
+        unit: Value(unit),
+        supplier: Value(supplier),
+        isRecommended: Value(isRecommended),
+        createdAt: Value(now),
+        updatedAt: Value(now),
       );
+      if (optionGroups.isEmpty) {
+        await _datasource.insertProduct(companion);
+      } else {
+        await _datasource.insertProductWithOptionGroups(
+          companion,
+          optionGroups,
+        );
+      }
       return id;
     } catch (e) {
       if (finalImagePath != null) {
@@ -110,7 +141,10 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<void> updateProduct(Product product) async {
+  Future<void> updateProduct(
+    Product product, {
+    List<ProductOptionGroup>? optionGroups,
+  }) async {
     final existing = await _datasource.getProductById(product.id);
 
     String? finalImagePath = product.imagePath;
@@ -151,6 +185,15 @@ class ProductRepositoryImpl implements ProductRepository {
           existing?.barcodeImagePath != null) {
         barcodeImagePath = existing!.barcodeImagePath;
       } else {
+        // Check barcode uniqueness (excluding current product)
+        final exists = await _datasource.barcodeExistsAnyStatus(
+          normalizedBarcode,
+          excludeId: product.id,
+        );
+        if (exists) {
+          throw Exception('Barcode already exists: $normalizedBarcode');
+        }
+
         if (existing?.barcodeImagePath != null) {
           await _barcodeImageService.delete(product.id);
         }
@@ -165,25 +208,33 @@ class ProductRepositoryImpl implements ProductRepository {
     }
 
     final now = DateTime.now();
-    await _datasource.updateProduct(
-      ProductsCompanion(
-        id: Value(product.id),
-        name: Value(product.name),
-        sku: Value(product.sku),
-        barcode: Value(normalizedBarcode),
-        price: Value(product.price),
-        cost: Value(product.cost),
-        stock: Value(product.stock),
-        categoryId: Value(product.categoryId),
-        imageUrl: Value(product.imageUrl),
-        imagePath: Value(finalImagePath),
-        imageThumbnailPath: Value(finalThumbPath),
-        barcodeImagePath: Value(barcodeImagePath),
-        isActive: Value(product.isActive),
-        trackStock: Value(product.trackStock),
-        updatedAt: Value(now),
-      ),
+    final companion = ProductsCompanion(
+      id: Value(product.id),
+      name: Value(product.name),
+      sku: Value(product.sku),
+      barcode: Value(normalizedBarcode),
+      price: Value(product.price.value),
+      cost: Value(product.cost.value),
+      stock: Value(product.stock),
+      categoryId: Value(product.categoryId),
+      imageUrl: Value(product.imageUrl),
+      imagePath: Value(finalImagePath),
+      imageThumbnailPath: Value(finalThumbPath),
+      barcodeImagePath: Value(barcodeImagePath),
+      isActive: Value(product.isActive),
+      trackStock: Value(product.trackStock),
+      description: Value(product.description),
+      brand: Value(product.brand),
+      unit: Value(product.unit),
+      supplier: Value(product.supplier),
+      isRecommended: Value(product.isRecommended),
+      updatedAt: Value(now),
     );
+    if (optionGroups == null) {
+      await _datasource.updateProduct(companion);
+    } else {
+      await _datasource.updateProductWithOptionGroups(companion, optionGroups);
+    }
 
     if (imageChanged || imageRemoved) {
       await _imageService.deleteImages(oldImagePath, oldThumbPath);
@@ -213,6 +264,21 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> deleteProduct(String id) async {
+    // Check for references in sale_items and draft_cart_items
+    final saleItemsCount = await _datasource.countSaleItemsByProduct(id);
+    if (saleItemsCount > 0) {
+      throw Exception(
+        'Cannot delete product: $saleItemsCount sale(s) reference this product',
+      );
+    }
+
+    final draftItemsCount = await _datasource.countDraftItemsByProduct(id);
+    if (draftItemsCount > 0) {
+      throw Exception(
+        'Cannot delete product: $draftItemsCount draft cart(s) reference this product',
+      );
+    }
+
     final product = await _datasource.getProductById(id);
     if (product != null) {
       await _imageService.deleteImages(

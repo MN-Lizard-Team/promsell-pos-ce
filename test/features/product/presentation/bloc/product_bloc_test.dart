@@ -1,10 +1,13 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
+import 'package:promsell_pos_ce/features/product/domain/utils/csv_product_parser.dart';
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
@@ -15,6 +18,7 @@ void main() {
   late MockUpdateProduct mockUpdateProduct;
   late MockDeleteProduct mockDeleteProduct;
   late MockBatchGenerateBarcodes mockBatchGenerateBarcodes;
+  late MockImportProducts mockImportProducts;
 
   setUp(() {
     mockGetProducts = MockGetProducts();
@@ -22,6 +26,7 @@ void main() {
     mockUpdateProduct = MockUpdateProduct();
     mockDeleteProduct = MockDeleteProduct();
     mockBatchGenerateBarcodes = MockBatchGenerateBarcodes();
+    mockImportProducts = MockImportProducts();
   });
 
   setUpAll(() {
@@ -34,6 +39,7 @@ void main() {
     updateProduct: mockUpdateProduct,
     deleteProduct: mockDeleteProduct,
     batchGenerateBarcodes: mockBatchGenerateBarcodes,
+    importProducts: mockImportProducts,
   );
 
   group('ProductBloc', () {
@@ -166,7 +172,7 @@ void main() {
         const ProductState(saveStatus: ProductSaveStatus.saving),
         const ProductState(
           saveStatus: ProductSaveStatus.error,
-          errorMessage: 'duplicateBarcode',
+          error: BusinessRuleError('DuplicateBarcode'),
         ),
       ],
     );
@@ -184,7 +190,35 @@ void main() {
         const ProductState(saveStatus: ProductSaveStatus.saving),
         const ProductState(
           saveStatus: ProductSaveStatus.error,
-          errorMessage: 'duplicateBarcode',
+          error: BusinessRuleError('DuplicateBarcode'),
+        ),
+      ],
+    );
+    blocTest<ProductBloc, ProductState>(
+      'ProductTabChanged updates selectedTab',
+      build: buildBloc,
+      act: (b) => b.add(const ProductTabChanged(ProductTabFilter.stock)),
+      expect: () => [const ProductState(selectedTab: ProductTabFilter.stock)],
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'ProductsImported uses importStatus (not ProductStatus) so catalog stream cannot race dialog',
+      setUp: () {
+        when(
+          () => mockImportProducts(any()),
+        ).thenAnswer((_) async => const ProductImportResult(importedCount: 3));
+      },
+      build: buildBloc,
+      act: (b) => b.add(
+        const ProductsImported([
+          CsvProductRow(sourceRow: 2, name: 'Test', price: 10),
+        ]),
+      ),
+      expect: () => [
+        const ProductState(importStatus: ProductImportStatus.importing),
+        const ProductState(
+          importStatus: ProductImportStatus.success,
+          importResult: ProductImportResult(importedCount: 3),
         ),
       ],
     );

@@ -91,7 +91,9 @@ class ReceiptSummaryCard extends StatelessWidget {
                 ? Icons.check_circle_outline
                 : Icons.cancel_outlined,
             label: context.l10n.settingsShowShopInfo,
-            value: showShopInfo ? 'ON' : 'OFF',
+            value: showShopInfo
+                ? context.l10n.settingsOn
+                : context.l10n.settingsOff,
             st: st,
           ),
           _buildRow(

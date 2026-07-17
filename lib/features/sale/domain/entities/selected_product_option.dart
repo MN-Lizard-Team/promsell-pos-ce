@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 
 class SelectedProductOption extends Equatable {
   const SelectedProductOption({
@@ -6,23 +7,23 @@ class SelectedProductOption extends Equatable {
     required this.optionName,
     required this.groupId,
     required this.groupName,
-    this.priceDelta = 0.0,
+    this.priceDelta = Money.zero,
   });
 
   final String optionId;
   final String optionName;
   final String groupId;
   final String groupName;
-  final double priceDelta;
+  final Money priceDelta;
 
-  double get totalPriceDelta => priceDelta;
+  Money get totalPriceDelta => priceDelta;
 
   SelectedProductOption copyWith({
     String? optionId,
     String? optionName,
     String? groupId,
     String? groupName,
-    double? priceDelta,
+    Money? priceDelta,
   }) {
     return SelectedProductOption(
       optionId: optionId ?? this.optionId,
@@ -38,7 +39,7 @@ class SelectedProductOption extends Equatable {
     'optionName': optionName,
     'groupId': groupId,
     'groupName': groupName,
-    'priceDelta': priceDelta,
+    'priceDelta': priceDelta.value,
   };
 
   factory SelectedProductOption.fromJson(Map<String, dynamic> json) =>
@@ -47,7 +48,9 @@ class SelectedProductOption extends Equatable {
         optionName: json['optionName'] as String? ?? '',
         groupId: json['groupId'] as String? ?? '',
         groupName: json['groupName'] as String? ?? '',
-        priceDelta: (json['priceDelta'] as num?)?.toDouble() ?? 0.0,
+        priceDelta: Money.fromDouble(
+          (json['priceDelta'] as num?)?.toDouble() ?? 0.0,
+        ),
       );
 
   @override

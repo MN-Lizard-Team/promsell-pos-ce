@@ -55,18 +55,26 @@ keytool -genkey -v -keystore promsell-release-key.jks \
   -alias promsell
 ```
 
-2. Create `android/key.properties`:
+2. Create `android/app/keystore.properties` (path required by `android/app/build.gradle.kts` — Release tasks **fail closed** if this file is missing):
 
 ```properties
+storeFile=promsell-release-key.jks
 storePassword=<your-store-password>
-keyPassword=<your-key-password>
 keyAlias=promsell
-storeFile=../../promsell-release-key.jks
+keyPassword=<your-key-password>
 ```
 
-3. Reference in `android/app/build.gradle.kts` — see [Flutter signing docs](https://docs.flutter.dev/deployment/android#signing-the-app).
+Place the `.jks` next to that properties file under `android/app/` (or set `storeFile` to a path relative to `android/app/`).
 
-> **Never commit `key.properties` or `.jks` files to git.** Both are in `.gitignore`.
+3. Build a signed app bundle:
+
+```bash
+flutter build appbundle --release --flavor prod -t lib/main_prod.dart
+```
+
+See also [Flutter signing docs](https://docs.flutter.dev/deployment/android#signing-the-app) and `docs/STORE_SUBMISSION.md`.
+
+> **Never commit `keystore.properties`, `key.properties`, or `.jks` files to git.** They are in `.gitignore`.
 
 ---
 
@@ -112,7 +120,7 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.8.9+1
+version: 0.9.0+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -134,7 +142,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 ## Checklist before release
 
 - [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — all 1373 tests pass
+- [ ] `flutter test` — the unit/widget suite (`flutter test --exclude-tags stress`) pass
 - [ ] Integration tests pass (checkout flow + sale integrity)
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date (files not committed to git)
@@ -164,13 +172,13 @@ Before distributing a build with UI changes:
 2. Search and filter products in the Sale tab.
 3. Add items to cart and adjust quantity.
 3b. **Tap the quantity number** in cart → verify numeric input dialog opens with stock info and clamping.
-4. Long-press a cart item → enter multi-select mode → select multiple items → tap bulk delete or clear discount.
-5. Verify items display in single-row 3-zone layout (avatar | name+price | stepper+total). Verify discount chip appears inline with price when applied. Swipe right to delete (with undo snackbar); swipe left to increment quantity. Long-press to drag-and-reorder items.
-6. Tap the density toggle button in the cart header → cycle through Normal ↔ Ultra-Compact. Verify layout adapts (padding, avatar size, font size).
-7. Drag the resize handle between catalog and cart to resize the panel; use the size slider for Small/Large presets.
-8. Tap the cart icon with the item-count badge in the app bar → verify `CartReviewPage` opens with interactive cart editing; tap a product image for zoom dialog; tap a row for product detail sheet; adjust quantities and verify total updates live; tap **Back to Sale** and verify the cart reflects changes. Verify stepper buttons have press-scale animation and haptic feedback.
-9. Tap the tag icon on a cart item → apply a 10% discount — verify discount badge and updated subtotal.
-10. Tap **Apply cart discount** → apply a fixed amount — verify breakdown in full-screen `CheckoutPage` (Subtotal → discounts → Total); verify receipt preview pinch-to-zoom works.
+4. Open a cart line menu (⋯) → discount / note / duplicate / remove; confirm remove shows undo snackbar.
+5. Verify receipt-style cart lines (avatar, name, qty steppers, line total, discount badge when applied). Verify sticky payable total and Park / Pay CTAs. Verify totals match checkout with VAT/SC enabled.
+6. Tap the bottom cart bar (or compact FAB) → verify full-page `CartReviewPage` opens; product image zoom; row detail; qty +/− / long-press keypad; line ⋯ actions; live payable; **Add items** / back returns to catalog with cart preserved.
+7. From cart, tap **Pay** (retail) → cart review pops, payment sheet on sale root (no empty cart under payment). Restaurant: Pay → `CheckoutPage`; cart icon on checkout reopens `CartReviewPage`.
+8. Enable ultra-compact in Settings → sale shows FAB instead of bottom bar; long-press FAB to exit compact.
+9. Line action sheet → apply a 10% discount — verify discount badge and updated subtotal.
+10. Tap **Apply cart discount** → apply a fixed amount — verify breakdown on payment / checkout (Subtotal → discounts → Total); verify receipt preview pinch-to-zoom works.
 11. Tap the bookmarks icon → create a second draft, switch between drafts — cart content should swap; verify draft count badge (e.g. "Cart · 1/5") and draft search/sort functionality; kill and relaunch app to verify draft restore.
 12. Complete one cash sale using quick cash chips.
 13. Open History, expand the saved sale — verify receipt number; if VAT mode is INCLUSIVE or EXCLUSIVE, verify Subtotal + VAT rows appear; verify discount rows if discount was applied.

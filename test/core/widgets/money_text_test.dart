@@ -31,7 +31,7 @@ void main() {
         ),
       );
 
-      expect(find.text('฿99999.99'), findsOneWidget);
+      expect(find.text('฿99,999.99'), findsOneWidget);
     });
 
     testWidgets('applies custom color', (tester) async {

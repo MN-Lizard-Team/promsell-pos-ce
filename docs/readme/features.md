@@ -8,7 +8,7 @@
 
 | Feature | Description |
 |---------|-------------|
-| **Sale** | `SaleDashboardHeader` (shop name + revenue/sales/cart total), `SaleFilterBar` (Category/Sort/Stock dropdown filters), `SaleProductCard` delivery-style with `ProductCardShell` (grid: full-width images, list: 72×72 rounded-rect), `StockIndicator` + price pills, search in AppBar toggle, list/grid `SegmentedButton`. Adaptive cart: `CartBottomBar` (badge bounce, pull-up gesture, velocity snap) in compact mode; `CartContent` (expanded mode with `ReorderableListView` + `Dismissible`) in expanded mode; `CartReviewPage` with `CartProductDetailSheet` (qty/subtotal/discount/note/stock status). Multi-method checkout, quick cash chips, per-item/cart discount with preset chips, drag-to-reorder, resizable panel, compact/ultra-compact modes |
+| **Sale** | `SaleDashboardHeader` (shop name + revenue/sales/cart total), `SaleFilterBar` (Category/Sort/Stock dropdown filters), `SaleProductCard` delivery-style with `ProductCardShell` (grid: full-width images, list: 72×72 rounded-rect), `StockIndicator` + price pills, search in AppBar toggle, list/grid `SegmentedButton`. Adaptive cart: `CartBottomBar` in compact mode; docked / sheet `CartReviewBody` + receipt-style lines + sticky payable footer (Park / Pay); `CartProductDetailSheet` (qty/discount/note). Multi-method checkout, quick cash chips, per-item/cart discount with presets, drafts/park bills, compact/ultra-compact modes |
 | **Draft Cart** | Auto-save every 1.5s; configurable max drafts (5–100); search + sort; count badge; auto-archive after 7 days; switch/rename/delete drafts; active draft restored on app launch; cleared on checkout |
 | **Discount** | Per-item / per-cart discount (% or ฿) with live preview; merchant-configurable preset groups with quick-apply chips; max discount clamping; full payment sheet breakdown; VAT applied after discounts |
 | **Products** | List/grid toggle with dashboard (hero gradient card showing total products + inventory value, 3 mini stat cards for active/low-stock/out-of-stock), **category filter chips with color/icon**, image picker (gallery/camera) with pure Dart compression + thumbnail system, `CachedNetworkImage`, configurable image quality, `_StockBadge` (traffic-light), unified add/edit form with Hybrid Collapsible layout (basic fields visible, advanced in `ExpansionTile`), `ProductFormCubit` with typed draft persistence, swipe-to-delete in both list and grid modes, active/inactive toggle, orphaned file cleanup, remove-then-cancel protection. **Barcode** — camera scan (EAN-13/8, UPC-A/E, Code 128/39, ITF, QR Code, DataMatrix, PDF417, Aztec, Codabar), manual number entry fallback with inline validation, EAN-13 compliant auto-generation with Luhn check digit (GS1 prefix `200`), duplicate prevention (schema v16 unique index), case-insensitive lookup with uppercase normalization, persisted PNG barcode images generated on add/update (schema v18), generate-from-preview button, copy barcode/SKU, save as PDF/PNG/JPEG. **Category Management** — drag-drop reordering, color + icon picker (10 colors / 21 icons), product count badges, search, bulk delete. Schema v19 |
@@ -24,9 +24,9 @@
 | **Navbar Floating Center Button** (v0.8.9+) | Diamond-shaped Sale button rising above bar with bounce animation on tab change; `RepaintBoundary` on regular items; `Positioned` overlay in `Stack` |
 | **Void / Refund** | Atomic void sale flow: marks VOIDED, restores stock, logs VOID_REVERSAL; receipt number generation |
 | **Receipt Preview** | On-screen preview in `thermal` (80mm paper) and `card` styles, with independent pre/post-sale toggles and `"none"` option; pinch-to-zoom full-screen dialog |
-| **Receipt PDF** | Print and share receipts as PDF with Thai font support; 80mm thermal + A4 layouts; PromptPay QR on receipt; centralized `ImageViewerDialog` for product/receipt images |
+| **Receipt PDF** | Print and share receipts as PDF with Thai font support; **80mm thermal or A4** via settings `receiptSize`; logo / PromptPay-on-receipt / barcode planned; totals from **stored sale fields** (SC, promo, VAT); VOID watermark on voided sales; **sale receipt ≠ tax invoice** disclaimer; centralized `ImageViewerDialog` for product images |
 | **PromptPay QR** | EMVCo-compliant QR generation for static/dynamic payments; integrated into payment sheet; configurable PromptPay ID (phone or citizen ID) |
-| **Backup & Restore** | Full SQLite export/import with WAL checkpoint and schema validation; CSV export for sales & products; configurable backup reminder banner |
+| **Backup export / restore** | WAL checkpoint → DB copy → optional AES-GCM (PIN ≥ 6, default on) + share; CSV export; reminder. **Same-device in-app restore** of `.enc` / SQLCipher `.db` (Settings → Backup). Cross-device / after uninstall **not** supported (needs device SQLCipher key). Schema **v28** |
 | **VAT** | `NONE` / `INCLUSIVE` / `EXCLUSIVE` modes with correct subtotal/VAT/total breakdown on receipts and PDFs; VAT mode and rate are snapshotted at sale time and used for accurate historical reprints |
 | **Offline-first** | All data stored locally in SQLite via Drift — no internet required |
 | **Material 3** | Merchant Command Deck refresh with shared theme tokens and responsive UI primitives |
@@ -39,7 +39,7 @@
 |-------|------------|
 | **Framework** | Flutter 3.x · Dart 3.11+ |
 | **State management** | flutter_bloc (BLoC + Cubit pattern) |
-| **Database** | Drift (SQLite ORM) with code generation — 12 tables, UUID PKs |
+| **Database** | Drift + **SQLCipher** — **15 tables**, schema **v28** (`sale_payments` multi-tender), UUID PKs; Money satang in domain / REAL baht on disk |
 | **DI** | injectable + get_it (compile-time safe) |
 | **Routing** | Navigator + lazy-loaded tabs |
 | **Persistence** | SettingsLocalDatasource (Drift-backed typed key-value store); Drift tables for receipt sequences |
@@ -52,4 +52,4 @@
 
 ---
 
-<sub>Promsell POS Community Edition · v0.8.9 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.0 · AGPL-3.0</sub>

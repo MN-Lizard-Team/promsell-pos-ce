@@ -46,7 +46,7 @@ class ProductHeroImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
       child: Container(
-        height: 220,
+        constraints: const BoxConstraints(minHeight: 84, maxHeight: 220),
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: _hasImage
@@ -72,24 +72,34 @@ class ProductHeroImage extends StatelessWidget {
               )
             else
               Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.inventory_2,
-                      size: 56,
-                      color: theme.colorScheme.onPrimaryContainer.withValues(
-                        alpha: 0.4,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.inventory_2,
+                        size: 32,
+                        color: theme.colorScheme.onPrimaryContainer.withValues(
+                          alpha: 0.4,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      context.l10n.tapToAddImage,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 4),
+                      Flexible(
+                        child: Text(
+                          context.l10n.tapToAddImage,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             if (isLoading)
@@ -104,9 +114,9 @@ class ProductHeroImage extends StatelessWidget {
                 ),
               ),
             Positioned(
-              bottom: _hasImage ? null : 16,
-              top: _hasImage ? 16 : null,
-              right: 16,
+              bottom: _hasImage ? null : 4,
+              top: _hasImage ? 4 : null,
+              right: 4,
               child: FloatingActionButton.small(
                 onPressed: onTap,
                 heroTag: 'product_image_fab',

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_info_block.dart';
 
@@ -8,7 +9,7 @@ void main() {
   final product = Product(
     id: 'p1',
     name: 'Coffee',
-    price: 50,
+    price: Money.fromDouble(50),
     stock: 10,
     isActive: true,
     createdAt: DateTime(2024, 1, 1),

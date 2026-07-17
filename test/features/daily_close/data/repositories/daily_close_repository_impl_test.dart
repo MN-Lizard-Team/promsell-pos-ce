@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart';
 import 'package:promsell_pos_ce/features/daily_close/data/repositories/daily_close_repository_impl.dart';
@@ -60,11 +61,11 @@ void main() {
     });
 
     test('save persists and returns entity', () async {
-      final entity = const DailyClose(
+      final entity = DailyClose(
         id: '1',
         closeDate: '2026-06-05',
-        totalRevenue: 100,
-        paymentBreakdown: {'cash': 100},
+        totalRevenue: Money.fromDouble(100),
+        paymentBreakdown: const {'cash': 100},
       );
       final savedData = DailyCloseData(
         id: '1',
@@ -88,7 +89,7 @@ void main() {
       final result = await repo.save(entity);
 
       expect(result.id, '1');
-      expect(result.totalRevenue, 100);
+      expect(result.totalRevenue, Money.fromDouble(100));
       verify(() => mockDatasource.save(any())).called(1);
     });
 

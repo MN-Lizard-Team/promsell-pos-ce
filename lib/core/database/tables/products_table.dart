@@ -16,6 +16,12 @@ class Products extends Table {
   TextColumn get imageThumbnailPath => text().nullable()();
   TextColumn get barcodeImagePath => text().nullable()();
   BoolColumn get trackStock => boolean().withDefault(const Constant(true))();
+  TextColumn get description => text().nullable()();
+  TextColumn get brand => text().nullable().withLength(max: 100)();
+  TextColumn get unit => text().nullable().withLength(max: 50)();
+  TextColumn get supplier => text().nullable().withLength(max: 100)();
+  BoolColumn get isRecommended =>
+      boolean().withDefault(const Constant(false))();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

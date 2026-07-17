@@ -1,11 +1,12 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/draft_cart_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 
 import '../../../../helpers/fake_database.dart';
@@ -41,7 +42,7 @@ void main() {
     return Product(
       id: data.id,
       name: data.name,
-      price: data.price,
+      price: Money.fromDouble(data.price),
       stock: data.stock,
       isActive: data.isActive,
       trackStock: data.trackStock,
@@ -64,13 +65,11 @@ void main() {
     test('upsertDraft and loadDraft round-trip', () async {
       final product = await seedProduct('prod-001');
       final cartId = await ds.createDraft(name: 'Cart1');
+      final line = CartItem(product: product, qty: 3, lineId: 'stable-line-1');
 
       await ds.upsertDraft(
         cartId,
-        CartState(
-          items: [CartItem(product: product, qty: 3)],
-          note: 'test note',
-        ),
+        CartSnapshot(items: [line], note: 'test note'),
       );
 
       final loaded = await ds.loadDraft(cartId);
@@ -79,6 +78,7 @@ void main() {
       expect(loaded.items, hasLength(1));
       expect(loaded.items.first.product.id, 'prod-001');
       expect(loaded.items.first.qty, 3);
+      expect(loaded.items.first.lineId, 'stable-line-1');
       expect(loaded.note, 'test note');
     });
 
@@ -126,7 +126,7 @@ void main() {
 
     test('archiveOldDrafts archives drafts older than cutoff', () async {
       final cartId = await ds.createDraft(name: 'Old');
-      await ds.upsertDraft(cartId, const CartState(items: [], note: ''));
+      await ds.upsertDraft(cartId, const CartSnapshot(items: [], note: ''));
 
       final archived = await ds.archiveOldDrafts(
         DateTime.now().add(const Duration(days: 1)),
@@ -144,12 +144,12 @@ void main() {
 
       await ds.upsertDraft(
         cartId,
-        CartState(items: [CartItem(product: product, qty: 1)]),
+        CartSnapshot(items: [CartItem(product: product, qty: 1)]),
       );
 
       await ds.upsertDraft(
         cartId,
-        CartState(items: [CartItem(product: product2, qty: 5)]),
+        CartSnapshot(items: [CartItem(product: product2, qty: 5)]),
       );
 
       final loaded = await ds.loadDraft(cartId);

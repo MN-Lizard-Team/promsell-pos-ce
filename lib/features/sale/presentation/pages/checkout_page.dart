@@ -6,7 +6,7 @@ import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/tabl
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/cart_review_page.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -15,36 +15,29 @@ class CheckoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<TableBloc>().add(const TablesLoaded());
+    final isRestaurant = context
+        .read<SettingsCubit>()
+        .state
+        .settings
+        .isRestaurantMode;
+    final tableBloc = isRestaurant ? context.read<TableBloc>() : null;
+    tableBloc?.add(const TablesLoaded());
+
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.paymentTitle),
         actions: [
-          BlocBuilder<CartBloc, CartState>(
-            builder: (_, state) {
+          BlocSelector<CartBloc, CartState, int>(
+            selector: (state) => state.itemCount,
+            builder: (_, itemCount) {
               return IconButton(
                 icon: Badge(
-                  isLabelVisible: state.itemCount > 0,
-                  label: Text('${state.itemCount}'),
+                  isLabelVisible: itemCount > 0,
+                  label: Text('$itemCount'),
                   child: const Icon(Icons.shopping_cart_outlined),
                 ),
                 tooltip: context.l10n.cartTitle,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MultiBlocProvider(
-                        providers: [
-                          BlocProvider.value(value: context.read<CartBloc>()),
-                          BlocProvider.value(
-                            value: context.read<SettingsCubit>(),
-                          ),
-                        ],
-                        child: const CartReviewPage(),
-                      ),
-                    ),
-                  );
-                },
+                onPressed: () => openCartReviewPage(context),
               );
             },
           ),
@@ -55,7 +48,7 @@ class CheckoutPage extends StatelessWidget {
           BlocProvider.value(value: context.read<CartBloc>()),
           BlocProvider.value(value: context.read<CheckoutBloc>()),
           BlocProvider.value(value: context.read<SettingsCubit>()),
-          BlocProvider.value(value: context.read<TableBloc>()),
+          if (tableBloc != null) BlocProvider.value(value: tableBloc),
         ],
         child: const CheckoutBody(),
       ),

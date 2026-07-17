@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/promptpay_qr_code.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
@@ -80,9 +81,7 @@ class QrDisplaySection extends StatelessWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: promptpayId));
                   HapticFeedback.lightImpact();
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(copyLabel)));
+                  AppSnackBar.info(context, copyLabel);
                 },
                 icon: const Icon(Icons.copy, size: 18),
                 tooltip: copyLabel,

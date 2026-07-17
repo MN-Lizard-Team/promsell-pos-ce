@@ -1,1 +1,1 @@
-Offline POS for small shops. Sell, track stock, and print receipts — no internet needed.
+Offline POS for small shops. Sell, stock, receipts, PromptPay — no cloud.

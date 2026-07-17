@@ -81,7 +81,9 @@ class DiscountPolicySummaryCard extends StatelessWidget {
                 ? Icons.check_circle_outline
                 : Icons.cancel_outlined,
             label: context.l10n.enableItemDiscount,
-            value: enableItemDiscount ? 'ON' : 'OFF',
+            value: enableItemDiscount
+                ? context.l10n.settingsOn
+                : context.l10n.settingsOff,
             st: st,
           ),
           _buildRow(
@@ -89,7 +91,9 @@ class DiscountPolicySummaryCard extends StatelessWidget {
                 ? Icons.check_circle_outline
                 : Icons.cancel_outlined,
             label: context.l10n.enableCartDiscount,
-            value: enableCartDiscount ? 'ON' : 'OFF',
+            value: enableCartDiscount
+                ? context.l10n.settingsOn
+                : context.l10n.settingsOff,
             st: st,
           ),
           _buildRow(

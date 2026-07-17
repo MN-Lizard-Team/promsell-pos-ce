@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/cards/daily_close_date_card.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/cards/daily_close_reconciliation_card.dart';
@@ -58,11 +60,9 @@ class _DailyClosePageState extends State<DailyClosePage> {
             }
             if (state.status == DailyCloseStatus.error &&
                 state.errorMessage != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage!),
-                  backgroundColor: Colors.red,
-                ),
+              AppSnackBar.error(
+                context,
+                state.errorMessage ?? context.l10n.errorOccurred,
               );
             }
           },
@@ -92,7 +92,7 @@ class _DailyClosePageState extends State<DailyClosePage> {
                   countedController: _countedController,
                   noteController: _noteController,
                   openingCash: state.openingCash,
-                  expectedCash: state.dailyClose?.expectedCash ?? 0,
+                  expectedCash: state.dailyClose?.expectedCash.value ?? 0,
                   countedCash: state.countedCash,
                   overShort: state.overShort,
                   isReadOnly: isReadOnly,
@@ -135,49 +135,33 @@ class _DailyClosePageState extends State<DailyClosePage> {
     );
   }
 
-  void _confirmClose(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.closeDayConfirmTitle),
-        content: Text(ctx.l10n.closeDayConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(ctx.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _cubit.closeDay(deviceId: '');
-            },
-            child: Text(ctx.l10n.confirm),
-          ),
-        ],
-      ),
+  Future<void> _confirmClose(BuildContext context) async {
+    final l10n = context.l10n;
+    final confirmed = await showAppConfirm(
+      context,
+      title: l10n.closeDayConfirmTitle,
+      message: l10n.closeDayConfirmMessage,
+      confirmLabel: l10n.confirm,
+      cancelLabel: l10n.cancel,
+      destructive: false,
+      icon: Icons.lock_outline,
     );
+    if (!confirmed || !context.mounted) return;
+    await _cubit.closeDay(deviceId: '');
   }
 
-  void _confirmReopen(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(ctx.l10n.reopenDayConfirmTitle),
-        content: Text(ctx.l10n.reopenDayConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(ctx.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _cubit.reopenDay();
-            },
-            child: Text(ctx.l10n.confirm),
-          ),
-        ],
-      ),
+  Future<void> _confirmReopen(BuildContext context) async {
+    final l10n = context.l10n;
+    final confirmed = await showAppConfirm(
+      context,
+      title: l10n.reopenDayConfirmTitle,
+      message: l10n.reopenDayConfirmMessage,
+      confirmLabel: l10n.confirm,
+      cancelLabel: l10n.cancel,
+      destructive: false,
+      icon: Icons.lock_open_outlined,
     );
+    if (!confirmed || !context.mounted) return;
+    await _cubit.reopenDay();
   }
 }

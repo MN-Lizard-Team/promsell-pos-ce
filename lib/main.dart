@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/services/crash_log_service.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
@@ -17,14 +18,19 @@ import 'package:promsell_pos_ce/core/widgets/splash/app_splash_wrapper.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/settings_root_page.dart';
 import 'package:promsell_pos_ce/core/theme/app_theme.dart';
+import 'package:promsell_pos_ce/core/shell/main_shell_scope.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/nav/bottom_navigation_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/nav/nav_swipe_helper.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 
 void main() async {
@@ -111,7 +117,7 @@ class _MainShell extends StatefulWidget {
   State<_MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<_MainShell> {
+class _MainShellState extends State<_MainShell> with WidgetsBindingObserver {
   int _index = 0;
   DateTime? _lastBackPress;
 
@@ -128,11 +134,50 @@ class _MainShellState extends State<_MainShell> {
     SettingsPage.new,
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Clear store-PIN session grace when the app leaves the foreground so
+  /// sensitive actions re-prompt after background / multitasking.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
+      try {
+        sl<AppLockService>().lockSession();
+      } catch (_) {}
+    }
+  }
+
   Widget _pageFor(int i) => _cachedPages.putIfAbsent(i, _pageBuilders[i]);
 
   void _handleTabTap(int i) {
     if (i != _index) {
       setState(() => _index = i);
+      // Isolate ProductBloc filters between Products (1) and Sale (2).
+      if (i == 1) {
+        try {
+          sl<ProductBloc>().add(
+            const ProductSurfaceEntered(ProductSurface.catalog),
+          );
+        } catch (_) {}
+      } else if (i == 2) {
+        try {
+          sl<ProductBloc>().add(
+            const ProductSurfaceEntered(ProductSurface.sale),
+          );
+        } catch (_) {}
+      }
     } else {
       _scrollToTop();
     }
@@ -158,11 +203,22 @@ class _MainShellState extends State<_MainShell> {
     );
   }
 
-  void _onSaleLongPress(String key) {
-    if (key == 'new_draft') {
-      if (_index != 2) setState(() => _index = 2);
-      sl<DraftBloc>().add(const DraftCreated());
+  Future<void> _onSaleLongPress(String key) async {
+    if (key != 'new_draft') return;
+    final cart = sl<CartBloc>().state;
+    if (!cart.isEmpty) {
+      final confirmed = await showConfirmationDialog(
+        context,
+        title: context.l10n.clearCart,
+        message: context.l10n.confirmClearCart,
+        confirmLabel: context.l10n.clearCart,
+        destructive: true,
+      );
+      if (!confirmed || !mounted) return;
     }
+    if (_index != 2) setState(() => _index = 2);
+    sl<DraftBloc>().add(const DraftCreated());
+    sl<CartBloc>().add(const CartCleared());
   }
 
   void _onProductLongPress(String key) {
@@ -232,78 +288,92 @@ class _MainShellState extends State<_MainShell> {
       ),
     ];
 
-    final body = GestureDetector(
-      onHorizontalDragEnd: _handleSwipe,
-      child: IndexedStack(
-        index: _index,
-        children: [
-          for (int i = 0; i < _pageBuilders.length; i++)
-            i == _index || _cachedPages.containsKey(i)
-                ? _pageFor(i)
-                : const SizedBox.shrink(),
-        ],
+    // Shared feature blocs for all shell tabs (Home goToTab + IndexedStack).
+    // Without this, ProductList/Sale BlocListeners throw ProviderNotFound when
+    // the tab is first mounted from Home (or after partial hot-reload).
+    final body = MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: sl<ProductBloc>()),
+        BlocProvider.value(value: sl<CategoryBloc>()),
+        BlocProvider.value(value: sl<CartBloc>()),
+        BlocProvider.value(value: sl<DraftBloc>()),
+      ],
+      child: GestureDetector(
+        onHorizontalDragEnd: _handleSwipe,
+        child: IndexedStack(
+          index: _index,
+          children: [
+            for (int i = 0; i < _pageBuilders.length; i++)
+              i == _index || _cachedPages.containsKey(i)
+                  ? _pageFor(i)
+                  : const SizedBox.shrink(),
+          ],
+        ),
       ),
     );
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        final now = DateTime.now();
-        if (_lastBackPress != null &&
-            now.difference(_lastBackPress!) < const Duration(seconds: 2)) {
-          SystemNavigator.pop();
-        } else {
-          _lastBackPress = now;
-          AppSnackBar.info(context, l10n.pressBackAgainToExit);
-        }
-      },
-      child: Shortcuts(
-        shortcuts: _shortcutMap,
-        child: Actions(
-          actions: <Type, Action<Intent>>{
-            _SwitchTabIntent: CallbackAction<_SwitchTabIntent>(
-              onInvoke: (intent) => _handleTabTap(intent.index),
-            ),
-          },
-          child: Focus(
-            autofocus: true,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isTablet = constraints.maxWidth >= 600;
-                if (isTablet) {
+    return MainShellScope(
+      goToTab: _handleTabTap,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          final now = DateTime.now();
+          if (_lastBackPress != null &&
+              now.difference(_lastBackPress!) < const Duration(seconds: 2)) {
+            SystemNavigator.pop();
+          } else {
+            _lastBackPress = now;
+            AppSnackBar.info(context, l10n.pressBackAgainToExit);
+          }
+        },
+        child: Shortcuts(
+          shortcuts: _shortcutMap,
+          child: Actions(
+            actions: <Type, Action<Intent>>{
+              _SwitchTabIntent: CallbackAction<_SwitchTabIntent>(
+                onInvoke: (intent) => _handleTabTap(intent.index),
+              ),
+            },
+            child: Focus(
+              autofocus: true,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isTablet = constraints.maxWidth >= 600;
+                  if (isTablet) {
+                    return Scaffold(
+                      body: Row(
+                        children: [
+                          NavigationRail(
+                            selectedIndex: _index,
+                            onDestinationSelected: _handleTabTap,
+                            labelType: NavigationRailLabelType.selected,
+                            destinations: navItems
+                                .map(
+                                  (item) => NavigationRailDestination(
+                                    icon: Icon(item.icon),
+                                    selectedIcon: Icon(item.activeIcon),
+                                    label: Text(item.label),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                          const VerticalDivider(thickness: 1, width: 1),
+                          Expanded(child: body),
+                        ],
+                      ),
+                    );
+                  }
                   return Scaffold(
-                    body: Row(
-                      children: [
-                        NavigationRail(
-                          selectedIndex: _index,
-                          onDestinationSelected: _handleTabTap,
-                          labelType: NavigationRailLabelType.selected,
-                          destinations: navItems
-                              .map(
-                                (item) => NavigationRailDestination(
-                                  icon: Icon(item.icon),
-                                  selectedIcon: Icon(item.activeIcon),
-                                  label: Text(item.label),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        const VerticalDivider(thickness: 1, width: 1),
-                        Expanded(child: body),
-                      ],
+                    body: body,
+                    bottomNavigationBar: AppBottomNavigationBar(
+                      selectedIndex: _index,
+                      onTap: _handleTabTap,
+                      items: navItems,
                     ),
                   );
-                }
-                return Scaffold(
-                  body: body,
-                  bottomNavigationBar: AppBottomNavigationBar(
-                    selectedIndex: _index,
-                    onTap: _handleTabTap,
-                    items: navItems,
-                  ),
-                );
-              },
+                },
+              ),
             ),
           ),
         ),

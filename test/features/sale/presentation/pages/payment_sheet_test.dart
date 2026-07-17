@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet_redesign.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/pages/payment_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment/payment_widgets.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
@@ -24,7 +25,7 @@ void main() {
   final testProduct = Product(
     id: 'prod-0001-0001-0001-000000000001',
     name: 'Water',
-    price: 10.0,
+    price: Money.fromDouble(10),
     stock: 100,
     imageThumbnailPath: null,
     isActive: true,
@@ -51,8 +52,8 @@ void main() {
         paymentMethod: 'cash',
         vatMode: 'NONE',
         vatRate: 0,
-        amountReceived: 0,
-        changeAmount: 0,
+        amountReceived: Money.zero,
+        changeAmount: Money.zero,
       ),
     );
   });

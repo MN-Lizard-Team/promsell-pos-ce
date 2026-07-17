@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_list_page.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/product_stats_row.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
@@ -65,7 +68,7 @@ void main() {
         searchHistoryCubit: mockSearchHistoryCubit,
       );
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(ProductStatsRow), findsOneWidget);
     });
 
     testWidgets('shows product list when loaded', (tester) async {
@@ -73,7 +76,7 @@ void main() {
         Product(
           id: 'prod-0001-0001-0001-000000000001',
           name: 'Water',
-          price: 10.0,
+          price: Money.fromDouble(10.0),
           stock: 100,
           imageThumbnailPath: null,
           isActive: true,
@@ -83,7 +86,7 @@ void main() {
         Product(
           id: 'prod-0002-0002-0002-000000000002',
           name: 'Coke',
-          price: 25.0,
+          price: Money.fromDouble(25.0),
           stock: 50,
           imageThumbnailPath: null,
           isActive: true,
@@ -124,7 +127,7 @@ void main() {
       when(() => mockProductBloc.state).thenReturn(
         const ProductState(
           status: ProductStatus.failure,
-          errorMessage: 'DB error',
+          error: DatabaseError('DB error'),
         ),
       );
 

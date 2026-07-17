@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 
 abstract class CheckoutEvent extends Equatable {
   const CheckoutEvent();
@@ -18,29 +20,31 @@ class CheckoutConfirmed extends CheckoutEvent {
     this.changeAmount,
     this.note,
     this.paymentReference,
-    this.orderType = 'dinein',
+    this.payments,
+    this.orderType = 'delivery',
     this.orderChannel = 'walkin',
     this.externalOrderRef,
     this.tableId,
     this.serviceChargeRate = 0.0,
-    this.serviceChargeAmount = 0.0,
+    this.serviceChargeAmount = Money.zero,
   });
   final String paymentMethod;
   final String vatMode;
   final double vatRate;
   final String? cartDiscountType;
   final double? cartDiscountValue;
-  final double? cartDiscountAmount;
-  final double? amountReceived;
-  final double? changeAmount;
+  final Money? cartDiscountAmount;
+  final Money? amountReceived;
+  final Money? changeAmount;
   final String? note;
   final String? paymentReference;
+  final List<SalePayment>? payments;
   final String orderType;
   final String orderChannel;
   final String? externalOrderRef;
   final String? tableId;
   final double serviceChargeRate;
-  final double serviceChargeAmount;
+  final Money serviceChargeAmount;
   @override
   List<Object?> get props => [
     paymentMethod,
@@ -53,6 +57,7 @@ class CheckoutConfirmed extends CheckoutEvent {
     changeAmount,
     note,
     paymentReference,
+    payments,
     orderType,
     orderChannel,
     externalOrderRef,

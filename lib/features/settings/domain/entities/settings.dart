@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/backup_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/daily_close_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/device_config.dart';
@@ -71,7 +72,6 @@ class Settings extends Equatable {
   String get dateFormat => uiConfig.dateFormat;
   String get receiptNote => receiptConfig.receiptNote;
   bool get showShopInfoOnReceipt => receiptConfig.showShopInfo;
-  bool get autoPrintPrompt => receiptConfig.autoPrintPrompt;
   double get vatRate => taxConfig.vatRate;
   String get vatMode => taxConfig.vatMode;
   String get receiptPreviewStyle => receiptConfig.receiptPreviewStyle;
@@ -82,7 +82,7 @@ class Settings extends Equatable {
   bool get enableItemDiscount => discountConfig.enableItemDiscount;
   bool get enableCartDiscount => discountConfig.enableCartDiscount;
   double get maxDiscountPercent => discountConfig.maxDiscountPercent;
-  double get maxDiscountAmount => discountConfig.maxDiscountAmount;
+  Money get maxDiscountAmount => discountConfig.maxDiscountAmount;
   String get defaultDiscountType => discountConfig.defaultDiscountType;
   List<DiscountPreset> get discountPresets => discountConfig.discountPresets;
   String get activeDiscountPresetId => discountConfig.activeDiscountPresetId;
@@ -101,7 +101,6 @@ class Settings extends Equatable {
   int get imageMaxWidth => imageConfig.maxWidth;
   int get imageQuality => imageConfig.quality;
   int get maxDrafts => draftConfig.maxDrafts;
-  bool get cartCompactMode => uiConfig.cartCompactMode;
   bool get ultraCompactMode => uiConfig.ultraCompactMode;
   bool get accessibilityMode => uiConfig.accessibilityMode;
   String get deviceId => deviceConfig.deviceId;
@@ -171,7 +170,6 @@ class Settings extends Equatable {
     String? dateFormat,
     String? receiptNote,
     bool? showShopInfoOnReceipt,
-    bool? autoPrintPrompt,
     double? vatRate,
     String? vatMode,
     String? receiptPreviewStyle,
@@ -182,7 +180,7 @@ class Settings extends Equatable {
     bool? enableItemDiscount,
     bool? enableCartDiscount,
     double? maxDiscountPercent,
-    double? maxDiscountAmount,
+    Money? maxDiscountAmount,
     String? defaultDiscountType,
     List<DiscountPreset>? discountPresets,
     String? activeDiscountPresetId,
@@ -199,7 +197,6 @@ class Settings extends Equatable {
     int? imageMaxWidth,
     int? imageQuality,
     int? maxDrafts,
-    bool? cartCompactMode,
     bool? ultraCompactMode,
     bool? accessibilityMode,
     String? deviceId,
@@ -229,7 +226,6 @@ class Settings extends Equatable {
         receiptPreviewStyle: receiptPreviewStyle,
         receiptNote: receiptNote,
         showShopInfo: showShopInfoOnReceipt,
-        autoPrintPrompt: autoPrintPrompt,
         showPreSalePreview: showPreSalePreview,
         showPostSalePreview: showPostSalePreview,
       ),
@@ -269,16 +265,16 @@ class Settings extends Equatable {
         locale: locale?.languageCode,
         themeMode: themeMode?.name,
         dateFormat: dateFormat,
-        cartCompactMode: cartCompactMode,
         ultraCompactMode: ultraCompactMode,
         accessibilityMode: accessibilityMode,
       ),
-      dailyCloseConfig: dailyCloseConfig.copyWith(
-        dailyCloseLock: dailyCloseLock,
-        lastClosedDate: identical(lastClosedDate, _unset)
-            ? null
-            : lastClosedDate as String?,
-      ),
+      // Nested config uses its own sentinel — map Settings _unset → omit field.
+      dailyCloseConfig: identical(lastClosedDate, _unset)
+          ? dailyCloseConfig.copyWith(dailyCloseLock: dailyCloseLock)
+          : dailyCloseConfig.copyWith(
+              dailyCloseLock: dailyCloseLock,
+              lastClosedDate: lastClosedDate as String?,
+            ),
       backupConfig: backupConfig.copyWith(
         reminderDays: backupReminderDays,
         lastBackupAt: identical(lastBackupAt, _unset)

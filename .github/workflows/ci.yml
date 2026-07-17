@@ -48,10 +48,16 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage --exclude-tags stress
 
+      # Device/widget integration_test/ (often flaky on bare CI runners).
+      # Money-path fail-closed suite: .github/workflows/release-trust.yml (C7).
+      - name: Run device integration_test suite (soft — see Release Trust)
+        run: flutter test integration_test/
+        continue-on-error: true
+
       - name: Check coverage threshold
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
-          min_coverage: 30
+          min_coverage: 50
           path: coverage/lcov.info
           exclude: 'lib/l10n/app_localizations.dart lib/l10n/app_localizations_en.dart lib/l10n/app_localizations_th.dart lib/**/*.g.dart lib/**/*.gr.dart lib/**/*.freezed.dart lib/core/di/injection.config.dart'
 

@@ -1,5 +1,6 @@
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/features/home/presentation/widgets/home_sparkline.dart';
@@ -15,7 +16,7 @@ class HomeHeroDashboardCard extends StatefulWidget {
     this.onTap,
   });
 
-  final double todayRevenue;
+  final Money todayRevenue;
   final int todaySalesCount;
   final List<double> trendData;
   final bool isLoading;
@@ -32,7 +33,7 @@ class _HomeHeroDashboardCardState extends State<HomeHeroDashboardCard> {
   void didUpdateWidget(HomeHeroDashboardCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.todayRevenue != widget.todayRevenue && !widget.isLoading) {
-      _displayRevenue = widget.todayRevenue;
+      _displayRevenue = widget.todayRevenue.value;
     }
   }
 
@@ -45,7 +46,7 @@ class _HomeHeroDashboardCardState extends State<HomeHeroDashboardCard> {
     return Semantics(
       button: widget.onTap != null,
       label:
-          '${l10n.homeTodayRevenue} ${CurrencyFormatter.format(widget.todayRevenue)} ${l10n.homeFromBills(widget.todaySalesCount)}',
+          '${l10n.homeTodayRevenue} ${CurrencyFormatter.format(widget.todayRevenue.value)} ${l10n.homeFromBills(widget.todaySalesCount)}',
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 20),
         elevation: 8,
@@ -97,7 +98,7 @@ class _HomeHeroDashboardCardState extends State<HomeHeroDashboardCard> {
                                     ),
                               ),
                               Text(
-                                '.${(widget.todayRevenue.abs() % 1).toStringAsFixed(2).substring(2)}',
+                                '.${(widget.todayRevenue.value.abs() % 1).toStringAsFixed(2).substring(2)}',
                                 style: theme.textTheme.headlineLarge?.copyWith(
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -0.5,

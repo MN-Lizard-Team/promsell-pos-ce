@@ -1,4 +1,4 @@
-# Query Patterns — Promsell POS CE v0.8.9
+# Query Patterns — Promsell POS CE (v0.9.0)
 
 Common Drift query patterns used in the datasource layer.
 
@@ -160,4 +160,4 @@ Future<void> upsertDraft(String cartId, SaleState state) async {
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Query Patterns</sub>
+<sub>Promsell POS CE · v0.9.0 · Query Patterns</sub>

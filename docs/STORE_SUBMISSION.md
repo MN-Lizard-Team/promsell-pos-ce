@@ -1,48 +1,104 @@
 # Store Submission Checklist
 
-Last updated: 2026-07-06 | Version: 0.8.9+1
+Last updated: **2026-07-17** | Version: **0.9.0+1**  
+Trust package: `docs/plan/V090-TRUST/` · Smoke: `docs/testing/RELEASE_0.9_SMOKE.md`
 
 ---
 
-## Pre-Flight (Code — DONE)
+## Pre-Flight (Code)
 
-- [x] Version bumped to `0.8.9+1` in `pubspec.yaml`
-- [x] Android app label = "Promsell"
-- [x] iOS display name = "Promsell"
-- [x] iOS bundle name = "Promsell"
-- [x] Android permissions (INTERNET, CAMERA, storage) — CAMERA used for product photos + barcode scanning
-- [x] iOS privacy strings + ATS + encryption compliance
-- [x] Release signing config with keystore fallback
-- [x] `.gitignore` excludes keystore files
-- [x] `flutter analyze` → 0 issues
-- [x] `flutter test` → 1373 passing
-
----
-
-## Pre-Flight (Metadata — DONE)
-
-- [x] Play Store EN metadata (title, short, full description)
-- [x] Play Store TH metadata
-- [x] App Store metadata (subtitle, keywords, promo text, URLs)
-- [x] Privacy policy (`docs/PRIVACY_POLICY.md`)
+- [x] Version `0.9.0+1` in `pubspec.yaml`
+- [x] Android / iOS display name **Promsell**
+- [x] Permissions: CAMERA (product photos + barcode), storage for exports; INTERNET optional (remote product images only)
+- [x] iOS privacy usage strings present (`Info.plist`)
+- [x] Release signing fail-closed without `android/app/keystore.properties`
+- [x] Keystore artifacts gitignored (`*.jks`, `keystore.properties`)
+- [x] Money-path trust suite + device smoke cash/draft/daily close (2026-07-17)
+- [x] Release Trust CI (fail-closed): `.github/workflows/release-trust.yml`
+- [x] Signed **prod** AAB dry-run (throwaway keystore only — **not** for Play upload)
 
 ---
 
-## Manual Steps Required (User)
+## Pre-Flight (Listing metadata)
 
-### 1. Create Android Release Keystore
+| Asset | Path | Status |
+|-------|------|--------|
+| Play title EN/TH | `fastlane/metadata/android/{en-US,th}/title.txt` | ✅ TH ≤30 (`Promsell — POS ร้านค้าเล็ก`) |
+| Play short EN/TH | `.../short_description.txt` (≤80 chars) | ✅ 2026-07-17 |
+| Play full EN/TH | `.../full_description.txt` (restore honesty, AGPL, not tax invoice) | ✅ 2026-07-17 |
+| Privacy policy | `docs/PRIVACY_POLICY.md` | ✅ |
+| Privacy URL | `fastlane/metadata/android/*/privacy_url.txt` | ✅ **teeprakorn1** |
+| iOS metadata stubs | `fastlane/metadata/ios/en-US/*` | ✅ |
+| iOS marketing/support URLs | fixed to teeprakorn1 | ✅ |
+
+---
+
+## Screenshots & feature graphic (E5)
+
+### Phone screenshots (1080×2400) — staged
+
+**10 phone shots** under:
+
+- `fastlane/metadata/android/en-US/images/phoneScreenshots/`
+- `fastlane/metadata/android/th/images/phoneScreenshots/` (mirror)
+
+| # | File | Content |
+|---|------|---------|
+| 01 | `01_home.png` | Home dashboard |
+| 02 | `02_sale.png` | Sale catalog |
+| 03 | `03_checkout.png` | Checkout |
+| 04 | `04_receipt.png` | Cash receipt |
+| 05 | `05_products.png` | Products |
+| 06 | `06_history.png` | History |
+| 07 | `07_report.png` | Report |
+| 08 | `08_settings.png` | Settings |
+| 09 | `09_draft.png` | Draft reopen |
+| 10 | `10_daily_close.png` | Daily close |
+
+Also kept under repo `screenshots/`.
+
+### Feature graphic (Play)
+
+| Item | Value |
+|------|--------|
+| Size | **1024 × 500** PNG |
+| EN | `fastlane/metadata/android/en-US/images/featureGraphic.png` |
+| TH | `fastlane/metadata/android/th/images/featureGraphic.png` |
+| Regenerate | `dart run tool/generate_feature_graphic.dart` |
+| Status | ✅ 2026-07-17 (brand banner; replace with designer art if desired) |
+
+### Tablet / iOS
+
+| Slot | Status |
+|------|--------|
+| Play 7" / 10" | ⬜ Empty (README placeholders). Capture if claiming tablet. |
+| App Store sets | ⬜ Use phone PNGs as start on macOS. |
+
+### Listing checklist before **Submit for review**
+
+- [x] ≥2 phone screenshots staged (we have **10**)
+- [x] Feature graphic 1024×500 staged EN + TH
+- [ ] Optional: polish feature graphic / tablet shots
+- [x] Descriptions: offline-first, AGPL source, **not tax invoice**, same-device restore honesty
+- [x] Privacy URL uses **teeprakorn1** (not teepakorn1)
+- [ ] Data safety form in Play Console
+- [ ] Production release keystore (not throwaway E2) + dual custody
+- [ ] Upload production-signed AAB
+- [ ] Content rating + Free pricing + Thailand
+- [ ] Contact `mnlizard.official@gmail.com`
+
+---
+
+## Manual steps (operator)
+
+### 1. Production keystore
 
 ```bash
 cd android/app
-keytool -genkey -v -keystore promsell-release-key.jks \
-  -keyalg RSA -keysize 2048 -validity 10000 \
-  -alias promsell \
-  -storepass YOUR_STRONG_PASSWORD \
-  -keypass YOUR_STRONG_PASSWORD \
-  -dname "CN=Promsell, O=Promsell, C=TH"
+keytool -genkey -v -keystore promsell-release-key.jks   -keyalg RSA -keysize 2048 -validity 10000   -alias promsell   -storepass YOUR_STRONG_PASSWORD   -keypass YOUR_STRONG_PASSWORD   -dname "CN=Promsell, O=Promsell, C=TH"
 ```
 
-Then create `android/app/keystore.properties`:
+`keystore.properties` (gitignored):
 
 ```properties
 storeFile=promsell-release-key.jks
@@ -51,98 +107,57 @@ keyAlias=promsell
 keyPassword=YOUR_STRONG_PASSWORD
 ```
 
-> This file is already `.gitignore`d. Never commit it.
-
-### 2. Take Screenshots
-
-| Store | Minimum | Recommended |
-|-------|---------|-------------|
-| Play Store | 2 phone | 8 phone + 4 tablet (7" + 10") |
-| App Store | 3 iPhone | 10 iPhone + 5 iPad |
-
-Use emulator or physical device. Capture key screens:
-- Home dashboard (hero card, stats row, menu grid, promotion banner)
-- Sale / Cart (single-row 3-zone layout, inline discount chips)
-- Product list
-- Receipt / QR
-- Inventory
-- Settings (2-level hierarchy with search)
-- Reports (with History sub-tab)
-
-Save to:
-- `fastlane/metadata/android/en-US/images/phoneScreenshots/`
-- `fastlane/metadata/android/en-US/images/sevenInchScreenshots/`
-- `fastlane/metadata/android/en-US/images/tenInchScreenshots/`
-- `fastlane/metadata/ios/screenshots/`
-
-### 3. Design Feature Graphic (Play Store)
-
-- Size: **1024 x 500 px**
-- Content: App name + tagline + visual (receipt + phone mockup)
-- Tool: Canva, Figma, Photoshop
-- Save to: `fastlane/metadata/android/en-US/images/featureGraphic.png`
-
-### 4. Build & Verify
+### 2. Build
 
 ```bash
-# Android AAB (required for Play Store)
 flutter build appbundle --release --flavor prod -t lib/main_prod.dart
-# Output: build/app/outputs/bundle/prodRelease/app-prod-release.aab
-
-# iOS IPA (required for App Store)
-flutter build ipa --release --flavor prod -t lib/main_prod.dart
-# Output: build/ios/ipa/Promsell.ipa
+# → build/app/outputs/bundle/prodRelease/app-prod-release.aab
 ```
 
-### 5. Play Console Setup
+### 3. Play Console
 
-1. Go to [play.google.com/console](https://play.google.com/console)
-2. Pay $25 one-time developer fee (if new account)
-3. Create app → "Promsell"
-4. App category: **Shopping** or **Business**
-5. Content rating: Fill questionnaire → likely **Everyone**
-6. Data safety form:
-   - Does your app collect data? → **No**
-   - Provide privacy policy URL → `https://github.com/teepakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md`
-7. Upload AAB + screenshots + feature graphic + descriptions
-8. Set pricing: **Free**
-9. Set countries: **Thailand** (+ others if desired)
-10. Contact email: `mnlizard.official@gmail.com`
+1. Create app **Promsell** · Business/Shopping
+2. Data safety: no server collection; local POS data; camera for barcode/photos
+3. Privacy: https://github.com/teeprakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md
+4. Upload AAB + assets from `fastlane/metadata/android/`
+5. Free · Thailand · contact `mnlizard.official@gmail.com`
 
-### 6. App Store Connect Setup
+### 4. App Store Connect (optional)
 
-1. Go to [appstoreconnect.apple.com](https://appstoreconnect.apple.com)
-2. Requires Apple Developer Program ($99/year)
-3. Create app:
-   - Name: **Promsell**
-   - Bundle ID: `com.promsell.promsellPosCe`
-   - SKU: `promsell-pos-ce`
-4. Primary category: **Shopping** or **Business**
-5. Secondary: **Productivity**
-6. Age rating: **4+**
-7. Upload IPA via Transporter or Xcode
-8. Add screenshots for iPhone + iPad
-9. Privacy policy URL: same as above
-10. Contact info: `mnlizard.official@gmail.com`
+Bundle `com.promsell.promsellPosCe` · same privacy URL · export compliance for SQLCipher/AES
 
 ---
 
-## Post-Launch
+## Data safety notes
 
-- [ ] Monitor crash reports (Play Console / Xcode Organizer)
-- [ ] Respond to user reviews
-- [ ] Update screenshots after major UI changes
-- [ ] Keep privacy policy updated if data practices change
+| Topic | Guidance |
+|-------|----------|
+| Developer servers collect data? | **No** |
+| Local data | Sales, stock, optional customers, PromptPay ID |
+| Encryption | SQLCipher + AES-GCM backup (default **on** for new installs) |
+| User-initiated share | Backup/share sheet / crash export — not developer collection |
+| Analytics | None |
+| License | AGPL-3.0 |
+| Receipts | **Not** tax invoices |
 
 ---
 
-## Quick Reference
+## Quick reference
 
 | Item | Value |
-|------|-------|
-| App name | Promsell |
-| Version | 0.8.9+1 |
-| Contact | mnlizard.official@gmail.com |
-| Privacy URL | https://github.com/teepakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
-| Bundle ID (Android) | com.promsell.promsell_pos_ce |
-| Bundle ID (iOS) | com.promsell.promsellPosCe |
+|------|--------|
+| Version | 0.9.0+1 |
+| Privacy URL | https://github.com/teeprakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
+| Source | https://github.com/teeprakorn1/promsell-pos-ce |
+| Android ID | `com.promsell.promsell_pos_ce` |
+| Phone screenshots | `fastlane/metadata/android/en-US/images/phoneScreenshots/` |
+| Feature graphic | `fastlane/metadata/android/en-US/images/featureGraphic.png` |
+
+---
+
+## E4 / E5 (trust package)
+
+| ID | Status |
+|----|--------|
+| **E4** CI release + secrets-optional AAB | ✅ `release-aab.yml` (2026-07-17) |
+| **E5** Screenshots + graphic + privacy + listing honesty | ✅ **Staged 2026-07-17** — operator still submits in consoles |

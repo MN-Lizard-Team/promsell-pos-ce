@@ -32,6 +32,7 @@ class CategoryListTile extends StatelessWidget {
 
     return Semantics(
       button: true,
+      selected: selectionMode && selected,
       label: '${category.name}, $productCount ${context.l10n.productsCount}',
       child: Card(
         clipBehavior: Clip.antiAlias,
@@ -95,42 +96,17 @@ class CategoryListTile extends StatelessWidget {
                   )
                 else if (onDelete != null)
                   IconButton(
+                    tooltip: context.l10n.deleteCategory,
                     icon: Icon(
                       Icons.delete_outline,
                       color: theme.colorScheme.error,
                     ),
-                    onPressed: () => _confirmDelete(context),
+                    onPressed: onDelete,
                   ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(context.l10n.deleteCategory),
-        content: Text(context.l10n.confirmDeleteCategory(category.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(context.l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              onDelete?.call();
-              Navigator.pop(dialogContext);
-            },
-            child: Text(
-              context.l10n.delete,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
       ),
     );
   }

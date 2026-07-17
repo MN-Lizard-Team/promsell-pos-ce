@@ -21,6 +21,15 @@ class ReceiptPreview extends StatelessWidget {
     this.note,
     this.receiptNumber,
     this.createdAt,
+    this.cartDiscount,
+    this.promotionDiscount,
+    this.serviceCharge,
+    this.serviceChargeRate,
+    this.isVoided = false,
+    this.voidReason,
+    this.isReprint = false,
+    this.notTaxInvoiceDisclaimer,
+    this.footerOverride,
   });
 
   final Settings settings;
@@ -41,6 +50,15 @@ class ReceiptPreview extends StatelessWidget {
   final String? note;
   final String? receiptNumber;
   final DateTime? createdAt;
+  final double? cartDiscount;
+  final double? promotionDiscount;
+  final double? serviceCharge;
+  final double? serviceChargeRate;
+  final bool isVoided;
+  final String? voidReason;
+  final bool isReprint;
+  final String? notTaxInvoiceDisclaimer;
+  final String? footerOverride;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +75,15 @@ class ReceiptPreview extends StatelessWidget {
         note: note,
         receiptNumber: receiptNumber,
         createdAt: createdAt,
+        cartDiscount: cartDiscount,
+        promotionDiscount: promotionDiscount,
+        serviceCharge: serviceCharge,
+        serviceChargeRate: serviceChargeRate,
+        isVoided: isVoided,
+        voidReason: voidReason,
+        isReprint: isReprint,
+        notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
+        footerOverride: footerOverride,
       ),
       ReceiptPreviewStyle.card => ReceiptPreviewCard(
         settings: settings,
@@ -70,6 +97,15 @@ class ReceiptPreview extends StatelessWidget {
         note: note,
         receiptNumber: receiptNumber,
         createdAt: createdAt,
+        cartDiscount: cartDiscount,
+        promotionDiscount: promotionDiscount,
+        serviceCharge: serviceCharge,
+        serviceChargeRate: serviceChargeRate,
+        isVoided: isVoided,
+        voidReason: voidReason,
+        isReprint: isReprint,
+        notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
+        footerOverride: footerOverride,
       ),
       ReceiptPreviewStyle.none => const SizedBox.shrink(),
     };

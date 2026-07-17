@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class SettingsTextTile extends StatelessWidget {
@@ -134,7 +135,7 @@ class _EditDialogState extends State<_EditDialog>
 
   @override
   void dispose() {
-    _controller.dispose();
+    disposeTextEditingControllerAfterFrame(_controller);
     _shakeController.dispose();
     super.dispose();
   }
@@ -149,8 +150,10 @@ class _EditDialogState extends State<_EditDialog>
           return;
         }
       }
+      unfocusForDialogClose();
       Navigator.of(context).pop(text);
     } else {
+      unfocusForDialogClose();
       Navigator.of(context).pop();
     }
   }

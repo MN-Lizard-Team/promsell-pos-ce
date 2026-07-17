@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/draft_cart_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/repositories/draft_cart_repository_impl.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
 
 class MockDraftCartLocalDatasource extends Mock
     implements DraftCartLocalDatasource {}
@@ -17,7 +17,7 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(const CartState());
+    registerFallbackValue(const CartSnapshot(items: []));
   });
 
   test('createDraft delegates to datasource', () async {
@@ -36,10 +36,14 @@ void main() {
       () => mockDs.upsertDraft(any(), any(), name: any(named: 'name')),
     ).thenAnswer((_) async {});
 
-    await repo.saveDraft('draft-001', const CartState());
+    await repo.saveDraft('draft-001', const CartSnapshot(items: []));
 
     verify(
-      () => mockDs.upsertDraft('draft-001', const CartState(), name: null),
+      () => mockDs.upsertDraft(
+        'draft-001',
+        const CartSnapshot(items: []),
+        name: null,
+      ),
     ).called(1);
   });
 

@@ -17,22 +17,40 @@ class ReportPromptPayCard extends StatelessWidget {
   final String currency;
   final DateFormat fmt;
 
-  List<Sale> get _promptPaySales => sales
-      .where((s) => !s.isVoided && s.paymentMethod == 'promptpay')
-      .toList();
+  List<Sale> get _promptPaySales {
+    final list =
+        sales
+            .where((s) => !s.isVoided && s.paymentMethod == 'promptpay')
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
 
   double get _total =>
-      _promptPaySales.fold(0.0, (sum, s) => sum + s.totalAmount);
+      _promptPaySales.fold(0.0, (sum, s) => sum + s.totalAmount.value);
 
   double get _average =>
       _promptPaySales.isEmpty ? 0.0 : _total / _promptPaySales.length;
+
+  String _bankLabel(BuildContext context, String code) {
+    final bank = pp.thaiBankByCode(code);
+    if (bank == null) return code;
+    final isTh = Localizations.localeOf(context).languageCode == 'th';
+    if (isTh) {
+      return bank.nameTh.isNotEmpty ? bank.nameTh : code;
+    }
+    return bank.nameEn.isNotEmpty
+        ? bank.nameEn
+        : (bank.nameTh.isNotEmpty ? bank.nameTh : code);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    final promptPaySales = _promptPaySales;
 
-    if (_promptPaySales.isEmpty) {
+    if (promptPaySales.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -70,16 +88,16 @@ class ReportPromptPayCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: _MetricTile(
-                    label: l10n.salesCount(_promptPaySales.length),
+                    label: l10n.salesCount(promptPaySales.length),
                     value: null,
-                    count: _promptPaySales.length,
+                    count: promptPaySales.length,
                     currency: currency,
                     theme: theme,
                   ),
                 ),
                 Expanded(
                   child: _MetricTile(
-                    label: 'Average',
+                    label: l10n.reportAverage,
                     value: _average,
                     currency: currency,
                     theme: theme,
@@ -89,13 +107,13 @@ class ReportPromptPayCard extends StatelessWidget {
             ),
             const Divider(height: 32),
             Text(
-              'Recent',
+              l10n.reportRecent,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
-            ..._promptPaySales.take(5).map((s) {
+            ...promptPaySales.take(5).map((s) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
@@ -118,8 +136,7 @@ class ReportPromptPayCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          pp.thaiBankByCode(s.sendingBankCode!)?.nameTh ??
-                              s.sendingBankCode!,
+                          _bankLabel(context, s.sendingBankCode!),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.tertiary,
                           ),
@@ -145,7 +162,7 @@ class ReportPromptPayCard extends StatelessWidget {
                       ),
                     const SizedBox(width: 8),
                     MoneyText(
-                      value: s.totalAmount,
+                      value: s.totalAmount.value,
                       currency: currency,
                       style: theme.textTheme.bodyMedium,
                     ),
@@ -190,7 +207,7 @@ class _MetricTile extends StatelessWidget {
         if (value != null)
           MoneyText(
             value: value!,
-            currency: '',
+            currency: currency,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
             ),

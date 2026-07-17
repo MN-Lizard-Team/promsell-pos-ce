@@ -1,27 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 
-Future<bool> showConfirmDeleteDialog(
-  BuildContext context,
-  String productName,
-) async {
+/// Product delete confirm — title question + product name as [detail].
+Future<bool> showConfirmDeleteDialog(BuildContext context, String productName) {
   final l10n = context.l10n;
-  final result = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(l10n.deleteProduct),
-      content: Text(l10n.confirmDeleteProduct(productName)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: Text(l10n.delete),
-        ),
-      ],
-    ),
+  return showAppConfirm(
+    context,
+    title: l10n.deleteProductConfirmTitle,
+    message: '',
+    detail: productName,
+    confirmLabel: l10n.delete,
+    cancelLabel: l10n.cancel,
+    destructive: true,
+    confirmIcon: Icons.delete_outline_rounded,
   );
-  return result ?? false;
 }

@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 
 class SaleItem extends Equatable {
@@ -10,8 +12,8 @@ class SaleItem extends Equatable {
     required this.price,
     required this.qty,
     required this.subtotal,
-    this.discountAmount = 0.0,
-    this.vatAmount = 0.0,
+    this.discountAmount = Money.zero,
+    this.vatAmount = Money.zero,
     this.note,
     this.selectedOptions = const [],
     this.updatedAt,
@@ -24,11 +26,11 @@ class SaleItem extends Equatable {
   final String saleId;
   final String productId;
   final String productName;
-  final double price;
+  final Money price;
   final int qty;
-  final double subtotal;
-  final double discountAmount;
-  final double vatAmount;
+  final Money subtotal;
+  final Money discountAmount;
+  final Money vatAmount;
   final String? note;
   final List<SelectedProductOption> selectedOptions;
   final DateTime? updatedAt;
@@ -63,22 +65,22 @@ class Sale extends Equatable {
     required this.paymentMethod,
     this.receiptNumber,
     this.status = 'COMPLETED',
-    this.subtotalAmount = 0.0,
+    this.subtotalAmount = Money.zero,
     this.discountType,
     this.discountValue,
-    this.discountAmount = 0.0,
+    this.discountAmount = Money.zero,
     this.vatMode = 'NONE',
     this.vatRate = 0.0,
-    this.vatAmount = 0.0,
-    this.orderType = 'dinein',
+    this.vatAmount = Money.zero,
+    this.orderType = 'delivery',
     this.orderChannel = 'walkin',
     this.externalOrderRef,
     this.tableId,
     this.serviceChargeRate = 0.0,
-    this.serviceChargeAmount = 0.0,
+    this.serviceChargeAmount = Money.zero,
     this.customerId,
     this.promotionId,
-    this.promotionDiscountAmount = 0.0,
+    this.promotionDiscountAmount = Money.zero,
     this.amountReceived,
     this.changeAmount,
     this.note,
@@ -88,31 +90,32 @@ class Sale extends Equatable {
     this.voidReason,
     required this.createdAt,
     this.items = const [],
+    this.payments = const [],
   });
 
   final String id;
   final String? receiptNumber;
   final String status;
-  final double subtotalAmount;
+  final Money subtotalAmount;
   final String? discountType;
-  final double? discountValue;
-  final double discountAmount;
+  final double? discountValue; // Can be % or flat amount — stays double
+  final Money discountAmount;
   final String vatMode;
-  final double vatRate;
-  final double vatAmount;
+  final double vatRate; // Rate/percentage — stays double
+  final Money vatAmount;
   final String orderType;
   final String orderChannel;
   final String? externalOrderRef;
   final String? tableId;
-  final double serviceChargeRate;
-  final double serviceChargeAmount;
+  final double serviceChargeRate; // Rate/percentage — stays double
+  final Money serviceChargeAmount;
   final String? customerId;
   final String? promotionId;
-  final double promotionDiscountAmount;
-  final double totalAmount;
+  final Money promotionDiscountAmount;
+  final Money totalAmount;
   final String paymentMethod;
-  final double? amountReceived;
-  final double? changeAmount;
+  final Money? amountReceived;
+  final Money? changeAmount;
   final String? note;
   final String? paymentReference;
   final String? sendingBankCode;
@@ -120,8 +123,13 @@ class Sale extends Equatable {
   final String? voidReason;
   final DateTime createdAt;
   final List<SaleItem> items;
+  final List<SalePayment> payments;
 
   bool get isVoided => status == 'VOIDED';
+
+  /// Single-tender: first payment method; multi may use header [paymentMethod].
+  String get primaryPaymentMethod =>
+      payments.length == 1 ? payments.first.method : paymentMethod;
 
   @override
   List<Object?> get props => [
@@ -155,5 +163,6 @@ class Sale extends Equatable {
     voidReason,
     createdAt,
     items,
+    payments,
   ];
 }

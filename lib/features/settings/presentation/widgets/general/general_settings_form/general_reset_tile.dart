@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
@@ -71,49 +73,30 @@ class GeneralResetTile extends StatelessWidget {
     );
   }
 
-  void _showResetConfirmDialog(
+  Future<void> _showResetConfirmDialog(
     BuildContext context,
     Settings s,
     SettingsThemeExtension st,
     AppLocalizations l10n,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.generalSettingsResetTitle),
-        content: Text(l10n.generalSettingsResetConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              onUpdate(
-                s.copyWith(
-                  locale: const Locale('th'),
-                  themeMode: ThemeMode.system,
-                  accessibilityMode: false,
-                ),
-              );
-              Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.settingsSaved),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
-            },
-            style: FilledButton.styleFrom(backgroundColor: st.softAccent),
-            child: Text(l10n.save),
-          ),
-        ],
+  ) async {
+    final confirmed = await showAppConfirm(
+      context,
+      title: l10n.generalSettingsResetTitle,
+      message: l10n.generalSettingsResetConfirm,
+      confirmLabel: l10n.generalSettingsReset,
+      cancelLabel: l10n.cancel,
+      destructive: true,
+      confirmIcon: Icons.restart_alt,
+    );
+    if (!confirmed || !context.mounted) return;
+    HapticFeedback.lightImpact();
+    onUpdate(
+      s.copyWith(
+        locale: const Locale('th'),
+        themeMode: ThemeMode.system,
+        accessibilityMode: false,
       ),
     );
+    AppSnackBar.success(context, l10n.settingsSaved);
   }
 }

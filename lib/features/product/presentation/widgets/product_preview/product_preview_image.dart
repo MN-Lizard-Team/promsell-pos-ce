@@ -7,8 +7,6 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/utils/category_style_resolver.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_icon_data.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
-    show parseCategoryColor;
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 /// Full-width product image for the preview page.
@@ -319,7 +317,6 @@ class PreviewOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = context.l10n;
 
     return Positioned(
       bottom: 0,
@@ -352,38 +349,16 @@ class PreviewOverlay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (hasImage)
-              Row(
-                children: [
-                  if (category != null) ...[
-                    _CategoryChip(category: category!, onDark: true),
-                  ] else
-                    Text(
-                      l10n.noCategory,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  const Spacer(),
-                  StatusChip(active: product.isActive),
+            Row(
+              children: [
+                const Spacer(),
+                StatusChip(active: product.isActive),
+                if (product.isRecommended) ...[
+                  const SizedBox(width: 6),
+                  const RecommendedChip(),
                 ],
-              )
-            else
-              Row(
-                children: [
-                  if (category != null) ...[
-                    _CategoryChip(category: category!, onDark: false),
-                  ] else
-                    Text(
-                      l10n.noCategory,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.secondary,
-                      ),
-                    ),
-                  const Spacer(),
-                  StatusChip(active: product.isActive),
-                ],
-              ),
+              ],
+            ),
           ],
         ),
       ),
@@ -494,7 +469,10 @@ class _PreviewError extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, size: 16),
-              label: const Text('Retry', style: TextStyle(fontSize: 12)),
+              label: Text(
+                context.l10n.retry,
+                style: const TextStyle(fontSize: 12),
+              ),
               style: OutlinedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(
@@ -556,74 +534,31 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({required this.category, required this.onDark});
-
-  final Category category;
-  final bool onDark;
+class RecommendedChip extends StatelessWidget {
+  const RecommendedChip({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
-    final hasDbColor = category.color != null && category.color!.isNotEmpty;
-    final dbColor = parseCategoryColor(category.color);
-    final resolvedStyle = CategoryStyleResolver.resolve(category.name);
-    final hasResolvedColor = resolvedStyle.color != Colors.transparent;
-
-    final color = hasDbColor
-        ? dbColor
-        : hasResolvedColor
-        ? resolvedStyle.color
-        : null;
-
-    final icon = parseCategoryIcon(category.iconName);
-
-    if (color == null) {
-      final fallbackColor = onDark
-          ? Colors.white.withValues(alpha: 0.8)
-          : theme.colorScheme.secondary;
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: fallbackColor),
-          const SizedBox(width: 4),
-          Text(
-            category.name,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: fallbackColor,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      );
-    }
-
-    final chipColor = onDark
-        ? color.withValues(alpha: 0.25)
-        : color.withValues(alpha: 0.12);
-    final borderColor = onDark
-        ? color.withValues(alpha: 0.6)
-        : color.withValues(alpha: 0.4);
-    final textColor = onDark ? Colors.white : color;
-
+    final color = theme.colorScheme.tertiary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: chipColor,
+        color: color.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: borderColor, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: textColor),
-          const SizedBox(width: 4),
+          const Icon(Icons.star_rounded, size: 11, color: Colors.white),
+          const SizedBox(width: 3),
           Text(
-            category.name,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: textColor,
+            l10n.saleRecommendedFilter,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
-              fontSize: 12,
             ),
           ),
         ],

@@ -3,32 +3,40 @@
   "appTitle": "Promsell POS",
   "appTagline": "ร้านค้าอัจฉริยะ",
   "loading": "กำลังโหลด...",
-
   "navHome": "หน้าหลัก",
   "navSale": "ขายสินค้า",
   "navProducts": "สินค้า",
   "navHistory": "ประวัติ",
   "navReport": "รายงาน",
   "navSettings": "ตั้งค่า",
-
   "salePageTitle": "ขายสินค้า",
+  "salePageSubtitle": "เพิ่มสินค้าและทำรายการขาย",
+  "saleBillNoteTitle": "หมายเหตุบิล",
   "dragToResizeCart": "ลากเพื่อปรับขนาดตะกร้า",
   "exitCompactMode": "ออกจากโหมดกะทัดรัด",
   "exitCompactModeConfirm": "สลับเป็นมุมมองตะกร้าปกติ?",
   "autoConfirmingIn": "ยืนยันอัตโนมัติใน {secs}...",
   "@autoConfirmingIn": {
-    "placeholders": { "secs": { "type": "int" } }
+    "placeholders": {
+      "secs": {
+        "type": "int"
+      }
+    }
   },
   "clearCart": "ล้าง",
   "confirmClearCart": "ยืนยันล้างตะกร้าทั้งหมด?",
-  "cartTitle": "ตะกร้า",
+  "cartTitle": "บิล",
   "cartEmpty": "ตะกร้าว่าง",
   "backToSale": "กลับไปขายสินค้า",
   "checkoutButton": "ชำระเงิน",
   "addItems": "เพิ่มสินค้า",
   "itemRemoved": "ลบ {name} แล้ว",
   "@itemRemoved": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "undo": "ยกเลิก",
   "allCategories": "ทั้งหมด",
@@ -38,25 +46,36 @@
   "saleSavedSuccess": "บันทึกการขายเรียบร้อย",
   "productAddedToCart": "เพิ่ม {name} แล้ว",
   "@productAddedToCart": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
-  "tapProductToAdd": "แตะสินค้าเพื่อเพิ่มลงตะกร้า",
+  "tapProductToAdd": "แตะสินค้าเพื่อเพิ่มในบิลนี้",
   "noMatchingProducts": "ไม่พบสินค้าที่ตรงกัน",
   "stockLimitReached": "ถึงจำนวนคงเหลือแล้ว",
   "cartTotal": "รวม",
   "checkout": "ชำระเงิน ({count})",
   "@checkout": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "paymentTitle": "ชำระเงิน",
-  "totalAmount": "ยอดรวม",
+  "totalAmount": "ยอดชำระ",
   "cash": "เงินสด",
   "transfer": "โอน",
   "card": "บัตร",
   "receivedAmount": "รับเงินมา ({currency})",
   "@receivedAmount": {
-    "placeholders": { "currency": { "type": "String" } }
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
   },
   "change": "เงินทอน",
   "confirmPayment": "ยืนยันการชำระ",
@@ -66,7 +85,6 @@
   "saleTimeout": "หมดเวลารอการชำระเงิน กรุณาลองอีกครั้ง",
   "insufficientCash": "เงินที่รับมายังไม่ครบยอด",
   "remainingAmount": "ยอดขาด",
-
   "productsTitle": "สินค้า",
   "searchProducts": "ค้นหาสินค้า...",
   "recentSearches": "ค้นหาล่าสุด",
@@ -76,15 +94,24 @@
   "noCategory": "ไม่มีหมวดหมู่",
   "stockLabel": "คงเหลือ: {count}",
   "@stockLabel": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "stockRemaining": "เหลือ: {count}",
   "@stockRemaining": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "itemNoteLabel": "หมายเหตุสินค้า",
   "itemNoteHint": "เพิ่มหมายเหตุสำหรับสินค้านี้",
   "duplicateItem": "คัดลอกรายการแล้ว",
+  "duplicateItemAction": "คัดลอกรายการ",
   "clear": "ล้าง",
   "edit": "แก้ไข",
   "delete": "ลบ",
@@ -93,10 +120,29 @@
   "deleteProduct": "ลบสินค้า",
   "confirmDeleteProduct": "ยืนยันการลบ \"{name}\"?",
   "@confirmDeleteProduct": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "productDeactivateConfirm": "ปิดการใช้งาน \"{name}\"? สินค้านี้จะถูกซ่อนจากหน้าขาย",
+  "@productDeactivateConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "productActivateConfirm": "เปิดใช้งาน \"{name}\"? สินค้านี้จะแสดงบนหน้าขาย",
+  "@productActivateConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "cancel": "ยกเลิก",
-
   "addProduct": "เพิ่มสินค้า",
   "editProductTitle": "แก้ไขสินค้า",
   "productNameLabel": "ชื่อสินค้า *",
@@ -118,7 +164,11 @@
   "quickEditPriceInvalid": "ราคาไม่ถูกต้อง",
   "priceLabel": "ราคา ({currency}) *",
   "@priceLabel": {
-    "placeholders": { "currency": { "type": "String" } }
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
   },
   "priceRequired": "กรุณาใส่ราคา",
   "invalidPrice": "ราคาไม่ถูกต้อง",
@@ -143,30 +193,39 @@
   "productAddError": "เพิ่มสินค้าไม่สำเร็จ",
   "productDeleteError": "ลบสินค้าไม่สำเร็จ",
   "stockZeroWarning": "สินค้าจะไม่แสดงในหน้าขายเมื่อสต็อก = 0",
-
   "historyTitle": "ประวัติการขาย",
   "searchHistoryHint": "ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…",
-  "noSearchResults": "ไม่พบรายการขายที่ตรงกัน",
+  "noSearchResults": "ไม่พบการตั้งค่า",
   "noSalesYet": "ยังไม่มีรายการขาย",
   "noDailyClosesYet": "ยังไม่มีการปิดรับ",
   "noteLabel": "หมายเหตุ: {note}",
   "@noteLabel": {
-    "placeholders": { "note": { "type": "String" } }
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
   },
-
   "reportTitle": "รายงาน",
   "totalRevenue": "ยอดขายรวม",
   "salesCount": "{count} รายการ",
   "@salesCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "byPaymentMethod": "แยกตามวิธีชำระ",
   "topProducts": "สินค้าขายดี (Top 5)",
   "units": "{count} ชิ้น",
   "@units": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "settingsTitle": "ตั้งค่า",
   "searchSettings": "ค้นหาการตั้งค่า...",
   "pressBackAgainToExit": "กดย้อนกลับอีกครั้งเพื่อออก",
@@ -237,48 +296,80 @@
   "vatModeNone": "ไม่มี",
   "vatModeInclusive": "รวมแล้ว",
   "vatModeExclusive": "แยกนอก",
-
   "voided": "ยกเลิกแล้ว",
   "voidSale": "ยกเลิกบิล",
   "voidSaleConfirm": "ยกเลิกบิลนี้? สต็อกจะถูกคืน",
-  "voidReasonHint": "เหตุผลในการยกเลิก (ไม่บังคับ)",
+  "voidReason": "เหตุผลที่ยกเลิก",
+  "voidReasonHint": "ระบุเหตุผลที่ยกเลิก",
+  "voidReasonRequired": "กรุณาระบุเหตุผลที่ยกเลิก",
+  "voidedAtLabel": "ยกเลิกเมื่อ {datetime}",
+  "@voidedAtLabel": {
+    "placeholders": {
+      "datetime": {
+        "type": "String"
+      }
+    }
+  },
   "voidSuccess": "ยกเลิกบิลแล้ว",
   "voidedSalesCount": "{count} รายการยกเลิก",
   "@voidedSalesCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "voidedTotal": "ยอดที่ถูกยกเลิก",
   "netRevenue": "ยอดขายสุทธิ",
-
   "adjustStock": "ปรับสต็อก",
   "adjustStockTitle": "ปรับสต็อก: {name}",
   "@adjustStockTitle": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "adjustQtyLabel": "จำนวนที่เปลี่ยน (+/-)",
   "adjustReasonLabel": "เหตุผล *",
   "adjustReasonRequired": "กรุณาระบุเหตุผล",
   "adjustSuccess": "ปรับสต็อกแล้ว",
-
   "inventoryLog": "ประวัติสต็อก",
   "noInventoryLogs": "ยังไม่มีประวัติสต็อก",
-
   "invLogTypeSale": "ขาย",
   "invLogTypeVoidReversal": "ยกเลิกบิล",
   "invLogTypeStockIn": "รับสต็อก",
   "invLogTypeStockOut": "ตัดสต็อก",
-
+  "invLogReasonProductStockEdited": "แก้ไขสต็อกสินค้า",
+  "invLogSaleRef": "บิล · {ref}",
+  "@invLogSaleRef": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "productHistoryShowingLatest": "แสดง {count} รายการล่าสุด",
+  "@productHistoryShowingLatest": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productHistoryViewAll": "ดูประวัติทั้งหมด",
   "productFormSectionBasicInfo": "ข้อมูลพื้นฐาน",
-  "tabInfo": "ข้อมูล",
+  "tabInfo": "สินค้า",
   "tabPrice": "ราคา",
   "tabStock": "สต็อก",
+  "tabCodes": "รหัส",
   "productFormSectionDetails": "รายละเอียด",
   "productFormImageUrlLabel": "URL รูปภาพ (ไม่บังคับ)",
-
-  "trackStock": "ติดตามสต็อค",
+  "trackStock": "ติดตามสต็อก",
   "trackStockHint": "ปิดเพื่อสินค้าประเภทบริการ (ไม่ตัดสต็อค)",
   "trackStockDisableConfirm": "การปิดการติดตามสต็อกจะแช่แข็งค่าสต็อกปัจจุบัน คุณสามารถเปิดใหม่ได้ในภายหลังเพื่อติดตามต่อ",
   "stockTrackingDisabled": "การติดตามสต็อกปิดอยู่ เปิดเพื่อจัดการจำนวนสต็อก",
+  "stockNotTracked": "ไม่ติดตามสต็อก",
   "settingsStockPolicy": "นโยบายสต็อค",
   "allowOversell": "อนุญาตขายเกินสต็อค",
   "allowOversellHint": "อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้",
@@ -286,14 +377,17 @@
   "lowStockWarning": "สต็อคใกล้หมด",
   "inStock": "มีสินค้า",
   "codesCardTitle": "SKU & บาร์โค้ด",
-
   "discountSectionLabel": "ส่วนลด",
   "discountDialogTitle": "ใส่ส่วนลด",
   "discountTypePercent": "% ประเภทเปอร์เซ็นต์",
   "discountTypeAmount": "บาท",
   "discountPreview": "หลังหัก: {amount}",
   "@discountPreview": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "discountApply": "ใช้ส่วนลด",
   "discountClear": "ลบส่วนลด",
@@ -301,7 +395,11 @@
   "applyCartDiscount": "เพิ่มส่วนลดทั้งบิล",
   "discountLabel": "-{amount}",
   "@discountLabel": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "discountValueRequired": "กรุณาใส่จำนวนส่วนลด",
   "discountValueInvalid": "ส่วนลดไม่ถูกต้อง",
@@ -326,8 +424,7 @@
   "addPresetValue": "เพิ่มค่า",
   "receiptItemDiscounts": "ส่วนลดรายการ",
   "receiptCartDiscount": "ส่วนลดบิล",
-
-  "draftsTitle": "บิลที่บันทึก",
+  "draftsTitle": "บิลเปิด",
   "newDraft": "บิลใหม่",
   "renameDraft": "เปลี่ยนชื่อ",
   "deleteDraft": "ลบบิล",
@@ -336,17 +433,16 @@
   "activeDraftLabel": "ใช้งานอยู่",
   "draftNameHint": "ชื่อบิล (ไม่บังคับ)",
   "switchDraft": "สลับไปบิลนี้",
-
   "cartCleared": "ล้างตะกร้าแล้ว",
-  "undo": "เรียกคืน",
-  "itemRemoved": "ลบรายการแล้ว",
   "removeItem": "ลบรายการ",
   "itemsLabel": "รายการ",
   "searchCartItems": "ค้นหาสินค้าในตะกร้า...",
   "searchDrafts": "ค้นหาบิล...",
-  "untitledDraft": "บิลใหม่",
+  "untitledDraft": "บิล",
   "noMatchingItems": "ไม่พบสินค้าที่ตรงกัน",
   "noMatchingDrafts": "ไม่พบบิลที่ตรงกัน",
+  "noSavedBills": "ยังไม่มีบิลที่บันทึก",
+  "noSavedBillsHint": "พักบิลจากหน้าขายเพื่อเก็บไว้ที่นี่",
   "groupView": "มุมมองแบบกลุ่ม",
   "listView": "มุมมองรายการ",
   "gridView": "มุมมองตาราง",
@@ -359,30 +455,60 @@
   "atStockLimit": "สินค้าหมดสต็อก",
   "justNow": "เมื่อสักครู่",
   "timeAgoMinutes": "{m} นาทีที่แล้ว",
-  "@timeAgoMinutes": {"placeholders": {"m": {"type": "int"}}},
+  "@timeAgoMinutes": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
   "timeAgoHours": "{h} ชั่วโมงที่แล้ว",
-  "@timeAgoHours": {"placeholders": {"h": {"type": "int"}}},
+  "@timeAgoHours": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
   "timeAgoDays": "{d} วันที่แล้ว",
-  "@timeAgoDays": {"placeholders": {"d": {"type": "int"}}},
+  "@timeAgoDays": {
+    "placeholders": {
+      "d": {
+        "type": "int"
+      }
+    }
+  },
   "searchResultsCount": "{n} รายการ",
-  "@searchResultsCount": {"placeholders": {"n": {"type": "int"}}},
+  "@searchResultsCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "confirmPaymentAmount": "ยืนยัน {currency}{amount}",
   "@confirmPaymentAmount": {
     "placeholders": {
-      "currency": { "type": "String" },
-      "amount": { "type": "String" }
+      "currency": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "discountPreviewPercent": "หลังหัก: {value}%",
   "@discountPreviewPercent": {
-    "placeholders": { "value": { "type": "String" } }
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   },
-
   "pickImageGallery": "เลือกจากคลังรูป",
   "pickImageCamera": "ถ่ายรูป",
   "removeImage": "ลบรูป",
   "imagePickError": "ไม่สามารถเลือกรูปได้",
-
   "promptpay": "พร้อมเพย์",
   "settingsPromptpayId": "PromptPay ID",
   "settingsPromptpayIdHint": "เบอร์โทรหรือเลขบัตรประชาชน",
@@ -433,11 +559,9 @@
   "showLess": "แสดงน้อยลง",
   "itemsCount": "{count} รายการ",
   "totalDiscountLabel": "ส่วนลดทั้งหมด",
-
   "settingsReceiptSize": "ขนาดใบเสร็จ",
   "receiptSize80mm": "80mm (กระดาษความร้อน)",
   "receiptSizeA4": "A4",
-
   "settingsMaxDrafts": "บิลสูงสุด",
   "settingsCompactCartMode": "ตะกร้าแบบ Delivery",
   "settingsUltraCompactMode": "โหมดกะทัดรัดมาก",
@@ -461,6 +585,7 @@
   "imageQualityOriginal": "ต้นฉบับ",
   "imageExample": "ตัวอย่าง",
   "settingsBackup": "สำรองข้อมูล",
+  "settingsSetupReadiness": "ความพร้อมร้าน",
   "settingsData": "ข้อมูล",
   "exportDatabase": "ส่งออกฐานข้อมูล (สำรองข้อมูลเต็มรูปแบบ)",
   "exportSalesCsv": "ส่งออกยอดขาย (CSV)",
@@ -473,7 +598,11 @@
   "backupReminderTitle": "แนะนำสำรองข้อมูล",
   "backupReminderMessage": "ยังไม่ได้สำรองข้อมูลมากกว่า {days} วัน",
   "@backupReminderMessage": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "settingsBackupReminderDays": "เตือนสำรองข้อมูล (วัน, 0=ปิด)",
   "backupWeekly": "รายสัปดาห์",
@@ -486,7 +615,11 @@
   "backupYesterday": "เมื่อวาน",
   "backupDaysAgo": "{days} วันที่แล้ว",
   "@backupDaysAgo": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "backupStatusSafe": "ปลอดภัย",
   "backupStatusWarning": "ใกล้ครบกำหนด",
@@ -497,7 +630,11 @@
   "backupFrequency": "ความถี่",
   "backupEveryNDays": "ทุก {n} วัน",
   "@backupEveryNDays": {
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "backupOff": "ปิด",
   "backupActionTitle": "สำรองข้อมูลด้วยตนเอง",
@@ -505,16 +642,19 @@
   "backupEncryptionTitle": "การเข้ารหัสสำรองข้อมูล",
   "backupEncryptionLabel": "เข้ารหัสไฟล์สำรอง",
   "backupEncryptionDesc": "ปกป้องไฟล์สำรองด้วยการเข้ารหัส AES-256-GCM (ต้องใส่ PIN)",
-  "backupInfoDescription": "สำรองข้อมูลเป็นประจำเพื่อป้องกันข้อมูลการขาย สินค้า และการตั้งค่าของคุณ",
+  "backupInfoDescription": "ส่งออกสำรองข้อมูลเป็นประจำ (แนะนำเข้ารหัส PIN อย่างน้อย 6 ตัว) กู้คืนบนเครื่องเดิมได้เมื่อยังมีคีย์เข้ารหัส ห้ามใช้ข้ามเครื่องหลังถอนแอป",
   "exportSuccess": "ส่งออกสำเร็จ",
   "bulkSelected": "เลือกแล้ว {count} รายการ",
   "@bulkSelected": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "bulkClearDiscount": "ล้างส่วนลด",
   "bulkDelete": "ลบรายการ",
   "reorderItem": "ลากเพื่อจัดเรียง",
-
   "dailyCloseTitle": "ปิดยอดประจำวัน",
   "dailyCloseHistoryTitle": "ประวัติปิดยอด",
   "closeToday": "ปิดยอดวันนี้",
@@ -525,8 +665,6 @@
   "reopenDayConfirmTitle": "เปิดยอดใหม่?",
   "reopenDayConfirmMessage": "การดำเนินการนี้จะปลดล็อกวัน การขายจะถูกนับเข้ายอดใหม่",
   "confirm": "ยืนยัน",
-  "cancel": "ยกเลิก",
-
   "dbHealthTitle": "สุขภาพฐานข้อมูล",
   "dbHealthFileSize": "ขนาดไฟล์ฐานข้อมูล",
   "dbHealthLarge": "ใหญ่",
@@ -536,7 +674,6 @@
   "dbHealthRowCounts": "จำนวนแถว",
   "dbHealthVacuum": "บีบอัดฐานข้อมูล",
   "dbHealthVacuumDescription": "บีบอัดจะสร้างไฟล์ฐานข้อมูลใหม่เพื่อคืนพื้นที่ว่างและลดการแตกกระจาย",
-
   "onboardingWelcome": "ยินดีต้อนรับ",
   "onboardingShopInfoTitle": "ข้อมูลร้าน",
   "onboardingShopNameLabel": "ชื่อร้าน",
@@ -575,18 +712,29 @@
   "onboardingNone": "ไม่มี",
   "onboardingInclusive": "รวมในราคา",
   "onboardingExclusive": "แยกจากราคา",
-
   "dailyCloseLoadError": "ข้อผิดพลาด: {message}",
   "@dailyCloseLoadError": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "dailyCloseSales": "ยอดขาย: {count}",
   "@dailyCloseSales": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "dailyCloseVoids": "ยกเลิก: {count}",
   "@dailyCloseVoids": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "settingsDailyCloseTitle": "ปิดยอดประจำวัน",
   "settingsDailyCloseSubtitle": "การตรวจสอบยอดประจำวัน",
@@ -597,11 +745,19 @@
   "dbHealthVacuumSuccess": "บีบอัดฐานข้อมูลสำเร็จ",
   "dbHealthVacuumFailed": "บีบอัดล้มเหลว: {error}",
   "@dbHealthVacuumFailed": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "dbHealthError": "ข้อผิดพลาด: {message}",
   "@dbHealthError": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "dayClosedMessage": "วันนี้ปิดยอดแล้ว กรุณาเปิดยอดใหม่เพื่อขายต่อ",
   "tapToSet": "แตะเพื่อตั้งค่า",
@@ -612,7 +768,6 @@
   "@addressHint": {},
   "phoneHint": "081-234-5678",
   "@phoneHint": {},
-
   "categoryManagementTitle": "จัดการหมวดหมู่",
   "noCategoriesYet": "ยังไม่มีหมวดหมู่",
   "uncategorized": "ไม่มีหมวดหมู่",
@@ -623,11 +778,19 @@
   "deleteCategory": "ลบหมวดหมู่",
   "confirmDeleteCategory": "คุณแน่ใจหรือว่าจะลบ \"{name}\"?",
   "@confirmDeleteCategory": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "bulkDeleteConfirm": "ลบ {count} หมวดหมู่?",
   "@bulkDeleteConfirm": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "categoryName": "ชื่อหมวดหมู่",
   "categoryNameRequired": "กรุณาใส่ชื่อหมวดหมู่",
@@ -649,7 +812,6 @@
   "tryDifferentKeyword": "ลองคำค้นหาอื่น",
   "clearSearch": "ล้างการค้นหา",
   "inactive": "ไม่ใช้งาน",
-  "noCategory": "ไม่มีหมวดหมู่",
   "tapToZoom": "แตะเพื่อขยาย",
   "@tapToZoom": {},
   "imageError": "ไม่สามารถโหลดรูปได้",
@@ -663,9 +825,13 @@
   "barcodeLabel": "บาร์โค้ด",
   "costLabel": "ต้นทุน ({currency})",
   "@costLabel": {
-    "placeholders": { "currency": { "type": "String" } }
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
   },
-  "costHelper": "ใช้คำนวณกำไรขั้นต้น",
+  "costHelper": "ใช้คำนวณกำไรขั้นต้น (ไม่บังคับ)",
   "outOfStockShort": "หมด",
   "productsCount": "สินค้า",
   "lowStock": "เหลือน้อย",
@@ -680,7 +846,7 @@
   "scanBarcode": "สแกนบาร์โค้ด",
   "barcodeScannerHint": "จัดบาร์โค้ดให้อยู่ในกรอบ",
   "barcodeNotFound": "ไม่พบสินค้าที่มีบาร์โค้ดนี้",
-  "duplicateBarcode": "บาร์โค้ดนี้มีอยู่แล้วในสินค้าอื่น",
+  "duplicateBarcode": "บาร์โค้ดนี้มีอยู่แล้ว",
   "enterManually": "ป้อนด้วยตนเอง",
   "enterBarcodeManually": "ป้อนบาร์โค้ดด้วยตนเอง",
   "cameraPermissionDenied": "ต้องอนุญาตใช้กล้องเพื่อสแกนบาร์โค้ด กรุณาเปิดสิทธิ์การเข้าถึงกล้องในการตั้งค่า",
@@ -695,12 +861,20 @@
   "focusCamera": "โฟกัส",
   "productFound": "เพิ่ม {name} แล้ว",
   "@productFound": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "productNotFoundShort": "ไม่พบสินค้า",
   "scanCount": "สแกนแล้ว {count} ชิ้น",
   "@scanCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "done": "เสร็จ",
   "torchOn": "เปิดไฟฉาย",
@@ -754,7 +928,6 @@
   "barcodeHelpNoBarcodeBody": "ถ้าสินค้าไม่มีบาร์โค้ด คุณสามารถสร้างบาร์โค้ดอัตโนมัติได้ในหน้าข้อมูลสินค้า (แท็บขั้นสูง) เพื่อให้สามารถสแกนได้ในภายหลังที่หน้าขาย",
   "barcodeHelper": "สแกนหรือพิมพ์บาร์โค้ดบนบรรจุภัณฑ์สินค้า ถ้าไม่มี ให้แตะ สร้างบาร์โค้ด",
   "skuHelper": "รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SHIRT-RED-L",
-  "save": "บันทึก",
   "imagePicked": "เพิ่มรูปภาพแล้ว",
   "imagePickFailed": "ไม่สามารถเพิ่มรูปภาพได้ โปรดลองอีกครั้ง",
   "storagePermissionDenied": "ต้องอนุญาตเข้าถึงคลังรูปเพื่อเลือกรูป กรุณาเปิดสิทธิ์การเข้าถึงในการตั้งค่า",
@@ -790,13 +963,14 @@
   "agplShort": "AGPL-3.0",
   "copyrightNotice": "© 2026 Promsell POS CE · AGPL-3.0",
   "dataCollection": "การเก็บข้อมูล",
-  "dataCollectionBody": "Promsell ไม่เก็บข้อมูลส่วนบุคคลใดๆ ข้อมูลการขาย สินค้าคงคลัง และการตั้งค่าทั้งหมดจัดเก็บไว้ในเครื่องของคุณด้วย SQLite ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์ของเรา",
+  "dataCollectionBody": "Promsell ไม่เก็บและไม่ส่งข้อมูลส่วนบุคคลไปยังเซิร์ฟเวอร์ของผู้พัฒนา ข้อมูลการขาย สต็อก การตั้งค่า และข้อมูลร้าน/ลูกค้าที่คุณกรอก (ถ้ามี) จัดเก็บบนเครื่องนี้เท่านั้น (SQLite/SQLCipher) จะไม่ออกจากเครื่อง เว้นแต่คุณส่งออกหรือแชร์เอง",
+  "customerDataTitle": "ข้อมูลลูกค้า",
+  "customerDataBody": "หากใช้ฟีเจอร์ลูกค้า ชื่อ เบอร์โทร และอีเมลจะเก็บบนเครื่องนี้เท่านั้น ลบรายชื่อได้ตลอดเวลา และไม่ส่งไปเซิร์ฟเวอร์ของผู้พัฒนา",
   "thirdPartyServices": "บริการภายนอก",
   "thirdPartyServicesBody": "เราไม่ใช้บริการวิเคราะห์ข้อมูล โฆษณา หรือคลาวด์ แอปทำงานแบบออฟไลน์ทั้งหมด",
   "dataStorage": "การจัดเก็บข้อมูล",
-  "dataStorageBody": "ข้อมูลของคุณอยู่ในเครื่อง คุณสามารถส่งออกหรือลบได้ตลอดเวลาผ่านฟีเจอร์สำรอง/กู้คืน รูปภาพสินค้าจัดเก็บในไดเรกทอรีส่วนตัวของแอปและมีการล้างแคชอัตโนมัติ (จำกัด 50MB) เพื่อป้องกันการใช้พื้นที่มากเกินไป",
-  "backupEncryptionTitle": "การเข้ารหัสสำรองข้อมูล (ไม่บังคับ)",
-  "backupEncryptionBody": "Promsell มีการเข้ารหัส AES-256-GCM สำหรับสำรองข้อมูล หากเปิดใช้งาน ข้อมูลสำรองจะถูกเข้ารหัสด้วยคีย์ที่ได้จาก PIN ที่ผู้ใช้กำหนดผ่าน PBKDF2 PIN ไม่ถูกจัดเก็บในเครื่องหรือส่งไปยังที่ใด หากลืม PIN จะไม่สามารถกู้คืนข้อมูลสำรองได้ — เราไม่สามารถรีเซ็ตหรือกู้คืนได้",
+  "dataStorageBody": "ข้อมูลของคุณอยู่ในเครื่อง ส่งออกหรือลบได้ผ่านสำรอง/กู้คืน การกู้คืนในแอปใช้ได้เฉพาะเครื่องเดิมขณะที่คีย์ SQLCipher ยังอยู่ ไม่รองรับข้ามเครื่องหรือหลังถอนการติดตั้ง/ล้างคีย์ รูปสินค้าใช้แคช LRU 50MB ในเครื่อง",
+  "backupEncryptionBody": "การส่งออกฐานข้อมูลใช้ AES-256-GCM ด้วยคีย์จาก PIN (PBKDF2 อย่างน้อย 6 ตัวอักษร) ค่าเริ่มต้นเปิดเข้ารหัสสำหรับติดตั้งใหม่ PIN ไม่ถูกเก็บหรือส่งออก หากลืม PIN จะกู้ไฟล์สำรองนั้นไม่ได้ ฐานข้อมูลจริงถูกปกป้องด้วย SQLCipher แยกต่างหาก",
   "permissionsTitle": "สิทธิ์การเข้าถึง",
   "permissionsCamera": "กล้อง: ใช้สำหรับถ่ายรูปสินค้าและสแกนบาร์โค้ด ไม่มีการส่งรูปภาพหรือข้อมูลสแกนออกจากเครื่อง",
   "permissionsStorage": "คลังข้อมูล: ใช้สำหรับบันทึกข้อมูลสำรองและใบเสร็จเท่านั้น",
@@ -805,11 +979,9 @@
   "crashLoggingBody": "หากแอปผิดพลาด ระบบจะบันทึกข้อความผิดพลาด สแตกเทรซ และเวลาที่เกิดเหตุลงในเครื่องของคุณ ข้อมูลที่อ่อนไหว (หมายเลขโทรศัพท์ PromptPay ID เลขบัตรประชาชน) จะถูกล้างโดยอัตโนมัติก่อนจัดเก็บ บันทึกข้อผิดพลาดไม่ถูกส่งออกจากเครื่อง คุณสามารถดู ส่งออก และล้างบันทึกได้ใน การตั้งค่า → เกี่ยวกับ → บันทึกข้อผิดพลาด",
   "contactTitle": "ติดต่อ",
   "contactBody": "สอบถามเพิ่มเติม: mnlizard.official@gmail.com",
-  "noSearchResults": "ไม่พบการตั้งค่า",
   "productPreviewSystemInfo": "ข้อมูลระบบ",
   "sellingPrice": "ราคาขาย",
   "profit": "กำไร",
-  "trackStock": "ติดตามสต็อก",
   "dateCreated": "วันที่สร้าง",
   "dateUpdated": "วันที่อัปเดต",
   "barcodeViewFull": "ดู",
@@ -817,6 +989,17 @@
   "barcodePrint": "พิมพ์",
   "productPreviewMargin": "กำไรขั้นต้น",
   "productPreviewStockValue": "มูลค่าสต็อก",
+  "productPreviewStockValueSale": "มูลค่าขายทั้งหมด",
+  "productPreviewPotentialProfit": "กำไรหากขายหมด",
+  "productPreviewTotalSold": "ยอดขายรวม",
+  "productPreviewTotalIn": "รับเข้ารวม",
+  "productPreviewTotalOut": "ปรับลดรวม",
+  "productPreviewLastUpdate": "อัปเดตสต็อกล่าสุด",
+  "productPreviewRecentMoves": "การเคลื่อนไหวล่าสุด",
+  "productPreviewMarkup": "เพิ่มราคาจากต้นทุน",
+  "productPreviewRoi": "ผลตอบแทนต่อต้นทุน",
+  "productPreviewTotalRevenue": "ราคารวมสต็อกทั้งหมด",
+  "productPreviewTotalProfit": "กำไรรวมจากสต็อก",
   "productPreviewStatus": "สถานะ",
   "productPreviewActive": "เปิดใช้งาน",
   "productPreviewCost": "ต้นทุน",
@@ -827,11 +1010,19 @@
   "invalidValue": "ค่าไม่ถูกต้อง",
   "discountPresetAdded": "เพิ่ม {label}",
   "@discountPresetAdded": {
-    "placeholders": { "label": { "type": "String" } }
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
   },
   "discountPresetRemoved": "ลบ {label}",
   "@discountPresetRemoved": {
-    "placeholders": { "label": { "type": "String" } }
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
   },
   "unsupportedFormat": "รูปแบบไม่รองรับ",
   "barcodeSavedSuccess": "บันทึกบาร์โค้ดสำเร็จ",
@@ -840,6 +1031,12 @@
   "barcodeSaveError": "ไม่สามารถบันทึกบาร์โค้ดได้",
   "barcodePrintError": "ไม่สามารถพิมพ์บาร์โค้ดได้",
   "inventoryValue": "มูลค่าคงคลัง",
+  "currencyBaht": "บาท",
+  "currencyDollar": "ดอลลาร์",
+  "currencyEuro": "ยูโร",
+  "currencyYen": "เยน",
+  "stockOnHand": "คงเหลือ",
+  "piecesLabel": "ชิ้น",
   "totalProducts": "สินค้าทั้งหมด",
   "todayRevenue": "ยอดขายวันนี้",
   "todaySalesCount": "บิด",
@@ -854,21 +1051,33 @@
   "filterStock": "สต็อก",
   "filterAll": "ทั้งหมด",
   "filterMore": "กรอง",
+  "productRowMenuQty": "กำหนดจำนวน",
+  "productRowMenuAdd": "เพิ่มลงตะกร้า",
+  "productRowMenu": "เมนูสินค้า",
+  "cartBottomLabel": "ตะกร้า",
+  "saleCategoryTabsLabel": "หมวดหมู่",
   "filterPageTitle": "กรองสินค้า",
   "filterReset": "รีเซ็ต",
   "filterShowResults": "ดูผลลัพธ์",
   "filterShowResultsCount": "ดูผลลัพธ์ ({count})",
   "@filterShowResultsCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "filterPriceRange": "ช่วงราคา",
   "filterPriceMin": "ต่ำสุด",
   "filterPriceMax": "สูงสุด",
   "filterActiveCount": "ใช้งาน {count}",
   "@filterActiveCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
-
   "businessType": "ประเภทธุรกิจ",
   "businessTypeRetail": "ค้าปลีก",
   "businessTypeRestaurant": "ร้านอาหาร",
@@ -947,7 +1156,6 @@
       }
     }
   },
-
   "customersTitle": "ลูกค้า",
   "customerSaved": "บันทึกลูกค้าแล้ว",
   "addCustomer": "เพิ่มลูกค้า",
@@ -984,7 +1192,44 @@
       }
     }
   },
-
+  "selectCustomer": "เลือกลูกค้า",
+  "clearCustomer": "ล้างลูกค้า",
+  "noCustomer": "ไม่มีลูกค้า",
+  "receiptLabelCustomer": "ลูกค้า",
+  "selectPromotion": "เลือกโปรโมชัน",
+  "clearPromotion": "ล้างโปรโมชัน",
+  "noActivePromotions": "ไม่มีโปรโมชันที่ใช้งานอยู่",
+  "promotionNotFound": "ไม่พบโปรโมชันหรือหมดอายุแล้ว",
+  "receiptLabelPromotion": "โปรโมชัน",
+  "receiptLabelPromotionDiscount": "ส่วนลดโปร",
+  "customerNotFound": "ไม่พบลูกค้าหรือถูกลบแล้ว",
+  "insufficientStock": "สต็อกไม่เพียงพอ",
+  "productNotFound": "ไม่พบสินค้า",
+  "productInactive": "สินค้าไม่ได้เปิดใช้งาน",
+  "saleNotFound": "ไม่พบรายการขาย",
+  "saleAlreadyVoided": "รายการนี้ถูกยกเลิกแล้ว",
+  "notFound": "ไม่พบข้อมูล",
+  "validationError": "ข้อมูลไม่ถูกต้อง",
+  "databaseError": "ข้อผิดพลาดฐานข้อมูล",
+  "backupFailed": "สำรองข้อมูลล้มเหลว",
+  "backupShareSubject": "ไฟล์สำรอง Promsell POS",
+  "backupPinTitle": "PIN เข้ารหัสสำรองข้อมูล",
+  "backupPinHint": "กรอก PIN เพื่อเข้ารหัสไฟล์สำรอง",
+  "backupPinRequired": "ต้องใส่ PIN เมื่อเปิดการเข้ารหัส",
+  "backupPinTooShort": "PIN ต้องมีอย่างน้อย 6 ตัวอักษร",
+  "backupPinConfirmHint": "ยืนยัน PIN",
+  "backupPinMismatch": "PIN ไม่ตรงกัน",
+  "backupEncryptionOffTitle": "ปิดการเข้ารหัสสำรองข้อมูล?",
+  "backupEncryptionOffConfirm": "ไฟล์สำรองที่ไม่ได้เข้ารหัสเสี่ยงถูกคัดลอกได้ง่ายขึ้นหากมีคนได้ไฟล์ คุณเปิดการเข้ารหัสใหม่ได้ภายหลัง",
+  "customerSpentLabel": "ใช้ไป {amount}",
+  "@customerSpentLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "tryDifferentSearch": "ลองคำค้นหาอื่น",
   "promotionsTitle": "โปรโมชัน",
   "promotionSaved": "บันทึกโปรโมชันแล้ว",
   "addPromotion": "เพิ่มโปรโมชัน",
@@ -1047,7 +1292,6 @@
       }
     }
   },
-
   "homeGreeting": "สวัสดี, {shopName}",
   "@homeGreeting": {
     "placeholders": {
@@ -1067,6 +1311,88 @@
   "homeCloseDay": "ปิดยอดวัน",
   "homePromotionBannerCta": "สร้างเลย",
   "homeCreatePromotion": "สร้างโปรโมชั่น",
+  "importProducts": "นำเข้าสินค้า",
+  "productTabAll": "ทั้งหมด",
+  "productTabCategory": "หมวดหมู่",
+  "productTabStock": "คลังสินค้า",
+  "productMenuEdit": "แก้ไข",
+  "productMenuPreview": "ดูตัวอย่าง",
+  "importFromCsv": "นำเข้าจาก CSV",
+  "selectCsvFile": "เลือกไฟล์ CSV",
+  "csvImportPreview": "ตัวอย่างข้อมูลที่จะนำเข้า",
+  "confirmImport": "ยืนยันนำเข้า",
+  "importSuccess": "นำเข้าสินค้า {count} รายการแล้ว",
+  "@importSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importError": "นำเข้าสินค้าไม่สำเร็จ",
+  "csvImportError": "อ่านไฟล์ CSV ไม่สำเร็จ",
+  "csvNoData": "ไม่พบข้อมูลในไฟล์ CSV",
+  "csvInvalidFormat": "รูปแบบไฟล์ไม่ถูกต้อง",
+  "csvFileTooLarge": "ไฟล์ใหญ่เกินไป (สูงสุด {maxMb} MB)",
+  "@csvFileTooLarge": {
+    "placeholders": {
+      "maxMb": {
+        "type": "int"
+      }
+    }
+  },
+  "csvTooManyRows": "มีแถวมากเกินไป (สูงสุด {maxRows} แถว)",
+  "@csvTooManyRows": {
+    "placeholders": {
+      "maxRows": {
+        "type": "int"
+      }
+    }
+  },
+  "csvRowErrorsSkipped": "จะข้าม {count} แถวที่มีข้อผิดพลาด",
+  "@csvRowErrorsSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "csvImportPartialSuccess": "นำเข้า {imported} รายการ; ล้มเหลว {errors} แถว",
+  "@csvImportPartialSuccess": {
+    "placeholders": {
+      "imported": {
+        "type": "int"
+      },
+      "errors": {
+        "type": "int"
+      }
+    }
+  },
+  "csvImportCategoriesCreated": "สร้างหมวดหมู่ {count} รายการ",
+  "@csvImportCategoriesCreated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "csvDownloadTemplate": "ดาวน์โหลดเทมเพลต",
+  "csvColumnLegend": "จำเป็น: ชื่อ, ราคา. ไม่บังคับ: รหัสสินค้า, บาร์โค้ด, ต้นทุน, สต็อก, หมวดหมู่, ติดตามสต็อก",
+  "csvImporting": "กำลังนำเข้า…",
+  "csvRowLabel": "แถว {row}: {message}",
+  "@csvRowLabel": {
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "csvTemplateShared": "เทมเพลตพร้อมแชร์แล้ว",
+  "csvParseErrorsTitle": "แถวที่จะถูกข้าม",
+  "csvPostImportErrorsTitle": "แถวที่นำเข้าไม่สำเร็จ",
   "homePromotionBannerSubtitle": "เพิ่มยอดขายได้ง่ายๆ",
   "homeNoActivePromotion": "ไม่มีโปรโมชันที่ใช้งานอยู่",
   "homePromotionOff": "ลด",
@@ -1076,6 +1402,501 @@
       "count": {
         "type": "int"
       }
+    }
+  },
+  "productDetailTitle": "รายละเอียดสินค้า",
+  "productTabInfo": "ข้อมูลสินค้า",
+  "productTabHistory": "ประวัติ",
+  "productDescriptionLabel": "รายละเอียด",
+  "productDescriptionEmpty": "ไม่มีรายละเอียด",
+  "productUnitLabel": "หน่วยนับ",
+  "productUnitDefault": "ชิ้น",
+  "productTabPointOfSale": "ขายหน้าร้าน",
+  "productTabPriceStock": "ราคาและสต็อก",
+  "productTabCodesMore": "รหัสและเพิ่มเติม",
+  "productRecommended": "สินค้าแนะนำ",
+  "productUnitOther": "อื่น ๆ",
+  "productCustomUnit": "ระบุหน่วยนับ",
+  "productTaxLabel": "ภาษี",
+  "productWeightLabel": "น้ำหนัก",
+  "productSizeLabel": "ขนาดสินค้า",
+  "productBrandLabel": "แบรนด์",
+  "productSupplierLabel": "ผู้จัดจำหน่าย",
+  "copyBarcode": "คัดลอกบาร์โค้ด",
+  "printBarcode": "พิมพ์บาร์โค้ด",
+  "productAdjustStock": "ปรับสต็อก",
+  "productNoHistory": "ไม่มีประวัติการเคลื่อนไหวสต็อก",
+  "normalProduct": "สินค้าปกติ",
+  "readyToSell": "พร้อมขาย",
+  "retailPrice": "ราคาขายปลีก",
+  "averageCost": "ต้นทุนเฉลี่ย",
+  "averageProfit": "กำไรต่อชิ้น",
+  "remainingStock": "สต็อกคงเหลือ",
+  "moveProduct": "ย้ายสินค้า",
+  "editProduct": "แก้ไขสินค้า",
+  "pieces": "{count} ชิ้น",
+  "@pieces": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resourceNotFound": "ไม่พบ{resource}",
+  "@resourceNotFound": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      }
+    }
+  },
+  "resourceNotFoundWithId": "ไม่พบ{resource} (ID: {id})",
+  "@resourceNotFoundWithId": {
+    "placeholders": {
+      "resource": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "businessRuleViolation": "ละเมิดกฎทางธุรกิจ",
+  "networkError": "ข้อผิดพลาดเครือข่าย",
+  "networkErrorDefault": "ข้อผิดพลาดเครือข่าย (สถานะ: {code})",
+  "@networkErrorDefault": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "fileSystemError": "ข้อผิดพลาดระบบไฟล์",
+  "permissionDenied": "ไม่ได้รับอนุญาต",
+  "permissionDeniedMessage": "กรุณาอนุญาตการเข้าถึง{permission}",
+  "@permissionDeniedMessage": {
+    "placeholders": {
+      "permission": {
+        "type": "String"
+      }
+    }
+  },
+  "unexpectedError": "เกิดข้อผิดพลาดที่ไม่คาดคิด",
+  "invalidDiscount": "ส่วนลดไม่ถูกต้อง",
+  "negativePriceNotAllowed": "ไม่อนุญาตให้ใส่ราคาติดลบ",
+  "homeLoadError": "โหลดข้อมูลไม่สำเร็จ",
+  "productFormSectionGeneral": "ข้อมูลทั่วไป",
+  "productFormSectionPricing": "ราคา & ต้นทุน",
+  "productFormSectionStock": "สต็อก & หน่วยนับ",
+  "productFormSectionSettings": "การตั้งค่า",
+  "productFormSectionExtra": "ข้อมูลเพิ่มเติม",
+  "profitMargin": "อัตรากำไร",
+  "notSpecified": "ไม่ระบุ",
+  "saveProduct": "บันทึกสินค้า",
+  "discardChanges": "ไม่บันทึก",
+  "unsavedChangesMessageCreate": "ออกโดยไม่บันทึกสินค้า? ร่างจะถูกเก็บไว้ให้กู้คืนครั้งถัดไป หรือเลือกทิ้งร่าง",
+  "unsavedChangesMessageEdit": "มีการแก้ไขที่ยังไม่บันทึก ต้องการออกโดยไม่บันทึกหรือไม่?",
+  "costExceedsPriceWarning": "ต้นทุนสูงกว่าราคาขาย — กำไรติดลบ",
+  "priceStockEstimateTitle": "ถ้าขายหมดสต็อก",
+  "priceStockEstimateRevenue": "รายได้โดยประมาณ",
+  "priceStockEstimateProfit": "กำไรโดยประมาณ",
+  "editStockAdjustHint": "แก้จำนวนผ่านปุ่มปรับสต็อก เพื่อให้มีประวัติการเคลื่อนไหว",
+  "lowStockThresholdHint": "เตือนสต็อกต่ำที่ {n}",
+  "@lowStockThresholdHint": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "stockInventoryValueTitle": "มูลค่าคลัง",
+  "adjustModeAdd": "เพิ่ม",
+  "adjustModeRemove": "ลด",
+  "adjustQtyAmountLabel": "จำนวน",
+  "adjustCurrentStock": "สต็อกปัจจุบัน: {qty} {unit}",
+  "@adjustCurrentStock": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustPreviewResult": "{from} → {to} {unit}",
+  "@adjustPreviewResult": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "adjustWouldGoNegative": "สต็อกไม่พอสำหรับจำนวนที่ลด",
+  "adjustReasonRestock": "รับเข้า / เติมสต็อก",
+  "adjustReasonDamaged": "ชำรุด / เสียหาย",
+  "adjustReasonLost": "สูญหาย",
+  "adjustReasonCountCorrection": "แก้จากนับสต็อก",
+  "adjustReasonReturn": "รับคืนจากลูกค้า",
+  "adjustReasonOther": "อื่นๆ",
+  "adjustReasonOtherHint": "ระบุเหตุผล",
+  "editLowStockThreshold": "แก้เกณฑ์เตือน",
+  "lowStockThresholdSaved": "อัปเดตเกณฑ์เตือนสต็อกต่ำแล้ว",
+  "createProductFromBarcode": "สร้างสินค้า",
+  "scanAgainToAdd": "บันทึกแล้ว — สแกนอีกครั้งเพื่อใส่ตะกร้า",
+  "productCreatedAddedToCart": "สร้างสินค้าและใส่ตะกร้าแล้ว",
+  "barcodeReplaceTitle": "แทนที่บาร์โค้ด?",
+  "barcodeReplaceMessage": "รหัสปัจจุบัน: {code} — รหัสใหม่จะแทนที่ของเดิม",
+  "@barcodeReplaceMessage": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "barcodePreviewEmpty": "พรีวิวจะแสดงเมื่อพิมพ์หรือสร้างบาร์โค้ด",
+  "scanModeContinuous": "ต่อเนื่อง",
+  "scanModeSingle": "ครั้งเดียว",
+  "searchMatchName": "ชื่อ",
+  "searchMatchSku": "SKU",
+  "searchMatchBarcode": "บาร์โค้ด",
+  "searchResultCount": "พบ {count} รายการ",
+  "@searchResultCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchFiltersIgnoredHint": "แสดงทุกรายการที่ตรงคำค้น (ไม่ใช้ตัวกรองรายการ)",
+  "searchShowingCount": "แสดง {shown} จาก {total}",
+  "@searchShowingCount": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "barcodeAmbiguousCount": "มีสินค้า {count} รายการใช้บาร์โค้ดนี้",
+  "@barcodeAmbiguousCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartBillDetails": "รายละเอียดบิล",
+  "cartHoldBill": "บิลที่บันทึก",
+  "cartItemCount": "{count} รายการ",
+  "@cartItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cartActiveBill": "บิล: {name}",
+  "@cartActiveBill": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "heroNoBarcode": "ไม่มีบาร์โค้ด",
+  "setSellingPrice": "ตั้งราคาขาย",
+  "showProductHint": "เปิดแล้วแสดงในรายการสินค้าและหน้าขาย",
+  "productRecommendedHint": "ไฮไลต์บนหน้าขายและมีป้ายในรายการสินค้า",
+  "productBrandHint": "แบรนด์หรือผู้ผลิต (ไม่บังคับ)",
+  "productDescriptionHint": "หมายเหตุสำหรับพนักงาน (ไม่แสดงบนหน้าขาย)",
+  "productFormSectionVisibility": "การแสดงผล",
+  "productSettingsOutcomeVisible": "แสดงบนขาย",
+  "productSettingsOutcomeHidden": "ซ่อนจากขาย",
+  "productSettingsOutcomeRecommended": "แนะนำ",
+  "productSettingsOutcomeNotRecommended": "ไม่แนะนำ",
+  "productRecommendedNeedsVisible": "สินค้าแนะนำควรเปิดแสดง — เปิดแสดงสินค้า หรือปิดแนะนำ",
+  "saleRecommendedFilter": "แนะนำ",
+  "saleRecommendedFilterAll": "ทั้งหมด",
+  "productSupplierHint": "แหล่งที่ซื้อสินค้า (ไม่บังคับ)",
+  "productOptionsSummaryTitle": "ตัวเลือกเพิ่ม",
+  "productOptionGroupSummary": "{name} · {detail} · {count} ตัวเลือก",
+  "@productOptionGroupSummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productFormCostEmptyHint": "ใส่ต้นทุนเพื่อดูกำไรและมาร์กอัป",
+  "productFormMarkupFromCost": "ตั้งราคาจากต้นทุน",
+  "productFormPriceChanged": "{from} → {to}",
+  "@productFormPriceChanged": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "clearFieldTitle": "ล้างข้อความ?",
+  "clearFieldConfirm": "จะลบข้อความในช่องนี้ แน่ใจหรือไม่?",
+  "deleteProductConfirmTitle": "ลบสินค้านี้ออกจากรายการ?",
+  "removeCartLineTitle": "ลบรายการนี้ออกจากบิล?",
+  "removeCartLineQty": "จำนวน {count} ชิ้น",
+  "@removeCartLineQty": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "removeCartLineConfirm": "ลบรายการ",
+  "datePresetToday": "วันนี้",
+  "datePresetYesterday": "เมื่อวาน",
+  "datePresetLast7Days": "7 วัน",
+  "datePresetThisMonth": "เดือนนี้",
+  "datePresetCustom": "กำหนดเอง",
+  "reportAverage": "เฉลี่ย",
+  "reportRecent": "ล่าสุด",
+  "paymentMethodShare": "{percent}%",
+  "@paymentMethodShare": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "closeDayToday": "ปิดยอดวันนี้",
+  "dailyCloseSummaryTitle": "สรุป",
+  "dailyCloseSalesCountLabel": "จำนวนบิล",
+  "dailyCloseVoidedCountLabel": "จำนวนยกเลิก",
+  "dailyCloseGrossRevenue": "ยอดรวมก่อนหักยกเลิก",
+  "dailyCloseVoidedAmount": "ยอดยกเลิก",
+  "dailyCloseByPayment": "แยกตามวิธีชำระ",
+  "dailyCloseVatCollected": "ภาษีมูลค่าเพิ่ม",
+  "dailyCloseDiscountsGiven": "ส่วนลดที่ให้",
+  "dailyCloseCashReconciliation": "กระทบยอดเงินสด",
+  "dailyCloseOpeningCash": "เงินสดเปิดลิ้นชัก",
+  "dailyCloseExpectedCash": "เงินสดที่ควรมี",
+  "dailyCloseCountedCash": "เงินสดที่นับได้",
+  "dailyCloseOverShort": "เกิน / ขาด",
+  "dailyCloseNoteOptional": "หมายเหตุ (ถ้ามี)",
+  "dailyCloseStatusOpen": "เปิดอยู่",
+  "dailyCloseStatusClosed": "ปิดแล้ว",
+  "dailyCloseStatusClosedBadge": "ปิดแล้ว",
+  "dailyCloseStatusOpenBadge": "เปิด",
+  "noCategoriesFound": "ไม่พบหมวดหมู่ที่ตรงกับการค้นหา",
+  "categorySaved": "บันทึกหมวดหมู่แล้ว",
+  "categoryDeleted": "ลบหมวดหมู่แล้ว",
+  "categoriesDeleted": "ลบ {count} หมวดหมู่แล้ว",
+  "@categoriesDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryReorderHint": "ลากเพื่อจัดลำดับหมวดหมู่ที่แสดงบนหน้าขาย",
+  "deleteCategoryProductsImpact": "สินค้า {count} รายการจะถูกย้ายไปหมวดหมู่ที่เลือก (หรือไม่มีหมวดหมู่)",
+  "@deleteCategoryProductsImpact": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryNameTooLong": "ชื่อต้องไม่เกิน 100 ตัวอักษร",
+  "goToSale": "ไปหน้าขาย",
+  "closeDayForDate": "ปิดยอดวันที่ {date}",
+  "@closeDayForDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reportNoSalesInPeriod": "ไม่มียอดขายในช่วงนี้",
+  "currentBill": "บิลปัจจุบัน",
+  "currentBillWithCount": "บิล ({count})",
+  "@currentBillWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewBill": "บิล",
+  "viewBillWithCount": "บิล ({count})",
+  "@viewBillWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "draftNotFound": "ไม่พบบิลเปิด",
+  "maxDraftsReached": "บิลเปิดครบจำนวนสูงสุด ({count})",
+  "@maxDraftsReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addToCart": "เพิ่มลงตะกร้า",
+  "holdCurrentBill": "พักบิลนี้",
+  "newBill": "บิลใหม่",
+  "billHeld": "บันทึกบิลแล้ว",
+  "newBillConfirm": "บันทึกบิลปัจจุบันแล้วเริ่มบิลว่างใหม่?",
+  "newBillStarted": "เริ่มบิลใหม่แล้ว",
+  "voidBlockedDayClosed": "ปิดยอดแล้ว เปิดวันก่อนเพื่อยกเลิกบิลนี้",
+  "billParked": "พักบิลแล้ว — พร้อมลูกค้าถัดไป",
+  "receiptThankYouDefault": "ขอบคุณครับ/ค่ะ!",
+  "receiptNotTaxInvoice": "ใบเสร็จการขาย — ไม่ใช่ใบกำกับภาษี",
+  "receiptReprint": "พิมพ์ซ้ำ",
+  "receiptShareVoidBlocked": "ไม่สามารถแชร์บิลที่ยกเลิกเป็นใบเสร็จปกติได้ — พิมพ์จะมีเครื่องหมายยกเลิก",
+  "parkBill": "พักบิล",
+  "parkBillNameTitle": "ตั้งชื่อบิล (ไม่บังคับ)",
+  "currentBillNamed": "{name} ({count})",
+  "@currentBillNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "amountDue": "ยอดชำระ",
+  "payAmount": "ชำระ {amount}",
+  "@payAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "parkAndNext": "พักแล้วคิวถัดไป",
+  "openBillsCount": "บิลเปิด ({count})",
+  "@openBillsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billItemsMissing": "ไม่พบ {count} รายการ (สินค้าอาจถูกลบ)",
+  "@billItemsMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "splitTenderTitle": "แบ่งชำระ (เงินสด + อื่น)",
+  "splitTenderSubtitle": "จ่ายบางส่วนเงินสด ที่เหลือโอน/QR/บัตร",
+  "splitCashAmount": "จำนวนเงินสด",
+  "paymentMismatch": "ยอดชำระไม่ตรงกับยอดบิล",
+  "paymentMixed": "แบ่งชำระ",
+  "promptPayShareTitle": "ส่วน PromptPay",
+  "promptPayShareHint": "สแกนเฉพาะส่วน PromptPay (ไม่ใช่ยอดบิลเต็ม)",
+  "promptPayFullBillTitle": "ชำระด้วย PromptPay",
+  "settingsAttentionItemsCount": "มี {count} รายการที่ควรตั้งค่า",
+  "@settingsAttentionItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAttentionShopTitle": "ตั้งค่าข้อมูลร้านให้ครบ",
+  "settingsAttentionShopBody": "ใส่ชื่อร้านและเบอร์โทรเพื่อใบเสร็จที่ถูกต้อง",
+  "settingsAttentionPromptpayTitle": "ตั้งค่าพร้อมเพย์",
+  "settingsAttentionPromptpayBody": "เพิ่มเลขพร้อมเพย์เพื่อแสดง QR ตอนชำระเงิน",
+  "settingsAttentionReview": "ดูรายการ",
+  "settingsDayClose": "ปิดวัน",
+  "settingsBackupData": "สำรองและข้อมูล",
+  "settingsPreview": "ตัวอย่าง{section}",
+  "@settingsPreview": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsModeLabel": "โหมด",
+  "settingsCatalogMode": "แคตตาล็อก",
+  "shopNamePlaceholder": "ชื่อร้านของคุณ",
+  "shopAddressPlaceholder": "ยังไม่ได้ตั้งที่อยู่",
+  "shopPhonePlaceholder": "ยังไม่ได้ตั้งเบอร์โทร",
+  "settingsDetails": "รายละเอียด",
+  "settingsPolicy": "นโยบาย",
+  "settingsOn": "เปิด",
+  "settingsOff": "ปิด",
+  "cartPaymentInProgress": "กำลังชำระเงิน — ล็อกตะกร้าจนกว่าจะเสร็จหรือยกเลิก",
+  "backupRestoreTitle": "กู้คืนสำรอง (เครื่องนี้เท่านั้น)",
+  "backupRestoreConfirmTitle": "กู้คืนสำรองข้อมูล?",
+  "backupRestoreConfirmMessage": "จะแทนที่ฐานข้อมูลปัจจุบันบนเครื่องนี้ ระบบจะเก็บสำเนาก่อนกู้คืน หลังกู้คืนให้ปิดแอปแล้วเปิดใหม่ ใช้ได้เฉพาะเครื่องเดิม (คีย์ SQLCipher ต้องยังอยู่)",
+  "backupRestoreSuccess": "กู้คืนสำเร็จ กรุณาปิดแอปให้สนิทแล้วเปิดใหม่",
+  "backupRestorePlainUnsupported": "ไม่รองรับไฟล์ SQLite แบบไม่เข้ารหัส ใช้ไฟล์ที่ส่งออกจากแอปนี้",
+  "backupRestoreInvalid": "ไฟล์สำรองไม่ถูกต้อง",
+  "backupRestoreSourceMissing": "ไม่พบไฟล์สำรอง",
+  "backupConfirmExportTitle": "ยืนยันการส่งออกสำรอง",
+  "backupConfirmRestoreTitle": "ยืนยันการกู้คืนสำรอง",
+  "appLockTitle": "ล็อก PIN ร้าน",
+  "appLockSubtitle": "ป้องกันยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay",
+  "appLockSectionTitle": "การกระทำที่เสี่ยง",
+  "appLockRequirePin": "ต้องใช้ PIN ร้าน",
+  "appLockRequirePinHint": "เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (ผ่อนผัน {minutes} นาที)",
+  "@appLockRequirePinHint": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "appLockCreatePin": "สร้าง PIN ร้าน",
+  "appLockEnterPin": "กรอก PIN ร้าน",
+  "appLockConfirmPin": "ยืนยัน PIN",
+  "appLockPinLabel": "PIN",
+  "appLockUnlock": "ปลดล็อก",
+  "appLockEnabled": "เปิดใช้ PIN ร้านแล้ว",
+  "appLockDisabled": "ปิด PIN ร้านแล้ว",
+  "appLockEnableFailed": "เปิดใช้ PIN ไม่สำเร็จ",
+  "appLockDisableNeedsPin": "ต้องใช้ PIN เพื่อปิด",
+  "appLockPinTooShort": "PIN ต้องมีอย่างน้อย {min} หลัก",
+  "@appLockPinTooShort": {
+    "placeholders": {
+      "min": { "type": "int" }
+    }
+  },
+  "appLockIncorrectPin": "PIN ไม่ถูกต้อง",
+  "appLockActionRequired": "ต้องใช้ PIN ร้าน",
+  "appLockConfirmVoid": "ยืนยันยกเลิกบิลด้วย PIN ร้าน",
+  "appLockConfirmPromptPay": "ยืนยันการเปลี่ยน PromptPay",
+  "appLockConfirmStock": "ยืนยันปรับสต็อกด้วย PIN ร้าน",
+  "appLockConfirmCsv": "ยืนยันนำเข้า CSV ด้วย PIN ร้าน",
+  "appLockPinsMismatch": "PIN ไม่ตรงกัน",
+  "appLockLockedOut": "พยายามผิดหลายครั้ง ลองใหม่ใน {seconds} วินาที",
+  "@appLockLockedOut": {
+    "placeholders": {
+      "seconds": { "type": "int" }
     }
   }
 }

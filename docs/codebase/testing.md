@@ -1,6 +1,6 @@
-# Testing — Promsell POS CE v0.8.9
+# Testing — Promsell POS CE v0.9.0
 
-1373 automated tests across 9 layers — 56% line coverage (11,978 / 21,392 lines). Run with `flutter test` (use `--exclude-tags stress` to skip stress tests).
+Automated tests across unit, widget, and integration layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests). Coverage and counts drift with the suite — prefer CI.
 
 > **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
 
@@ -39,7 +39,8 @@ test/
 │   │           ├── cart/       # CartItemCard, CartItemRow, CartQtyButton, CartQtyStepper, CartDetailRow, CartDottedLineRow, CartTotalBar, CompactCartFab, CartBottomSheet (CartItemTile, CartSummaryFooter), CartItemRow (CartItemPrice)
 │   │           ├── catalog/    # SaleProductCard
 │   │           ├── checkout/   # CheckoutTotalCard
-│   │           ├── drafts/     # DraftsBottomSheet (DraftTile)
+│   │           ├── drafts/     # DraftTile, DraftSearchBar, park actions
+│   │       ├── pages/          # + SavedBillsPage (full-page saved bills)
 │   │           ├── payment/    # PaymentWidgets
 │   │           └── promptpay/  # PaymentStatusCard
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
@@ -74,7 +75,85 @@ test/
     └── l10n_parity_test.dart   # EN/TH key parity and non-empty validation
 ```
 
----
+
+## Integration Tests (E2E)
+
+**Location:** `integration_test/`
+**Status:** ✅ 30 tests compiling, ready for runtime validation
+**Updated:** 2026-07-10
+
+### Test Architecture
+
+**Robot Pattern** - Maintainable test helpers:
+```
+integration_test/
+├── helpers/
+│   ├── test_app.dart              # Test app wrapper with in-memory DB
+│   ├── test_fixtures.dart          # 20 products, 5 categories, realistic data
+│   └── test_utils.dart             # Common assertions and Finder extensions
+├── robot_pattern/
+│   ├── robot_base.dart             # Base robot class
+│   ├── sale_robot.dart             # Sale flow helpers
+│   ├── checkout_robot.dart         # Checkout helpers
+│   ├── product_robot.dart          # Product CRUD helpers
+│   └── restaurant_robot.dart       # Restaurant flow helpers
+├── sale_happy_path_test.dart       # 3 test cases - Cash sale flow
+├── draft_recovery_test.dart        # 5 test cases - Cart persistence
+├── product_management_test.dart    # 9 test cases - CRUD + stock
+├── promotion_application_test.dart # 8 test cases - Discount system
+├── restaurant_order_test.dart      # 5 test cases - Dine-in + modifiers
+└── all_tests.dart                  # Test entry point
+```
+
+### Critical User Journeys Covered
+
+1. **Happy Path Sale** (3 tests)
+   - Add products to cart → checkout → cash payment → receipt generation
+   - Inventory decremented correctly
+   - Sale recorded in database
+
+2. **Restaurant Order Flow** (5 tests)
+   - Table selection → add items with modifiers → service charge calculation
+   - Order type (dine-in/takeaway/delivery)
+   - Table status management
+
+3. **Draft Cart Recovery** (5 tests)
+   - Cart persistence across app restart
+   - Auto-save on modifications
+   - Recovery after force close
+
+4. **Product Management** (9 tests)
+   - Create/update/delete products
+   - Stock adjustments with reason tracking
+   - Barcode generation and validation
+   - Product history logs
+
+5. **Promotion Application** (8 tests)
+   - Percent and fixed discounts
+   - Date-based activation
+   - Receipt showing promotion details
+
+### Running E2E Tests
+
+```bash
+# Run all integration tests
+flutter test integration_test/
+
+# Run specific journey
+flutter test integration_test/sale_happy_path_test.dart
+
+# Analyze test code
+flutter analyze integration_test/
+```
+
+### Test Data
+- 20 products (Coffee, Thai Milk Tea, Pad Thai, etc.)
+- 5 categories (Drinks, Food, Snacks, Desserts, Merchandise)
+- 3 restaurant tables
+- 2 active promotions
+- 3 customer records
+
+For detailed E2E test guide, see [docs/testing/E2E_TEST_GUIDE.md](../testing/E2E_TEST_GUIDE.md).
 
 ## Test layers
 
@@ -83,7 +162,7 @@ test/
 | Domain | Unit test | None (pure Dart) |
 | BLoC / Cubit | `bloc_test` | Mocked use cases |
 | Repository | Unit test with `mocktail` | Mocked datasources |
-| Datasource | In-memory Drift DB | `sqlite3_flutter_libs` (FFI) |
+| Datasource | In-memory Drift DB | `sqlcipher_flutter_libs (production) / in-memory Drift for tests` (FFI) |
 | Widget | `pumpApp` + `MockBloc` | Mocked BLoC states |
 | Integration | In-memory DB end-to-end | Real repos + datasources |
 | Stress | `@Tags(['stress'])` — excluded from CI | In-memory Drift DB, 10k+ rows |
@@ -110,4 +189,4 @@ test/
 
 ---
 
-<sub>Promsell POS CE · v0.8.9 · Testing</sub>
+<sub>Promsell POS CE · v0.9.0 · Testing</sub>

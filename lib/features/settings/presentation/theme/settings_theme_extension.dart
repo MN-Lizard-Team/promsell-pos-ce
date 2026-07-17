@@ -1,5 +1,6 @@
 import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 
 @immutable
 class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
@@ -62,35 +63,37 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     success: Color(0xFF22C55E),
     mutedText: Color(0xFF475569),
     iconContainerBackground: Color(0xFFD0ECEF),
-    dividerIndent: 16,
-    cardRadius: 16,
-    sectionGap: 32,
+    // Divider starts after icon well (40) + gap (12) + left pad (16) ≈ 68
+    dividerIndent: 68,
+    cardRadius: 20,
+    sectionGap: 16,
     tileMinHeight: 64,
-    iconSize: 48,
-    tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    iconSize: 40,
+    tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   );
 
+  /// Surfaces align with [AppColors] dark stack (not GitHub palette).
   static const SettingsThemeExtension dark = SettingsThemeExtension(
-    cardBackground: Color(0xFF161B22),
-    cardBorderColor: Color(0xFF30363D),
+    cardBackground: AppColors.darkCard,
+    cardBorderColor: AppColors.darkOutline,
     softAccent: Color(0xFF0E7C8A),
     softAccentContainer: Color(0xFF0A4A52),
-    activeAccent: Color(0xFFFF6B00),
+    activeAccent: AppColors.accent,
     activeAccentContainer: Color(0xFF4A2A00),
-    neutralAccent: Color(0xFF94A3B8),
-    neutralAccentContainer: Color(0xFF1E293B),
-    softTextPrimary: Color(0xFFF0F6FC),
-    softTextSecondary: Color(0xFF8B949E),
+    neutralAccent: AppColors.darkNeutralAccent,
+    neutralAccentContainer: AppColors.darkNeutralAccentContainer,
+    softTextPrimary: AppColors.darkTextPrimary,
+    softTextSecondary: AppColors.darkTextSecondary,
     danger: Color(0xFFEF4444),
-    success: Color(0xFF22C55E),
-    mutedText: Color(0xFF8B949E),
+    success: AppColors.darkSuccess,
+    mutedText: AppColors.darkTextSecondary,
     iconContainerBackground: Color(0xFF0A4A52),
-    dividerIndent: 16,
-    cardRadius: 16,
-    sectionGap: 32,
+    dividerIndent: 68,
+    cardRadius: 20,
+    sectionGap: 16,
     tileMinHeight: 64,
-    iconSize: 48,
-    tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    iconSize: 40,
+    tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   );
 
   @override

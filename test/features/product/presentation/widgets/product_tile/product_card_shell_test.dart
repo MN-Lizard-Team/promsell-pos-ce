@@ -12,7 +12,7 @@ void main() {
       );
 
       expect(find.text('Hello'), findsOneWidget);
-      expect(find.byType(Container), findsWidgets);
+      expect(find.byType(Material), findsWidgets);
     });
 
     testWidgets('calls onTap when tapped', (tester) async {

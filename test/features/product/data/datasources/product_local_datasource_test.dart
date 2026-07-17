@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
@@ -43,7 +44,7 @@ void main() {
       final product = await datasource.getProductById(id);
       expect(product, isNotNull);
       expect(product!.name, 'Water');
-      expect(product.price, 100.0);
+      expect(product.price, Money.fromDouble(100.0));
       expect(product.stock, 10);
     });
 
@@ -88,7 +89,7 @@ void main() {
 
       final product = await datasource.getProductById(id);
       expect(product!.name, 'New');
-      expect(product.price, 200.0);
+      expect(product.price, Money.fromDouble(200.0));
     });
 
     test('deleteProduct removes product', () async {

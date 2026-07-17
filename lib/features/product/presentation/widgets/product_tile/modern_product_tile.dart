@@ -143,7 +143,7 @@ class _ModernProductTileState extends State<ModernProductTile>
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: MoneyText(
-                            value: product.price,
+                            value: product.price.value,
                             currency: currency,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w800,
