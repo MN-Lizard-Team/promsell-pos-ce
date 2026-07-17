@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/discount_prese
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_preset_edit_form.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
 class DiscountPresetEditPage extends StatelessWidget {
   const DiscountPresetEditPage({
@@ -64,18 +65,12 @@ class DiscountPresetEditPage extends StatelessWidget {
             : preset;
         final currentlyActive = currentPreset.id == s.activeDiscountPresetId;
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(l10n.editDiscountPreset),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            children: [
-              Container(
+        return SettingsLeafChrome(
+          title: l10n.editDiscountPreset,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: st.cardBackground,
@@ -91,8 +86,8 @@ class DiscountPresetEditPage extends StatelessWidget {
                   onSetActive: () => _setActive(context),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

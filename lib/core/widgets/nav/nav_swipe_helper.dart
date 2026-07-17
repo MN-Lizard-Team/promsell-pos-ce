@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 abstract final class NavSwipeHelper {
-  static const double threshold = 300.0;
+  static const double threshold = 600.0;
 
   static void handleSwipe(
     DragEndDetails details,

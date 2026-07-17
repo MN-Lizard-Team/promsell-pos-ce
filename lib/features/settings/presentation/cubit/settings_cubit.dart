@@ -15,11 +15,24 @@ class SettingsCubit extends Cubit<SettingsState> {
     this._repository,
     this._persistenceService,
     this._barcodeGenerator,
-  ) : super(const SettingsState());
+  ) : super(const SettingsState()) {
+    _persistenceService.onDebouncedSaveError = _onDebouncedSaveError;
+  }
 
   final SettingsRepository _repository;
   final SettingsPersistenceService _persistenceService;
   final Ean13Generator _barcodeGenerator;
+
+  void _onDebouncedSaveError(Object error) {
+    if (isClosed) return;
+    AppLogger.error('SettingsCubit debounced save failed', error: error);
+    emit(
+      state.copyWith(
+        status: SettingsStatus.failure,
+        errorMessage: error.toString(),
+      ),
+    );
+  }
 
   Future<void> load() async {
     emit(state.copyWith(status: SettingsStatus.loading, errorMessage: null));
@@ -75,6 +88,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   @override
   Future<void> close() async {
+    _persistenceService.onDebouncedSaveError = null;
     await _persistenceService.dispose();
     return super.close();
   }

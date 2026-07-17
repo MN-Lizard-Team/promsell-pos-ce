@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt/receipt_preview/receipt_preview_data.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
@@ -20,6 +21,15 @@ class ReceiptPreviewCard extends StatelessWidget {
     this.note,
     this.receiptNumber,
     this.createdAt,
+    this.cartDiscount,
+    this.promotionDiscount,
+    this.serviceCharge,
+    this.serviceChargeRate,
+    this.isVoided = false,
+    this.voidReason,
+    this.isReprint = false,
+    this.notTaxInvoiceDisclaimer,
+    this.footerOverride,
   });
 
   final Settings settings;
@@ -39,6 +49,15 @@ class ReceiptPreviewCard extends StatelessWidget {
   final String? note;
   final String? receiptNumber;
   final DateTime? createdAt;
+  final double? cartDiscount;
+  final double? promotionDiscount;
+  final double? serviceCharge;
+  final double? serviceChargeRate;
+  final bool isVoided;
+  final String? voidReason;
+  final bool isReprint;
+  final String? notTaxInvoiceDisclaimer;
+  final String? footerOverride;
 
   String _formatDate(DateTime dt) {
     try {
@@ -49,12 +68,18 @@ class ReceiptPreviewCard extends StatelessWidget {
     }
   }
 
+  String _money(double amount) =>
+      CurrencyFormatter.formatGroupedWithSymbol(amount, settings.currency);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final s = settings;
     final l = labels;
     final vat = vatInfo;
+    final footer =
+        footerOverride ??
+        (s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!');
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 320),
@@ -67,6 +92,30 @@ class ReceiptPreviewCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (isVoided) ...[
+                Text(
+                  l.voided ?? 'VOIDED',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.error,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (voidReason != null && voidReason!.isNotEmpty)
+                  Text(
+                    '${l.voidReason ?? 'Reason'}: $voidReason',
+                    style: theme.textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+              ],
+              if (isReprint)
+                Text(
+                  l.reprint ?? 'REPRINT',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               if (s.shopName.isNotEmpty)
                 Text(
                   s.shopName,
@@ -89,6 +138,13 @@ class ReceiptPreviewCard extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
               ],
+              if (notTaxInvoiceDisclaimer != null &&
+                  notTaxInvoiceDisclaimer!.isNotEmpty)
+                Text(
+                  notTaxInvoiceDisclaimer!,
+                  style: theme.textTheme.labelSmall,
+                  textAlign: TextAlign.center,
+                ),
               const Divider(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -107,9 +163,30 @@ class ReceiptPreviewCard extends StatelessWidget {
                     ),
                 ],
               ),
-              if (paymentMethod != null)
+              if (l.paymentLines.isNotEmpty)
+                ...l.paymentLines.map(
+                  (line) => Text(
+                    '${l.payment}: $line',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                )
+              else if (paymentMethod != null)
                 Text(
                   '${l.payment}: $paymentMethod',
+                  style: theme.textTheme.bodySmall,
+                ),
+              if (l.customer != null &&
+                  l.customerName != null &&
+                  l.customerName!.isNotEmpty)
+                Text(
+                  '${l.customer}: ${l.customerName}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              if (l.promotion != null &&
+                  l.promotionName != null &&
+                  l.promotionName!.isNotEmpty)
+                Text(
+                  '${l.promotion}: ${l.promotionName}',
                   style: theme.textTheme.bodySmall,
                 ),
               const SizedBox(height: 8),
@@ -131,22 +208,36 @@ class ReceiptPreviewCard extends StatelessWidget {
                         const SizedBox(width: 10),
                       ],
                       Expanded(child: Text('${item.name} x${item.qty}')),
-                      Text('${s.currency}${item.subtotal.toStringAsFixed(2)}'),
+                      Text(_money(item.subtotal)),
                     ],
                   ),
                 ),
               ),
               const Divider(height: 16),
-              if (vat != null) ...[
+              if (cartDiscount != null && cartDiscount! > 0)
+                _row(theme, l.cartDiscount, '-${_money(cartDiscount!)}'),
+              if (promotionDiscount != null && promotionDiscount! > 0)
                 _row(
                   theme,
-                  l.subtotal,
-                  '${s.currency}${vat.subtotal.toStringAsFixed(2)}',
+                  l.promotionDiscount ?? l.promotion ?? 'Promotion',
+                  '-${_money(promotionDiscount!)}',
                 ),
+              if (serviceCharge != null && serviceCharge! > 0)
                 _row(
                   theme,
-                  vat.isInclusive ? l.vatIncluded : '${l.vat} ${s.vatRate}%',
-                  '${s.currency}${vat.vatAmount.toStringAsFixed(2)}',
+                  (serviceChargeRate != null && serviceChargeRate! > 0)
+                      ? '${l.serviceCharge ?? 'Service charge'} ${serviceChargeRate!.toStringAsFixed(0)}%'
+                      : (l.serviceCharge ?? 'Service charge'),
+                  _money(serviceCharge!),
+                ),
+              if (vat != null) ...[
+                _row(theme, l.subtotal, _money(vat.subtotal)),
+                _row(
+                  theme,
+                  vat.isInclusive
+                      ? l.vatIncluded
+                      : '${l.vat} ${settings.vatRate}%',
+                  _money(vat.vatAmount),
                 ),
               ],
               Container(
@@ -172,7 +263,7 @@ class ReceiptPreviewCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${s.currency}${vat?.totalWithVat.toStringAsFixed(2) ?? total.toStringAsFixed(2)}',
+                      _money(vat?.totalWithVat ?? total),
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -182,16 +273,8 @@ class ReceiptPreviewCard extends StatelessWidget {
               ),
               if (amountReceived != null) ...[
                 const SizedBox(height: 4),
-                _row(
-                  theme,
-                  l.received,
-                  '${s.currency}${amountReceived!.toStringAsFixed(2)}',
-                ),
-                _row(
-                  theme,
-                  l.change,
-                  '${s.currency}${(changeAmount ?? 0).toStringAsFixed(2)}',
-                ),
+                _row(theme, l.received, _money(amountReceived!)),
+                _row(theme, l.change, _money(changeAmount ?? 0)),
               ],
               if (note != null && note!.isNotEmpty) ...[
                 const SizedBox(height: 8),
@@ -199,7 +282,7 @@ class ReceiptPreviewCard extends StatelessWidget {
               ],
               const SizedBox(height: 8),
               Text(
-                s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!',
+                footer,
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
@@ -215,7 +298,7 @@ class ReceiptPreviewCard extends StatelessWidget {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(left, style: theme.textTheme.bodyMedium),
+        Flexible(child: Text(left, style: theme.textTheme.bodyMedium)),
         Text(right, style: theme.textTheme.bodyMedium),
       ],
     ),

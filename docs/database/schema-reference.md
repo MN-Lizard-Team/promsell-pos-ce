@@ -1,4 +1,4 @@
-# Schema Reference — Promsell POS CE (schema v27)
+# Schema Reference — Promsell POS CE (schema v28)
 
 Detailed column reference for all 14 database tables, indexes, seed data, and enum values.
 
@@ -102,6 +102,28 @@ Source: `lib/core/database/tables/sale_items_table.dart`
 | `deviceId` | TEXT | Yes | — | Sync |
 
 > **Design decision:** `productId` has no FK constraint to `products` — sale history must survive product deletion. `productName` and `price` are snapshots.
+
+
+### SalePayments
+
+Source: `lib/core/database/tables/sale_payments_table.dart` — added schema **v28**
+
+| Column | Type | Nullable | Default | Constraint |
+|--------|------|----------|---------|------------|
+| `id` | TEXT | No | — | **PK**, UUIDv4 |
+| `saleId` | TEXT | No | — | **FK → sales.id** (CASCADE) |
+| `method` | TEXT | No | — | cash / transfer / card / promptpay / … |
+| `amount` | REAL | No | — | Tender amount (baht) |
+| `reference` | TEXT | Yes | — | Optional payment reference |
+| `sendingBankCode` | TEXT | Yes | — | Optional bank code |
+| `sortOrder` | INTEGER | No | `0` | Display/order of tenders |
+| `createdAt` | DATETIME | No | `currentDateAndTime` | |
+| `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
+| `deletedAt` | DATETIME | Yes | — | Soft delete |
+| `version` | INTEGER | No | `1` | Sync |
+| `deviceId` | TEXT | Yes | — | Sync |
+
+> Multi-tender lines for a sale. Header `sales.payment_method` / `amount_received` remain for legacy single-tender compatibility.
 
 ### Categories
 
@@ -440,4 +462,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · schema v28 · 14 tables · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.0 · schema v28 · 15 tables · SQLCipher AES-256</sub>

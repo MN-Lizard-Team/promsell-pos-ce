@@ -647,9 +647,9 @@
   "backupOff": "Off",
   "backupActionTitle": "Manual backup",
   "backupActionSubtitle": "Tap to record that you have backed up your data",
-  "backupEncryptionTitle": "Backup Encryption (Optional)",
+  "backupEncryptionTitle": "Backup Encryption",
   "backupEncryptionLabel": "Encrypt backups",
-  "backupEncryptionDesc": "Protect backup files with AES-256-GCM encryption (PIN required)",
+  "backupEncryptionDesc": "Protect backup files with AES-256-GCM encryption (PIN required; default on for new installs)",
   "backupInfoDescription": "Export backups regularly (encryption recommended, PIN at least 6 characters). In-app restore is same-device only while the SQLCipher key remains. Cross-device restore and key recovery are not available.",
   "exportSuccess": "Export successful",
   "bulkSelected": "{count} selected",
@@ -971,12 +971,14 @@
   "agplShort": "AGPL-3.0",
   "copyrightNotice": "© 2026 Promsell POS CE · AGPL-3.0",
   "dataCollection": "Data Collection",
-  "dataCollectionBody": "Promsell does not collect any personal data. All sales, inventory, and settings are stored locally on your device using SQLite. No data is transmitted to our servers.",
+  "dataCollectionBody": "Promsell does not collect or transmit personal data to developer servers. Sales, inventory, settings, and any optional customer or shop details you enter are stored only on this device (SQLite / SQLCipher). Nothing is sent to our servers unless you export or share it yourself.",
+  "customerDataTitle": "Customer Data",
+  "customerDataBody": "If you use customer management, name, phone, and email are stored only on this device. You can delete customer records anytime. This data is never sent to our servers.",
   "thirdPartyServices": "Third-Party Services",
   "thirdPartyServicesBody": "We do not use analytics, advertising, or cloud services. The app works entirely offline.",
   "dataStorage": "Data Storage",
-  "dataStorageBody": "Your data remains on your device. You can export or delete it at any time via the Backup/Restore feature. Product images are stored locally in the app's private directory and are subject to automatic LRU cache eviction (50MB limit) to prevent excessive disk usage.",
-  "backupEncryptionBody": "Promsell offers optional AES-256-GCM encryption for database backups. If enabled, backups are encrypted with a key derived from a user-supplied PIN via PBKDF2. The PIN is never stored on the device or transmitted anywhere. Forgetting the PIN makes the backup unrecoverable — we cannot reset or recover it.",
+  "dataStorageBody": "Your data remains on your device. You can export or delete via Backup/Restore. In-app restore is same-device only while the SQLCipher key remains; cross-device restore and restore after uninstall/keystore wipe are not supported. Product images use a local 50MB LRU cache.",
+  "backupEncryptionBody": "Database exports use AES-256-GCM with a PIN-derived key (PBKDF2; PIN at least 6 characters). Encryption is on by default for new installs. The PIN is never stored or transmitted. Forgetting the PIN makes that export unrecoverable. The live database is separately protected by SQLCipher.",
   "permissionsTitle": "Permissions",
   "permissionsCamera": "Camera: Used for taking product photos and scanning product barcodes. No photos or scans are transmitted off-device.",
   "permissionsStorage": "Storage: Used only for saving backups and receipts.",
@@ -1057,6 +1059,11 @@
   "filterStock": "Stock",
   "filterAll": "All",
   "filterMore": "Filter",
+  "productRowMenuQty": "Set quantity",
+  "productRowMenuAdd": "Add to cart",
+  "productRowMenu": "Product actions",
+  "cartBottomLabel": "Cart",
+  "saleCategoryTabsLabel": "Category",
   "filterPageTitle": "Filter Products",
   "filterReset": "Reset",
   "filterShowResults": "Show Results",
@@ -1863,10 +1870,10 @@
   "backupConfirmExportTitle": "Confirm backup export",
   "backupConfirmRestoreTitle": "Confirm backup restore",
   "appLockTitle": "Store PIN lock",
-  "appLockSubtitle": "Protect void, backup, and PromptPay changes",
+  "appLockSubtitle": "Protect void, backup, stock adjust, CSV import, and PromptPay changes",
   "appLockSectionTitle": "Sensitive actions",
   "appLockRequirePin": "Require store PIN",
-  "appLockRequirePinHint": "When enabled, void, backup export/restore, and PromptPay ID changes require PIN (session grace {minutes} min).",
+  "appLockRequirePinHint": "When enabled, void, backup export/restore, stock adjust, CSV import, and PromptPay ID changes require PIN (session grace {minutes} min).",
   "@appLockRequirePinHint": {
     "placeholders": {
       "minutes": { "type": "int" }
@@ -1891,5 +1898,13 @@
   "appLockActionRequired": "Action requires store PIN",
   "appLockConfirmVoid": "Confirm void with store PIN",
   "appLockConfirmPromptPay": "Confirm PromptPay change",
-  "appLockPinsMismatch": "PINs do not match"
+  "appLockConfirmStock": "Confirm stock adjust with store PIN",
+  "appLockConfirmCsv": "Confirm CSV import with store PIN",
+  "appLockPinsMismatch": "PINs do not match",
+  "appLockLockedOut": "Too many attempts. Try again in {seconds}s",
+  "@appLockLockedOut": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  }
 }

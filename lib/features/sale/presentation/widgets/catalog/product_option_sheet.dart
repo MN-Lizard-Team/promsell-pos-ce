@@ -227,9 +227,9 @@ class _OptionGroupSection extends StatelessWidget {
                   ListTile(
                     leading: Radio<String>(value: option.id),
                     title: Text(option.name),
-                    subtitle: option.priceDelta > 0
+                    subtitle: option.priceDelta.isPositive
                         ? Text(
-                            '+$currency ${option.priceDelta.toStringAsFixed(2)}',
+                            '+$currency ${option.priceDelta.value.toStringAsFixed(2)}',
                           )
                         : null,
                     dense: true,
@@ -245,8 +245,10 @@ class _OptionGroupSection extends StatelessWidget {
               value: selectedIds.contains(option.id),
               onChanged: (_) => onToggle(option),
               title: Text(option.name),
-              subtitle: option.priceDelta > 0
-                  ? Text('+$currency ${option.priceDelta.toStringAsFixed(2)}')
+              subtitle: option.priceDelta.isPositive
+                  ? Text(
+                      '+$currency ${option.priceDelta.value.toStringAsFixed(2)}',
+                    )
                   : null,
               dense: true,
               contentPadding: EdgeInsets.zero,

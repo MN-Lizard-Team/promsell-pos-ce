@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/backup_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/daily_close_config.dart';
@@ -28,7 +29,6 @@ class SettingsMapper {
   static const _keyDateFormat = 'dateFormat';
   static const _keyReceiptNote = 'receiptNote';
   static const _keyShowShopInfo = 'showShopInfo';
-  static const _keyAutoPrintPrompt = 'autoPrintPrompt';
   static const _keyVatRate = 'vatRate';
   static const _keyVatMode = 'vatMode';
   static const _keyReceiptPreviewStyle = 'receiptPreviewStyle';
@@ -56,7 +56,6 @@ class SettingsMapper {
   static const _keyImageMaxWidth = 'imageMaxWidth';
   static const _keyImageQuality = 'imageQuality';
   static const _keyMaxDrafts = 'maxDrafts';
-  static const _keyCartCompactMode = 'cartCompactMode';
   static const _keyUltraCompactMode = 'ultraCompactMode';
   static const _keyAccessibilityMode = 'accessibilityMode';
   static const _keyDeviceId = 'deviceId';
@@ -70,10 +69,20 @@ class SettingsMapper {
   static const _keyBarcodeAutoGeneratePrefix = 'barcodeAutoGeneratePrefix';
   static const _keyBarcodeEnabledFormats = 'barcodeEnabledFormats';
   static const _keyBarcodeAutoOpenManualDelay = 'barcodeAutoOpenManualDelay';
-  static const _keyBarcodeLastCounter = 'barcodeLastCounter';
+
+  /// Public for partial counter writes (barcode generation).
+  static const keyBarcodeLastCounter = 'barcodeLastCounter';
+  static const _keyBarcodeLastCounter = keyBarcodeLastCounter;
   static const _keyBarcodeContinuousScan = 'barcodeContinuousScan';
   static const _keyBusinessType = 'businessType';
   static const _keyDefaultServiceChargeRate = 'defaultServiceChargeRate';
+
+  // Legacy seed keys (pre-canonical camelCase) — dual-read only.
+  static const _legacyShopName = 'shop_name';
+  static const _legacyReceiptNote = 'receipt_footer';
+  static const _legacyVatRate = 'vat_rate';
+  static const _legacyVatMode = 'vat_mode';
+  static const _legacyCurrency = 'currency_symbol';
 
   Map<String, String> toMap(Settings settings) {
     return {
@@ -86,7 +95,6 @@ class SettingsMapper {
       _keyDateFormat: settings.uiConfig.dateFormat,
       _keyReceiptNote: settings.receiptConfig.receiptNote,
       _keyShowShopInfo: settings.receiptConfig.showShopInfo.toString(),
-      _keyAutoPrintPrompt: settings.receiptConfig.autoPrintPrompt.toString(),
       _keyVatRate: settings.taxConfig.vatRate.toString(),
       _keyVatMode: settings.taxConfig.vatMode,
       _keyReceiptPreviewStyle: settings.receiptConfig.receiptPreviewStyle,
@@ -102,7 +110,7 @@ class SettingsMapper {
           .toString(),
       _keyMaxDiscountPercent: settings.discountConfig.maxDiscountPercent
           .toString(),
-      _keyMaxDiscountAmount: settings.discountConfig.maxDiscountAmount
+      _keyMaxDiscountAmount: settings.discountConfig.maxDiscountAmount.value
           .toString(),
       _keyDefaultDiscountType: settings.discountConfig.defaultDiscountType,
       _keyDiscountPresets: _serializeDiscountPresets(
@@ -125,7 +133,6 @@ class SettingsMapper {
       _keyImageMaxWidth: settings.imageConfig.maxWidth.toString(),
       _keyImageQuality: settings.imageConfig.quality.toString(),
       _keyMaxDrafts: settings.draftConfig.maxDrafts.toString(),
-      _keyCartCompactMode: settings.uiConfig.cartCompactMode.toString(),
       _keyUltraCompactMode: settings.uiConfig.ultraCompactMode.toString(),
       _keyAccessibilityMode: settings.uiConfig.accessibilityMode.toString(),
       _keyDeviceId: settings.deviceConfig.deviceId,
@@ -157,28 +164,29 @@ class SettingsMapper {
   Settings fromMap(Map<String, String> map) {
     return Settings(
       shopInfo: ShopInfo(
-        name: map[_keyShopName] ?? '',
+        name: _string(map, _keyShopName, legacy: _legacyShopName),
         address: map[_keyAddress] ?? '',
         phone: map[_keyPhone] ?? '',
       ),
       receiptConfig: ReceiptConfig(
         receiptSize: map[_keyReceiptSize] ?? '80mm',
         receiptPreviewStyle: map[_keyReceiptPreviewStyle] ?? 'thermal',
-        receiptNote: map[_keyReceiptNote] ?? '',
+        receiptNote: _string(map, _keyReceiptNote, legacy: _legacyReceiptNote),
         showShopInfo: _parseBool(map[_keyShowShopInfo], true),
-        autoPrintPrompt: _parseBool(map[_keyAutoPrintPrompt], true),
         showPreSalePreview: _parseBool(map[_keyShowPreSalePreview], true),
         showPostSalePreview: _parseBool(map[_keyShowPostSalePreview], true),
       ),
       taxConfig: TaxConfig(
-        vatRate: _parseDouble(map[_keyVatRate], 7.0),
-        vatMode: map[_keyVatMode] ?? 'NONE',
+        vatRate: _parseDouble(map[_keyVatRate] ?? map[_legacyVatRate], 7.0),
+        vatMode: map[_keyVatMode] ?? map[_legacyVatMode] ?? 'NONE',
       ),
       discountConfig: DiscountConfig(
         enableItemDiscount: _parseBool(map[_keyEnableItemDiscount], true),
         enableCartDiscount: _parseBool(map[_keyEnableCartDiscount], true),
         maxDiscountPercent: _parseDouble(map[_keyMaxDiscountPercent], 100.0),
-        maxDiscountAmount: _parseDouble(map[_keyMaxDiscountAmount], 0.0),
+        maxDiscountAmount: Money.fromDouble(
+          _parseDouble(map[_keyMaxDiscountAmount], 0.0),
+        ),
         defaultDiscountType: map[_keyDefaultDiscountType] ?? 'PERCENT',
         discountPresets: _parseDiscountPresets(map[_keyDiscountPresets]),
         activeDiscountPresetId: map[_keyActiveDiscountPresetId] ?? 'default',
@@ -192,7 +200,7 @@ class SettingsMapper {
         quality: _parseInt(map[_keyImageQuality], 80),
       ),
       paymentConfig: PaymentConfig(
-        currency: map[_keyCurrency] ?? '฿',
+        currency: _string(map, _keyCurrency, legacy: _legacyCurrency, or: '฿'),
         promptpayId: map[_keyPromptpayId] ?? '',
         billerId: map[_keyBillerId] ?? '',
         promptPayTimeout: _parseInt(map[_keyPromptPayTimeout], 180),
@@ -209,7 +217,6 @@ class SettingsMapper {
         locale: map[_keyLocale] ?? 'th',
         themeMode: _parseThemeMode(map[_keyTheme]),
         dateFormat: map[_keyDateFormat] ?? 'dd/MM/yyyy',
-        cartCompactMode: _parseBool(map[_keyCartCompactMode], false),
         ultraCompactMode: _parseBool(map[_keyUltraCompactMode], false),
         accessibilityMode: _parseBool(map[_keyAccessibilityMode], false),
       ),
@@ -220,7 +227,8 @@ class SettingsMapper {
       backupConfig: BackupConfig(
         reminderDays: _parseInt(map[_keyBackupReminderDays], 7),
         lastBackupAt: _nullIfEmpty(map[_keyLastBackupAt]),
-        encryptionEnabled: _parseBool(map[_keyBackupEncryptionEnabled], false),
+        // Default on (v0.9): matches BackupConfig entity; stored value wins if key exists.
+        encryptionEnabled: _parseBool(map[_keyBackupEncryptionEnabled], true),
       ),
       draftConfig: DraftConfig(maxDrafts: _parseInt(map[_keyMaxDrafts], 30)),
       barcodeConfig: BarcodeConfig(
@@ -243,9 +251,31 @@ class SettingsMapper {
     );
   }
 
+  /// Prefer [key], then optional [legacy]; empty uses [or].
+  static String _string(
+    Map<String, String> map,
+    String key, {
+    String? legacy,
+    String or = '',
+  }) {
+    final v = map[key];
+    if (v != null && v.isNotEmpty) return v;
+    if (legacy != null) {
+      final old = map[legacy];
+      if (old != null && old.isNotEmpty) return old;
+    }
+    // Explicit empty canonical key wins over missing.
+    if (map.containsKey(key)) return v ?? or;
+    if (legacy != null && map.containsKey(legacy)) return map[legacy] ?? or;
+    return or;
+  }
+
   static bool _parseBool(String? raw, bool fallback) {
-    if (raw == null) return fallback;
-    return raw == 'true' || raw == '1';
+    if (raw == null || raw.trim().isEmpty) return fallback;
+    final v = raw.trim().toLowerCase();
+    if (v == 'true' || v == '1') return true;
+    if (v == 'false' || v == '0') return false;
+    return fallback;
   }
 
   static int _parseInt(String? raw, int fallback) {
@@ -286,7 +316,11 @@ class SettingsMapper {
 
   static BusinessType _parseBusinessType(String? raw) {
     if (raw == null || raw.isEmpty) return BusinessType.retail;
-    return BusinessType.values.byName(raw);
+    for (final v in BusinessType.values) {
+      if (v.name == raw) return v;
+    }
+    AppLogger.warning('SettingsMapper: unknown businessType "$raw" → retail');
+    return BusinessType.retail;
   }
 
   static String _serializeDiscountPresets(List<DiscountPreset> presets) {

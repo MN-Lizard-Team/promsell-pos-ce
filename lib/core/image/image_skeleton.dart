@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 
 class ImageSkeleton extends StatefulWidget {
-  const ImageSkeleton({super.key, required this.size, this.borderRadius});
+  const ImageSkeleton({
+    super.key,
+    required this.size,
+    this.borderRadius,
+    this.color,
+  });
 
   final double size;
   final BorderRadius? borderRadius;
+  final Color? color;
 
   @override
   State<ImageSkeleton> createState() => _ImageSkeletonState();
@@ -32,7 +38,7 @@ class _ImageSkeletonState extends State<ImageSkeleton>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final baseColor = theme.colorScheme.surfaceContainerHighest;
+    final baseColor = widget.color ?? theme.colorScheme.surfaceContainerHighest;
     final highlightColor = theme.colorScheme.surfaceContainerLowest;
 
     return AnimatedBuilder(

@@ -11,20 +11,20 @@ class SettingsSectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final st = context.settingsTheme;
+    final outline = theme.colorScheme.outlineVariant.withValues(alpha: 0.55);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (title != null)
           Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 10, top: 8),
+            padding: const EdgeInsets.only(left: 20, bottom: 8, top: 4),
             child: Text(
-              title!.toUpperCase(),
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: st.mutedText,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.8,
-                fontSize: 13,
+              title!,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
               ),
             ),
           ),
@@ -33,24 +33,14 @@ class SettingsSectionCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: st.cardBackground,
             borderRadius: BorderRadius.circular(st.cardRadius),
-            border: Border.all(color: st.cardBorderColor, width: 0.8),
+            border: Border.all(color: outline, width: 1),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(st.cardRadius),
             child: Material(
               type: MaterialType.transparency,
               child: Column(
-                children: _buildChildrenWithDividers(
-                  children
-                      .map(
-                        (c) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: c,
-                        ),
-                      )
-                      .toList(),
-                  st,
-                ),
+                children: _buildChildrenWithDividers(children, st, outline),
               ),
             ),
           ),
@@ -62,6 +52,7 @@ class SettingsSectionCard extends StatelessWidget {
   List<Widget> _buildChildrenWithDividers(
     List<Widget> children,
     SettingsThemeExtension st,
+    Color outline,
   ) {
     final result = <Widget>[];
     for (var i = 0; i < children.length; i++) {
@@ -71,8 +62,8 @@ class SettingsSectionCard extends StatelessWidget {
           Divider(
             height: 1,
             indent: st.dividerIndent,
-            endIndent: st.dividerIndent,
-            color: st.cardBorderColor.withValues(alpha: 0.5),
+            endIndent: 16,
+            color: outline,
           ),
         );
       }

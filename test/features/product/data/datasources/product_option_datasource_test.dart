@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
@@ -73,7 +74,7 @@ void main() {
       expect(groups[0].isRequired, true);
       expect(groups[0].options.length, 1);
       expect(groups[0].options[0].name, 'Large');
-      expect(groups[0].options[0].priceDelta, 10.0);
+      expect(groups[0].options[0].priceDelta, Money.fromDouble(10.0));
     });
 
     test('deleteOptionGroup soft-deletes group', () async {

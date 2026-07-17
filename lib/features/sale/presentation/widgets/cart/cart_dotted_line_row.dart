@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 
 class CartDottedLineRow extends StatelessWidget {
@@ -11,7 +12,7 @@ class CartDottedLineRow extends StatelessWidget {
   });
 
   final String label;
-  final double value;
+  final Money value;
   final String currency;
   final Color? valueColor;
 
@@ -52,7 +53,7 @@ class CartDottedLineRow extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         MoneyText(
-          value: value,
+          value: value.value,
           currency: currency,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600,

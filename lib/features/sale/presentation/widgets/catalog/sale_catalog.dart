@@ -1,51 +1,97 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/errors/app_error_display.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
-import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_empty_state.dart';
-import 'package:promsell_pos_ce/core/widgets/search/search_result_tile.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/utils/search_surface_config.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/product_sliver_content.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/product_option_sheet.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/category_filter_sheet.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_dashboard_header.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_filter_bar.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/view_mode.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/open_bills_strip.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_catalog_filter_chrome.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_mode_switcher.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_product_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
-class SaleCatalog extends StatelessWidget {
+class SaleCatalog extends StatefulWidget {
   const SaleCatalog({
     super.key,
     required this.searchController,
     required this.viewMode,
     required this.onViewModeChanged,
     required this.onClearFilters,
+    this.bottomContentInset = 0,
   });
 
   final TextEditingController searchController;
   final ViewMode viewMode;
   final ValueChanged<ViewMode> onViewModeChanged;
   final VoidCallback onClearFilters;
+  final double bottomContentInset;
+
+  @override
+  State<SaleCatalog> createState() => _SaleCatalogState();
+}
+
+class _SaleCatalogState extends State<SaleCatalog> {
+  bool _recommendedOnly = false;
+
+  List<Product> _prepareProducts(List<Product> active) {
+    if (_recommendedOnly) {
+      return active.where((p) => p.isRecommended).toList();
+    }
+    final boosted = <Product>[];
+    final rest = <Product>[];
+    for (final p in active) {
+      if (p.isRecommended) {
+        boosted.add(p);
+      } else {
+        rest.add(p);
+      }
+    }
+    return [...boosted, ...rest];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final currency = context.watch<SettingsCubit>().state.settings.currency;
+    final settings = context.watch<SettingsCubit>().state.settings;
+    final currency = settings.currency;
+    final threshold = settings.lowStockThreshold;
+    // Must use State.build context for select/watch — not BlocBuilder's parent
+    // Element when that Element is not the one currently building.
+    final categories = context.select<CategoryBloc, List<Category>>(
+      (b) => b.state.categories,
+    );
+    // Multi-bill chrome only when 2+ non-empty bills (density / wireframe).
+    // Must use State.build context — not BlocBuilder's builder context.
+    final openBillCount = context.select<DraftBloc, int>(
+      (b) => b.state.openBillCount,
+    );
+
+    ProductBloc productBloc;
+    try {
+      productBloc = context.read<ProductBloc>();
+    } catch (_) {
+      productBloc = sl<ProductBloc>();
+    }
 
     return BlocListener<ProductBloc, ProductState>(
+      bloc: productBloc,
       listenWhen: (prev, curr) => prev.searchQuery != curr.searchQuery,
       listener: (_, state) {
-        if (searchController.text != state.searchQuery) {
-          searchController.text = state.searchQuery;
+        if (widget.searchController.text != state.searchQuery) {
+          widget.searchController.text = state.searchQuery;
         }
       },
       child: BlocBuilder<ProductBloc, ProductState>(
+        bloc: productBloc,
         builder: (ctx, state) {
           if (state.status == ProductStatus.initial) {
             return const Center(child: CircularProgressIndicator());
@@ -54,56 +100,57 @@ class SaleCatalog extends StatelessWidget {
           if (state.status == ProductStatus.failure) {
             return AppEmptyState(
               icon: Icons.error_outline,
-              title: state.errorMessage ?? ctx.l10n.errorOccurred,
+              title:
+                  state.error?.displayMessage(ctx.l10n) ??
+                  ctx.l10n.errorOccurred,
             );
           }
 
-          final activeProducts = state.filtered
+          final activeProducts = state
+              .filteredProducts(
+                lowStockThreshold: threshold,
+                pauseFiltersOnSearch:
+                    SearchSurfaceConfig.saleListFiltered.pauseFiltersOnSearch,
+              )
               .where((product) => product.isActive)
               .toList();
-          final products = activeProducts;
+          final hasRecommended = activeProducts.any((p) => p.isRecommended);
+          if (_recommendedOnly && !hasRecommended && mounted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && _recommendedOnly) {
+                setState(() => _recommendedOnly = false);
+              }
+            });
+          }
+          final products = _prepareProducts(activeProducts);
+          final terminalInset = 12 + widget.bottomContentInset;
+          final isUltra = settings.ultraCompactMode;
+          final showMultiBillChrome = !isUltra && openBillCount > 1;
 
           return CustomScrollView(
             slivers: [
-              if (state.searchQuery.isEmpty)
-                const SliverToBoxAdapter(child: SaleDashboardHeader()),
+              if (showMultiBillChrome)
+                const SliverToBoxAdapter(child: SaleModeSwitcher()),
+              if (showMultiBillChrome)
+                const SliverToBoxAdapter(child: OpenBillsStrip()),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 6),
-                  child: Row(
-                    children: [
-                      Flexible(
-                        flex: 1,
-                        child: SaleFilterBar(productState: state),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        flex: 2,
-                        child: _buildCategoryButton(ctx, state),
-                      ),
-                      const SizedBox(width: 6),
-                      SegmentedButton<ViewMode>(
-                        segments: const [
-                          ButtonSegment(
-                            value: ViewMode.list,
-                            icon: Icon(Icons.view_list, size: 18),
-                          ),
-                          ButtonSegment(
-                            value: ViewMode.grid,
-                            icon: Icon(Icons.grid_view, size: 18),
-                          ),
-                        ],
-                        selected: {viewMode},
-                        onSelectionChanged: (selection) =>
-                            onViewModeChanged(selection.first),
-                        style: const ButtonStyle(
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          padding: WidgetStatePropertyAll(
-                            EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          ),
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: SaleCatalogFilterChrome(
+                    categories: categories,
+                    productState: state,
+                    viewMode: widget.viewMode,
+                    onViewModeChanged: widget.onViewModeChanged,
+                    showCategories: state.searchQuery.isEmpty,
+                    hasRecommended: state.searchQuery.isEmpty && hasRecommended,
+                    recommendedOnly: _recommendedOnly,
+                    onRecommendedChanged: (v) =>
+                        setState(() => _recommendedOnly = v),
+                    onCategorySelected: (id) {
+                      context.read<ProductBloc>().add(
+                        ProductCategoryFilterChanged(id),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -115,18 +162,26 @@ class SaleCatalog extends StatelessWidget {
                         ? SearchEmptyState(
                             query: state.searchQuery,
                             onClear: () {
-                              searchController.clear();
+                              widget.searchController.clear();
                               context.read<ProductBloc>().add(
                                 const ProductSearchChanged(''),
                               );
                             },
+                          )
+                        : _recommendedOnly
+                        ? AppEmptyState(
+                            icon: Icons.star_outline,
+                            title: context.l10n.saleRecommendedFilter,
+                            actionLabel: context.l10n.saleRecommendedFilterAll,
+                            onAction: () =>
+                                setState(() => _recommendedOnly = false),
                           )
                         : state.categoryFilter != null
                         ? AppEmptyState(
                             icon: Icons.filter_list_off,
                             title: ctx.l10n.noProductsInCategory,
                             actionLabel: ctx.l10n.clearFilters,
-                            onAction: onClearFilters,
+                            onAction: widget.onClearFilters,
                           )
                         : AppEmptyState(
                             icon: Icons.inventory_2_outlined,
@@ -135,62 +190,17 @@ class SaleCatalog extends StatelessWidget {
                           ),
                   ),
                 )
-              else if (state.searchQuery.isNotEmpty)
+              else if (state.searchQuery.isNotEmpty ||
+                  widget.viewMode == ViewMode.list)
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+                  padding: EdgeInsets.only(bottom: terminalInset),
                   sliver: SliverList.separated(
                     itemCount: products.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (_, i) => SearchResultTile(
-                      product: products[i],
-                      query: state.searchQuery,
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        final allowOversell = context
-                            .read<SettingsCubit>()
-                            .state
-                            .settings
-                            .allowOversell;
-                        final p = products[i];
-                        if (p.optionGroups.isNotEmpty) {
-                          ProductOptionSheet.show(
-                            context,
-                            product: p,
-                            onConfirm: (options) {
-                              context.read<CartBloc>().add(
-                                CartProductAdded(
-                                  p,
-                                  allowOversell: allowOversell,
-                                  selectedOptions: options,
-                                ),
-                              );
-                              AppSnackBar.info(
-                                context,
-                                context.l10n.productAddedToCart(p.name),
-                              );
-                            },
-                          );
-                          return;
-                        }
-                        context.read<CartBloc>().add(
-                          CartProductAdded(p, allowOversell: allowOversell),
-                        );
-                        AppSnackBar.info(
-                          context,
-                          context.l10n.productAddedToCart(p.name),
-                        );
-                      },
-                    ),
-                  ),
-                )
-              else if (viewMode == ViewMode.list)
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 80),
-                  sliver: SliverList.separated(
-                    itemCount: products.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 6),
+                    // 92: room for name + 1 meta line + stock + price/add
+                    // without bottom RenderFlex overflow on device text scale.
                     itemBuilder: (_, i) => SizedBox(
-                      height: 88,
+                      height: 92,
                       child: SaleProductCard(
                         product: products[i],
                         currency: currency,
@@ -200,14 +210,15 @@ class SaleCatalog extends StatelessWidget {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 80),
+                  padding: EdgeInsets.only(bottom: terminalInset),
                   sliver: SliverGrid(
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 200,
-                          mainAxisExtent: 240,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
+                          maxCrossAxisExtent: 168,
+                          // Image 88 + body (name/meta/stock/price+add).
+                          mainAxisExtent: 200,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
                         ),
                     delegate: SliverChildBuilderDelegate(
                       (_, index) => SaleProductCard(
@@ -223,40 +234,6 @@ class SaleCatalog extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildCategoryButton(BuildContext context, ProductState state) {
-    final l10n = context.l10n;
-    final categories = context.watch<CategoryBloc>().state.categories;
-    final selected = state.categoryFilter;
-
-    String label;
-    if (selected == null) {
-      label = l10n.filterCategory;
-    } else if (selected == kNoCategoryFilter) {
-      label = l10n.noCategory;
-    } else {
-      label =
-          categories
-              .where((c) => c.id == selected)
-              .map((c) => c.name)
-              .firstOrNull ??
-          l10n.filterCategory;
-    }
-
-    final hasSelection = selected != null;
-
-    return PillButton(
-      icon: Icons.category_outlined,
-      label: label,
-      active: hasSelection,
-      onTap: () => CategoryFilterSheet.show(context),
-      onClear: hasSelection
-          ? () => context.read<ProductBloc>().add(
-              const ProductCategoryFilterChanged(null),
-            )
-          : null,
     );
   }
 }

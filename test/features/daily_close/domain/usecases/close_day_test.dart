@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/close_day.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 
 class MockDailyCloseRepository extends Mock implements DailyCloseRepository {}
 
@@ -39,21 +41,21 @@ void main() {
         Sale(
           id: 's1',
           receiptNumber: '001',
-          totalAmount: 100,
+          totalAmount: Money.fromDouble(100),
           paymentMethod: 'cash',
           status: 'COMPLETED',
-          vatAmount: 7,
-          discountAmount: 0,
+          vatAmount: Money.fromDouble(7),
+          discountAmount: Money.zero,
           createdAt: DateTime(2026, 6, 5, 10),
         ),
         Sale(
           id: 's2',
           receiptNumber: '002',
-          totalAmount: 50,
+          totalAmount: Money.fromDouble(50),
           paymentMethod: 'promptpay',
           status: 'COMPLETED',
-          vatAmount: 3.5,
-          discountAmount: 0,
+          vatAmount: Money.fromDouble(3.5),
+          discountAmount: Money.zero,
           createdAt: DateTime(2026, 6, 5, 11),
         ),
       ];
@@ -72,10 +74,13 @@ void main() {
         deviceId: 'dev1',
       );
 
-      expect(result.openingCash, 200);
-      expect(result.expectedCash, 300); // 200 + 100 cash sales
-      expect(result.overShortAmount, 10); // 310 - 300
-      expect(result.totalRevenue, 150);
+      expect(result.openingCash, Money.fromDouble(200));
+      expect(
+        result.expectedCash,
+        Money.fromDouble(300),
+      ); // 200 + 100 cash sales
+      expect(result.overShortAmount, Money.fromDouble(10)); // 310 - 300
+      expect(result.totalRevenue, Money.fromDouble(150));
       expect(result.salesCount, 2);
     });
 
@@ -100,9 +105,9 @@ void main() {
         deviceId: 'dev1',
       );
 
-      expect(result.totalRevenue, 0);
-      expect(result.expectedCash, 0);
-      expect(result.overShortAmount, 0);
+      expect(result.totalRevenue, Money.zero);
+      expect(result.expectedCash, Money.zero);
+      expect(result.overShortAmount, Money.zero);
     });
 
     test('throws when day is already closed', () async {
@@ -138,21 +143,21 @@ void main() {
         Sale(
           id: 's1',
           receiptNumber: '001',
-          totalAmount: 200,
+          totalAmount: Money.fromDouble(200),
           paymentMethod: 'cash',
           status: 'COMPLETED',
-          vatAmount: 14,
-          discountAmount: 0,
+          vatAmount: Money.fromDouble(14),
+          discountAmount: Money.zero,
           createdAt: DateTime(2026, 6, 5, 10),
         ),
         Sale(
           id: 's2',
           receiptNumber: '002',
-          totalAmount: 50,
+          totalAmount: Money.fromDouble(50),
           paymentMethod: 'cash',
           status: 'VOIDED',
-          vatAmount: 0,
-          discountAmount: 0,
+          vatAmount: Money.zero,
+          discountAmount: Money.zero,
           createdAt: DateTime(2026, 6, 5, 11),
         ),
       ];
@@ -171,11 +176,72 @@ void main() {
         deviceId: 'dev1',
       );
 
-      expect(result.totalRevenue, 200);
-      expect(result.totalVoid, 50);
+      expect(result.totalRevenue, Money.fromDouble(200));
+      expect(result.totalVoid, Money.fromDouble(50));
       expect(result.salesCount, 1);
       expect(result.voidCount, 1);
-      expect(result.expectedCash, 300); // 100 + 200 cash
+      expect(result.expectedCash, Money.fromDouble(300)); // 100 + 200 cash
     });
+
+    test(
+      'expected cash uses cash tender lines only for multi-tender sales',
+      () async {
+        when(
+          () => mockRepo.getByDate('2026-06-05'),
+        ).thenAnswer((_) async => null);
+        when(() => mockRepo.save(any())).thenAnswer((inv) async {
+          return inv.positionalArguments.first as DailyClose;
+        });
+
+        final sales = [
+          Sale(
+            id: 'mixed-1',
+            receiptNumber: '001',
+            totalAmount: Money.fromDouble(200),
+            paymentMethod: 'mixed',
+            status: 'COMPLETED',
+            payments: [
+              SalePayment(method: 'cash', amount: Money.fromDouble(80)),
+              SalePayment(method: 'promptpay', amount: Money.fromDouble(120)),
+            ],
+            vatAmount: Money.zero,
+            discountAmount: Money.zero,
+            createdAt: DateTime(2026, 6, 5, 10),
+          ),
+          Sale(
+            id: 'cash-2',
+            receiptNumber: '002',
+            totalAmount: Money.fromDouble(50),
+            paymentMethod: 'cash',
+            status: 'COMPLETED',
+            vatAmount: Money.zero,
+            discountAmount: Money.zero,
+            createdAt: DateTime(2026, 6, 5, 11),
+          ),
+        ];
+
+        when(
+          () => mockSales.querySales(
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenAnswer((_) async => sales);
+
+        final result = await usecase(
+          date: '2026-06-05',
+          openingCash: 100,
+          countedCash: 230, // 100 + 80 + 50
+          deviceId: 'dev1',
+        );
+
+        // cash lines only: 80 (mixed) + 50 (cash) — not full 200 mixed bill
+        expect(result.expectedCash, Money.fromDouble(230));
+        expect(result.overShortAmount, Money.zero);
+        expect(result.totalRevenue, Money.fromDouble(250));
+        expect(result.paymentBreakdown['cash'], 130);
+        expect(result.paymentBreakdown['promptpay'], 120);
+        expect(result.paymentBreakdown['mixed'], isNull);
+      },
+    );
   });
 }

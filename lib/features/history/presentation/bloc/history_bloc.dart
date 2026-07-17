@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
@@ -23,7 +24,16 @@ class _HistoryError extends HistoryEvent {
   List<Object?> get props => [message];
 }
 
-@lazySingleton
+/// Stable keys for UI l10n mapping (not raw exception strings).
+abstract final class HistoryErrorKeys {
+  static const saleAlreadyVoided = 'saleAlreadyVoided';
+  static const dayClosed = 'dayClosed';
+  static const saleNotFound = 'saleNotFound';
+  static const generic = 'errorOccurred';
+}
+
+/// Factory scope — each History surface owns its own stream subscription.
+@injectable
 class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   HistoryBloc({
     required WatchSaleHistory watchSaleHistory,
@@ -104,10 +114,17 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
     SaleVoidRequested event,
     Emitter<HistoryState> emit,
   ) async {
-    emit(state.copyWith(status: HistoryStatus.voiding));
+    if (state.voidingSaleId != null) return;
+    emit(state.copyWith(voidingSaleId: event.saleId, errorMessage: null));
     try {
       await _voidSale(event.saleId, reason: event.reason);
-      emit(state.copyWith(status: HistoryStatus.success));
+      emit(
+        state.copyWith(
+          voidingSaleId: null,
+          status: HistoryStatus.success,
+          errorMessage: null,
+        ),
+      );
     } catch (e, stack) {
       AppLogger.error(
         'HistoryBloc._onVoidRequested failed',
@@ -116,8 +133,10 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
       );
       emit(
         state.copyWith(
-          status: HistoryStatus.failure,
-          errorMessage: e.toString(),
+          voidingSaleId: null,
+          // Keep list data; signal failure via error key for snack.
+          status: HistoryStatus.success,
+          errorMessage: mapHistoryVoidErrorKey(e),
         ),
       );
     }
@@ -128,4 +147,17 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
     _sub?.cancel();
     return super.close();
   }
+}
+
+String mapHistoryVoidErrorKey(Object e) {
+  if (e is BusinessRuleError && e.rule == 'SaleAlreadyVoided') {
+    return HistoryErrorKeys.saleAlreadyVoided;
+  }
+  if (e is BusinessRuleError && e.rule == 'DayClosed') {
+    return HistoryErrorKeys.dayClosed;
+  }
+  if (e is NotFoundError) {
+    return HistoryErrorKeys.saleNotFound;
+  }
+  return HistoryErrorKeys.generic;
 }

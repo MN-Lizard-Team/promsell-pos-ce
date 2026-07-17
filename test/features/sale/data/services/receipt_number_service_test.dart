@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
@@ -71,5 +72,47 @@ void main() {
     expect(receipts.toSet().length, 100);
     // Last one should be 0100
     expect(receipts.last, endsWith('-0100'));
+  });
+
+  test('parseSeq extracts trailing sequence', () {
+    expect(ReceiptNumberService.parseSeq('260715-A1-0042'), 42);
+    expect(ReceiptNumberService.parseSeq(null), isNull);
+    expect(ReceiptNumberService.parseSeq('bad'), isNull);
+  });
+
+  test('reseeds when settings lag behind existing sales', () async {
+    // First number establishes prefix + seq 1.
+    final first = await db.transaction(() => service.nextReceiptNumber());
+    final parts = first.split('-');
+    final dateKey = parts[0];
+    final prefix = parts[1];
+
+    // Insert a higher receipt as if restored from backup.
+    await db
+        .into(db.sales)
+        .insert(
+          SalesCompanion.insert(
+            id: 'sale-restored',
+            totalAmount: 100,
+            paymentMethod: 'cash',
+            receiptNumber: Value(
+              ReceiptNumberService.formatReceiptNumber(
+                dateKey: dateKey,
+                devicePrefix: prefix,
+                seq: 50,
+              ),
+            ),
+          ),
+        );
+
+    // Settings still think we are at seq 1 — next must jump past 50.
+    await db
+        .into(db.appSettings)
+        .insertOnConflictUpdate(
+          AppSettingsCompanion.insert(key: 'receiptSequence', value: '1'),
+        );
+
+    final next = await db.transaction(() => service.nextReceiptNumber());
+    expect(ReceiptNumberService.parseSeq(next), 51);
   });
 }

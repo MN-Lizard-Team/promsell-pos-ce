@@ -85,18 +85,27 @@ class ImageCacheService {
   }
 
   /// Deletes a specific image and its thumbnail.
+  ///
+  /// Only deletes files under the app `images/` directory (path sandbox).
   Future<void> deleteImage(String? imagePath, String? thumbnailPath) async {
-    if (imagePath != null && imagePath.isNotEmpty) {
-      final file = File(imagePath);
+    final root = await _cacheDir;
+    await _deleteIfUnderImages(imagePath, root);
+    await _deleteIfUnderImages(thumbnailPath, root);
+  }
+
+  Future<void> _deleteIfUnderImages(String? path, Directory imagesRoot) async {
+    if (path == null || path.isEmpty) return;
+    try {
+      final file = File(path);
+      final resolved = p.normalize(file.absolute.path);
+      final rootPath = p.normalize(imagesRoot.absolute.path);
+      final sep = p.separator;
+      final underRoot =
+          resolved == rootPath || resolved.startsWith('$rootPath$sep');
+      if (!underRoot) return;
       if (await file.exists()) {
         await file.delete();
       }
-    }
-    if (thumbnailPath != null && thumbnailPath.isNotEmpty) {
-      final file = File(thumbnailPath);
-      if (await file.exists()) {
-        await file.delete();
-      }
-    }
+    } catch (_) {}
   }
 }

@@ -1,4 +1,4 @@
-# Conventions — Promsell POS CE v0.8.9
+# Conventions — Promsell POS CE (v0.9.0)
 
 State management, settings persistence, localization, dependency injection, and code generation conventions.
 
@@ -33,7 +33,7 @@ SettingsCubit
               └── SettingsLocalDatasource (Drift key-value store)
 ```
 
-### `Settings` aggregate root — 13 typed group entities
+### `Settings` aggregate root — 14 typed group entities
 
 | Group | Entity | Key fields |
 |-------|--------|-----------|
@@ -50,6 +50,7 @@ SettingsCubit
 | Daily Close | `DailyCloseConfig` | dailyCloseLock, lastClosedDate |
 | Backup | `BackupConfig` | reminderDays, lastBackupAt, encryptionEnabled |
 | Draft | `DraftConfig` | maxDrafts |
+| Business | `BusinessConfig` | businessType (retail/restaurant), serviceChargeRate (v0.8.9+) |
 
 ### Flat getters + flat `copyWith`
 
@@ -86,7 +87,8 @@ Annotations on implementation classes drive registration:
 | Scope | Annotation | Examples |
 |-------|-----------|----------|
 | Lazy singleton | `@LazySingleton(as: Abc)` | datasources, repositories, services |
-| Lazy singleton | `@lazySingleton` | `ProductBloc`, `CategoryBloc`, `CartBloc`, `DraftBloc`, `CheckoutBloc`, `SettingsCubit`, `ReportCubit`, `ProductFormCubit` |
+| Lazy singleton | `@lazySingleton` | `ProductBloc`, `CategoryBloc`, `CartBloc`, `DraftBloc`, `CheckoutBloc`, `SettingsCubit`, `ReportCubit`, … |
+| Factory (per route) | `@injectable` | `ProductFormCubit` (and other form-scoped cubits) |
 | Factory | `@injectable` | use cases, `Ean13Generator` |
 | Module | `@module` | `DatabaseModule` provides `AppDatabase` |
 
@@ -115,4 +117,4 @@ Two generators must be run after changes:
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Conventions</sub>
+<sub>Promsell POS CE · v0.9.0 · Conventions</sub>

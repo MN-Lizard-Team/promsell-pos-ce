@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_draft.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_state.dart';
@@ -89,7 +90,7 @@ class ProductFormCubit extends Cubit<ProductFormState> {
     );
   }
 
-  Future<void> generateBarcode({String? prefix, String? excludeId}) async {
+  Future<String> generateBarcode({String? prefix, String? excludeId}) async {
     try {
       final barcode = await _generateBarcode(
         prefix: prefix,
@@ -101,6 +102,7 @@ class ProductFormCubit extends Cubit<ProductFormState> {
           isDirty: true,
         ),
       );
+      return barcode;
     } catch (e, stack) {
       AppLogger.error(
         'ProductFormCubit.generateBarcode failed',
@@ -112,6 +114,18 @@ class ProductFormCubit extends Cubit<ProductFormState> {
   }
 
   ProductDraft collectDraft() => state.draft;
+
+  static int resolveStock({
+    required bool trackStock,
+    required bool isEditing,
+    required String stockText,
+    int? latestStock,
+    int? baseStock,
+  }) {
+    if (trackStock) return int.tryParse(stockText) ?? 0;
+    if (isEditing) return latestStock ?? baseStock ?? 0;
+    return int.tryParse(stockText) ?? 0;
+  }
 
   Future<void> saveDraftToStorage() async {
     if (!state.isDirty || state.isSubmitted) return;
@@ -148,6 +162,12 @@ class ProductFormCubit extends Cubit<ProductFormState> {
     String? imageThumbnailPath,
     required bool trackStock,
     bool isActive = true,
+    bool isRecommended = false,
+    String description = '',
+    String brand = '',
+    String unit = '',
+    String supplier = '',
+    List<ProductOptionGroup> optionGroups = const [],
   }) {
     emit(
       state.copyWith(
@@ -164,6 +184,12 @@ class ProductFormCubit extends Cubit<ProductFormState> {
           imageThumbnailPath: imageThumbnailPath,
           trackStock: trackStock,
           isActive: isActive,
+          isRecommended: isRecommended,
+          description: description,
+          brand: brand,
+          unit: unit,
+          supplier: supplier,
+          optionGroups: optionGroups,
         ),
         isDirty: true,
       ),

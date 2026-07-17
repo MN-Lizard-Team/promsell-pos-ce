@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 
 class AppTextDialog extends StatefulWidget {
   const AppTextDialog({
@@ -79,14 +80,19 @@ class _AppTextDialogState extends State<AppTextDialog> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    disposeTextEditingControllerAfterFrame(_controller);
     super.dispose();
+  }
+
+  void _pop([String? value]) {
+    unfocusForDialogClose();
+    Navigator.of(context).pop(value);
   }
 
   void _submit() {
     setState(() => _submitted = true);
     if (_formKey.currentState?.validate() ?? false) {
-      Navigator.of(context).pop(_controller.text.trim());
+      _pop(_controller.text.trim());
     }
   }
 
@@ -120,13 +126,21 @@ class _AppTextDialogState extends State<AppTextDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(widget.cancelLabel ?? 'Cancel'),
+        Semantics(
+          button: true,
+          label: widget.cancelLabel ?? 'Cancel',
+          child: TextButton(
+            onPressed: () => _pop(),
+            child: Text(widget.cancelLabel ?? 'Cancel'),
+          ),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(widget.submitLabel ?? 'Save'),
+        Semantics(
+          button: true,
+          label: widget.submitLabel ?? 'Save',
+          child: FilledButton(
+            onPressed: _submit,
+            child: Text(widget.submitLabel ?? 'Save'),
+          ),
         ),
       ],
     );

@@ -66,7 +66,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
     if (customer == null) return;
     await _datasource.updateSpent(
       customerId,
-      customer.totalSpent + amount,
+      customer.totalSpent.value + amount,
       customer.visitCount + 1,
     );
   }

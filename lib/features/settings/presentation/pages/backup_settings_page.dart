@@ -197,6 +197,11 @@ class BackupSettingsPage extends StatelessWidget {
                   activeTrackColor: st.softAccent,
                   onChanged: (v) async {
                     if (!v && s.backupEncryptionEnabled) {
+                      final unlocked = await ensureAppUnlocked(
+                        context,
+                        title: l10n.backupEncryptionOffTitle,
+                      );
+                      if (!unlocked || !context.mounted) return;
                       final ok = await showAppConfirm(
                         context,
                         title: l10n.backupEncryptionOffTitle,

@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/barcode/b
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_switch_tile.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
 class BarcodeSettingsPage extends StatelessWidget {
   const BarcodeSettingsPage({super.key});
@@ -25,85 +26,71 @@ class BarcodeSettingsPage extends StatelessWidget {
         final accent = context.settingsTheme.softAccent;
         final st = context.settingsTheme;
 
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.barcodeSettings)),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            children: [
-              BarcodePreviewCard(
-                scanEnabled: s.barcodeScanEnabled,
-                prefix: s.barcodeAutoGeneratePrefix,
-                vibrateOnScan: s.barcodeBeepOnScan,
-              ),
-              const SizedBox(height: 24),
-              SettingsSectionCard(
-                title: l10n.settingsGeneral,
-                children: [
-                  SettingsSwitchTile(
-                    icon: Icons.camera_alt_outlined,
-                    title: l10n.enableBarcodeScan,
-                    subtitle: l10n.enableBarcodeScanHint,
-                    accentColor: accent,
-                    value: s.barcodeScanEnabled,
-                    onChanged: (v) {
-                      cubit.updateField(
-                        (s) => s.copyWith(barcodeScanEnabled: v),
-                      );
-                    },
-                  ),
-                  SettingsSwitchTile(
-                    icon: Icons.volume_up_outlined,
-                    title: l10n.playBeepOnScan,
-                    subtitle: l10n.playBeepOnScanHint,
-                    accentColor: accent,
-                    value: s.barcodeBeepOnScan,
-                    onChanged: (v) {
-                      cubit.updateField(
-                        (s) => s.copyWith(barcodeBeepOnScan: v),
-                      );
-                    },
-                  ),
-                  SettingsSwitchTile(
-                    icon: Icons.repeat,
-                    title: l10n.continuousScan,
-                    subtitle: l10n.continuousScanHint,
-                    accentColor: accent,
-                    value: s.barcodeContinuousScan,
-                    onChanged: (v) {
-                      cubit.updateField(
-                        (s) => s.copyWith(barcodeContinuousScan: v),
-                      );
-                    },
-                  ),
-                  BarcodePrefixTile(settings: s, cubit: cubit),
-                ],
-              ),
-              const SizedBox(height: 24),
-              SettingsSectionCard(
-                title: l10n.barcodeFormats,
-                children: [
-                  BarcodeFormatsTile(settings: s, cubit: cubit, st: st),
-                ],
-              ),
-              const SizedBox(height: 24),
-              SettingsSectionCard(
-                title: l10n.barcodeAutoOpenManual,
-                children: [
-                  BarcodeAutoOpenTile(settings: s, cubit: cubit, st: st),
-                ],
-              ),
-              const SizedBox(height: 24),
-              SettingsSectionCard(
-                title: l10n.batchGenerateBarcodes,
-                children: [BarcodeBatchGenerateTile(settings: s, st: st)],
-              ),
-              const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: BarcodeHelpSection(st: st),
-              ),
-            ],
+        return SettingsLeafChrome(
+          title: l10n.barcodeSettings,
+          header: BarcodePreviewCard(
+            scanEnabled: s.barcodeScanEnabled,
+            prefix: s.barcodeAutoGeneratePrefix,
+            vibrateOnScan: s.barcodeBeepOnScan,
           ),
+          children: [
+            SettingsSectionCard(
+              title: l10n.settingsGeneral,
+              children: [
+                SettingsSwitchTile(
+                  icon: Icons.camera_alt_outlined,
+                  title: l10n.enableBarcodeScan,
+                  subtitle: l10n.enableBarcodeScanHint,
+                  accentColor: accent,
+                  value: s.barcodeScanEnabled,
+                  onChanged: (v) {
+                    cubit.updateField((s) => s.copyWith(barcodeScanEnabled: v));
+                  },
+                ),
+                SettingsSwitchTile(
+                  icon: Icons.volume_up_outlined,
+                  title: l10n.playBeepOnScan,
+                  subtitle: l10n.playBeepOnScanHint,
+                  accentColor: accent,
+                  value: s.barcodeBeepOnScan,
+                  onChanged: (v) {
+                    cubit.updateField((s) => s.copyWith(barcodeBeepOnScan: v));
+                  },
+                ),
+                SettingsSwitchTile(
+                  icon: Icons.repeat,
+                  title: l10n.continuousScan,
+                  subtitle: l10n.continuousScanHint,
+                  accentColor: accent,
+                  value: s.barcodeContinuousScan,
+                  onChanged: (v) {
+                    cubit.updateField(
+                      (s) => s.copyWith(barcodeContinuousScan: v),
+                    );
+                  },
+                ),
+                BarcodePrefixTile(settings: s, cubit: cubit),
+              ],
+            ),
+            SettingsSectionCard(
+              title: l10n.barcodeFormats,
+              children: [BarcodeFormatsTile(settings: s, cubit: cubit, st: st)],
+            ),
+            SettingsSectionCard(
+              title: l10n.barcodeAutoOpenManual,
+              children: [
+                BarcodeAutoOpenTile(settings: s, cubit: cubit, st: st),
+              ],
+            ),
+            SettingsSectionCard(
+              title: l10n.batchGenerateBarcodes,
+              children: [BarcodeBatchGenerateTile(settings: s, st: st)],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: BarcodeHelpSection(st: st),
+            ),
+          ],
         );
       },
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
@@ -54,14 +55,16 @@ class DiscountLimitsSection extends StatelessWidget {
                 context: context,
                 icon: Icons.trending_down_outlined,
                 label: l10n.maxDiscountAmount,
-                displayValue: s.maxDiscountAmount <= 0
+                displayValue: !s.maxDiscountAmount.isPositive
                     ? l10n.maxAmountNoLimit
-                    : '${s.currency}${s.maxDiscountAmount.toStringAsFixed(0)}',
-                value: s.maxDiscountAmount,
+                    : '${s.currency}${s.maxDiscountAmount.value.toStringAsFixed(0)}',
+                value: s.maxDiscountAmount.value,
                 min: 0,
                 max: 999999,
                 presets: const [0.0, 100.0, 500.0, 1000.0],
-                onChanged: (v) => onUpdate(s.copyWith(maxDiscountAmount: v)),
+                onChanged: (v) => onUpdate(
+                  s.copyWith(maxDiscountAmount: Money.fromDouble(v)),
+                ),
               ),
             ],
           ),

@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.8.9
+# CODEBASE.md — Promsell POS CE v0.9.0
 
 ## System overview
 
@@ -167,7 +167,7 @@ features/<name>/
 - Sale layouts are adaptive:
   - Compact screens use a product catalog with a delivery-style `CartBottomBar` (item count badge + total + checkout; tap/pull-up to open `CartBottomSheet`).
   - Expanded screens keep the cart pane visible beside the product grid via `CartContent` (expanded mode with `ReorderableListView` + `Dismissible`).
-  - **Compact Cart Mode** (toggle in Settings → General, default ON) shows `CartBottomBar`; OFF shows classic `CartPanel` with vertical drag handle.
+  - **Compact Cart Mode** (toggle in Settings → General, default ON) shows `CartBottomBar`; OFF uses the classic taller cart chrome (bottom bar / sheet — not a separate `CartPanel` class).
   - `SaleDashboardHeader` shows shop name + today's revenue/sales count/cart total in a horizontal scrollable row.
   - `SaleFilterBar` provides 3 dropdown filters (Category/Sort/Stock) replacing the old category chips.
 - User-facing strings must remain localized through ARB files and accessed with `context.l10n`.
@@ -184,13 +184,13 @@ features/<name>/
 
 | Document | Content |
 |----------|---------|
-| [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (60+ entries) + Feature modules table (16 features) |
+| [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (60+ entries) + Feature modules table (13 features under `lib/features/`) |
 | [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (15 group entities), Localization, DI, Code generation |
 | [`docs/codebase/file-dependency-map.md`](docs/codebase/file-dependency-map.md) | If-you-change-X-update-Y rules for all entities, BLoCs, datasources |
-| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (1373 tests, 9 layers) + test layer techniques |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema v21 overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
+| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (multi-layer suite; run flutter test) + test layer techniques |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema **v28** overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-024) + barcode DI graph |
 
 ---
 
-<sub>Promsell POS CE · v0.8.9 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.9.0 · Codebase Reference</sub>

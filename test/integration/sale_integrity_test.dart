@@ -1,6 +1,9 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
+import 'package:promsell_pos_ce/features/inventory/data/datasources/inventory_log_local_datasource.dart';
+import 'package:promsell_pos_ce/features/inventory/data/repositories/inventory_repository_impl.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
@@ -34,7 +37,9 @@ void main() {
       inventoryLogService: inventoryLogService,
       settingsRepo: fakeSettingsRepo,
     );
-    adjustStock = AdjustStock(db, inventoryLogService);
+    adjustStock = AdjustStock(
+      InventoryRepositoryImpl(db, InventoryLogLocalDatasource(db)),
+    );
   });
 
   tearDown(() => db.close());
@@ -133,10 +138,10 @@ void main() {
       expect(
         () => saleDs.voidSale(sale.id),
         throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            contains('already voided'),
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            'SaleAlreadyVoided',
           ),
         ),
       );
@@ -146,11 +151,7 @@ void main() {
       expect(
         () => saleDs.voidSale('non-existent'),
         throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            contains('Sale not found'),
-          ),
+          isA<NotFoundError>().having((e) => e.resource, 'resource', 'Sale'),
         ),
       );
     });

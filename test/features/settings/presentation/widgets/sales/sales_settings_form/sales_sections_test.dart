@@ -14,22 +14,7 @@ void main() {
       );
 
       expect(find.text('DISPLAY'), findsOneWidget);
-      expect(find.byType(Switch), findsNWidgets(2));
-    });
-
-    testWidgets('calls onUpdate with compact mode', (tester) async {
-      Settings? updated;
-      await tester.pumpApp(
-        SalesDisplaySection(
-          settings: const Settings(),
-          onUpdate: (s) => updated = s,
-        ),
-      );
-
-      await tester.tap(find.byType(Switch).first);
-      await tester.pump();
-      expect(updated, isNotNull);
-      expect(updated!.cartCompactMode, isFalse);
+      expect(find.byType(Switch), findsOneWidget);
     });
   });
 

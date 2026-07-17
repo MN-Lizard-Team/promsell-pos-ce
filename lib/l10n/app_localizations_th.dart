@@ -1365,7 +1365,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get backupActionSubtitle => 'แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว';
 
   @override
-  String get backupEncryptionTitle => 'การเข้ารหัสสำรองข้อมูล (ไม่บังคับ)';
+  String get backupEncryptionTitle => 'การเข้ารหัสสำรองข้อมูล';
 
   @override
   String get backupEncryptionLabel => 'เข้ารหัสไฟล์สำรอง';
@@ -2135,7 +2135,14 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get dataCollectionBody =>
-      'Promsell ไม่เก็บข้อมูลส่วนบุคคลใดๆ ข้อมูลการขาย สินค้าคงคลัง และการตั้งค่าทั้งหมดจัดเก็บไว้ในเครื่องของคุณด้วย SQLite ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์ของเรา';
+      'Promsell ไม่เก็บและไม่ส่งข้อมูลส่วนบุคคลไปยังเซิร์ฟเวอร์ของผู้พัฒนา ข้อมูลการขาย สต็อก การตั้งค่า และข้อมูลร้าน/ลูกค้าที่คุณกรอก (ถ้ามี) จัดเก็บบนเครื่องนี้เท่านั้น (SQLite/SQLCipher) จะไม่ออกจากเครื่อง เว้นแต่คุณส่งออกหรือแชร์เอง';
+
+  @override
+  String get customerDataTitle => 'ข้อมูลลูกค้า';
+
+  @override
+  String get customerDataBody =>
+      'หากใช้ฟีเจอร์ลูกค้า ชื่อ เบอร์โทร และอีเมลจะเก็บบนเครื่องนี้เท่านั้น ลบรายชื่อได้ตลอดเวลา และไม่ส่งไปเซิร์ฟเวอร์ของผู้พัฒนา';
 
   @override
   String get thirdPartyServices => 'บริการภายนอก';
@@ -2149,11 +2156,11 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get dataStorageBody =>
-      'ข้อมูลของคุณอยู่ในเครื่อง คุณสามารถส่งออกหรือลบได้ตลอดเวลาผ่านฟีเจอร์สำรอง/กู้คืน รูปภาพสินค้าจัดเก็บในไดเรกทอรีส่วนตัวของแอปและมีการล้างแคชอัตโนมัติ (จำกัด 50MB) เพื่อป้องกันการใช้พื้นที่มากเกินไป';
+      'ข้อมูลของคุณอยู่ในเครื่อง ส่งออกหรือลบได้ผ่านสำรอง/กู้คืน การกู้คืนในแอปใช้ได้เฉพาะเครื่องเดิมขณะที่คีย์ SQLCipher ยังอยู่ ไม่รองรับข้ามเครื่องหรือหลังถอนการติดตั้ง/ล้างคีย์ รูปสินค้าใช้แคช LRU 50MB ในเครื่อง';
 
   @override
   String get backupEncryptionBody =>
-      'Promsell มีการเข้ารหัส AES-256-GCM สำหรับสำรองข้อมูล หากเปิดใช้งาน ข้อมูลสำรองจะถูกเข้ารหัสด้วยคีย์ที่ได้จาก PIN ที่ผู้ใช้กำหนดผ่าน PBKDF2 PIN ไม่ถูกจัดเก็บในเครื่องหรือส่งไปยังที่ใด หากลืม PIN จะไม่สามารถกู้คืนข้อมูลสำรองได้ — เราไม่สามารถรีเซ็ตหรือกู้คืนได้';
+      'การส่งออกฐานข้อมูลใช้ AES-256-GCM ด้วยคีย์จาก PIN (PBKDF2 อย่างน้อย 6 ตัวอักษร) ค่าเริ่มต้นเปิดเข้ารหัสสำหรับติดตั้งใหม่ PIN ไม่ถูกเก็บหรือส่งออก หากลืม PIN จะกู้ไฟล์สำรองนั้นไม่ได้ ฐานข้อมูลจริงถูกปกป้องด้วย SQLCipher แยกต่างหาก';
 
   @override
   String get permissionsTitle => 'สิทธิ์การเข้าถึง';
@@ -2360,6 +2367,21 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get filterMore => 'กรอง';
+
+  @override
+  String get productRowMenuQty => 'กำหนดจำนวน';
+
+  @override
+  String get productRowMenuAdd => 'เพิ่มลงตะกร้า';
+
+  @override
+  String get productRowMenu => 'เมนูสินค้า';
+
+  @override
+  String get cartBottomLabel => 'ตะกร้า';
+
+  @override
+  String get saleCategoryTabsLabel => 'หมวดหมู่';
 
   @override
   String get filterPageTitle => 'กรองสินค้า';
@@ -3752,7 +3774,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get appLockSubtitle =>
-      'ป้องกันการยกเลิกบิล สำรองข้อมูล และแก้ PromptPay';
+      'ป้องกันยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay';
 
   @override
   String get appLockSectionTitle => 'การกระทำที่เสี่ยง';
@@ -3762,7 +3784,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String appLockRequirePinHint(int minutes) {
-    return 'เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง และแก้ PromptPay (ผ่อนผัน $minutes นาที)';
+    return 'เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (ผ่อนผัน $minutes นาที)';
   }
 
   @override
@@ -3810,5 +3832,16 @@ class AppLocalizationsTh extends AppLocalizations {
   String get appLockConfirmPromptPay => 'ยืนยันการเปลี่ยน PromptPay';
 
   @override
+  String get appLockConfirmStock => 'ยืนยันปรับสต็อกด้วย PIN ร้าน';
+
+  @override
+  String get appLockConfirmCsv => 'ยืนยันนำเข้า CSV ด้วย PIN ร้าน';
+
+  @override
   String get appLockPinsMismatch => 'PIN ไม่ตรงกัน';
+
+  @override
+  String appLockLockedOut(int seconds) {
+    return 'พยายามผิดหลายครั้ง ลองใหม่ใน $seconds วินาที';
+  }
 }

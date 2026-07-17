@@ -243,4 +243,3 @@ class CartState extends Equatable {
     paymentLocked,
   ];
 }
-

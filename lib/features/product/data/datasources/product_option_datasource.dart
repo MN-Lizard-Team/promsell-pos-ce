@@ -1,11 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 
 abstract class ProductOptionDatasource {
   Future<List<ProductOptionGroup>> getOptionGroupsForProduct(String productId);
+  Future<Map<String, List<ProductOptionGroup>>> getOptionGroupsForProducts(
+    List<String> productIds,
+  );
   Future<void> insertOptionGroup(ProductOptionGroupsCompanion companion);
   Future<void> updateOptionGroup(ProductOptionGroupsCompanion companion);
   Future<void> deleteOptionGroup(String id);
@@ -24,7 +28,7 @@ class ProductOptionDatasourceImpl implements ProductOptionDatasource {
     id: d.id,
     groupId: d.groupId,
     name: d.name,
-    priceDelta: d.priceDelta,
+    priceDelta: Money.fromDouble(d.priceDelta),
     sortOrder: d.sortOrder,
   );
 
@@ -74,6 +78,49 @@ class ProductOptionDatasourceImpl implements ProductOptionDatasource {
     return groups
         .map((g) => _groupFromData(g, optionsByGroup[g.id] ?? []))
         .toList();
+  }
+
+  @override
+  Future<Map<String, List<ProductOptionGroup>>> getOptionGroupsForProducts(
+    List<String> productIds,
+  ) async {
+    if (productIds.isEmpty) return {};
+
+    final groups =
+        await (_db.select(_db.productOptionGroups)
+              ..where((g) => g.productId.isIn(productIds))
+              ..where((g) => g.deletedAt.isNull())
+              ..orderBy([(g) => OrderingTerm.asc(g.sortOrder)]))
+            .get();
+
+    if (groups.isEmpty) {
+      return {for (final id in productIds) id: []};
+    }
+
+    final groupIds = groups.map((g) => g.id).toList();
+    final options =
+        await (_db.select(_db.productOptions)
+              ..where((o) => o.groupId.isIn(groupIds))
+              ..where((o) => o.deletedAt.isNull())
+              ..orderBy([(o) => OrderingTerm.asc(o.sortOrder)]))
+            .get();
+
+    final optionsByGroup = <String, List<ProductOption>>{};
+    for (final opt in options) {
+      optionsByGroup
+          .putIfAbsent(opt.groupId, () => [])
+          .add(_optionFromData(opt));
+    }
+
+    final result = <String, List<ProductOptionGroup>>{};
+    for (final id in productIds) {
+      result[id] = [];
+    }
+    for (final g in groups) {
+      result[g.productId]!.add(_groupFromData(g, optionsByGroup[g.id] ?? []));
+    }
+
+    return result;
   }
 
   @override

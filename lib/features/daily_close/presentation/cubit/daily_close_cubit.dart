@@ -1,3 +1,4 @@
+import 'package:promsell_pos_ce/features/sale/domain/services/sales_day_lock.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
@@ -7,6 +8,7 @@ import 'package:promsell_pos_ce/features/daily_close/domain/usecases/close_day.d
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_by_date.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 part 'daily_close_state.dart';
 
@@ -17,12 +19,14 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
     this._reopenDay,
     this._getByDate,
     this._settingsRepo,
+    this._settingsCubit,
   ) : super(const DailyCloseState());
 
   final CloseDay _closeDay;
   final ReopenDay _reopenDay;
   final GetDailyCloseByDate _getByDate;
   final SettingsRepository _settingsRepo;
+  final SettingsCubit _settingsCubit;
 
   Future<void> loadDate(String date, {String deviceId = ''}) async {
     emit(state.copyWith(status: DailyCloseStatus.loading, errorMessage: null));
@@ -34,8 +38,8 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
             status: DailyCloseStatus.closed,
             date: date,
             dailyClose: existing,
-            openingCash: existing.openingCash,
-            countedCash: existing.countedCash,
+            openingCash: existing.openingCash.value,
+            countedCash: existing.countedCash.value,
             note: existing.note ?? '',
           ),
         );
@@ -51,7 +55,7 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
           status: DailyCloseStatus.ready,
           date: date,
           dailyClose: existing,
-          openingCash: existing?.openingCash ?? 0,
+          openingCash: existing?.openingCash.value ?? 0,
         ),
       );
     } catch (e, stack) {
@@ -91,6 +95,8 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
       emit(state.copyWith(status: DailyCloseStatus.closed, dailyClose: result));
       final settings = await _settingsRepo.load();
       await _settingsRepo.save(settings.copyWith(lastClosedDate: state.date));
+      // Checkout reads SettingsCubit memory — keep it in sync with repo.
+      await _settingsCubit.load();
     } catch (e, stack) {
       AppLogger.error(
         'DailyCloseCubit.closeDay failed',
@@ -117,7 +123,13 @@ class DailyCloseCubit extends Cubit<DailyCloseState> {
         state.copyWith(status: DailyCloseStatus.reopened, dailyClose: result),
       );
       final settings = await _settingsRepo.load();
-      await _settingsRepo.save(settings.copyWith(lastClosedDate: null));
+      final reopened = state.date;
+      if (reopened != null &&
+          SalesDayLock.normalizeClosedDate(settings.lastClosedDate) ==
+              reopened) {
+        await _settingsRepo.save(settings.copyWith(lastClosedDate: null));
+        await _settingsCubit.load();
+      }
     } catch (e, stack) {
       AppLogger.error(
         'DailyCloseCubit.reopenDay failed',

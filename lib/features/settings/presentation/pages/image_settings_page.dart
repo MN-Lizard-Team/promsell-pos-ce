@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/image/ima
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/image/image_width_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/demo_image_preview.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
 class ImageSettingsPage extends StatelessWidget {
   const ImageSettingsPage({super.key});
@@ -20,36 +21,30 @@ class ImageSettingsPage extends StatelessWidget {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();
 
-        return Scaffold(
-          appBar: AppBar(title: Text(context.l10n.settingsImages)),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            children: [
-              ImagePreviewCard(
-                imageMaxWidth: s.imageMaxWidth,
-                imageQuality: s.imageQuality,
-              ),
-              const SizedBox(height: 24),
-              DemoImagePreview(
-                width: s.imageMaxWidth,
-                quality: s.imageQuality,
-                st: context.settingsTheme,
-              ),
-              const SizedBox(height: 24),
-              SettingsSectionCard(
-                title: context.l10n.settingsImages,
-                children: [
-                  ImageWidthTile(settings: s, cubit: cubit),
-                  ImageQualityTile(settings: s, cubit: cubit),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: ClearImageCacheButton(),
-              ),
-            ],
+        return SettingsLeafChrome(
+          title: context.l10n.settingsImages,
+          header: ImagePreviewCard(
+            imageMaxWidth: s.imageMaxWidth,
+            imageQuality: s.imageQuality,
           ),
+          children: [
+            DemoImagePreview(
+              width: s.imageMaxWidth,
+              quality: s.imageQuality,
+              st: context.settingsTheme,
+            ),
+            SettingsSectionCard(
+              title: context.l10n.settingsImages,
+              children: [
+                ImageWidthTile(settings: s, cubit: cubit),
+                ImageQualityTile(settings: s, cubit: cubit),
+              ],
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: ClearImageCacheButton(),
+            ),
+          ],
         );
       },
     );

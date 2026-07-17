@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
@@ -12,14 +13,17 @@ import '../../../../helpers/mocks.dart';
 void main() {
   late MockProductRepository mockProductRepo;
   late MockSettingsRepository mockSettingsRepo;
+  late MockPromotionRepository mockPromotionRepo;
   late CartBloc cartBloc;
 
   setUp(() {
     mockProductRepo = MockProductRepository();
     mockSettingsRepo = MockSettingsRepository();
+    mockPromotionRepo = MockPromotionRepository();
     cartBloc = CartBloc(
       productRepo: mockProductRepo,
       settingsRepo: mockSettingsRepo,
+      promotionRepo: mockPromotionRepo,
     );
     registerFallbackValue(CartProductAdded(_dummyProduct));
   });
@@ -32,7 +36,7 @@ void main() {
       Product(
         id: 'p1',
         name: 'Coffee',
-        price: 50.0,
+        price: Money.fromDouble(50),
         stock: 10,
         isActive: true,
         trackStock: false,
@@ -45,13 +49,13 @@ void main() {
     'adding product with selectedOptions creates separate line item',
     () async {
       final product = testProduct();
-      const options = [
+      final options = [
         SelectedProductOption(
           optionId: 'opt1',
           optionName: 'Large',
           groupId: 'g1',
           groupName: 'Size',
-          priceDelta: 10.0,
+          priceDelta: Money.fromDouble(10),
         ),
       ];
 
@@ -74,22 +78,22 @@ void main() {
     'adding same product with different options creates separate items',
     () async {
       final product = testProduct();
-      const opts1 = [
+      final opts1 = [
         SelectedProductOption(
           optionId: 'opt1',
           optionName: 'Large',
           groupId: 'g1',
           groupName: 'Size',
-          priceDelta: 10.0,
+          priceDelta: Money.fromDouble(10),
         ),
       ];
-      const opts2 = [
-        SelectedProductOption(
+      final opts2 = [
+        const SelectedProductOption(
           optionId: 'opt2',
           optionName: 'Small',
           groupId: 'g1',
           groupName: 'Size',
-          priceDelta: 0.0,
+          priceDelta: Money.zero,
         ),
       ];
 
@@ -125,13 +129,13 @@ void main() {
 
   test('selectedOptions price delta is included in subtotal', () async {
     final product = testProduct();
-    const options = [
+    final options = [
       SelectedProductOption(
         optionId: 'opt1',
         optionName: 'Large',
         groupId: 'g1',
         groupName: 'Size',
-        priceDelta: 10.0,
+        priceDelta: Money.fromDouble(10),
       ),
     ];
 
@@ -140,15 +144,15 @@ void main() {
     cartBloc.stream.listen(states.add);
     await Future.delayed(const Duration(milliseconds: 100));
 
-    expect(states.last.items[0].rawSubtotal, 60.0);
-    expect(states.last.items[0].subtotal, 60.0);
+    expect(states.last.items[0].rawSubtotal, Money.fromDouble(60));
+    expect(states.last.items[0].subtotal, Money.fromDouble(60));
   });
 }
 
 final _dummyProduct = Product(
   id: 'fallback',
   name: '',
-  price: 0,
+  price: Money.zero,
   stock: 0,
   isActive: true,
   createdAt: DateTime(2025, 1, 1),

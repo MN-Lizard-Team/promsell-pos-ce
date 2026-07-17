@@ -10,7 +10,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class CartProductDetailSheet {
   CartProductDetailSheet._();
 
-  static void show(BuildContext context, CartItem item) {
+  static void show(
+    BuildContext context,
+    CartItem item, {
+    VoidCallback? onEditNote,
+    VoidCallback? onEditDiscount,
+  }) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final currency = context.read<SettingsCubit>().state.settings.currency;
@@ -21,7 +26,7 @@ class CartProductDetailSheet {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => SafeArea(
+      builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -82,27 +87,27 @@ class CartProductDetailSheet {
                 for (final opt in item.selectedOptions)
                   CartDetailRow(
                     '${opt.groupName}: ${opt.optionName}',
-                    opt.priceDelta > 0
-                        ? '+$currency${opt.priceDelta.toStringAsFixed(2)}'
+                    opt.priceDelta.isPositive
+                        ? '+$currency${opt.priceDelta.value.toStringAsFixed(2)}'
                         : '-',
                   ),
                 const SizedBox(height: 8),
               ],
               CartDetailRow(
                 l10n.receiptLabelSubtotal,
-                '$currency${item.product.price.toStringAsFixed(2)} x ${item.qty}',
+                '$currency${item.product.price.value.toStringAsFixed(2)} x ${item.qty}',
               ),
               CartDetailRow(l10n.quantityLabel, '${item.qty}'),
               MoneyDetailRow(
                 label: l10n.totalAmount,
-                value: item.subtotal,
+                value: item.subtotal.value,
                 currency: currency,
                 theme: theme,
               ),
-              if (item.discountAmount > 0)
+              if (item.discountAmount.isPositive)
                 CartDetailRow(
                   l10n.discountSectionLabel,
-                  '-$currency${item.discountAmount.toStringAsFixed(2)}',
+                  '-$currency${item.discountAmount.value.toStringAsFixed(2)}',
                 ),
               if (item.note != null && item.note!.isNotEmpty) ...[
                 const SizedBox(height: 8),
@@ -126,10 +131,44 @@ class CartProductDetailSheet {
               const SizedBox(height: 8),
               _StockStatusRow(item: item, theme: theme, l10n: l10n),
               const SizedBox(height: 12),
+              if (onEditNote != null || onEditDiscount != null) ...[
+                Row(
+                  children: [
+                    if (onEditNote != null)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(sheetContext).pop();
+                            onEditNote();
+                          },
+                          icon: const Icon(Icons.note_alt_outlined, size: 18),
+                          label: Text(l10n.itemNoteLabel),
+                        ),
+                      ),
+                    if (onEditNote != null && onEditDiscount != null)
+                      const SizedBox(width: 8),
+                    if (onEditDiscount != null)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(sheetContext).pop();
+                            onEditDiscount();
+                          },
+                          icon: const Icon(
+                            Icons.local_offer_outlined,
+                            size: 18,
+                          ),
+                          label: Text(l10n.discountSectionLabel),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Navigator.of(sheetContext).pop(),
                   icon: const Icon(Icons.close),
                   label: Text(l10n.close),
                 ),
@@ -167,7 +206,8 @@ class _StockStatusRow extends StatelessWidget {
       color = theme.colorScheme.error;
       label = l10n.outOfStock;
       icon = Icons.error_outline;
-    } else if (stock <= 5) {
+    } else if (stock <=
+        context.read<SettingsCubit>().state.settings.lowStockThreshold) {
       color = theme.colorScheme.tertiary;
       label = l10n.lowStock;
       icon = Icons.warning_amber;

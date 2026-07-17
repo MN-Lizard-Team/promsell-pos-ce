@@ -3,7 +3,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 
 const Object _unset = Object();
 
-enum HistoryStatus { initial, loading, success, failure, voiding }
+enum HistoryStatus { initial, loading, success, failure }
 
 class HistoryState extends Equatable {
   const HistoryState({
@@ -13,6 +13,7 @@ class HistoryState extends Equatable {
     this.to,
     this.errorMessage,
     this.searchQuery = '',
+    this.voidingSaleId,
   });
 
   final HistoryStatus status;
@@ -22,13 +23,16 @@ class HistoryState extends Equatable {
   final String? errorMessage;
   final String searchQuery;
 
+  /// When non-null, a void is in flight for this sale (list stays visible).
+  final String? voidingSaleId;
+
   List<Sale> get filteredSales {
     if (searchQuery.isEmpty) return sales;
     final q = searchQuery.toLowerCase();
     return sales.where((s) {
       final receipt = s.receiptNumber?.toLowerCase() ?? '';
       final payment = s.paymentMethod.toLowerCase();
-      final amount = s.totalAmount.toStringAsFixed(2);
+      final amount = s.totalAmount.value.toStringAsFixed(2);
       return receipt.contains(q) || payment.contains(q) || amount.contains(q);
     }).toList();
   }
@@ -40,6 +44,7 @@ class HistoryState extends Equatable {
     Object? to = _unset,
     Object? errorMessage = _unset,
     String? searchQuery,
+    Object? voidingSaleId = _unset,
   }) => HistoryState(
     status: status ?? this.status,
     sales: sales ?? this.sales,
@@ -49,6 +54,9 @@ class HistoryState extends Equatable {
         ? this.errorMessage
         : errorMessage as String?,
     searchQuery: searchQuery ?? this.searchQuery,
+    voidingSaleId: identical(voidingSaleId, _unset)
+        ? this.voidingSaleId
+        : voidingSaleId as String?,
   );
 
   @override
@@ -59,5 +67,6 @@ class HistoryState extends Equatable {
     to,
     errorMessage,
     searchQuery,
+    voidingSaleId,
   ];
 }

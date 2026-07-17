@@ -1,7 +1,9 @@
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 
 @LazySingleton(as: SaleRepository)
@@ -17,21 +19,22 @@ class SaleRepositoryImpl implements SaleRepository {
     required double vatRate,
     String? cartDiscountType,
     double? cartDiscountValue,
-    double? cartDiscountAmount,
-    double? amountReceived,
-    double? changeAmount,
+    Money? cartDiscountAmount,
+    Money? amountReceived,
+    Money? changeAmount,
     String? note,
     String? paymentReference,
     String? sendingBankCode,
-    String orderType = 'dinein',
+    List<SalePayment>? payments,
+    String orderType = 'delivery',
     String orderChannel = 'walkin',
     String? externalOrderRef,
     String? tableId,
     double serviceChargeRate = 0.0,
-    double serviceChargeAmount = 0.0,
+    Money serviceChargeAmount = Money.zero,
     String? customerId,
     String? promotionId,
-    double promotionDiscountAmount = 0.0,
+    Money promotionDiscountAmount = Money.zero,
   }) => _datasource.insertSaleWithItems(
     items: items,
     paymentMethod: paymentMethod,
@@ -45,6 +48,7 @@ class SaleRepositoryImpl implements SaleRepository {
     note: note,
     paymentReference: paymentReference,
     sendingBankCode: sendingBankCode,
+    payments: payments,
     orderType: orderType,
     orderChannel: orderChannel,
     externalOrderRef: externalOrderRef,

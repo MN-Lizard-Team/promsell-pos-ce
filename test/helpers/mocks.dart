@@ -10,6 +10,7 @@ import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_barcodes.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/history/domain/repositories/history_repository.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/get_sale_history.dart';
@@ -18,6 +19,7 @@ import 'package:promsell_pos_ce/features/report/domain/usecases/get_report.dart'
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
+import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
@@ -64,6 +66,8 @@ class MockHistoryRepository extends Mock implements HistoryRepository {}
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
+class MockPromotionRepository extends Mock implements PromotionRepository {}
+
 // ── Datasources ──
 class MockSaleLocalDatasource extends Mock implements SaleLocalDatasource {}
 
@@ -85,6 +89,8 @@ class MockUpdateProduct extends Mock implements UpdateProduct {}
 class MockDeleteProduct extends Mock implements DeleteProduct {}
 
 class MockBatchGenerateBarcodes extends Mock implements BatchGenerateBarcodes {}
+
+class MockImportProducts extends Mock implements ImportProducts {}
 
 class MockGetProducts extends Mock implements GetProducts {}
 

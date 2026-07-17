@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 
 class MoneyText extends StatelessWidget {
   const MoneyText({
@@ -21,7 +22,7 @@ class MoneyText extends StatelessWidget {
     final effectiveStyle = style ?? Theme.of(context).textTheme.titleMedium;
 
     return Text(
-      '$currency${value.toStringAsFixed(2)}',
+      CurrencyFormatter.formatGroupedWithSymbol(value, currency),
       textAlign: textAlign,
       style: effectiveStyle?.copyWith(
         color: color ?? effectiveStyle.color,

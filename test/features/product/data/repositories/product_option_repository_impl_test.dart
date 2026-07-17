@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/repositories/product_option_repository_impl.dart';
@@ -66,7 +67,7 @@ void main() {
       final groups = await repo.getOptionGroupsForProduct(productId);
       expect(groups[0].options.length, 1);
       expect(groups[0].options[0].name, 'Extra Cheese');
-      expect(groups[0].options[0].priceDelta, 5.0);
+      expect(groups[0].options[0].priceDelta, Money.fromDouble(5.0));
     });
 
     test('updateOptionGroup updates name and selectionType', () async {
@@ -113,7 +114,7 @@ void main() {
               id: optId,
               groupId: groupId,
               name: 'Hot',
-              priceDelta: 0.0,
+              priceDelta: Money.zero,
             ),
           ],
         ),

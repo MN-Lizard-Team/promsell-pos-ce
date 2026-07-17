@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_by_date.dart';
@@ -14,10 +15,10 @@ void main() {
     mockRepo = MockDailyCloseRepository();
   });
 
-  const tDailyClose = DailyClose(
+  final tDailyClose = DailyClose(
     id: 'dc-0001',
     closeDate: '2025-01-15',
-    totalRevenue: 5000.0,
+    totalRevenue: Money.fromDouble(5000.0),
     salesCount: 10,
   );
 

@@ -14,12 +14,15 @@ class SettingsPersistenceService {
   Settings? _lastSettings;
   bool _isDisposed = false;
 
+  /// Optional listener for debounced save failures (UI snack / cubit).
+  void Function(Object error)? onDebouncedSaveError;
+
   void scheduleSave(Settings settings) {
     if (_isDisposed) return;
     _lastSettings = settings;
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 800), () {
-      if (!_isDisposed) _save(settings);
+      if (!_isDisposed) unawaited(_saveDebounced(settings));
     });
   }
 
@@ -27,10 +30,18 @@ class SettingsPersistenceService {
     if (_isDisposed) return;
     _lastSettings = settings;
     _saveTimer?.cancel();
-    await _save(settings);
+    await _saveOrThrow(settings);
   }
 
-  Future<void> _save(Settings settings) async {
+  Future<void> _saveDebounced(Settings settings) async {
+    try {
+      await _saveOrThrow(settings);
+    } catch (e) {
+      onDebouncedSaveError?.call(e);
+    }
+  }
+
+  Future<void> _saveOrThrow(Settings settings) async {
     if (_isDisposed) return;
     try {
       await _repository.save(settings);
@@ -40,14 +51,24 @@ class SettingsPersistenceService {
         error: e,
         stack: stack,
       );
+      rethrow;
     }
   }
 
   Future<void> dispose() async {
     _saveTimer?.cancel();
-    if (_lastSettings != null) {
-      await _repository.save(_lastSettings!);
-    }
+    final pending = _lastSettings;
     _isDisposed = true;
+    if (pending != null) {
+      try {
+        await _repository.save(pending);
+      } catch (e, stack) {
+        AppLogger.error(
+          'SettingsPersistenceService.dispose flush failed',
+          error: e,
+          stack: stack,
+        );
+      }
+    }
   }
 }

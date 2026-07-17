@@ -1,36 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_unsaved_dialog.dart';
 
-enum UnsavedDialogAction { discard, cancel, save }
+export 'package:promsell_pos_ce/core/widgets/dialogs/app_unsaved_dialog.dart'
+    show UnsavedDialogAction;
 
+/// Unsaved-exit dialog for product form (create vs edit copy).
 Future<UnsavedDialogAction> showUnsavedChangesDialog(
-  BuildContext context,
-) async {
+  BuildContext context, {
+  bool isEditing = false,
+}) {
   final l10n = context.l10n;
-  final result = await showDialog<String>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(l10n.unsavedChangesTitle),
-      content: Text(l10n.unsavedChangesMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, 'discard'),
-          child: Text(l10n.discardDraft),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, 'cancel'),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, 'save'),
-          child: Text(l10n.save),
-        ),
-      ],
-    ),
+  return showAppUnsaved(
+    context,
+    title: l10n.unsavedChangesTitle,
+    message: isEditing
+        ? l10n.unsavedChangesMessageEdit
+        : l10n.unsavedChangesMessageCreate,
+    discardLabel: l10n.discardChanges,
+    cancelLabel: l10n.cancel,
+    saveLabel: l10n.save,
   );
-  return switch (result) {
-    'discard' => UnsavedDialogAction.discard,
-    'save' => UnsavedDialogAction.save,
-    _ => UnsavedDialogAction.cancel,
-  };
 }

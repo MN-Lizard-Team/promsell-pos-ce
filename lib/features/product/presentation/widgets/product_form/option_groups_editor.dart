@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/utils/id_generator.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product_option.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/option_edit_sheet.dart';
+import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/option_group_edit_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class OptionGroupsEditor extends StatefulWidget {
@@ -32,50 +34,44 @@ class _OptionGroupsEditorState extends State<OptionGroupsEditor> {
 
   void _notify() => widget.onChanged(List.of(_groups));
 
-  void _addGroup() async {
-    final group = await _showGroupDialog();
-    if (group == null) return;
+  Future<void> _addGroup() async {
+    final group = await showOptionGroupEditSheet(context);
+    if (group == null || !mounted) return;
     setState(() => _groups.add(group));
     _notify();
   }
 
-  void _editGroup(int index) async {
-    final group = await _showGroupDialog(existing: _groups[index]);
-    if (group == null) return;
+  Future<void> _editGroup(int index) async {
+    final group = await showOptionGroupEditSheet(
+      context,
+      existing: _groups[index],
+    );
+    if (group == null || !mounted) return;
     setState(() => _groups[index] = group);
     _notify();
   }
 
-  void _deleteGroup(int index) async {
+  Future<void> _deleteGroup(int index) async {
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteOptionGroup),
-        content: Text(l10n.confirmDeleteOptionGroup),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.deleteOptionGroup),
-          ),
-        ],
-      ),
+    final name = _groups[index].name;
+    final confirmed = await showConfirmationDialog(
+      context,
+      title: l10n.deleteOptionGroup,
+      message: l10n.confirmDeleteOptionGroup,
+      detail: name.isNotEmpty ? name : null,
+      confirmLabel: l10n.delete,
+      cancelLabel: l10n.cancel,
+      destructive: true,
+      confirmIcon: Icons.delete_outline_rounded,
     );
-    if (confirmed != true) return;
+    if (!confirmed || !mounted) return;
     setState(() => _groups.removeAt(index));
     _notify();
   }
 
-  void _addOption(int groupIndex) async {
-    final option = await _showOptionDialog();
-    if (option == null) return;
+  Future<void> _addOption(int groupIndex) async {
+    final option = await showOptionEditSheet(context);
+    if (option == null || !mounted) return;
     setState(() {
       _groups[groupIndex] = _groups[groupIndex].copyWith(
         options: [..._groups[groupIndex].options, option],
@@ -84,11 +80,12 @@ class _OptionGroupsEditorState extends State<OptionGroupsEditor> {
     _notify();
   }
 
-  void _editOption(int groupIndex, int optionIndex) async {
-    final option = await _showOptionDialog(
+  Future<void> _editOption(int groupIndex, int optionIndex) async {
+    final option = await showOptionEditSheet(
+      context,
       existing: _groups[groupIndex].options[optionIndex],
     );
-    if (option == null) return;
+    if (option == null || !mounted) return;
     setState(() {
       final opts = List.of(_groups[groupIndex].options);
       opts[optionIndex] = option;
@@ -97,29 +94,20 @@ class _OptionGroupsEditorState extends State<OptionGroupsEditor> {
     _notify();
   }
 
-  void _deleteOption(int groupIndex, int optionIndex) async {
+  Future<void> _deleteOption(int groupIndex, int optionIndex) async {
     final l10n = context.l10n;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteOption),
-        content: Text(l10n.confirmDeleteOption),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.deleteOption),
-          ),
-        ],
-      ),
+    final name = _groups[groupIndex].options[optionIndex].name;
+    final confirmed = await showConfirmationDialog(
+      context,
+      title: l10n.deleteOption,
+      message: l10n.confirmDeleteOption,
+      detail: name.isNotEmpty ? name : null,
+      confirmLabel: l10n.delete,
+      cancelLabel: l10n.cancel,
+      destructive: true,
+      confirmIcon: Icons.delete_outline_rounded,
     );
-    if (confirmed != true) return;
+    if (!confirmed || !mounted) return;
     setState(() {
       final opts = List.of(_groups[groupIndex].options);
       opts.removeAt(optionIndex);
@@ -128,177 +116,22 @@ class _OptionGroupsEditorState extends State<OptionGroupsEditor> {
     _notify();
   }
 
-  Future<ProductOptionGroup?> _showGroupDialog({
-    ProductOptionGroup? existing,
-  }) async {
-    final l10n = context.l10n;
-    final nameCtrl = TextEditingController(text: existing?.name ?? '');
-    var selectionType = existing?.selectionType ?? OptionSelectionType.single;
-    var isRequired = existing?.isRequired ?? false;
-
-    return showDialog<ProductOptionGroup>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: Text(
-            existing == null ? l10n.addOptionGroup : l10n.editOptionGroup,
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameCtrl,
-                decoration: InputDecoration(
-                  labelText: l10n.optionGroupName,
-                  hintText: l10n.optionGroupNameHint,
-                  border: const OutlineInputBorder(),
-                ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    Text(l10n.optionSelectionType),
-                    const SizedBox(width: 12),
-                    SegmentedButton<OptionSelectionType>(
-                      segments: [
-                        ButtonSegment(
-                          value: OptionSelectionType.single,
-                          label: Text(l10n.optionSelectionSingle),
-                        ),
-                        ButtonSegment(
-                          value: OptionSelectionType.multiple,
-                          label: Text(l10n.optionSelectionMultiple),
-                        ),
-                      ],
-                      selected: {selectionType},
-                      onSelectionChanged: (v) =>
-                          setState(() => selectionType = v.first),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                title: Text(l10n.optionRequired),
-                value: isRequired,
-                onChanged: (v) => setState(() => isRequired = v),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
-            ),
-            FilledButton(
-              onPressed: () {
-                final name = nameCtrl.text.trim();
-                if (name.isEmpty) return;
-                Navigator.pop(
-                  ctx,
-                  (existing ??
-                          ProductOptionGroup(
-                            id: IdGenerator.newId(),
-                            productId: '',
-                            name: name,
-                          ))
-                      .copyWith(
-                        name: name,
-                        selectionType: selectionType,
-                        isRequired: isRequired,
-                      ),
-                );
-              },
-              child: Text(MaterialLocalizations.of(ctx).saveButtonLabel),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<ProductOption?> _showOptionDialog({ProductOption? existing}) async {
-    final l10n = context.l10n;
-    final nameCtrl = TextEditingController(text: existing?.name ?? '');
-    final priceCtrl = TextEditingController(
-      text: existing?.priceDelta.toStringAsFixed(2) ?? '0.00',
-    );
-
-    return showDialog<ProductOption>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(existing == null ? l10n.addOption : l10n.editOption),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: InputDecoration(
-                labelText: l10n.optionName,
-                hintText: l10n.optionNameHint,
-                border: const OutlineInputBorder(),
-              ),
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: priceCtrl,
-              decoration: InputDecoration(
-                labelText: l10n.optionPriceDelta,
-                hintText: l10n.optionPriceDeltaHint,
-                border: const OutlineInputBorder(),
-                prefixText: '${_currencySymbol()} ',
-              ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = nameCtrl.text.trim();
-              if (name.isEmpty) return;
-              final price = double.tryParse(priceCtrl.text.trim()) ?? 0.0;
-              Navigator.pop(
-                ctx,
-                (existing ??
-                        ProductOption(
-                          id: IdGenerator.newId(),
-                          groupId: '',
-                          name: name,
-                        ))
-                    .copyWith(name: name, priceDelta: price),
-              );
-            },
-            child: Text(MaterialLocalizations.of(ctx).saveButtonLabel),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _currencySymbol() {
-    final settings = context.read<SettingsCubit>().state.settings;
-    return settings.currency;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
     return FormSectionCard(
-      icon: Icons.tune_outlined,
       title: l10n.optionGroups,
+      subtitle: l10n.optionGroupsSubtitle,
+      trailing: _groups.isEmpty
+          ? null
+          : Text(
+              '${_groups.length}',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -440,9 +273,9 @@ class _GroupCard extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (group.options[i].priceDelta > 0)
+                      if (group.options[i].priceDelta > Money.zero)
                         Text(
-                          '+$currency ${group.options[i].priceDelta.toStringAsFixed(2)}',
+                          '+$currency ${group.options[i].priceDelta.value.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       IconButton(

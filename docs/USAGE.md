@@ -156,9 +156,22 @@ Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 | Document | Content |
 |----------|---------|
 | [`docs/usage/features.md`](usage/features.md) | Features walkthrough (Home, Products, Sale, Report, Settings tabs) + all settings pages with detailed tables |
-| [`docs/usage/development.md`](usage/development.md) | Localization (i18n), Database (Drift), Architecture overview, Testing (1373 tests), Troubleshooting |
+| [`docs/usage/development.md`](usage/development.md) | Localization (i18n), Database (Drift), Architecture overview, Testing (tests (see CI / `flutter test`)), Troubleshooting |
 
 ---
+
+
+## Backup and recovery (merchant runbook)
+
+Promsell stores all POS data in an encrypted SQLite file on the device (SQLCipher). Treat backups as mandatory.
+
+1. **Settings → Backup** — keep **Encrypt backups** on (default). Choose a PIN of at least **6** characters and store it offline.
+2. **Backup Now** regularly (or enable the reminder). Share the file to cloud/USB you control — not only on the same phone.
+3. **Same-device restore** — use **Restore** on the same device to re-apply a previous `.enc` or SQLCipher `.db` export. Restart the app after restore.
+4. **Not supported in 0.9.0** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
+5. **Key loss = data loss** without an off-device export. There is no key recovery phrase in CE 0.9.0.
+
+See also [SECURITY.md](../SECURITY.md) and [Privacy Policy](PRIVACY_POLICY.md).
 
 ## Need help?
 

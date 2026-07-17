@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 
 class DbHealthPage extends StatefulWidget {
   const DbHealthPage({super.key});
@@ -89,18 +90,14 @@ class _DbHealthPageState extends State<DbHealthPage> {
       final db = sl<AppDatabase>();
       await db.customStatement('VACUUM');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.dbHealthVacuumSuccess)),
-        );
+        AppSnackBar.success(context, context.l10n.dbHealthVacuumSuccess);
         await _loadHealth();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.dbHealthVacuumFailed(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+        AppSnackBar.error(
+          context,
+          context.l10n.dbHealthVacuumFailed(e.toString()),
         );
       }
     }

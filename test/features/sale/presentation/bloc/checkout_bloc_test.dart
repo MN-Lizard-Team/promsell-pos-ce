@@ -134,7 +134,7 @@ void main() {
     );
 
     blocTest<CheckoutBloc, CheckoutState>(
-      'emits failure on error',
+      'emits failure on error and unlocks cart without clearing lines',
       build: buildBloc,
       setUp: () {
         when(
@@ -168,8 +168,68 @@ void main() {
         ),
         isA<CheckoutState>()
             .having((s) => s.status, 'status', CheckoutStatus.failure)
-            .having((s) => s.errorMessage, 'errorMessage', 'saleError'),
+            .having((s) => s.errorMessage, 'errorMessage', 'saleError')
+            .having((s) => s.frozenItems, 'frozenItems', isNull)
+            .having((s) => s.promptPayAmount, 'promptPayAmount', isNull),
       ],
+      verify: (_) {
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(true)),
+        ).called(1);
+        // ≥1: failure path unlocks; blocTest close() may unlock again.
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(false)),
+        ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared()));
+      },
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'DayClosed unlocks cart without clearing lines',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+          ),
+        ).thenThrow(const BusinessRuleError('DayClosed'));
+      },
+      act: (b) => b.add(
+        const CheckoutConfirmed(
+          paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
+        ),
+      ),
+      expect: () => [
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.processing,
+        ),
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.failure)
+            .having((s) => s.errorMessage, 'errorMessage', 'dayClosed'),
+      ],
+      verify: (_) {
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(true)),
+        ).called(1);
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(false)),
+        ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared()));
+      },
     );
 
     blocTest<CheckoutBloc, CheckoutState>(
@@ -639,6 +699,75 @@ void main() {
             .having((s) => s.status, 'status', CheckoutStatus.failure)
             .having((s) => s.errorMessage, 'errorMessage', 'paymentMismatch'),
       ],
+      verify: (_) {
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(false)),
+        ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared()));
+      },
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'PromptPay confirm failure unlocks cart without clearing lines',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+            sendingBankCode: any(named: 'sendingBankCode'),
+            payments: any(named: 'payments'),
+            customerId: any(named: 'customerId'),
+            promotionId: any(named: 'promotionId'),
+            promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
+          ),
+        ).thenThrow(Exception('db error'));
+      },
+      act: (b) async {
+        b.add(
+          const CheckoutConfirmed(
+            paymentMethod: 'promptpay',
+            vatMode: 'NONE',
+            vatRate: 0,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        b.add(const CheckoutPaymentConfirmed(paymentReference: 'PP-FAIL'));
+      },
+      expect: () => [
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.waitingPayment,
+        ),
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.processing,
+        ),
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.failure)
+            .having((s) => s.errorMessage, 'errorMessage', 'saleError')
+            .having((s) => s.frozenItems, 'frozenItems', isNull),
+      ],
+      verify: (_) {
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(true)),
+        ).called(1);
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(false)),
+        ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared()));
+      },
     );
 
     blocTest<CheckoutBloc, CheckoutState>(
@@ -734,7 +863,7 @@ void main() {
 
   group('CheckoutPaymentCancelled', () {
     blocTest<CheckoutBloc, CheckoutState>(
-      'returns to idle',
+      'returns to idle and unlocks cart',
       build: buildBloc,
       seed: () => const CheckoutState(status: CheckoutStatus.waitingPayment),
       act: (b) => b.add(const CheckoutPaymentCancelled()),
@@ -745,6 +874,11 @@ void main() {
           CheckoutStatus.idle,
         ),
       ],
+      verify: (_) {
+        verify(
+          () => mockCartBloc.add(const CartPaymentLockChanged(false)),
+        ).called(greaterThanOrEqualTo(1));
+      },
     );
   });
 

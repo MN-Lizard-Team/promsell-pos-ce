@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 
 const _unset = Object();
 
@@ -6,17 +7,17 @@ class DailyClose extends Equatable {
   const DailyClose({
     required this.id,
     required this.closeDate,
-    this.openingCash = 0,
-    this.expectedCash = 0,
-    this.countedCash = 0,
-    this.overShortAmount = 0,
-    this.totalRevenue = 0,
-    this.totalVoid = 0,
+    this.openingCash = Money.zero,
+    this.expectedCash = Money.zero,
+    this.countedCash = Money.zero,
+    this.overShortAmount = Money.zero,
+    this.totalRevenue = Money.zero,
+    this.totalVoid = Money.zero,
     this.salesCount = 0,
     this.voidCount = 0,
     this.paymentBreakdown = const {},
-    this.vatAmount = 0,
-    this.discountAmount = 0,
+    this.vatAmount = Money.zero,
+    this.discountAmount = Money.zero,
     this.note,
     this.closedAt,
     this.deviceId,
@@ -27,17 +28,18 @@ class DailyClose extends Equatable {
 
   final String id;
   final String closeDate;
-  final double openingCash;
-  final double expectedCash;
-  final double countedCash;
-  final double overShortAmount;
-  final double totalRevenue;
-  final double totalVoid;
+  final Money openingCash;
+  final Money expectedCash;
+  final Money countedCash;
+  final Money overShortAmount;
+  final Money totalRevenue;
+  final Money totalVoid;
   final int salesCount;
   final int voidCount;
-  final Map<String, double> paymentBreakdown;
-  final double vatAmount;
-  final double discountAmount;
+  final Map<String, double>
+  paymentBreakdown; // keyed by payment method, value in baht
+  final Money vatAmount;
+  final Money discountAmount;
   final String? note;
   final DateTime? closedAt;
   final String? deviceId;
@@ -50,17 +52,17 @@ class DailyClose extends Equatable {
   DailyClose copyWith({
     String? id,
     String? closeDate,
-    double? openingCash,
-    double? expectedCash,
-    double? countedCash,
-    double? overShortAmount,
-    double? totalRevenue,
-    double? totalVoid,
+    Money? openingCash,
+    Money? expectedCash,
+    Money? countedCash,
+    Money? overShortAmount,
+    Money? totalRevenue,
+    Money? totalVoid,
     int? salesCount,
     int? voidCount,
     Map<String, double>? paymentBreakdown,
-    double? vatAmount,
-    double? discountAmount,
+    Money? vatAmount,
+    Money? discountAmount,
     Object? note = _unset,
     Object? closedAt = _unset,
     Object? deviceId = _unset,

@@ -39,6 +39,9 @@ class BackupRestoreService {
     if (looksEncrypted) {
       if (p0.isEmpty) throw StateError('PIN_REQUIRED');
       if (p0.length < minPinLength) throw StateError('PIN_TOO_SHORT');
+    } else {
+      // Reject plain SQLite before any path_provider / file swap work.
+      await _assertSqlCipherCandidate(sourcePath);
     }
 
     final tempDir = await getTemporaryDirectory();
@@ -57,9 +60,8 @@ class BackupRestoreService {
           pin: p0,
           outputPath: decryptedTemp,
         );
+        await _assertSqlCipherCandidate(workingPath);
       }
-
-      await _assertSqlCipherCandidate(workingPath);
 
       final docs = await getApplicationDocumentsDirectory();
       final dbPath = p.join(docs.path, BackupExportService.dbFileName);

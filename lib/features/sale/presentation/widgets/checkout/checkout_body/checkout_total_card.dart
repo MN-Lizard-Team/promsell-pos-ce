@@ -10,6 +10,8 @@ class CheckoutTotalCard extends StatelessWidget {
     required this.itemsDiscountTotal,
     required this.hasCartDiscount,
     required this.cartDiscountAmount,
+    this.promotionDiscountAmount = 0,
+    this.serviceChargeAmount = 0,
     required this.vatInfo,
     required this.vatRate,
     required this.effectiveTotal,
@@ -20,7 +22,15 @@ class CheckoutTotalCard extends StatelessWidget {
   final double itemsDiscountTotal;
   final bool hasCartDiscount;
   final double cartDiscountAmount;
-  final dynamic vatInfo;
+  final double promotionDiscountAmount;
+  final double serviceChargeAmount;
+  final ({
+    double subtotal,
+    double vatAmount,
+    double totalWithVat,
+    bool isInclusive,
+  })?
+  vatInfo;
   final double vatRate;
   final double effectiveTotal;
   final String currency;
@@ -29,6 +39,14 @@ class CheckoutTotalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hasItemDiscounts = itemsDiscountTotal > 0;
+    final hasPromo = promotionDiscountAmount > 0;
+    final hasSc = serviceChargeAmount > 0;
+    final showLines =
+        hasItemDiscounts ||
+        hasCartDiscount ||
+        hasPromo ||
+        hasSc ||
+        vatInfo != null;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -43,7 +61,7 @@ class CheckoutTotalCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            if (hasItemDiscounts || hasCartDiscount)
+            if (showLines)
               PaymentTotalRow(
                 label: context.l10n.receiptLabelSubtotal,
                 value: itemsSubtotal,
@@ -68,10 +86,35 @@ class CheckoutTotalCard extends StatelessWidget {
                   color: theme.colorScheme.error,
                 ),
               ),
-            if (vatInfo != null && !vatInfo.isInclusive)
+            if (hasPromo)
+              PaymentTotalRow(
+                label: context.l10n.receiptLabelPromotionDiscount,
+                value: -promotionDiscountAmount,
+                currency: currency,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            if (hasSc)
+              PaymentTotalRow(
+                label: context.l10n.serviceCharge,
+                value: serviceChargeAmount,
+                currency: currency,
+                style: theme.textTheme.bodySmall,
+              ),
+            if (vatInfo != null && !vatInfo!.isInclusive)
               PaymentTotalRow(
                 label: '${context.l10n.receiptLabelVat} $vatRate%',
-                value: vatInfo.vatAmount,
+                value: vatInfo!.vatAmount,
+                currency: currency,
+                style: theme.textTheme.bodySmall,
+              ),
+            if (vatInfo != null && vatInfo!.isInclusive)
+              PaymentTotalRow(
+                label: context.l10n.receiptLabelVatIncluded(
+                  vatRate.toStringAsFixed(0),
+                ),
+                value: vatInfo!.vatAmount,
                 currency: currency,
                 style: theme.textTheme.bodySmall,
               ),

@@ -7,29 +7,15 @@ import '../../../../../../helpers/pump_app.dart';
 
 void main() {
   group('GeneralAppearanceTiles', () {
-    testWidgets('renders theme, compact cart, accessibility tiles', (
+    testWidgets('renders theme tile only (a11y toggle deferred)', (
       tester,
     ) async {
       await tester.pumpApp(
         GeneralAppearanceTiles(settings: const Settings(), onUpdate: (s) {}),
       );
 
-      expect(find.byType(ListTile), findsNWidgets(3));
-      expect(find.byType(Switch), findsNWidgets(2));
-    });
-
-    testWidgets('toggles compact cart mode', (tester) async {
-      Settings? updated;
-      await tester.pumpApp(
-        GeneralAppearanceTiles(
-          settings: const Settings(),
-          onUpdate: (s) => updated = s,
-        ),
-      );
-
-      await tester.tap(find.byType(Switch).first);
-      await tester.pump();
-      expect(updated, isNotNull);
+      expect(find.byType(ListTile), findsOneWidget);
+      expect(find.byType(Switch), findsNothing);
     });
 
     testWidgets('opens theme dialog', (tester) async {

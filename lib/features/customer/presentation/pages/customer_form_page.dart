@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/sticky_action_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_text_field.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/customer/domain/entities/customer.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/bloc/customer_bloc.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/bloc/customer_event.dart';
 import 'package:promsell_pos_ce/features/customer/presentation/bloc/customer_state.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CustomerFormPage extends StatefulWidget {
   const CustomerFormPage({super.key, this.customer});
@@ -79,30 +84,19 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     }
   }
 
-  void _confirmDelete() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Customer'),
-        content: Text(
-          'Are you sure you want to delete "${widget.customer!.name}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+  Future<void> _confirmDelete() async {
+    final l10n = context.l10n;
+    final confirmed = await showAppConfirm(
+      context,
+      title: l10n.deleteCustomerTitle,
+      message: '',
+      detail: widget.customer!.name,
+      confirmLabel: l10n.delete,
+      cancelLabel: l10n.cancel,
+      destructive: true,
+      confirmIcon: Icons.person_remove_outlined,
     );
-    if (!mounted || confirmed != true) return;
+    if (!mounted || !confirmed) return;
     _deleting = true;
     setState(() {});
     context.read<CustomerBloc>().add(CustomerDeleted(widget.customer!.id));
@@ -110,31 +104,34 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final currency = context.watch<SettingsCubit>().state.settings.currency;
+
     return BlocListener<CustomerBloc, CustomerState>(
       listenWhen: (prev, curr) =>
           (_submitted || _deleting) && prev.saveStatus != curr.saveStatus,
       listener: (ctx, state) {
         if (state.saveStatus == CustomerSaveStatus.saved) {
-          AppSnackBar.success(ctx, 'Customer saved');
+          AppSnackBar.success(ctx, ctx.l10n.customerSaved);
           Navigator.pop(ctx, true);
         } else if (state.saveStatus == CustomerSaveStatus.error) {
           _submitted = false;
           _deleting = false;
           setState(() {});
-          AppSnackBar.error(ctx, state.errorMessage ?? 'Error');
+          AppSnackBar.error(ctx, state.errorMessage ?? ctx.l10n.errorOccurred);
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEditing ? 'Edit Customer' : 'Add Customer'),
+          title: Text(_isEditing ? l10n.editCustomerTitle : l10n.addCustomer),
         ),
         bottomNavigationBar: BlocBuilder<CustomerBloc, CustomerState>(
           builder: (_, state) {
             final isSaving = state.saveStatus == CustomerSaveStatus.saving;
             return StickyActionBar(
-              primaryLabel: _isEditing ? 'Save' : 'Add Customer',
+              primaryLabel: _isEditing ? l10n.save : l10n.addCustomer,
               onPrimary: _submit,
-              dangerLabel: _isEditing ? 'Delete' : null,
+              dangerLabel: _isEditing ? l10n.delete : null,
               onDanger: _isEditing ? _confirmDelete : null,
               isLoading: isSaving,
             );
@@ -149,42 +146,30 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
               children: [
                 FormSectionCard(
                   icon: Icons.person_outline,
-                  title: 'Customer Information',
+                  title: l10n.customerInfoSection,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextFormField(
+                      AppTextField(
                         controller: _nameCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          prefixIcon: Icon(Icons.person_outline),
-                          border: OutlineInputBorder(),
-                        ),
+                        labelText: l10n.customerNameLabel,
                         validator: (value) =>
                             (value == null || value.trim().isEmpty)
-                            ? 'Name is required'
+                            ? l10n.customerNameRequired
                             : null,
                         textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
+                      AppTextField(
                         controller: _phoneCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Phone',
-                          prefixIcon: Icon(Icons.phone_outlined),
-                          border: OutlineInputBorder(),
-                        ),
+                        labelText: l10n.customerPhoneLabel,
                         keyboardType: TextInputType.phone,
                         textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
+                      AppTextField(
                         controller: _emailCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.email_outlined),
-                          border: OutlineInputBorder(),
-                        ),
+                        labelText: l10n.customerEmailLabel,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                       ),
@@ -194,13 +179,10 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
                 const SizedBox(height: 16),
                 FormSectionCard(
                   icon: Icons.note_outlined,
-                  title: 'Notes',
-                  child: TextFormField(
+                  title: l10n.customerNotesSection,
+                  child: AppTextField(
                     controller: _noteCtrl,
-                    decoration: const InputDecoration(
-                      hintText: 'Add a note about this customer...',
-                      border: OutlineInputBorder(),
-                    ),
+                    hintText: l10n.customerNoteHint,
                     maxLines: 3,
                   ),
                 ),
@@ -208,18 +190,29 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
                   const SizedBox(height: 16),
                   FormSectionCard(
                     icon: Icons.bar_chart_outlined,
-                    title: 'Statistics',
+                    title: l10n.customerStatisticsSection,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _StatRow(
-                          label: 'Total Visits',
+                          label: l10n.customerTotalVisits,
                           value: widget.customer!.visitCount.toString(),
                         ),
                         const SizedBox(height: 8),
-                        _StatRow(
-                          label: 'Total Spent',
-                          value: widget.customer!.totalSpent.toStringAsFixed(2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              l10n.customerTotalSpent,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            MoneyText(
+                              value: widget.customer!.totalSpent.value,
+                              currency: currency,
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ],
                         ),
                       ],
                     ),

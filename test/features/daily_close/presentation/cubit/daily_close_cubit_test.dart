@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.
 import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class MockCloseDay extends Mock implements CloseDay {}
 
@@ -16,6 +17,8 @@ class MockReopenDay extends Mock implements ReopenDay {}
 class MockGetDailyCloseByDate extends Mock implements GetDailyCloseByDate {}
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}
+
+class MockSettingsCubit extends Mock implements SettingsCubit {}
 
 class FakeSettings extends Fake implements Settings {}
 
@@ -28,6 +31,7 @@ void main() {
     late MockReopenDay mockReopenDay;
     late MockGetDailyCloseByDate mockGetByDate;
     late MockSettingsRepository mockSettingsRepo;
+    late MockSettingsCubit mockSettingsCubit;
     late DailyCloseCubit cubit;
 
     setUp(() {
@@ -35,16 +39,19 @@ void main() {
       mockReopenDay = MockReopenDay();
       mockGetByDate = MockGetDailyCloseByDate();
       mockSettingsRepo = MockSettingsRepository();
+      mockSettingsCubit = MockSettingsCubit();
       when(() => mockGetByDate(any())).thenAnswer((_) async => null);
       when(
         () => mockSettingsRepo.load(),
       ).thenAnswer((_) async => const Settings());
       when(() => mockSettingsRepo.save(any())).thenAnswer((_) async {});
+      when(() => mockSettingsCubit.load()).thenAnswer((_) async {});
       cubit = DailyCloseCubit(
         mockCloseDay,
         mockReopenDay,
         mockGetByDate,
         mockSettingsRepo,
+        mockSettingsCubit,
       );
     });
 

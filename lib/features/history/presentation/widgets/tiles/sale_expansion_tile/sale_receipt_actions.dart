@@ -7,7 +7,9 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/features/customer/domain/repositories/customer_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
+import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
@@ -23,27 +25,55 @@ class SaleReceiptActions {
       if (images.containsKey(item.productId)) continue;
       try {
         final product = await productRepo.getProductById(item.productId);
-        if (product?.imagePath != null) {
-          final file = File(product!.imagePath!);
+        final path = product?.imageThumbnailPath ?? product?.imagePath;
+        if (path != null) {
+          final file = File(path);
           if (await file.exists()) {
-            images[item.productId] = await file.readAsBytes();
+            final bytes = await file.readAsBytes();
+            if (bytes.lengthInBytes <= 400 * 1024) {
+              images[item.productId] = bytes;
+            }
           }
         }
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('SaleReceiptActions image load failed', error: e);
+      }
     }
     return images;
   }
 
-  static ReceiptLabels _buildLabels(
+  static Future<ReceiptLabels> _buildLabels(
     BuildContext context,
     Sale sale,
-    String paymentMethodLabel,
-  ) {
+    String paymentMethodLabel, {
+    List<String> paymentLines = const [],
+  }) async {
     final l = context.l10n;
+    String? customerName;
+    if (sale.customerId != null) {
+      final c = await sl<CustomerRepository>().getCustomerById(
+        sale.customerId!,
+      );
+      customerName = c?.name;
+    }
+    String? promotionName;
+    String? promotionDiscount;
+    if (sale.promotionId != null) {
+      final p = await sl<PromotionRepository>().getPromotionById(
+        sale.promotionId!,
+      );
+      promotionName = p?.name;
+      if (sale.promotionDiscountAmount.isPositive) {
+        promotionDiscount = sale.promotionDiscountAmount.value.toStringAsFixed(
+          2,
+        );
+      }
+    }
     return ReceiptLabels(
       receipt: l.receiptLabelReceipt,
       payment: l.receiptLabelPayment,
       paymentMethodLabel: paymentMethodLabel,
+      paymentLines: paymentLines,
       total: l.receiptLabelTotal,
       received: l.receiptLabelReceived,
       change: l.receiptLabelChange,
@@ -53,6 +83,16 @@ class SaleReceiptActions {
       subtotal: l.receiptLabelSubtotal,
       itemDiscounts: l.receiptItemDiscounts,
       cartDiscount: l.receiptCartDiscount,
+      serviceCharge: l.serviceCharge,
+      customer: l.receiptLabelCustomer,
+      customerName: customerName,
+      promotion: l.receiptLabelPromotion,
+      promotionName: promotionName,
+      promotionDiscount: promotionDiscount,
+      voided: l.voided,
+      voidReason: l.voidReason,
+      reprint: l.receiptReprint,
+      notTaxInvoice: l.receiptNotTaxInvoice,
     );
   }
 
@@ -62,9 +102,16 @@ class SaleReceiptActions {
     Settings settings,
   ) async {
     try {
-      final paymentMethodLabel = localizePaymentMethod(
+      final paymentMethodLabel = formatSalePaymentSummary(
         context,
-        sale.paymentMethod,
+        sale,
+        currency: settings.currency,
+      );
+
+      final paymentLines = formatSalePaymentLines(
+        context,
+        sale,
+        currency: settings.currency,
       );
       final saleSettings = settings.copyWith(
         vatRate: sale.vatRate,
@@ -72,11 +119,22 @@ class SaleReceiptActions {
       );
       final productImages = await _loadProductImages(sale);
       if (!context.mounted) return;
+      final labels = await _buildLabels(
+        context,
+        sale,
+        paymentMethodLabel,
+        paymentLines: paymentLines,
+      );
+      if (!context.mounted) return;
+      final l = context.l10n;
       await sl<ReceiptPdfService>().printReceipt(
         sale: sale,
         settings: saleSettings,
         productImages: productImages,
-        labels: _buildLabels(context, sale, paymentMethodLabel),
+        labels: labels,
+        isReprint: true,
+        thankYouFallback: l.receiptThankYouDefault,
+        notTaxInvoiceDisclaimer: l.receiptNotTaxInvoice,
       );
     } catch (e) {
       AppLogger.error('SaleReceiptActions.printReceipt failed', error: e);
@@ -91,10 +149,23 @@ class SaleReceiptActions {
     Sale sale,
     Settings settings,
   ) async {
+    if (sale.isVoided) {
+      if (context.mounted) {
+        AppSnackBar.warning(context, context.l10n.receiptShareVoidBlocked);
+      }
+      return;
+    }
     try {
-      final paymentMethodLabel = localizePaymentMethod(
+      final paymentMethodLabel = formatSalePaymentSummary(
         context,
-        sale.paymentMethod,
+        sale,
+        currency: settings.currency,
+      );
+
+      final paymentLines = formatSalePaymentLines(
+        context,
+        sale,
+        currency: settings.currency,
       );
       final saleSettings = settings.copyWith(
         vatRate: sale.vatRate,
@@ -102,11 +173,22 @@ class SaleReceiptActions {
       );
       final productImages = await _loadProductImages(sale);
       if (!context.mounted) return;
+      final labels = await _buildLabels(
+        context,
+        sale,
+        paymentMethodLabel,
+        paymentLines: paymentLines,
+      );
+      if (!context.mounted) return;
+      final l = context.l10n;
       await sl<ReceiptPdfService>().shareReceipt(
         sale: sale,
         settings: saleSettings,
         productImages: productImages,
-        labels: _buildLabels(context, sale, paymentMethodLabel),
+        labels: labels,
+        isReprint: true,
+        thankYouFallback: l.receiptThankYouDefault,
+        notTaxInvoiceDisclaimer: l.receiptNotTaxInvoice,
       );
     } catch (e) {
       AppLogger.error('SaleReceiptActions.shareReceipt failed', error: e);

@@ -2657,7 +2657,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupEncryptionTitle.
   ///
   /// In th, this message translates to:
-  /// **'การเข้ารหัสสำรองข้อมูล (ไม่บังคับ)'**
+  /// **'การเข้ารหัสสำรองข้อมูล'**
   String get backupEncryptionTitle;
 
   /// No description provided for @backupEncryptionLabel.
@@ -4091,8 +4091,20 @@ abstract class AppLocalizations {
   /// No description provided for @dataCollectionBody.
   ///
   /// In th, this message translates to:
-  /// **'Promsell ไม่เก็บข้อมูลส่วนบุคคลใดๆ ข้อมูลการขาย สินค้าคงคลัง และการตั้งค่าทั้งหมดจัดเก็บไว้ในเครื่องของคุณด้วย SQLite ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์ของเรา'**
+  /// **'Promsell ไม่เก็บและไม่ส่งข้อมูลส่วนบุคคลไปยังเซิร์ฟเวอร์ของผู้พัฒนา ข้อมูลการขาย สต็อก การตั้งค่า และข้อมูลร้าน/ลูกค้าที่คุณกรอก (ถ้ามี) จัดเก็บบนเครื่องนี้เท่านั้น (SQLite/SQLCipher) จะไม่ออกจากเครื่อง เว้นแต่คุณส่งออกหรือแชร์เอง'**
   String get dataCollectionBody;
+
+  /// No description provided for @customerDataTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลลูกค้า'**
+  String get customerDataTitle;
+
+  /// No description provided for @customerDataBody.
+  ///
+  /// In th, this message translates to:
+  /// **'หากใช้ฟีเจอร์ลูกค้า ชื่อ เบอร์โทร และอีเมลจะเก็บบนเครื่องนี้เท่านั้น ลบรายชื่อได้ตลอดเวลา และไม่ส่งไปเซิร์ฟเวอร์ของผู้พัฒนา'**
+  String get customerDataBody;
 
   /// No description provided for @thirdPartyServices.
   ///
@@ -4115,13 +4127,13 @@ abstract class AppLocalizations {
   /// No description provided for @dataStorageBody.
   ///
   /// In th, this message translates to:
-  /// **'ข้อมูลของคุณอยู่ในเครื่อง คุณสามารถส่งออกหรือลบได้ตลอดเวลาผ่านฟีเจอร์สำรอง/กู้คืน รูปภาพสินค้าจัดเก็บในไดเรกทอรีส่วนตัวของแอปและมีการล้างแคชอัตโนมัติ (จำกัด 50MB) เพื่อป้องกันการใช้พื้นที่มากเกินไป'**
+  /// **'ข้อมูลของคุณอยู่ในเครื่อง ส่งออกหรือลบได้ผ่านสำรอง/กู้คืน การกู้คืนในแอปใช้ได้เฉพาะเครื่องเดิมขณะที่คีย์ SQLCipher ยังอยู่ ไม่รองรับข้ามเครื่องหรือหลังถอนการติดตั้ง/ล้างคีย์ รูปสินค้าใช้แคช LRU 50MB ในเครื่อง'**
   String get dataStorageBody;
 
   /// No description provided for @backupEncryptionBody.
   ///
   /// In th, this message translates to:
-  /// **'Promsell มีการเข้ารหัส AES-256-GCM สำหรับสำรองข้อมูล หากเปิดใช้งาน ข้อมูลสำรองจะถูกเข้ารหัสด้วยคีย์ที่ได้จาก PIN ที่ผู้ใช้กำหนดผ่าน PBKDF2 PIN ไม่ถูกจัดเก็บในเครื่องหรือส่งไปยังที่ใด หากลืม PIN จะไม่สามารถกู้คืนข้อมูลสำรองได้ — เราไม่สามารถรีเซ็ตหรือกู้คืนได้'**
+  /// **'การส่งออกฐานข้อมูลใช้ AES-256-GCM ด้วยคีย์จาก PIN (PBKDF2 อย่างน้อย 6 ตัวอักษร) ค่าเริ่มต้นเปิดเข้ารหัสสำหรับติดตั้งใหม่ PIN ไม่ถูกเก็บหรือส่งออก หากลืม PIN จะกู้ไฟล์สำรองนั้นไม่ได้ ฐานข้อมูลจริงถูกปกป้องด้วย SQLCipher แยกต่างหาก'**
   String get backupEncryptionBody;
 
   /// No description provided for @permissionsTitle.
@@ -4519,6 +4531,36 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'กรอง'**
   String get filterMore;
+
+  /// No description provided for @productRowMenuQty.
+  ///
+  /// In th, this message translates to:
+  /// **'กำหนดจำนวน'**
+  String get productRowMenuQty;
+
+  /// No description provided for @productRowMenuAdd.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มลงตะกร้า'**
+  String get productRowMenuAdd;
+
+  /// No description provided for @productRowMenu.
+  ///
+  /// In th, this message translates to:
+  /// **'เมนูสินค้า'**
+  String get productRowMenu;
+
+  /// No description provided for @cartBottomLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ตะกร้า'**
+  String get cartBottomLabel;
+
+  /// No description provided for @saleCategoryTabsLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'หมวดหมู่'**
+  String get saleCategoryTabsLabel;
 
   /// No description provided for @filterPageTitle.
   ///
@@ -7061,7 +7103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appLockSubtitle.
   ///
   /// In th, this message translates to:
-  /// **'ป้องกันการยกเลิกบิล สำรองข้อมูล และแก้ PromptPay'**
+  /// **'ป้องกันยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay'**
   String get appLockSubtitle;
 
   /// No description provided for @appLockSectionTitle.
@@ -7079,7 +7121,7 @@ abstract class AppLocalizations {
   /// No description provided for @appLockRequirePinHint.
   ///
   /// In th, this message translates to:
-  /// **'เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง และแก้ PromptPay (ผ่อนผัน {minutes} นาที)'**
+  /// **'เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (ผ่อนผัน {minutes} นาที)'**
   String appLockRequirePinHint(int minutes);
 
   /// No description provided for @appLockCreatePin.
@@ -7166,11 +7208,29 @@ abstract class AppLocalizations {
   /// **'ยืนยันการเปลี่ยน PromptPay'**
   String get appLockConfirmPromptPay;
 
+  /// No description provided for @appLockConfirmStock.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันปรับสต็อกด้วย PIN ร้าน'**
+  String get appLockConfirmStock;
+
+  /// No description provided for @appLockConfirmCsv.
+  ///
+  /// In th, this message translates to:
+  /// **'ยืนยันนำเข้า CSV ด้วย PIN ร้าน'**
+  String get appLockConfirmCsv;
+
   /// No description provided for @appLockPinsMismatch.
   ///
   /// In th, this message translates to:
   /// **'PIN ไม่ตรงกัน'**
   String get appLockPinsMismatch;
+
+  /// No description provided for @appLockLockedOut.
+  ///
+  /// In th, this message translates to:
+  /// **'พยายามผิดหลายครั้ง ลองใหม่ใน {seconds} วินาที'**
+  String appLockLockedOut(int seconds);
 }
 
 class _AppLocalizationsDelegate

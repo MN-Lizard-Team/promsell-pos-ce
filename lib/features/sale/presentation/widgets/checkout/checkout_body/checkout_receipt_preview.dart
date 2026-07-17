@@ -35,8 +35,8 @@ class CheckoutReceiptPreview extends StatelessWidget {
         (i) => ReceiptPreviewItem(
           name: i.product.name,
           qty: i.qty,
-          price: i.product.price,
-          subtotal: i.subtotal,
+          price: i.product.price.value,
+          subtotal: i.subtotal.value,
           imagePath: i.product.imagePath,
           imageThumbnailPath: i.product.imageThumbnailPath,
           imageUrl: i.product.imageUrl,

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_category.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/delete_categories.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/reorder_categories.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_category.dart';
@@ -32,11 +33,13 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     required AddCategory addCategory,
     required UpdateCategory updateCategory,
     required DeleteCategory deleteCategory,
+    required DeleteCategories deleteCategories,
     required ReorderCategories reorderCategories,
   }) : _watchCategories = watchCategories,
        _addCategory = addCategory,
        _updateCategory = updateCategory,
        _deleteCategory = deleteCategory,
+       _deleteCategories = deleteCategories,
        _reorderCategories = reorderCategories,
        super(const CategoryState()) {
     on<_CategoriesUpdated>(_onUpdated);
@@ -44,6 +47,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<CategoryAdded>(_onAdded);
     on<CategoryUpdated>(_onCategoryUpdated);
     on<CategoryDeleted>(_onDeleted);
+    on<CategoriesDeleted>(_onCategoriesDeleted);
     on<CategoriesReordered>(_onReordered);
     _startWatching();
   }
@@ -52,6 +56,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   final AddCategory _addCategory;
   final UpdateCategory _updateCategory;
   final DeleteCategory _deleteCategory;
+  final DeleteCategories _deleteCategories;
   final ReorderCategories _reorderCategories;
   StreamSubscription<List<Category>>? _sub;
 
@@ -137,6 +142,29 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         state.copyWith(
           saveStatus: CategorySaveStatus.error,
           errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onCategoriesDeleted(
+    CategoriesDeleted event,
+    Emitter<CategoryState> emit,
+  ) async {
+    emit(
+      state.copyWith(saveStatus: CategorySaveStatus.saving, errorMessage: null),
+    );
+    try {
+      await _deleteCategories(
+        event.ids,
+        moveProductsToCategoryId: event.moveProductsToCategoryId,
+      );
+      emit(state.copyWith(saveStatus: CategorySaveStatus.saved));
+    } catch (error) {
+      emit(
+        state.copyWith(
+          saveStatus: CategorySaveStatus.error,
+          errorMessage: error.toString(),
         ),
       );
     }

@@ -27,16 +27,9 @@ class PromptpayPreviewCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            accentColor.withValues(alpha: 0.2),
-            accentColor.withValues(alpha: 0.05),
-          ],
-        ),
+        color: st.cardBackground,
         borderRadius: BorderRadius.circular(st.cardRadius),
-        border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 1),
+        border: Border.all(color: st.cardBorderColor, width: 0.8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

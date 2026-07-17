@@ -22,4 +22,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final map = _mapper.toMap(settings);
     await _datasource.setAll(map);
   }
+
+  @override
+  Future<void> saveBarcodeLastCounter(int counter) async {
+    await _datasource.setInt(SettingsMapper.keyBarcodeLastCounter, counter);
+  }
 }

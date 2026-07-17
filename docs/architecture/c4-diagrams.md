@@ -1,4 +1,4 @@
-# C4 Diagrams & Data Flows — Promsell POS CE v0.8.9
+# C4 Diagrams & Data Flows — Promsell POS CE (v0.9.0)
 
 System context, container diagram, component diagram, and data flow sequences for all stock-mutating operations.
 
@@ -69,7 +69,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 │  SlipVerifier (bank slip Mini-QR decoding)                   │
 │  SlipScannerDialog (QR camera scanner)                       │
 │  Ean13Generator (@injectable, EAN-13 + Luhn check digit)     │
-│  BackupService (export/import/CSV)                           │
+│  BackupExportService + BackupRestoreService (export/share; same-device restore)       │
 │  ProductImageService (compression + format validation)       │
 │  BarcodeImageService (barcode PNG via RenderRepaintBoundary) │
 │  ImageCacheService (LRU cache eviction)                      │
@@ -78,7 +78,7 @@ System context, container diagram, component diagram, and data flow sequences fo
                          ▼
 ┌─────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                 │
-│  9 tables • schema v19 • WAL • FK ON • UUIDv4 PKs   │
+│  15 tables • schema v28 • WAL • FK ON • UUIDv4 PKs  │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -140,7 +140,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 ┌───────────────────── Storage ───────────────────────────┐
 │                                                         │
 │  SQLite (Drift)                                         │
-│  9 tables • WAL • FK ON • UUIDv4 PKs                    │
+│  15 tables • schema v28 • WAL • FK ON • UUIDv4 PKs      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -294,4 +294,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · C4 Diagrams & Data Flows</sub>
+<sub>Promsell POS CE · v0.9.0 · schema v28 · 15 tables · C4 Diagrams & Data Flows</sub>

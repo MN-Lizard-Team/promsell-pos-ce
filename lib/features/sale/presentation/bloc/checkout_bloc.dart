@@ -54,9 +54,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   void _clearPending() {
     _pendingSaleEvent = null;
     _frozenCart = null;
-    if (_cartBloc.state.paymentLocked) {
-      _cartBloc.add(const CartPaymentLockChanged(false));
-    }
+    // Always dispatch unlock (idempotent) so failure paths and tests stay
+    // consistent even when cart mock state is stale.
+    _cartBloc.add(const CartPaymentLockChanged(false));
   }
 
   Future<void> _onConfirmed(
@@ -255,10 +255,13 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   }) async {
     // Money path must use confirm-time freeze — never fall back to live cart.
     if (cartSnapshot == null) {
+      _clearPending();
       emit(
         state.copyWith(
           status: CheckoutStatus.failure,
           errorMessage: 'saleError',
+          frozenItems: null,
+          promptPayAmount: null,
         ),
       );
       return;
@@ -312,10 +315,15 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         error: e,
         stack: stack,
       );
+      // Unlock cart + drop freeze so cashier can fix stock/day and retry.
+      // Do not clear cart lines — merchant must correct and re-confirm.
+      _clearPending();
       emit(
         state.copyWith(
           status: CheckoutStatus.failure,
           errorMessage: _mapCheckoutError(e),
+          frozenItems: null,
+          promptPayAmount: null,
         ),
       );
     }
@@ -350,11 +358,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
   @override
   Future<void> close() async {
-    _pendingSaleEvent = null;
-    _frozenCart = null;
-    if (_cartBloc.state.paymentLocked) {
-      _cartBloc.add(const CartPaymentLockChanged(false));
-    }
+    _clearPending();
     return super.close();
   }
 }

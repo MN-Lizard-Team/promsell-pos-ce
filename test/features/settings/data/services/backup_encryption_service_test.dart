@@ -28,7 +28,7 @@ void main() {
 
       final encPath = await service.encryptFile(
         sourcePath: sourcePath,
-        pin: '1234',
+        pin: '123456',
       );
 
       expect(encPath, '$sourcePath.enc');
@@ -45,12 +45,12 @@ void main() {
 
       final encPath = await service.encryptFile(
         sourcePath: sourcePath,
-        pin: '5678',
+        pin: '567890',
       );
 
       final decPath = await service.decryptFile(
         sourcePath: encPath,
-        pin: '5678',
+        pin: '567890',
       );
 
       final decrypted = await File(decPath).readAsBytes();
@@ -63,11 +63,11 @@ void main() {
 
       final encPath = await service.encryptFile(
         sourcePath: sourcePath,
-        pin: 'correct',
+        pin: 'correct1',
       );
 
       expect(
-        () => service.decryptFile(sourcePath: encPath, pin: 'wrong'),
+        () => service.decryptFile(sourcePath: encPath, pin: 'wrong12'),
         throwsA(isA<Exception>()),
       );
     });
@@ -78,10 +78,13 @@ void main() {
 
       final encPath = await service.encryptFile(
         sourcePath: sourcePath,
-        pin: 'abc',
+        pin: 'abcdef',
       );
 
-      final result = await service.verifyPin(sourcePath: encPath, pin: 'abc');
+      final result = await service.verifyPin(
+        sourcePath: encPath,
+        pin: 'abcdef',
+      );
       expect(result, isTrue);
     });
 
@@ -91,10 +94,13 @@ void main() {
 
       final encPath = await service.encryptFile(
         sourcePath: sourcePath,
-        pin: 'abc',
+        pin: 'abcdef',
       );
 
-      final result = await service.verifyPin(sourcePath: encPath, pin: 'xyz');
+      final result = await service.verifyPin(
+        sourcePath: encPath,
+        pin: 'xyzxyz',
+      );
       expect(result, isFalse);
     });
 
@@ -102,7 +108,7 @@ void main() {
       expect(
         () => service.encryptFile(
           sourcePath: '${tempDir.path}/nonexistent.db',
-          pin: '1234',
+          pin: '123456',
         ),
         throwsA(isA<StateError>()),
       );
@@ -113,7 +119,7 @@ void main() {
       await File(shortPath).writeAsBytes([1, 2, 3]);
 
       expect(
-        () => service.decryptFile(sourcePath: shortPath, pin: '1234'),
+        () => service.decryptFile(sourcePath: shortPath, pin: '123456'),
         throwsA(isA<StateError>()),
       );
     });
@@ -126,8 +132,9 @@ void main() {
       final salt = Uint8List.fromList(List.generate(16, (i) => i));
       final nonce = Uint8List.fromList(List.generate(12, (i) => i + 16));
 
-      // Build v1 key with old weak derivation
-      final hmac = Hmac(sha256, Uint8List.fromList('legacy'.codeUnits));
+      // Build v1 key with old weak derivation (PIN must be ≥6 for decrypt API).
+      const pin = 'legacy1';
+      final hmac = Hmac(sha256, Uint8List.fromList(pin.codeUnits));
       var block = hmac.convert(salt).bytes;
       const copies = (32 + 32 - 1) ~/ 32; // = 1
       for (var i = 1; i < copies; i++) {
@@ -150,10 +157,7 @@ void main() {
       final v1Path = '${tempDir.path}/legacy.enc';
       await File(v1Path).writeAsBytes(v1File);
 
-      final decPath = await service.decryptFile(
-        sourcePath: v1Path,
-        pin: 'legacy',
-      );
+      final decPath = await service.decryptFile(sourcePath: v1Path, pin: pin);
       final decrypted = await File(decPath).readAsBytes();
       expect(decrypted, equals(original));
     });

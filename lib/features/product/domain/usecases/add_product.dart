@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/core/utils/validators.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 
 @injectable
@@ -20,6 +21,13 @@ class AddProduct {
     String? imagePath,
     String? imageThumbnailPath,
     bool trackStock = true,
+    bool isActive = true,
+    String? description,
+    String? brand,
+    String? unit,
+    String? supplier,
+    bool isRecommended = false,
+    List<ProductOptionGroup> optionGroups = const [],
   }) async {
     Validators.productName(name);
     Validators.price(price);
@@ -41,6 +49,13 @@ class AddProduct {
       imagePath: imagePath,
       imageThumbnailPath: imageThumbnailPath,
       trackStock: trackStock,
+      isActive: isActive,
+      description: description,
+      brand: brand,
+      unit: unit,
+      supplier: supplier,
+      isRecommended: isRecommended,
+      optionGroups: optionGroups,
     );
   }
 }

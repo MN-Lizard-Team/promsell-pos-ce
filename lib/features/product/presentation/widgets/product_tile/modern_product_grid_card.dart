@@ -36,120 +36,121 @@ class _ModernProductGridCardState extends State<ModernProductGridCard>
     final product = widget.product;
     final theme = Theme.of(context);
 
-    return Dismissible(
-      key: ValueKey(product.id),
-      direction: DismissDirection.endToStart,
-      background: const DeleteBackground(
-        borderRadius: 16,
-        margin: EdgeInsets.zero,
-      ),
-      confirmDismiss: (_) => confirmDeleteProduct(context, widget.product),
-      child: BlocSelector<CategoryBloc, CategoryState, Category?>(
-        selector: (state) => state.categories
-            .where((c) => c.id == product.categoryId)
-            .firstOrNull,
-        builder: (_, cat) {
-          return ProductCardShell(
-            onTap: () => showProductPreviewPage(context, widget.product),
-            onLongPress: () => showProductEditPage(context, widget.product),
-            isActive: product.isActive,
-            borderRadius: 16,
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: ProductAvatar(
-                          imagePath: product.imagePath,
-                          imageThumbnailPath: product.imageThumbnailPath,
-                          imageUrl: product.imageUrl,
-                          size: 52,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (cat != null)
-                        Center(child: _CategoryLabel(category: cat))
-                      else
-                        const SizedBox(height: 16),
-                      const SizedBox(height: 2),
-                      InkWell(
-                        onTap: () => quickEditName(context),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Text(
-                          product.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
+    return RepaintBoundary(
+      child: Dismissible(
+        key: ValueKey(product.id),
+        direction: DismissDirection.endToStart,
+        background: const DeleteBackground(
+          borderRadius: 16,
+          margin: EdgeInsets.zero,
+        ),
+        confirmDismiss: (_) => confirmDeleteProduct(context, widget.product),
+        child: BlocSelector<CategoryBloc, CategoryState, Category?>(
+          selector: (state) => state.categories
+              .where((c) => c.id == product.categoryId)
+              .firstOrNull,
+          builder: (_, cat) {
+            return ProductCardShell(
+              onTap: () => showProductPreviewPage(context, widget.product),
+              onLongPress: () => showProductEditPage(context, widget.product),
+              isActive: product.isActive,
+              borderRadius: 16,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: ProductAvatar(
+                            imagePath: product.imagePath,
+                            imageThumbnailPath: product.imageThumbnailPath,
+                            imageUrl: product.imageUrl,
+                            size: 52,
                           ),
                         ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () => quickEditPrice(context),
-                              borderRadius: BorderRadius.circular(6),
-                              child: MoneyText(
-                                value: product.price,
-                                currency: currency,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                  color: theme.colorScheme.primary,
+                        const SizedBox(height: 8),
+                        if (cat != null)
+                          Center(child: _CategoryLabel(category: cat))
+                        else
+                          const SizedBox(height: 16),
+                        const SizedBox(height: 2),
+                        InkWell(
+                          onTap: () => quickEditName(context),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Text(
+                            product.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => quickEditPrice(context),
+                                borderRadius: BorderRadius.circular(6),
+                                child: MoneyText(
+                                  value: product.price.value,
+                                  currency: currency,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: theme.colorScheme.primary,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          InkWell(
-                            onTap: () => quickEditStock(context),
-                            borderRadius: BorderRadius.circular(8),
-                            child: StockIndicator(
-                              stock: product.stock,
-                              trackStock: product.trackStock,
-                              compact: true,
+                            InkWell(
+                              onTap: () => quickEditStock(context),
+                              borderRadius: BorderRadius.circular(8),
+                              child: StockIndicator(
+                                stock: product.stock,
+                                trackStock: product.trackStock,
+                                compact: true,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                if (!product.isActive)
-                  Positioned(
-                    top: 6,
-                    right: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.secondaryContainer.withValues(
-                          alpha: 0.85,
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        context.l10n.inactive,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSecondaryContainer,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                      ],
+                    ),
+                  ),
+                  if (!product.isActive)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.secondaryContainer
+                              .withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          context.l10n.inactive,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSecondaryContainer,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

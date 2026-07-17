@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/sale/data/repositories/sale_repository_impl.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
@@ -38,8 +39,8 @@ void main() {
         paymentMethod: 'cash',
         vatMode: 'NONE',
         vatRate: 0,
-        amountReceived: 500,
-        changeAmount: 300,
+        amountReceived: Money.fromDouble(500),
+        changeAmount: Money.fromDouble(300),
       );
 
       expect(result, tSale);
@@ -49,8 +50,8 @@ void main() {
           paymentMethod: 'cash',
           vatMode: 'NONE',
           vatRate: 0,
-          amountReceived: 500,
-          changeAmount: 300,
+          amountReceived: Money.fromDouble(500),
+          changeAmount: Money.fromDouble(300),
         ),
       ).called(1);
     });

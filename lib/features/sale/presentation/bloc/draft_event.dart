@@ -50,3 +50,32 @@ class DraftAutoSaveRequested extends DraftEvent {
 class DraftRotated extends DraftEvent {
   const DraftRotated();
 }
+
+/// Immediate persist of [cartState] to the active draft (no debounce).
+class DraftForceSaveRequested extends DraftEvent {
+  const DraftForceSaveRequested(this.cartState);
+  final CartState cartState;
+  @override
+  List<Object?> get props => [cartState];
+}
+
+/// Park current bill: force-save active draft then create a new empty draft.
+/// Optional [name] is applied to the **parked** draft (not the new empty one).
+/// Does not clear cart — UI clears only after success.
+class DraftParkRequested extends DraftEvent {
+  const DraftParkRequested(this.cartState, {this.name});
+  final CartState cartState;
+  final String? name;
+  @override
+  List<Object?> get props => [cartState, name];
+}
+
+/// Start a new bill: force-save current, create empty draft.
+/// Does not clear cart — UI clears only after success.
+class DraftStartNewBillRequested extends DraftEvent {
+  const DraftStartNewBillRequested(this.cartState, {this.name});
+  final CartState cartState;
+  final String? name;
+  @override
+  List<Object?> get props => [cartState, name];
+}

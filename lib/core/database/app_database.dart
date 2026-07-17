@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
 import 'package:meta/meta.dart';
+import 'package:promsell_pos_ce/core/database/database_opener.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/database/tables/app_settings_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/categories_table.dart';
@@ -10,6 +10,7 @@ import 'package:promsell_pos_ce/core/database/tables/draft_carts_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/inventory_logs_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/products_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/sale_items_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/sale_payments_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/sales_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/restaurant_tables_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/product_option_groups_table.dart';
@@ -24,6 +25,7 @@ part 'app_database.g.dart';
     Products,
     Sales,
     SaleItems,
+    SalePayments,
     Categories,
     InventoryLogs,
     AppSettings,
@@ -42,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 28;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -250,7 +252,7 @@ class AppDatabase extends _$AppDatabase {
         await _addColumnIfNotExists(
           'sales',
           'order_type',
-          "TEXT NOT NULL DEFAULT 'dinein'",
+          "TEXT NOT NULL DEFAULT 'delivery'",
         );
         await _addColumnIfNotExists(
           'sales',
@@ -274,7 +276,7 @@ class AppDatabase extends _$AppDatabase {
         await _addColumnIfNotExists(
           'draft_carts',
           'order_type',
-          "TEXT NOT NULL DEFAULT 'dinein'",
+          "TEXT NOT NULL DEFAULT 'delivery'",
         );
         await _addColumnIfNotExists(
           'draft_carts',
@@ -369,6 +371,90 @@ class AppDatabase extends _$AppDatabase {
           'CREATE INDEX IF NOT EXISTS idx_sales_customer_id ON sales (customer_id)',
         );
       }
+      if (from < 22) {
+        await _addColumnIfNotExists('products', 'description', 'TEXT');
+      }
+      // v23: Runtime validations only (barcode uniqueness, product delete guard)
+      // No schema changes required
+      if (from < 23) {
+        // No-op: validations implemented in repository layer
+      }
+      // v24: Barcode UNIQUE INDEX + performance indexes
+      if (from < 24) {
+        // Re-run barcode deduplication to ensure uniqueness before creating index
+        await _deduplicateBarcodes();
+
+        // Drop old non-conditional unique index if exists
+        await customStatement(
+          'DROP INDEX IF EXISTS idx_products_barcode_unique',
+        );
+
+        // Create conditional unique index (NULL and empty string allowed)
+        await customStatement(
+          "CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique ON products(barcode) WHERE barcode IS NOT NULL AND barcode != ''",
+        );
+
+        // Add performance indexes
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_sale_items_product_id ON sale_items(product_id)',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at)',
+        );
+      }
+      if (from < 25) {
+        await _addColumnIfNotExists('products', 'brand', 'TEXT');
+        await _addColumnIfNotExists('products', 'unit', 'TEXT');
+        await _addColumnIfNotExists('products', 'supplier', 'TEXT');
+        await _addColumnIfNotExists(
+          'products',
+          'is_recommended',
+          'INTEGER NOT NULL DEFAULT 0',
+        );
+      }
+      if (from < 26) {
+        // Keep one row per close_date (latest id wins), then unique index.
+        await customStatement('''
+DELETE FROM daily_closes WHERE id NOT IN (
+  SELECT id FROM daily_closes
+  GROUP BY close_date
+  HAVING id = MAX(id)
+)
+''');
+        await customStatement(
+          'DROP INDEX IF EXISTS idx_daily_closes_close_date',
+        );
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_closes_close_date_unique ON daily_closes (close_date)',
+        );
+      }
+      if (from < 28) {
+        await m.createTable(salePayments);
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_sale_payments_sale_id '
+          'ON sale_payments (sale_id)',
+        );
+      }
+      if (from < 27) {
+        // Dedupe non-null receipt numbers (keep latest created_at), then unique.
+        await customStatement('''
+UPDATE sales
+SET receipt_number = receipt_number || '-dup-' || id
+WHERE receipt_number IS NOT NULL
+  AND receipt_number != ''
+  AND id NOT IN (
+    SELECT id FROM sales
+    WHERE receipt_number IS NOT NULL AND receipt_number != ''
+    GROUP BY receipt_number
+    HAVING id = MAX(id)
+  )
+''');
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_receipt_number_unique '
+          'ON sales(receipt_number) '
+          "WHERE receipt_number IS NOT NULL AND receipt_number != ''",
+        );
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA journal_mode=WAL');
@@ -383,8 +469,9 @@ class AppDatabase extends _$AppDatabase {
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_products_is_active ON products (is_active)',
     );
+    // Conditional unique index created in v24 migration
     await customStatement(
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique ON products (barcode)',
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique ON products(barcode) WHERE barcode IS NOT NULL AND barcode != ''",
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales (created_at)',
@@ -393,7 +480,18 @@ class AppDatabase extends _$AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_sales_status ON sales (status)',
     );
     await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_receipt_number_unique '
+      'ON sales(receipt_number) '
+      "WHERE receipt_number IS NOT NULL AND receipt_number != ''",
+    );
+    await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id ON sale_items (sale_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_sale_payments_sale_id ON sale_payments (sale_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_sale_items_product_id ON sale_items (product_id)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_inventory_logs_product_id ON inventory_logs (product_id)',
@@ -402,18 +500,22 @@ class AppDatabase extends _$AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_draft_cart_items_cart_id ON draft_cart_items (cart_id)',
     );
     await customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_daily_closes_close_date ON daily_closes (close_date)',
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_closes_close_date_unique ON daily_closes (close_date)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions (is_active)',
     );
   }
 
   Future<void> _seedDefaultSettings() async {
+    // Canonical keys must match [SettingsMapper] (camelCase).
     await batch((b) {
       b.insertAll(appSettings, [
-        AppSettingsCompanion.insert(key: 'shop_name', value: ''),
-        AppSettingsCompanion.insert(key: 'receipt_footer', value: ''),
-        AppSettingsCompanion.insert(key: 'vat_rate', value: '7'),
-        AppSettingsCompanion.insert(key: 'vat_mode', value: 'NONE'),
-        AppSettingsCompanion.insert(key: 'currency_symbol', value: '฿'),
+        AppSettingsCompanion.insert(key: 'shopName', value: ''),
+        AppSettingsCompanion.insert(key: 'receiptNote', value: ''),
+        AppSettingsCompanion.insert(key: 'vatRate', value: '7'),
+        AppSettingsCompanion.insert(key: 'vatMode', value: 'NONE'),
+        AppSettingsCompanion.insert(key: 'currency', value: '฿'),
       ], mode: InsertMode.insertOrIgnore);
     });
   }
@@ -597,7 +699,14 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  /// Opens the database with SQLCipher AES-256-CBC encryption (Phase 2a / v0.9.0).
+  ///
+  /// Uses LazyDatabase to defer opening until first query, allowing async key fetch
+  /// from secure storage. On first launch after upgrade, transparently migrates
+  /// plain SQLite → encrypted SQLCipher.
   static QueryExecutor _openDatabase() {
-    return driftDatabase(name: 'promsell_pos.db');
+    return LazyDatabase(() async {
+      return EncryptedDatabaseOpener.open();
+    });
   }
 }

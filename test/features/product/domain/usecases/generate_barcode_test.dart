@@ -29,7 +29,9 @@ void main() {
     when(
       () => mockSettingsRepo.load(),
     ).thenAnswer((_) async => const Settings());
-    when(() => mockSettingsRepo.save(any())).thenAnswer((_) async {});
+    when(
+      () => mockSettingsRepo.saveBarcodeLastCounter(any()),
+    ).thenAnswer((_) async {});
   });
 
   group('GenerateBarcode', () {
@@ -84,8 +86,9 @@ void main() {
 
       await generateBarcode(prefix: '200');
 
-      verify(() => mockSettingsRepo.load()).called(2);
-      verify(() => mockSettingsRepo.save(any())).called(1);
+      // load once for initCounter; counter patch only (no full Settings.save)
+      verify(() => mockSettingsRepo.load()).called(1);
+      verify(() => mockSettingsRepo.saveBarcodeLastCounter(any())).called(1);
     });
   });
 }

@@ -33,5 +33,21 @@ void main() {
       final result = CurrencyFormatter.format(0);
       expect(result, contains('0.00'));
     });
+
+    test('formatGrouped adds thousand separators with 2 decimals', () {
+      expect(CurrencyFormatter.formatGrouped(1234.5), '1,234.50');
+      expect(CurrencyFormatter.formatGrouped(99999.99), '99,999.99');
+      expect(CurrencyFormatter.formatGrouped(0), '0.00');
+    });
+
+    test('formatGroupedWithSymbol prefixes currency symbol', () {
+      expect(CurrencyFormatter.formatGroupedWithSymbol(1500, '฿'), '฿1,500.00');
+      expect(CurrencyFormatter.formatGroupedWithSymbol(-50.25, '฿'), '฿-50.25');
+    });
+
+    test('formatGroupedInt adds thousand separators', () {
+      expect(CurrencyFormatter.formatGroupedInt(12345), '12,345');
+      expect(CurrencyFormatter.formatGroupedInt(0), '0');
+    });
   });
 }

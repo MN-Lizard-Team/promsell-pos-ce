@@ -1,0 +1,188 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import '../helpers/test_utils.dart';
+import 'robot_base.dart';
+
+/// Robot for checkout page interactions
+class CheckoutRobot extends RobotBase {
+  CheckoutRobot(super.tester);
+
+  /// Verify on checkout page
+  void verifyOnCheckoutPage() {
+    expectVisible(
+      find.text('Checkout').or(find.text('Payment')),
+      reason: 'Should be on checkout page',
+    );
+  }
+
+  /// Select payment method
+  Future<void> selectPaymentMethod(String method) async {
+    final methodBtn = find.text(method)
+        .or(find.textContaining(method))
+        .or(find.widgetWithText(Card, method));
+    await tap(methodBtn);
+  }
+
+  /// Enter cash received amount
+  Future<void> enterCashReceived(double amount) async {
+    final receivedField = find.widgetWithText(TextField, 'Received')
+        .or(find.byType(TextField));
+    await enterText(receivedField, amount.toString());
+  }
+
+  /// Use quick cash amount button
+  Future<void> selectQuickCash(String amount) async {
+    await tap(find.text(amount));
+  }
+
+  /// Apply discount
+  Future<void> applyDiscount({
+    required String type,
+    required double value,
+  }) async {
+    final discountBtn = find.text('Discount')
+        .or(find.byIcon(Icons.discount))
+        .or(find.text('Add Discount'));
+    await tap(discountBtn);
+
+    // Select discount type (Percent or Fixed)
+    await tap(find.text(type));
+
+    // Enter value
+    final valueField = find.byType(TextField);
+    await enterText(valueField, value.toString());
+
+    // Confirm
+    await tap(find.text('Apply').or(find.text('OK')));
+  }
+
+  /// Apply promotion
+  Future<void> applyPromotion(String promotionName) async {
+    final promoBtn = find.text('Promotion')
+        .or(find.text('Apply Promotion'))
+        .or(find.byIcon(Icons.local_offer));
+    
+    if (promoBtn.evaluate().isNotEmpty) {
+      await tap(promoBtn);
+      await tap(find.text(promotionName));
+    } else {
+      // Try finding promotion directly in list
+      await tap(find.text(promotionName));
+    }
+  }
+
+  /// Add customer to sale
+  Future<void> selectCustomer(String customerName) async {
+    final customerBtn = find.text('Customer')
+        .or(find.byIcon(Icons.person))
+        .or(find.text('Add Customer'));
+    await tap(customerBtn);
+    await tap(find.text(customerName));
+  }
+
+  /// Add note to sale
+  Future<void> addNote(String note) async {
+    final noteField = find.widgetWithText(TextField, 'Note')
+        .or(find.byType(TextField));
+    await enterText(noteField, note);
+  }
+
+  /// Complete payment
+  Future<void> completePayment() async {
+    final completeBtn = find.text('Complete')
+        .or(find.text('Pay'))
+        .or(find.text('Confirm Payment'))
+        .or(find.byIcon(Icons.check));
+    await tap(completeBtn);
+  }
+
+  /// Verify payment complete (receipt shown)
+  void verifyPaymentComplete() {
+    expectVisible(
+      find.text('Receipt')
+          .or(find.text('Payment Complete'))
+          .or(find.text('Success')),
+      reason: 'Payment should be complete',
+    );
+  }
+
+  /// Verify change amount
+  void verifyChange(Money expectedChange) {
+    final changeText = expectedChange.toString();
+    expectVisible(
+      find.textContaining('Change').and(find.textContaining(changeText)),
+      reason: 'Change should be $changeText',
+    );
+  }
+
+  /// Verify grand total
+  void verifyGrandTotal(Money expectedTotal) {
+    final totalText = expectedTotal.toString();
+    expectVisible(
+      find.textContaining(totalText),
+      reason: 'Grand total should be $totalText',
+    );
+  }
+
+  /// Verify discount applied
+  void verifyDiscountAmount(Money discountAmount) {
+    final discountText = discountAmount.toString();
+    expectVisible(
+      find.textContaining('Discount').and(find.textContaining(discountText)),
+      reason: 'Discount should be $discountText',
+    );
+  }
+
+  /// Close receipt and return to sale
+  Future<void> closeReceipt() async {
+    final closeBtn = find.text('Close')
+        .or(find.text('Done'))
+        .or(find.text('New Sale'))
+        .or(find.byIcon(Icons.close));
+    await tap(closeBtn);
+  }
+
+  /// Print receipt
+  Future<void> printReceipt() async {
+    final printBtn = find.text('Print')
+        .or(find.byIcon(Icons.print));
+    if (printBtn.evaluate().isNotEmpty) {
+      await tap(printBtn);
+    }
+  }
+
+  /// Share receipt
+  Future<void> shareReceipt() async {
+    final shareBtn = find.text('Share')
+        .or(find.byIcon(Icons.share));
+    if (shareBtn.evaluate().isNotEmpty) {
+      await tap(shareBtn);
+    }
+  }
+
+  /// Go back to cart
+  Future<void> backToCart() async {
+    final backBtn = find.byIcon(Icons.arrow_back)
+        .or(find.text('Back'));
+    await tap(backBtn);
+  }
+
+  /// Verify service charge applied
+  void verifyServiceCharge(Money chargeAmount) {
+    final chargeText = chargeAmount.toString();
+    expectVisible(
+      find.textContaining('Service').and(find.textContaining(chargeText)),
+      reason: 'Service charge should be $chargeText',
+    );
+  }
+
+  /// Verify VAT amount
+  void verifyVAT(Money vatAmount) {
+    final vatText = vatAmount.toString();
+    expectVisible(
+      find.textContaining('VAT').and(find.textContaining(vatText)),
+      reason: 'VAT should be $vatText',
+    );
+  }
+}

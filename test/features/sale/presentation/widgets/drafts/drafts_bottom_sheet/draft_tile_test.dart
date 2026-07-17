@@ -58,7 +58,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Draft'), findsOneWidget);
+      // untitledDraft is product language "Bill" (not legacy "Draft").
+      expect(find.textContaining('Bill'), findsWidgets);
     });
 
     testWidgets('calls onSwitch when tapped', (tester) async {
@@ -150,7 +151,7 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.delete_outline));
       await tester.pump();
-      await tester.tap(find.widgetWithText(TextButton, 'Delete bill'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete bill'));
       await tester.pump();
       expect(deleted, isTrue);
     });

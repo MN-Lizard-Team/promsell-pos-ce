@@ -51,6 +51,7 @@ class SearchHistoryCubit extends Cubit<SearchHistoryState> {
 
   Future<void> _persist(List<String> list) async {
     await _datasource.setString(_key, jsonEncode(list));
+    if (isClosed) return;
     emit(SearchHistoryState(searches: list));
   }
 }

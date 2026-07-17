@@ -62,10 +62,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
         );
       }
 
-      final balRow =
-          await (_db.select(_db.products)
-                ..where((p) => p.id.equals(productId)))
-              .getSingle();
+      final balRow = await (_db.select(
+        _db.products,
+      )..where((p) => p.id.equals(productId))).getSingle();
 
       // Log the adjustment
       final logType = qtyChange > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
@@ -80,7 +79,6 @@ class InventoryRepositoryImpl implements InventoryRepository {
           createdAt: Value(now),
         ),
       );
-
     });
   }
 

@@ -26,16 +26,17 @@ class CategoryRepositoryImpl implements CategoryRepository {
       _datasource.watchAll().map((rows) => rows.map(_fromData).toList());
 
   @override
-  Future<void> addCategory({
+  Future<String> addCategory({
     required String name,
     int sortOrder = 0,
     String? color,
     String? iconName,
   }) async {
     final now = DateTime.now();
+    final id = IdGenerator.newId();
     await _datasource.insert(
       CategoriesCompanion.insert(
-        id: IdGenerator.newId(),
+        id: id,
         name: name,
         sortOrder: Value(sortOrder),
         color: Value(color),
@@ -44,6 +45,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         updatedAt: Value(now),
       ),
     );
+    return id;
   }
 
   @override
@@ -63,6 +65,15 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
   @override
   Future<void> deleteCategory(String id) => _datasource.delete(id);
+
+  @override
+  Future<void> deleteCategories(
+    List<String> categoryIds, {
+    String? moveProductsToCategoryId,
+  }) => _datasource.deleteWithProductDisposition(
+    categoryIds,
+    moveProductsToCategoryId: moveProductsToCategoryId,
+  );
 
   @override
   Future<void> reorderCategories(List<String> orderedIds) =>

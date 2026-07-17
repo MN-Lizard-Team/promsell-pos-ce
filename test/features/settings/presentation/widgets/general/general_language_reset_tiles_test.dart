@@ -61,7 +61,7 @@ void main() {
       await tester.tap(find.byType(ListTile));
       await tester.pump();
 
-      await tester.tap(find.byType(FilledButton));
+      await tester.tap(find.byType(FilledButton).last);
       await tester.pump();
 
       expect(updated, isNotNull);

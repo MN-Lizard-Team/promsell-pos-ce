@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE v0.8.9
+# Technical Deep-Dive — Promsell POS CE (v0.9.0)
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 
@@ -27,7 +27,7 @@ Multiple `BlocListener`s subscribed to the same BLoC receive emissions in **subs
 |-------------|----------|--------|
 | `@LazySingleton` | `ProductBloc` | Shared across Sale + Product tabs — same product list everywhere |
 | `@LazySingleton` | `CategoryBloc` | Shared across Product + Category Management — same category list everywhere |
-| `@LazySingleton` | `CartBloc`, `DraftBloc`, `CheckoutBloc` | Shared single instances across SalePage, CartPanel, CheckoutPage — prevents split-brain state (v0.8.3 fix from `@injectable` factory) |
+| `@LazySingleton` | `CartBloc`, `DraftBloc`, `CheckoutBloc` | Shared single instances across SalePage, cart sheet/review, CheckoutPage/PaymentSheet — prevents split-brain state |
 | `@LazySingleton` | `SettingsCubit` | Global app state (locale, theme) — must persist across navigation |
 | `@LazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()` |
 
@@ -132,7 +132,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 ┌─────────────────── Database ────────────────────────────────┐
 │                                                             │
 │  AppDatabase (singleton)                                    │
-│  SQLite • Drift ORM • 9 tables • WAL • FK ON                │
+│  SQLite • Drift ORM • 15 tables • schema v28 • WAL • FK ON • SQLCipher │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -169,15 +169,44 @@ Every stock-mutating operation runs inside a **single Drift transaction** to gua
 
 ## Error Handling Strategy
 
+### AppError value object (domain layer)
+
+All domain-layer errors use the `AppError` sealed class for type-safe error handling:
+
+```dart
+sealed class AppError {
+  const AppError();
+  
+  factory AppError.validation(String message) = ValidationError;
+  factory AppError.notFound(String message) = NotFoundError;
+  factory AppError.conflict(String message) = ConflictError;
+  factory AppError.insufficientStock(String productName, int available) = InsufficientStockError;
+}
+```
+
+Benefits:
+- **Exhaustive pattern matching** — compiler enforces all error types are handled
+- **Type-safe error context** — each error carries specific typed fields
+- **Localization-ready** — error messages constructed at UI layer using `context.l10n`
+- **Testable** — errors are pure value objects
+
+### Money value object (domain layer)
+
+All currency amounts use the `Money` value object to ensure:
+- **Precision**: Uses `Decimal` type to avoid floating-point errors
+- **Currency awareness**: Stores amount + currency code (e.g. `Money(amount: Decimal.parse('10.50'), currency: 'THB')`)
+- **Safe arithmetic**: Overloaded operators (`+`, `-`, `*`, `/`) with currency validation
+- **Formatting**: `MoneyText / display helpers (not Money.format())` respects locale and currency symbol from settings
+
 ### Layer-specific patterns
 
 | Layer | Strategy |
 |-------|----------|
-| **Datasource** | Throw Dart exceptions (`StateError`, `ArgumentError`) on constraint violations |
-| **Repository** | Catches DB exceptions, wraps in domain-specific failures (when needed) |
-| **Use Case** | Propagates exceptions — no silent swallowing |
-| **BLoC/Cubit** | Catches in event handler, emits error state |
-| **UI** | Reacts to error state → shows `AppSnackBar.error()` |
+| **Datasource** | Throw `AppError` on constraint violations (e.g. `AppError.conflict()` for duplicate barcode) |
+| **Repository** | Catches DB exceptions, wraps in `AppError` types |
+| **Use Case** | Propagates `AppError` — no silent swallowing |
+| **BLoC/Cubit** | Catches in event handler, emits error state with `AppError` |
+| **UI** | Pattern-match on `AppError` type → shows localized `AppSnackBar.error()` |
 
 ### Transaction failure recovery
 
@@ -195,10 +224,12 @@ try {
 
 | Error | Source | Handling |
 |-------|--------|----------|
-| Insufficient stock | `SaleLocalDatasource` | Throw before writes; BLoC shows "Stock insufficient" snackbar |
-| Double void | `SaleLocalDatasource` | `StateError("Already voided")` → UI error snackbar |
-| Product not found | Repository | Returns `null` → use case throws `ArgumentError` |
+| Insufficient stock | `SaleLocalDatasource` | Throw `AppError.insufficientStock()` before writes; BLoC shows localized snackbar |
+| Double void | `SaleLocalDatasource` | `AppError.conflict("Already voided")` → UI error snackbar |
+| Product not found | Repository | Returns `null` → use case throws `AppError.notFound()` |
+| Duplicate barcode | `ProductLocalDatasource` | `AppError.conflict()` from runtime validation → UI shows error |
 | DB corruption | SQLite | Drift WAL recovery; worst case: app reinstall |
+| Encryption key loss | SQLCipher | **Permanent data loss** — requires backup restore or fresh start |
 
 ---
 
@@ -239,4 +270,4 @@ try {
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Technical Deep-Dive</sub>
+<sub>Promsell POS CE · v0.9.0 · Technical Deep-Dive</sub>

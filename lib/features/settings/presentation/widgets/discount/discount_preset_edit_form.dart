@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 
 class DiscountPresetEditForm extends StatelessWidget {
   const DiscountPresetEditForm({
@@ -207,12 +208,9 @@ class DiscountPresetEditForm extends StatelessWidget {
         final removedLabel = preset.type == 'PERCENT'
             ? '${v.toStringAsFixed(0)}%'
             : '฿${v.toStringAsFixed(2)}';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.discountPresetRemoved(removedLabel)),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
+        AppSnackBar.success(
+          context,
+          context.l10n.discountPresetRemoved(removedLabel),
         );
       },
       deleteIconColor: st.danger,
@@ -308,21 +306,12 @@ class _AddPresetDialogState extends State<_AddPresetDialog> {
               final addedLabel = widget.type == 'PERCENT'
                   ? '${val.toStringAsFixed(0)}%'
                   : '฿${val.toStringAsFixed(2)}';
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(context.l10n.discountPresetAdded(addedLabel)),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
+              AppSnackBar.success(
+                context,
+                context.l10n.discountPresetAdded(addedLabel),
               );
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(context.l10n.invalidValue),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              AppSnackBar.error(context, context.l10n.invalidValue);
             }
             Navigator.of(context).pop();
           },

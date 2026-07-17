@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
-import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_dashboard_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_attention_banner.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_tile_builders.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_tile_data.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
@@ -41,22 +42,14 @@ class _SettingsRootView extends StatefulWidget {
   State<_SettingsRootView> createState() => _SettingsRootViewState();
 }
 
-class _SettingsRootViewState extends State<_SettingsRootView>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animController;
+class _SettingsRootViewState extends State<_SettingsRootView> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
-  bool _isSearching = false;
   String _query = '';
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _animController.forward();
     _searchController.addListener(() {
       setState(() => _query = _searchController.text.toLowerCase());
     });
@@ -64,7 +57,6 @@ class _SettingsRootViewState extends State<_SettingsRootView>
 
   @override
   void dispose() {
-    _animController.dispose();
     _searchController.dispose();
     _searchFocus.dispose();
     super.dispose();
@@ -89,43 +81,21 @@ class _SettingsRootViewState extends State<_SettingsRootView>
     );
   }
 
-  Widget _animatedTile(SettingsTileData tile, int index) {
-    final animation = CurvedAnimation(
-      parent: _animController,
-      curve: Interval(
-        (index * 0.04).clamp(0.0, 1.0),
-        1.0,
-        curve: Curves.easeOutCubic,
-      ),
-    );
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0.0, end: 1.0).animate(animation),
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.1),
-          end: Offset.zero,
-        ).animate(animation),
-        child: SettingsCategoryTile(
-          icon: tile.icon,
-          title: tile.title,
-          subtitle: tile.subtitle,
-          accentColor: tile.accent,
-          statusChip: tile.statusChip,
-          onTap: () => _push(context, tile.page),
-        ),
-      ),
-    );
+  void _clearSearch() {
+    _searchController.clear();
+    _searchFocus.unfocus();
+    setState(() => _query = '');
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final st = context.settingsTheme;
+    final theme = Theme.of(context);
     final s = widget.settings;
 
     final sections = SettingsTileBuilders.allSections(context, s, st, l10n);
-
-    final showGrouped = _query.isEmpty && !_isSearching;
+    final showGrouped = _query.isEmpty;
 
     final filteredSections = showGrouped
         ? sections
@@ -134,8 +104,10 @@ class _SettingsRootViewState extends State<_SettingsRootView>
                 (sec) => SettingsSectionData(
                   title: sec.title,
                   tiles: sec.tiles.where((t) {
-                    final text = '${t.title} ${t.subtitle ?? ''} ${sec.title}'
-                        .toLowerCase();
+                    final keywords = t.searchKeywords.join(' ');
+                    final text =
+                        '${t.title} ${t.subtitle ?? ''} ${sec.title} $keywords'
+                            .toLowerCase();
                     return text.contains(_query);
                   }).toList(),
                 ),
@@ -144,101 +116,107 @@ class _SettingsRootViewState extends State<_SettingsRootView>
               .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                focusNode: _searchFocus,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: l10n.searchSettings,
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary,
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocus,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: l10n.searchSettings,
+                    prefixIcon: const Icon(Icons.search, size: 22),
+                    suffixIcon: _query.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: MaterialLocalizations.of(
+                              context,
+                            ).deleteButtonTooltip,
+                            icon: const Icon(Icons.close, size: 20),
+                            onPressed: _clearSearch,
+                          ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.55),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outlineVariant.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.outlineVariant.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.primary,
+                        width: 1.2,
+                      ),
+                    ),
                   ),
-                ),
-                style: Theme.of(context).textTheme.titleMedium,
-              )
-            : Text(l10n.settingsTitle),
-        actions: [
-          IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearching = !_isSearching;
-                if (!_isSearching) {
-                  _searchController.clear();
-                  _query = '';
-                } else {
-                  _searchFocus.requestFocus();
-                }
-              });
-            },
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        children: [
-          if (showGrouped) ...[
-            SettingsDashboardCard(
-              settings: s,
-              localeLabel: SettingsTileBuilders.localeLabel(context, s),
-              themeLabel: SettingsTileBuilders.themeLabel(context, s),
-              themeIcon: SettingsTileBuilders.themeIcon(s),
-              themeColor: SettingsTileBuilders.themeColor(s),
-              backupStatus: SettingsTileBuilders.backupStatus(context, s),
-              st: st,
-              onLocaleToggle: () {
-                final cubit = context.read<SettingsCubit>();
-                final next = s.locale.languageCode == 'th'
-                    ? const Locale('en')
-                    : const Locale('th');
-                cubit.updateField((_) => s.copyWith(locale: next));
-              },
-              onThemeToggle: () {
-                final cubit = context.read<SettingsCubit>();
-                final next = switch (s.themeMode) {
-                  ThemeMode.light => ThemeMode.dark,
-                  ThemeMode.dark => ThemeMode.system,
-                  ThemeMode.system => ThemeMode.light,
-                };
-                cubit.updateField((_) => s.copyWith(themeMode: next));
-              },
-            ),
-            const SizedBox(height: 24),
-          ],
-          if (filteredSections.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(32),
-              child: Center(
-                child: Text(
-                  l10n.noSearchResults,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(color: st.mutedText),
+                  style: theme.textTheme.bodyLarge,
                 ),
               ),
-            )
-          else
-            ...filteredSections.asMap().entries.expand((entry) {
-              final sectionIndex = entry.key;
-              final sec = entry.value;
-              final tileStartIndex = sections
-                  .sublist(0, sectionIndex)
-                  .fold<int>(0, (sum, s) => sum + s.tiles.length);
-              return [
-                SettingsSectionCard(
-                  title: sec.title,
-                  children: sec.tiles.asMap().entries.map((tileEntry) {
-                    final globalIndex = tileStartIndex + tileEntry.key;
-                    return _animatedTile(tileEntry.value, globalIndex);
-                  }).toList(),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(0, 4, 0, 16),
+                  children: [
+                    if (showGrouped)
+                      SettingsAttentionBanner(
+                        settings: s,
+                        onOpen: (page) => _push(context, page),
+                      ),
+                    if (filteredSections.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                        child: AppEmptyState(
+                          icon: Icons.search_off_outlined,
+                          title: l10n.noSearchResults,
+                        ),
+                      )
+                    else
+                      ...filteredSections.expand((sec) {
+                        return [
+                          SettingsSectionCard(
+                            title: sec.title,
+                            children: sec.tiles.map((tile) {
+                              return SettingsCategoryTile(
+                                icon: tile.icon,
+                                title: tile.title,
+                                subtitle: tile.subtitle,
+                                accentColor: tile.accent,
+                                statusChip: tile.statusChip,
+                                onTap: () => _push(context, tile.page),
+                              );
+                            }).toList(),
+                          ),
+                          SizedBox(height: st.sectionGap),
+                        ];
+                      }),
+                  ],
                 ),
-                const SizedBox(height: 24),
-              ];
-            }),
-        ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

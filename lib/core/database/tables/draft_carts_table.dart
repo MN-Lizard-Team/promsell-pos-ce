@@ -7,7 +7,7 @@ class DraftCarts extends Table {
   TextColumn get note => text().nullable()();
   TextColumn get cartDiscountType => text().nullable()();
   RealColumn get cartDiscountValue => real().nullable()();
-  TextColumn get orderType => text().withDefault(const Constant('dinein'))();
+  TextColumn get orderType => text().withDefault(const Constant('delivery'))();
   TextColumn get orderChannel => text().withDefault(const Constant('walkin'))();
   TextColumn get externalOrderRef => text().nullable()();
   TextColumn get tableId => text().nullable()();

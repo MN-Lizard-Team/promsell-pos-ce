@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dart';
 
 void main() {
@@ -18,7 +19,7 @@ void main() {
 
       expect(promo.type, PromotionType.percent);
       expect(promo.value, 0.0);
-      expect(promo.minPurchaseAmount, 0.0);
+      expect(promo.minPurchaseAmount, Money.zero);
       expect(promo.isActive, isTrue);
       expect(promo.endDate, isNull);
     });
@@ -90,9 +91,9 @@ void main() {
         updatedAt: tDateTime,
       );
 
-      expect(promo.discountFor(100), 10);
-      expect(promo.discountFor(250), 25);
-      expect(promo.discountFor(0), 0);
+      expect(promo.discountFor(Money.fromDouble(100)), Money.fromDouble(10));
+      expect(promo.discountFor(Money.fromDouble(250)), Money.fromDouble(25));
+      expect(promo.discountFor(Money.zero), Money.zero);
     });
 
     test('discountFor amount type clamps to subtotal', () {
@@ -106,9 +107,9 @@ void main() {
         updatedAt: tDateTime,
       );
 
-      expect(promo.discountFor(100), 50);
-      expect(promo.discountFor(30), 30);
-      expect(promo.discountFor(0), 0);
+      expect(promo.discountFor(Money.fromDouble(100)), Money.fromDouble(50));
+      expect(promo.discountFor(Money.fromDouble(30)), Money.fromDouble(30));
+      expect(promo.discountFor(Money.zero), Money.zero);
     });
 
     test('discountFor returns 0 when below minPurchaseAmount', () {
@@ -117,14 +118,14 @@ void main() {
         name: 'Min 200',
         type: PromotionType.percent,
         value: 10,
-        minPurchaseAmount: 200,
+        minPurchaseAmount: Money.fromDouble(200),
         startDate: pastDate,
         createdAt: tDateTime,
         updatedAt: tDateTime,
       );
 
-      expect(promo.discountFor(100), 0);
-      expect(promo.discountFor(200), 20);
+      expect(promo.discountFor(Money.fromDouble(100)), Money.zero);
+      expect(promo.discountFor(Money.fromDouble(200)), Money.fromDouble(20));
     });
 
     test('discountFor returns 0 when not currently active', () {
@@ -139,7 +140,7 @@ void main() {
         updatedAt: tDateTime,
       );
 
-      expect(promo.discountFor(100), 0);
+      expect(promo.discountFor(Money.fromDouble(100)), Money.zero);
     });
 
     test('copyWith updates only specified fields', () {
@@ -166,7 +167,7 @@ void main() {
         name: 'Test',
         type: PromotionType.percent,
         value: 10,
-        minPurchaseAmount: 100,
+        minPurchaseAmount: Money.fromDouble(100),
         startDate: pastDate,
         endDate: futureDate,
         isActive: true,

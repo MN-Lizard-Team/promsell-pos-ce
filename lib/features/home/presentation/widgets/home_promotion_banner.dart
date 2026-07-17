@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dart';
 
 class HomePromotionBanner extends StatefulWidget {
@@ -40,13 +41,28 @@ class _HomePromotionBannerState extends State<HomePromotionBanner>
     super.dispose();
   }
 
+  String _discountLabel(BuildContext context, Promotion promo) {
+    final l10n = context.l10n;
+    if (promo.type == PromotionType.percent) {
+      return l10n.promotionPercentOff(promo.value.toStringAsFixed(0));
+    }
+    return l10n.promotionAmountOff(promo.value.toStringAsFixed(2));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final cs = theme.colorScheme;
-
     final onPrimary = cs.onPrimary;
+    final promo = widget.promotion;
+    final hasPromo = promo != null;
+
+    final title = hasPromo ? promo.name : l10n.homeCreatePromotion;
+    final subtitle = hasPromo
+        ? _discountLabel(context, promo)
+        : l10n.homeNoActivePromotion;
+    final cta = hasPromo ? l10n.promotionsTitle : l10n.homePromotionBannerCta;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -62,7 +78,10 @@ class _HomePromotionBannerState extends State<HomePromotionBanner>
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xFF157E83), Color(0xFF085F65)],
+                colors: [
+                  AppColors.promotionGradientStart,
+                  AppColors.promotionGradientEnd,
+                ],
               ),
             ),
             child: Stack(
@@ -79,7 +98,9 @@ class _HomePromotionBannerState extends State<HomePromotionBanner>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        l10n.homeCreatePromotion,
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.headlineSmall?.copyWith(
                           color: onPrimary,
                           fontWeight: FontWeight.w800,
@@ -87,7 +108,9 @@ class _HomePromotionBannerState extends State<HomePromotionBanner>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        l10n.homePromotionBannerSubtitle,
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: onPrimary.withValues(alpha: 0.7),
                         ),
@@ -103,9 +126,9 @@ class _HomePromotionBannerState extends State<HomePromotionBanner>
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          l10n.homePromotionBannerCta,
+                          cta,
                           style: theme.textTheme.labelLarge?.copyWith(
-                            color: const Color(0xFF085F65),
+                            color: AppColors.promotionGradientEnd,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

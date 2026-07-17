@@ -1,15 +1,16 @@
-Promsell is a free, offline-first point-of-sale app designed for small shops, market stalls, and local merchants in Thailand.
+Promsell is a free, offline-first point-of-sale app for small shops, market stalls, and local merchants in Thailand.
 
 **Core Features:**
-• **Quick Sales** — Add products to cart, apply discounts, calculate VAT, and checkout in seconds.
-• **Inventory Management** — Track stock levels, log adjustments, and get low-stock alerts.
-• **Receipts & QR** — Print or share 80mm/A4 PDF receipts. Generate PromptPay QR codes for easy payment.
-• **Offline-First** — All data stays on your device. Works 100% without internet.
-• **Multi-Language** — Switch between Thai and English instantly.
-• **Reports** — Daily sales summary and inventory reports.
-• **Backup export (same-device restore)** — Export your database and settings anytime.
+• **Quick Sales** — Cart, discounts, VAT modes, multi-tender checkout.
+• **Inventory** — Stock tracking, adjustments, and low-stock awareness.
+• **Receipts & PromptPay** — Share PDF receipts (not a tax invoice). Generate PromptPay QR offline.
+• **Offline-First** — Core POS works without internet. Data stays on your device (SQLCipher at rest).
+• **Thai + English** — Switch language anytime.
+• **Drafts & Daily Close** — Park bills and close the day.
+• **Backup** — Encrypted export (recommended). Same-device restore only; no cloud multi-device restore in Community Edition.
 
-**Perfect for:**
-Grocery stores, cafés, food stalls, retail shops, and any small business that needs a simple, fast cash register.
+**Perfect for:** grocery, cafés, food stalls, and small retail that need a fast cash register on a phone or tablet.
 
-No subscription. No cloud lock-in. Your data, your device.
+No subscription. No cloud lock-in. Open source **AGPL-3.0** — source: https://github.com/teeprakorn1/promsell-pos-ce
+
+Receipts are sales receipts, not official tax invoices.

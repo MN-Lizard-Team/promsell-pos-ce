@@ -50,10 +50,81 @@ class ReceiptContentSection extends StatelessWidget {
                 onChanged: (v) =>
                     onUpdate(s.copyWith(showShopInfoOnReceipt: v)),
               ),
+              Divider(
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+                color: st.cardBorderColor,
+              ),
+              _buildPaperSizeTile(context, s),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPaperSizeTile(BuildContext context, Settings s) {
+    final st = context.settingsTheme;
+    final l10n = context.l10n;
+    final label = s.receiptSize == 'A4'
+        ? l10n.receiptSizeA4
+        : l10n.receiptSize80mm;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(
+          Icons.crop_portrait_outlined,
+          color: st.softAccent,
+          size: 22,
+        ),
+        title: Text(
+          l10n.settingsReceiptSize,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+        subtitle: Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: st.softAccent,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+        trailing: Icon(Icons.chevron_right, color: st.softTextSecondary),
+        onTap: () async {
+          final next = await showModalBottomSheet<String>(
+            context: context,
+            builder: (ctx) => SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Text(l10n.receiptSize80mm),
+                    trailing: s.receiptSize != 'A4'
+                        ? Icon(Icons.check, color: st.softAccent)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, '80mm'),
+                  ),
+                  ListTile(
+                    title: Text(l10n.receiptSizeA4),
+                    trailing: s.receiptSize == 'A4'
+                        ? Icon(Icons.check, color: st.softAccent)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, 'A4'),
+                  ),
+                ],
+              ),
+            ),
+          );
+          if (next != null && next != s.receiptSize) {
+            onUpdate(s.copyWith(receiptSize: next));
+          }
+        },
+      ),
     );
   }
 

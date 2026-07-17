@@ -129,8 +129,9 @@ void main() {
       ).thenAnswer((_) async => 'GEN123456');
 
       final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
-      await cubit.generateBarcode();
+      final result = await cubit.generateBarcode();
 
+      expect(result, 'GEN123456');
       expect(cubit.state.draft.barcode, 'GEN123456');
       expect(cubit.state.isDirty, isTrue);
       cubit.close();

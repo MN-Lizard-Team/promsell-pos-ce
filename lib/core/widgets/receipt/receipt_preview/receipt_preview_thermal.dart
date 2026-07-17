@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt/receipt_preview/receipt_preview_data.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
@@ -20,6 +21,15 @@ class ReceiptPreviewThermal extends StatelessWidget {
     this.note,
     this.receiptNumber,
     this.createdAt,
+    this.cartDiscount,
+    this.promotionDiscount,
+    this.serviceCharge,
+    this.serviceChargeRate,
+    this.isVoided = false,
+    this.voidReason,
+    this.isReprint = false,
+    this.notTaxInvoiceDisclaimer,
+    this.footerOverride,
   });
 
   final Settings settings;
@@ -39,6 +49,15 @@ class ReceiptPreviewThermal extends StatelessWidget {
   final String? note;
   final String? receiptNumber;
   final DateTime? createdAt;
+  final double? cartDiscount;
+  final double? promotionDiscount;
+  final double? serviceCharge;
+  final double? serviceChargeRate;
+  final bool isVoided;
+  final String? voidReason;
+  final bool isReprint;
+  final String? notTaxInvoiceDisclaimer;
+  final String? footerOverride;
 
   String _formatDate(DateTime dt) {
     try {
@@ -49,12 +68,18 @@ class ReceiptPreviewThermal extends StatelessWidget {
     }
   }
 
+  String _money(double amount) =>
+      CurrencyFormatter.formatGroupedWithSymbol(amount, settings.currency);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final s = settings;
     final l = labels;
     final vat = vatInfo;
+    final footer =
+        footerOverride ??
+        (s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!');
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 280),
@@ -77,6 +102,30 @@ class ReceiptPreviewThermal extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (isVoided) ...[
+              _center(
+                l.voided ?? 'VOIDED',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.error,
+                ),
+              ),
+              if (voidReason != null && voidReason!.isNotEmpty)
+                _center(
+                  '${l.voidReason ?? 'Reason'}: $voidReason',
+                  style: const TextStyle(fontSize: 9),
+                ),
+              const SizedBox(height: 4),
+            ],
+            if (isReprint)
+              _center(
+                l.reprint ?? 'REPRINT',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             if (s.shopName.isNotEmpty)
               _center(
                 s.shopName,
@@ -91,6 +140,15 @@ class ReceiptPreviewThermal extends StatelessWidget {
               if (s.phone.isNotEmpty)
                 _center(s.phone, style: const TextStyle(fontSize: 9)),
             ],
+            if (notTaxInvoiceDisclaimer != null &&
+                notTaxInvoiceDisclaimer!.isNotEmpty)
+              _center(
+                notTaxInvoiceDisclaimer!,
+                style: TextStyle(
+                  fontSize: 8,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
             const SizedBox(height: 4),
             _divider(theme),
             const SizedBox(height: 4),
@@ -110,7 +168,18 @@ class ReceiptPreviewThermal extends StatelessWidget {
                   ),
               ],
             ),
-            if (paymentMethod != null) Text('${l.payment}: $paymentMethod'),
+            if (l.paymentLines.isNotEmpty)
+              ...l.paymentLines.map((line) => Text('${l.payment}: $line'))
+            else if (paymentMethod != null)
+              Text('${l.payment}: $paymentMethod'),
+            if (l.customer != null &&
+                l.customerName != null &&
+                l.customerName!.isNotEmpty)
+              Text('${l.customer}: ${l.customerName}'),
+            if (l.promotion != null &&
+                l.promotionName != null &&
+                l.promotionName!.isNotEmpty)
+              Text('${l.promotion}: ${l.promotionName}'),
             const SizedBox(height: 6),
             _divider(theme),
             ...items.map(
@@ -137,7 +206,7 @@ class ReceiptPreviewThermal extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${s.currency}${item.subtotal.toStringAsFixed(2)}',
+                      _money(item.subtotal),
                       style: const TextStyle(fontSize: 10),
                     ),
                   ],
@@ -145,40 +214,40 @@ class ReceiptPreviewThermal extends StatelessWidget {
               ),
             ),
             _divider(theme),
-            if (vat != null) ...[
+            if (cartDiscount != null && cartDiscount! > 0)
+              _row(l.cartDiscount, '-${_money(cartDiscount!)}'),
+            if (promotionDiscount != null && promotionDiscount! > 0)
               _row(
-                l.subtotal,
-                '${s.currency}${vat.subtotal.toStringAsFixed(2)}',
+                l.promotionDiscount ?? l.promotion ?? 'Promotion',
+                '-${_money(promotionDiscount!)}',
               ),
+            if (serviceCharge != null && serviceCharge! > 0)
               _row(
-                vat.isInclusive ? l.vatIncluded : '${l.vat} ${s.vatRate}%',
-                '${s.currency}${vat.vatAmount.toStringAsFixed(2)}',
+                (serviceChargeRate != null && serviceChargeRate! > 0)
+                    ? '${l.serviceCharge ?? 'Service charge'} ${serviceChargeRate!.toStringAsFixed(0)}%'
+                    : (l.serviceCharge ?? 'Service charge'),
+                _money(serviceCharge!),
+              ),
+            if (vat != null) ...[
+              _row(l.subtotal, _money(vat.subtotal)),
+              _row(
+                vat.isInclusive
+                    ? l.vatIncluded
+                    : '${l.vat} ${settings.vatRate}%',
+                _money(vat.vatAmount),
               ),
             ],
-            _row(
-              l.total,
-              '${s.currency}${vat?.totalWithVat.toStringAsFixed(2) ?? total.toStringAsFixed(2)}',
-              bold: true,
-            ),
+            _row(l.total, _money(vat?.totalWithVat ?? total), bold: true),
             if (amountReceived != null) ...[
-              _row(
-                l.received,
-                '${s.currency}${amountReceived!.toStringAsFixed(2)}',
-              ),
-              _row(
-                l.change,
-                '${s.currency}${(changeAmount ?? 0).toStringAsFixed(2)}',
-              ),
+              _row(l.received, _money(amountReceived!)),
+              _row(l.change, _money(changeAmount ?? 0)),
             ],
             if (note != null && note!.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text('${l.note}: $note', style: const TextStyle(fontSize: 9)),
             ],
             const SizedBox(height: 8),
-            _center(
-              s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!',
-              style: const TextStyle(fontSize: 10),
-            ),
+            _center(footer, style: const TextStyle(fontSize: 10)),
           ],
         ),
       ),
@@ -198,10 +267,12 @@ class ReceiptPreviewThermal extends StatelessWidget {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          left,
-          style: TextStyle(
-            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+        Flexible(
+          child: Text(
+            left,
+            style: TextStyle(
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ),
         Text(

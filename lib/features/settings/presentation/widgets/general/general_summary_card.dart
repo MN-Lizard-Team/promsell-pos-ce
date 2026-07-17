@@ -7,13 +7,11 @@ class GeneralSummaryCard extends StatelessWidget {
   const GeneralSummaryCard({
     required this.locale,
     required this.themeMode,
-    required this.accessibilityMode,
     super.key,
   });
 
   final Locale locale;
   final ThemeMode themeMode;
-  final bool accessibilityMode;
 
   String _languageLabel(BuildContext context) {
     return locale.languageCode == 'th'
@@ -55,19 +53,9 @@ class GeneralSummaryCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            st.softAccent.withValues(alpha: 0.18),
-            st.softAccent.withValues(alpha: 0.04),
-          ],
-        ),
+        color: st.cardBackground,
         borderRadius: BorderRadius.circular(st.cardRadius),
-        border: Border.all(
-          color: st.softAccent.withValues(alpha: 0.35),
-          width: 1,
-        ),
+        border: Border.all(color: st.cardBorderColor, width: 0.8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -110,14 +98,6 @@ class GeneralSummaryCard extends StatelessWidget {
                 icon: _themeIcon(),
                 label: _themeLabel(context),
                 color: _themeColor(context),
-                st: st,
-              ),
-              _buildBadge(
-                icon: accessibilityMode
-                    ? Icons.check_circle_outline
-                    : Icons.cancel_outlined,
-                label: accessibilityMode ? 'ON' : 'OFF',
-                color: accessibilityMode ? AppColors.success : st.mutedText,
                 st: st,
               ),
             ],

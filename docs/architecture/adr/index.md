@@ -1,4 +1,4 @@
-# Architecture Decision Records (ADRs) — Promsell POS CE v0.8.9
+# Architecture Decision Records (ADRs) — Promsell POS CE (v0.9.0)
 
 All architecture decision records, ordered by ADR number.
 
@@ -158,7 +158,7 @@ All architecture decision records, ordered by ADR number.
 
 ## ADR-009: Deferred route push after modal pop (addPostFrameCallback)
 
-**Context:** Both a modal bottom sheet (`PaymentSheet`) / full-screen page (`CheckoutPage`) and its parent page (`_CartPanel`) listen to `CheckoutBloc`. On `SaleStatus.success`, the parent listener (subscribed first) pushes a receipt dialog before the modal/page listener can pop. `Navigator.pop()` then removes the dialog, not the modal — leaving it open and `_submitted = true` permanently.
+**Context:** Both a modal bottom sheet (`PaymentSheet`) / full-screen page (`CheckoutPage`) and its parent cart chrome (sale cart sheet / review) listen to `CheckoutBloc`. On `SaleStatus.success`, the parent listener (subscribed first) pushes a receipt dialog before the modal/page listener can pop. `Navigator.pop()` then removes the dialog, not the modal — leaving it open and `_submitted = true` permanently.
 
 **Decision:** Wrap any `showDialog` call in the parent `BlocListener` with `WidgetsBinding.instance.addPostFrameCallback`. The dialog push is deferred to the next frame, after the modal/page's `Navigator.pop()` has already run. Applies to both `PaymentSheet` (legacy bottom sheet) and `CheckoutPage` (v0.6.1+ full-screen page).
 
@@ -474,7 +474,7 @@ lib/core/widgets/
 | `primitives/` | `app_badge`, `app_empty_state`, `app_loading_overlay`, `app_snack_bar`, `app_text_dialog`, `money_text`, `section_card`, `skeleton_card` | 8 |
 | `barcode/` | `barcode_scanner_dialog`, `scan_overlay_painter` | 2 |
 | `image/` | `image_source_sheet`, `image_viewer_dialog` | 2 |
-| `search/` | `app_search_bar`, `search_empty_state`, `search_highlight_text`, `search_history_cubit`, `search_result_tile` | 5 |
+| `search/` | `search_empty_state`, `search_highlight_text`, `search_history_cubit`, `search_result_tile` (`app_search_bar` removed) | 4 |
 | `layout/` | `adaptive_breakpoints`, `danger_zone_card`, `form_section_card`, `modern_toggle_card`, `sticky_action_bar` | 5 |
 | `nav/` | `animated_nav_bar` | 1 |
 | `receipt/` | `receipt_preview` | 1 |
@@ -531,4 +531,4 @@ lib/core/widgets/
 
 ---
 
-<sub>Promsell POS CE · v0.8.8 · Architecture Decision Records</sub>
+<sub>Promsell POS CE · v0.9.0 · Architecture Decision Records</sub>

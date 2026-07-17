@@ -81,7 +81,7 @@ void main() {
         const PaymentTotalRow(label: 'Discount', value: -50, currency: '฿'),
       );
 
-      expect(find.textContaining('-฿50'), findsOneWidget);
+      expect(find.textContaining('฿-50'), findsOneWidget);
     });
   });
 }

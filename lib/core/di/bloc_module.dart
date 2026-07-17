@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dar
 import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_barcodes.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
@@ -16,11 +17,13 @@ abstract class BlocModule {
     UpdateProduct updateProduct,
     DeleteProduct deleteProduct,
     BatchGenerateBarcodes batchGenerateBarcodes,
+    ImportProducts importProducts,
   ) => ProductBloc(
     getProducts: getProducts,
     addProduct: addProduct,
     updateProduct: updateProduct,
     deleteProduct: deleteProduct,
     batchGenerateBarcodes: batchGenerateBarcodes,
+    importProducts: importProducts,
   )..add(const ProductsSubscribed());
 }

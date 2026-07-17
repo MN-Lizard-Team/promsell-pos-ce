@@ -1,43 +1,38 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
-import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
-import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
-import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt/receipt_preview.dart';
+import 'package:promsell_pos_ce/features/customer/domain/repositories/customer_repository.dart';
+import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
+import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_payment_routes.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/promptpay_payment_page.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/cash_input_section.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_receipt_dialog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_receipt_preview.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_restaurant_section.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_status_listener.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_tender_helpers.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_total_card.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/order_channel_selector.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/order_type_selector.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/table_selector.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/payment_input_section.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/payment_method_selector.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/sale_receipt_dialog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/customer_selector.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/promotion_selector.dart';
-import 'package:promsell_pos_ce/features/customer/domain/repositories/customer_repository.dart';
-import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
+/// Checkout form body. Public API unchanged: `const CheckoutBody()`.
 class CheckoutBody extends StatefulWidget {
   const CheckoutBody({super.key});
 
@@ -56,75 +51,17 @@ class _CheckoutBodyState extends State<CheckoutBody> {
   final _noteCtrl = TextEditingController();
   final _referenceCtrl = TextEditingController();
   final _externalRefCtrl = TextEditingController();
-  bool _submitted = false;
-  bool _inPaymentFlow = false;
+  final _flags = CheckoutFlowFlags();
   double _effectiveTotal = 0;
-  Timer? _processingTimeoutTimer;
   bool _cashUserEdited = false;
   bool _restaurantSeeded = false;
 
   double get _received => double.tryParse(_receivedCtrl.text) ?? 0;
   double get _change => _received - _effectiveTotal;
 
-  void _startProcessingTimeout(BuildContext ctx) {
-    _processingTimeoutTimer?.cancel();
-    _processingTimeoutTimer = Timer(const Duration(seconds: 30), () {
-      if (!mounted) return;
-      // Do not unlock _submitted while CreateSale may still complete.
-      AppSnackBar.error(ctx, ctx.l10n.saleTimeout);
-    });
-  }
-
-  void _cancelProcessingTimeout() {
-    _processingTimeoutTimer?.cancel();
-    _processingTimeoutTimer = null;
-  }
-
-  /// Pop PromptPay and payment shell until sale/catalog host remains.
-  void _popCheckoutShells(
-    NavigatorState nav, {
-    required bool includePromptPay,
-  }) {
-    var poppedPrompt = false;
-    var poppedShell = false;
-    while (nav.canPop()) {
-      final name = ModalRoute.of(nav.context)?.settings.name;
-      if (includePromptPay &&
-          !poppedPrompt &&
-          name == SalePaymentRoutes.promptPay) {
-        nav.pop();
-        poppedPrompt = true;
-        continue;
-      }
-      if (!poppedShell &&
-          (name == SalePaymentRoutes.paymentSheet ||
-              name == SalePaymentRoutes.checkoutPage)) {
-        nav.pop();
-        poppedShell = true;
-        break;
-      }
-      // Fallback when route names missing (tests / legacy): pop once or twice.
-      if (name == null || !SalePaymentRoutes.isCheckoutShell(name)) {
-        if (includePromptPay && !poppedPrompt) {
-          nav.pop();
-          poppedPrompt = true;
-          if (nav.canPop()) {
-            nav.pop();
-            poppedShell = true;
-          }
-        } else if (!poppedShell && nav.canPop()) {
-          nav.pop();
-          poppedShell = true;
-        }
-        break;
-      }
-      break;
-    }
-  }
-
   @override
   void dispose() {
-    _cancelProcessingTimeout();
+    _flags.dispose();
     _receivedCtrl.dispose();
     _splitCashCtrl.dispose();
     _noteCtrl.dispose();
@@ -178,41 +115,18 @@ class _CheckoutBodyState extends State<CheckoutBody> {
     setState(() {});
   }
 
-  List<SalePayment> _buildTenders(Money payableTotal) {
-    if (!_splitTender) {
-      return [
-        SalePayment(
-          method: _method,
-          amount: payableTotal,
-          reference: _referenceCtrl.text.trim().isEmpty
-              ? null
-              : _referenceCtrl.text.trim(),
-        ),
-      ];
-    }
-    final cashPart = Money.fromDouble(
-      double.tryParse(_splitCashCtrl.text) ?? 0,
-    );
-    final other = (payableTotal - cashPart).clampToZero();
-    final otherMethod = _method == 'cash' ? 'promptpay' : _method;
-    return [
-      if (cashPart > Money.zero)
-        SalePayment(method: 'cash', amount: cashPart, sortOrder: 0),
-      if (other > Money.zero)
-        SalePayment(
-          method: otherMethod,
-          amount: other,
-          reference: _referenceCtrl.text.trim().isEmpty
-              ? null
-              : _referenceCtrl.text.trim(),
-          sortOrder: 1,
-        ),
-    ];
-  }
+  List<SalePayment> _buildTenders(Money payableTotal) =>
+      CheckoutTenderHelpers.buildTenders(
+        splitTender: _splitTender,
+        method: _method,
+        payableTotal: payableTotal,
+        reference: _referenceCtrl.text,
+        splitCashText: _splitCashCtrl.text,
+      );
 
   void _confirm() {
-    if (_submitted) return;
-    _submitted = true;
+    if (_flags.submitted) return;
+    _flags.submitted = true;
     setState(() {});
     HapticFeedback.mediumImpact();
     final note = _noteCtrl.text.trim();
@@ -261,46 +175,11 @@ class _CheckoutBodyState extends State<CheckoutBody> {
     );
   }
 
-  List<double> _quickAmounts() {
-    final total = _effectiveTotal;
-    final roundedTen = (total / 10).ceil() * 10.0;
-    final roundedHundred = (total / 100).ceil() * 100.0;
-    final nextTen = roundedTen > total ? roundedTen : roundedTen + 10;
-    final nextHundred = roundedHundred > total
-        ? roundedHundred
-        : roundedHundred + 100;
-    final unique = <double>{
-      total,
-      nextTen,
-      nextHundred,
-    }.where((v) => v > 0).toList()..sort();
-    if (unique.length < 2) {
-      unique.add(total + 20);
-      unique.sort();
-    }
-    return unique;
-  }
+  List<double> _quickAmounts() =>
+      CheckoutTenderHelpers.quickAmounts(_effectiveTotal);
 
-  String _localizeCheckoutError(BuildContext ctx, String? key) {
-    return switch (key) {
-      'cartEmpty' => ctx.l10n.cartEmpty,
-      'insufficientStock' => ctx.l10n.insufficientStock,
-      'productNotFound' => ctx.l10n.productNotFound,
-      'productInactive' => ctx.l10n.productInactive,
-      'customerNotFound' => ctx.l10n.customerNotFound,
-      'promotionNotFound' => ctx.l10n.promotionNotFound,
-      'saleNotFound' => ctx.l10n.saleNotFound,
-      'saleAlreadyVoided' => ctx.l10n.saleAlreadyVoided,
-      'notFound' => ctx.l10n.notFound,
-      'validationError' => ctx.l10n.validationError,
-      'databaseError' => ctx.l10n.databaseError,
-      'saleError' => ctx.l10n.saleError,
-      'dayClosed' => ctx.l10n.dayClosedMessage,
-      'paymentMismatch' => ctx.l10n.paymentMismatch,
-      null => ctx.l10n.saleError,
-      _ => ctx.l10n.saleError,
-    };
-  }
+  String _localizeCheckoutError(BuildContext ctx, String? key) =>
+      CheckoutTenderHelpers.localizeCheckoutError(ctx, key);
 
   Future<void> _showReceiptDialog(
     BuildContext context, {
@@ -382,106 +261,12 @@ class _CheckoutBodyState extends State<CheckoutBody> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CheckoutBloc, CheckoutState>(
-      listenWhen: (prev, curr) =>
-          prev.status != curr.status &&
-          (curr.status == CheckoutStatus.failure ||
-              curr.status == CheckoutStatus.success ||
-              curr.status == CheckoutStatus.waitingPayment ||
-              curr.status == CheckoutStatus.idle ||
-              curr.status == CheckoutStatus.processing),
-      listener: (ctx, state) {
-        if (state.status == CheckoutStatus.processing) {
-          // Snack-only timeout; keep _submitted locked while CreateSale runs.
-          _startProcessingTimeout(ctx);
-          return;
-        }
-        if (state.status == CheckoutStatus.waitingPayment) {
-          _inPaymentFlow = true;
-          _cancelProcessingTimeout();
-          final cartState = ctx.read<CartBloc>().state;
-          final settings = ctx.read<SettingsCubit>().state.settings;
-          // Split tender: QR only for PromptPay share; full bill when PP-only.
-          final qrTotal = state.promptPayAmount ?? _effectiveTotal;
-          Navigator.of(ctx).push(
-            MaterialPageRoute(
-              settings: const RouteSettings(name: SalePaymentRoutes.promptPay),
-              builder: (_) => PromptPayPaymentPage(
-                total: qrTotal,
-                billTotal:
-                    (state.promptPayAmount != null &&
-                        (state.promptPayAmount! - _effectiveTotal).abs() >
-                            0.009)
-                    ? _effectiveTotal
-                    : null,
-                currency: settings.currency,
-                promptpayId: settings.promptpayId,
-                settings: settings,
-                bloc: ctx.read<CheckoutBloc>(),
-                items: state.frozenItems ?? cartState.items,
-              ),
-            ),
-          );
-          return;
-        }
-        if (state.status == CheckoutStatus.success) {
-          _cancelProcessingTimeout();
-          final wasInFlow = _inPaymentFlow;
-          _inPaymentFlow = false;
-          _submitted = false;
-          final sale = state.lastSale;
-          final settings = ctx.read<SettingsCubit>().state.settings;
-          final checkoutBloc = ctx.read<CheckoutBloc>();
-          final nav = Navigator.of(ctx);
-
-          // Capture host (under payment UI) before popping routes.
-          final hostContext = nav.context;
-
-          _popCheckoutShells(nav, includePromptPay: wasInFlow);
-
-          checkoutBloc.add(const CheckoutReset());
-
-          final showReceipt =
-              sale != null &&
-              settings.showPostSalePreview &&
-              settings.receiptPreviewStyle != 'none';
-          if (showReceipt) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!hostContext.mounted) return;
-              SaleReceiptDialog.show(hostContext, sale, settings);
-            });
-          }
-          return;
-        }
-        // PromptPay cancelled / timed out → only the PromptPay route was pushed.
-        if (state.status == CheckoutStatus.idle && _inPaymentFlow) {
-          _cancelProcessingTimeout();
-          _inPaymentFlow = false;
-          _submitted = false;
-          final nav = Navigator.of(ctx);
-          final name = ModalRoute.of(nav.context)?.settings.name;
-          if (nav.canPop() &&
-              (name == SalePaymentRoutes.promptPay || name == null)) {
-            nav.pop();
-          }
-          return;
-        }
-        if (state.status == CheckoutStatus.failure) {
-          _cancelProcessingTimeout();
-          final wasInFlow = _inPaymentFlow;
-          _inPaymentFlow = false;
-          _submitted = false;
-          if (wasInFlow) {
-            final nav = Navigator.of(ctx);
-            final name = ModalRoute.of(nav.context)?.settings.name;
-            if (nav.canPop() &&
-                (name == SalePaymentRoutes.promptPay || name == null)) {
-              nav.pop();
-            }
-          }
-          final msg = _localizeCheckoutError(ctx, state.errorMessage);
-          AppSnackBar.error(ctx, msg);
-        }
+    return CheckoutStatusListener(
+      flags: _flags,
+      effectiveTotal: _effectiveTotal,
+      localizeError: _localizeCheckoutError,
+      onFlagsChanged: () {
+        if (mounted) setState(() {});
       },
       child: BlocBuilder<CartBloc, CartState>(
         builder: (_, cartState) {
@@ -508,7 +293,6 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                   isInclusive: payable.isVatInclusive,
                 );
 
-          // Scroll + sticky confirm (keyboard inset owned by PaymentSheet shell).
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -541,60 +325,23 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                       ),
                       if (isRestaurant) ...[
                         const SizedBox(height: 12),
-                        FormSectionCard(
-                          icon: Icons.restaurant_outlined,
-                          title: context.l10n.orderType,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              OrderTypeSelector(
-                                orderType: _orderType,
-                                onChanged: (v) {
-                                  setState(() => _orderType = v);
-                                  _syncOrderTypeToCart(v);
-                                },
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                context.l10n.orderChannel,
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: 8),
-                              OrderChannelSelector(
-                                orderChannel: _orderChannel,
-                                onChanged: (v) {
-                                  setState(() => _orderChannel = v);
-                                  _syncOrderChannelToCart(v);
-                                },
-                              ),
-                              if (_orderType == 'dinein') ...[
-                                const SizedBox(height: 12),
-                                TableSelector(
-                                  selectedTableId: _selectedTableId,
-                                  onSelected: (v) {
-                                    setState(() => _selectedTableId = v);
-                                    _syncTableToCart(v);
-                                  },
-                                ),
-                              ],
-                              if (_orderType == 'delivery') ...[
-                                const SizedBox(height: 12),
-                                TextField(
-                                  controller: _externalRefCtrl,
-                                  decoration: InputDecoration(
-                                    labelText: context.l10n.externalOrderRef,
-                                    hintText: context.l10n.externalOrderRefHint,
-                                    border: const OutlineInputBorder(),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                        CheckoutRestaurantSection(
+                          orderType: _orderType,
+                          orderChannel: _orderChannel,
+                          selectedTableId: _selectedTableId,
+                          externalRefCtrl: _externalRefCtrl,
+                          onOrderTypeChanged: (v) {
+                            setState(() => _orderType = v);
+                            _syncOrderTypeToCart(v);
+                          },
+                          onOrderChannelChanged: (v) {
+                            setState(() => _orderChannel = v);
+                            _syncOrderChannelToCart(v);
+                          },
+                          onTableSelected: (v) {
+                            setState(() => _selectedTableId = v);
+                            _syncTableToCart(v);
+                          },
                         ),
                       ],
                       const SizedBox(height: 12),
@@ -751,13 +498,14 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          onPressed: isProcessing || !canConfirm || _submitted
+                          onPressed:
+                              isProcessing || !canConfirm || _flags.submitted
                               ? null
                               : () {
                                   HapticFeedback.mediumImpact();
                                   _confirm();
                                 },
-                          icon: isProcessing || _submitted
+                          icon: isProcessing || _flags.submitted
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,

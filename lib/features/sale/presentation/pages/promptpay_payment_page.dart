@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/secure_screen.dart';
 import 'package:promsell_pos_ce/core/utils/sound_player.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
@@ -26,9 +27,14 @@ class PromptPayPaymentPage extends StatefulWidget {
     required this.settings,
     required this.bloc,
     required this.items,
+    this.billTotal,
   });
 
+  /// Amount encoded in QR (full bill or PromptPay tender share).
   final double total;
+
+  /// Full bill when [total] is only a PromptPay share (split tender).
+  final double? billTotal;
   final String currency;
   final String promptpayId;
   final Settings settings;
@@ -51,6 +57,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
   @override
   void initState() {
     super.initState();
+    SecureScreen.setSecure(true);
     _remainingSeconds = widget.settings.promptPayTimeout;
     _startTimer();
   }
@@ -74,6 +81,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
 
   @override
   void dispose() {
+    SecureScreen.setSecure(false);
     _timer?.cancel();
     _autoConfirmTimer?.cancel();
     _referenceCtrl.dispose();
@@ -153,7 +161,12 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.promptpay),
+          title: Text(
+            widget.billTotal != null &&
+                    (widget.billTotal! - widget.total).abs() > 0.009
+                ? l10n.promptPayShareTitle
+                : l10n.promptPayFullBillTitle,
+          ),
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
@@ -180,6 +193,7 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
                 theme: Theme.of(context),
                 items: widget.items,
                 total: widget.total,
+                billTotal: widget.billTotal,
                 currency: widget.currency,
                 promptpayId: widget.promptpayId,
                 settings: widget.settings,

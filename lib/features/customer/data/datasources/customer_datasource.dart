@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/customer/domain/entities/customer.dart';
 
 abstract class CustomerDatasource {
@@ -24,7 +25,7 @@ class CustomerDatasourceImpl implements CustomerDatasource {
     phone: d.phone,
     email: d.email,
     note: d.note,
-    totalSpent: d.totalSpent,
+    totalSpent: Money.fromDouble(d.totalSpent),
     visitCount: d.visitCount,
     createdAt: d.createdAt,
     updatedAt: d.updatedAt,

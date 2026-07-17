@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/receipt/receipt_settings_form/receipt_tax_section.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form/sales_daily_close_section.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form/sales_display_section.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form/sales_preferences_section.dart';
@@ -20,6 +21,9 @@ class SalesSettingsForm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SalesPreferencesSection(settings: settings, onUpdate: onUpdate),
+        const SizedBox(height: 24),
+        // Tax/VAT under Sales for merchant findability (not under Receipt).
+        ReceiptTaxSection(settings: settings, onUpdate: onUpdate),
         const SizedBox(height: 24),
         SalesDisplaySection(settings: settings, onUpdate: onUpdate),
         const SizedBox(height: 24),

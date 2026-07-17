@@ -639,7 +639,7 @@
   "backupOff": "ปิด",
   "backupActionTitle": "สำรองข้อมูลด้วยตนเอง",
   "backupActionSubtitle": "แตะเพื่อบันทึกว่าคุณได้สำรองข้อมูลแล้ว",
-  "backupEncryptionTitle": "การเข้ารหัสสำรองข้อมูล (ไม่บังคับ)",
+  "backupEncryptionTitle": "การเข้ารหัสสำรองข้อมูล",
   "backupEncryptionLabel": "เข้ารหัสไฟล์สำรอง",
   "backupEncryptionDesc": "ปกป้องไฟล์สำรองด้วยการเข้ารหัส AES-256-GCM (ต้องใส่ PIN)",
   "backupInfoDescription": "ส่งออกสำรองข้อมูลเป็นประจำ (แนะนำเข้ารหัส PIN อย่างน้อย 6 ตัว) กู้คืนบนเครื่องเดิมได้เมื่อยังมีคีย์เข้ารหัส ห้ามใช้ข้ามเครื่องหลังถอนแอป",
@@ -963,12 +963,14 @@
   "agplShort": "AGPL-3.0",
   "copyrightNotice": "© 2026 Promsell POS CE · AGPL-3.0",
   "dataCollection": "การเก็บข้อมูล",
-  "dataCollectionBody": "Promsell ไม่เก็บข้อมูลส่วนบุคคลใดๆ ข้อมูลการขาย สินค้าคงคลัง และการตั้งค่าทั้งหมดจัดเก็บไว้ในเครื่องของคุณด้วย SQLite ไม่มีการส่งข้อมูลไปยังเซิร์ฟเวอร์ของเรา",
+  "dataCollectionBody": "Promsell ไม่เก็บและไม่ส่งข้อมูลส่วนบุคคลไปยังเซิร์ฟเวอร์ของผู้พัฒนา ข้อมูลการขาย สต็อก การตั้งค่า และข้อมูลร้าน/ลูกค้าที่คุณกรอก (ถ้ามี) จัดเก็บบนเครื่องนี้เท่านั้น (SQLite/SQLCipher) จะไม่ออกจากเครื่อง เว้นแต่คุณส่งออกหรือแชร์เอง",
+  "customerDataTitle": "ข้อมูลลูกค้า",
+  "customerDataBody": "หากใช้ฟีเจอร์ลูกค้า ชื่อ เบอร์โทร และอีเมลจะเก็บบนเครื่องนี้เท่านั้น ลบรายชื่อได้ตลอดเวลา และไม่ส่งไปเซิร์ฟเวอร์ของผู้พัฒนา",
   "thirdPartyServices": "บริการภายนอก",
   "thirdPartyServicesBody": "เราไม่ใช้บริการวิเคราะห์ข้อมูล โฆษณา หรือคลาวด์ แอปทำงานแบบออฟไลน์ทั้งหมด",
   "dataStorage": "การจัดเก็บข้อมูล",
-  "dataStorageBody": "ข้อมูลของคุณอยู่ในเครื่อง คุณสามารถส่งออกหรือลบได้ตลอดเวลาผ่านฟีเจอร์สำรอง/กู้คืน รูปภาพสินค้าจัดเก็บในไดเรกทอรีส่วนตัวของแอปและมีการล้างแคชอัตโนมัติ (จำกัด 50MB) เพื่อป้องกันการใช้พื้นที่มากเกินไป",
-  "backupEncryptionBody": "Promsell มีการเข้ารหัส AES-256-GCM สำหรับสำรองข้อมูล หากเปิดใช้งาน ข้อมูลสำรองจะถูกเข้ารหัสด้วยคีย์ที่ได้จาก PIN ที่ผู้ใช้กำหนดผ่าน PBKDF2 PIN ไม่ถูกจัดเก็บในเครื่องหรือส่งไปยังที่ใด หากลืม PIN จะไม่สามารถกู้คืนข้อมูลสำรองได้ — เราไม่สามารถรีเซ็ตหรือกู้คืนได้",
+  "dataStorageBody": "ข้อมูลของคุณอยู่ในเครื่อง ส่งออกหรือลบได้ผ่านสำรอง/กู้คืน การกู้คืนในแอปใช้ได้เฉพาะเครื่องเดิมขณะที่คีย์ SQLCipher ยังอยู่ ไม่รองรับข้ามเครื่องหรือหลังถอนการติดตั้ง/ล้างคีย์ รูปสินค้าใช้แคช LRU 50MB ในเครื่อง",
+  "backupEncryptionBody": "การส่งออกฐานข้อมูลใช้ AES-256-GCM ด้วยคีย์จาก PIN (PBKDF2 อย่างน้อย 6 ตัวอักษร) ค่าเริ่มต้นเปิดเข้ารหัสสำหรับติดตั้งใหม่ PIN ไม่ถูกเก็บหรือส่งออก หากลืม PIN จะกู้ไฟล์สำรองนั้นไม่ได้ ฐานข้อมูลจริงถูกปกป้องด้วย SQLCipher แยกต่างหาก",
   "permissionsTitle": "สิทธิ์การเข้าถึง",
   "permissionsCamera": "กล้อง: ใช้สำหรับถ่ายรูปสินค้าและสแกนบาร์โค้ด ไม่มีการส่งรูปภาพหรือข้อมูลสแกนออกจากเครื่อง",
   "permissionsStorage": "คลังข้อมูล: ใช้สำหรับบันทึกข้อมูลสำรองและใบเสร็จเท่านั้น",
@@ -1049,6 +1051,11 @@
   "filterStock": "สต็อก",
   "filterAll": "ทั้งหมด",
   "filterMore": "กรอง",
+  "productRowMenuQty": "กำหนดจำนวน",
+  "productRowMenuAdd": "เพิ่มลงตะกร้า",
+  "productRowMenu": "เมนูสินค้า",
+  "cartBottomLabel": "ตะกร้า",
+  "saleCategoryTabsLabel": "หมวดหมู่",
   "filterPageTitle": "กรองสินค้า",
   "filterReset": "รีเซ็ต",
   "filterShowResults": "ดูผลลัพธ์",
@@ -1855,10 +1862,10 @@
   "backupConfirmExportTitle": "ยืนยันการส่งออกสำรอง",
   "backupConfirmRestoreTitle": "ยืนยันการกู้คืนสำรอง",
   "appLockTitle": "ล็อก PIN ร้าน",
-  "appLockSubtitle": "ป้องกันการยกเลิกบิล สำรองข้อมูล และแก้ PromptPay",
+  "appLockSubtitle": "ป้องกันยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay",
   "appLockSectionTitle": "การกระทำที่เสี่ยง",
   "appLockRequirePin": "ต้องใช้ PIN ร้าน",
-  "appLockRequirePinHint": "เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง และแก้ PromptPay (ผ่อนผัน {minutes} นาที)",
+  "appLockRequirePinHint": "เมื่อเปิด ระบบจะขอ PIN ก่อนยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (ผ่อนผัน {minutes} นาที)",
   "@appLockRequirePinHint": {
     "placeholders": {
       "minutes": { "type": "int" }
@@ -1883,5 +1890,13 @@
   "appLockActionRequired": "ต้องใช้ PIN ร้าน",
   "appLockConfirmVoid": "ยืนยันยกเลิกบิลด้วย PIN ร้าน",
   "appLockConfirmPromptPay": "ยืนยันการเปลี่ยน PromptPay",
-  "appLockPinsMismatch": "PIN ไม่ตรงกัน"
+  "appLockConfirmStock": "ยืนยันปรับสต็อกด้วย PIN ร้าน",
+  "appLockConfirmCsv": "ยืนยันนำเข้า CSV ด้วย PIN ร้าน",
+  "appLockPinsMismatch": "PIN ไม่ตรงกัน",
+  "appLockLockedOut": "พยายามผิดหลายครั้ง ลองใหม่ใน {seconds} วินาที",
+  "@appLockLockedOut": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  }
 }

@@ -4,7 +4,7 @@ class BackupConfig extends Equatable {
   const BackupConfig({
     this.reminderDays = 7,
     this.lastBackupAt,
-    this.encryptionEnabled = false,
+    this.encryptionEnabled = true,
   });
 
   final int reminderDays;

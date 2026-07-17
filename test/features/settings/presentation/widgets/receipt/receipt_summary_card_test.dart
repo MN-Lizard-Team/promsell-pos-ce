@@ -59,7 +59,7 @@ void main() {
         ),
       );
 
-      expect(find.text('ON'), findsOneWidget);
+      expect(find.text('On'), findsOneWidget);
     });
 
     testWidgets('shows OFF for shop info disabled', (tester) async {
@@ -73,7 +73,7 @@ void main() {
         ),
       );
 
-      expect(find.text('OFF'), findsOneWidget);
+      expect(find.text('Off'), findsOneWidget);
     });
 
     testWidgets('renders inclusive VAT label with rate', (tester) async {

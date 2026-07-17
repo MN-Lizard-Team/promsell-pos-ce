@@ -10,6 +10,9 @@ class StickyActionBar extends StatelessWidget {
     this.dangerLabel,
     this.onDanger,
     this.isLoading = false,
+    this.sideBySide = false,
+    this.primaryColor,
+    this.primaryKey,
   });
 
   final String primaryLabel;
@@ -20,9 +23,41 @@ class StickyActionBar extends StatelessWidget {
   final VoidCallback? onDanger;
   final bool isLoading;
 
+  /// When true, secondary + primary sit on one row (mockup-style cancel/save).
+  final bool sideBySide;
+
+  /// Optional fill color for the primary button (e.g. accent orange).
+  final Color? primaryColor;
+
+  final Key? primaryKey;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primaryStyle = primaryColor == null
+        ? null
+        : FilledButton.styleFrom(
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+          );
+
+    Widget primaryButton() {
+      return FilledButton(
+        key: primaryKey,
+        style: primaryStyle,
+        onPressed: isLoading ? null : onPrimary,
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.white,
+                ),
+              )
+            : Text(primaryLabel),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -36,45 +71,48 @@ class StickyActionBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (dangerLabel != null || secondaryLabel != null)
-              Row(
+        child: sideBySide
+            ? Row(
                 children: [
-                  if (dangerLabel != null)
-                    TextButton.icon(
-                      onPressed: onDanger,
-                      icon: const Icon(Icons.delete_outline),
-                      label: Text(dangerLabel!),
-                      style: TextButton.styleFrom(
-                        foregroundColor: theme.colorScheme.error,
+                  if (secondaryLabel != null) ...[
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: isLoading ? null : onSecondary,
+                        child: Text(secondaryLabel!),
                       ),
                     ),
-                  const Spacer(),
-                  if (secondaryLabel != null)
-                    TextButton(
-                      onPressed: onSecondary,
-                      child: Text(secondaryLabel!),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(child: primaryButton()),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (dangerLabel != null || secondaryLabel != null)
+                    Row(
+                      children: [
+                        if (dangerLabel != null)
+                          TextButton.icon(
+                            onPressed: onDanger,
+                            icon: const Icon(Icons.delete_outline),
+                            label: Text(dangerLabel!),
+                            style: TextButton.styleFrom(
+                              foregroundColor: theme.colorScheme.error,
+                            ),
+                          ),
+                        const Spacer(),
+                        if (secondaryLabel != null)
+                          TextButton(
+                            onPressed: onSecondary,
+                            child: Text(secondaryLabel!),
+                          ),
+                      ],
                     ),
+                  primaryButton(),
                 ],
               ),
-            FilledButton(
-              onPressed: isLoading ? null : onPrimary,
-              child: isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(primaryLabel),
-            ),
-          ],
-        ),
       ),
     );
   }

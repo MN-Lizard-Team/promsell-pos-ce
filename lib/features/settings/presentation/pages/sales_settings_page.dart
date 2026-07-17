@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_preview_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
 class SalesSettingsPage extends StatelessWidget {
   const SalesSettingsPage({super.key});
@@ -15,25 +16,20 @@ class SalesSettingsPage extends StatelessWidget {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();
 
-        return Scaffold(
-          appBar: AppBar(title: Text(context.l10n.settingsSales)),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            children: [
-              SalesPreviewCard(
-                currency: s.currency,
-                dateFormat: s.dateFormat,
-                maxDrafts: s.maxDrafts,
-                cartCompactMode: s.cartCompactMode,
-                ultraCompactMode: s.ultraCompactMode,
-              ),
-              const SizedBox(height: 24),
-              SalesSettingsForm(
-                settings: s,
-                onUpdate: (next) => cubit.updateField((_) => next),
-              ),
-            ],
+        return SettingsLeafChrome(
+          title: context.l10n.settingsSales,
+          header: SalesPreviewCard(
+            currency: s.currency,
+            dateFormat: s.dateFormat,
+            maxDrafts: s.maxDrafts,
+            ultraCompactMode: s.ultraCompactMode,
           ),
+          children: [
+            SalesSettingsForm(
+              settings: s,
+              onUpdate: (next) => cubit.updateField((_) => next),
+            ),
+          ],
         );
       },
     );

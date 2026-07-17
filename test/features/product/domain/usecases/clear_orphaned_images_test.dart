@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/clear_orphaned_images.dart';
 
@@ -22,7 +23,7 @@ void main() {
       Product(
         id: 'p1',
         name: 'A',
-        price: 10,
+        price: Money.fromDouble(10),
         stock: 5,
         isActive: true,
         imagePath: '/images/p1.jpg',
@@ -33,7 +34,7 @@ void main() {
       Product(
         id: 'p2',
         name: 'B',
-        price: 20,
+        price: Money.fromDouble(20),
         stock: 3,
         isActive: true,
         imagePath: null,
@@ -76,7 +77,7 @@ void main() {
       Product(
         id: 'p1',
         name: 'A',
-        price: 10,
+        price: Money.fromDouble(10),
         stock: 5,
         isActive: true,
         imagePath: '',

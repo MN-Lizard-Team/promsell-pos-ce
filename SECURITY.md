@@ -41,7 +41,7 @@
 ## What we do NOT consider security issues
 
 - UI bugs or UX issues
-- Missing features (including deferred in-app backup restore)
+- Missing features (including **cross-device** restore / SQLCipher key export — Phase 2b)
 - Configuration errors by the user
 - Device-level security (screen lock, full-disk encryption) — outside app scope
 - Data loss after **user-initiated** uninstall or keystore wipe without a backup
@@ -55,31 +55,36 @@ Promsell is an **offline-first local app** with no required network for core POS
 3. **Key loss = data loss** — there is **no** key recovery or multi-device key export in 0.9.0. Uninstall, factory reset, or secure-storage wipe without an export backup makes the DB unreadable
 4. **Atomic transactions** — sale create, void, stock adjust inside DB transactions
 5. **Inventory audit trail** — stock changes logged in `inventory_logs`
-6. **Backup export** — WAL checkpoint → DB copy → optional AES-256-GCM (PBKDF2 PIN, min length 6). Default encryption **on** when the setting key is missing (v0.9)
-7. **Backup restore** — **not in-app in 0.9.0**. Merchants export/share a file; restore is manual (replace DB after decrypt offline). In-app restore targeted for a later 0.9.x
-8. **Crash logs** — PII patterns sanitized **on write**
-9. **Image sandbox** — product image delete restricted under app `images/` directory
-10. **No server by default** — no remote API keys in core flow
-11. **Dependency hygiene** — CI outdated check + Dependabot
+6. **Backup export** — WAL checkpoint → DB copy → optional AES-256-GCM (PBKDF2 PIN, min length 6). Default encryption **on** when the setting key is missing (v0.9). Turning encryption off requires store PIN (if enabled) + confirmation
+7. **Backup restore (same-device)** — Settings → Backup can restore a `.enc` / SQLCipher `.db` export on **this device** (needs the existing SQLCipher key in secure storage). Cross-device / after uninstall is **not** supported. Plain SQLite files are rejected
+8. **Store PIN lock** — optional PIN (min **6**) with PBKDF2 hashing + attempt lockout **persisted in secure storage** (survives cold start); gates void, backup export/restore, stock adjust, CSV import, PromptPay edits, and disabling backup encryption
+9. **Crash logs** — PII patterns sanitized **on write**
+10. **Image sandbox** — product image delete restricted under app `images/` directory
+11. **No server by default** — no remote API keys in core flow
+12. **Dependency hygiene** — CI outdated check + Dependabot
 
 ## Backup & recovery (honest limits)
 
+**SSOT:** Same-device in-app restore **yes**; cross-device / key recovery **no**; key loss without export = permanent data loss.
+
 | Capability | 0.9.0 |
 |------------|--------|
-| Export encrypted/plain DB | Yes |
+| Export encrypted/plain DB | Yes (encrypt default on) |
 | Share via OS sheet | Yes |
-| In-app restore UI | **Yes (same-device)** |
-| SQLCipher key backup / Phase 2b | **No** |
+| In-app restore UI | **Yes (same-device only)** |
+| Cross-device restore / key export | **No** (Phase 2b) |
+| SQLCipher key backup | **No** |
 | Survive app uninstall without export | **No** |
 
-**Recommended practice:** enable backup encryption, use a strong PIN (≥ 6), export regularly, store the file off-device.
+**Recommended practice:** keep backup encryption on, use a strong PIN (≥ 6), export regularly, store the file off-device. Same-device restore still needs this device’s SQLCipher key.
 
 ## Security changelog (recent)
 
-- **0.9.0** — SQLCipher production path; backup encrypt default on; PIN min 6; crash sanitize on write; image delete sandbox; schema v28
+- **0.9.0** — SQLCipher production path; backup encrypt default on; **same-device in-app restore**; store PIN min 6 + PBKDF2 + lockout; crash sanitize on write; image delete sandbox; schema **v28**
 - **0.8.x** — See prior SECURITY entries and CHANGELOG (barcode uniqueness, orphaned images, crash export sanitize, restaurant/CRM isolation)
 
 ## Security testing expectations
 
 - Unit/widget tests on CI; integration suite may be non-blocking
-- Manual smoke: encrypted open, sale, void, backup export (see `docs/testing/RELEASE_0.9_SMOKE.md`)
+- Manual smoke: encrypted open, cash/PromptPay sale, void, draft, daily close, backup export/restore (see `docs/testing/RELEASE_0.9_SMOKE.md`)
+- CI: unit/widget coverage floor 50%; money-path fail-closed via `.github/workflows/release-trust.yml`; optional signed AAB via `release-aab.yml` when keystore secrets are set

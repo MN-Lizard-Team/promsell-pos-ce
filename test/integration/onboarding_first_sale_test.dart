@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
@@ -79,11 +80,11 @@ void main() {
       paymentMethod: 'cash',
       vatMode: 'NONE',
       vatRate: 0,
-      amountReceived: 500,
-      changeAmount: 200,
+      amountReceived: Money.fromDouble(500),
+      changeAmount: Money.fromDouble(200),
     );
 
-    expect(sale.totalAmount, 300.0);
+    expect(sale.totalAmount, Money.fromDouble(300.0));
     expect(sale.receiptNumber, isNotEmpty);
 
     // 5. Verify stock updated

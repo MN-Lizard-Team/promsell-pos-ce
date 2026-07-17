@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/domain/entities/restaurant_table.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_event.dart';
@@ -165,31 +166,23 @@ class _TableManagementPageState extends State<TableManagementPage> {
     );
   }
 
-  void _confirmDelete(BuildContext context, RestaurantTable table) {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    RestaurantTable table,
+  ) async {
     final l10n = context.l10n;
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteTable),
-        content: Text('${l10n.confirmDeleteTable}\n\n${table.name}'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () {
-              context.read<TableBloc>().add(TableDeleted(table.id));
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.deleteTable),
-          ),
-        ],
-      ),
+    final confirmed = await showAppConfirm(
+      context,
+      title: l10n.confirmDeleteTable,
+      message: '',
+      detail: table.name,
+      confirmLabel: l10n.delete,
+      cancelLabel: l10n.cancel,
+      destructive: true,
+      confirmIcon: Icons.table_restaurant_outlined,
     );
+    if (!confirmed || !context.mounted) return;
+    context.read<TableBloc>().add(TableDeleted(table.id));
   }
 }
 

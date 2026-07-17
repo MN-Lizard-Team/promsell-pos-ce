@@ -18,24 +18,23 @@
 1. Use the search bar or category chips to narrow the product catalog
 2. Tap any product card to add it to the cart — out-of-stock products appear dimmed and cannot be tapped (unless **Allow oversell** is enabled in Settings → Stock)
 3. If a product in your cart goes out of stock (e.g. stock adjusted elsewhere), a snackbar warns you with the product name; the item stays in the cart with qty clamped to available stock
-4. Adjust quantity with `+` / `-` controls, or **tap the quantity number** to open a numeric input dialog with stock info and clamping; long-press a cart item to enter **multi-select mode** for bulk delete or clear discount
-5. **Cart layout** — Items display in a single-row 3-zone layout (product info | stepper | price). Swipe right to delete (with undo), swipe left to increment quantity, and long-press to drag-and-reorder items. Discount chips appear inline with the price
-6. **Compact modes** — Tap the density toggle button in the cart header to switch between Normal ↔ Ultra-Compact layouts
-7. **Resizable panel** — Drag the handle between the catalog and cart to resize the panel, or use the size slider in the cart header for Small/Large presets
-8. **Apply discounts** (optional):
-   - Tap the 🏷️ tag icon on any cart item → choose **%** or **฿**, enter value, tap Apply
+4. Adjust quantity with `+` / `-` controls, or **tap the quantity number** (or long-press qty) to open a numeric keypad with stock clamping; use the line **⋯ menu** or action sheet for discount, note, duplicate, or remove (with undo)
+5. **Cart layout** — Open cart from the bottom command bar (or compact FAB / current-bill chip) → full-page `CartReviewPage`. Receipt-style lines (thumb, name, options, discount badge, qty steppers, line total). Payable total is sticky and uses `SalePayableCalculator` (VAT/SC aware). Park + Pay CTAs on the cart footer
+6. **Ultra-compact sale** — Settings → ultra-compact mode replaces the bottom bar with a floating cart FAB (long-press to exit compact)
+7. **Apply discounts** (optional):
+   - Line **⋯** / action sheet → discount, note, duplicate, remove (undo on remove)
    - Tap **Apply cart discount** below the subtotal for a bill-wide discount
    - Payment sheet shows the full breakdown: Subtotal → discounts → Total
-9. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, search, switch between customers / tables, or delete; cart auto-saves every 1.5 s
-10. Tap **Checkout** → full-screen `CheckoutPage` opens
-11. Select **Cash / Transfer / Card / PromptPay**
-12. For cash, use quick cash chips or enter the amount received — change is calculated automatically
-13. Optionally add a sale note
-14. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
+8. **Switch drafts** (optional): tap the 🔖 bookmarks icon in the app bar to open the Drafts sheet — create new drafts, rename, search, switch between customers / tables, or delete; cart auto-saves every 1.5 s
+9. Tap **Pay** on the cart (or bottom bar) → retail opens payment sheet after leaving cart review; restaurant opens full-screen `CheckoutPage`
+10. Select **Cash / Transfer / Card / PromptPay**
+11. For cash, use quick cash chips or enter the amount received — change is calculated automatically
+12. Optionally add a sale note
+13. Tap **Confirm Payment** — sale is saved; if **Auto print prompt** is on, a receipt preview dialog appears with Print / Share / Close options; closing the dialog resets the cart and creates a fresh empty draft
 
-> **Review cart before checkout:** Tap the 🛒 cart icon with the item-count badge in the app bar to open `CartReviewPage` — tap a product image for zoom (with share and info buttons in the viewer toolbar), tap a row for product detail, use +/- to adjust quantities, or delete items with undo. The total updates live on every change.
+> **Review cart:** Bottom bar / FAB / bill strip / checkout cart icon all open `CartReviewPage` — product image zoom, row detail, +/- qty (or long-press qty keypad), line actions, live payable total. **Add items** / system back returns to the catalog; cart session stays in `CartBloc`.
 
-On compact phones, the cart appears as a bottom command panel. On tablet or expanded width layouts, the cart remains visible beside the product grid.
+Sale catalog always uses the full width; cart is never docked beside the grid.
 
 ### Products tab
 
@@ -64,7 +63,7 @@ On compact phones, the cart appears as a bottom command panel. On tablet or expa
 - **Voided sales** display a red **VOIDED** badge, strikethrough amount, dimmed card, and a block icon
 - Expanded card shows:
   - **VAT breakdown** — when `vatMode` is INCLUSIVE or EXCLUSIVE, Subtotal and VAT (with rate %) rows are shown above the total, using the VAT settings that were active at the time of sale
-  - **Void Sale** button (red) — opens confirmation dialog with optional reason; atomically marks sale as voided, restores stock, and logs VOID_REVERSAL
+  - **Void Sale** button (red) — confirmation requires a **void reason**; atomically marks sale as voided, restores stock, and logs VOID_REVERSAL
   - **Print Receipt** and **Share Receipt** buttons — generates an 80 mm thermal receipt PDF with sale-time VAT values
 - Use the **search bar** (appears below the app bar) to filter by receipt number, payment method, or amount
 - Use the date-range picker (calendar icon) to filter history by period
@@ -149,9 +148,10 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 
 - **Status card** — Gradient card showing backup status (Safe/Warning/Overdue) with last backup date
 - **Backup reminder** — Switch to enable/disable; tap to open frequency picker dialog with preset chips (3/7/14/30 days) or custom input
-- **Encryption** (v0.7.2+) — Toggle to enable AES-256-GCM encryption with PIN-derived PBKDF2 key; PIN is never stored — forgotten PIN = unrecoverable backup
-- **Backup Now** — Manual backup trigger action tile
-- **Export/Restore** — Export database (`.db` or `.db.enc` if encrypted), sales CSV, products CSV; restore from backup file
+- **Encryption** (v0.7.2+) — Toggle AES-256-GCM encryption with PIN-derived PBKDF2 key (default **on** in v0.9); PIN is never stored — forgotten PIN = unrecoverable export. Turning encryption **off** requires store PIN (if enabled) + confirmation
+- **Backup Now** — Manual backup trigger (export `.db` or encrypted package) + sales/products CSV
+- **Restore (same-device, v0.9.0)** — Pick a previous `.enc` or SQLCipher `.db` export and restore into the live DB. Requires this device’s SQLCipher key. **Not** for another phone or after uninstall. App restart recommended after restore
+- **Key loss** — Uninstall / keystore wipe without an off-device export = permanent data loss
 
 ### Image Settings
 

@@ -21,25 +21,8 @@ class GeneralAppearanceTiles extends StatelessWidget {
     final l10n = context.l10n;
     final s = settings;
 
-    return Column(
-      children: [
-        _buildThemeTile(context, s, st, l10n),
-        Divider(
-          height: 1,
-          indent: 16,
-          endIndent: 16,
-          color: st.cardBorderColor,
-        ),
-        _buildCompactCartTile(context, s, st, l10n),
-        Divider(
-          height: 1,
-          indent: 16,
-          endIndent: 16,
-          color: st.cardBorderColor,
-        ),
-        _buildAccessibilityTile(context, s, st, l10n),
-      ],
-    );
+    // accessibilityMode UI hidden until real text-scale / contrast is wired.
+    return Column(children: [_buildThemeTile(context, s, st, l10n)]);
   }
 
   Widget _buildThemeTile(
@@ -136,110 +119,6 @@ class GeneralAppearanceTiles extends StatelessWidget {
             child: Text(l10n.cancel),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCompactCartTile(
-    BuildContext context,
-    Settings s,
-    SettingsThemeExtension st,
-    AppLocalizations l10n,
-  ) {
-    return MergeSemantics(
-      child: ListTile(
-        minTileHeight: st.tileMinHeight,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: st.iconSize,
-          height: st.iconSize,
-          decoration: BoxDecoration(
-            color: st.iconContainerBackground,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.shopping_bag_outlined,
-            color: st.softAccent,
-            size: 24,
-          ),
-        ),
-        title: Text(
-          l10n.settingsCompactCartMode,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(
-          l10n.settingsCompactModeSubtitle,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: st.mutedText),
-        ),
-        trailing: Switch(
-          value: s.cartCompactMode,
-          onChanged: (v) {
-            HapticFeedback.lightImpact();
-            onUpdate(s.copyWith(cartCompactMode: v));
-          },
-          activeThumbColor: st.softAccent,
-        ),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onUpdate(s.copyWith(cartCompactMode: !s.cartCompactMode));
-        },
-      ),
-    );
-  }
-
-  Widget _buildAccessibilityTile(
-    BuildContext context,
-    Settings s,
-    SettingsThemeExtension st,
-    AppLocalizations l10n,
-  ) {
-    return MergeSemantics(
-      child: ListTile(
-        minTileHeight: st.tileMinHeight,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: st.iconSize,
-          height: st.iconSize,
-          decoration: BoxDecoration(
-            color: st.iconContainerBackground,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.accessibility_new_outlined,
-            color: st.softAccent,
-            size: 24,
-          ),
-        ),
-        title: Text(
-          l10n.settingsAccessibilityMode,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(
-          l10n.settingsAccessibilityModeHint,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: st.mutedText),
-        ),
-        trailing: Switch(
-          value: s.accessibilityMode,
-          onChanged: (v) {
-            HapticFeedback.lightImpact();
-            onUpdate(s.copyWith(accessibilityMode: v));
-          },
-          activeThumbColor: st.softAccent,
-        ),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onUpdate(s.copyWith(accessibilityMode: !s.accessibilityMode));
-        },
       ),
     );
   }

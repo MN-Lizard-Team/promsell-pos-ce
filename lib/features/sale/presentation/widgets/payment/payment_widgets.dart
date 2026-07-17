@@ -162,9 +162,11 @@ class PaymentTotalRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(label, style: finalStyle)),
-          Text(
-            '${value < 0 ? '-' : ''}$currency${value.abs().toStringAsFixed(2)}',
+          MoneyText(
+            value: value,
+            currency: currency,
             style: finalStyle,
+            color: finalStyle?.color,
           ),
         ],
       ),

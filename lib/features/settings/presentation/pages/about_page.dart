@@ -12,6 +12,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/about/abo
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/about/about_tech_row.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -106,119 +107,114 @@ class _AboutPageState extends State<AboutPage> {
     final version = _packageInfo?.version ?? '—';
     final buildNumber = _packageInfo?.buildNumber ?? '—';
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.aboutApp)),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        children: [
-          AboutHeaderCard(version: version, buildNumber: buildNumber, st: st),
-          const SizedBox(height: 24),
-          SettingsSectionCard(
-            title: l10n.builtWith,
-            children: [
-              AboutTechRow(
-                icon: Icons.flutter_dash,
-                label: l10n.techStackFlutter,
-                st: st,
-              ),
-              Divider(
-                height: 1,
-                indent: 16,
-                endIndent: 16,
-                color: st.cardBorderColor,
-              ),
-              AboutTechRow(
-                icon: Icons.storage_outlined,
-                label: l10n.techStackDrift,
-                st: st,
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SettingsSectionCard(
-            title: l10n.contactUs,
-            children: [
-              ListTile(
-                leading: Container(
-                  width: st.iconSize,
-                  height: st.iconSize,
-                  decoration: BoxDecoration(
-                    color: st.iconContainerBackground,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    Icons.email_outlined,
-                    color: st.softAccent,
-                    size: 24,
-                  ),
-                ),
-                title: Text(
-                  'mnlizard.official@gmail.com',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SettingsSectionCard(
-            children: [
-              AboutLinkTile(
-                icon: Icons.privacy_tip_outlined,
-                label: l10n.privacyPolicy,
-                st: st,
-                onTap: () => _push(context, const PrivacyPolicyPage()),
-              ),
-              Divider(
-                height: 1,
-                indent: 16,
-                endIndent: 16,
-                color: st.cardBorderColor,
-              ),
-              AboutLinkTile(
-                icon: Icons.gavel_outlined,
-                label: l10n.openSourceLicense,
-                st: st,
-                onTap: () => _push(context, const AppLicensePage()),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          SettingsSectionCard(
-            title: l10n.crashLogs,
-            children: [
-              AboutLinkTile(
-                icon: Icons.file_download_outlined,
-                label: l10n.exportCrashLogs,
-                st: st,
-                onTap: () => _exportCrashLogs(context),
-              ),
-              Divider(
-                height: 1,
-                indent: 16,
-                endIndent: 16,
-                color: st.cardBorderColor,
-              ),
-              AboutLinkTile(
-                icon: Icons.delete_outline,
-                label: l10n.clearCrashLogs,
-                st: st,
-                onTap: () => _clearCrashLogs(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          Center(
-            child: Text(
-              l10n.copyrightNotice,
-              style: theme.textTheme.bodySmall?.copyWith(color: st.mutedText),
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
+    return SettingsLeafChrome(
+      title: l10n.aboutApp,
+      header: AboutHeaderCard(
+        version: version,
+        buildNumber: buildNumber,
+        st: st,
       ),
+      children: [
+        SettingsSectionCard(
+          title: l10n.builtWith,
+          children: [
+            AboutTechRow(
+              icon: Icons.flutter_dash,
+              label: l10n.techStackFlutter,
+              st: st,
+            ),
+            Divider(
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+              color: st.cardBorderColor,
+            ),
+            AboutTechRow(
+              icon: Icons.storage_outlined,
+              label: l10n.techStackDrift,
+              st: st,
+            ),
+          ],
+        ),
+        SettingsSectionCard(
+          title: l10n.contactUs,
+          children: [
+            ListTile(
+              leading: Container(
+                width: st.iconSize,
+                height: st.iconSize,
+                decoration: BoxDecoration(
+                  color: st.iconContainerBackground,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.email_outlined,
+                  color: st.softAccent,
+                  size: 24,
+                ),
+              ),
+              title: Text(
+                'mnlizard.official@gmail.com',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SettingsSectionCard(
+          children: [
+            AboutLinkTile(
+              icon: Icons.privacy_tip_outlined,
+              label: l10n.privacyPolicy,
+              st: st,
+              onTap: () => _push(context, const PrivacyPolicyPage()),
+            ),
+            Divider(
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+              color: st.cardBorderColor,
+            ),
+            AboutLinkTile(
+              icon: Icons.gavel_outlined,
+              label: l10n.openSourceLicense,
+              st: st,
+              onTap: () => _push(context, const AppLicensePage()),
+            ),
+          ],
+        ),
+        SettingsSectionCard(
+          title: l10n.crashLogs,
+          children: [
+            AboutLinkTile(
+              icon: Icons.file_download_outlined,
+              label: l10n.exportCrashLogs,
+              st: st,
+              onTap: () => _exportCrashLogs(context),
+            ),
+            Divider(
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+              color: st.cardBorderColor,
+            ),
+            AboutLinkTile(
+              icon: Icons.delete_outline,
+              label: l10n.clearCrashLogs,
+              st: st,
+              onTap: () => _clearCrashLogs(context),
+            ),
+          ],
+        ),
+        Center(
+          child: Text(
+            l10n.copyrightNotice,
+            style: theme.textTheme.bodySmall?.copyWith(color: st.mutedText),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -10,8 +10,10 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/product/data/services/barcode_image_service.dart';
+import 'package:promsell_pos_ce/features/product/presentation/utils/barcode_symbology.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog.dart';
 import 'package:share_plus/share_plus.dart';
@@ -36,13 +38,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
   final GlobalKey _repaintKey = GlobalKey();
   static final _barcodeImageService = BarcodeImageService();
 
-  Barcode _resolveType() {
-    final clean = widget.barcode.replaceAll(RegExp(r'\s'), '');
-    if (RegExp(r'^\d{13}$').hasMatch(clean)) return Barcode.ean13();
-    if (RegExp(r'^\d{8}$').hasMatch(clean)) return Barcode.ean8();
-    if (RegExp(r'^\d{12}$').hasMatch(clean)) return Barcode.upcA();
-    return Barcode.code128();
-  }
+  Barcode _resolveType() => resolveBarcodeSymbology(widget.barcode);
 
   Future<Uint8List?> _captureBarcode() async {
     if (widget.barcodeImagePath != null) {
@@ -128,7 +124,10 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
           children: [
             pw.Text(
               widget.productName,
-              style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+              style: const pw.TextStyle(
+                fontSize: 8,
+                fontWeight: pw.FontWeight.bold,
+              ),
               textAlign: pw.TextAlign.center,
             ),
             pw.SizedBox(height: 4),
@@ -242,12 +241,16 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
+    final cs = theme.colorScheme;
+    final typeLabel = barcodeSymbologyLabel(widget.barcode);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.35)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -257,7 +260,28 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              key: const ValueKey('preview-barcode-type-chip'),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: const Color(0xFFCBD5E1)),
+              ),
+              child: Text(
+                typeLabel,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           RepaintBoundary(
             key: _repaintKey,
             child: Container(
@@ -280,33 +304,47 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
           ),
           const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _BarcodeActionButton(
-                icon: Icons.copy,
-                label: l10n.copyPromptpayId,
-                onTap: _copyBarcode,
-                successMessage: l10n.copyPromptpayId,
+              Expanded(
+                child: _BarcodeActionButton(
+                  key: const ValueKey('preview-barcode-copy'),
+                  icon: Icons.copy_outlined,
+                  label: l10n.copyBarcode,
+                  onTap: _copyBarcode,
+                  successMessage: l10n.copyBarcode,
+                ),
               ),
-              _BarcodeActionButton(
-                icon: Icons.zoom_out_map,
-                label: l10n.barcodeViewFull,
-                onTap: _viewFullImage,
-                errorMessage: l10n.barcodeViewError,
+              const SizedBox(width: 6),
+              Expanded(
+                child: _BarcodeActionButton(
+                  key: const ValueKey('preview-barcode-view'),
+                  icon: Icons.zoom_out_map,
+                  label: l10n.barcodeViewFull,
+                  onTap: _viewFullImage,
+                  errorMessage: l10n.barcodeViewError,
+                ),
               ),
-              _BarcodeActionButton(
-                icon: Icons.save_alt,
-                label: l10n.barcodeSave,
-                onTap: _showSaveOptions,
-                successMessage: l10n.barcodeSavedSuccess,
-                errorMessage: l10n.barcodeSaveError,
+              const SizedBox(width: 6),
+              Expanded(
+                child: _BarcodeActionButton(
+                  key: const ValueKey('preview-barcode-save'),
+                  icon: Icons.save_alt,
+                  label: l10n.barcodeSave,
+                  onTap: _showSaveOptions,
+                  successMessage: l10n.barcodeSavedSuccess,
+                  errorMessage: l10n.barcodeSaveError,
+                ),
               ),
-              _BarcodeActionButton(
-                icon: Icons.print_outlined,
-                label: l10n.barcodePrint,
-                onTap: _print,
-                successMessage: l10n.barcodePrintedSuccess,
-                errorMessage: l10n.barcodePrintError,
+              const SizedBox(width: 6),
+              Expanded(
+                child: _BarcodeActionButton(
+                  key: const ValueKey('preview-barcode-print'),
+                  icon: Icons.print_outlined,
+                  label: l10n.barcodePrint,
+                  onTap: _print,
+                  successMessage: l10n.barcodePrintedSuccess,
+                  errorMessage: l10n.barcodePrintError,
+                ),
               ),
             ],
           ),
@@ -349,6 +387,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
           style: theme.textTheme.bodySmall?.copyWith(
             fontFeatures: const [FontFeature.tabularFigures()],
             letterSpacing: 1.2,
+            fontWeight: FontWeight.w700,
             color: Colors.black87,
           ),
         ),
@@ -359,6 +398,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
 
 class _BarcodeActionButton extends StatelessWidget {
   const _BarcodeActionButton({
+    super.key,
     required this.icon,
     required this.label,
     required this.onTap,
@@ -375,47 +415,58 @@ class _BarcodeActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Tooltip(
       message: label,
       child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: () async {
-            final sm = ScaffoldMessenger.of(context);
             try {
               final success = await onTap();
               if (!context.mounted) return;
               if (success && successMessage != null) {
-                sm.showSnackBar(
-                  SnackBar(
-                    content: Text(successMessage!),
-                    duration: const Duration(milliseconds: 800),
-                  ),
+                AppSnackBar.success(
+                  context,
+                  successMessage!,
+                  duration: const Duration(milliseconds: 800),
                 );
               } else if (!success && errorMessage != null) {
-                sm.showSnackBar(
-                  SnackBar(
-                    content: Text(errorMessage!),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                AppSnackBar.error(context, errorMessage!);
               }
             } catch (e) {
               if (context.mounted) {
-                sm.showSnackBar(
-                  SnackBar(
-                    content: Text(errorMessage ?? label),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
+                AppSnackBar.error(context, errorMessage ?? label);
               }
             }
           },
-          customBorder: const CircleBorder(),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Icon(icon, size: 22, color: theme.colorScheme.primary),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFCBD5E1)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 20, color: cs.primary),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 10,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

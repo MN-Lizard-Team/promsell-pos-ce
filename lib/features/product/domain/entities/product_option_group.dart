@@ -42,6 +42,34 @@ class ProductOptionGroup extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'productId': productId,
+    'name': name,
+    'selectionType': selectionType.name,
+    'isRequired': isRequired,
+    'sortOrder': sortOrder,
+    'options': options.map((option) => option.toJson()).toList(),
+  };
+
+  factory ProductOptionGroup.fromJson(Map<String, dynamic> json) {
+    final optionValues = json['options'] as List<dynamic>? ?? const [];
+    return ProductOptionGroup(
+      id: json['id'] as String? ?? '',
+      productId: json['productId'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      selectionType: json['selectionType'] == OptionSelectionType.multiple.name
+          ? OptionSelectionType.multiple
+          : OptionSelectionType.single,
+      isRequired: json['isRequired'] as bool? ?? false,
+      sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
+      options: optionValues
+          .whereType<Map<String, dynamic>>()
+          .map(ProductOption.fromJson)
+          .toList(),
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,

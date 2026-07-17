@@ -11,8 +11,8 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **Encryption** | SQLCipher AES-256 (full-database encryption, Phase 2a) |
 | **File** | `promsell_pos.db` (platform default app directory, encrypted at rest) |
-| **Schema version** | **28** (v26 unique `daily_closes.close_date`; **v27** unique `sales.receipt_number` where non-null) |
-| **Tables** | 14 |
+| **Schema version** | **28** (v26 unique `daily_closes.close_date`; **v27** unique `sales.receipt_number`; **v28** `sale_payments` multi-tender) |
+| **Tables** | **15** |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
 | **Foreign keys** | Enabled (`PRAGMA foreign_keys=ON`) |
@@ -135,7 +135,7 @@ When a record is "deleted":
                               ▼
               ┌───────────────────────────────┐
               │  Local SQLite (WAL)           │
-              │  14 tables, all sync-ready    │
+              │  15 tables, all sync-ready    │
               └───────────────┬───────────────┘
                               │
              Phase 4 (future) │
@@ -210,14 +210,14 @@ v23                                           v24
 	If plain legacy DB exists → encrypt migrate → ready
 	```
 	
-	### Backup export (not full restore UI)
-	
-	- **CSV exports**: Plaintext (user-controlled)
-	- **Full DB export**: WAL checkpoint → copy → optional **AES-256-GCM** package with PIN (≥ 6) via Settings → Backup
-	- **In-app restore**: **Yes (same-device)t shipped in 0.9.0** (export + share only; manual offline replace)
-	- **Cloud sync**: not in CE 0.9
-	
-	> **Note**: Losing the SQLCipher key (uninstall / keystore wipe) without an export means **permanent data loss**. Key recovery is not available in 0.9.0 (Phase 2b deferred).
+### Backup export & same-device restore
+
+- **CSV exports**: Plaintext (user-controlled)
+- **Full DB export**: WAL checkpoint → copy → optional **AES-256-GCM** package with PIN (≥ 6) via Settings → Backup (default encrypt **on**)
+- **In-app restore**: **Yes — same-device only** (Settings → Backup). Restores `.enc` or SQLCipher `.db`; rejects plain SQLite. Needs this device’s SQLCipher key in secure storage. Cross-device / after uninstall = **not** supported (Phase 2b)
+- **Cloud sync**: not in CE 0.9
+
+> **Note**: Losing the SQLCipher key (uninstall / keystore wipe) without an export means **permanent data loss**. Key recovery is not available in 0.9.0 (Phase 2b deferred).
 
 ---
 
@@ -225,24 +225,25 @@ v23                                           v24
 
 | Document | Content |
 |----------|---------|
-| [`docs/database/schema-reference.md`](database/schema-reference.md) | All 14 tables with column details, indexes, seed data, enum values |
+| [`docs/database/schema-reference.md`](database/schema-reference.md) | All **15** tables with column details, indexes, seed data, enum values |
 | [`docs/database/query-patterns.md`](database/query-patterns.md) | Drift query patterns: watch products, insert sale, void sale, date range, draft upsert |
-| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→v27), backup export, encrypted backups, performance notes, DB testing |
+| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→**v28**), backup export/restore, encrypted backups, performance notes, DB testing |
 
 ---
 
-### Schema v25–v27
+### Schema v25–v28
 
 | Version | Changes |
 |---------|---------|
 | **v25** | Products: nullable `brand`, `unit`, `supplier`; `is_recommended` |
 | **v26** | Unique index on `daily_closes(close_date)` after dedupe (one close per business day) |
 | **v27** | Unique partial index on `sales(receipt_number)` after dedupe; receipt sequence reseeds from max on disk |
+| **v28** | `sale_payments` multi-tender table + index on `sale_id` |
 
 **Money on disk:** amount columns remain SQLite **REAL** (baht). Domain code uses the `Money` value object (integer satang) and maps at the data layer. Integer column storage is deferred (Phase M).
 
-**Backup:** Export + optional AES-GCM (PIN ≥ 6). **In-app restore is not shipped in 0.9.0** — replace the DB file offline after decrypt if needed. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup.
+**Backup:** Export + optional AES-GCM (PIN ≥ 6). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup.
 
 ---
 
-<sub>Promsell POS CE · Schema v27 · UUIDv4 · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · Schema v28 · 15 tables · UUIDv4 · SQLCipher AES-256</sub>

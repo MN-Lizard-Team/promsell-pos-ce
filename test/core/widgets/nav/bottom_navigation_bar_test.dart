@@ -24,20 +24,26 @@ void main() {
   setUp(() {
     tappedIndex = -1;
     items = const [
-      NavItem(
-        icon: Icons.point_of_sale_outlined,
-        activeIcon: Icons.point_of_sale,
-        label: 'Sale',
-      ),
+      NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home'),
       NavItem(
         icon: Icons.inventory_2_outlined,
         activeIcon: Icons.inventory_2,
         label: 'Products',
       ),
       NavItem(
+        icon: Icons.point_of_sale_outlined,
+        activeIcon: Icons.point_of_sale,
+        label: 'Sale',
+      ),
+      NavItem(
         icon: Icons.receipt_long_outlined,
         activeIcon: Icons.receipt_long,
         label: 'History',
+      ),
+      NavItem(
+        icon: Icons.settings_outlined,
+        activeIcon: Icons.settings,
+        label: 'Settings',
       ),
     ];
   });
@@ -47,10 +53,12 @@ void main() {
       await tester.pumpWidget(buildNavBar());
       await tester.pump();
 
-      expect(find.byType(Expanded), findsNWidgets(2));
-      expect(find.text('Sale'), findsOneWidget);
+      expect(find.byType(Expanded), findsNWidgets(4));
+      expect(find.text('Home'), findsOneWidget);
       expect(find.text('Products'), findsOneWidget);
+      expect(find.text('Sale'), findsOneWidget);
       expect(find.text('History'), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
     });
 
     testWidgets('shows active icon for selected tab', (tester) async {
@@ -58,17 +66,14 @@ void main() {
       await tester.pump();
 
       expect(find.byIcon(Icons.inventory_2), findsOneWidget);
-      expect(find.byIcon(Icons.point_of_sale_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.home_outlined), findsOneWidget);
     });
 
-    testWidgets('active item has primaryContainer pill', (tester) async {
+    testWidgets('center diamond container renders', (tester) async {
       await tester.pumpWidget(buildNavBar(selectedIndex: 0));
       await tester.pump();
 
-      final activeContainer = tester.widgetList<AnimatedContainer>(
-        find.byType(AnimatedContainer),
-      );
-      expect(activeContainer, isNotEmpty);
+      expect(find.byType(Container), findsWidgets);
     });
   });
 
@@ -87,7 +92,7 @@ void main() {
       await tester.pumpWidget(buildNavBar(selectedIndex: 0));
       await tester.pump();
 
-      await tester.tap(find.text('Sale'));
+      await tester.tap(find.text('Home'));
       await tester.pump();
 
       expect(tappedIndex, 0);
@@ -102,7 +107,7 @@ void main() {
       await tester.fling(
         find.byType(AppBottomNavigationBar),
         const Offset(100, 0),
-        500,
+        700,
       );
       await tester.pumpAndSettle();
 
@@ -116,7 +121,7 @@ void main() {
       await tester.fling(
         find.byType(AppBottomNavigationBar),
         const Offset(-100, 0),
-        500,
+        700,
       );
       await tester.pumpAndSettle();
 
@@ -138,7 +143,7 @@ void main() {
     });
 
     testWidgets('swipe at last tab does not exceed bounds', (tester) async {
-      await tester.pumpWidget(buildNavBar(selectedIndex: 2));
+      await tester.pumpWidget(buildNavBar(selectedIndex: 4));
       await tester.pump();
 
       await tester.fling(
@@ -158,38 +163,48 @@ void main() {
     ) async {
       String? actionKey;
       items = [
-        NavItem(
-          icon: Icons.point_of_sale_outlined,
-          activeIcon: Icons.point_of_sale,
-          label: 'Sale',
-          longPressActions: const {'new_draft': 'New Draft'},
-          onLongPressAction: (key) => actionKey = key,
-        ),
         const NavItem(
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Home',
+        ),
+        NavItem(
           icon: Icons.inventory_2_outlined,
           activeIcon: Icons.inventory_2,
           label: 'Products',
+          longPressActions: const {'add_product': 'Add Product'},
+          onLongPressAction: (key) => actionKey = key,
+        ),
+        const NavItem(
+          icon: Icons.point_of_sale_outlined,
+          activeIcon: Icons.point_of_sale,
+          label: 'Sale',
         ),
         const NavItem(
           icon: Icons.receipt_long_outlined,
           activeIcon: Icons.receipt_long,
           label: 'History',
         ),
+        const NavItem(
+          icon: Icons.settings_outlined,
+          activeIcon: Icons.settings,
+          label: 'Settings',
+        ),
       ];
 
       await tester.pumpWidget(buildNavBar());
       await tester.pump();
 
-      await tester.longPress(find.text('Sale'));
+      await tester.longPress(find.text('Products'));
       await tester.pumpAndSettle();
 
       expect(find.byType(PopupMenuItem<String>), findsOneWidget);
-      expect(find.text('New Draft'), findsOneWidget);
+      expect(find.text('Add Product'), findsOneWidget);
 
-      await tester.tap(find.text('New Draft'));
+      await tester.tap(find.text('Add Product'));
       await tester.pumpAndSettle();
 
-      expect(actionKey, 'new_draft');
+      expect(actionKey, 'add_product');
     });
 
     testWidgets('long-press without actions does not show menu', (
@@ -198,7 +213,7 @@ void main() {
       await tester.pumpWidget(buildNavBar());
       await tester.pump();
 
-      await tester.longPress(find.text('History'));
+      await tester.longPress(find.text('Settings'));
       await tester.pumpAndSettle();
 
       expect(find.byType(PopupMenuItem<String>), findsNothing);
@@ -209,9 +224,9 @@ void main() {
     testWidgets('badge dot shows when badgeCount is 0', (tester) async {
       items = const [
         NavItem(
-          icon: Icons.point_of_sale_outlined,
-          activeIcon: Icons.point_of_sale,
-          label: 'Sale',
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Home',
           badgeCount: 0,
         ),
         NavItem(
@@ -220,9 +235,19 @@ void main() {
           label: 'Products',
         ),
         NavItem(
+          icon: Icons.point_of_sale_outlined,
+          activeIcon: Icons.point_of_sale,
+          label: 'Sale',
+        ),
+        NavItem(
           icon: Icons.receipt_long_outlined,
           activeIcon: Icons.receipt_long,
           label: 'History',
+        ),
+        NavItem(
+          icon: Icons.settings_outlined,
+          activeIcon: Icons.settings,
+          label: 'Settings',
         ),
       ];
 
@@ -242,9 +267,9 @@ void main() {
     testWidgets('badge number shows when badgeCount > 0', (tester) async {
       items = const [
         NavItem(
-          icon: Icons.point_of_sale_outlined,
-          activeIcon: Icons.point_of_sale,
-          label: 'Sale',
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Home',
           badgeCount: 5,
         ),
         NavItem(
@@ -253,9 +278,19 @@ void main() {
           label: 'Products',
         ),
         NavItem(
+          icon: Icons.point_of_sale_outlined,
+          activeIcon: Icons.point_of_sale,
+          label: 'Sale',
+        ),
+        NavItem(
           icon: Icons.receipt_long_outlined,
           activeIcon: Icons.receipt_long,
           label: 'History',
+        ),
+        NavItem(
+          icon: Icons.settings_outlined,
+          activeIcon: Icons.settings,
+          label: 'Settings',
         ),
       ];
 
@@ -271,7 +306,7 @@ void main() {
       await tester.pumpWidget(buildNavBar(selectedIndex: 0));
       await tester.pump();
 
-      expect(find.byIcon(Icons.point_of_sale), findsOneWidget);
+      expect(find.byIcon(Icons.home), findsOneWidget);
 
       await tester.pumpWidget(buildNavBar(selectedIndex: 1));
       await tester.pumpAndSettle();
@@ -281,29 +316,39 @@ void main() {
 
     testWidgets('center button renders as Positioned overlay', (tester) async {
       items = [
-        NavItem(
-          icon: Icons.point_of_sale_outlined,
-          activeIcon: Icons.point_of_sale,
-          label: 'Sale',
-          longPressActions: const {'new_draft': 'New Draft'},
-          onLongPressAction: (_) {},
-        ),
         const NavItem(
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Home',
+        ),
+        NavItem(
           icon: Icons.inventory_2_outlined,
           activeIcon: Icons.inventory_2,
           label: 'Products',
+          longPressActions: const {'add_product': 'Add Product'},
+          onLongPressAction: (_) {},
+        ),
+        const NavItem(
+          icon: Icons.point_of_sale_outlined,
+          activeIcon: Icons.point_of_sale,
+          label: 'Sale',
         ),
         const NavItem(
           icon: Icons.receipt_long_outlined,
           activeIcon: Icons.receipt_long,
           label: 'History',
         ),
+        const NavItem(
+          icon: Icons.settings_outlined,
+          activeIcon: Icons.settings,
+          label: 'Settings',
+        ),
       ];
 
       await tester.pumpWidget(buildNavBar());
       await tester.pump();
 
-      await tester.longPress(find.text('Sale'));
+      await tester.longPress(find.text('Products'));
       await tester.pumpAndSettle();
 
       expect(find.byType(PopupMenuItem<String>), findsOneWidget);
@@ -336,22 +381,32 @@ void main() {
 
     testWidgets('long-press menu anchors to navbar top (F4)', (tester) async {
       items = [
-        NavItem(
-          icon: Icons.point_of_sale_outlined,
-          activeIcon: Icons.point_of_sale,
-          label: 'Sale',
-          longPressActions: const {'new_draft': 'New Draft'},
-          onLongPressAction: (_) {},
-        ),
         const NavItem(
+          icon: Icons.home_outlined,
+          activeIcon: Icons.home,
+          label: 'Home',
+        ),
+        NavItem(
           icon: Icons.inventory_2_outlined,
           activeIcon: Icons.inventory_2,
           label: 'Products',
+          longPressActions: const {'add_product': 'Add Product'},
+          onLongPressAction: (_) {},
+        ),
+        const NavItem(
+          icon: Icons.point_of_sale_outlined,
+          activeIcon: Icons.point_of_sale,
+          label: 'Sale',
         ),
         const NavItem(
           icon: Icons.receipt_long_outlined,
           activeIcon: Icons.receipt_long,
           label: 'History',
+        ),
+        const NavItem(
+          icon: Icons.settings_outlined,
+          activeIcon: Icons.settings,
+          label: 'Settings',
         ),
       ];
 
@@ -360,10 +415,10 @@ void main() {
 
       final navBarBox = tester.getRect(find.byType(AppBottomNavigationBar));
 
-      await tester.longPress(find.text('Sale'));
+      await tester.longPress(find.text('Products'));
       await tester.pumpAndSettle();
 
-      expect(find.text('New Draft'), findsOneWidget);
+      expect(find.text('Add Product'), findsOneWidget);
 
       final menuRect = tester.getRect(find.byType(PopupMenuItem<String>).at(0));
       expect(menuRect.bottom, lessThanOrEqualTo(navBarBox.bottom));
@@ -377,9 +432,9 @@ void main() {
         find.byType(IconWithBadge),
       );
       expect(icons, isNotEmpty);
-      final saleIcon = icons.first;
+      final homeIcon = icons.first;
       expect(
-        saleIcon.color,
+        homeIcon.color,
         isNot(
           equals(
             Theme.of(
@@ -405,7 +460,7 @@ void main() {
       await tester.pumpWidget(buildNavBar(selectedIndex: 1));
       await tester.pump();
 
-      final semantics = tester.getSemantics(find.text('Sale'));
+      final semantics = tester.getSemantics(find.text('Home'));
       expect(semantics.flagsCollection.isSelected, Tristate.isFalse);
       expect(semantics.flagsCollection.isButton, isTrue);
     });

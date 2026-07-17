@@ -33,7 +33,7 @@ class PaymentMethodSelector extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: PaymentMethodCard(
-            icon: Icons.qr_code_2_outlined,
+            icon: Icons.account_balance_outlined,
             label: context.l10n.transfer,
             selected: method == 'transfer',
             onTap: () {

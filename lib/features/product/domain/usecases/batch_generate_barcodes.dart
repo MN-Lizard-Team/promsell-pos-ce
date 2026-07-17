@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
+import 'package:promsell_pos_ce/features/product/domain/utils/product_barcode_eligibility.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 @injectable
@@ -15,14 +16,15 @@ class BatchGenerateBarcodes {
   final SettingsRepository _settingsRepo;
   final Ean13Generator _generator;
 
+  /// Generates EAN-13 barcodes for **all** products (active + inactive) that
+  /// still need one. Returns how many rows were updated.
   Future<int> call({required String prefix}) async {
     final settings = await _settingsRepo.load();
     _generator.initCounter(settings.barcodeLastCounter);
 
-    final products = await _repository.getActiveProducts();
-    final withoutBarcode = products
-        .where((p) => p.barcode == null || p.barcode!.isEmpty)
-        .toList();
+    // Policy A: full catalog — matches UI count on ProductBloc.state.products.
+    final products = await _repository.getAllProducts();
+    final withoutBarcode = products.where(productNeedsBarcode).toList();
 
     if (withoutBarcode.isEmpty) return 0;
 
@@ -57,13 +59,13 @@ class BatchGenerateBarcodes {
 
   Future<void> _persistCounter() async {
     try {
-      final settings = await _settingsRepo.load();
-      final updated = settings.copyWith(
-        barcodeLastCounter: _generator.currentCounter,
+      await _settingsRepo.saveBarcodeLastCounter(_generator.currentCounter);
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Barcode counter persistence failed',
+        error: e,
+        stack: stack,
       );
-      await _settingsRepo.save(updated);
-    } catch (e) {
-      AppLogger.warning('Barcode counter persistence failed', error: e);
     }
   }
 }

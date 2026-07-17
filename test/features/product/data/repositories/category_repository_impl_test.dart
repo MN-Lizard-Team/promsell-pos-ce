@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/category_local_datasource.dart';
@@ -52,7 +53,7 @@ void main() {
       expect(updated.first.sortOrder, 5);
     });
 
-    test('deleteCategory removes the category', () async {
+    test('deleteCategory soft-deletes (hidden from watch)', () async {
       await repo.addCategory(name: 'Drinks');
       final first = await repo.watchCategories().first;
       final catId = first.first.id;
@@ -61,6 +62,12 @@ void main() {
 
       final after = await repo.watchCategories().first;
       expect(after, isEmpty);
+
+      // Row still exists with deletedAt set.
+      final row = await (db.select(
+        db.categories,
+      )..where((c) => c.id.equals(catId))).getSingle();
+      expect(row.deletedAt != null, isTrue);
     });
 
     test('reorderCategories updates sortOrder for all', () async {
@@ -86,5 +93,71 @@ void main() {
       final categories = await repo.watchCategories().first;
       expect(categories.map((c) => c.name).toList(), ['A', 'M', 'Z']);
     });
+
+    test(
+      'deleteCategories null disposition uncategorized products then removes cats',
+      () async {
+        await repo.addCategory(name: 'Drinks', sortOrder: 1);
+        await repo.addCategory(name: 'Food', sortOrder: 2);
+        final cats = await repo.watchCategories().first;
+        final drinksId = cats.firstWhere((c) => c.name == 'Drinks').id;
+        final foodId = cats.firstWhere((c) => c.name == 'Food').id;
+
+        await db
+            .into(db.products)
+            .insert(
+              ProductsCompanion.insert(
+                id: 'p1',
+                name: 'Coffee',
+                price: 50,
+                categoryId: Value(drinksId),
+              ),
+            );
+
+        await repo.deleteCategories([drinksId], moveProductsToCategoryId: null);
+
+        final afterCats = await repo.watchCategories().first;
+        expect(afterCats.map((c) => c.id), [foodId]);
+
+        final product = await (db.select(
+          db.products,
+        )..where((p) => p.id.equals('p1'))).getSingle();
+        expect(product.categoryId, equals(null));
+      },
+    );
+
+    test(
+      'deleteCategories moves products to destination then removes cats',
+      () async {
+        await repo.addCategory(name: 'Drinks', sortOrder: 1);
+        await repo.addCategory(name: 'Food', sortOrder: 2);
+        final cats = await repo.watchCategories().first;
+        final drinksId = cats.firstWhere((c) => c.name == 'Drinks').id;
+        final foodId = cats.firstWhere((c) => c.name == 'Food').id;
+
+        await db
+            .into(db.products)
+            .insert(
+              ProductsCompanion.insert(
+                id: 'p2',
+                name: 'Tea',
+                price: 40,
+                categoryId: Value(drinksId),
+              ),
+            );
+
+        await repo.deleteCategories([
+          drinksId,
+        ], moveProductsToCategoryId: foodId);
+
+        final afterCats = await repo.watchCategories().first;
+        expect(afterCats.map((c) => c.id), [foodId]);
+
+        final product = await (db.select(
+          db.products,
+        )..where((p) => p.id.equals('p2'))).getSingle();
+        expect(product.categoryId, foodId);
+      },
+    );
   });
 }

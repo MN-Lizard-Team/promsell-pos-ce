@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_text_field.dart';
 
+/// Product-form wrapper around [AppTextField] (dense, no prefix by default).
+///
+/// Keeps the historical API (`icon` + `showIcon`) so existing call sites
+/// and tests (`product-text-field-clear`) stay stable.
 class ProductTextField extends StatelessWidget {
   const ProductTextField({
     super.key,
@@ -15,7 +20,12 @@ class ProductTextField extends StatelessWidget {
     this.helperText,
     this.onChanged,
     this.suffix,
+    this.suffixText,
     this.focusNode,
+    this.maxLines,
+    this.maxLength,
+    this.showIcon = false,
+    this.showClearButton = true,
   });
 
   final TextEditingController controller;
@@ -29,26 +39,34 @@ class ProductTextField extends StatelessWidget {
   final String? helperText;
   final ValueChanged<String>? onChanged;
   final Widget? suffix;
+  final String? suffixText;
   final FocusNode? focusNode;
+  final int? maxLines;
+  final int? maxLength;
+  final bool showIcon;
+  final bool showClearButton;
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return AppTextField(
       controller: controller,
-      focusNode: focusNode,
-      decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: Icon(icon),
-        suffixIcon: suffix,
-        helperText: helperText,
-        helperMaxLines: 2,
-      ),
+      labelText: labelText,
+      helperText: helperText,
+      prefixIcon: icon,
+      showPrefixIcon: showIcon,
+      suffix: suffix,
+      suffixText: suffixText,
+      showClearButton: showClearButton,
+      clearButtonKey: const ValueKey('product-text-field-clear'),
+      validator: validator,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      validator: validator,
       textInputAction: textInputAction,
-      onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
+      onFieldSubmitted: onFieldSubmitted,
+      focusNode: focusNode,
+      maxLines: maxLines ?? 1,
+      maxLength: maxLength,
     );
   }
 }

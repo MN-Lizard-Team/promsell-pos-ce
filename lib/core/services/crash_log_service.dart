@@ -71,7 +71,9 @@ class CrashLogService {
       if (!await file.exists()) {
         await file.create(recursive: true);
       }
-      await file.writeAsString(entry.toString(), mode: FileMode.append);
+      // Sanitize PII at write time (not only on export).
+      final sanitized = sanitizeExport(entry.toString());
+      await file.writeAsString(sanitized, mode: FileMode.append);
     } catch (e) {
       AppLogger.warning('CrashLogService: failed to record error', error: e);
     }

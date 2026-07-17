@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -31,13 +32,13 @@ class GenerateBarcode {
 
   Future<void> _persistCounter() async {
     try {
-      final settings = await _settingsRepo.load();
-      final updated = settings.copyWith(
-        barcodeLastCounter: _generator.currentCounter,
+      await _settingsRepo.saveBarcodeLastCounter(_generator.currentCounter);
+    } catch (e, stack) {
+      AppLogger.warning(
+        'GenerateBarcode: counter persistence failed',
+        error: e,
+        stack: stack,
       );
-      await _settingsRepo.save(updated);
-    } catch (_) {
-      // Counter persistence is best-effort — don't fail barcode generation
     }
   }
 }

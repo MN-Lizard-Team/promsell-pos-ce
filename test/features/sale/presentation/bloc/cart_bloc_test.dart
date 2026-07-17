@@ -607,7 +607,6 @@ void main() {
     );
   });
 
-
   group('payment lock', () {
     blocTest<CartBloc, CartState>(
       'paymentLocked rejects CartProductAdded',
@@ -647,6 +646,73 @@ void main() {
       ),
       act: (b) => b.add(const CartCleared()),
       expect: () => [const CartState()],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'paymentLocked rejects CartItemQtyChanged',
+      build: buildBloc,
+      seed: () => CartState(
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'x')],
+        paymentLocked: true,
+      ),
+      act: (b) => b.add(
+        const CartItemQtyChanged(productId: 'prod-0001', qty: 3, lineId: 'x'),
+      ),
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.paymentLocked, 'locked', true)
+            .having((s) => s.items.single.qty, 'qty', 1)
+            .having((s) => s.errorMessage, 'err', 'paymentInProgress'),
+      ],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'paymentLocked rejects CartProductRemoved',
+      build: buildBloc,
+      seed: () => CartState(
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'x')],
+        paymentLocked: true,
+      ),
+      act: (b) => b.add(const CartProductRemoved('prod-0001', lineId: 'x')),
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.paymentLocked, 'locked', true)
+            .having((s) => s.items, 'items', hasLength(1))
+            .having((s) => s.errorMessage, 'err', 'paymentInProgress'),
+      ],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'paymentLocked rejects CartDiscountChanged',
+      build: buildBloc,
+      seed: () => CartState(
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'x')],
+        paymentLocked: true,
+      ),
+      act: (b) => b.add(
+        const CartDiscountChanged(discountType: 'PERCENT', discountValue: 10),
+      ),
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.paymentLocked, 'locked', true)
+            .having((s) => s.errorMessage, 'err', 'paymentInProgress'),
+      ],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'paymentLocked rejects CartBarcodeScanned',
+      build: buildBloc,
+      seed: () => CartState(
+        items: [CartItem(product: tProduct, qty: 1, lineId: 'x')],
+        paymentLocked: true,
+      ),
+      act: (b) => b.add(const CartBarcodeScanned('1234567890123')),
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.paymentLocked, 'locked', true)
+            .having((s) => s.items, 'items', hasLength(1))
+            .having((s) => s.errorMessage, 'err', 'paymentInProgress'),
+      ],
     );
   });
 

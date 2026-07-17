@@ -35,11 +35,9 @@ void main() {
       final decoration = container.decoration as BoxDecoration;
       expect(
         decoration.color,
-        isNot(
-          Theme.of(
-            tester.element(find.byType(Container).first),
-          ).colorScheme.surfaceContainerLowest,
-        ),
+        Theme.of(
+          tester.element(find.byType(Container).first),
+        ).colorScheme.surfaceContainerLow,
       );
     });
   });

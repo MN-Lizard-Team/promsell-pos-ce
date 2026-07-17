@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
+import 'package:promsell_pos_ce/core/utils/secure_screen.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 
 /// Prompts for store PIN when [AppLockService] is enabled and session expired.
@@ -57,7 +58,14 @@ class _AppLockPinDialogState extends State<_AppLockPinDialog> {
   bool _busy = false;
 
   @override
+  void initState() {
+    super.initState();
+    SecureScreen.setSecure(true);
+  }
+
+  @override
   void dispose() {
+    SecureScreen.setSecure(false);
     _controller.dispose();
     super.dispose();
   }
@@ -67,16 +75,34 @@ class _AppLockPinDialogState extends State<_AppLockPinDialog> {
       _busy = true;
       _error = null;
     });
-    final ok = await sl<AppLockService>().verifyPin(_controller.text);
-    if (!mounted) return;
-    if (ok) {
-      Navigator.pop(context, true);
-      return;
+    final lock = sl<AppLockService>();
+    try {
+      final ok = await lock.verifyPin(_controller.text);
+      if (!mounted) return;
+      if (ok) {
+        Navigator.pop(context, true);
+        return;
+      }
+      setState(() {
+        _busy = false;
+        _error = widget.wrongPinMessage;
+      });
+    } on StateError catch (e) {
+      if (!mounted) return;
+      if (e.message == 'PIN_LOCKED') {
+        final left = lock.lockoutRemaining;
+        final secs = left?.inSeconds ?? 0;
+        setState(() {
+          _busy = false;
+          _error = context.l10n.appLockLockedOut(secs);
+        });
+        return;
+      }
+      setState(() {
+        _busy = false;
+        _error = widget.wrongPinMessage;
+      });
     }
-    setState(() {
-      _busy = false;
-      _error = widget.wrongPinMessage;
-    });
   }
 
   @override

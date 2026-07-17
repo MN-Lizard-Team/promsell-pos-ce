@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/product_preview_image.dart';
@@ -11,7 +12,7 @@ void main() {
     final product = Product(
       id: 'p1',
       name: 'Coffee',
-      price: 80,
+      price: Money.fromDouble(80),
       stock: 10,
       isActive: true,
       createdAt: DateTime(2025, 1, 1),
@@ -41,33 +42,34 @@ void main() {
       expect(find.text('Coffee'), findsNothing);
     });
 
-    testWidgets('renders category name when provided via PreviewOverlay', (
-      tester,
-    ) async {
-      final category = Category(
-        id: 'c1',
-        name: 'Drinks',
-        color: '0xFF0000',
-        createdAt: DateTime(2025, 1, 1),
-        updatedAt: DateTime(2025, 1, 1),
-      );
-      await tester.pumpApp(
-        SizedBox(
-          height: 260,
-          child: Stack(
-            children: [
-              PreviewOverlay(
-                product: product,
-                category: category,
-                hasImage: true,
-              ),
-            ],
+    testWidgets(
+      'PreviewOverlay no longer shows category name (moved to header card)',
+      (tester) async {
+        final category = Category(
+          id: 'c1',
+          name: 'Drinks',
+          color: '0xFF0000',
+          createdAt: DateTime(2025, 1, 1),
+          updatedAt: DateTime(2025, 1, 1),
+        );
+        await tester.pumpApp(
+          SizedBox(
+            height: 260,
+            child: Stack(
+              children: [
+                PreviewOverlay(
+                  product: product,
+                  category: category,
+                  hasImage: true,
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Drinks'), findsOneWidget);
-    });
+        expect(find.text('Drinks'), findsNothing);
+      },
+    );
 
     testWidgets(
       'renders inactive status for inactive product via PreviewOverlay',

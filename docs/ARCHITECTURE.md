@@ -1,9 +1,9 @@
-﻿# Architecture — Promsell POS CE v0.8.9
+﻿# Architecture — Promsell POS CE (v0.9.0)
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
 > **Quick reference:** See [`CODEBASE.md`](../CODEBASE.md) for file maps and module summaries.
-> **Database details:** See [`docs/DATABASE.md`](DATABASE.md) for schema, indexes, and query patterns.
+> **Database details:** See [`docs/DATABASE.md`](DATABASE.md) for schema, indexes, query patterns, SQLCipher encryption.
 
 ---
 
@@ -33,19 +33,10 @@ Offline-first mobile POS system — Flutter, Drift SQLite, BLoC/Cubit, Material 
 └────────────────────────┬─────────────────────────────┘  
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│   lib/features/ — Feature modules                                               │
-│   home/       — Home dashboard (hero card, stats, menu grid, promo banner)      │
-│   sale/       — Cart, checkout, draft, discount, restaurant order type/channel  │
-│               + table selector, service charge, product options in cart         │
-│   product/    — CRUD inventory, image service, barcode scan + image generation  │
-│               + ProductFormCubit (typed draft state, Hybrid Collapsible form)   │
-│               + product_navigation.dart (shared show/edit/preview/delete)       │
-│               + StatsDashboard (hero gradient: total products + inventory val)  │
-│               + ProductOptionGroup/ProductOption (modifiers, CRUD, cart sheet)  │
-│   customer/   — Customer CRUD, CustomerBloc, list/form pages with search        │
-│   promotion/  — Promotion CRUD, PromotionBloc, percent/fixed discount, dates    │
-│   report/     — Analytics dashboard + History sub-tab (TabBar, merged)          │
-│   settings/   — Locale, theme, shop info, business type, service charge         │
+│   lib/features/ — 13 feature modules                                            │
+│   home/ sale/ product/ customer/ promotion/ report/ settings/                   │
+│   history/ inventory/ receipt/ daily_close/ restaurant_table/ onboarding/       │
+│   (sale owns cart/checkout/drafts; report shell hosts history tab)              │
 └────────────────────────┬────────────────────────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -120,4 +111,4 @@ features/<name>/
 
 ---
 
-<sub>Promsell POS CE · v0.8.9 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.9.0 · Architecture Document · Deep Technical Reference</sub>

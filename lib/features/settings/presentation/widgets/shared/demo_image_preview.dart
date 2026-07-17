@@ -29,13 +29,6 @@ class DemoImagePreview extends StatelessWidget {
         color: st.cardBackground,
         borderRadius: BorderRadius.circular(st.cardRadius),
         border: Border.all(color: st.cardBorderColor, width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow,
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -45,16 +38,7 @@ class DemoImagePreview extends StatelessWidget {
             child: Container(
               width: displayWidth,
               height: displayHeight,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    st.softAccent.withValues(alpha: 0.25),
-                    st.softAccent.withValues(alpha: 0.08),
-                  ],
-                ),
-              ),
+              color: st.iconContainerBackground,
               child: Image.asset(
                 'assets/images/demo/demo_image_01.png',
                 width: displayWidth,

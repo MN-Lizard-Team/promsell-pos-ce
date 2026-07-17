@@ -1,13 +1,19 @@
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/utils/validators.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
+import 'package:promsell_pos_ce/features/sale/domain/services/sales_day_lock.dart';
+import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
 @injectable
 class CreateSale {
-  const CreateSale(this._repository);
+  const CreateSale(this._repository, this._settingsRepo);
   final SaleRepository _repository;
+  final SettingsRepository _settingsRepo;
 
   Future<Sale> call({
     required List<CartItem> items,
@@ -16,45 +22,76 @@ class CreateSale {
     required double vatRate,
     String? cartDiscountType,
     double? cartDiscountValue,
-    double? cartDiscountAmount,
-    double? amountReceived,
-    double? changeAmount,
+    Money? cartDiscountAmount,
+    Money? amountReceived,
+    Money? changeAmount,
     String? note,
     String? paymentReference,
     String? sendingBankCode,
-    String orderType = 'dinein',
+    List<SalePayment>? payments,
+    String orderType = 'delivery',
     String orderChannel = 'walkin',
     String? externalOrderRef,
     String? tableId,
     double serviceChargeRate = 0.0,
-    double serviceChargeAmount = 0.0,
+    Money serviceChargeAmount = Money.zero,
     String? customerId,
     String? promotionId,
-    double promotionDiscountAmount = 0.0,
-  }) {
+    Money promotionDiscountAmount = Money.zero,
+  }) async {
     Validators.nonEmptyCart(items);
     for (final item in items) {
       Validators.qty(item.qty);
-      Validators.price(item.product.price);
+      Validators.price(item.product.price.value);
     }
+
+    final settings = await _settingsRepo.load();
+    if (SalesDayLock.isCreateBlocked(
+      dailyCloseLock: settings.dailyCloseLock,
+      lastClosedDate: settings.lastClosedDate,
+    )) {
+      throw const BusinessRuleError(SalesDayLock.ruleDayClosed);
+    }
+
+    // Fiscal policy: clamp VAT rate and cart discount against settings.
+    final safeVatRate = vatRate.clamp(0.0, 100.0);
+    var safeCartDiscountType = cartDiscountType;
+    var safeCartDiscountValue = cartDiscountValue;
+    if (safeCartDiscountType != null && safeCartDiscountValue != null) {
+      final isPercent = safeCartDiscountType.toUpperCase() == 'PERCENT';
+      if (isPercent) {
+        final maxP = settings.maxDiscountPercent.clamp(0.0, 100.0);
+        if (safeCartDiscountValue > maxP) {
+          safeCartDiscountValue = maxP;
+        }
+      } else {
+        final maxAmt = settings.maxDiscountAmount.value;
+        if (maxAmt > 0 && safeCartDiscountValue > maxAmt) {
+          safeCartDiscountValue = maxAmt;
+        }
+      }
+    }
+    final safeServiceChargeRate = serviceChargeRate.clamp(0.0, 100.0);
+
     return _repository.createSale(
       items: items,
       paymentMethod: paymentMethod,
       vatMode: vatMode,
-      vatRate: vatRate,
-      cartDiscountType: cartDiscountType,
-      cartDiscountValue: cartDiscountValue,
+      vatRate: safeVatRate,
+      cartDiscountType: safeCartDiscountType,
+      cartDiscountValue: safeCartDiscountValue,
       cartDiscountAmount: cartDiscountAmount,
       amountReceived: amountReceived,
       changeAmount: changeAmount,
       note: note,
       paymentReference: paymentReference,
       sendingBankCode: sendingBankCode,
+      payments: payments,
       orderType: orderType,
       orderChannel: orderChannel,
       externalOrderRef: externalOrderRef,
       tableId: tableId,
-      serviceChargeRate: serviceChargeRate,
+      serviceChargeRate: safeServiceChargeRate,
       serviceChargeAmount: serviceChargeAmount,
       customerId: customerId,
       promotionId: promotionId,

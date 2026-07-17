@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_result_tile.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -17,7 +19,7 @@ void main() {
   final product = Product(
     id: 'p1',
     name: 'Coffee',
-    price: 50,
+    price: Money.fromDouble(50),
     stock: 10,
     sku: 'CFE001',
     isActive: true,
@@ -77,6 +79,38 @@ void main() {
       );
 
       expect(find.textContaining('Drinks'), findsOneWidget);
+    });
+
+    testWidgets('catalog mode uses chevron not filled add disc', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        SearchResultTile(product: product, query: ''),
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsNothing);
+    });
+
+    testWidgets('sale mode shows add disc and cart qty on avatar', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        SearchResultTile(
+          product: product,
+          query: 'cof',
+          cartQty: 3,
+          showAddAffordance: true,
+        ),
+        categoryBloc: mockCategoryBloc,
+        settingsCubit: mockSettingsCubit,
+      );
+
+      expect(find.byIcon(Icons.add), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right), findsNothing);
+      expect(find.text('×3'), findsOneWidget);
     });
   });
 }

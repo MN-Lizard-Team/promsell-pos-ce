@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 
 class StockBadge extends StatelessWidget {
-  const StockBadge({super.key, required this.stock});
+  const StockBadge({
+    super.key,
+    required this.stock,
+    this.lowStockThreshold = 5,
+  });
 
   final int stock;
+  final int lowStockThreshold;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final threshold = lowStockThreshold < 1 ? 1 : lowStockThreshold;
 
     final Color color;
     if (stock == 0) {
       color = theme.colorScheme.error;
-    } else if (stock <= 5) {
+    } else if (stock <= threshold) {
       color = theme.colorScheme.tertiary;
     } else {
       color = theme.colorScheme.primary;
@@ -23,7 +30,7 @@ class StockBadge extends StatelessWidget {
     final IconData icon;
     if (stock == 0) {
       icon = Icons.error_outline;
-    } else if (stock <= 5) {
+    } else if (stock <= threshold) {
       icon = Icons.warning_amber;
     } else {
       icon = Icons.check_circle_outline;
@@ -42,7 +49,9 @@ class StockBadge extends StatelessWidget {
             Icon(icon, size: 14, color: color),
             const SizedBox(width: 4),
             Text(
-              context.l10n.stockLabel(stock),
+              stock == 0
+                  ? context.l10n.outOfStockShort
+                  : '${context.l10n.stockOnHand} ${CurrencyFormatter.formatQuantityCompact(stock)}',
               style: theme.textTheme.labelSmall?.copyWith(
                 color: color,
                 fontWeight: FontWeight.w700,

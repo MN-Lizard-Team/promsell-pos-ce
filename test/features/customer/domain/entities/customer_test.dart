@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/customer/domain/entities/customer.dart';
 
 void main() {
@@ -18,7 +19,7 @@ void main() {
       expect(customer.phone, isNull);
       expect(customer.email, isNull);
       expect(customer.note, isNull);
-      expect(customer.totalSpent, 0.0);
+      expect(customer.totalSpent, Money.zero);
       expect(customer.visitCount, 0);
     });
 
@@ -29,7 +30,7 @@ void main() {
         phone: '0812345678',
         email: 'jane@example.com',
         note: 'VIP customer',
-        totalSpent: 1500.50,
+        totalSpent: Money.fromDouble(1500.50),
         visitCount: 12,
         createdAt: tDateTime,
         updatedAt: tDateTime,
@@ -38,7 +39,7 @@ void main() {
       expect(customer.phone, '0812345678');
       expect(customer.email, 'jane@example.com');
       expect(customer.note, 'VIP customer');
-      expect(customer.totalSpent, 1500.50);
+      expect(customer.totalSpent, Money.fromDouble(1500.50));
       expect(customer.visitCount, 12);
     });
 
@@ -59,6 +60,25 @@ void main() {
       expect(updated.visitCount, 5);
     });
 
+    test('copyWith can clear nullable phone/email/note', () {
+      final customer = Customer(
+        id: 'c1',
+        name: 'John',
+        phone: '0812345678',
+        email: 'john@test.com',
+        note: 'vip',
+        createdAt: tDateTime,
+        updatedAt: tDateTime,
+      );
+
+      final cleared = customer.copyWith(phone: null, email: null, note: null);
+
+      expect(cleared.phone, isNull);
+      expect(cleared.email, isNull);
+      expect(cleared.note, isNull);
+      expect(cleared.name, 'John');
+    });
+
     test('props contains all fields', () {
       final customer = Customer(
         id: 'c1',
@@ -66,7 +86,7 @@ void main() {
         phone: '081',
         email: 'john@test.com',
         note: 'note',
-        totalSpent: 100.0,
+        totalSpent: Money.fromDouble(100.0),
         visitCount: 3,
         createdAt: tDateTime,
         updatedAt: tDateTime,

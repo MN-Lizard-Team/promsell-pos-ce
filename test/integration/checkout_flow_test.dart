@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
@@ -109,13 +110,13 @@ void main() {
           paymentMethod: 'cash',
           vatMode: 'NONE',
           vatRate: 0,
-          amountReceived: 100,
-          changeAmount: 20,
+          amountReceived: Money.fromDouble(100),
+          changeAmount: Money.fromDouble(20),
           note: 'Integration test',
         );
 
         // 4. Verify sale
-        expect(sale.totalAmount, expectedTotal);
+        expect(sale.totalAmount, Money.fromDouble(expectedTotal));
         expect(sale.paymentMethod, 'cash');
         expect(sale.items.length, 2);
         expect(sale.items.where((i) => i.productName == 'Water').first.qty, 3);

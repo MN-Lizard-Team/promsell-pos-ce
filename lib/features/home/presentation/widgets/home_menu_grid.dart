@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 
+enum HomeMenuItem { sell, products, customers, promotions, history, closeDay }
+
 class HomeMenuGrid extends StatelessWidget {
   const HomeMenuGrid({super.key});
 
@@ -15,31 +17,37 @@ class HomeMenuGrid extends StatelessWidget {
         icon: Icons.point_of_sale,
         label: l10n.navSale,
         iconColor: cs.primary,
+        item: HomeMenuItem.sell,
       ),
       _MenuItem(
         icon: Icons.inventory_2_outlined,
         label: l10n.navProducts,
         iconColor: cs.secondary,
+        item: HomeMenuItem.products,
       ),
       _MenuItem(
         icon: Icons.people_outline,
         label: l10n.customersTitle,
         iconColor: cs.tertiary,
+        item: HomeMenuItem.customers,
       ),
       _MenuItem(
         icon: Icons.local_offer_outlined,
         label: l10n.promotionsTitle,
         iconColor: cs.error,
+        item: HomeMenuItem.promotions,
       ),
       _MenuItem(
         icon: Icons.receipt_long_outlined,
         label: l10n.homeHistory,
         iconColor: cs.secondary,
+        item: HomeMenuItem.history,
       ),
       _MenuItem(
         icon: Icons.task_alt,
         label: l10n.homeCloseDay,
         iconColor: cs.primary,
+        item: HomeMenuItem.closeDay,
       ),
     ];
 
@@ -68,7 +76,7 @@ class HomeMenuGrid extends StatelessWidget {
             ),
             itemBuilder: (context, i) {
               final item = items[i];
-              return _MenuButton(item: item, index: i);
+              return _MenuButton(item: item);
             },
           ),
         ],
@@ -82,17 +90,18 @@ class _MenuItem {
     required this.icon,
     required this.label,
     required this.iconColor,
+    required this.item,
   });
 
   final IconData icon;
   final String label;
   final Color iconColor;
+  final HomeMenuItem item;
 }
 
 class _MenuButton extends StatelessWidget {
-  const _MenuButton({required this.item, required this.index});
+  const _MenuButton({required this.item});
   final _MenuItem item;
-  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -140,14 +149,12 @@ class _MenuButton extends StatelessWidget {
   }
 
   void _onTap(BuildContext context) {
-    // Navigation is handled by the parent HomePage via a callback map
-    // We use a simple approach: find the HomePage ancestor and call its handler
     final handler = HomeMenuGridTapHandler.of(context);
-    handler?.onTap(index);
+    handler?.onTap(item.item);
   }
 }
 
-typedef HomeMenuTapCallback = void Function(int index);
+typedef HomeMenuTapCallback = void Function(HomeMenuItem item);
 
 class HomeMenuGridTapHandler extends InheritedWidget {
   const HomeMenuGridTapHandler({

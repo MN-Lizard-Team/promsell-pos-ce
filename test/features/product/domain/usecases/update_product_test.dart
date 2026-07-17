@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
@@ -23,7 +24,7 @@ void main() {
 
   final validProduct = tProduct.copyWith(
     name: 'Updated Product',
-    price: 150.0,
+    price: Money.fromDouble(150.0),
     stock: 30,
   );
 
@@ -47,14 +48,14 @@ void main() {
     });
 
     test('throws ArgumentError when price is zero', () async {
-      final product = validProduct.copyWith(price: 0.0);
+      final product = validProduct.copyWith(price: Money.zero);
 
       expect(() => usecase(product), throwsA(isA<ArgumentError>()));
       verifyNever(() => mockRepo.updateProduct(any()));
     });
 
     test('throws ArgumentError when price is negative', () async {
-      final product = validProduct.copyWith(price: -10.0);
+      final product = validProduct.copyWith(price: Money.fromDouble(-10.0));
 
       expect(() => usecase(product), throwsA(isA<ArgumentError>()));
       verifyNever(() => mockRepo.updateProduct(any()));

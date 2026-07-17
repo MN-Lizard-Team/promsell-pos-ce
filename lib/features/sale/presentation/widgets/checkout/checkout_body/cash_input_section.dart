@@ -66,7 +66,8 @@ class CashInputSection extends StatelessWidget {
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
           ],
-          autofocus: true,
+          // Avoid forcing keyboard on open (sheet sticky CTA / double-inset thrash).
+          autofocus: false,
           onChanged: (value) {
             final parsed = double.tryParse(value);
             if (parsed != null) {

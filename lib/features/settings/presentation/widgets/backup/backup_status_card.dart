@@ -26,16 +26,9 @@ class BackupStatusCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            statusColor.withValues(alpha: 0.25),
-            statusColor.withValues(alpha: 0.08),
-          ],
-        ),
+        color: st.cardBackground,
         borderRadius: BorderRadius.circular(st.cardRadius),
-        border: Border.all(color: statusColor.withValues(alpha: 0.4), width: 1),
+        border: Border.all(color: st.cardBorderColor, width: 0.8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -55,6 +48,7 @@ class BackupStatusCard extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               fontSize: 18,
+              color: statusColor,
             ),
             textAlign: TextAlign.center,
           ),

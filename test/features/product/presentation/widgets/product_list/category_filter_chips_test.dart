@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/category_filter_chips.dart';
@@ -35,7 +34,10 @@ void main() {
         ),
       );
 
-      expect(find.byType(ChoiceChip), findsNWidgets(4));
+      expect(find.text('All'), findsOneWidget);
+      expect(find.text('No category'), findsOneWidget);
+      expect(find.text('Drinks'), findsOneWidget);
+      expect(find.text('Food'), findsOneWidget);
     });
 
     testWidgets('calls onCategorySelected with category id', (tester) async {

@@ -1,6 +1,7 @@
 # Changelog — v0.2.x — Promsell POS CE
 
-> For the most up-to-date changes and release information, see [CHANGELOG.md](/CHANGELOG.md) for version 0.8.x, including feature additions, system improvements, performance enhancements, and bug fixes.
+> Current release: [CHANGELOG.md](../../CHANGELOG.md) (v0.9.0+).  
+> 0.8.x notes: [CHANGELOG-08x.md](CHANGELOG-08x.md).
 
 ---
 

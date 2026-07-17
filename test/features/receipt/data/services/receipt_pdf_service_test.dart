@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
@@ -23,6 +26,11 @@ void main() {
     subtotal: 'Subtotal',
     itemDiscounts: 'Item Discounts',
     cartDiscount: 'Cart Discount',
+    serviceCharge: 'Service Charge',
+    promotionDiscount: 'Promo',
+    voided: 'VOIDED',
+    voidReason: 'Reason',
+    reprint: 'REPRINT',
   );
 
   const defaultSettings = Settings();
@@ -31,7 +39,7 @@ void main() {
     service = ReceiptPdfService();
   });
 
-  group('ReceiptPdfService.calculateVat', () {
+  group('ReceiptPdfService.calculateVat (legacy)', () {
     test('returns null for NONE mode', () {
       final result = service.calculateVat(total: 100, rate: 7, mode: 'NONE');
       expect(result, isNull);
@@ -100,24 +108,41 @@ void main() {
       expect(result!.vatAmount, 0.0);
       expect(result.totalWithVat, 100.0);
     });
+
+    test('INCLUSIVE with rounding produces exact 2-decimal values', () {
+      final result = service.calculateVat(
+        total: 99.99,
+        rate: 7,
+        mode: 'INCLUSIVE',
+      );
+      expect(result, isNotNull);
+      expect(
+        result!.subtotal,
+        double.parse(result.subtotal.toStringAsFixed(2)),
+      );
+      expect(
+        result.vatAmount,
+        double.parse(result.vatAmount.toStringAsFixed(2)),
+      );
+    });
   });
 
   group('ReceiptPdfService.buildDocumentForTest', () {
     test('builds document with minimal sale', () {
       final sale = Sale(
         id: 'sale-1',
-        totalAmount: 100,
+        totalAmount: Money.fromDouble(100),
         paymentMethod: 'CASH',
         createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
+        items: [
           SaleItem(
             id: 'item-1',
             saleId: 'sale-1',
             productId: 'p1',
             productName: 'Coffee',
-            price: 50,
+            price: Money.fromDouble(50),
             qty: 2,
-            subtotal: 100,
+            subtotal: Money.fromDouble(100),
           ),
         ],
       );
@@ -131,67 +156,72 @@ void main() {
       expect(doc, isNotNull);
     });
 
-    test('builds document with item discounts', () {
+    test('builds document with SC promo cart disc and stored VAT', () {
       final sale = Sale(
-        id: 'sale-2',
-        totalAmount: 85,
-        paymentMethod: 'CASH',
-        discountType: 'PERCENT',
-        discountValue: 10,
-        discountAmount: 10,
-        createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
-          SaleItem(
-            id: 'item-1',
-            saleId: 'sale-2',
-            productId: 'p1',
-            productName: 'Coffee',
-            price: 50,
-            qty: 2,
-            subtotal: 90,
-            discountAmount: 10,
-          ),
-        ],
-      );
-
-      final doc = service.buildDocumentForTest(
-        sale: sale,
-        settings: defaultSettings,
-        labels: labels,
-      );
-
-      expect(doc, isNotNull);
-    });
-
-    test('builds document with VAT', () {
-      final sale = Sale(
-        id: 'sale-3',
-        totalAmount: 107,
-        paymentMethod: 'CASH',
-        vatMode: 'INCLUSIVE',
+        id: 'sale-ssot',
+        receiptNumber: 'R-SSOT',
+        totalAmount: Money.fromDouble(1023.99),
+        subtotalAmount: Money.fromDouble(957),
+        discountAmount: Money.fromDouble(100),
+        promotionDiscountAmount: Money.fromDouble(30),
+        serviceChargeAmount: Money.fromDouble(87),
+        serviceChargeRate: 10,
+        vatMode: 'EXCLUSIVE',
         vatRate: 7,
+        vatAmount: Money.fromDouble(66.99),
+        paymentMethod: 'CASH',
         createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
+        items: [
           SaleItem(
             id: 'item-1',
-            saleId: 'sale-3',
+            saleId: 'sale-ssot',
             productId: 'p1',
             productName: 'Coffee',
-            price: 107,
+            price: Money.fromDouble(1000),
             qty: 1,
-            subtotal: 107,
+            subtotal: Money.fromDouble(1000),
+            discountAmount: Money.fromDouble(50),
           ),
         ],
       );
 
-      const settings = Settings(
-        taxConfig: TaxConfig(vatRate: 7, vatMode: 'INCLUSIVE'),
+      final doc = service.buildDocumentForTest(
+        sale: sale,
+        settings: defaultSettings,
+        labels: labels,
+      );
+
+      expect(doc, isNotNull);
+    });
+
+    test('builds voided document without error', () {
+      final sale = Sale(
+        id: 'sale-void',
+        totalAmount: Money.fromDouble(50),
+        paymentMethod: 'CASH',
+        status: 'VOIDED',
+        voidReason: 'Test',
+        voidedAt: DateTime(2025, 1, 15),
+        createdAt: DateTime(2025, 1, 15, 10, 30),
+        items: [
+          SaleItem(
+            id: 'item-1',
+            saleId: 'sale-void',
+            productId: 'p1',
+            productName: 'Tea',
+            price: Money.fromDouble(50),
+            qty: 1,
+            subtotal: Money.fromDouble(50),
+          ),
+        ],
       );
 
       final doc = service.buildDocumentForTest(
         sale: sale,
-        settings: settings,
+        settings: defaultSettings,
         labels: labels,
+        isReprint: true,
+        notTaxInvoiceDisclaimer: 'Not a tax invoice',
       );
 
       expect(doc, isNotNull);
@@ -200,20 +230,20 @@ void main() {
     test('builds document with amountReceived and change', () {
       final sale = Sale(
         id: 'sale-4',
-        totalAmount: 100,
+        totalAmount: Money.fromDouble(100),
         paymentMethod: 'CASH',
-        amountReceived: 200,
-        changeAmount: 100,
+        amountReceived: Money.fromDouble(200),
+        changeAmount: Money.fromDouble(100),
         createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
+        items: [
           SaleItem(
             id: 'item-1',
             saleId: 'sale-4',
             productId: 'p1',
             productName: 'Coffee',
-            price: 100,
+            price: Money.fromDouble(100),
             qty: 1,
-            subtotal: 100,
+            subtotal: Money.fromDouble(100),
           ),
         ],
       );
@@ -227,59 +257,34 @@ void main() {
       expect(doc, isNotNull);
     });
 
-    test('builds document with note', () {
-      final sale = Sale(
-        id: 'sale-5',
-        totalAmount: 50,
-        paymentMethod: 'CASH',
-        note: 'Test note',
-        createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
-          SaleItem(
-            id: 'item-1',
-            saleId: 'sale-5',
-            productId: 'p1',
-            productName: 'Tea',
-            price: 50,
-            qty: 1,
-            subtotal: 50,
-          ),
-        ],
-      );
-
-      final doc = service.buildDocumentForTest(
-        sale: sale,
-        settings: defaultSettings,
-        labels: labels,
-      );
-
-      expect(doc, isNotNull);
-    });
-
-    test('builds document with shop info on receipt', () {
+    test('builds document with note and shop info', () {
       const settings = Settings(
         shopInfo: ShopInfo(
           name: 'Test Shop',
           address: '123 Test St',
           phone: '02-123-4567',
         ),
-        receiptConfig: ReceiptConfig(showShopInfo: true),
+        receiptConfig: ReceiptConfig(
+          showShopInfo: true,
+          receiptNote: 'Custom footer text',
+        ),
       );
 
       final sale = Sale(
         id: 'sale-6',
-        totalAmount: 50,
+        totalAmount: Money.fromDouble(50),
         paymentMethod: 'CASH',
+        note: 'Test note',
         createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
+        items: [
           SaleItem(
             id: 'item-1',
             saleId: 'sale-6',
             productId: 'p1',
             productName: 'Tea',
-            price: 50,
+            price: Money.fromDouble(50),
             qty: 1,
-            subtotal: 50,
+            subtotal: Money.fromDouble(50),
           ),
         ],
       );
@@ -293,73 +298,91 @@ void main() {
       expect(doc, isNotNull);
     });
 
-    test('builds document with receipt note footer', () {
-      const settings = Settings(
-        receiptConfig: ReceiptConfig(receiptNote: 'Custom footer text'),
-      );
-
+    test('builds document with product images without error', () {
       final sale = Sale(
-        id: 'sale-7',
-        totalAmount: 50,
-        paymentMethod: 'CASH',
-        createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
+        id: 'uuid-123',
+        receiptNumber: 'R00001',
+        totalAmount: Money.fromDouble(107.0),
+        paymentMethod: 'cash',
+        amountReceived: Money.fromDouble(107.0),
+        changeAmount: Money.zero,
+        createdAt: DateTime(2024, 1, 15, 10, 30),
+        items: [
           SaleItem(
-            id: 'item-1',
-            saleId: 'sale-7',
+            id: 'i1',
+            saleId: 'uuid-123',
             productId: 'p1',
-            productName: 'Tea',
-            price: 50,
+            productName: 'Test Product',
+            price: Money.fromDouble(100.0),
             qty: 1,
-            subtotal: 50,
+            subtotal: Money.fromDouble(100.0),
           ),
         ],
       );
-
-      final doc = service.buildDocumentForTest(
-        sale: sale,
-        settings: settings,
-        labels: labels,
-      );
-
-      expect(doc, isNotNull);
-    });
-
-    test('builds document with receipt number', () {
-      final sale = Sale(
-        id: 'sale-8',
-        receiptNumber: 'R-001',
-        totalAmount: 50,
-        paymentMethod: 'CASH',
-        createdAt: DateTime(2025, 1, 15, 10, 30),
-        items: const [
-          SaleItem(
-            id: 'item-1',
-            saleId: 'sale-8',
-            productId: 'p1',
-            productName: 'Tea',
-            price: 50,
-            qty: 1,
-            subtotal: 50,
-          ),
-        ],
-      );
-
+      final pngBytes = Uint8List.fromList([
+        0x89,
+        0x50,
+        0x4E,
+        0x47,
+        0x0D,
+        0x0A,
+        0x1A,
+        0x0A,
+      ]);
       final doc = service.buildDocumentForTest(
         sale: sale,
         settings: defaultSettings,
         labels: labels,
+        productImages: {'p1': pngBytes},
       );
-
       expect(doc, isNotNull);
     });
+
+    test(
+      'builds document with VAT settings (stored sale fields preferred)',
+      () {
+        final sale = Sale(
+          id: 'sale-3',
+          totalAmount: Money.fromDouble(107),
+          subtotalAmount: Money.fromDouble(100),
+          paymentMethod: 'CASH',
+          vatMode: 'INCLUSIVE',
+          vatRate: 7,
+          vatAmount: Money.fromDouble(7),
+          createdAt: DateTime(2025, 1, 15, 10, 30),
+          items: [
+            SaleItem(
+              id: 'item-1',
+              saleId: 'sale-3',
+              productId: 'p1',
+              productName: 'Coffee',
+              price: Money.fromDouble(107),
+              qty: 1,
+              subtotal: Money.fromDouble(107),
+            ),
+          ],
+        );
+
+        const settings = Settings(
+          taxConfig: TaxConfig(vatRate: 7, vatMode: 'INCLUSIVE'),
+        );
+
+        final doc = service.buildDocumentForTest(
+          sale: sale,
+          settings: settings,
+          labels: labels,
+        );
+
+        expect(doc, isNotNull);
+      },
+    );
   });
 
-  group('Sale', () {
+  group('Sale.isVoided', () {
     test('isVoided returns true when status is VOIDED', () {
       final sale = Sale(
         id: 's1',
-        totalAmount: 100,
+        totalAmount: Money.fromDouble(100),
         paymentMethod: 'CASH',
         status: 'VOIDED',
         createdAt: DateTime.utc(2025, 1, 1),
@@ -370,7 +393,7 @@ void main() {
     test('isVoided returns false when status is COMPLETED', () {
       final sale = Sale(
         id: 's1',
-        totalAmount: 100,
+        totalAmount: Money.fromDouble(100),
         paymentMethod: 'CASH',
         status: 'COMPLETED',
         createdAt: DateTime.utc(2025, 1, 1),

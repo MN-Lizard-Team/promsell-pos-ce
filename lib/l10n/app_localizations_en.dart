@@ -1373,14 +1373,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap to record that you have backed up your data';
 
   @override
-  String get backupEncryptionTitle => 'Backup Encryption (Optional)';
+  String get backupEncryptionTitle => 'Backup Encryption';
 
   @override
   String get backupEncryptionLabel => 'Encrypt backups';
 
   @override
   String get backupEncryptionDesc =>
-      'Protect backup files with AES-256-GCM encryption (PIN required)';
+      'Protect backup files with AES-256-GCM encryption (PIN required; default on for new installs)';
 
   @override
   String get backupInfoDescription =>
@@ -2144,7 +2144,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataCollectionBody =>
-      'Promsell does not collect any personal data. All sales, inventory, and settings are stored locally on your device using SQLite. No data is transmitted to our servers.';
+      'Promsell does not collect or transmit personal data to developer servers. Sales, inventory, settings, and any optional customer or shop details you enter are stored only on this device (SQLite / SQLCipher). Nothing is sent to our servers unless you export or share it yourself.';
+
+  @override
+  String get customerDataTitle => 'Customer Data';
+
+  @override
+  String get customerDataBody =>
+      'If you use customer management, name, phone, and email are stored only on this device. You can delete customer records anytime. This data is never sent to our servers.';
 
   @override
   String get thirdPartyServices => 'Third-Party Services';
@@ -2158,11 +2165,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataStorageBody =>
-      'Your data remains on your device. You can export or delete it at any time via the Backup/Restore feature. Product images are stored locally in the app\'s private directory and are subject to automatic LRU cache eviction (50MB limit) to prevent excessive disk usage.';
+      'Your data remains on your device. You can export or delete via Backup/Restore. In-app restore is same-device only while the SQLCipher key remains; cross-device restore and restore after uninstall/keystore wipe are not supported. Product images use a local 50MB LRU cache.';
 
   @override
   String get backupEncryptionBody =>
-      'Promsell offers optional AES-256-GCM encryption for database backups. If enabled, backups are encrypted with a key derived from a user-supplied PIN via PBKDF2. The PIN is never stored on the device or transmitted anywhere. Forgetting the PIN makes the backup unrecoverable — we cannot reset or recover it.';
+      'Database exports use AES-256-GCM with a PIN-derived key (PBKDF2; PIN at least 6 characters). Encryption is on by default for new installs. The PIN is never stored or transmitted. Forgetting the PIN makes that export unrecoverable. The live database is separately protected by SQLCipher.';
 
   @override
   String get permissionsTitle => 'Permissions';
@@ -2369,6 +2376,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterMore => 'Filter';
+
+  @override
+  String get productRowMenuQty => 'Set quantity';
+
+  @override
+  String get productRowMenuAdd => 'Add to cart';
+
+  @override
+  String get productRowMenu => 'Product actions';
+
+  @override
+  String get cartBottomLabel => 'Cart';
+
+  @override
+  String get saleCategoryTabsLabel => 'Category';
 
   @override
   String get filterPageTitle => 'Filter Products';
@@ -3773,7 +3795,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appLockTitle => 'Store PIN lock';
 
   @override
-  String get appLockSubtitle => 'Protect void, backup, and PromptPay changes';
+  String get appLockSubtitle =>
+      'Protect void, backup, stock adjust, CSV import, and PromptPay changes';
 
   @override
   String get appLockSectionTitle => 'Sensitive actions';
@@ -3783,7 +3806,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String appLockRequirePinHint(int minutes) {
-    return 'When enabled, void, backup export/restore, and PromptPay ID changes require PIN (session grace $minutes min).';
+    return 'When enabled, void, backup export/restore, stock adjust, CSV import, and PromptPay ID changes require PIN (session grace $minutes min).';
   }
 
   @override
@@ -3831,5 +3854,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appLockConfirmPromptPay => 'Confirm PromptPay change';
 
   @override
+  String get appLockConfirmStock => 'Confirm stock adjust with store PIN';
+
+  @override
+  String get appLockConfirmCsv => 'Confirm CSV import with store PIN';
+
+  @override
   String get appLockPinsMismatch => 'PINs do not match';
+
+  @override
+  String appLockLockedOut(int seconds) {
+    return 'Too many attempts. Try again in ${seconds}s';
+  }
 }

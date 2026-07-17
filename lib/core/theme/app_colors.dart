@@ -39,9 +39,11 @@ class AppColors {
   static const Color textOnPrimary = Color(0xFFFFFFFF);
 
   static const Color error = Color(0xFFDC2626);
+  static const Color onError = Color(0xFFFFFFFF);
   static const Color success = Color(0xFF22C55E);
   static const Color successContainer = Color(0xFFDCFCE7);
   static const Color warning = Color(0xFFFF6B00);
+  static const Color onWarning = Color(0xFFFFFFFF);
   static const Color info = Color(0xFF0EA5E9);
   static const Color infoContainer = Color(0xFFDBEAFE);
   static const Color onSuccess = Color(0xFFFFFFFF);
@@ -94,4 +96,12 @@ class AppColors {
   static const Color overlaySurface = Color(0x80000000);
   static const Color overlayIcon = Color(0xFFFFFFFF);
   static const Color overlayTextSecondary = Color(0xB3FFFFFF);
+
+  /// Used by overlay toasts ([AppSnackBar] action bar). Modal dialogs use
+  /// [ThemeData.dialogTheme] shape radius **20** instead.
+  static const double dialogRadius = 16;
+  static const double dialogActionRadius = 8;
+
+  static const Color promotionGradientStart = Color(0xFF157E83);
+  static const Color promotionGradientEnd = Color(0xFF085F65);
 }

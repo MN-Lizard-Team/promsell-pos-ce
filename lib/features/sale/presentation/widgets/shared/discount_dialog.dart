@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 
 class DiscountDialog extends StatefulWidget {
   const DiscountDialog({
@@ -104,8 +105,13 @@ class _DiscountDialogState extends State<DiscountDialog> {
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    disposeTextEditingControllerAfterFrame(_ctrl);
     super.dispose();
+  }
+
+  void _closeDialog() {
+    unfocusForDialogClose();
+    Navigator.pop(context);
   }
 
   @override
@@ -191,7 +197,7 @@ class _DiscountDialogState extends State<DiscountDialog> {
                     ? value.clamp(0.0, widget.maxAmount)
                     : value;
                 widget.onApply(_type, effectiveValue);
-                Navigator.pop(context);
+                _closeDialog();
               }
             },
           ),
@@ -215,17 +221,14 @@ class _DiscountDialogState extends State<DiscountDialog> {
           TextButton(
             onPressed: () {
               widget.onClear!();
-              Navigator.pop(context);
+              _closeDialog();
             },
             child: Text(
               l10n.discountClear,
               style: TextStyle(color: theme.colorScheme.error),
             ),
           ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
+        TextButton(onPressed: _closeDialog, child: Text(l10n.cancel)),
         FilledButton(
           onPressed: value > 0
               ? () {
@@ -235,7 +238,7 @@ class _DiscountDialogState extends State<DiscountDialog> {
                       ? value.clamp(0.0, widget.maxAmount)
                       : value;
                   widget.onApply(_type, effectiveValue);
-                  Navigator.pop(context);
+                  _closeDialog();
                 }
               : null,
           child: Text(l10n.discountApply),

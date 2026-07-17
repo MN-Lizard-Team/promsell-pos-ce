@@ -41,6 +41,14 @@ void main() {
       expect(await repo.getActiveProducts(), [tProduct]);
     });
 
+    test('getAllProducts delegates to datasource', () async {
+      when(
+        () => mockDs.getAllProducts(),
+      ).thenAnswer((_) async => [tProduct, tInactiveProduct]);
+
+      expect(await repo.getAllProducts(), [tProduct, tInactiveProduct]);
+    });
+
     test('getProductById delegates to datasource', () async {
       when(
         () => mockDs.getProductById(any()),
@@ -85,7 +93,7 @@ void main() {
               as ProductsCompanion;
       expect(captured.id.value, tProduct.id);
       expect(captured.name.value, tProduct.name);
-      expect(captured.price.value, tProduct.price);
+      expect(captured.price.value, tProduct.price.value);
     });
 
     test('updateProduct deletes old images when imagePath changes', () async {
@@ -331,6 +339,12 @@ void main() {
       when(
         () => mockDs.getProductById(any()),
       ).thenAnswer((_) async => tProduct);
+      when(
+        () => mockDs.countSaleItemsByProduct(any()),
+      ).thenAnswer((_) async => 0);
+      when(
+        () => mockDs.countDraftItemsByProduct(any()),
+      ).thenAnswer((_) async => 0);
       when(
         () => mockImageService.deleteImages(any(), any()),
       ).thenAnswer((_) async {});

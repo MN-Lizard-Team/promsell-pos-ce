@@ -1,25 +1,26 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 
 class ProductOption extends Equatable {
   const ProductOption({
     required this.id,
     required this.groupId,
     required this.name,
-    this.priceDelta = 0.0,
+    this.priceDelta = Money.zero,
     this.sortOrder = 0,
   });
 
   final String id;
   final String groupId;
   final String name;
-  final double priceDelta;
+  final Money priceDelta;
   final int sortOrder;
 
   ProductOption copyWith({
     String? id,
     String? groupId,
     String? name,
-    double? priceDelta,
+    Money? priceDelta,
     int? sortOrder,
   }) {
     return ProductOption(
@@ -35,7 +36,7 @@ class ProductOption extends Equatable {
     'id': id,
     'groupId': groupId,
     'name': name,
-    'priceDelta': priceDelta,
+    'priceDelta': priceDelta.value,
     'sortOrder': sortOrder,
   };
 
@@ -43,7 +44,9 @@ class ProductOption extends Equatable {
     id: json['id'] as String,
     groupId: json['groupId'] as String? ?? '',
     name: json['name'] as String,
-    priceDelta: (json['priceDelta'] as num?)?.toDouble() ?? 0.0,
+    priceDelta: Money.fromDouble(
+      (json['priceDelta'] as num?)?.toDouble() ?? 0.0,
+    ),
     sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
   );
 
