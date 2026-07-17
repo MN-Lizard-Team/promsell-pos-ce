@@ -32,20 +32,22 @@
 - [x] **R18 — NavBar + Preview + Barcode Overhaul** (v0.8.6): NavBar overhaul (`AppBottomNavigationBar` with long-press actions, `NavSwipeHelper`); Product Preview redesign (`SliverAppBar` collapsing hero, `ProductPreviewImage`, `StickyActionBar`); persistent barcode images (`BarcodeImageService` via `RenderRepaintBoundary` 600×200 @ 3x, `barcodeImagePath` column); `Ean13Generator` refactored to `@injectable` instance; theme polish (WCAG AA light theme, dark mode surfaceContainer tokens); QuickEdit upgrade (validation, Set/Adjust dual-mode); category management overhaul (`category_icon_data.dart`, search, Semantics)
 - [x] **R19 — Product Form Redesign** (v0.8.7): Merged `AddProductPage` + `ProductFormPage` into unified `ProductFormPage` with Hybrid Collapsible layout (basic fields visible, advanced in `ExpansionTile`); `ProductFormCubit` with typed `ProductDraft` entity replacing raw `Map<String, dynamic>` draft; draft persistence fixes (data loss, `isClosed` guard); `TextEditingController` disposal fix (unfocus before pop, remove listeners before dispose); 31 widget + unit tests
 - [x] **R20 — Sale Page Redesign + Cart UI Overhaul + Barcode Scanner Upgrade** (v0.8.8): `SaleDashboardHeader` + `SaleFilterBar` (Category/Sort/Stock dropdowns) + `SaleProductCard` delivery-style; `CartContent` unified widget + `CartBottomBar` with badge bounce/pull-up/velocity snap; continuous scan mode + product overlay; product form hardening (Bugs A–D, 11 dialog disposal fixes); filter/payment/cart page fixes + `CartProductDetailSheet` enrichment; 1302 tests passing
-- [x] **R21 — Restaurant Operations + CRM + Home Dashboard + Navbar Redesign** (v0.9.0): Restaurant mode (order type/channel, table management, service charge); customer & promotion management with full CRUD; home dashboard redesign (hero card, stats row, menu grid, promotion banner with gradient + floating animation); navbar floating center button with bounce animation; product modifiers/options; report/history merge; schema v20-v21 (customer, promotion, restaurant tables, product options); tests (see CI / `flutter test`) passing
-- [x] **R22 — v0.9.0 integrity & encryption** : SQLCipher at rest; Money VO + payable SSOT; stock/allowOversell; PromptPay cart freeze; schema **v28** (`sale_payments`); payment sticky CTA; backup export + **same-device in-app restore** (no cross-device / key export)
+- [x] **R21 — Restaurant Operations + CRM + Home Dashboard + Navbar Redesign** (v0.8.9): Restaurant mode; customer & promotion CRUD; home dashboard; floating Sale nav; product options; report/history merge; schema v20–v21
+- [x] **R22 — v0.9.0 trust cut**: SQLCipher; Money satang VO + payable SSOT; hard cart freeze + atomic stock; multi-tender `sale_payments` (schema **v28**); same-device backup restore; store PIN (PBKDF2, persisted lockout, stock/CSV gates); release-trust CI; privacy/store honesty; checkout failure unlocks cart
+
+### Next (post-0.9)
+
+- [ ] Phase M — INTEGER satang columns (or wired `MoneyConverter` end-to-end)
+- [ ] Phase 2b — cross-device restore / key recovery
+- [ ] Tablet dual-pane sale + orientation policy
+- [ ] Play Console production cut (keystore, Data safety, AAB)
 
 ### Release timeline
 
 ```
-v0.4.0    v0.5.x    v0.6.x    v0.7.x         v0.8.x
-  │         │         │         │               │
-  ▼         ▼         ▼         ▼               ▼
-Schema     Cashier   Merchant  Settings+       Brand+
-+ Sale     UX +      Tools +   Ops +           Preview +
-Integrity  Discount  Cart UX   Data +          NavBar +
-           + Images  Redesign  PromptPay       Barcode +
-                               + Barcode       Theme Polish
+v0.4.x → v0.5.x → v0.6.x → v0.7.x → v0.8.x → v0.9.0 trust cut
+  schema    cashier   tools     ops       brand     SQLCipher +
+  integrity UX        cart      PromptPay CRM       PIN + restore
 ```
 
 ---

@@ -76,11 +76,18 @@ Also kept under repo `screenshots/`.
 
 ### Listing checklist before **Submit for review**
 
+**In-repo (code/docs/metadata)**
+
 - [x] ≥2 phone screenshots staged (we have **10**)
 - [x] Feature graphic 1024×500 staged EN + TH
-- [ ] Optional: polish feature graphic / tablet shots
 - [x] Descriptions: offline-first, AGPL source, **not tax invoice**, same-device restore honesty
+- [x] Privacy policy wording: developer does **not** collect server-side PII; local device may store sales/customers
 - [x] Privacy URL uses **teeprakorn1** (not teepakorn1)
+- [x] Play title EN ≤30 · TH ≤30 (`Promsell — POS ร้านค้าเล็ก`)
+- [ ] Optional: polish feature graphic / tablet shots
+
+**Play Console (human — not done by git alone)**
+
 - [ ] Data safety form in Play Console
 - [ ] Production release keystore (not throwaway E2) + dual custody
 - [ ] Upload production-signed AAB

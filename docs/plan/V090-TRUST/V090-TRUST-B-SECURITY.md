@@ -1,15 +1,15 @@
 # W-B — Security Hardening (P0)
 
 **Parent:** [V090-TRUST-OVERVIEW.md](./V090-TRUST-OVERVIEW.md)  
-**Status:** ⬜ Not started  
-**Risk if skipped:** Staff fraud (void / PromptPay), weak offline PIN, backup mishandling
+**Status:** ✅ Done for v0.9.0 trust cut (local ship bar)  
+**Risk if skipped:** Staff fraud (void / PromptPay / stock), weak offline PIN, backup mishandling
 
 ---
 
-## Problem
+## Problem (historical)
 
-- App lock (**was** min PIN 4 / single SHA-256 / no lockout; **now** min 6 + PBKDF2 v2 + lockout + background session clear — see implementation)
-- Backup encryption can still be turned off by user
+- App lock was min PIN 4 / single SHA-256 / no durable lockout
+- Backup encryption could be turned off without friction
 - Secure storage options not always explicit
 
 ---
@@ -18,33 +18,35 @@
 
 | ID | Task | Primary paths | Done |
 |----|------|---------------|------|
-| **B1** | PIN min length ≥ 6 (align with backup) | `app_lock_service.dart`, PIN dialog, l10n | ⬜ |
-| **B2** | CSPRNG salt + KDF (PBKDF2 / scrypt / Argon2id) instead of single SHA-256 | `app_lock_service.dart` | ⬜ |
-| **B3** | Lockout / exponential backoff after N failures | service + dialog | ⬜ |
-| **B4** | Explicit `FlutterSecureStorage` options (Android encrypted prefs / iOS accessibility) | `app_lock_service`, `db_key_store` | ⬜ |
-| **B5** | Backup: keep default encrypt on; remove plain export from prod **or** stronger re-auth + typed confirm | `backup_*`, settings UI | ⬜ |
-| **B6** | Session lock on resume + FLAG_SECURE on PIN/PromptPay | `_MainShell` lifecycle; `SecureScreen` + MainActivity channel | ✅ |
-
----
-
-## Migration / UX constraints
-
-- Existing PIN hashes: plan **re-enroll** or dual-verify transition — document in PR
-- Prefer sensitive-action gates first; full session lock is B6
-- Merchant copy must warn: uninstall / keystore wipe without export = permanent loss
+| **B1** | PIN min length ≥ 6 (align with backup) | `app_lock_service.dart`, PIN dialog, l10n | ✅ |
+| **B2** | CSPRNG salt + PBKDF2-HMAC-SHA256 (v2) + legacy v1 upgrade | `app_lock_service.dart` | ✅ |
+| **B3** | Lockout after N failures — **persisted** in secure storage | service + dialog | ✅ |
+| **B4** | Explicit `FlutterSecureStorage` options | `app_lock_service`, `db_key_store` | ✅ |
+| **B5** | Backup encrypt default on; encryption-off needs store PIN + confirm | `backup_*`, settings UI | ✅ |
+| **B6** | Session clear on background + FLAG_SECURE on PIN/PromptPay | `_MainShell`, `SecureScreen` | ✅ |
+| **B7** | Gate stock adjust + CSV import with store PIN | `adjust_stock_sheet`, `openProductCsvImport` | ✅ |
+| **B8** | Checkout failure unlocks cart (no stuck `paymentLocked`) | `checkout_bloc.dart` | ✅ |
 
 ---
 
 ## Exit criteria
 
-- [ ] Expanded `app_lock_service` tests: set / verify / wrong / disable / grace / lockout
-- [ ] No debug desktop fixed-key path on mobile release (review or assert)
-- [ ] Backup policy discourages or blocks plaintext export in prod flavor
-- [ ] Pair with W-C **C3** test expansion
+- [x] Expanded `app_lock_service` tests: set / verify / wrong / disable / grace / lockout / cold-start persist
+- [x] Mobile release path does not use desktop debug fixed key
+- [x] Backup default encrypt on; plain SQLite restore rejected
+- [x] Pair with W-C trust tests (`release-trust.yml`)
+
+---
+
+## Residual (accepted / later)
+
+- PIN remains **optional** (opt-in) — not forced onboarding
+- No multi-user RBAC
+- Cross-device restore / key export = Phase 2b
+- R8 minify / deeper crash sanitize = post-0.9 polish
 
 ---
 
 ## Related
 
-- Threat notes from elite audit: weak optional lock, doc restore drift, backup share chain
-- Pair docs updates with W-A where security policy text changes
+- `SECURITY.md`, `docs/PRIVACY_POLICY.md`, smoke #11–#13 in `docs/testing/RELEASE_0.9_SMOKE.md`

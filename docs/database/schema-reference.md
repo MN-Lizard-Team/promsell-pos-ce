@@ -1,6 +1,6 @@
 # Schema Reference — Promsell POS CE (schema v28)
 
-Detailed column reference for all 14 database tables, indexes, seed data, and enum values.
+Detailed column reference for all **15** database tables, indexes, seed data, and enum values.
 
 > **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
 
@@ -21,7 +21,7 @@ Source: `lib/core/database/tables/products_table.dart`
 | `price` | REAL | No | — | Baht on disk; domain maps via `Money` |
 | `cost` | REAL | Yes | — | |
 | `stock` | INTEGER | No | `0` | |
-| `categoryId` | TEXT | Yes | — | Logical ref → categories |
+| `categoryId` | TEXT | Yes | — | **FK** → `categories.id` (Drift `references`; default RESTRICT/NO ACTION) |
 | `imageUrl` | TEXT | Yes | — | Network URL for future online sync |
 | `imagePath` | TEXT | Yes | — | Local file path from gallery/camera pick |
 | `imageThumbnailPath` | TEXT | Yes | — | Local thumbnail path (200px) for small avatar display |
@@ -56,7 +56,7 @@ Source: `lib/core/database/tables/sales_table.dart`
 | `vatMode` | TEXT | No | `'NONE'` | `NONE` \| `INCLUSIVE` \| `EXCLUSIVE` |
 | `vatRate` | REAL | No | `0` | |
 | `vatAmount` | REAL | No | `0` | |
-| `orderType` | TEXT | No | `'dinein'` | `dinein` \| `takeaway` \| `delivery` (added v20) |
+| `orderType` | TEXT | No | `'delivery'` | `dinein` \| `takeaway` \| `delivery` (added v20; default matches Drift table) |
 | `orderChannel` | TEXT | No | `'walkin'` | `walkin` \| `online` \| `phone` (added v20) |
 | `externalOrderRef` | TEXT | Yes | — | External order ID / delivery reference (added v20) |
 | `tableId` | TEXT | Yes | — | Logical ref → restaurant_tables (added v20) |
@@ -65,7 +65,7 @@ Source: `lib/core/database/tables/sales_table.dart`
 | `customerId` | TEXT | Yes | — | Logical ref → customers (added v21) |
 | `promotionId` | TEXT | Yes | — | Logical ref → promotions (added v21) |
 | `promotionDiscountAmount` | REAL | No | `0` | Promotion discount applied (added v21) |
-| `paymentMethod` | TEXT | No | — | `cash` \| `transfer` \| `card` \| `promptpay` |
+| `paymentMethod` | TEXT | No | — | `cash` \| `transfer` \| `card` \| `promptpay` \| `mixed` |
 | `amountReceived` | REAL | Yes | — | |
 | `changeAmount` | REAL | Yes | — | |
 | `paymentReference` | TEXT | Yes | — | PromptPay transaction ID |
@@ -186,7 +186,7 @@ Source: `lib/core/database/tables/draft_carts_table.dart`
 | `note` | TEXT | Yes | — | |
 | `cartDiscountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `cartDiscountValue` | REAL | Yes | — | |
-| `orderType` | TEXT | No | `'dinein'` | `dinein` \| `takeaway` \| `delivery` (added v20) |
+| `orderType` | TEXT | No | `'delivery'` | `dinein` \| `takeaway` \| `delivery` (added v20; default matches Drift table) |
 | `orderChannel` | TEXT | No | `'walkin'` | `walkin` \| `online` \| `phone` (added v20) |
 | `externalOrderRef` | TEXT | Yes | — | External order ID / delivery reference (added v20) |
 | `tableId` | TEXT | Yes | — | Logical ref → restaurant_tables (added v20) |
@@ -358,7 +358,8 @@ Created in `_createIndexes()` during `onCreate` and `onUpgrade`.
 | `idx_sale_items_sale_id` | sale_items | `sale_id` | Fetch items for a specific sale |
 | `idx_inventory_logs_product_id` | inventory_logs | `product_id` | Product stock audit trail |
 | `idx_draft_cart_items_cart_id` | draft_cart_items | `cart_id` | Fetch items for a draft cart |
-| `idx_daily_closes_close_date_unique` | daily_closes | `close_date` | **UNIQUE** one close row per business day (schema **v28**) |
+| `idx_daily_closes_close_date_unique` | daily_closes | `close_date` | **UNIQUE** one close row per business day (schema **v26**) |
+| `idx_sale_payments_sale_id` | sale_payments | `sale_id` | Tender lines for a sale (schema **v28**) |
 | `idx_sales_receipt_number_unique` | sales | `receipt_number` | **UNIQUE** where non-null/non-empty (schema **v27**) |
 | `idx_product_option_groups_product_id` | product_option_groups | `product_id` | Fetch option groups for a product (v20) |
 | `idx_product_options_group_id` | product_options | `group_id` | Fetch options for a group (v20) |
@@ -382,11 +383,11 @@ Inserted on `onCreate` via `_seedDefaultSettings()` using `InsertMode.insertOrIg
 
 | Key | Default value | Description |
 |-----|---------------|-------------|
-| `shop_name` | `""` | Shop display name for receipts |
-| `receipt_footer` | `""` | Optional receipt footer text |
-| `vat_rate` | `"7"` | VAT percentage |
-| `vat_mode` | `"NONE"` | `NONE` \| `INCLUSIVE` \| `EXCLUSIVE` |
-| `currency_symbol` | `"฿"` | Currency display symbol |
+| `shopName` | `""` | Shop display name for receipts (camelCase; legacy `shop_name` dual-read in mapper) |
+| `receiptNote` | `""` | Optional receipt footer / note text |
+| `vatRate` | `"7"` | VAT percentage |
+| `vatMode` | `"NONE"` | `NONE` \| `INCLUSIVE` \| `EXCLUSIVE` |
+| `currency` | `"฿"` | Currency display symbol |
 
 Keys added by **Sale Integrity** (written at runtime by `ReceiptNumberService` and `SettingsLocalDatasource`):
 

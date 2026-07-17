@@ -155,8 +155,12 @@ Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 
 | Document | Content |
 |----------|---------|
-| [`docs/usage/features.md`](usage/features.md) | Features walkthrough (Home, Products, Sale, Report, Settings tabs) + all settings pages with detailed tables |
-| [`docs/usage/development.md`](usage/development.md) | Localization (i18n), Database (Drift), Architecture overview, Testing (tests (see CI / `flutter test`)), Troubleshooting |
+| [`docs/usage/features.md`](usage/features.md) | Features walkthrough (tabs + settings) — includes **Store PIN**, same-device backup restore |
+| [`docs/usage/development.md`](usage/development.md) | Localization, Drift/SQLCipher, architecture, testing, troubleshooting |
+| [`docs/testing/RELEASE_0.9_SMOKE.md`](testing/RELEASE_0.9_SMOKE.md) | v0.9.0 release smoke checklist |
+| [`SECURITY.md`](../SECURITY.md) | Encryption, PIN gates, backup honesty |
+| [`docs/PRIVACY_POLICY.md`](PRIVACY_POLICY.md) | Privacy (local data vs developer servers) |
+| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.0 notes + archive links |
 
 ---
 

@@ -93,7 +93,8 @@ erDiagram
 | `sale_items.productId → products.id` | **No** (logical) | Sale history must survive product deletion |
 | `inventory_logs.productId → products.id` | **No** (logical) | Audit trail must survive product deletion |
 | `inventory_logs.refSaleId → sales.id` | **No** (logical) | Log must survive even if sale is hard-deleted |
-| `products.categoryId → categories.id` | **No** (logical) | Product must survive category deletion |
+| `products.categoryId → categories.id` | **Yes** (Drift FK, default RESTRICT) | Code uses `references(Categories, #id)`; deleting a category with products may fail unless app nulls/reassigns first |
+| `sale_payments.saleId → sales.id` | **Yes** (CASCADE) | Multi-tender lines (schema **v28**) |
 
 > Full ERD with all columns: [`docs/database/schema-reference.md`](database/schema-reference.md)
 
@@ -242,7 +243,7 @@ v23                                           v24
 
 **Money on disk:** amount columns remain SQLite **REAL** (baht). Domain code uses the `Money` value object (integer satang) and maps at the data layer. Integer column storage is deferred (Phase M).
 
-**Backup:** Export + optional AES-GCM (PIN ≥ 6). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup.
+**Backup:** Export + AES-GCM (PIN ≥ 6; default **on** when setting missing). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup.
 
 ---
 

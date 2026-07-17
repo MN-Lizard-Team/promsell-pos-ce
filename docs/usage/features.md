@@ -149,9 +149,16 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 - **Status card** — Gradient card showing backup status (Safe/Warning/Overdue) with last backup date
 - **Backup reminder** — Switch to enable/disable; tap to open frequency picker dialog with preset chips (3/7/14/30 days) or custom input
 - **Encryption** (v0.7.2+) — Toggle AES-256-GCM encryption with PIN-derived PBKDF2 key (default **on** in v0.9); PIN is never stored — forgotten PIN = unrecoverable export. Turning encryption **off** requires store PIN (if enabled) + confirmation
-- **Backup Now** — Manual backup trigger (export `.db` or encrypted package) + sales/products CSV
-- **Restore (same-device, v0.9.0)** — Pick a previous `.enc` or SQLCipher `.db` export and restore into the live DB. Requires this device’s SQLCipher key. **Not** for another phone or after uninstall. App restart recommended after restore
+- **Backup Now** — Manual backup trigger (export `.db` or encrypted package) + sales/products CSV; **store PIN** when lock enabled
+- **Restore (same-device, v0.9.0)** — Pick a previous `.enc` or SQLCipher `.db` export and restore into the live DB. Requires this device’s SQLCipher key. **Not** for another phone or after uninstall. App restart recommended after restore; **store PIN** when lock enabled
 - **Key loss** — Uninstall / keystore wipe without an off-device export = permanent data loss
+
+### Store PIN lock (v0.9.0)
+
+- Optional Settings → Store PIN lock (min **6** digits, PBKDF2)
+- When enabled, PIN is required for: **void sale**, **backup export/restore**, **turn backup encryption off**, **stock adjust**, **CSV product import**, **PromptPay ID/biller changes**
+- Session grace (~2 min); cleared when app goes to background
+- Too many wrong attempts → temporary lockout **persists** across app restart
 
 ### Image Settings
 

@@ -55,7 +55,7 @@ Promsell is an **offline-first local app** with no required network for core POS
 3. **Key loss = data loss** — there is **no** key recovery or multi-device key export in 0.9.0. Uninstall, factory reset, or secure-storage wipe without an export backup makes the DB unreadable
 4. **Atomic transactions** — sale create, void, stock adjust inside DB transactions
 5. **Inventory audit trail** — stock changes logged in `inventory_logs`
-6. **Backup export** — WAL checkpoint → DB copy → optional AES-256-GCM (PBKDF2 PIN, min length 6). Default encryption **on** when the setting key is missing (v0.9). Turning encryption off requires store PIN (if enabled) + confirmation
+6. **Backup export** — WAL checkpoint → DB copy → AES-256-GCM (PBKDF2 PIN, min length 6). Encryption default **on** when the setting key is missing (v0.9); can be turned off with store PIN (if enabled) + confirmation
 7. **Backup restore (same-device)** — Settings → Backup can restore a `.enc` / SQLCipher `.db` export on **this device** (needs the existing SQLCipher key in secure storage). Cross-device / after uninstall is **not** supported. Plain SQLite files are rejected
 8. **Store PIN lock** — optional PIN (min **6**) with PBKDF2 hashing + attempt lockout **persisted in secure storage** (survives cold start); gates void, backup export/restore, stock adjust, CSV import, PromptPay edits, and disabling backup encryption
 9. **Crash logs** — PII patterns sanitized **on write**
@@ -80,7 +80,7 @@ Promsell is an **offline-first local app** with no required network for core POS
 
 ## Security changelog (recent)
 
-- **0.9.0** — SQLCipher production path; backup encrypt default on; **same-device in-app restore**; store PIN min 6 + PBKDF2 + lockout; crash sanitize on write; image delete sandbox; schema **v28**
+- **0.9.0** — SQLCipher production path; backup encrypt default on; **same-device in-app restore**; store PIN min 6 + PBKDF2 + **persisted** lockout; gates void/backup/stock/CSV/PromptPay; crash sanitize on write; image delete sandbox; schema **v28**; checkout failure unlocks cart
 - **0.8.x** — See prior SECURITY entries and CHANGELOG (barcode uniqueness, orphaned images, crash export sanitize, restaurant/CRM isolation)
 
 ## Security testing expectations

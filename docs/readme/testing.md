@@ -4,37 +4,37 @@
 
 ---
 
-**tests** (see CI / `flutter test`) covering every application layer — **56% line coverage** (11,978 / 21,392 executable lines across 387 files):
+**tests** (see CI / `flutter test`) — **~1622** host tests green on 2026-07-17 trust cut (`--exclude-tags stress`); line coverage **~52%** overall (CI floor **50%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
 
-| Layer | What's tested | Count |
+| Layer | What's tested | Notes |
 |-------|--------------|-------|
-| **Domain** | Entity equality, use case delegation, discount math, `InventoryLog` domain, `ReportCalculator` extension, `Ean13Generator` Luhn check digit, `Validators.barcode` length, `CartItem` discount, `DraftCart`, `Sale` entity, `Category` entity, `Settings`/`ShopInfo`/`ConfigEntities`/`DiscountConfig`/`TaxPaymentConfig` | ~228 |
-| **BLoC / Cubit** | Event→state transitions, discount events, draft events, cart discount persistence, stock policy, `InventoryLogCubit`, `ReportCubit`, `ProductFormCubit` (draft init, sync, save, clear, restore), `SettingsCubit`, `HistoryBloc`, `DailyCloseCubit`, `SearchHistoryCubit` | ~80 |
-| **Repository** | Impl with mocked datasources (sale, product, category, history, settings, daily_close, draft_cart) | ~50 |
-| **Datasource** | Real in-memory SQLite (Drift) — sale, product, draft_cart, settings, daily_close | ~50 |
-| **Services** | ReceiptNumberService, InventoryLogService, ReceiptPdfService, ProductImageService, BackupEncryptionService, DI graph, crash logging, PDF receipt | ~190 |
-| **Widget** | Page tests (SalePage, CartReviewPage, CheckoutPage, PaymentSheet, SettingsPage, StockSettingsPage) + 60+ extracted widget tests across core (barcode, image, layout, nav, primitives, search, stock), sale (cart, catalog, checkout, drafts, payment, promptpay), product, settings (about, backup, barcode, discount, general, image, promptpay, receipt, shop, tiles), daily_close, onboarding | ~643 |
-| **Integration** | Checkout flow, sale integrity (void + adjust), onboarding → first sale | 14 |
-| **Stress** | 10k products / 50k sales seed + query timing (`@Tags(['stress'])`) | 2 |
-| **L10n parity** | EN/TH key coverage, non-empty values, params | 7 |
+| **Domain / Money** | `Money` satang VO, payable calculator, entities, validators | High trust value |
+| **BLoC / Cubit** | Cart freeze/payment lock, checkout, draft, settings, daily close, history | Checkout unlock-on-failure covered |
+| **Repository / Datasource** | Sale insert/void stock integrity, products, drafts, settings | In-memory Drift |
+| **Services** | App lock (PBKDF2 + persisted lockout), backup encrypt/restore, receipt PDF, crash log | |
+| **Widget** | Sale/cart/settings/product/pages + shared primitives | Largest layer by count |
+| **Host integration** | Checkout flow, sale integrity, onboarding first sale | Under `test/integration/` |
+| **Device E2E** | Happy path / draft / product / promo / restaurant (soft on main CI) | `integration_test/` |
+| **Stress** | Large seed + timing (`@Tags(['stress'])`) | Weekly / label workflow |
+| **L10n parity** | EN/TH keys | |
 
 ### Test pyramid
 
 ```
                     ┌───────────┐
-                    │  Stress   │  2 tests (10k+ rows, @Tags(['stress']))
+                    │  Stress   │  tagged suite (not every PR)
                     └─────┬─────┘
                 ┌─────────┴─────────┐
-                │   Integration     │  14 tests (in-memory DB end-to-end)
+                │ Device E2E        │  soft-fail on main CI
                 └─────────┬─────────┘
             ┌─────────────┴─────────────┐
-            │      Widget + L10n        │  ~650 tests (pumpApp + mock BLoC)
+            │ Host integration          │  sale integrity / checkout
             └─────────────┬─────────────┘
         ┌─────────────────┴──────────────────┐
-        │   BLoC + Services + Repository     │  ~320 tests (mocktail + mock DS)
+        │ Widget + BLoC + Services           │  bulk of suite
         └─────────────────┬──────────────────┘
     ┌─────────────────────┴──────────────────────┐
-    │              Domain + Datasource           │  ~278 tests (pure Dart + in-mem DB)
+    │ Domain + Datasource (incl. Money path)     │  Release Trust hard gate
     └────────────────────────────────────────────┘
 ```
 

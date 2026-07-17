@@ -192,11 +192,13 @@ Benefits:
 
 ### Money value object (domain layer)
 
-All currency amounts use the `Money` value object to ensure:
-- **Precision**: Uses `Decimal` type to avoid floating-point errors
-- **Currency awareness**: Stores amount + currency code (e.g. `Money(amount: Decimal.parse('10.50'), currency: 'THB')`)
-- **Safe arithmetic**: Overloaded operators (`+`, `-`, `*`, `/`) with currency validation
-- **Formatting**: `MoneyText / display helpers (not Money.format())` respects locale and currency symbol from settings
+All **domain** currency math uses the `Money` value object (`lib/core/domain/money.dart`):
+- **Precision**: Integer **satang** (1 ฿ = 100 satang) — avoids binary float error on add/sub/mul
+- **No currency field on the VO** — shop currency symbol comes from settings / formatters
+- **Safe arithmetic**: `+`, `-`, `*` with half-up rounding; clamp-safe subtraction
+- **Persistence (v0.9.0)**: SQLite still stores **REAL baht** on amount columns; convert at boundaries via `.value` / `Money.fromDouble` (`MoneyConverter` exists; full INTEGER column migration = Phase M)
+- **Formatting**: `MoneyText` / `CurrencyFormatter` respect locale and settings symbol
+- **Payable SSOT**: cart display, checkout charge, and sale insert share `SalePayableCalculator`
 
 ### Layer-specific patterns
 

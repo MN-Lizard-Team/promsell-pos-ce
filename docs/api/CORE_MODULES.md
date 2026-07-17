@@ -70,9 +70,9 @@ final sorted = [price3, price1, price2]..sort();
 // String representation
 print(price.toString());            // "Money(299.50)"
 
-// Decimal value (for display/persistence only)
-final baht = price.value;           // 299.50
-print('฿${baht.toStringAsFixed(2)}');  // "฿299.50"
+// Baht as double (display / REAL persistence boundary only — not domain math)
+  final baht = price.value;           // 299.50
+  print('฿${baht.toStringAsFixed(2)}');  // "฿299.50"
 
 // Raw satang (for exact arithmetic)
 final satang = price.satang;        // 29950
