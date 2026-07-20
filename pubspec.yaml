@@ -25,7 +25,7 @@ dependencies:
   path_provider: ^2.1.6
   # SQLCipher — full-database AES-256-CBC encryption (Phase 2a / v0.9.0)
   # Note: This package REPLACES sqlite3_flutter_libs (both provide the same classes)
-  sqlcipher_flutter_libs: ^0.6.0
+  sqlcipher_flutter_libs: ^0.7.0+eol
   # sqlite3 — required directly for open.overrideFor() to load libsqlcipher.so
   sqlite3: ^2.9.4
   # Secure storage for the DB encryption key (Keystore on Android, Keychain on iOS)
