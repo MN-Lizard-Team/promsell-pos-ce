@@ -66,8 +66,16 @@ app.*.map.json
 *.pem
 *.key
 
-# Android UI dump (Appium/uiautomator)
+# Android UI dump (Appium/uiautomator) — root-level hierarchy snapshots
 dc*.xml
+# Catch-all for root-level UI dump artifacts (sale*.xml, hist*.xml, onb*.xml, etc.)
+/*.xml
+!android/**/*.xml
+!ios/**/*.xml
+!lib/**/*.xml
+!test/**/*.xml
+!integration_test/**/*.xml
+!docs/**/*.xml
 
 # Aiyu MultiAgent
 .agent
