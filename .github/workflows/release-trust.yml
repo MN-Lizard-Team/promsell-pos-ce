@@ -38,7 +38,9 @@ on:
       - '.github/workflows/release-aab.yml'
 
 concurrency:
-  group: release-trust-${{ github.ref }}
+  # Separate group per trigger so a tag push (direct) and a workflow_call
+  # from release-aab.yml don't cancel each other.
+  group: release-trust-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
