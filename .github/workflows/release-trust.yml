@@ -8,9 +8,6 @@ permissions:
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
   # Optional: block merges that claim release readiness on main
   pull_request:
     branches: [main]
@@ -38,9 +35,7 @@ on:
       - '.github/workflows/release-aab.yml'
 
 concurrency:
-  # Separate group per trigger so a tag push (direct) and a workflow_call
-  # from release-aab.yml don't cancel each other.
-  group: release-trust-${{ github.event_name }}-${{ github.ref }}
+  group: release-trust-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
