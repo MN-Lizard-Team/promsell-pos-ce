@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product_draft.d
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_image_handler.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Create-only draft autosave / restore for [ProductFormPage].
 ///
@@ -46,21 +47,21 @@ class ProductFormDraftCoordinator {
     required void Function(bool) setIsRecommended,
     required void Function(List<ProductOptionGroup>) setOptionGroups,
     required VoidCallback onRestored,
-  })  : _isEditing = isEditing,
-        _isSubmitted = isSubmitted,
-        _isMounted = isMounted,
-        _initialBarcode = initialBarcode,
-        _selectedCategory = selectedCategory,
-        _trackStock = trackStock,
-        _isActive = isActive,
-        _isRecommended = isRecommended,
-        _optionGroups = optionGroups,
-        _setSelectedCategory = setSelectedCategory,
-        _setTrackStock = setTrackStock,
-        _setIsActive = setIsActive,
-        _setIsRecommended = setIsRecommended,
-        _setOptionGroups = setOptionGroups,
-        _onRestored = onRestored;
+  }) : _isEditing = isEditing,
+       _isSubmitted = isSubmitted,
+       _isMounted = isMounted,
+       _initialBarcode = initialBarcode,
+       _selectedCategory = selectedCategory,
+       _trackStock = trackStock,
+       _isActive = isActive,
+       _isRecommended = isRecommended,
+       _optionGroups = optionGroups,
+       _setSelectedCategory = setSelectedCategory,
+       _setTrackStock = setTrackStock,
+       _setIsActive = setIsActive,
+       _setIsRecommended = setIsRecommended,
+       _setOptionGroups = setOptionGroups,
+       _onRestored = onRestored;
 
   final TextEditingController nameCtrl;
   final TextEditingController priceCtrl;
@@ -144,7 +145,7 @@ class ProductFormDraftCoordinator {
       confirmLabel: l10n.restore,
       cancelLabel: l10n.discardDraft,
       destructive: false,
-      icon: Icons.history_edu_outlined,
+      icon: TablerIcons.history,
     );
     if (!context.mounted || !_isMounted()) return;
     if (restore) {

@@ -40,15 +40,22 @@ class ProductOption extends Equatable {
     'sortOrder': sortOrder,
   };
 
-  factory ProductOption.fromJson(Map<String, dynamic> json) => ProductOption(
-    id: json['id'] as String,
-    groupId: json['groupId'] as String? ?? '',
-    name: json['name'] as String,
-    priceDelta: Money.fromDouble(
-      (json['priceDelta'] as num?)?.toDouble() ?? 0.0,
-    ),
-    sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
-  );
+  factory ProductOption.fromJson(Map<String, dynamic> json) {
+    final priceDeltaValue = (json['priceDelta'] as num?)?.toDouble() ?? 0.0;
+    // Validate that priceDelta has at most 2 decimal places (satang precision).
+    if ((priceDeltaValue * 100).roundToDouble() / 100 != priceDeltaValue) {
+      throw ArgumentError(
+        'priceDelta must have at most 2 decimal places, got: $priceDeltaValue',
+      );
+    }
+    return ProductOption(
+      id: json['id'] as String,
+      groupId: json['groupId'] as String? ?? '',
+      name: json['name'] as String,
+      priceDelta: Money.fromDouble(priceDeltaValue),
+      sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
+    );
+  }
 
   @override
   List<Object?> get props => [id, groupId, name, priceDelta, sortOrder];

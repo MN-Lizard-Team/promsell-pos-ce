@@ -27,4 +27,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
   Future<void> saveBarcodeLastCounter(int counter) async {
     await _datasource.setInt(SettingsMapper.keyBarcodeLastCounter, counter);
   }
+
+  @override
+  Future<void> saveSkuLastCounter(int counter) async {
+    await _datasource.setInt(SettingsMapper.keySkuLastCounter, counter);
+  }
 }

@@ -58,9 +58,20 @@ app.*.map.json
 # Generated code (run: dart run build_runner build)
 **/*.g.dart
 **/*.config.dart
+**/*.freezed.dart
+
+# Environment / secrets (DO NOT COMMIT)
+.env
+.env.*
+*.pem
+*.key
+
+# Android UI dump (Appium/uiautomator)
+dc*.xml
 
 # Aiyu MultiAgent
 .agent
 .windsurf
 .windsurfrules
 .zcode
+.devin

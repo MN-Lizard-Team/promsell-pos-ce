@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_
 import 'package:promsell_pos_ce/features/inventory/presentation/cubit/inventory_log_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/inventory_log_row.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/shared_widgets.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class HistoryTab extends StatelessWidget {
   const HistoryTab({
@@ -48,7 +49,7 @@ class _HistoryTabView extends StatelessWidget {
         }
         if (state.status == InventoryLogStatus.failure) {
           return AppEmptyState(
-            icon: Icons.error_outline,
+            icon: TablerIcons.alertCircle,
             title: state.errorMessage ?? l10n.errorOccurred,
             actionLabel: l10n.retry,
             onAction: () =>
@@ -57,7 +58,7 @@ class _HistoryTabView extends StatelessWidget {
         }
         if (state.logs.isEmpty) {
           return AppEmptyState(
-            icon: Icons.history,
+            icon: TablerIcons.history,
             title: l10n.productNoHistory,
           );
         }
@@ -79,7 +80,7 @@ class _HistoryTabView extends StatelessWidget {
           itemBuilder: (context, index) {
             if (index == 0) {
               return PreviewCard(
-                icon: Icons.history_outlined,
+                icon: TablerIcons.history,
                 title: l10n.productTabHistory,
                 child: capped
                     ? Text(

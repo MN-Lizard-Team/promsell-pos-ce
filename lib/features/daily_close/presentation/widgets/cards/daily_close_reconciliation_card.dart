@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
-import 'package:promsell_pos_ce/core/utils/money_utils.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/rows/daily_close_read_only_row.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -89,7 +88,7 @@ class DailyCloseReconciliationCard extends StatelessWidget {
             DailyCloseReadOnlyRow(
               label: l10n.dailyCloseOverShort,
               value: Text(
-                '${overShort >= 0 ? '+' : ''}${MoneyUtils.round(overShort).toStringAsFixed(2)}',
+                '${overShort >= 0 ? '+' : ''}${overShort.toStringAsFixed(2)}',
                 style: TextStyle(
                   color: overShortColor,
                   fontWeight: FontWeight.bold,

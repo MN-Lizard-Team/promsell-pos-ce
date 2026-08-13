@@ -17,6 +17,7 @@ import 'package:promsell_pos_ce/features/product/presentation/utils/barcode_symb
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class BarcodeImageWidget extends StatefulWidget {
   const BarcodeImageWidget({
@@ -308,7 +309,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
               Expanded(
                 child: _BarcodeActionButton(
                   key: const ValueKey('preview-barcode-copy'),
-                  icon: Icons.copy_outlined,
+                  icon: TablerIcons.copy,
                   label: l10n.copyBarcode,
                   onTap: _copyBarcode,
                   successMessage: l10n.copyBarcode,
@@ -318,7 +319,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
               Expanded(
                 child: _BarcodeActionButton(
                   key: const ValueKey('preview-barcode-view'),
-                  icon: Icons.zoom_out_map,
+                  icon: TablerIcons.maximize,
                   label: l10n.barcodeViewFull,
                   onTap: _viewFullImage,
                   errorMessage: l10n.barcodeViewError,
@@ -328,7 +329,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
               Expanded(
                 child: _BarcodeActionButton(
                   key: const ValueKey('preview-barcode-save'),
-                  icon: Icons.save_alt,
+                  icon: TablerIcons.download,
                   label: l10n.barcodeSave,
                   onTap: _showSaveOptions,
                   successMessage: l10n.barcodeSavedSuccess,
@@ -339,7 +340,7 @@ class _BarcodeImageWidgetState extends State<BarcodeImageWidget> {
               Expanded(
                 child: _BarcodeActionButton(
                   key: const ValueKey('preview-barcode-print'),
-                  icon: Icons.print_outlined,
+                  icon: TablerIcons.printer,
                   label: l10n.barcodePrint,
                   onTap: _print,
                   successMessage: l10n.barcodePrintedSuccess,

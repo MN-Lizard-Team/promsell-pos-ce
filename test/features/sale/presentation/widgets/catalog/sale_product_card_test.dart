@@ -77,9 +77,9 @@ void main() {
       final outOfStock = product.copyWith(stock: 0);
       await pumpCard(tester, outOfStock);
 
-      expect(find.byType(Opacity), findsOneWidget);
-      final opacity = tester.widget<Opacity>(find.byType(Opacity));
-      expect(opacity.opacity, 0.55);
+      // OOS products are wrapped in ColorFiltered (grayscale) + badge.
+      expect(find.byType(ColorFiltered), findsOneWidget);
+      expect(find.text('Out of stock'), findsOneWidget);
     });
 
     testWidgets('shows SKU meta when sku present (preferred over category)', (

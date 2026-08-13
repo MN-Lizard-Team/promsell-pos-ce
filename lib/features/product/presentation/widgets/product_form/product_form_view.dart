@@ -14,6 +14,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_fo
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_view_model.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/shared/product_text_field.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Product form body: pill TabBar + pages under pinned hero.
 /// Tab order: Product → Price → Stock → Codes (POS workflow).
@@ -68,15 +69,18 @@ class ProductFormViewState extends State<ProductFormView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {});
-      }
-    });
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -84,9 +88,12 @@ class ProductFormViewState extends State<ProductFormView>
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final settings = context.watch<SettingsCubit>().state.settings;
-    final currency = settings.currency;
-    final lowStockThreshold = settings.lowStockThreshold;
+    final currency = context.select(
+      (SettingsCubit c) => c.state.settings.currency,
+    );
+    final lowStockThreshold = context.select(
+      (SettingsCubit c) => c.state.settings.lowStockThreshold,
+    );
     final c = widget.model.controllers;
     final s = widget.model.state;
     final cb = widget.model.callbacks;
@@ -112,7 +119,8 @@ class ProductFormViewState extends State<ProductFormView>
                   controller: c.nameCtrl,
                   focusNode: c.nameFocusNode,
                   labelText: l10n.productNameLabel,
-                  icon: Icons.badge_outlined,
+                  hintText: l10n.productNameHint,
+                  icon: TablerIcons.idBadge2,
                   maxLength: 200,
                   validator: (value) => (value == null || value.trim().isEmpty)
                       ? l10n.productNameRequired
@@ -129,7 +137,7 @@ class ProductFormViewState extends State<ProductFormView>
                 ProductTextField(
                   controller: c.brandCtrl,
                   labelText: l10n.productBrandLabel,
-                  icon: Icons.business_outlined,
+                  icon: TablerIcons.building,
                   helperText: l10n.productBrandHint,
                   maxLength: 100,
                   textInputAction: TextInputAction.next,
@@ -138,7 +146,7 @@ class ProductFormViewState extends State<ProductFormView>
                 ProductTextField(
                   controller: c.descriptionCtrl,
                   labelText: l10n.productDescriptionLabel,
-                  icon: Icons.description_outlined,
+                  icon: TablerIcons.fileText,
                   helperText: l10n.productDescriptionHint,
                   maxLines: 3,
                   maxLength: 500,
@@ -154,7 +162,7 @@ class ProductFormViewState extends State<ProductFormView>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ModernToggleCard(
-                  icon: Icons.visibility_outlined,
+                  icon: TablerIcons.eye,
                   title: l10n.showProduct,
                   subtitle: l10n.showProductHint,
                   value: s.isActive,
@@ -170,7 +178,7 @@ class ProductFormViewState extends State<ProductFormView>
                 ),
                 const SizedBox(height: 12),
                 ModernToggleCard(
-                  icon: Icons.star_outline,
+                  icon: TablerIcons.star,
                   title: l10n.productRecommended,
                   subtitle: l10n.productRecommendedHint,
                   value: s.isRecommended,
@@ -214,7 +222,8 @@ class ProductFormViewState extends State<ProductFormView>
                   key: const ValueKey('product-form-price'),
                   controller: c.priceCtrl,
                   labelText: l10n.sellingPrice,
-                  icon: Icons.sell_outlined,
+                  hintText: l10n.priceHint,
+                  icon: TablerIcons.tag,
                   showIcon: false,
                   suffixText: currencySuffix,
                   keyboardType: const TextInputType.numberWithOptions(
@@ -246,7 +255,7 @@ class ProductFormViewState extends State<ProductFormView>
                   controller: c.costCtrl,
                   labelText: l10n.productPreviewCost,
                   helperText: l10n.costHelper,
-                  icon: Icons.price_change_outlined,
+                  icon: TablerIcons.currencyBaht,
                   showIcon: false,
                   suffixText: currencySuffix,
                   keyboardType: const TextInputType.numberWithOptions(
@@ -308,7 +317,7 @@ class ProductFormViewState extends State<ProductFormView>
                 ),
                 const SizedBox(height: 12),
                 ModernToggleCard(
-                  icon: Icons.inventory_2,
+                  icon: TablerIcons.box,
                   title: l10n.trackStock,
                   subtitle: l10n.trackStockHint,
                   value: s.trackStock,
@@ -346,11 +355,28 @@ class ProductFormViewState extends State<ProductFormView>
                 ProductTextField(
                   key: const ValueKey('product-form-sku'),
                   controller: c.skuCtrl,
+                  focusNode: c.skuFocusNode,
                   labelText: l10n.skuLabel,
                   helperText: l10n.skuHelper,
-                  icon: Icons.qr_code,
+                  icon: TablerIcons.qrcode,
                   showIcon: false,
                   textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    key: const ValueKey('product-form-generate-sku'),
+                    onPressed: s.isGeneratingSku ? null : cb.onGenerateSku,
+                    icon: s.isGeneratingSku
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(TablerIcons.wand, size: 18),
+                    label: Text(l10n.generateSku),
+                  ),
                 ),
               ],
             ),
@@ -358,13 +384,13 @@ class ProductFormViewState extends State<ProductFormView>
           const SizedBox(height: 16),
           FormSectionCard(
             key: const ValueKey('product-form-supplier-section'),
-            icon: Icons.local_shipping_outlined,
+            icon: TablerIcons.truck,
             title: l10n.productSupplierLabel,
             child: ProductTextField(
               controller: c.supplierCtrl,
               labelText: l10n.productSupplierLabel,
               helperText: l10n.productSupplierHint,
-              icon: Icons.local_shipping_outlined,
+              icon: TablerIcons.truck,
               showIcon: false,
               maxLength: 100,
               textInputAction: TextInputAction.next,
@@ -420,7 +446,7 @@ class ProductFormViewState extends State<ProductFormView>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.article_outlined, size: 16),
+                            const Icon(TablerIcons.infoCircle, size: 16),
                             const SizedBox(width: 4),
                             Text(l10n.tabInfo),
                           ],
@@ -433,7 +459,7 @@ class ProductFormViewState extends State<ProductFormView>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.price_check_outlined, size: 16),
+                            const Icon(TablerIcons.tag, size: 16),
                             const SizedBox(width: 4),
                             Text(l10n.tabPrice),
                           ],
@@ -446,7 +472,7 @@ class ProductFormViewState extends State<ProductFormView>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.inventory_2_outlined, size: 16),
+                            const Icon(TablerIcons.box, size: 16),
                             const SizedBox(width: 4),
                             Text(l10n.tabStock),
                           ],
@@ -459,7 +485,7 @@ class ProductFormViewState extends State<ProductFormView>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.qr_code_2_outlined, size: 16),
+                            const Icon(TablerIcons.qrcode, size: 16),
                             const SizedBox(width: 4),
                             Text(l10n.tabCodes),
                           ],
@@ -481,12 +507,33 @@ class ProductFormViewState extends State<ProductFormView>
   }
 
   Widget _scroll({required List<Widget> children}) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: children,
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Tablet/wide screens: 2-column layout for better space use.
+        if (constraints.maxWidth >= 600 && children.length >= 2) {
+          final half = (children.length / 2).ceil();
+          final left = children.sublist(0, half);
+          final right = children.sublist(half);
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: Column(children: left)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(children: right)),
+              ],
+            ),
+          );
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
+        );
+      },
     );
   }
 }

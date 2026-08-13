@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 
@@ -49,7 +50,12 @@ abstract final class SaleWriteHelpers {
       return list
           .map((e) => SelectedProductOption.fromJson(e as Map<String, dynamic>))
           .toList();
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning(
+        'sale_write_helpers: parseSelectedOptions failed',
+        error: e,
+        stack: stack,
+      );
       return const [];
     }
   }

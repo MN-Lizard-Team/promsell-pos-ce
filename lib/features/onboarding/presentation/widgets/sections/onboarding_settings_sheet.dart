@@ -17,6 +17,7 @@ class OnboardingSettingsSheet {
     showModalBottomSheet(
       context: context,
       enableDrag: true,
+      isScrollControlled: true,
       showDragHandle: false,
       backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(

@@ -50,7 +50,7 @@ void main() {
     });
 
     test('props contains all fields', () {
-      expect(tProduct.props.length, 22);
+      expect(tProduct.props.length, 23);
     });
 
     test('description is null by default', () {

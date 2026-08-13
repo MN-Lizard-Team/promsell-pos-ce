@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class GeneralAppearanceTiles extends StatelessWidget {
   const GeneralAppearanceTiles({
@@ -47,7 +48,7 @@ class GeneralAppearanceTiles extends StatelessWidget {
           color: st.iconContainerBackground,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(Icons.dark_mode_outlined, color: st.softAccent, size: 24),
+        child: Icon(TablerIcons.palette, color: st.softAccent, size: 24),
       ),
       title: Text(
         l10n.settingsTheme,
@@ -95,9 +96,9 @@ class GeneralAppearanceTiles extends StatelessWidget {
               ThemeMode.system => l10n.settingsThemeSystem,
             };
             final icon = switch (mode) {
-              ThemeMode.light => Icons.wb_sunny,
-              ThemeMode.dark => Icons.nights_stay,
-              ThemeMode.system => Icons.brightness_auto,
+              ThemeMode.light => TablerIcons.sun,
+              ThemeMode.dark => TablerIcons.moon,
+              ThemeMode.system => TablerIcons.brightnessAuto,
             };
             return ListTile(
               leading: Icon(icon, color: isSelected ? st.softAccent : null),

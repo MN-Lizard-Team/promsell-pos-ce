@@ -1,47 +1,34 @@
-# Migration & Operations — Promsell POS CE (v0.9.0)
+# Migration & Operations — Promsell POS CE (v0.9.1)
 
 Migration guide, backup **export**, performance notes, and database testing.
 
 > **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
 
-**Current schema: v28** (15 tables including `sale_payments`). **Same-device in-app restore** is shipped (Settings → Backup). Cross-device / key recovery is **not** (Phase 2b).
+**Current schema: v30** (16 tables including `sale_payments` and `product_audits`). **Same-device in-app restore** is shipped (Settings → Backup). Cross-device / key recovery is **not** (Phase 2b).
 
 ---
 
 ## Migration Guide
 
-### Current strategy (v0.6.3+)
+### Current strategy
 
-All migrations are **non-destructive**. Pre-v2 schemas safely migrate via table creation + guarded column adds.
+**SSOT for `onUpgrade` is** [`lib/core/database/app_database.dart`](../../lib/core/database/app_database.dart). Do not copy snippets from this page into a new migration.
 
-```dart
-onUpgrade: (m, from, to) async {
-  // Safe migration for pre-v2 schemas
-  if (from < 2) {
-    await m.createAll(); // creates tables at current schema
-    await _createIndexes();
-    await _seedDefaultSettings();
-    // Add columns that may not exist in old schemas
-    await _addColumnIfNotExists(m, products, products.imagePath);
-    await _addColumnIfNotExists(m, products, products.imageThumbnailPath);
-    await _addColumnIfNotExists(m, draftCarts, draftCarts.cartDiscountType);
-    await _addColumnIfNotExists(m, draftCarts, draftCarts.cartDiscountValue);
-  }
-  if (from < 3) { ... }
-  if (from < 4) { ... }
-  if (from < 5) { ... }
-  if (from < 6) { ... }
-},
-```
+- Migrations are additive. There is **no** down migration.
+- Unique indexes belong in `onUpgrade` **after a dedupe pass**. `_createIndexes()` runs on `onCreate` and `from < 2` only and does **not** create `idx_products_sku_lower_unique`.
+- **v30** adds `sku_lower`, backfills `LOWER(sku)`, then `CREATE UNIQUE` — **no SKU dedupe**. Mixed-case duplicate SKUs can fail the upgrade (repair: [V092-C.2](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-C-STOCK.md)).
+- In source, `from < 27` (receipt unique) runs **after** `from < 30`.
 
-### Latest steps (v0.9.0)
+### Latest steps (v0.9.1)
 
-| Version | Changes |
-|---------|---------|
+| Version | Changes (match `onUpgrade`) |
+|---------|------------------------------|
 | **v25** | Products: `brand`, `unit`, `supplier`, `is_recommended` |
 | **v26** | Dedupe `daily_closes` by `close_date`, unique index on `close_date` |
-| **v27** | Dedupe non-null `sales.receipt_number`, unique partial index; receipt reseed from sales |
-| **v28** | Create `sale_payments` (multi-tender) + index `idx_sale_payments_sale_id` |
+| **v27** | Dedupe non-null `sales.receipt_number`, unique partial index (runs after v30 in source) |
+| **v28** | Create `sale_payments` + `idx_sale_payments_sale_id` |
+| **v29** | `barcode_lower` + `_deduplicateBarcodesLower()` + unique index |
+| **v30** | `sku_lower` + backfill + unique — **no SKU dedupe** |
 
 ### Incremental migrations (v2 → v24, historical)
 
@@ -64,17 +51,17 @@ onUpgrade: (m, from, to) async {
     await _seedR45Settings(); // imageMaxWidth, imageQuality
   }
   if (from < 7) {
-    await m.addColumn(sales, sales.vatAmount);
-    await m.addColumn(sales, sales.vatRate);
+    // CODE: draft_carts.is_archived — NOT sales.vat*
+    await m.addColumn(draftCarts, draftCarts.isArchived);
   }
   if (from < 8) {
-    // daily_closes table added
+    // CODE: _seedR5Settings (deviceId, devicePrefix, onboarding, dailyCloseLock, lastClosedDate)
   }
   if (from < 9) {
     // payment_breakdown, vat_amount, discount_amount on daily_closes
   }
   if (from < 10) {
-    // deviceId, devicePrefix, onboardingCompleted, dailyCloseLock, lastClosedDate, compactCartMode settings
+    // CODE: rebuild daily_closes so closed_at is nullable (NOT device settings)
   }
   if (from < 11) {
     // sync columns v1: updatedAt, deletedAt, version, deviceId on 6 core tables (TEXT ISO8601)
@@ -95,9 +82,8 @@ onUpgrade: (m, from, to) async {
     // Preset colors: 10 choices; preset icons: 21 Material icons
   }
   if (from < 16) {
-    // Add UNIQUE INDEX on products.barcode
-    // Duplicate-safe: logs warning and skips if legacy data has duplicates
-    // Prevents migration crash while enforcing uniqueness going forward
+    // CODE: _deduplicateBarcodes() then unique index.
+    // Leftover duplicates THROW StateError — do not document as skip/warn.
   }
   if (from < 17) {
     // Auto-deduplicate barcodes before unique index creation
@@ -129,15 +115,33 @@ onUpgrade: (m, from, to) async {
     // Add description column to products table for long-form product descriptions
   }
   if (from < 23) {
-    // Runtime barcode validation: drop UNIQUE constraint on products.barcode
-    // Implement application-level uniqueness check via ProductLocalDatasource._validateBarcodeUnique()
-    // Barcode length constraint: 1-50 characters when non-null
-    // Reason: UNIQUE constraint conflicts with sync soft-delete pattern (multiple deleted products can have same barcode)
+    // CODE: no-op (runtime validation only). UNIQUE was NOT dropped.
   }
   if (from < 24) {
-    // Add compound index: idx_products_barcode_deletedAt (barcode, deleted_at)
-    // Improves performance for barcode uniqueness queries that filter by deletedAt IS NULL
-    // Replaces old idx_products_barcode_unique from v16-v22
+    // CODE: re-dedupe + DROP/CREATE partial unique on barcode WHERE non-null/non-empty
+    // + idx_sale_items_product_id + idx_sales_created_at.
+    // There is NO idx_products_barcode_deletedAt.
+  }
+  if (from < 25) {
+    // Add brand, unit, supplier, is_recommended columns to products table
+  }
+  if (from < 26) {
+    // Dedupe daily_closes by close_date; add unique index idx_daily_closes_close_date_unique
+  }
+  if (from < 27) {
+    // Dedupe non-null sales.receipt_number; add unique partial index idx_sales_receipt_number_unique
+    // Reseed receipt sequence from highest existing receipt number
+  }
+  if (from < 28) {
+    // Create sale_payments table (multi-tender) + index idx_sale_payments_sale_id
+  }
+  if (from < 29) {
+    // Add barcode_lower shadow column to products; dedupe case-insensitive barcodes
+    // Create unique partial index idx_products_barcode_lower_unique
+  }
+  if (from < 30) {
+    // Add sku_lower shadow column to products
+    // Create unique partial index idx_products_sku_lower_unique
   }
 },
 ```
@@ -341,4 +345,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Migration & Operations · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.1 · Migration & Operations · SQLCipher AES-256</sub>

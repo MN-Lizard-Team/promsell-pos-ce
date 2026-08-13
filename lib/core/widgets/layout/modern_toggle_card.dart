@@ -81,7 +81,11 @@ class ModernToggleCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Switch(value: value, onChanged: onChanged),
+              Semantics(
+                label: title,
+                value: value ? 'on' : 'off',
+                child: Switch(value: value, onChanged: onChanged),
+              ),
             ],
           ),
         ),

@@ -79,9 +79,19 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       return;
     }
 
-    // Freeze cart at confirm for every method so live edits cannot change
-    // the sale lines after the cashier taps pay.
+    // Snapshot live cart once, then lock immediately so queued mutations cannot
+    // change lines after the cashier taps pay (Wave C).
     final cart = _cartBloc.state;
+    if (cart.items.any((i) => !i.isAvailable)) {
+      emit(
+        state.copyWith(
+          status: CheckoutStatus.failure,
+          errorMessage: 'productInactive',
+        ),
+      );
+      return;
+    }
+
     final frozenItems = cart.items
         .map(
           (i) => i.copyWith(
@@ -98,6 +108,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       promotionDiscountAmount: cart.promotionDiscountAmount,
     );
     _pendingSaleEvent = event;
+    // Lock before waitingPayment / createSale so UI and draft guards engage.
     _cartBloc.add(const CartPaymentLockChanged(true));
 
     // Any PromptPay tender (full bill or split share) opens QR flow first.
@@ -214,6 +225,11 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     CheckoutPaymentCancelled event,
     Emitter<CheckoutState> emit,
   ) {
+    // Wave P1: never unlock mid-CreateSale — cancel only while waiting on QR.
+    // Ignore cancel during processing (and idle/success/failure no-ops).
+    if (state.status == CheckoutStatus.processing) return;
+    if (state.status != CheckoutStatus.waitingPayment) return;
+
     _clearPending();
     emit(
       state.copyWith(
@@ -227,7 +243,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
   void _onReset(CheckoutReset event, Emitter<CheckoutState> emit) {
     _clearPending();
-    _cartBloc.add(const CartCleared());
+    _cartBloc.add(const CartCleared(force: true));
     emit(const CheckoutState());
   }
 
@@ -304,7 +320,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         promotionDiscountAmount: Money.fromDouble(promotionDiscountAmount),
       );
 
-      _cartBloc.add(const CartCleared());
+      _cartBloc.add(const CartCleared(force: true));
       _draftBloc.add(const DraftRotated());
       _clearPending();
 
@@ -358,7 +374,9 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
   @override
   Future<void> close() async {
-    _clearPending();
+    if (_pendingSaleEvent != null || _frozenCart != null) {
+      _clearPending();
+    }
     return super.close();
   }
 }

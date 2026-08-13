@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
+import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/report_section_card.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:thai_promptpay/thai_promptpay.dart' as pp;
 
 class ReportPromptPayCard extends StatelessWidget {
@@ -11,26 +14,13 @@ class ReportPromptPayCard extends StatelessWidget {
     required this.sales,
     required this.currency,
     required this.fmt,
+    required this.calculator,
   });
 
   final List<Sale> sales;
   final String currency;
   final DateFormat fmt;
-
-  List<Sale> get _promptPaySales {
-    final list =
-        sales
-            .where((s) => !s.isVoided && s.paymentMethod == 'promptpay')
-            .toList()
-          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return list;
-  }
-
-  double get _total =>
-      _promptPaySales.fold(0.0, (sum, s) => sum + s.totalAmount.value);
-
-  double get _average =>
-      _promptPaySales.isEmpty ? 0.0 : _total / _promptPaySales.length;
+  final ReportCalculatorService calculator;
 
   String _bankLabel(BuildContext context, String code) {
     final bank = pp.thaiBankByCode(code);
@@ -48,130 +38,124 @@ class ReportPromptPayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final promptPaySales = _promptPaySales;
+    final promptPaySales = calculator.promptPaySales(sales);
 
     if (promptPaySales.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: theme.colorScheme.primary,
+    final total = calculator.promptPayLegTotal(sales).value;
+    final average = promptPaySales.isEmpty
+        ? 0.0
+        : total / promptPaySales.length;
+
+    return ReportSectionCard(
+      title: l10n.promptpay,
+      icon: TablerIcons.wallet,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _MetricTile(
+                  label: l10n.netRevenue,
+                  value: total,
+                  currency: currency,
+                  theme: theme,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.promptpay,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _MetricTile(
-                    label: l10n.netRevenue,
-                    value: _total,
-                    currency: currency,
-                    theme: theme,
-                  ),
-                ),
-                Expanded(
-                  child: _MetricTile(
-                    label: l10n.salesCount(promptPaySales.length),
-                    value: null,
-                    count: promptPaySales.length,
-                    currency: currency,
-                    theme: theme,
-                  ),
-                ),
-                Expanded(
-                  child: _MetricTile(
-                    label: l10n.reportAverage,
-                    value: _average,
-                    currency: currency,
-                    theme: theme,
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 32),
-            Text(
-              l10n.reportRecent,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
               ),
-            ),
-            const SizedBox(height: 8),
-            ...promptPaySales.take(5).map((s) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        fmt.format(s.createdAt),
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ),
-                    if (s.sendingBankCode != null &&
-                        s.sendingBankCode!.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.tertiaryContainer,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _bankLabel(context, s.sendingBankCode!),
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.tertiary,
-                          ),
-                        ),
-                      )
-                    else if (s.paymentReference != null &&
-                        s.paymentReference!.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          s.paymentReference!,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(width: 8),
-                    MoneyText(
-                      value: s.totalAmount.value,
-                      currency: currency,
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
+              Expanded(
+                child: _MetricTile(
+                  label: l10n.salesCount(promptPaySales.length),
+                  value: null,
+                  count: promptPaySales.length,
+                  currency: currency,
+                  theme: theme,
                 ),
-              );
-            }),
-          ],
-        ),
+              ),
+              Expanded(
+                child: _MetricTile(
+                  label: l10n.reportAverage,
+                  value: average,
+                  currency: currency,
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 32),
+          Text(
+            l10n.reportRecent,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...promptPaySales.take(5).map((s) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      fmt.format(s.createdAt),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                  if (s.sendingBankCode != null &&
+                      s.sendingBankCode!.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondaryContainer,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _bankLabel(context, s.sendingBankCode!),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSecondaryContainer,
+                        ),
+                      ),
+                    )
+                  else if (s.paymentReference != null &&
+                      s.paymentReference!.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        s.paymentReference!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  MoneyText(
+                    value: calculator.promptPayLegAmount(s).value,
+                    currency: currency,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }

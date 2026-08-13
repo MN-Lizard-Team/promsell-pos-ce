@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_fo
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/unit_picker_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/shared/product_text_field.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class BarcodeField extends StatelessWidget {
   const BarcodeField({
@@ -72,18 +73,19 @@ class BarcodeField extends StatelessWidget {
           controller: barcodeCtrl,
           focusNode: barcodeFocusNode,
           labelText: l10n.barcodeLabel,
+          hintText: l10n.barcodeHint,
           helperText: l10n.barcodeHelper,
-          icon: Icons.qr_code_scanner,
+          icon: TablerIcons.barcode,
           showIcon: false,
           validator: (value) {
             if (value == null || value.trim().isEmpty) return null;
             if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value.trim())) {
-              return l10n.invalidBarcode;
+              return l10n.invalidBarcodeFormat;
             }
             return null;
           },
           suffix: IconButton(
-            icon: const Icon(Icons.camera_alt_outlined),
+            icon: const Icon(TablerIcons.camera),
             tooltip: l10n.scanBarcode,
             visualDensity: VisualDensity.compact,
             onPressed: () => _onScan(context),
@@ -117,7 +119,7 @@ class BarcodeField extends StatelessWidget {
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.auto_fix_high_outlined, size: 18),
+                : const Icon(TablerIcons.wand, size: 18),
             label: Text(l10n.generateBarcode),
           ),
         ),
@@ -158,7 +160,7 @@ class UnitField extends StatelessWidget {
             child: InputDecorator(
               decoration: InputDecoration(
                 labelText: l10n.productUnitLabel,
-                suffixIcon: const Icon(Icons.keyboard_arrow_down_outlined),
+                suffixIcon: const Icon(TablerIcons.chevronDown),
               ),
               child: Text(
                 display.isEmpty ? l10n.productUnitOther : display,

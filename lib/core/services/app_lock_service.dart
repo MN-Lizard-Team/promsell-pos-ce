@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
+import 'package:promsell_pos_ce/core/utils/crypto_utils.dart';
 
 /// Store PIN lock for sensitive POS actions
 /// (void, backup, PromptPay, stock adjust, CSV import).
@@ -13,12 +15,17 @@ import 'package:injectable/injectable.dart';
 /// plain text. Session unlock is in-memory only ([sessionGrace]).
 /// Failed-attempt lockout is persisted so cold start cannot reset brute force.
 ///
+/// Domain use cases should call [requireSensitiveSession] so gates are not
+/// UI-only (POST-090 E0c). UI still prompts via [ensureUnlocked] / PIN dialog.
+///
 /// Scheme:
 /// - **v2** (current): PBKDF2-HMAC-SHA256, 100k iterations, 32-byte key
 /// - **v1** (legacy): SHA-256(`salt::pin`) — verified once then upgraded to v2
 @LazySingleton()
 class AppLockService {
-  AppLockService({FlutterSecureStorage? storage})
+  /// Thrown / used as [BusinessRuleError.rule] when lock is on and session cold.
+  static const ruleAppLockRequired = 'AppLockRequired';
+  AppLockService({@ignoreParam FlutterSecureStorage? storage})
     : _storage =
           storage ??
           const FlutterSecureStorage(
@@ -114,6 +121,32 @@ class AppLockService {
     if (trimmed.length < minPinLength) {
       throw StateError('PIN_TOO_SHORT');
     }
+    // Guard: refuse to overwrite an existing PIN without verification.
+    // Callers that need to change an existing PIN must use [changePin].
+    if (await hasPin()) {
+      throw StateError('PIN_ALREADY_SET');
+    }
+    await _writePin(trimmed);
+  }
+
+  /// Changes the PIN after verifying the current PIN.
+  ///
+  /// Throws `PIN_WRONG` if [currentPin] does not match the stored hash.
+  /// Throws `PIN_LOCKED` if the lockout is active.
+  Future<void> changePin({
+    required String currentPin,
+    required String newPin,
+  }) async {
+    final ok = await verifyPin(currentPin);
+    if (!ok) throw StateError('PIN_WRONG');
+    final trimmed = newPin.trim();
+    if (trimmed.length < minPinLength) {
+      throw StateError('PIN_TOO_SHORT');
+    }
+    await _writePin(trimmed);
+  }
+
+  Future<void> _writePin(String trimmed) async {
     final salt = _randomSalt();
     final hash = _hashV2(trimmed, salt);
     await _storage.write(key: _pinSaltKey, value: salt);
@@ -168,7 +201,7 @@ class AppLockService {
     await _persistLockout();
     // Upgrade legacy hashes on successful unlock.
     if (scheme != _schemeV2) {
-      await setPin(trimmed);
+      await _writePin(trimmed);
     } else {
       unlockSession();
     }
@@ -186,6 +219,16 @@ class AppLockService {
       if (e.message == 'PIN_LOCKED') return false;
       rethrow;
     }
+  }
+
+  /// Domain gate: fails closed when store PIN is enabled and session is locked.
+  ///
+  /// Call after UI unlock (or when lock is disabled). Does not accept a PIN —
+  /// callers must [verifyPin] / [unlockSession] first.
+  Future<void> requireSensitiveSession() async {
+    if (!await isEnabled()) return;
+    if (isSessionUnlocked) return;
+    throw const BusinessRuleError(ruleAppLockRequired);
   }
 
   Future<void> _hydrateLockout() async {
@@ -215,10 +258,7 @@ class AppLockService {
       await _storage.delete(key: _lockedUntilKey);
       return;
     }
-    await _storage.write(
-      key: _failedAttemptsKey,
-      value: '$_failedAttempts',
-    );
+    await _storage.write(key: _failedAttemptsKey, value: '$_failedAttempts');
     final until = _lockedUntil;
     if (until == null) {
       await _storage.delete(key: _lockedUntilKey);
@@ -247,48 +287,14 @@ class AppLockService {
   }
 
   String _hashV2(String pin, String salt) {
-    final saltBytes = utf8.encode(salt);
-    final key = _pbkdf2(
-      pin,
-      Uint8List.fromList(saltBytes),
-      _pbkdf2Iterations,
-      _keyLength,
+    final saltBytes = Uint8List.fromList(utf8.encode(salt));
+    final key = pbkdf2(
+      password: pin,
+      salt: saltBytes,
+      iterations: _pbkdf2Iterations,
+      keyLength: _keyLength,
     );
     return key.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-  }
-
-  /// PBKDF2-HMAC-SHA256 (same family as backup encryption).
-  List<int> _pbkdf2(
-    String password,
-    Uint8List salt,
-    int iterations,
-    int keyLength,
-  ) {
-    final passwordBytes = Uint8List.fromList(utf8.encode(password));
-    final hmac = Hmac(sha256, passwordBytes);
-    const blockLength = 32;
-    final blocksNeeded = (keyLength + blockLength - 1) ~/ blockLength;
-    final result = <int>[];
-
-    for (var blockIndex = 1; blockIndex <= blocksNeeded; blockIndex++) {
-      final saltAndIndex = Uint8List(salt.length + 4);
-      saltAndIndex.setAll(0, salt);
-      saltAndIndex[salt.length] = (blockIndex >> 24) & 0xFF;
-      saltAndIndex[salt.length + 1] = (blockIndex >> 16) & 0xFF;
-      saltAndIndex[salt.length + 2] = (blockIndex >> 8) & 0xFF;
-      saltAndIndex[salt.length + 3] = blockIndex & 0xFF;
-
-      var u = hmac.convert(saltAndIndex).bytes;
-      final block = List<int>.from(u);
-      for (var i = 1; i < iterations; i++) {
-        u = hmac.convert(u).bytes;
-        for (var j = 0; j < block.length; j++) {
-          block[j] ^= u[j];
-        }
-      }
-      result.addAll(block);
-    }
-    return result.sublist(0, keyLength);
   }
 
   String _randomSalt() {

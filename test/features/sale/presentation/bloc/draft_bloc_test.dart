@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/draft_bill_switch_guard.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 import '../../../../helpers/mocks.dart';
@@ -21,6 +22,12 @@ void main() {
     mockDraftRepo = MockDraftCartRepository();
     mockSettingsRepo = MockSettingsRepository();
     registerFallbackValue(const CartSnapshot(items: []));
+    // Init / empty / rotate always call createDraft(name: …) via DraftNaming.
+    // Tests may override; bare createDraft() alone no longer matches.
+    when(
+      () => mockDraftRepo.createDraft(name: any(named: 'name')),
+    ).thenAnswer((_) async => 'draft-1');
+    when(() => mockDraftRepo.createDraft()).thenAnswer((_) async => 'draft-1');
   });
 
   DraftBloc buildBloc() =>
@@ -87,6 +94,9 @@ void main() {
       ).thenAnswer((_) async => 0);
       when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
       when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-1');
+      when(
         () => mockDraftRepo.createDraft(),
       ).thenAnswer((_) async => 'draft-1');
 
@@ -95,6 +105,7 @@ void main() {
 
       final state = await bloc.stream.first;
       expect(state.activeDraftId, 'draft-1');
+      expect(state.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
       await bloc.close();
     });
 
@@ -242,6 +253,9 @@ void main() {
       ).thenAnswer((_) async => 0);
       when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
       when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-1');
+      when(
         () => mockDraftRepo.createDraft(),
       ).thenAnswer((_) async => 'draft-1');
       when(() => mockDraftRepo.deleteDraft(any())).thenAnswer((_) async {});
@@ -253,7 +267,10 @@ void main() {
       bloc.add(const DraftInitialized());
       await bloc.stream.first;
 
-      // Override createDraft for the rotated call
+      // Override createDraft for the rotated call (named via DraftNaming).
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-2');
       when(
         () => mockDraftRepo.createDraft(),
       ).thenAnswer((_) async => 'draft-2');
@@ -262,8 +279,12 @@ void main() {
       final state = await bloc.stream.first;
 
       expect(state.activeDraftId, 'draft-2');
-      expect(state.activeDraftName, startsWith('B-'));
+      // SSOT empty-bill format: B-HHmm (4 digits), not legacy ms%100000.
+      expect(state.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
       verify(() => mockDraftRepo.deleteDraft('draft-1')).called(1);
+      verify(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).called(greaterThan(0));
       await bloc.close();
     });
   });
@@ -493,9 +514,13 @@ void main() {
       verify(
         () => mockDraftRepo.saveDraft('draft-1', any(), name: 'Table 7'),
       ).called(greaterThan(0));
+      // New empty gets auto name (forNewEmptyBill), never null.
       verify(
-        () => mockDraftRepo.createDraft(name: null),
+        () => mockDraftRepo.createDraft(
+          name: any(named: 'name', that: isNotNull),
+        ),
       ).called(greaterThan(0));
+      expect(last.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
       await bloc.close();
     });
 
@@ -677,6 +702,106 @@ void main() {
       await bloc.close();
     });
 
+    test('1-tap park keeps existing active name', () async {
+      when(
+        () => mockDraftRepo.archiveOldDrafts(any()),
+      ).thenAnswer((_) async => 0);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer(
+        (_) async => [
+          DraftCart(
+            id: 'draft-1',
+            name: 'VIP',
+            items: const [],
+            updatedAt: DateTime(2026, 1, 1),
+          ),
+        ],
+      );
+      when(() => mockDraftRepo.loadDraft('draft-1')).thenAnswer(
+        (_) async => DraftCart(
+          id: 'draft-1',
+          name: 'VIP',
+          items: const [],
+          updatedAt: DateTime(2026, 1, 1),
+        ),
+      );
+      when(
+        () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
+      ).thenAnswer((_) async {});
+      when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 1);
+      when(
+        () => mockSettingsRepo.load(),
+      ).thenAnswer((_) async => const Settings());
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-2');
+      when(
+        () => mockDraftRepo.createDraft(),
+      ).thenAnswer((_) async => 'draft-2');
+
+      final bloc = buildBloc();
+      bloc.add(const DraftInitialized());
+      await bloc.stream.first;
+      expect(bloc.state.activeDraftName, 'VIP');
+
+      when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 1);
+      // name: null = 1-tap → preserve VIP on parked draft
+      bloc.add(const DraftParkRequested(CartState(), name: null));
+      final last = await bloc.stream.firstWhere(
+        (s) =>
+            s.lastOp == 'park' &&
+            (s.opStatus == DraftOpStatus.success ||
+                s.opStatus == DraftOpStatus.failure),
+      );
+      expect(last.opStatus, DraftOpStatus.success);
+      verify(
+        () => mockDraftRepo.saveDraft('draft-1', any(), name: 'VIP'),
+      ).called(greaterThan(0));
+      expect(last.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
+      await bloc.close();
+    });
+
+    test('unnamed newBill gets auto empty name', () async {
+      when(
+        () => mockDraftRepo.archiveOldDrafts(any()),
+      ).thenAnswer((_) async => 0);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+      var createN = 0;
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async {
+        createN++;
+        return 'draft-$createN';
+      });
+      when(() => mockDraftRepo.createDraft()).thenAnswer((_) async {
+        createN++;
+        return 'draft-$createN';
+      });
+      when(
+        () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
+      ).thenAnswer((_) async {});
+      when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 1);
+      when(
+        () => mockSettingsRepo.load(),
+      ).thenAnswer((_) async => const Settings());
+
+      final bloc = buildBloc();
+      bloc.add(const DraftInitialized());
+      await bloc.stream.first;
+      expect(bloc.state.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
+
+      when(() => mockDraftRepo.countDrafts()).thenAnswer((_) async => 1);
+      bloc.add(const DraftStartNewBillRequested(CartState()));
+      final last = await bloc.stream.firstWhere(
+        (s) =>
+            s.lastOp == 'newBill' &&
+            (s.opStatus == DraftOpStatus.success ||
+                s.opStatus == DraftOpStatus.failure),
+      );
+      expect(last.opStatus, DraftOpStatus.success);
+      expect(last.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
+      await bloc.close();
+    });
+
     test('autosave blackout skips empty cart after park', () async {
       when(
         () => mockDraftRepo.archiveOldDrafts(any()),
@@ -785,6 +910,100 @@ void main() {
         () =>
             mockDraftRepo.saveDraft(activeId, any(), name: any(named: 'name')),
       ).called(greaterThan(0));
+      await bloc.close();
+    });
+  });
+
+  group('Save Bill integrity P0', () {
+    test('DraftSwitched paymentLocked rejects without load', () async {
+      when(
+        () => mockDraftRepo.archiveOldDrafts(any()),
+      ).thenAnswer((_) async => 0);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-1');
+
+      final bloc = buildBloc();
+      bloc.add(const DraftInitialized());
+      await bloc.stream.first;
+
+      bloc.add(const DraftSwitched('draft-2', paymentLocked: true));
+      final state = await bloc.stream.firstWhere(
+        (s) => s.lastOp == 'switch' && s.opStatus == DraftOpStatus.failure,
+      );
+      expect(state.errorMessage, DraftBillSwitchGuard.errorCode);
+      expect(state.activeDraftId, 'draft-1');
+      verifyNever(() => mockDraftRepo.loadDraft(any()));
+      await bloc.close();
+    });
+
+    test('DraftDeleted paymentLocked rejects without delete', () async {
+      when(
+        () => mockDraftRepo.archiveOldDrafts(any()),
+      ).thenAnswer((_) async => 0);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-1');
+
+      final bloc = buildBloc();
+      bloc.add(const DraftInitialized());
+      await bloc.stream.first;
+
+      bloc.add(const DraftDeleted('draft-1', paymentLocked: true));
+      final state = await bloc.stream.firstWhere(
+        (s) => s.lastOp == 'delete' && s.opStatus == DraftOpStatus.failure,
+      );
+      expect(state.errorMessage, DraftBillSwitchGuard.errorCode);
+      verifyNever(() => mockDraftRepo.deleteDraft(any()));
+      await bloc.close();
+    });
+
+    test('DraftSwitched with liveCart force-saves before load', () async {
+      when(
+        () => mockDraftRepo.archiveOldDrafts(any()),
+      ).thenAnswer((_) async => 0);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-1');
+      when(
+        () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
+      ).thenAnswer((_) async {});
+      when(() => mockDraftRepo.loadDraft('draft-2')).thenAnswer(
+        (_) async => DraftCart(
+          id: 'draft-2',
+          name: 'B',
+          items: const [],
+          updatedAt: DateTime(2026),
+        ),
+      );
+
+      final bloc = buildBloc();
+      bloc.add(const DraftInitialized());
+      await bloc.stream.first;
+
+      final product = Product(
+        id: 'p1',
+        name: 'Water',
+        price: Money.fromDouble(10),
+        stock: 5,
+        isActive: true,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+      );
+      final live = CartState(items: [CartItem(product: product, qty: 2)]);
+      bloc.add(DraftSwitched('draft-2', liveCart: live));
+      final state = await bloc.stream.firstWhere(
+        (s) => s.lastOp == 'switch' && s.opStatus == DraftOpStatus.success,
+      );
+      expect(state.activeDraftId, 'draft-2');
+      verify(
+        () =>
+            mockDraftRepo.saveDraft('draft-1', any(), name: any(named: 'name')),
+      ).called(greaterThan(0));
+      verify(() => mockDraftRepo.loadDraft('draft-2')).called(1);
       await bloc.close();
     });
   });

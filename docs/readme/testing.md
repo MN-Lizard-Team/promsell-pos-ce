@@ -1,10 +1,10 @@
 # Testing — Promsell POS CE
 
-> **Main reference:** [`README.md`](../../README.md) — project overview, quick start, links
+> **Main reference:** [`README.md`](../../README.md) · CI map: [`docs/testing/CI.md`](../testing/CI.md)
 
 ---
 
-**tests** (see CI / `flutter test`) — **~1622** host tests green on 2026-07-17 trust cut (`--exclude-tags stress`); line coverage **~52%** overall (CI floor **50%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
+**tests** (see CI / `flutter test`) — **~2028** host tests green on 2026-08-13 (`--exclude-tags stress`); line coverage **~64%** overall (CI floor **60%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
 
 | Layer | What's tested | Notes |
 |-------|--------------|-------|
@@ -14,7 +14,7 @@
 | **Services** | App lock (PBKDF2 + persisted lockout), backup encrypt/restore, receipt PDF, crash log | |
 | **Widget** | Sale/cart/settings/product/pages + shared primitives | Largest layer by count |
 | **Host integration** | Checkout flow, sale integrity, onboarding first sale | Under `test/integration/` |
-| **Device E2E** | Happy path / draft / product / promo / restaurant (soft on main CI) | `integration_test/` |
+| **Device E2E** | Happy path / draft / product / promo / restaurant | Main CI: format/analyze only. Trust: blocking `--flavor dev` |
 | **Stress** | Large seed + timing (`@Tags(['stress'])`) | Weekly / label workflow |
 | **L10n parity** | EN/TH keys | |
 
@@ -25,7 +25,7 @@
                     │  Stress   │  tagged suite (not every PR)
                     └─────┬─────┘
                 ┌─────────┴─────────┐
-                │ Device E2E        │  soft-fail on main CI
+                │ Device E2E        │  not on ci.yml; trust blocks emulator
                 └─────────┬─────────┘
             ┌─────────────┴─────────────┐
             │ Host integration          │  sale integrity / checkout
@@ -82,10 +82,10 @@ Coverage measured via `flutter test --coverage --exclude-tags stress` (lcov.info
 | **core** | 2,613 / 5,518 | 47.4% |
 | **l10n** | 437 / 1,429 | 30.6% |
 | **receipt** | 29 / 148 | 19.6% |
-| **Total** | **11,978 / 21,392** | **56.0%** |
+| **Total** | **21,726 / 34,129** | **63.7%** |
 
-> **Note:** `l10n` coverage is low because generated `app_localizations.dart` has many unused getter branches. `receipt` coverage is low due to PDF rendering paths requiring platform plugins. `core` includes generated DI config and database code with low testability.
+> **Note:** Per-feature rows are from a 2026-07-23 snapshot; the **Total** row reflects the 2026-08-13 measurement (`tool/check_path_coverage.dart`). `l10n` coverage is low because generated `app_localizations.dart` has many unused getter branches. `receipt` coverage is low due to PDF rendering paths requiring platform plugins. `core` includes generated DI config and database code with low testability.
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.1 · AGPL-3.0</sub>

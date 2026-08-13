@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/svg_icon.dart';
 import 'package:promsell_pos_ce/features/product/domain/utils/product_barcode_eligibility.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
@@ -64,8 +65,8 @@ class BarcodeBatchGenerateTile extends StatelessWidget {
                         padding: EdgeInsets.all(10),
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Icon(
-                        Icons.barcode_reader,
+                    : SvgIcon(
+                        'barcode-scan-icon',
                         color: st.softAccent,
                         size: 24,
                       ),

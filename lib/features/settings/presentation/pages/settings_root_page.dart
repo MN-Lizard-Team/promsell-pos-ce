@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
@@ -25,6 +27,7 @@ class SettingsPage extends StatelessWidget {
         }
       },
       child: BlocBuilder<SettingsCubit, SettingsState>(
+        buildWhen: (prev, curr) => prev.settings != curr.settings,
         builder: (ctx, state) {
           return _SettingsRootView(settings: state.settings);
         },
@@ -42,21 +45,34 @@ class _SettingsRootView extends StatefulWidget {
   State<_SettingsRootView> createState() => _SettingsRootViewState();
 }
 
-class _SettingsRootViewState extends State<_SettingsRootView> {
+class _SettingsRootViewState extends State<_SettingsRootView>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
   String _query = '';
+  Timer? _debounce;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() {
-      setState(() => _query = _searchController.text.toLowerCase());
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 250), () {
+      if (mounted) {
+        setState(() => _query = _searchController.text.toLowerCase());
+      }
     });
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     _searchFocus.dispose();
     super.dispose();
@@ -89,6 +105,7 @@ class _SettingsRootViewState extends State<_SettingsRootView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = context.l10n;
     final st = context.settingsTheme;
     final theme = Theme.of(context);

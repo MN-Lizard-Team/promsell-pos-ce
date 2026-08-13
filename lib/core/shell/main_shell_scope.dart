@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Lets shell children switch bottom-nav / rail tabs without pushing routes.
 ///
-/// Provided by `_MainShell` in `main.dart`.
+/// Provided by `MainShell` in `lib/core/shell/main_shell.dart`.
 class MainShellScope extends InheritedWidget {
   const MainShellScope({
     super.key,

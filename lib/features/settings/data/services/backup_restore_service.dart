@@ -1,9 +1,12 @@
 import 'dart:io';
 
+import 'package:drift/native.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/database/db_key_store.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_encryption_service.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_export_service.dart';
@@ -12,14 +15,25 @@ import 'package:promsell_pos_ce/features/settings/data/services/backup_export_se
 ///
 /// Requires the existing [DbKeyStore] key on this device. Cross-device / after
 /// uninstall is intentionally unsupported (Phase 2b).
+
+typedef CandidateValidator = Future<void> Function(String path);
+
 @LazySingleton()
 class BackupRestoreService {
-  BackupRestoreService(this._db, this._encryption);
+  BackupRestoreService(
+    this._db,
+    this._encryption,
+    this._appLock, {
+    CandidateValidator? candidateValidator,
+  }) : _candidateValidator = candidateValidator;
 
   final AppDatabase _db;
+  final Future<void> Function(String path)? _candidateValidator;
   final BackupEncryptionService _encryption;
+  final AppLockService _appLock;
 
   static const minPinLength = BackupExportService.minPinLength;
+  static const maxBackupBytes = 512 * 1024 * 1024;
 
   /// Restores [sourcePath] (.enc or .db). Returns path of the pre-restore backup.
   ///
@@ -28,9 +42,14 @@ class BackupRestoreService {
     required String sourcePath,
     String? pin,
   }) async {
+    await _appLock.requireSensitiveSession();
+
     final source = File(sourcePath);
     if (!await source.exists()) {
       throw StateError('SOURCE_MISSING');
+    }
+    if (await source.length() > maxBackupBytes) {
+      throw StateError('BACKUP_TOO_LARGE');
     }
 
     final lower = sourcePath.toLowerCase();
@@ -60,8 +79,13 @@ class BackupRestoreService {
           pin: p0,
           outputPath: decryptedTemp,
         );
+        if (await File(workingPath).length() > maxBackupBytes) {
+          throw StateError('BACKUP_TOO_LARGE');
+        }
         await _assertSqlCipherCandidate(workingPath);
       }
+
+      await _validateCandidate(workingPath);
 
       final docs = await getApplicationDocumentsDirectory();
       final dbPath = p.join(docs.path, BackupExportService.dbFileName);
@@ -72,25 +96,43 @@ class BackupRestoreService {
         'promsell_pos.pre_restore_$stamp.db',
       );
 
-      // Close live connection before swapping files.
-      try {
-        await _db.close();
-      } catch (e, st) {
-        AppLogger.warning(
-          'BackupRestoreService: db.close failed (continuing)',
-          error: e,
-          stack: st,
-        );
-      }
-
       final live = File(dbPath);
+      final staged = File('$dbPath.restore-$stamp.stage');
+      final oldPath = '$dbPath.restore-$stamp.old';
+      final old = File(oldPath);
+
+      // Stage the candidate before closing the live database. The live file is
+      // untouched until validation and the copy both succeed.
+      await File(workingPath).copy(staged.path);
       if (await live.exists()) {
         await live.copy(preRestorePath);
       }
 
-      await File(workingPath).copy(dbPath);
-      await _safeDelete(walPath);
-      await _safeDelete(shmPath);
+      try {
+        // A close failure can leave active handles writing to the old file. Do
+        // not continue into a swap that could produce a split-brain database.
+        await _db.close();
+        if (await old.exists()) await old.delete();
+        if (await live.exists()) await live.rename(oldPath);
+        await staged.rename(dbPath);
+        await _deleteRequired(walPath);
+        await _deleteRequired(shmPath);
+        if (await old.exists()) await old.delete();
+      } catch (e, st) {
+        AppLogger.error(
+          'BackupRestoreService: swap failed; attempting rollback',
+          error: e,
+          stack: st,
+        );
+        if (await old.exists()) {
+          await _safeDelete(dbPath);
+          await old.rename(dbPath);
+        }
+        rethrow;
+      } finally {
+        await _safeDelete(staged.path);
+        await _safeDelete(oldPath);
+      }
 
       AppLogger.info(
         'BackupRestoreService: restored DB; pre_restore=$preRestorePath',
@@ -123,10 +165,59 @@ class BackupRestoreService {
     }
   }
 
+  Future<void> _validateCandidate(String path) async {
+    final validator = _candidateValidator;
+    if (validator != null) {
+      await validator(path);
+      return;
+    }
+
+    final key = await DbKeyStore.getOrCreateKey();
+    final candidate = AppDatabase.forTesting(
+      NativeDatabase(
+        File(path),
+        setup: (rawDb) => rawDb.execute("PRAGMA key=\"x'$key'\""),
+      ),
+    );
+    try {
+      final tables = await candidate
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name IN "
+            "('products','sales','sale_items','sale_payments')",
+          )
+          .get();
+      if (tables.length != 4) throw StateError('INVALID_BACKUP_SCHEMA');
+
+      final integrity = await candidate
+          .customSelect('PRAGMA integrity_check')
+          .getSingle();
+      if (integrity.data.values.first != 'ok') {
+        throw StateError('INVALID_BACKUP_INTEGRITY');
+      }
+      final foreignKeys = await candidate
+          .customSelect('PRAGMA foreign_key_check')
+          .get();
+      if (foreignKeys.isNotEmpty) throw StateError('INVALID_BACKUP_INTEGRITY');
+    } finally {
+      await candidate.close();
+    }
+  }
+
   Future<void> _safeDelete(String path) async {
     try {
       final f = File(path);
       if (await f.exists()) await f.delete();
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        'backup_restore: _safeDelete failed for $path',
+        error: e,
+        stack: stack,
+      );
+    }
+  }
+
+  Future<void> _deleteRequired(String path) async {
+    final file = File(path);
+    if (await file.exists()) await file.delete();
   }
 }

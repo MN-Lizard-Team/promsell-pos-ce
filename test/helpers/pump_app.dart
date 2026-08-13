@@ -29,6 +29,8 @@ extension PumpApp on WidgetTester {
     TableBloc? tableBloc,
     Locale locale = const Locale('en'),
   }) async {
+    // SettingsCubit is above MaterialApp in production (main.dart) so modal
+    // routes still see it. Mirror that here; keep other blocs under home.
     final providers = <BlocProvider>[
       if (cartBloc != null) BlocProvider<CartBloc>.value(value: cartBloc),
       if (checkoutBloc != null)
@@ -40,8 +42,6 @@ extension PumpApp on WidgetTester {
         BlocProvider<CategoryBloc>.value(value: categoryBloc),
       if (historyBloc != null)
         BlocProvider<HistoryBloc>.value(value: historyBloc),
-      if (settingsCubit != null)
-        BlocProvider<SettingsCubit>.value(value: settingsCubit),
       if (searchHistoryCubit != null)
         BlocProvider<SearchHistoryCubit>.value(value: searchHistoryCubit),
       if (productFormCubit != null)
@@ -49,7 +49,7 @@ extension PumpApp on WidgetTester {
       if (tableBloc != null) BlocProvider<TableBloc>.value(value: tableBloc),
     ];
 
-    final app = MaterialApp(
+    Widget app = MaterialApp(
       locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -65,6 +65,10 @@ extension PumpApp on WidgetTester {
               child: Scaffold(body: widget),
             ),
     );
+
+    if (settingsCubit != null) {
+      app = BlocProvider<SettingsCubit>.value(value: settingsCubit, child: app);
+    }
 
     await pumpWidget(app);
     await pump();

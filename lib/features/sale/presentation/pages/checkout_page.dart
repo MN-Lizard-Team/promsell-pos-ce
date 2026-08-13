@@ -6,8 +6,10 @@ import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/tabl
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_sheet.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_primary_app_bar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CheckoutPage extends StatelessWidget {
@@ -22,9 +24,11 @@ class CheckoutPage extends StatelessWidget {
         .isRestaurantMode;
     final tableBloc = isRestaurant ? context.read<TableBloc>() : null;
     tableBloc?.add(const TablesLoaded());
+    final pos = context.posTheme;
 
     return Scaffold(
-      appBar: AppBar(
+      backgroundColor: pos.catalogBackground,
+      appBar: PosPrimaryAppBar(
         title: Text(context.l10n.paymentTitle),
         actions: [
           BlocSelector<CartBloc, CartState, int>(
@@ -37,7 +41,8 @@ class CheckoutPage extends StatelessWidget {
                   child: const Icon(Icons.shopping_cart_outlined),
                 ),
                 tooltip: context.l10n.cartTitle,
-                onPressed: () => openCartReviewPage(context),
+                onPressed: () =>
+                    openCartReviewPage(context, replacePaymentShell: true),
               );
             },
           ),

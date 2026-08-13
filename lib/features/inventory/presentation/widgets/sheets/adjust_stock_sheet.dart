@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_text_field.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
@@ -75,9 +76,14 @@ class _AdjustStockSheetState extends State<_AdjustStockSheet> {
 
   @override
   void dispose() {
-    _qtyCtrl.dispose();
-    _reasonCtrl.dispose();
+    disposeTextEditingControllerAfterFrame(_qtyCtrl);
+    disposeTextEditingControllerAfterFrame(_reasonCtrl);
     super.dispose();
+  }
+
+  void _close([int? result]) {
+    unfocusForDialogClose();
+    Navigator.of(context).pop(result);
   }
 
   int get _deltaAbs => int.tryParse(_qtyCtrl.text.trim()) ?? 0;
@@ -143,7 +149,7 @@ class _AdjustStockSheetState extends State<_AdjustStockSheet> {
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       AppSnackBar.success(context, l10n.adjustSuccess);
-      Navigator.pop(context, newStock);
+      _close(newStock);
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -462,50 +468,47 @@ class _AdjustStockSheetState extends State<_AdjustStockSheet> {
                     ),
                   ),
                 const SizedBox(height: 22),
-                Row(
+                OverflowBar(
+                  alignment: MainAxisAlignment.spaceBetween,
+                  spacing: 12,
+                  overflowAlignment: OverflowBarAlignment.start,
+                  overflowSpacing: 8,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _saving
-                            ? null
-                            : () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: cs.onSurface,
-                          side: BorderSide(color: cs.outline),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: Text(
-                          l10n.cancel,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
+                    OutlinedButton(
+                      onPressed: _saving ? null : _close,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cs.onSurface,
+                        side: BorderSide(color: cs.outline),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(
+                        l10n.cancel,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        key: const ValueKey('adjust-stock-save'),
-                        onPressed: _saving ? null : _submit,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: AppColors.onWarning,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: _saving
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.onWarning,
-                                ),
-                              )
-                            : Text(
-                                l10n.save,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
+                    FilledButton(
+                      key: const ValueKey('adjust-stock-save'),
+                      onPressed: _saving ? null : _submit,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.onWarning,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
+                      child: _saving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.onWarning,
+                              ),
+                            )
+                          : Text(
+                              l10n.save,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
                     ),
                   ],
                 ),

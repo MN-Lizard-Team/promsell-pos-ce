@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 
 class DiscountPresetDialogs {
   DiscountPresetDialogs._();
@@ -57,7 +58,7 @@ class DiscountPresetDialogs {
           ),
         ],
       ),
-    );
+    ).then((_) => disposeTextEditingControllerAfterFrame(ctrl));
   }
 
   static void showDeleteDialog(

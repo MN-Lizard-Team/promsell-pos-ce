@@ -11,12 +11,23 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/de
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
-class ImageSettingsPage extends StatelessWidget {
+class ImageSettingsPage extends StatefulWidget {
   const ImageSettingsPage({super.key});
 
   @override
+  State<ImageSettingsPage> createState() => _ImageSettingsPageState();
+}
+
+class _ImageSettingsPageState extends State<ImageSettingsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();

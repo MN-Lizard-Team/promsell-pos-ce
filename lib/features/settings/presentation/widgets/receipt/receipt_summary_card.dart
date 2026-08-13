@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ReceiptSummaryCard extends StatelessWidget {
   const ReceiptSummaryCard({
@@ -20,9 +21,9 @@ class ReceiptSummaryCard extends StatelessWidget {
 
   IconData get _styleIcon {
     return switch (previewStyle) {
-      'thermal' => Icons.receipt_long_outlined,
-      'card' => Icons.credit_card_outlined,
-      _ => Icons.visibility_off_outlined,
+      'thermal' => TablerIcons.receipt2,
+      'card' => TablerIcons.creditCard,
+      _ => TablerIcons.eyeOff,
     };
   }
 
@@ -81,15 +82,13 @@ class ReceiptSummaryCard extends StatelessWidget {
           const SizedBox(height: 12),
           if (receiptNote.isNotEmpty)
             _buildRow(
-              icon: Icons.notes_outlined,
+              icon: TablerIcons.notes,
               label: context.l10n.settingsReceiptNote,
               value: receiptNote,
               st: st,
             ),
           _buildRow(
-            icon: showShopInfo
-                ? Icons.check_circle_outline
-                : Icons.cancel_outlined,
+            icon: showShopInfo ? TablerIcons.circleCheck : TablerIcons.circleX,
             label: context.l10n.settingsShowShopInfo,
             value: showShopInfo
                 ? context.l10n.settingsOn
@@ -103,7 +102,7 @@ class ReceiptSummaryCard extends StatelessWidget {
             st: st,
           ),
           _buildRow(
-            icon: Icons.percent_outlined,
+            icon: TablerIcons.percentage,
             label: context.l10n.settingsVatMode,
             value: _vatLabel(context),
             st: st,

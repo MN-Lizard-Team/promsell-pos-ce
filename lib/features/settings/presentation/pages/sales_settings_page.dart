@@ -6,12 +6,23 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sal
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
-class SalesSettingsPage extends StatelessWidget {
+class SalesSettingsPage extends StatefulWidget {
   const SalesSettingsPage({super.key});
 
   @override
+  State<SalesSettingsPage> createState() => _SalesSettingsPageState();
+}
+
+class _SalesSettingsPageState extends State<SalesSettingsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/receipt/receipt_settings_form/receipt_content_section.dart';
 
 import '../../../../../../helpers/pump_app.dart';
@@ -12,8 +13,8 @@ void main() {
         ReceiptContentSection(settings: const Settings(), onUpdate: (_) {}),
       );
 
-      expect(find.byIcon(Icons.info_outline), findsOneWidget);
-      expect(find.byIcon(Icons.receipt_long_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.infoCircle), findsOneWidget);
+      expect(find.byIcon(TablerIcons.receipt2), findsOneWidget);
       expect(find.byType(Switch), findsOneWidget);
     });
 
@@ -41,7 +42,7 @@ void main() {
         ReceiptContentSection(settings: const Settings(), onUpdate: (_) {}),
       );
 
-      await tester.tap(find.byIcon(Icons.receipt_long_outlined));
+      await tester.tap(find.byIcon(TablerIcons.receipt2));
       await tester.pump();
 
       expect(find.byType(TextField), findsOneWidget);

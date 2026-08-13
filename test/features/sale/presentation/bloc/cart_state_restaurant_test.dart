@@ -36,12 +36,12 @@ void main() {
       expect(state.serviceChargeAmount, Money.fromDouble(10.0));
     });
 
-    test('grandTotal includes service charge', () {
+    test('total + serviceChargeAmount includes service charge', () {
       final state = CartState(
         items: [CartItem(product: product, qty: 2)],
         serviceChargeRate: 10.0,
       );
-      expect(state.grandTotal, Money.fromDouble(110.0));
+      expect(state.total + state.serviceChargeAmount, Money.fromDouble(110.0));
     });
 
     test('total subtracts promotionDiscountAmount before service charge', () {
@@ -50,16 +50,16 @@ void main() {
         promotionDiscountAmount: 20,
         serviceChargeRate: 10.0,
       );
-      // items 100 - promo 20 = 80; SC 10% of 80 = 8; grand = 88
+      // items 100 - promo 20 = 80; SC 10% of 80 = 8; total+SC = 88
       expect(state.total, Money.fromDouble(80.0));
       expect(state.serviceChargeAmount, Money.fromDouble(8.0));
-      expect(state.grandTotal, Money.fromDouble(88.0));
+      expect(state.total + state.serviceChargeAmount, Money.fromDouble(88.0));
     });
 
     test('serviceChargeAmount is 0 when rate is null', () {
       final state = CartState(items: [CartItem(product: product, qty: 2)]);
       expect(state.serviceChargeAmount, Money.zero);
-      expect(state.grandTotal, state.total);
+      expect(state.total + state.serviceChargeAmount, state.total);
     });
 
     test('copyWith updates orderType', () {

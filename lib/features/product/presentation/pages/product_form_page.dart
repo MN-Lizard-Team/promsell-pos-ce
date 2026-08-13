@@ -25,6 +25,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_fo
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_view_model.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/detail_header.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ProductFormPage extends StatefulWidget {
   const ProductFormPage({
@@ -90,8 +91,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
   bool _submitted = false;
   bool _isPickingImage = false;
   bool _isGeneratingBarcode = false;
+  bool _isGeneratingSku = false;
   List<ProductOptionGroup> _optionGroups = [];
   final _barcodeFocusNode = FocusNode();
+  final _skuFocusNode = FocusNode();
   late final ProductFormDraftCoordinator _draftCoordinator;
   late final ProductFormLifecycle _lifecycle;
   late final ProductFormStockActions _stockActions;
@@ -182,8 +185,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
       trackStock: () => _trackStock,
       setTrackStock: (v) => _trackStock = v,
       markDirty: _markDirty,
-      onMarkDirtyListenerRemoved: () =>
-          _stockCtrl.removeListener(_markDirty),
+      onMarkDirtyListenerRemoved: () => _stockCtrl.removeListener(_markDirty),
       onMarkDirtyListenerRestored: () => _stockCtrl.addListener(_markDirty),
       onStateChanged: () {
         if (mounted) setState(() {});
@@ -192,12 +194,17 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _mediaActions = ProductFormMediaActions(
       barcodeCtrl: _barcodeCtrl,
       barcodeFocusNode: _barcodeFocusNode,
+      skuCtrl: _skuCtrl,
+      skuFocusNode: _skuFocusNode,
       imageHandler: _imageHandler,
       product: () => widget.product,
       isMounted: () => mounted,
       markDirty: _markDirty,
       setGeneratingBarcode: (v) {
         if (mounted) setState(() => _isGeneratingBarcode = v);
+      },
+      setGeneratingSku: (v) {
+        if (mounted) setState(() => _isGeneratingSku = v);
       },
       setPickingImage: (v) {
         if (mounted) setState(() => _isPickingImage = v);
@@ -268,6 +275,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _priceCtrl.dispose();
     _stockCtrl.dispose();
     _skuCtrl.dispose();
+    _skuFocusNode.dispose();
     _barcodeCtrl.dispose();
     _barcodeFocusNode.dispose();
     _nameFocusNode.dispose();
@@ -300,19 +308,31 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 ctx.read<ProductFormCubit>().clearDraft();
               }
               if (ctx.mounted) {
-                AppSnackBar.success(
-                  ctx,
-                  wasDeleting ? ctx.l10n.productDeleted : ctx.l10n.productSaved,
-                );
-                // Create: return the saved Product so callers can open preview.
-                // Edit/delete: keep bool for existing callers (showProductEditPage).
-                if (wasDeleting || _isEditing) {
+                if (wasDeleting) {
+                  // Pop first, then show undo on the parent (list page) which
+                  // has the BlocListener for lastDeletedProductId.
                   Navigator.pop(ctx, true);
                 } else {
-                  final created = state.products.isNotEmpty
-                      ? state.products.first
-                      : null;
-                  Navigator.pop(ctx, created ?? true);
+                  AppSnackBar.success(ctx, ctx.l10n.productSaved);
+                  // Create: return the saved Product so callers can open preview.
+                  // Edit: keep bool for existing callers (showProductEditPage).
+                  if (_isEditing) {
+                    Navigator.pop(ctx, true);
+                  } else {
+                    // Match by name + most recent createdAt to avoid picking
+                    // the wrong product when the list is sorted differently.
+                    final name = _nameCtrl.text.trim();
+                    Product? created;
+                    if (name.isNotEmpty) {
+                      final matches =
+                          state.products.where((p) => p.name == name).toList()
+                            ..sort(
+                              (a, b) => b.createdAt.compareTo(a.createdAt),
+                            );
+                      if (matches.isNotEmpty) created = matches.first;
+                    }
+                    Navigator.pop(ctx, created ?? true);
+                  }
                 }
               }
             } else if (state.saveStatus == ProductSaveStatus.error) {
@@ -372,7 +392,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
             ListTile(
               key: const ValueKey('product-form-more-menu'),
               leading: Icon(
-                Icons.delete_outline,
+                TablerIcons.trash,
                 color: Theme.of(ctx).colorScheme.error,
               ),
               title: Text(
@@ -453,6 +473,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       priceCtrl: _priceCtrl,
                       stockCtrl: _stockCtrl,
                       skuCtrl: _skuCtrl,
+                      skuFocusNode: _skuFocusNode,
                       barcodeCtrl: _barcodeCtrl,
                       barcodeFocusNode: _barcodeFocusNode,
                       nameFocusNode: _nameFocusNode,
@@ -471,38 +492,53 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       trackStock: _trackStock,
                       isPickingImage: _isPickingImage,
                       isGeneratingBarcode: _isGeneratingBarcode,
+                      isGeneratingSku: _isGeneratingSku,
                     ),
                     callbacks: ProductFormCallbacks(
                       onCategoryChanged: (cat) {
-                        _markDirty();
                         setState(() {
+                          _isDirty = true;
                           _selectedCategory = cat;
                           _categoryWasChanged = true;
                         });
+                        _draftCoordinator.scheduleAutosave(context);
                       },
                       onImageTap: () => _mediaActions.onImageTap(context),
                       onActiveChanged: (v) {
-                        _markDirty();
-                        setState(() => _isActive = v);
+                        setState(() {
+                          _isDirty = true;
+                          _isActive = v;
+                        });
+                        _draftCoordinator.scheduleAutosave(context);
                       },
                       onRecommendedChanged: (v) {
-                        _markDirty();
-                        setState(() => _isRecommended = v);
+                        setState(() {
+                          _isDirty = true;
+                          _isRecommended = v;
+                        });
+                        _draftCoordinator.scheduleAutosave(context);
                       },
                       onTrackStockChanged: (v) =>
                           _stockActions.handleTrackStockToggle(context, v),
                       onStockChanged: (v) {
-                        _markDirty();
-                        setState(() => _stockCtrl.text = v.toString());
+                        setState(() {
+                          _isDirty = true;
+                          _stockCtrl.text = v.toString();
+                        });
+                        _draftCoordinator.scheduleAutosave(context);
                       },
                       onAdjustStock: () => _stockActions.adjustStock(context),
                       onGenerateBarcode: () =>
                           _mediaActions.generateBarcode(context),
+                      onGenerateSku: () => _mediaActions.generateSku(context),
                     ),
                     optionGroups: _optionGroups,
                     onOptionGroupsChanged: (groups) {
-                      _markDirty();
-                      setState(() => _optionGroups = groups);
+                      setState(() {
+                        _isDirty = true;
+                        _optionGroups = groups;
+                      });
+                      _draftCoordinator.scheduleAutosave(context);
                     },
                   ),
                 ),

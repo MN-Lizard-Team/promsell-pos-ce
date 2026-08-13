@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
+import 'package:promsell_pos_ce/features/sale/domain/services/cart_discount_math.dart';
 import 'package:promsell_pos_ce/features/sale/domain/services/sales_day_lock.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
@@ -73,6 +74,26 @@ class CreateSale {
     }
     final safeServiceChargeRate = serviceChargeRate.clamp(0.0, 100.0);
 
+    // Wave D / AH-2.3: recompute money from lines + clamped type/value.
+    // Do not trust client cartDiscountAmount / serviceChargeAmount alone.
+    final itemsSubtotal = items.fold(Money.zero, (sum, i) => sum + i.subtotal);
+    final recomputedCartDiscount = CartDiscountMath.amountFromTypeValue(
+      type: safeCartDiscountType,
+      value: safeCartDiscountValue,
+      itemsSubtotal: itemsSubtotal,
+    );
+    final recomputedPromo = CartDiscountMath.clampPromotionToBase(
+      itemsSubtotal: itemsSubtotal,
+      cartDiscountAmount: recomputedCartDiscount,
+      promotionDiscount: promotionDiscountAmount,
+    );
+    final recomputedServiceCharge = CartDiscountMath.serviceChargeFromRate(
+      itemsSubtotal: itemsSubtotal,
+      cartDiscountAmount: recomputedCartDiscount,
+      promotionDiscountAmount: recomputedPromo,
+      serviceChargeRate: safeServiceChargeRate,
+    );
+
     return _repository.createSale(
       items: items,
       paymentMethod: paymentMethod,
@@ -80,7 +101,7 @@ class CreateSale {
       vatRate: safeVatRate,
       cartDiscountType: safeCartDiscountType,
       cartDiscountValue: safeCartDiscountValue,
-      cartDiscountAmount: cartDiscountAmount,
+      cartDiscountAmount: recomputedCartDiscount,
       amountReceived: amountReceived,
       changeAmount: changeAmount,
       note: note,
@@ -92,10 +113,10 @@ class CreateSale {
       externalOrderRef: externalOrderRef,
       tableId: tableId,
       serviceChargeRate: safeServiceChargeRate,
-      serviceChargeAmount: serviceChargeAmount,
+      serviceChargeAmount: recomputedServiceCharge,
       customerId: customerId,
       promotionId: promotionId,
-      promotionDiscountAmount: promotionDiscountAmount,
+      promotionDiscountAmount: recomputedPromo,
     );
   }
 }

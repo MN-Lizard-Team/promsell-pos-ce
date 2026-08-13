@@ -27,10 +27,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get navProducts => 'สินค้า';
 
   @override
-  String get navHistory => 'ประวัติ';
+  String get navHistory => 'ประวัติการขาย';
 
   @override
-  String get navReport => 'รายงาน';
+  String get navReport => 'สรุปยอด';
 
   @override
   String get navSettings => 'ตั้งค่า';
@@ -103,6 +103,20 @@ class AppLocalizationsTh extends AppLocalizations {
   String get saleSavedSuccess => 'บันทึกการขายเรียบร้อย';
 
   @override
+  String get saleSuccessTitle => 'ชำระเงินสำเร็จ';
+
+  @override
+  String saleSuccessSubtitle(String number) {
+    return 'ใบเสร็จ #$number';
+  }
+
+  @override
+  String get changeDue => 'เงินทอน';
+
+  @override
+  String get nextSale => 'ขายบิลถัดไป';
+
+  @override
   String productAddedToCart(String name) {
     return 'เพิ่ม $name แล้ว';
   }
@@ -172,7 +186,16 @@ class AppLocalizationsTh extends AppLocalizations {
   String get productsTitle => 'สินค้า';
 
   @override
-  String get searchProducts => 'ค้นหาสินค้า...';
+  String get searchProducts => 'ค้นหาสินค้า บาร์โค้ด และ อื่นๆ...';
+
+  @override
+  String get searchProductsHint => 'แตะเพื่อค้นหาสินค้า บาร์โค้ด และอื่นๆ...';
+
+  @override
+  String get tapToSearch => 'แตะเพื่อค้นหา';
+
+  @override
+  String get searchActive => 'กำลังค้นหา';
 
   @override
   String get recentSearches => 'ค้นหาล่าสุด';
@@ -181,7 +204,30 @@ class AppLocalizationsTh extends AppLocalizations {
   String get noProductsYet => 'ยังไม่มีสินค้า';
 
   @override
+  String get noProductsYetHint =>
+      'เพิ่มสินค้าชิ้นแรกของคุณหรือนำเข้าจาก CSV เพื่อเริ่มต้น';
+
+  @override
   String get errorOccurred => 'เกิดข้อผิดพลาด';
+
+  @override
+  String get receiptPrintFailed =>
+      'การพิมพ์ล้มเหลว กรุณาตรวจสอบเครื่องพิมพ์แล้วลองอีกครั้ง';
+
+  @override
+  String get receiptShareFailed => 'ไม่สามารถแชร์ใบเสร็จได้ กรุณาลองอีกครั้ง';
+
+  @override
+  String get receiptPdfFailed => 'ไม่สามารถสร้าง PDF ใบเสร็จได้';
+
+  @override
+  String get receiptPrintSuccess => 'พิมพ์ใบเสร็จสำเร็จ';
+
+  @override
+  String get receiptShareSuccess => 'แชร์ใบเสร็จสำเร็จ';
+
+  @override
+  String get receiptTaxInvoice => 'ใบกำกับภาษี';
 
   @override
   String get retry => 'ลองอีกครั้ง';
@@ -255,6 +301,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get productNameLabel => 'ชื่อสินค้า *';
+
+  @override
+  String get productNameHint => 'เช่น อเมริกาโน้เย็น แกรนด์';
 
   @override
   String get productNameRequired => 'กรุณาใส่ชื่อสินค้า';
@@ -333,7 +382,14 @@ class AppLocalizationsTh extends AppLocalizations {
   String get invalidBarcode => 'บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น';
 
   @override
+  String get invalidBarcodeFormat =>
+      'บาร์โค้ดต้องมีแค่ตัวอักษรและตัวเลข (ห้ามมีช่องว่าง ขีดกลาง หรืออักขระพิเศษ)';
+
+  @override
   String get categoryLabel => 'หมวดหมู่';
+
+  @override
+  String get categoryHelper => 'ไม่บังคับ — ช่วยจัดหมวดหมู่สินค้าใน POS';
 
   @override
   String get showProduct => 'แสดงสินค้า';
@@ -355,6 +411,14 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get productDeleted => 'ลบสินค้าแล้ว';
+
+  @override
+  String productDeletedWithName(String name) {
+    return 'ลบ $name แล้ว';
+  }
+
+  @override
+  String get productDeletedShort => 'ลบสินค้าแล้ว';
 
   @override
   String get stockUpdated => 'อัปเดตสต็อกแล้ว';
@@ -387,10 +451,36 @@ class AppLocalizationsTh extends AppLocalizations {
   String get searchHistoryHint => 'ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…';
 
   @override
-  String get noSearchResults => 'ไม่พบการตั้งค่า';
+  String get searchSales => 'ค้นหายอดขาย';
+
+  @override
+  String get noSearchResults => 'ไม่พบรายการขาย';
 
   @override
   String get noSalesYet => 'ยังไม่มีรายการขาย';
+
+  @override
+  String get noSalesInRange => 'ไม่มีรายการขายในช่วงวันที่ที่เลือก';
+
+  @override
+  String get changeDateRange => 'เปลี่ยนช่วงวันที่';
+
+  @override
+  String searchResultsCount(int n) {
+    return '$n รายการ';
+  }
+
+  @override
+  String get noResultsInDateRange =>
+      'ไม่พบในช่วงวันที่นี้ ลองเปลี่ยนช่วงวันที่';
+
+  @override
+  String searchingInRange(Object range) {
+    return 'ค้นหาในช่วง: $range';
+  }
+
+  @override
+  String get tapToExpandHint => 'แตะเพื่อดูรายละเอียดเพิ่มเติม';
 
   @override
   String get noDailyClosesYet => 'ยังไม่มีการปิดรับ';
@@ -401,7 +491,7 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
-  String get reportTitle => 'รายงาน';
+  String get reportTitle => 'สรุปยอดขาย';
 
   @override
   String get totalRevenue => 'ยอดขายรวม';
@@ -509,6 +599,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get settingsPhone => 'เบอร์โทรศัพท์';
 
   @override
+  String get settingsTaxId => 'เลขประจำตัวผู้เสียภาษี';
+
+  @override
   String get settingsSales => 'การขาย';
 
   @override
@@ -554,6 +647,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get phoneInvalid => 'เบอร์โทรศัพท์ไม่ถูกต้อง';
 
   @override
+  String get taxIdInvalid => 'เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก';
+
+  @override
+  String get taxIdChecksumInvalid =>
+      'เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง กรุณาตรวจสอบเลข 13 หลักอีกครั้ง';
+
+  @override
   String get shopInfoEmptyPreview => 'ข้อมูลร้านจะปรากฏที่นี่';
 
   @override
@@ -567,6 +667,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get shareReceipt => 'แชร์ใบเสร็จ';
+
+  @override
+  String get reprintReceipt => 'พิมพ์ใบเสร็จอีกครั้ง';
+
+  @override
+  String get shareReceiptCopy => 'แชร์สำเนา';
 
   @override
   String get receiptLabelReceipt => 'ใบเสร็จ';
@@ -626,6 +732,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get receiptPreview => 'ตัวอย่างใบเสร็จ';
+
+  @override
+  String get viewReceipt => 'ดูใบเสร็จ';
+
+  @override
+  String get hideReceipt => 'ซ่อนใบเสร็จ';
 
   @override
   String get vatModeNone => 'ไม่มี';
@@ -775,6 +887,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get allowOversellHint => 'อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้';
 
   @override
+  String get stockBlocked => 'บล็อค';
+
+  @override
   String get lowStockThreshold => 'เตือนสต็อคต่ำ (จำนวน)';
 
   @override
@@ -810,7 +925,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get discountClear => 'ลบส่วนลด';
 
   @override
-  String get cartDiscount => 'ส่วนลดทั้งบิล';
+  String get cartDiscount => 'ส่วนลดท้ายบิล';
 
   @override
   String get applyCartDiscount => 'เพิ่มส่วนลดทั้งบิล';
@@ -911,6 +1026,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get activeDraftLabel => 'ใช้งานอยู่';
 
   @override
+  String get openBillsSectionSelling => 'กำลังขาย';
+
+  @override
+  String get openBillsSectionParked => 'พักไว้';
+
+  @override
   String get draftNameHint => 'ชื่อบิล (ไม่บังคับ)';
 
   @override
@@ -932,7 +1053,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get searchDrafts => 'ค้นหาบิล...';
 
   @override
-  String get untitledDraft => 'บิล';
+  String get untitledDraft => 'บิลไม่มีชื่อ';
 
   @override
   String get noMatchingItems => 'ไม่พบสินค้าที่ตรงกัน';
@@ -941,10 +1062,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get noMatchingDrafts => 'ไม่พบบิลที่ตรงกัน';
 
   @override
-  String get noSavedBills => 'ยังไม่มีบิลที่บันทึก';
+  String get noSavedBills => 'ยังไม่มีบิลเปิด';
 
   @override
-  String get noSavedBillsHint => 'พักบิลจากหน้าขายเพื่อเก็บไว้ที่นี่';
+  String get noSavedBillsHint => 'พักบิลจากหน้าขายเพื่อเปิดที่นี่';
 
   @override
   String get groupView => 'มุมมองแบบกลุ่ม';
@@ -992,11 +1113,6 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String timeAgoDays(int d) {
     return '$d วันที่แล้ว';
-  }
-
-  @override
-  String searchResultsCount(int n) {
-    return '$n รายการ';
   }
 
   @override
@@ -1182,10 +1298,22 @@ class AppLocalizationsTh extends AppLocalizations {
   String get settingsReceiptSize => 'ขนาดใบเสร็จ';
 
   @override
+  String get receiptSize58mm => '58mm (กระดาษความร้อน)';
+
+  @override
   String get receiptSize80mm => '80mm (กระดาษความร้อน)';
 
   @override
   String get receiptSizeA4 => 'A4';
+
+  @override
+  String get receiptSize58mmDesc => 'กระทัดรัด — เครื่องพิมพ์พกพาขนาดเล็ก';
+
+  @override
+  String get receiptSize80mmDesc => 'มาตรฐาน — เครื่องพิมพ์ความร้อนทั่วไป';
+
+  @override
+  String get receiptSizeA4Desc => 'เอกสาร — สำหรับส่งอีเมล/ส่งออก PDF';
 
   @override
   String get settingsMaxDrafts => 'บิลสูงสุด';
@@ -1428,6 +1556,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get confirm => 'ยืนยัน';
 
   @override
+  String get basePrice => 'ราคาหลัก';
+
+  @override
+  String get optionsLabel => 'ตัวเลือก';
+
+  @override
   String get dbHealthTitle => 'สุขภาพฐานข้อมูล';
 
   @override
@@ -1461,6 +1595,21 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get onboardingShopInfoTitle => 'ข้อมูลร้าน';
+
+  @override
+  String get onboardingShopInfoSubtitle => 'ข้อมูลนี้จะแสดงบนใบเสร็จของร้าน';
+
+  @override
+  String get onboardingRequiredLabel => 'จำเป็น';
+
+  @override
+  String get onboardingOptionalLabel => 'ไม่บังคับ';
+
+  @override
+  String get onboardingReceiptPreviewTitle => 'ตัวอย่างหัวใบเสร็จ';
+
+  @override
+  String get onboardingReceiptPreviewEmpty => 'ชื่อร้านจะแสดงตรงนี้';
 
   @override
   String get onboardingShopNameLabel => 'ชื่อร้าน';
@@ -1574,6 +1723,76 @@ class AppLocalizationsTh extends AppLocalizations {
   String get onboardingExclusive => 'แยกจากราคา';
 
   @override
+  String get onboardingTrustOffline => 'ใช้งานได้แม้ไม่มีอินเทอร์เน็ต';
+
+  @override
+  String get onboardingTrustLocal => 'ข้อมูลอยู่บนอุปกรณ์นี้';
+
+  @override
+  String get onboardingTrustEncrypted => 'พื้นที่จัดเก็บเข้ารหัส';
+
+  @override
+  String onboardingStepOf(int step, int total) {
+    return 'ขั้นตอนที่ $step จาก $total';
+  }
+
+  @override
+  String get onboardingVatNoneHelp => 'ไม่มีการเพิ่ม VAT ในการขาย';
+
+  @override
+  String get onboardingVatInclusiveHelp => 'ราคาที่แสดงรวม VAT แล้ว';
+
+  @override
+  String get onboardingVatExclusiveHelp => 'ระบบจะบวก VAT เพิ่มจากราคาที่แสดง';
+
+  @override
+  String get onboardingPromptPaySecurity =>
+      'ไม่บังคับ ข้อมูลจะเก็บไว้บนอุปกรณ์นี้และใช้สร้าง QR รับเงิน';
+
+  @override
+  String onboardingDateExample(String date) {
+    return 'ตัวอย่าง: $date';
+  }
+
+  @override
+  String get onboardingCurrencyBaht => '฿ บาท';
+
+  @override
+  String get onboardingCurrencyUsd => '\$ ดอลลาร์';
+
+  @override
+  String get onboardingCurrencyEur => '€ ยูโร';
+
+  @override
+  String get onboardingCurrencyJpy => '¥ เยน';
+
+  @override
+  String get onboardingReadySummary =>
+      'พื้นที่ร้านของคุณพร้อมสำหรับการขายแรกแล้ว';
+
+  @override
+  String get onboardingLocalSecuritySummary =>
+      'ข้อมูลถูกเก็บไว้ในเครื่องและได้รับการปกป้องบนอุปกรณ์นี้';
+
+  @override
+  String get onboardingSetupComplete => 'ตั้งค่าเรียบร้อย';
+
+  @override
+  String get onboardingSecurityProtected => 'ปกป้องด้วย PIN ร้าน';
+
+  @override
+  String get onboardingFirstSaleHint => 'ขั้นตอนถัดไป: เริ่มขายรายการแรกของคุณ';
+
+  @override
+  String get onboardingSummaryStore => 'ร้านค้า';
+
+  @override
+  String get onboardingSummaryCurrency => 'สกุลเงิน';
+
+  @override
+  String get onboardingSummaryTax => 'ภาษี';
+
+  @override
   String dailyCloseLoadError(String message) {
     return 'ข้อผิดพลาด: $message';
   }
@@ -1634,6 +1853,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get phoneHint => '081-234-5678';
+
+  @override
+  String get taxIdHint => 'เลขประจำตัวผู้เสียภาษี 13 หลัก (เช่น 1234567890123)';
 
   @override
   String get categoryManagementTitle => 'จัดการหมวดหมู่';
@@ -1712,7 +1934,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get noProductsInCategory => 'ไม่มีสินค้าในหมวดหมู่นี้';
 
   @override
+  String get noSearchResultsHint => 'ลองใช้คำค้นหาอื่นหรือตรวจสอบการสะกด';
+
+  @override
   String get clearFilters => 'ล้างตัวกรอง';
+
+  @override
+  String get selected => 'เลือกแล้ว';
 
   @override
   String get startTypingToSearch => 'เริ่มพิมพ์เพื่อค้นหา';
@@ -1749,6 +1977,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get barcodeLabel => 'บาร์โค้ด';
+
+  @override
+  String get barcodeHint => 'เช่น 8850012345678';
 
   @override
   String costLabel(String currency) {
@@ -1874,6 +2105,15 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get barcodeGenerationError => 'สร้างบาร์โค้ดไม่สำเร็จ';
+
+  @override
+  String get generateSku => 'สร้าง SKU';
+
+  @override
+  String get skuGenerated => 'สร้าง SKU แล้ว';
+
+  @override
+  String get skuGenerationError => 'สร้าง SKU ไม่สำเร็จ';
 
   @override
   String get batchGenerateBarcodes => 'สร้างบาร์โค้ดให้สินค้าที่ยังไม่มี';
@@ -2022,7 +2262,8 @@ class AppLocalizationsTh extends AppLocalizations {
       'สแกนหรือพิมพ์บาร์โค้ดบนบรรจุภัณฑ์สินค้า ถ้าไม่มี ให้แตะ สร้างบาร์โค้ด';
 
   @override
-  String get skuHelper => 'รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SHIRT-RED-L';
+  String get skuHelper =>
+      'รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SKU00001 หรือ SHIRT-RED-L ถ้าไม่มี ให้แตะ สร้าง SKU';
 
   @override
   String get imagePicked => 'เพิ่มรูปภาพแล้ว';
@@ -2195,6 +2436,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get sellingPrice => 'ราคาขาย';
+
+  @override
+  String get priceHint => 'เช่น 45.00';
 
   @override
   String get profit => 'กำไร';
@@ -2387,7 +2631,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get filterPageTitle => 'กรองสินค้า';
 
   @override
-  String get filterReset => 'รีเซ็ต';
+  String get filterReset => 'ล้าง';
 
   @override
   String get filterShowResults => 'ดูผลลัพธ์';
@@ -2398,13 +2642,65 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
-  String get filterPriceRange => 'ช่วงราคา';
+  String get filterDone => 'เสร็จ';
+
+  @override
+  String filterRemainingCount(int count) {
+    return 'เหลือ $count รายการ';
+  }
+
+  @override
+  String get filterPriceCustom => 'กำหนดเอง';
+
+  @override
+  String get filterPriceRange => 'ราคา';
 
   @override
   String get filterPriceMin => 'ต่ำสุด';
 
   @override
   String get filterPriceMax => 'สูงสุด';
+
+  @override
+  String get filterCategoryChipHint => 'หมวดใช้แถบด้านบน';
+
+  @override
+  String get filterPriceOrderHint => 'ต่ำสุดต้อง ≤ สูงสุด';
+
+  @override
+  String filterPriceQuickUnder50(String currency) {
+    return '≤ ${currency}50';
+  }
+
+  @override
+  String filterPriceQuick51to100(String currency) {
+    return '${currency}51–100';
+  }
+
+  @override
+  String filterPriceQuick101to200(String currency) {
+    return '${currency}101–200';
+  }
+
+  @override
+  String filterPriceQuickOver200(String currency) {
+    return '≥ ${currency}201';
+  }
+
+  @override
+  String get sortChipDefault => 'ปกติ';
+
+  @override
+  String get sortChipName => 'ชื่อ';
+
+  @override
+  String get sortChipPriceAsc => 'ราคา ↑';
+
+  @override
+  String get sortChipPriceDesc => 'ราคา ↓';
+
+  @override
+  String get sortChipStock => 'สต็อก';
 
   @override
   String filterActiveCount(int count) {
@@ -2463,6 +2759,65 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get serviceCharge => 'ค่าบริการ';
+
+  @override
+  String get averageTransactionValue => 'ยอดเฉลี่ยต่อบิล';
+
+  @override
+  String get grossRevenue => 'ยอดขายรวมก่อนหัก void';
+
+  @override
+  String get promotionDiscount => 'ส่วนลดโปรโมชั่น';
+
+  @override
+  String get orderTypeBreakdown => 'ประเภทคำสั่งซื้อ';
+
+  @override
+  String get orderChannelBreakdown => 'ช่องทางการสั่งซื้อ';
+
+  @override
+  String get peakHours => 'ช่วงเวลาขายดี';
+
+  @override
+  String get uniqueCustomers => 'ลูกค้าไม่ซ้ำ';
+
+  @override
+  String get repeatCustomers => 'ลูกค้าซื้อซ้ำ';
+
+  @override
+  String get promotionOrders => 'บิลที่ใช้โปรโมชั่น';
+
+  @override
+  String get voidReasons => 'เหตุผลที่ยกเลิก';
+
+  @override
+  String get profitability => 'ความคุ้มทุน';
+
+  @override
+  String get grossProfit => 'กำไรขั้นต้น';
+
+  @override
+  String get profitMargin => 'อัตรากำไร';
+
+  @override
+  String get totalCost => 'ต้นทุนรวม';
+
+  @override
+  String get costCoverage => 'ความครอบคลุมต้นทุน';
+
+  @override
+  String costCoverageIncomplete(Object total, Object withCost) {
+    return 'ข้อมูลต้นทุนไม่ครบ ($withCost/$total รายการ)';
+  }
+
+  @override
+  String get costCoverageUnavailable => 'ยังไม่มีข้อมูลต้นทุน';
+
+  @override
+  String get insights => 'ภาพรวม';
+
+  @override
+  String get orderBreakdown => 'การกระจายคำสั่งซื้อ';
 
   @override
   String get tableNumber => 'โต๊ะ';
@@ -2548,6 +2903,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get optionGroupName => 'ชื่อกลุ่ม';
 
   @override
+  String get optionGroupNameRequired => 'กรุณากรอกชื่อกลุ่ม';
+
+  @override
   String get optionGroupNameHint => 'เช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด';
 
   @override
@@ -2582,6 +2940,22 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get optionPriceDeltaHint => 'ราคาเพิ่มเติม (สามารถเป็น 0)';
+
+  @override
+  String get optionPriceDeltaHelper =>
+      'เพิ่มจากราคาหลัก เช่น 5.00 จะเพิ่ม 5.00 ให้ราคาสินค้า';
+
+  @override
+  String get optionNameTooLong => 'ชื่อตัวเลือกต้องไม่เกิน 100 ตัวอักษร';
+
+  @override
+  String get optionPriceInvalid => 'ราคาต้องเป็นตัวเลขที่ถูกต้อง';
+
+  @override
+  String get optionPriceTooManyDecimals => 'ราคาต้องมีไม่เกิน 2 ตำแหน่งทศนิยม';
+
+  @override
+  String get optionPriceTooLarge => 'การปรับราคาใหญ่เกินไป (สูงสุด 999999.99)';
 
   @override
   String get deleteOptionGroup => 'ลบกลุ่มตัวเลือก';
@@ -2974,6 +3348,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get csvInvalidFormat => 'รูปแบบไฟล์ไม่ถูกต้อง';
 
   @override
+  String get csvInvalidEncoding =>
+      'ไฟล์ไม่ใช่ UTF-8 ที่ถูกต้อง กรุณาบันทึก CSV เป็น UTF-8 แล้วลองอีกครั้ง';
+
+  @override
   String csvFileTooLarge(int maxMb) {
     return 'ไฟล์ใหญ่เกินไป (สูงสุด $maxMb MB)';
   }
@@ -3191,9 +3569,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get productFormSectionExtra => 'ข้อมูลเพิ่มเติม';
 
   @override
-  String get profitMargin => 'อัตรากำไร';
-
-  @override
   String get notSpecified => 'ไม่ระบุ';
 
   @override
@@ -3297,6 +3672,14 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String barcodeReplaceMessage(String code) {
+    return 'รหัสปัจจุบัน: $code — รหัสใหม่จะแทนที่ของเดิม';
+  }
+
+  @override
+  String get skuReplaceTitle => 'แทนที่ SKU?';
+
+  @override
+  String skuReplaceMessage(String code) {
     return 'รหัสปัจจุบัน: $code — รหัสใหม่จะแทนที่ของเดิม';
   }
 
@@ -3455,6 +3838,68 @@ class AppLocalizationsTh extends AppLocalizations {
   String get datePresetCustom => 'กำหนดเอง';
 
   @override
+  String get dateFilterSheetTitle => 'เลือกช่วงวันที่';
+
+  @override
+  String get dateFilterSheetSubtitle =>
+      'เลือกหมวดหมู่ที่กำหนดไว้ หรือกำหนดช่วงวันที่เอง';
+
+  @override
+  String get dateFilterCategoryTile => 'หมวดหมู่';
+
+  @override
+  String get dateFilterCategoryDesc => 'วันนี้ • เมื่อวาน • 7 วัน • เดือนนี้';
+
+  @override
+  String get dateFilterCustomTile => 'กำหนดเอง';
+
+  @override
+  String get dateFilterCustomDesc => 'เลือกวันเริ่มต้นและวันสิ้นสุดเอง';
+
+  @override
+  String get dateFilterCustomPick => 'เลือกช่วงวันที่';
+
+  @override
+  String get dateFilterCustomChange => 'เปลี่ยนช่วงวันที่';
+
+  @override
+  String get dateFilterCustomApply => 'ใช้ช่วงนี้';
+
+  @override
+  String get dateFilterCustomCurrent => 'ช่วงที่เลือก';
+
+  @override
+  String get dateFilterPickYear => 'เลือกปี';
+
+  @override
+  String get dateFilterPickMonth => 'เลือกเดือน';
+
+  @override
+  String get dateFilterSelectYear => 'เลือกปีนี้';
+
+  @override
+  String get dateFilterSelectMonth => 'เลือกเดือนนี้';
+
+  @override
+  String get dateFilterThisYear => 'ปีนี้';
+
+  @override
+  String get dateFilterLastYear => 'ปีก่อน';
+
+  @override
+  String get dateFilterThisMonth => 'เดือนนี้';
+
+  @override
+  String get dateFilterUseToday => 'ตั้งเป็นวันนี้';
+
+  @override
+  String get dateFilterTipTitle => 'เกร็ดความรู้';
+
+  @override
+  String get dateFilterTipBody =>
+      'หมวดหมู่เหมาะกับดูสรุปรายวัน/รายสัปดาห์ ส่วนกำหนดเองเหมาะกับการเปรียบเทียบช่วงเวลาแบบยืดหยุ่น';
+
+  @override
   String get reportAverage => 'เฉลี่ย';
 
   @override
@@ -3559,11 +4004,32 @@ class AppLocalizationsTh extends AppLocalizations {
   String get reportNoSalesInPeriod => 'ไม่มียอดขายในช่วงนี้';
 
   @override
+  String get reportEmptyDesc =>
+      'ลองเปลี่ยนช่วงวันที่ หรือเริ่มขายสินค้าเพื่อดูสรุปยอดที่นี่';
+
+  @override
+  String get reportErrorDesc =>
+      'ไม่สามารถโหลดข้อมูลได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง';
+
+  @override
+  String get reportLoadingDesc => 'กำลังเรียกข้อมูลยอดขาย...';
+
+  @override
   String get currentBill => 'บิลปัจจุบัน';
 
   @override
   String currentBillWithCount(int count) {
     return 'บิล ($count)';
+  }
+
+  @override
+  String saleBillAt(int count) {
+    return 'บิลที่ $count';
+  }
+
+  @override
+  String productCountAt(int count) {
+    return 'สินค้า $count รายการ';
   }
 
   @override
@@ -3613,6 +4079,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get receiptNotTaxInvoice => 'ใบเสร็จการขาย — ไม่ใช่ใบกำกับภาษี';
 
   @override
+  String get receiptTaxId => 'เลขประจำตัวผู้เสียภาษี';
+
+  @override
   String get receiptReprint => 'พิมพ์ซ้ำ';
 
   @override
@@ -3621,6 +4090,13 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get parkBill => 'พักบิล';
+
+  @override
+  String get parkBillConfirmTitle => 'พักบิลนี้?';
+
+  @override
+  String get parkBillConfirmMessage =>
+      'บันทึกตะกร้านี้ แล้วเริ่มบิลว่างให้ลูกค้าถัดไป — เปิดบิลที่พักได้จากรายการบิลเปิด';
 
   @override
   String get parkBillNameTitle => 'ตั้งชื่อบิล (ไม่บังคับ)';
@@ -3844,4 +4320,67 @@ class AppLocalizationsTh extends AppLocalizations {
   String appLockLockedOut(int seconds) {
     return 'พยายามผิดหลายครั้ง ลองใหม่ใน $seconds วินาที';
   }
+
+  @override
+  String get onboardingStorePinTitle => 'ตั้งรหัส PIN ร้าน';
+
+  @override
+  String onboardingStorePinBody(int min) {
+    return 'จำเป็นสำหรับยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (อย่างน้อย $min หลัก) เก็บไว้เอง — ไม่มีระบบกู้ PIN';
+  }
+
+  @override
+  String get onboardingStorePinRequired => 'ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า';
+
+  @override
+  String get exportPdf => 'ส่งออก PDF';
+
+  @override
+  String get exportCsv => 'ส่งออก CSV';
+
+  @override
+  String get exportReport => 'ส่งออกรายงาน';
+
+  @override
+  String get exportNoData => 'ไม่มีข้อมูลให้ส่งออก';
+
+  @override
+  String get exportFailed => 'ส่งออกไม่สำเร็จ';
+
+  @override
+  String get revenueTrend => 'แนวโน้มยอดขาย';
+
+  @override
+  String get dailyRevenue => 'ยอดขายรายวัน';
+
+  @override
+  String get periodComparison => 'เทียบกับช่วงก่อนหน้า';
+
+  @override
+  String periodChangePositive(String percent) {
+    return '+$percent%';
+  }
+
+  @override
+  String periodChangeNegative(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get periodChangeZero => 'ไม่เปลี่ยนแปลง';
+
+  @override
+  String get previousPeriod => 'ช่วงก่อนหน้า';
+
+  @override
+  String get chartNoData => 'ไม่มีข้อมูลสำหรับกราฟ';
+
+  @override
+  String get dateRangeSeparator => ' – ';
+
+  @override
+  String get percentagePointsUnit => 'จุด';
+
+  @override
+  String get reportSectionLabel => 'ส่วนรายงาน';
 }

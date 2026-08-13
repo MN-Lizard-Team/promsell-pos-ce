@@ -36,6 +36,8 @@ class Settings extends Equatable {
     this.barcodeConfig = const BarcodeConfig(),
     this.businessConfig = const BusinessConfig(),
     this.onboardingCompleted = false,
+    this.skuLastCounter = 0,
+    this.skuAutoGeneratePrefix = 'SKU',
   });
 
   final ShopInfo shopInfo;
@@ -54,6 +56,12 @@ class Settings extends Equatable {
   final BusinessConfig businessConfig;
   final bool onboardingCompleted;
 
+  /// Sequence counter for auto-generated SKUs (persisted separately).
+  final int skuLastCounter;
+
+  /// Prefix for auto-generated SKUs (default `SKU`).
+  final String skuAutoGeneratePrefix;
+
   // ─── Flat convenience getters (mirror former Settings facade) ───────────
 
   Locale get locale => Locale(uiConfig.locale);
@@ -68,6 +76,7 @@ class Settings extends Equatable {
   String get shopName => shopInfo.name;
   String get address => shopInfo.address;
   String get phone => shopInfo.phone;
+  String get taxId => shopInfo.taxId;
   String get currency => paymentConfig.currency;
   String get dateFormat => uiConfig.dateFormat;
   String get receiptNote => receiptConfig.receiptNote;
@@ -138,6 +147,8 @@ class Settings extends Equatable {
     BarcodeConfig? barcodeConfig,
     BusinessConfig? businessConfig,
     bool? onboardingCompleted,
+    int? skuLastCounter,
+    String? skuAutoGeneratePrefix,
   }) {
     return Settings(
       shopInfo: shopInfo ?? this.shopInfo,
@@ -155,6 +166,9 @@ class Settings extends Equatable {
       barcodeConfig: barcodeConfig ?? this.barcodeConfig,
       businessConfig: businessConfig ?? this.businessConfig,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      skuLastCounter: skuLastCounter ?? this.skuLastCounter,
+      skuAutoGeneratePrefix:
+          skuAutoGeneratePrefix ?? this.skuAutoGeneratePrefix,
     );
   }
 
@@ -166,6 +180,7 @@ class Settings extends Equatable {
     String? shopName,
     String? address,
     String? phone,
+    String? taxId,
     String? currency,
     String? dateFormat,
     String? receiptNote,
@@ -214,12 +229,15 @@ class Settings extends Equatable {
     bool? barcodeContinuousScan,
     BusinessType? businessType,
     double? defaultServiceChargeRate,
+    int? skuLastCounter,
+    String? skuAutoGeneratePrefix,
   }) {
     return copyWithEntities(
       shopInfo: shopInfo.copyWith(
         name: shopName,
         address: address,
         phone: phone,
+        taxId: taxId,
       ),
       receiptConfig: receiptConfig.copyWith(
         receiptSize: receiptSize,
@@ -297,6 +315,8 @@ class Settings extends Equatable {
         defaultServiceChargeRate: defaultServiceChargeRate,
       ),
       onboardingCompleted: onboardingCompleted,
+      skuLastCounter: skuLastCounter,
+      skuAutoGeneratePrefix: skuAutoGeneratePrefix,
     );
   }
 
@@ -317,5 +337,7 @@ class Settings extends Equatable {
     barcodeConfig,
     businessConfig,
     onboardingCompleted,
+    skuLastCounter,
+    skuAutoGeneratePrefix,
   ];
 }

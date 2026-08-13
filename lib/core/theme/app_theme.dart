@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
+import 'package:promsell_pos_ce/features/report/presentation/theme/report_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/receipt_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 
 class AppTheme {
@@ -397,6 +399,64 @@ class AppTheme {
         color: AppColors.textPrimary,
       ),
     ),
+    datePickerTheme: DatePickerThemeData(
+      elevation: 0,
+      rangePickerElevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppColors.dialogRadius)),
+      ),
+      rangePickerShape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppColors.dialogRadius)),
+      ),
+      headerBackgroundColor: AppColors.primary,
+      headerForegroundColor: AppColors.textOnPrimary,
+      rangePickerHeaderBackgroundColor: AppColors.primary,
+      rangePickerHeaderForegroundColor: AppColors.textOnPrimary,
+      headerHeadlineStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+      ),
+      headerHelpStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      weekdayStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+      dayStyle: const TextStyle(fontFamily: _fontFamily, fontSize: 14),
+      dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return Colors.transparent;
+      }),
+      dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.textOnPrimary;
+        }
+        return AppColors.textPrimary;
+      }),
+      todayBackgroundColor: const WidgetStatePropertyAll(
+        AppColors.primaryContainer,
+      ),
+      todayForegroundColor: const WidgetStatePropertyAll(
+        AppColors.onPrimaryContainer,
+      ),
+      rangeSelectionBackgroundColor: AppColors.primaryContainer,
+      cancelButtonStyle: OutlinedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      confirmButtonStyle: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.surface,
       showDragHandle: true,
@@ -415,7 +475,7 @@ class AppTheme {
     tabBarTheme: const TabBarThemeData(
       labelColor: AppColors.textPrimary,
       unselectedLabelColor: AppColors.textSecondary,
-      indicatorColor: AppColors.accent,
+      indicatorColor: AppColors.primary,
       indicatorSize: TabBarIndicatorSize.label,
       dividerColor: Colors.transparent,
       labelStyle: TextStyle(
@@ -483,7 +543,9 @@ class AppTheme {
     ),
     extensions: const <ThemeExtension<dynamic>>[
       SettingsThemeExtension.light,
+      ReportThemeExtension.light,
       PosThemeExtension.light,
+      ReceiptThemeExtension.light,
     ],
   );
 
@@ -492,7 +554,7 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
-      primary: AppColors.primary,
+      primary: AppColors.darkPrimary,
       onPrimary: AppColors.darkOnPrimary,
       secondary: AppColors.darkTextSecondary,
       onSecondary: AppColors.darkBackground,
@@ -684,6 +746,66 @@ class AppTheme {
         color: AppColors.darkTextPrimary,
       ),
     ),
+    datePickerTheme: DatePickerThemeData(
+      elevation: 0,
+      rangePickerElevation: 0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppColors.dialogRadius)),
+      ),
+      rangePickerShape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppColors.dialogRadius)),
+      ),
+      headerBackgroundColor: AppColors.primary,
+      headerForegroundColor: AppColors.darkOnPrimary,
+      rangePickerHeaderBackgroundColor: AppColors.primary,
+      rangePickerHeaderForegroundColor: AppColors.darkOnPrimary,
+      headerHeadlineStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        color: AppColors.darkOnPrimary,
+      ),
+      headerHelpStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: AppColors.darkOnPrimary,
+      ),
+      weekdayStyle: const TextStyle(
+        fontFamily: _fontFamily,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+      dayStyle: const TextStyle(fontFamily: _fontFamily, fontSize: 14),
+      dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return Colors.transparent;
+      }),
+      dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.darkOnPrimary;
+        }
+        return AppColors.darkTextPrimary;
+      }),
+      todayBackgroundColor: const WidgetStatePropertyAll(
+        AppColors.darkPrimaryContainer,
+      ),
+      todayForegroundColor: const WidgetStatePropertyAll(
+        AppColors.darkOnPrimaryContainer,
+      ),
+      rangeSelectionBackgroundColor: AppColors.darkPrimaryContainer,
+      cancelButtonStyle: OutlinedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      confirmButtonStyle: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.darkOnPrimary,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.darkSurface,
       showDragHandle: true,
@@ -702,7 +824,7 @@ class AppTheme {
     tabBarTheme: const TabBarThemeData(
       labelColor: AppColors.darkTextPrimary,
       unselectedLabelColor: AppColors.darkTextSecondary,
-      indicatorColor: AppColors.accent,
+      indicatorColor: AppColors.primaryLight,
       indicatorSize: TabBarIndicatorSize.label,
       dividerColor: Colors.transparent,
       labelStyle: TextStyle(
@@ -770,7 +892,9 @@ class AppTheme {
     ),
     extensions: const <ThemeExtension<dynamic>>[
       SettingsThemeExtension.dark,
+      ReportThemeExtension.dark,
       PosThemeExtension.dark,
+      ReceiptThemeExtension.dark,
     ],
   );
 }

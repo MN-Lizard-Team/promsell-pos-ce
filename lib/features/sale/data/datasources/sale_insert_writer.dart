@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
+import 'package:promsell_pos_ce/features/sale/data/datasources/sale_day_guard.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_query_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_write_helpers.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_write_side_effects.dart';
@@ -117,11 +118,12 @@ class SaleInsertWriter {
         .fold(Money.zero, (s, p) => s + p.amount);
     final Money? effectiveReceived;
     final Money? effectiveChange;
+    // Wave P2: cash change SSOT = max(0, received − cashTender). Do not trust
+    // client changeAmount (UI may have used full-bill formula).
     if (cashTender > Money.zero) {
       effectiveReceived = amountReceived ?? cashTender;
       final change = effectiveReceived - cashTender;
-      effectiveChange =
-          changeAmount ?? (change > Money.zero ? change : Money.zero);
+      effectiveChange = change > Money.zero ? change : Money.zero;
     } else if (headerMethod != 'cash' && amountReceived != null) {
       effectiveReceived = finalTotal;
       effectiveChange = Money.zero;
@@ -137,6 +139,8 @@ class SaleInsertWriter {
     final deviceId = await _deviceId();
     late SaleData saleData;
     await _db.transaction(() async {
+      await SaleDayGuard.assertCreateAllowed(_db);
+
       // Receipt # with unique index: retry on rare race / reseed lag.
       const maxReceiptAttempts = 3;
       Object? lastReceiptError;
@@ -236,7 +240,7 @@ class SaleInsertWriter {
       final productIds = quantitiesByProduct.keys.toList();
       final productRows = await (_db.select(
         _db.products,
-      )..where((p) => p.id.isIn(productIds))).get();
+      )..where((p) => p.id.isIn(productIds) & p.deletedAt.isNull())).get();
       final productMap = {
         for (final product in productRows) product.id: product,
       };

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class BottomActionBar extends StatelessWidget {
   const BottomActionBar({
@@ -43,7 +44,7 @@ class BottomActionBar extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.inventory_2_outlined, size: 18),
+                      const Icon(TablerIcons.adjustments, size: 18),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
@@ -68,7 +69,7 @@ class BottomActionBar extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.edit_outlined, size: 18),
+                    const Icon(TablerIcons.edit, size: 18),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(

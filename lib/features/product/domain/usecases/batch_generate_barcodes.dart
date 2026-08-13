@@ -41,6 +41,8 @@ class BatchGenerateBarcodes {
         );
         if (!existsInDb && !usedBarcodes.contains(candidate)) {
           barcode = candidate;
+          // Persist counter immediately so a retry won't regenerate duplicates.
+          await _persistCounter();
           break;
         }
       }
@@ -53,7 +55,6 @@ class BatchGenerateBarcodes {
     if (updates.isEmpty) return 0;
 
     await _repository.bulkUpdateBarcodes(updates);
-    await _persistCounter();
     return updates.length;
   }
 

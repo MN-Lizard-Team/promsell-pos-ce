@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_settings_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/promptpay_settings_page.dart';
@@ -43,7 +44,7 @@ class SettingsAttentionIssue {
           title: l10n.backupReminderTitle,
           body: l10n.backupReminderMessage(settings.backupReminderDays),
           page: const BackupSettingsPage(),
-          icon: Icons.backup_outlined,
+          icon: TablerIcons.databaseExport,
           emphasis: AppColors.error,
         ),
       );
@@ -55,7 +56,7 @@ class SettingsAttentionIssue {
           title: l10n.settingsAttentionShopTitle,
           body: l10n.settingsAttentionShopBody,
           page: const ShopInfoSettingsPage(),
-          icon: Icons.store_outlined,
+          icon: TablerIcons.buildingStore,
           emphasis: AppColors.warning,
         ),
       );
@@ -67,7 +68,7 @@ class SettingsAttentionIssue {
           title: l10n.settingsAttentionPromptpayTitle,
           body: l10n.settingsAttentionPromptpayBody,
           page: const PromptpaySettingsPage(),
-          icon: Icons.qr_code_2_outlined,
+          icon: TablerIcons.qrcode,
           emphasis: AppColors.warning,
         ),
       );

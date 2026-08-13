@@ -7,18 +7,18 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/category/c
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_list_tile.dart'
     show parseCategoryColor;
 
-/// Horizontal category chips — shared by Product list and Sale catalog.
+/// Horizontal category chips — Product list + Sale catalog.
 ///
-/// Selected chip uses filled primary (mock-style). Fade edge uses a white
-/// gradient so it works on both surface and slate catalog backgrounds.
-class CategoryFilterChips extends StatelessWidget {
+/// Paper-stub language: r≈10, ink on paper; selected = primary fill (tab affordance).
+/// Shows a fade gradient on the right edge when more chips can be scrolled.
+class CategoryFilterChips extends StatefulWidget {
   const CategoryFilterChips({
     super.key,
     required this.categories,
     required this.selectedCategoryId,
     required this.onCategorySelected,
     this.padding = const EdgeInsets.symmetric(horizontal: 4),
-    this.height = 42,
+    this.height = 40,
   });
 
   final List<Category> categories;
@@ -28,33 +28,72 @@ class CategoryFilterChips extends StatelessWidget {
   final double height;
 
   @override
+  State<CategoryFilterChips> createState() => _CategoryFilterChipsState();
+}
+
+class _CategoryFilterChipsState extends State<CategoryFilterChips> {
+  final _scrollController = ScrollController();
+  bool _canScrollRight = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final pos = _scrollController.position;
+    final canRight = pos.pixels < pos.maxScrollExtent - 1;
+    if (canRight != _canScrollRight) {
+      setState(() => _canScrollRight = canRight);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
 
     return SizedBox(
-      height: height,
+      height: widget.height,
       child: ShaderMask(
-        shaderCallback: (bounds) => const LinearGradient(
+        shaderCallback: (bounds) => LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [Color(0xFFFFFFFF), Color(0xFFFFFFFF), Color(0x00FFFFFF)],
-          stops: [0.0, 0.88, 1.0],
+          colors: [
+            scheme.surface,
+            scheme.surface,
+            scheme.surface.withValues(alpha: 0),
+          ],
+          stops: _canScrollRight
+              ? const [0.0, 0.9, 1.0]
+              : const [0.0, 1.0, 1.0],
         ).createShader(bounds),
         blendMode: BlendMode.dstIn,
         child: ListView.separated(
-          padding: padding,
+          controller: _scrollController,
+          padding: widget.padding,
           scrollDirection: Axis.horizontal,
-          itemCount: categories.length + 2,
-          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          itemCount: widget.categories.length + 2,
+          separatorBuilder: (_, _) => const SizedBox(width: 6),
           itemBuilder: (_, index) {
             final isAll = index == 0;
-            final isNone = index == categories.length + 1;
-            final category = isAll || isNone ? null : categories[index - 1];
+            final isNone = index == widget.categories.length + 1;
+            final category = isAll || isNone
+                ? null
+                : widget.categories[index - 1];
             final selected = isNone
-                ? selectedCategoryId == kNoCategoryFilter
+                ? widget.selectedCategoryId == kNoCategoryFilter
                 : isAll
-                ? selectedCategoryId == null
-                : selectedCategoryId == category?.id;
+                ? widget.selectedCategoryId == null
+                : widget.selectedCategoryId == category?.id;
             final catColor = isAll || isNone
                 ? null
                 : parseCategoryColor(category!.color);
@@ -80,11 +119,11 @@ class CategoryFilterChips extends StatelessWidget {
               onTap: () {
                 HapticFeedback.selectionClick();
                 if (isAll) {
-                  onCategorySelected(null);
+                  widget.onCategorySelected(null);
                 } else if (isNone) {
-                  onCategorySelected(kNoCategoryFilter);
+                  widget.onCategorySelected(kNoCategoryFilter);
                 } else {
-                  onCategorySelected(category?.id);
+                  widget.onCategorySelected(category?.id);
                 }
               },
             );
@@ -110,39 +149,39 @@ class _CategoryPill extends StatelessWidget {
   final IconData? leading;
   final Color? accentColor;
 
+  static const _radius = 10.0;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bg = selected ? theme.colorScheme.primary : theme.colorScheme.surface;
-    final fg = selected
-        ? theme.colorScheme.onPrimary
-        : theme.colorScheme.onSurface;
+    final scheme = theme.colorScheme;
+    final bg = selected ? scheme.primary : scheme.surface;
+    final fg = selected ? scheme.onPrimary : scheme.onSurface;
     final borderColor = selected
-        ? theme.colorScheme.primary
-        : theme.colorScheme.outlineVariant.withValues(alpha: 0.85);
+        ? scheme.primary
+        : scheme.outlineVariant.withValues(alpha: 0.75);
     final iconColor = selected
-        ? theme.colorScheme.onPrimary
-        : (accentColor ?? theme.colorScheme.onSurfaceVariant);
+        ? scheme.onPrimary
+        : (accentColor ?? scheme.onSurfaceVariant);
 
     return Material(
       color: bg,
-      elevation: selected ? 1.5 : 0,
-      shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.12),
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-        side: BorderSide(color: borderColor, width: selected ? 0 : 1),
+        borderRadius: BorderRadius.circular(_radius),
+        side: BorderSide(color: borderColor, width: selected ? 1.5 : 1),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(_radius),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (leading != null) ...[
                 Icon(leading, size: 16, color: iconColor),
-                const SizedBox(width: 6),
+                const SizedBox(width: 5),
               ] else if (accentColor != null && !selected) ...[
                 Container(
                   width: 8,
@@ -152,13 +191,14 @@ class _CategoryPill extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 5),
               ],
               Text(
                 label,
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: fg,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: 13,
                 ),
               ),
             ],

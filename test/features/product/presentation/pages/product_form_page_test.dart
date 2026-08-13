@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_form_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
@@ -19,8 +20,11 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart'
 import 'package:promsell_pos_ce/features/settings/domain/entities/stock_config.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_draft.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/category_field.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_hero_image.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'dart:convert';
 
 import '../../../../helpers/mocks.dart';
@@ -66,7 +70,7 @@ Finder _saveButton() => find.byKey(const ValueKey('product-form-save'));
 
 Future<void> _openDeleteMenu(WidgetTester tester) async {
   // DetailHeader more button (same pattern as Product Preview).
-  await tester.tap(find.byIcon(Icons.more_vert));
+  await tester.tap(find.byIcon(TablerIcons.dotsVertical));
   await tester.pumpAndSettle();
 }
 
@@ -74,6 +78,8 @@ class _MockSettingsLocalDatasource extends Mock
     implements SettingsLocalDatasource {}
 
 class _MockGenerateBarcode extends Mock implements GenerateBarcode {}
+
+class _MockGenerateSku extends Mock implements GenerateSku {}
 
 void main() {
   late MockProductBloc mockProductBloc;
@@ -89,7 +95,11 @@ void main() {
     mockSettingsDs = _MockSettingsLocalDatasource();
     when(() => mockSettingsDs.getString(any())).thenAnswer((_) async => null);
     when(() => mockSettingsDs.setString(any(), any())).thenAnswer((_) async {});
-    productFormCubit = ProductFormCubit(mockSettingsDs, _MockGenerateBarcode());
+    productFormCubit = ProductFormCubit(
+      mockSettingsDs,
+      _MockGenerateBarcode(),
+      _MockGenerateSku(),
+    );
 
     when(() => mockCategoryBloc.state).thenReturn(
       const CategoryState(status: CategoryStatus.success, categories: []),
@@ -99,6 +109,9 @@ void main() {
     }
     if (!GetIt.I.isRegistered<GenerateBarcode>()) {
       GetIt.I.registerSingleton<GenerateBarcode>(_MockGenerateBarcode());
+    }
+    if (!GetIt.I.isRegistered<GenerateSku>()) {
+      GetIt.I.registerSingleton<GenerateSku>(_MockGenerateSku());
     }
     when(
       () => mockProductBloc.state,
@@ -327,7 +340,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Barcode must be alphanumeric (letters and numbers only)'),
+        find.text(
+          'Barcode must contain only letters and numbers (no spaces, hyphens, or special characters)',
+        ),
         findsOneWidget,
       );
     });
@@ -471,7 +486,96 @@ void main() {
       expect(find.text('Water'), findsWidgets);
       await _goToFormTab(tester, 1);
       expect(find.text('10.00'), findsWidgets);
-      expect(find.byIcon(Icons.more_vert), findsOneWidget);
+      expect(find.byIcon(TablerIcons.dotsVertical), findsOneWidget);
+    });
+
+    testWidgets('pre-fills all text fields with existing product values', (
+      tester,
+    ) async {
+      final full = Product(
+        id: 'prod-full-0001-0001-0001-000000000001',
+        name: 'Espresso',
+        sku: 'SKU-001',
+        barcode: '8851234567890',
+        price: Money.fromDouble(55.0),
+        cost: Money.fromDouble(30.0),
+        stock: 42,
+        description: 'Single origin beans',
+        brand: 'Northern Roasters',
+        unit: 'cup',
+        supplier: 'Bean Co.',
+        isActive: true,
+        trackStock: true,
+        imageThumbnailPath: null,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+      );
+      await _pumpForm(
+        tester,
+        ProductFormPage(product: full),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      // Info tab: name + description + brand.
+      expect(find.text('Espresso'), findsWidgets);
+      expect(find.text('Single origin beans'), findsWidgets);
+      expect(find.text('Northern Roasters'), findsWidgets);
+
+      // Price tab: price + cost.
+      await _goToFormTab(tester, 1);
+      expect(find.text('55.00'), findsWidgets);
+      expect(find.text('30.00'), findsWidgets);
+
+      // Stock tab: unit field (stock is rendered via StockStepper, not plain text).
+      await _goToFormTab(tester, 2);
+      expect(find.text('cup'), findsWidgets);
+
+      // Codes tab: sku + barcode + supplier.
+      await _goToFormTab(tester, 3);
+      expect(find.text('SKU-001'), findsWidgets);
+      expect(find.text('8851234567890'), findsWidgets);
+      expect(find.text('Bean Co.'), findsWidgets);
+    });
+
+    testWidgets('pre-fills option groups with existing product values', (
+      tester,
+    ) async {
+      final withOptions = Product(
+        id: 'prod-opt-0001-0001-0001-000000000001',
+        name: 'Coffee',
+        price: Money.fromDouble(40.0),
+        stock: 10,
+        imageThumbnailPath: null,
+        isActive: true,
+        createdAt: DateTime(2024),
+        updatedAt: DateTime(2024),
+        optionGroups: const [
+          ProductOptionGroup(
+            id: 'grp-1',
+            productId: 'prod-opt-0001-0001-0001-000000000001',
+            name: 'Size',
+            options: [
+              ProductOption(id: 'opt-1', groupId: 'grp-1', name: 'Large'),
+            ],
+          ),
+        ],
+      );
+      await _pumpForm(
+        tester,
+        ProductFormPage(product: withOptions),
+        mockProductBloc,
+        mockCategoryBloc,
+        mockSettingsCubit,
+        productFormCubit,
+      );
+
+      // Option groups editor is on the Codes tab (index 3).
+      await _goToFormTab(tester, 3);
+      expect(find.text('Size'), findsWidgets);
+      expect(find.text('Large'), findsWidgets);
     });
 
     testWidgets('dispatches ProductUpdated on edit submit', (tester) async {
@@ -725,6 +829,7 @@ void main() {
       final localCubit = ProductFormCubit(
         _MockSettingsLocalDatasourceWithDraft(draftJson),
         _MockGenerateBarcode(),
+        _MockGenerateSku(),
       );
 
       await _pumpForm(
@@ -751,7 +856,11 @@ void main() {
       );
 
       final mockDs = _MockSettingsLocalDatasourceWithDraft(draftJson);
-      final localCubit = ProductFormCubit(mockDs, _MockGenerateBarcode());
+      final localCubit = ProductFormCubit(
+        mockDs,
+        _MockGenerateBarcode(),
+        _MockGenerateSku(),
+      );
 
       await _pumpForm(
         tester,
@@ -783,6 +892,7 @@ void main() {
       final localCubit = ProductFormCubit(
         _MockSettingsLocalDatasourceWithDraft(draftJson),
         _MockGenerateBarcode(),
+        _MockGenerateSku(),
       );
 
       await _pumpForm(
@@ -812,6 +922,7 @@ void main() {
       final localCubit = ProductFormCubit(
         _MockSettingsLocalDatasourceWithDraft(draftJson),
         _MockGenerateBarcode(),
+        _MockGenerateSku(),
       );
 
       final product = Product(

@@ -19,7 +19,7 @@ class SaleAppBarActions extends StatelessWidget {
           label: openBillCount > 0
               ? Text(openBillCount > 99 ? '99+' : '$openBillCount')
               : null,
-          child: const Icon(Icons.bookmarks_outlined),
+          child: const Icon(Icons.receipt_long_outlined),
         ),
         tooltip: ctx.l10n.draftsTitle,
         onPressed: () => SavedBillsPage.open(ctx),

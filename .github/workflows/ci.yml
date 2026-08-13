@@ -1,18 +1,26 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -48,18 +56,28 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage --exclude-tags stress
 
-      # Device/widget integration_test/ (often flaky on bare CI runners).
-      # Money-path fail-closed suite: .github/workflows/release-trust.yml (C7).
-      - name: Run device integration_test suite (soft — see Release Trust)
-        run: flutter test integration_test/
-        continue-on-error: true
+      - name: Run performance benchmarks
+        run: flutter test test/performance/ --no-pub --reporter compact
 
-      - name: Check coverage threshold
-        uses: VeryGoodOpenSource/very_good_coverage@v3
-        with:
-          min_coverage: 50
-          path: coverage/lcov.info
-          exclude: 'lib/l10n/app_localizations.dart lib/l10n/app_localizations_en.dart lib/l10n/app_localizations_th.dart lib/**/*.g.dart lib/**/*.gr.dart lib/**/*.freezed.dart lib/core/di/injection.config.dart'
+      # Device tests require an emulator. Release candidates run the blocking
+      # Android smoke lane in release-trust.yml; keep this host job deterministic.
+      - name: Check integration_test formatting and analysis
+        run: |
+          dart format --set-exit-if-changed integration_test/
+          flutter analyze integration_test/
+
+      # Coverage gate: global ≥60% + sale-logic ≥80% in one call.
+      # Migrated from archived VeryGoodOpenSource/very_good_coverage@v3 to
+      # tool/check_path_coverage.dart (sole gate — handles both thresholds).
+      # Ladder: 50 → 60 → 70 → 80 (raise only after measured headroom).
+      # Exclude globs must stay in sync with kCoverageExclude* in the script.
+      - name: Coverage gate (global ≥60%, sale-logic ≥80%)
+        run: >
+          dart run tool/check_path_coverage.dart
+          --lcov coverage/lcov.info
+          --fail
+          --min-global=60
+          --min-sale-logic=80
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

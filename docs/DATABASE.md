@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE (v0.9.0)
+# Database Handbook — Promsell POS CE (v0.9.1)
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup export, and performance.
 
@@ -11,8 +11,8 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **Encryption** | SQLCipher AES-256 (full-database encryption, Phase 2a) |
 | **File** | `promsell_pos.db` (platform default app directory, encrypted at rest) |
-| **Schema version** | **28** (v26 unique `daily_closes.close_date`; **v27** unique `sales.receipt_number`; **v28** `sale_payments` multi-tender) |
-| **Tables** | **15** |
+| **Schema version** | **30** (v26 unique `daily_closes.close_date`; **v27** unique `sales.receipt_number`; **v28** `sale_payments` multi-tender; **v29** `products.barcode_lower` + unique index; **v30** `products.sku_lower` + unique index) |
+| **Tables** | **16** |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
 | **Foreign keys** | Enabled (`PRAGMA foreign_keys=ON`) |
@@ -29,8 +29,10 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 erDiagram
     Categories ||--o{ Products : "categoryId"
     Sales ||--|{ SaleItems : "saleId (CASCADE)"
+    Sales ||--|{ SalePayments : "saleId (CASCADE)"
     Products ||--o{ SaleItems : "productId (logical)"
     Products ||--o{ InventoryLogs : "productId (logical)"
+    Products ||--o{ ProductAudits : "productId (logical)"
     Sales ||--o{ InventoryLogs : "refSaleId (logical)"
     DraftCarts ||--|{ DraftCartItems : "cartId (CASCADE)"
     Products ||--o{ DraftCartItems : "productId (logical)"
@@ -54,6 +56,9 @@ erDiagram
 │  ┌──────────────┐                            ┌────────────────┐              │
 │  │ InventoryLogs│                            │  Categories    │              │
 │  └──────────────┘                            └────────────────┘              │
+│  ┌──────────┐   1:N  ┌──────────────┐                                        │
+│  │  Sales   │ ──────▶│ SalePayments │                                        │
+│  └──────────┘        └──────────────┘                                        │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -64,10 +69,10 @@ erDiagram
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  Key-Value (no FK)                                                           │
-│  ┌──────────────┐  1:1   ┌────────────────┐                                  │
-│  │  AppSettings │        │  DailyCloses   │                                  │
-│  └──────────────┘        └────────────────┘                                  │
+│  Key-Value / Audit (no FK)                                                   │
+│  ┌──────────────┐  1:1   ┌────────────────┐  ┌────────────────┐             │
+│  │  AppSettings │        │  DailyCloses   │  │ ProductAudits  │             │
+│  └──────────────┘        └────────────────┘  └────────────────┘             │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -93,16 +98,17 @@ erDiagram
 | `sale_items.productId → products.id` | **No** (logical) | Sale history must survive product deletion |
 | `inventory_logs.productId → products.id` | **No** (logical) | Audit trail must survive product deletion |
 | `inventory_logs.refSaleId → sales.id` | **No** (logical) | Log must survive even if sale is hard-deleted |
-| `products.categoryId → categories.id` | **Yes** (Drift FK, default RESTRICT) | Code uses `references(Categories, #id)`; deleting a category with products may fail unless app nulls/reassigns first |
+| `products.categoryId → categories.id` | **Yes** (Drift FK, `onDelete: KeyAction.setNull`) | Code uses `references(Categories, #id, onDelete: KeyAction.setNull)`; deleting a category nulls `categoryId` on its products |
 | `sale_payments.saleId → sales.id` | **Yes** (CASCADE) | Multi-tender lines (schema **v28**) |
+| `product_audits.productId → products.id` | **No** (logical) | Audit trail must survive product deletion |
 
 > Full ERD with all columns: [`docs/database/schema-reference.md`](database/schema-reference.md)
 
 ---
 
-## Sync-Ready Columns
+## Sync metadata columns (not a sync engine)
 
-These columns exist on all tables and are **actively populated** since schema v11 (v0.7.0) for Phase 4 (multi-device sync) readiness. `deviceId` was backfilled on all existing rows in schema v13.
+These columns exist on **most** tables (schema v11+). They are **metadata only** — CE has **no** sync engine, outbox, or multi-device protocol (ADR-028). `deviceId` was backfilled on six tables in schema v13. `ProductAudits` has no `deletedAt`. Sale/void stock updates do **not** always `version++` (V092-C.1).
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -136,15 +142,14 @@ When a record is "deleted":
                               ▼
               ┌───────────────────────────────┐
               │  Local SQLite (WAL)           │
-              │  15 tables, all sync-ready    │
+              │  16 tables; metadata columns  │
+              │  (not a sync engine)          │
               └───────────────┬───────────────┘
                               │
-             Phase 4 (future) │
+             Not in CE v1     │
               ┌───────────────▼───────────────┐
-              │  Sync Engine                  │
-              │  Compare version + updatedAt  │
-              │  Resolve conflicts (last-WW)  │
-              │  Merge deletedAt flags        │
+              │  No sync engine               │
+              │  (ADR-028 non-goal)           │
               └───────────────────────────────┘
 ```
 
@@ -156,8 +161,8 @@ When a record is "deleted":
 v1          v2          v5          v7          v8          v10
 │           │           │           │           │           │
 ▼           ▼           ▼           ▼           ▼           ▼
-Initial     Draft      Image       VAT         Daily       Device
-schema      discounts  settings    columns     Closes      settings
+Initial     Draft      Image       is_archived Daily       Rebuild
+	schema      discounts  settings    on drafts    Closes      daily_closes
 
 v11         v12         v13         v14         v15         v16      v17       v18       v19
 │           │           │           │           │           │        │         │         │
@@ -183,6 +188,18 @@ v23                                           v24
 	▼                                             ▼
 	Products brand / unit / supplier              Dedupe daily_closes by close_date
 	+ is_recommended                              Unique index on close_date
+
+	v27                                           v28
+	│                                             │
+	▼                                             ▼
+	Dedupe sales.receipt_number                   sale_payments multi-tender table
+	Unique partial index on receipt_number        + index on sale_id
+
+	v29                                           v30
+	│                                             │
+	▼                                             ▼
+	products.barcode_lower + unique index         products.sku_lower + unique index
+	(case-insensitive barcode lookups)            (case-insensitive SKU lookups)
 	```
 	
 	---
@@ -218,7 +235,7 @@ v23                                           v24
 - **In-app restore**: **Yes — same-device only** (Settings → Backup). Restores `.enc` or SQLCipher `.db`; rejects plain SQLite. Needs this device’s SQLCipher key in secure storage. Cross-device / after uninstall = **not** supported (Phase 2b)
 - **Cloud sync**: not in CE 0.9
 
-> **Note**: Losing the SQLCipher key (uninstall / keystore wipe) without an export means **permanent data loss**. Key recovery is not available in 0.9.0 (Phase 2b deferred).
+> **Note**: Losing the SQLCipher key (uninstall / keystore wipe) without an export means **permanent data loss**. Key recovery is not available in 0.9.1 (Phase 2b deferred).
 
 ---
 
@@ -226,13 +243,13 @@ v23                                           v24
 
 | Document | Content |
 |----------|---------|
-| [`docs/database/schema-reference.md`](database/schema-reference.md) | All **15** tables with column details, indexes, seed data, enum values |
+| [`docs/database/schema-reference.md`](database/schema-reference.md) | All **16** tables with column details, indexes, seed data, enum values |
 | [`docs/database/query-patterns.md`](database/query-patterns.md) | Drift query patterns: watch products, insert sale, void sale, date range, draft upsert |
-| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→**v28**), backup export/restore, encrypted backups, performance notes, DB testing |
+| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→**v30**), backup export/restore, encrypted backups, performance notes, DB testing |
 
 ---
 
-### Schema v25–v28
+### Schema v25–v30
 
 | Version | Changes |
 |---------|---------|
@@ -240,6 +257,8 @@ v23                                           v24
 | **v26** | Unique index on `daily_closes(close_date)` after dedupe (one close per business day) |
 | **v27** | Unique partial index on `sales(receipt_number)` after dedupe; receipt sequence reseeds from max on disk |
 | **v28** | `sale_payments` multi-tender table + index on `sale_id` |
+| **v29** | `products.barcode_lower` column + unique partial index for case-insensitive barcode lookups |
+| **v30** | `products.sku_lower` column + unique partial index for case-insensitive SKU lookups |
 
 **Money on disk:** amount columns remain SQLite **REAL** (baht). Domain code uses the `Money` value object (integer satang) and maps at the data layer. Integer column storage is deferred (Phase M).
 
@@ -247,4 +266,4 @@ v23                                           v24
 
 ---
 
-<sub>Promsell POS CE · Schema v28 · 15 tables · UUIDv4 · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · Schema v30 · 16 tables · UUIDv4 · SQLCipher AES-256</sub>

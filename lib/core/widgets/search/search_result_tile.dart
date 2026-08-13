@@ -136,8 +136,10 @@ class _SearchResultTileState extends State<SearchResultTile>
                     ),
                   ),
                 )
-              else
+              else if (!saleChrome)
                 StockBadge(stock: widget.product.stock),
+              // In sale chrome, always show stock (even when in cart).
+              if (saleChrome) StockBadge(stock: widget.product.stock),
             ],
           ),
           const SizedBox(width: 8),

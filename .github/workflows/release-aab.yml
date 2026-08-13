@@ -1,6 +1,6 @@
-# E4 — Release packaging gate.
+# E4 / POST-090 A3 — Release packaging gate.
 # 1) Always runs money-path trust suite (fail-closed via release-trust.yml).
-# 2) Optionally builds a signed prod AAB when ANDROID_KEYSTORE_* secrets exist.
+# 2) Builds a signed prod AAB; missing ANDROID_KEYSTORE_* secrets fail closed.
 #
 # Secrets (all required for signed AAB):
 #   ANDROID_KEYSTORE_BASE64  — base64 of the .jks / .keystore file
@@ -8,17 +8,15 @@
 #   ANDROID_KEY_ALIAS
 #   ANDROID_KEY_PASSWORD
 #
-# Without secrets the job still succeeds after trust suite and emits a notice
-# (secrets-optional). Store upload stays manual.
+# Tags `v*` and manual production cuts: signed AAB is required (fail-closed).
+# Store upload stays manual.
 name: Release AAB
+
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:
-    inputs:
-      require_signed_aab:
-        description: 'Fail if signing secrets are missing (strict store cut)'
-        type: boolean
-        default: false
   push:
     tags:
       - 'v*'
@@ -33,14 +31,33 @@ jobs:
     uses: ./.github/workflows/release-trust.yml
 
   signed-aab:
-    name: Signed prod AAB (secrets-optional)
+    name: Signed prod AAB
     needs: money-path
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      - name: Validate release tag and app version
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_version="${GITHUB_REF_NAME#v}"
+          app_version="$(sed -n "s/^version: *\([^+ ]*\).*/\1/p" pubspec.yaml)"
+          test -n "$app_version"
+          if [ "$tag_version" != "$app_version" ]; then
+            echo "::error title=Version mismatch::Tag v$tag_version does not match pubspec version $app_version"
+            exit 1
+          fi
+          case "$tag_version" in
+            ''|*[!0-9.]*|.*|*..*|*.)
+              echo "::error title=Invalid semver::Tag must use vMAJOR.MINOR.PATCH"
+              exit 1
+              ;;
+          esac
 
       - name: Detect signing secrets
         id: signing
@@ -59,12 +76,8 @@ jobs:
             echo "Signing secrets present — will build signed prod AAB."
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::notice title=E4 secrets-optional::ANDROID_KEYSTORE_* secrets not fully configured. Trust suite passed; signed AAB skipped. Local dry-run: docs/STORE_SUBMISSION.md / E2 throwaway keystore."
-            if [ "${{ github.event_name }}" = "workflow_dispatch" ] && \
-               [ "${{ inputs.require_signed_aab }}" = "true" ]; then
-              echo "::error::require_signed_aab=true but signing secrets are missing."
-              exit 1
-            fi
+            echo "::error title=A3 signed AAB required::Production release requires all ANDROID_KEYSTORE_* secrets."
+            exit 1
           fi
 
       - name: Set up Flutter
@@ -125,21 +138,3 @@ jobs:
           path: build/app/outputs/bundle/prodRelease/app-prod-release.aab
           if-no-files-found: error
           retention-days: 14
-
-      - name: Record skip marker when unsigned
-        if: steps.signing.outputs.available != 'true'
-        run: |
-          mkdir -p build/ci
-          cat > build/ci/e4-aab-skipped.txt <<'EOF'
-          E4 signed AAB skipped: ANDROID_KEYSTORE_* secrets not configured.
-          Money-path job still ran fail-closed via release-trust.yml.
-          Configure repository secrets to enable signed AAB on tags / workflow_dispatch.
-          EOF
-
-      - name: Upload skip notice
-        if: steps.signing.outputs.available != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: e4-aab-skipped
-          path: build/ci/e4-aab-skipped.txt
-          retention-days: 7

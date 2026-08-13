@@ -94,7 +94,7 @@ class Products extends Table {
 
 ### Testing
 
-21 unit tests in `test/core/domain/money_test.dart`:
+6 unit tests in `test/core/domain/money_test.dart`:
 - Arithmetic (addition, multiplication, subtraction)
 - Comparison operators
 - Rounding edge cases (half-up rule)
@@ -406,7 +406,7 @@ class GenerateBarcode {
 
 ### Testing
 
-9 unit tests in `test/core/utils/ean13_generator_test.dart`:
+18 unit tests in `test/core/utils/ean13_generator_test.dart`:
 - Check digit calculation
 - Prefix padding
 - Counter persistence
@@ -415,4 +415,4 @@ class GenerateBarcode {
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Core Modules API</sub>
+<sub>Promsell POS CE · v0.9.1 · Core Modules API</sub>

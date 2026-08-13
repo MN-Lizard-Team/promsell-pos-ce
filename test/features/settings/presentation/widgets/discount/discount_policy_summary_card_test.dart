@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_policy_summary_card.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -18,7 +18,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.local_offer_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.tag), findsOneWidget);
       expect(find.text('On'), findsOneWidget);
       expect(find.text('Off'), findsOneWidget);
     });

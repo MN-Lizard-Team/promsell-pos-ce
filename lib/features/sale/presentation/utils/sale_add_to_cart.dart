@@ -88,49 +88,79 @@ Future<SaleAddResult> saleAddToCartWithQtyDialog(
     return SaleAddResult.blockedOos;
   }
 
-  final controller = TextEditingController(text: '1');
   final qty = await showDialog<int>(
     context: context,
-    builder: (dialogCtx) {
-      final l10n = dialogCtx.l10n;
-      return AlertDialog(
-        title: Text(product.name),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(signed: true),
-          decoration: InputDecoration(
-            labelText: l10n.quantityLabel,
-            suffixText: product.trackStock
-                ? l10n.stockLabel(product.stock)
-                : null,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final parsed = int.tryParse(controller.text);
-              if (parsed == null || parsed <= 0) {
-                Navigator.pop(dialogCtx);
-                return;
-              }
-              var clamped = parsed;
-              if (product.trackStock && !allowOversell) {
-                clamped = parsed.clamp(1, product.stock);
-              }
-              Navigator.pop(dialogCtx, clamped);
-            },
-            child: Text(l10n.save),
-          ),
-        ],
-      );
-    },
+    builder: (dialogCtx) =>
+        _SaleQtyDialog(product: product, allowOversell: allowOversell),
   );
-  controller.dispose();
   if (qty == null || !context.mounted) return SaleAddResult.blocked;
   return saleAddToCart(context, product, qty: qty);
+}
+
+/// Qty entry dialog; owns its [TextEditingController] lifecycle.
+class _SaleQtyDialog extends StatefulWidget {
+  const _SaleQtyDialog({required this.product, required this.allowOversell});
+
+  final Product product;
+  final bool allowOversell;
+
+  @override
+  State<_SaleQtyDialog> createState() => _SaleQtyDialogState();
+}
+
+class _SaleQtyDialogState extends State<_SaleQtyDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '1');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final product = widget.product;
+    return AlertDialog(
+      title: Text(product.name),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(signed: true),
+        decoration: InputDecoration(
+          labelText: l10n.quantityLabel,
+          suffixText: product.trackStock
+              ? l10n.stockLabel(product.stock)
+              : null,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            final parsed = int.tryParse(_controller.text);
+            if (parsed == null || parsed <= 0) {
+              Navigator.pop(context);
+              return;
+            }
+            var clamped = parsed;
+            if (product.trackStock && !widget.allowOversell) {
+              clamped = parsed.clamp(1, product.stock);
+            }
+            Navigator.pop(context, clamped);
+          },
+          child: Text(l10n.save),
+        ),
+      ],
+    );
+  }
 }

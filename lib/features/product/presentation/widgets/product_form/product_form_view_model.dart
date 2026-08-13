@@ -31,6 +31,7 @@ class ProductFormControllers {
     required this.priceCtrl,
     required this.stockCtrl,
     required this.skuCtrl,
+    required this.skuFocusNode,
     required this.barcodeCtrl,
     required this.barcodeFocusNode,
     this.nameFocusNode,
@@ -45,6 +46,7 @@ class ProductFormControllers {
   final TextEditingController priceCtrl;
   final TextEditingController stockCtrl;
   final TextEditingController skuCtrl;
+  final FocusNode skuFocusNode;
   final TextEditingController barcodeCtrl;
   final FocusNode barcodeFocusNode;
   final FocusNode? nameFocusNode;
@@ -65,6 +67,7 @@ class ProductFormStateData {
     required this.trackStock,
     required this.isPickingImage,
     required this.isGeneratingBarcode,
+    required this.isGeneratingSku,
   });
 
   final Category? selectedCategory;
@@ -75,6 +78,7 @@ class ProductFormStateData {
   final bool trackStock;
   final bool isPickingImage;
   final bool isGeneratingBarcode;
+  final bool isGeneratingSku;
 }
 
 class ProductFormCallbacks {
@@ -87,6 +91,7 @@ class ProductFormCallbacks {
     required this.onStockChanged,
     required this.onAdjustStock,
     required this.onGenerateBarcode,
+    required this.onGenerateSku,
   });
 
   final ValueChanged<Category?> onCategoryChanged;
@@ -97,4 +102,5 @@ class ProductFormCallbacks {
   final ValueChanged<int> onStockChanged;
   final VoidCallback onAdjustStock;
   final VoidCallback onGenerateBarcode;
+  final VoidCallback onGenerateSku;
 }

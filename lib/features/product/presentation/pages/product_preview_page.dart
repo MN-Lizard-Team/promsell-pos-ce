@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/errors/app_error_display.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/confirmation_dialog.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
@@ -12,6 +13,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_navigation.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/bottom_action_bar.dart';
@@ -23,17 +25,20 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_pr
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/summary_card.dart';
 import 'package:promsell_pos_ce/features/inventory/presentation/widgets/dialogs/adjust_stock_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ProductPreviewPage extends StatefulWidget {
   const ProductPreviewPage({
     super.key,
     required this.product,
     required this.generateBarcode,
+    required this.generateSku,
     required this.watchInventoryLogs,
   });
 
   final Product product;
   final GenerateBarcode generateBarcode;
+  final GenerateSku generateSku;
   final WatchInventoryLogs watchInventoryLogs;
 
   @override
@@ -168,9 +173,32 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
       context.read<ProductBloc>().add(ProductUpdated(updated));
       setState(() => _currentProduct = updated);
       AppSnackBar.success(context, l10n.barcodeGenerated);
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning('generateBarcode failed', error: e, stack: stack);
       if (context.mounted) {
         AppSnackBar.error(context, l10n.errorOccurred);
+      }
+    }
+  }
+
+  Future<void> _generateSku(BuildContext context) async {
+    final l10n = context.l10n;
+    final settings = context.read<SettingsCubit>().state.settings;
+    final prefix = settings.skuAutoGeneratePrefix;
+    try {
+      final sku = await widget.generateSku(
+        prefix: prefix,
+        excludeId: widget.product.id,
+      );
+      if (!context.mounted) return;
+      final updated = _currentProduct.copyWith(sku: sku);
+      context.read<ProductBloc>().add(ProductUpdated(updated));
+      setState(() => _currentProduct = updated);
+      AppSnackBar.success(context, l10n.skuGenerated);
+    } catch (e, stack) {
+      AppLogger.warning('generateSku failed', error: e, stack: stack);
+      if (context.mounted) {
+        AppSnackBar.error(context, l10n.skuGenerationError);
       }
     }
   }
@@ -184,7 +212,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.edit_outlined),
+              leading: const Icon(TablerIcons.edit),
               title: Text(l10n.editProduct),
               onTap: () {
                 Navigator.pop(ctx);
@@ -194,8 +222,8 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
             ListTile(
               leading: Icon(
                 _latestProduct().isRecommended
-                    ? Icons.star
-                    : Icons.star_outline,
+                    ? TablerIcons.starFilled
+                    : TablerIcons.star,
               ),
               title: Text(
                 _latestProduct().isRecommended
@@ -209,7 +237,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
             ),
             ListTile(
               leading: Icon(
-                Icons.delete_outline,
+                TablerIcons.trash,
                 color: Theme.of(ctx).colorScheme.error,
               ),
               title: Text(
@@ -358,8 +386,6 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
                       controller: _tabController,
                       tabAlignment: TabAlignment.fill,
                       dividerColor: Colors.transparent,
-                      // Icon-only on very narrow widths avoids RenderFlex overflow.
-                      labelPadding: const EdgeInsets.symmetric(horizontal: 2),
                       indicator: BoxDecoration(
                         color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
@@ -371,37 +397,63 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
                       unselectedLabelColor: Theme.of(
                         context,
                       ).colorScheme.onSurfaceVariant,
-                      labelStyle: Theme.of(context).textTheme.labelMedium
+                      labelStyle: Theme.of(context).textTheme.labelLarge
                           ?.copyWith(fontWeight: FontWeight.w700),
                       unselectedLabelStyle: Theme.of(
                         context,
-                      ).textTheme.labelMedium,
+                      ).textTheme.labelLarge,
                       tabs: [
                         Tab(
-                          icon: const Icon(Icons.article_outlined, size: 18),
-                          text: l10n.tabInfo,
-                          iconMargin: const EdgeInsets.only(bottom: 2),
-                        ),
-                        Tab(
-                          icon: const Icon(
-                            Icons.inventory_2_outlined,
-                            size: 18,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(TablerIcons.infoCircle, size: 16),
+                                const SizedBox(width: 4),
+                                Text(l10n.tabInfo),
+                              ],
+                            ),
                           ),
-                          text: l10n.tabStock,
-                          iconMargin: const EdgeInsets.only(bottom: 2),
                         ),
                         Tab(
-                          icon: const Icon(
-                            Icons.price_check_outlined,
-                            size: 18,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(TablerIcons.box, size: 16),
+                                const SizedBox(width: 4),
+                                Text(l10n.tabStock),
+                              ],
+                            ),
                           ),
-                          text: l10n.tabPrice,
-                          iconMargin: const EdgeInsets.only(bottom: 2),
                         ),
                         Tab(
-                          icon: const Icon(Icons.history_outlined, size: 18),
-                          text: l10n.productTabHistory,
-                          iconMargin: const EdgeInsets.only(bottom: 2),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(TablerIcons.tag, size: 16),
+                                const SizedBox(width: 4),
+                                Text(l10n.tabPrice),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Tab(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(TablerIcons.history, size: 16),
+                                const SizedBox(width: 4),
+                                Text(l10n.productTabHistory),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -418,6 +470,9 @@ class _ProductPreviewPageState extends State<ProductPreviewPage>
                       onGenerateBarcode:
                           product.barcode == null || product.barcode!.isEmpty
                           ? () => _generateBarcode(context)
+                          : null,
+                      onGenerateSku: product.sku == null || product.sku!.isEmpty
+                          ? () => _generateSku(context)
                           : null,
                     ),
                     StockTab(

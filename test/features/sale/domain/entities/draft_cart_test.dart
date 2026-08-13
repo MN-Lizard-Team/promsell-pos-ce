@@ -144,12 +144,10 @@ void main() {
         promotionDiscountAmount: Money.fromDouble(20),
         updatedAt: DateTime(2025, 1, 1),
       );
-      // total = items − cart disc only (100)
+      // total = items − cart disc only (100), does NOT subtract promo
       expect(draft.total, Money.fromDouble(100));
       // payableTotal uses SalePayableCalculator (promo applied)
       expect(draft.payableTotal(), Money.fromDouble(80));
-      // legacy grandTotal also subtracts promo when recomputed
-      expect(draft.grandTotal, Money.fromDouble(80));
     });
   });
 }

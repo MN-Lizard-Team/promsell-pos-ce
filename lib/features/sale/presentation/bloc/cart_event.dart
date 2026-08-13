@@ -48,8 +48,18 @@ class CartItemQtyChanged extends CartEvent {
   List<Object?> get props => [productId, qty, allowOversell, lineId];
 }
 
+/// Clears the cart. User clear is blocked while [CartState.paymentLocked].
+///
+/// Pass [force] true for system paths only (post-sale, park success, checkout
+/// reset) so mid-payment clear cannot drop the lock and desync freeze vs live cart.
 class CartCleared extends CartEvent {
-  const CartCleared();
+  const CartCleared({this.force = false});
+
+  /// When true, bypass payment lock (post-sale / park / system reset only).
+  final bool force;
+
+  @override
+  List<Object?> get props => [force];
 }
 
 /// Full cart session restore (draft load, clear-undo). Prefer factories so

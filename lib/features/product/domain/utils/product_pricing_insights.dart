@@ -84,7 +84,8 @@ class ProductPricingInsights {
   /// e.g. cost 30 + 50% → 45.00
   static Money priceFromMarkup(Money cost, double markupPercent) {
     final factor = 1.0 + (markupPercent / 100.0);
-    return Money.fromDouble(cost.value * factor);
+    // Use integer satang arithmetic to avoid floating-point precision loss.
+    return cost * factor;
   }
 }
 

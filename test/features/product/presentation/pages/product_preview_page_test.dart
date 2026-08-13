@@ -6,17 +6,21 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/pages/product_preview_page.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../helpers/mocks.dart';
 import '../../../../helpers/pump_app.dart';
 
 class _MockGenerateBarcode extends Mock implements GenerateBarcode {}
+
+class _MockGenerateSku extends Mock implements GenerateSku {}
 
 void main() {
   late MockProductBloc mockProductBloc;
@@ -82,6 +86,7 @@ void main() {
       ProductPreviewPage(
         product: product,
         generateBarcode: _MockGenerateBarcode(),
+        generateSku: _MockGenerateSku(),
         watchInventoryLogs: MockWatchInventoryLogs(),
       ),
       productBloc: mockProductBloc,
@@ -94,13 +99,13 @@ void main() {
     testWidgets('Header has back button (U1)', (tester) async {
       await pumpPage(tester);
 
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      expect(find.byIcon(TablerIcons.arrowLeft), findsOneWidget);
     });
 
     testWidgets('Bottom bar does not have delete action', (tester) async {
       await pumpPage(tester);
 
-      expect(find.byIcon(Icons.delete_outline), findsNothing);
+      expect(find.byIcon(TablerIcons.trash), findsNothing);
     });
 
     testWidgets('AppBar has toggle active action (U1)', (tester) async {
@@ -148,7 +153,7 @@ void main() {
 
       await pumpPage(tester);
 
-      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.tap(find.byIcon(TablerIcons.dotsVertical));
       await tester.pumpAndSettle();
 
       final deleteItem = find.descendant(
@@ -172,7 +177,7 @@ void main() {
 
       await pumpPage(tester);
 
-      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.tap(find.byIcon(TablerIcons.dotsVertical));
       await tester.pumpAndSettle();
 
       final deleteItem = find.descendant(
@@ -216,8 +221,8 @@ void main() {
     ) async {
       await pumpPage(tester);
 
-      expect(find.byIcon(Icons.swap_horiz), findsNothing);
-      expect(find.byIcon(Icons.delete_outline), findsNothing);
+      expect(find.byIcon(TablerIcons.arrowsExchange), findsNothing);
+      expect(find.byIcon(TablerIcons.trash), findsNothing);
       expect(find.text('Adjust Stock'), findsOneWidget);
       expect(find.text('Edit Product'), findsOneWidget);
     });

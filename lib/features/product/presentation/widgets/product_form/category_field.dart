@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/category/category_picker_bottom_sheet.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class CategoryField extends StatelessWidget {
   const CategoryField({
@@ -31,6 +32,7 @@ class CategoryField extends StatelessWidget {
         child: InputDecorator(
           decoration: InputDecoration(
             labelText: context.l10n.categoryLabel,
+            helperText: context.l10n.categoryHelper,
             // No prefix icon — match text fields without leading icons.
             suffixIcon: hasCategory
                 ? IconButton(
@@ -38,11 +40,14 @@ class CategoryField extends StatelessWidget {
                     tooltip: MaterialLocalizations.of(
                       context,
                     ).deleteButtonTooltip,
-                    icon: const Icon(Icons.clear, size: 20),
-                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(TablerIcons.x, size: 20),
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
                     onPressed: () => onChanged(null),
                   )
-                : const Icon(Icons.keyboard_arrow_down_outlined),
+                : const Icon(TablerIcons.chevronDown),
           ),
           child: BlocBuilder<CategoryBloc, CategoryState>(
             builder: (ctx, state) {

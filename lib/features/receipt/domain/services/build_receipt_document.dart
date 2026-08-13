@@ -1,7 +1,9 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_document.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
+import 'package:promsell_pos_ce/features/receipt/domain/services/receipt_line_name.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
@@ -30,7 +32,10 @@ class BuildReceiptDocument {
       final img = productImages?[i.productId];
       return ReceiptLineItem(
         productId: i.productId,
-        name: i.productName,
+        name: receiptLineName(
+          productName: i.productName,
+          selectedOptions: i.selectedOptions,
+        ),
         qty: i.qty,
         unitPrice: i.price,
         lineTotal: i.subtotal,
@@ -51,11 +56,18 @@ class BuildReceiptDocument {
 
     final vatMode = sale.vatMode.toUpperCase();
 
+    // Show cash received/change only when there is a cash tender leg.
+    final cashLeg = saleCashTenderTotal(sale);
+    final showCashDrawer = cashLeg.isPositive;
+    final amountReceived = showCashDrawer ? sale.amountReceived : null;
+    final changeAmount = showCashDrawer ? sale.changeAmount : null;
+
     return ReceiptDocument(
       shopName: settings.shopName,
       showShopInfo: settings.showShopInfoOnReceipt,
       address: settings.address,
       phone: settings.phone,
+      taxId: settings.taxId,
       receiptNumber: sale.receiptNumber ?? sale.id,
       createdAt: sale.createdAt,
       paymentMethodLabel: labels.paymentMethodLabel,
@@ -77,15 +89,18 @@ class BuildReceiptDocument {
       vatAmount: sale.vatAmount,
       pretaxOrNetOfVat: sale.subtotalAmount,
       total: sale.totalAmount,
-      amountReceived: sale.amountReceived,
-      changeAmount: sale.changeAmount,
+      amountReceived: amountReceived,
+      changeAmount: changeAmount,
       note: sale.note,
       footer: footer,
       isVoided: sale.isVoided,
       voidReason: sale.voidReason,
       voidedAt: sale.voidedAt,
       isReprint: isReprint,
-      notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
+      // Show "not a tax invoice" disclaimer only when no valid Tax ID is set.
+      notTaxInvoiceDisclaimer: settings.taxId.trim().isEmpty
+          ? notTaxInvoiceDisclaimer
+          : null,
     );
   }
 }

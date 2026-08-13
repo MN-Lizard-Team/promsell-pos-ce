@@ -19,6 +19,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/backup/ba
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/backup/backup_status_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class BackupSettingsPage extends StatelessWidget {
   const BackupSettingsPage({super.key});
@@ -142,6 +143,7 @@ class BackupSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();
@@ -174,7 +176,7 @@ class BackupSettingsPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.enhanced_encryption_outlined,
+                      TablerIcons.lock,
                       color: st.softAccent,
                       size: 24,
                     ),
@@ -227,7 +229,7 @@ class BackupSettingsPage extends StatelessWidget {
                   backgroundColor: AppColors.accent,
                 ),
                 onPressed: () => _runBackup(context, s, cubit, l10n),
-                icon: const Icon(Icons.backup_outlined),
+                icon: const Icon(TablerIcons.databaseExport),
                 label: Text(l10n.backupNow),
               ),
             ),
@@ -238,7 +240,7 @@ class BackupSettingsPage extends StatelessWidget {
                   minimumSize: const Size.fromHeight(52),
                 ),
                 onPressed: () => _runRestore(context, s, l10n),
-                icon: const Icon(Icons.restore_outlined),
+                icon: const Icon(TablerIcons.history),
                 label: Text(l10n.backupRestoreTitle),
               ),
             ),

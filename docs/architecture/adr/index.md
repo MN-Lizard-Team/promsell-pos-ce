@@ -1,10 +1,10 @@
-# Architecture Decision Records (ADRs) — Promsell POS CE (v0.9.0)
+# Architecture Decision Records (ADRs) — Promsell POS CE (v0.9.1)
 
 All architecture decision records, ordered by ADR number.
 
 > **Main reference:** [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) — index + TOC
-> **C4 diagrams:** [`docs/architecture/c4-diagrams.md`](../architecture/c4-diagrams.md) — system context, container, component, data flows
-> **Technical deep-dive:** [`docs/architecture/technical-deep-dive.md`](../architecture/technical-deep-dive.md) — state management, DI, transactions, error handling, performance
+> **C4 diagrams:** [`docs/architecture/c4-diagrams.md`](../c4-diagrams.md) — system context, container, component, data flows
+> **Technical deep-dive:** [`docs/architecture/technical-deep-dive.md`](../technical-deep-dive.md) — state management, DI, transactions, error handling, performance
 
 ---
 
@@ -26,7 +26,7 @@ All architecture decision records, ordered by ADR number.
 | [ADR-012](#adr-012-pure-dart-image-compression-over-native-plugin) | Pure Dart image compression | — |
 | [ADR-013](#adr-013-checkoutbody-extraction-with-dynamic-total-from-checkoutbloc) | CheckoutBody extraction with dynamic total | v0.6.1 |
 | [ADR-014](#adr-014-productimageservice-coupling-is-not-an-architectural-issue) | ProductImageService coupling is not an issue | — |
-| [ADR-015](#adr-015-sync-ready-columns-on-all-core-tables) | Sync-ready columns on all core tables | v0.7.2 |
+| [ADR-015](#adr-015-sync-ready-columns-on-all-core-tables) | Sync **metadata** columns (amended by ADR-028) | v0.7.2 |
 | [ADR-016](#adr-016-backup-encryption-with-aes-256-gcm) | Backup encryption with AES-256-GCM | — |
 | [ADR-017](#adr-017-settings-hierarchy-revised-in-v081) | Settings hierarchy (revised) | v0.8.1 |
 | [ADR-018](#adr-018-settings-aggregate-root-with-typed-group-entities) | Settings aggregate root with typed groups | v0.7.3 |
@@ -38,6 +38,8 @@ All architecture decision records, ordered by ADR number.
 | [ADR-024](#adr-024-widget-folder-standardization-v085) | Widget folder standardization (feature + core) | v0.8.5 |
 | [ADR-025](#adr-025-ean13generator-injectable-instance-v086) | Ean13Generator injectable instance | v0.8.6 |
 | [ADR-026](#adr-026-barcode-image-rendering-via-repaintboundary-v086) | Barcode image rendering via RenderRepaintBoundary | v0.8.6 |
+| [ADR-027](#adr-027-payable-pipeline-item--cart--promo--sc--vat) | Payable pipeline (item → cart → promo → SC → VAT) | v0.9.x |
+| [ADR-028](#adr-028-sync-metadata-is-not-a-sync-engine) | Sync metadata is not a sync engine (amends ADR-015) | v0.9.x |
 
 ---
 
@@ -256,10 +258,10 @@ EXCLUSIVE: finalTotal = preTaxTotal + (preTaxTotal * vatRate)
 **Decision:** Add columns via schema migration v11→v12. Use `DateTime` (TEXT ISO8601 in v11, millisecondsSinceEpoch in v12). All repositories update `updatedAt` and `version` on writes. Soft deletes set `deletedAt` instead of removing rows.
 
 **Consequences:**
-- ✅ Tables are sync-ready without future schema changes
-- ✅ Immutable audit trail preserved (soft delete)
+- ✅ Metadata columns exist on most tables for a *future* multi-device program
+- ❌ **Not** a sync engine (no outbox, no multi-master, no cloud). See **ADR-028**
+- ⚠️ Not every table/write populates the full set (`ProductAudits` has no `deletedAt`; sale/void stock updates do not always `version++`)
 - ⚠️ Migration complexity: v11→v12 converts DateTime format
-- ⚠️ All repository write methods must now update timestamp columns
 
 ---
 
@@ -531,4 +533,30 @@ lib/core/widgets/
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Architecture Decision Records</sub>
+## ADR-027: Payable pipeline (item → cart → promo → SC → VAT)
+
+**Context:** ADR-011 only covers “discount before VAT.” Live checkout also applies line discounts, cart discount, promotion, service charge, then VAT (`NONE` / `INCLUSIVE` / `EXCLUSIVE`). UI must not invent totals.
+
+**Decision:** Domain SSOT is `SalePayableCalculator` / `payableTotals` (satang `Money`). Persistence stores the computed snapshot. Presentation formats only.
+
+**Consequences:**
+- ✅ One order of operations for goldens and writers
+- ✅ Supersedes ADR-011 *scope* (011 remains historically correct for discount-before-VAT)
+- ⚠️ Disk money is still REAL baht until Phase M (POST-090 C)
+
+---
+
+## ADR-028: Sync metadata is not a sync engine
+
+**Context:** ADR-015 and `docs/DATABASE.md` marketed “sync-ready” / “16 tables all sync-ready.” CE v1 is a single-device offline POS.
+
+**Decision:** Call these **sync metadata columns** (`updatedAt`, `deletedAt`, `version`, `deviceId`). CE non-goals: outbox, multi-master, cloud sync, last-write-wins engine. Amends ADR-015.
+
+**Consequences:**
+- ✅ Store listing and architecture docs must not claim a sync engine
+- ✅ Multi-device restore remains Phase 2b / a later program
+- ⚠️ Columns may stay unused on some writes until a real sync design exists
+
+---
+
+<sub>Promsell POS CE · v0.9.1 · Architecture Decision Records 001–028</sub>

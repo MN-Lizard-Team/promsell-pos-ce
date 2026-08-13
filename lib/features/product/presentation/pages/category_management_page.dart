@@ -221,7 +221,7 @@ class _CategoryManagementPageState extends State<CategoryManagementPage> {
                                       oldIndex,
                                       newIndex,
                                     )
-                                  : null,
+                                  : (_, _) {},
                               itemBuilder: (_, i) {
                                 final cat = cats[i];
                                 final count = counts[cat.id] ?? 0;

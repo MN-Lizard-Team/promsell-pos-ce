@@ -26,9 +26,9 @@ class BarcodeScannerSession {
     required bool Function() isMounted,
     required VoidCallback onStateChanged,
     required void Function(String? text) setError,
-  })  : _isMounted = isMounted,
-        _onStateChanged = onStateChanged,
-        _setError = setError;
+  }) : _isMounted = isMounted,
+       _onStateChanged = onStateChanged,
+       _setError = setError;
 
   final MobileScannerController controller;
   final TextEditingController manualCtrl;

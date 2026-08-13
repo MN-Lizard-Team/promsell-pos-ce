@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/entities/inventory_log.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/history_tab.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/mocks.dart';
 import '../../../../../helpers/pump_app.dart';
@@ -74,8 +75,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.add_circle_outline), findsOneWidget);
+      expect(find.byIcon(TablerIcons.shoppingCart), findsOneWidget);
+      expect(find.byIcon(TablerIcons.circlePlus), findsOneWidget);
       expect(find.text('Test sale'), findsOneWidget);
     });
 

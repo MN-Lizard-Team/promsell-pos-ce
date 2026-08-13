@@ -58,6 +58,7 @@ class DiscountPresetEditPage extends StatelessWidget {
     final st = context.settingsTheme;
 
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final currentPreset = index < s.discountPresets.length

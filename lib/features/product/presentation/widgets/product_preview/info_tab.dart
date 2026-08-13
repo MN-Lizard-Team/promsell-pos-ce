@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
@@ -13,11 +14,13 @@ class InfoTab extends StatelessWidget {
     required this.product,
     this.category,
     this.onGenerateBarcode,
+    this.onGenerateSku,
   });
 
   final Product product;
   final Category? category;
   final VoidCallback? onGenerateBarcode;
+  final VoidCallback? onGenerateSku;
 
   @override
   Widget build(BuildContext context) {
@@ -41,24 +44,24 @@ class InfoTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InfoListItem(
-                icon: Icons.category_outlined,
+                icon: TablerIcons.category,
                 label: l10n.categoryLabel,
                 value: Text(category?.name ?? l10n.noCategory),
               ),
               if (product.brand != null && product.brand!.trim().isNotEmpty)
                 InfoListItem(
-                  icon: Icons.business_outlined,
+                  icon: TablerIcons.building,
                   label: l10n.productBrandLabel,
                   value: Text(product.brand!.trim()),
                 ),
               if (hasSupplier)
                 InfoListItem(
-                  icon: Icons.local_shipping_outlined,
+                  icon: TablerIcons.truck,
                   label: l10n.productSupplierLabel,
                   value: Text(supplier),
                 ),
               InfoListItem(
-                icon: Icons.straighten,
+                icon: TablerIcons.rulerMeasure,
                 label: l10n.productUnitLabel,
                 value: Text(
                   product.unit?.trim().isNotEmpty == true
@@ -67,9 +70,7 @@ class InfoTab extends StatelessWidget {
                 ),
               ),
               InfoListItem(
-                icon: product.isActive
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
+                icon: product.isActive ? TablerIcons.eye : TablerIcons.eyeOff,
                 label: l10n.productPreviewStatus,
                 value: Text(
                   product.isActive
@@ -81,7 +82,9 @@ class InfoTab extends StatelessWidget {
                     : theme.colorScheme.error,
               ),
               InfoListItem(
-                icon: product.isRecommended ? Icons.star : Icons.star_outline,
+                icon: product.isRecommended
+                    ? TablerIcons.starFilled
+                    : TablerIcons.star,
                 label: l10n.productRecommended,
                 value: Text(
                   product.isRecommended
@@ -93,21 +96,21 @@ class InfoTab extends StatelessWidget {
                     : theme.colorScheme.onSurfaceVariant,
               ),
               InfoListItem(
-                icon: Icons.calendar_today_outlined,
+                icon: TablerIcons.calendar,
                 label: l10n.dateCreated,
                 value: Text(
                   '${dateFormat.format(product.createdAt)} ${timeFormat.format(product.createdAt)}',
                 ),
               ),
               InfoListItem(
-                icon: Icons.access_time_outlined,
+                icon: TablerIcons.clock,
                 label: l10n.dateUpdated,
                 value: Text(
                   '${dateFormat.format(product.updatedAt)} ${timeFormat.format(product.updatedAt)}',
                 ),
               ),
               InfoListItem(
-                icon: Icons.notes_outlined,
+                icon: TablerIcons.notes,
                 label: l10n.productDescriptionLabel,
                 value: Text(
                   hasDescription ? description : l10n.productDescriptionEmpty,
@@ -130,7 +133,7 @@ class InfoTab extends StatelessWidget {
                 for (var i = 0; i < optionGroups.length; i++) ...[
                   if (i > 0) const SizedBox(height: 4),
                   InfoListItem(
-                    icon: Icons.tune,
+                    icon: TablerIcons.adjustments,
                     label: optionGroups[i].name,
                     value: Text(_optionGroupDetail(context, optionGroups[i])),
                   ),
@@ -140,7 +143,11 @@ class InfoTab extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
-        CodesCard(product: product, onGenerateBarcode: onGenerateBarcode),
+        CodesCard(
+          product: product,
+          onGenerateBarcode: onGenerateBarcode,
+          onGenerateSku: onGenerateSku,
+        ),
       ],
     );
   }

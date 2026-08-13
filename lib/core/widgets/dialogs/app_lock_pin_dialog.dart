@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
+import 'package:promsell_pos_ce/core/services/store_pin_setup.dart';
 import 'package:promsell_pos_ce/core/utils/secure_screen.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 
 /// Prompts for store PIN when [AppLockService] is enabled and session expired.
 ///
@@ -31,6 +33,86 @@ Future<bool> ensureAppUnlocked(
     ),
   );
   return ok == true;
+}
+
+/// First-run / create flow: returns trimmed PIN or null if cancelled.
+///
+/// Does **not** call [AppLockService.setPin] — caller persists.
+Future<String?> showCreateStorePinDialog(
+  BuildContext context, {
+  bool barrierDismissible = false,
+}) async {
+  final l10n = context.l10n;
+  final c1 = TextEditingController();
+  final c2 = TextEditingController();
+  final result = await showDialog<String>(
+    context: context,
+    barrierDismissible: barrierDismissible,
+    builder: (ctx) {
+      return AlertDialog(
+        title: Text(l10n.onboardingStorePinTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.onboardingStorePinBody(AppLockService.minPinLength),
+              style: Theme.of(ctx).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: c1,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: l10n.appLockPinLabel,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: c2,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: l10n.appLockConfirmPin,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          if (barrierDismissible)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+          FilledButton(
+            onPressed: () {
+              final err = StorePinSetup.validateNewPin(c1.text, c2.text);
+              if (err == 'too_short' || err == 'empty') {
+                AppSnackBar.error(
+                  ctx,
+                  l10n.appLockPinTooShort(AppLockService.minPinLength),
+                );
+                return;
+              }
+              if (err == 'mismatch') {
+                AppSnackBar.error(ctx, l10n.appLockPinsMismatch);
+                return;
+              }
+              Navigator.pop(ctx, c1.text.trim());
+            },
+            child: Text(l10n.confirm),
+          ),
+        ],
+      );
+    },
+  );
+  disposeTextEditingControllerAfterFrame(c1);
+  disposeTextEditingControllerAfterFrame(c2);
+  return result;
 }
 
 class _AppLockPinDialog extends StatefulWidget {

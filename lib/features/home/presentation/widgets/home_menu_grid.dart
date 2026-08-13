@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 enum HomeMenuItem { sell, products, customers, promotions, history, closeDay }
 
@@ -14,19 +15,19 @@ class HomeMenuGrid extends StatelessWidget {
 
     final items = [
       _MenuItem(
-        icon: Icons.point_of_sale,
+        icon: TablerIcons.buildingStore,
         label: l10n.navSale,
         iconColor: cs.primary,
         item: HomeMenuItem.sell,
       ),
       _MenuItem(
-        icon: Icons.inventory_2_outlined,
+        icon: TablerIcons.cube,
         label: l10n.navProducts,
         iconColor: cs.secondary,
         item: HomeMenuItem.products,
       ),
       _MenuItem(
-        icon: Icons.people_outline,
+        icon: TablerIcons.addressBook,
         label: l10n.customersTitle,
         iconColor: cs.tertiary,
         item: HomeMenuItem.customers,
@@ -38,7 +39,7 @@ class HomeMenuGrid extends StatelessWidget {
         item: HomeMenuItem.promotions,
       ),
       _MenuItem(
-        icon: Icons.receipt_long_outlined,
+        icon: TablerIcons.receipt2,
         label: l10n.homeHistory,
         iconColor: cs.secondary,
         item: HomeMenuItem.history,

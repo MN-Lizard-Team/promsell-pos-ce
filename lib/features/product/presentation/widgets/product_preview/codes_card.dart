@@ -6,12 +6,19 @@ import 'package:promsell_pos_ce/features/product/presentation/utils/barcode_symb
 import 'package:promsell_pos_ce/features/product/presentation/widgets/shared/barcode_image_widget.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/shared_widgets.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class CodesCard extends StatelessWidget {
-  const CodesCard({super.key, required this.product, this.onGenerateBarcode});
+  const CodesCard({
+    super.key,
+    required this.product,
+    this.onGenerateBarcode,
+    this.onGenerateSku,
+  });
 
   final Product product;
   final VoidCallback? onGenerateBarcode;
+  final VoidCallback? onGenerateSku;
 
   @override
   Widget build(BuildContext context) {
@@ -31,18 +38,18 @@ class CodesCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InfoListItem(
-                icon: Icons.tag_outlined,
+                icon: TablerIcons.tag,
                 label: l10n.skuLabel,
                 value: Text(hasSku ? product.sku! : l10n.na),
                 onTap: hasSku
                     ? () => _copyToClipboard(context, product.sku!)
                     : null,
-                trailingIcon: Icons.copy,
+                trailingIcon: TablerIcons.copy,
                 semanticHint: hasSku ? l10n.copyBarcode : null,
               ),
               Divider(height: 1, color: dividerColor),
               InfoListItem(
-                icon: Icons.barcode_reader,
+                icon: TablerIcons.barcode,
                 label: l10n.barcodeLabel,
                 value: hasBarcode
                     ? Wrap(
@@ -83,16 +90,28 @@ class CodesCard extends StatelessWidget {
                 onTap: hasBarcode
                     ? () => _copyToClipboard(context, product.barcode!)
                     : null,
-                trailingIcon: Icons.copy,
+                trailingIcon: TablerIcons.copy,
                 semanticHint: hasBarcode ? l10n.copyBarcode : null,
               ),
+              if (!hasSku && onGenerateSku != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.tonalIcon(
+                    key: const ValueKey('codes-card-generate-sku'),
+                    onPressed: onGenerateSku,
+                    icon: const Icon(TablerIcons.wand, size: 18),
+                    label: Text(l10n.generateSku),
+                  ),
+                ),
+              ],
               if (!hasBarcode && onGenerateBarcode != null) ...[
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.tonalIcon(
                     onPressed: onGenerateBarcode,
-                    icon: const Icon(Icons.qr_code_2_outlined, size: 18),
+                    icon: const Icon(TablerIcons.qrcode, size: 18),
                     label: Text(l10n.generateBarcode),
                   ),
                 ),

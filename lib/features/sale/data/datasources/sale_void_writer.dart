@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
+import 'package:promsell_pos_ce/features/sale/data/datasources/sale_day_guard.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_write_side_effects.dart';
 
 /// Void sale + stock restore + inventory logs (single transaction).
@@ -31,6 +32,7 @@ class SaleVoidWriter {
         throw const BusinessRuleError('SaleAlreadyVoided');
       }
 
+      await SaleDayGuard.assertVoidAllowed(_db, sale.createdAt);
       final now = DateTime.now();
       await (_db.update(_db.sales)..where((s) => s.id.equals(saleId))).write(
         SalesCompanion(

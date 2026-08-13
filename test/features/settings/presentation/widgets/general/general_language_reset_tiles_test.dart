@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_language_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form/general_reset_tile.dart';
 
@@ -34,7 +35,7 @@ void main() {
         GeneralResetTile(settings: const Settings(), onUpdate: (_) {}),
       );
 
-      expect(find.byIcon(Icons.restore), findsOneWidget);
+      expect(find.byIcon(TablerIcons.history), findsOneWidget);
     });
 
     testWidgets('opens reset confirmation dialog on tap', (tester) async {

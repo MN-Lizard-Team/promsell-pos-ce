@@ -1,8 +1,8 @@
-# Conventions — Promsell POS CE (v0.9.0)
+# Conventions — Promsell POS CE (v0.9.1)
 
 State management, settings persistence, localization, dependency injection, and code generation conventions.
 
-> **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
+> **Main reference:** [`CODEBASE.md`](../../CODEBASE.md) — system overview, architecture, links
 
 ---
 
@@ -15,7 +15,17 @@ State management, settings persistence, localization, dependency injection, and 
 
 All state classes extend `Equatable` for efficient rebuilds.
 
-> Deep-dive: [`docs/architecture/technical-deep-dive.md`](architecture/technical-deep-dive.md)
+### Rebuild performance rules
+
+| Rule | Details |
+|------|--------|
+| **`context.select` over `context.watch`** | When a widget needs only 1–2 fields from a Cubit/Bloc, use `context.select((Cubit c) => c.state.field)` to rebuild only when that field changes. `context.watch<Cubit>()` rebuilds on **any** state change. |
+| **No state mutation in `BlocBuilder.builder`** | Never assign to instance fields inside `builder`. Compute local variables instead; defer side-effects to `addPostFrameCallback` or `BlocListener`. |
+| **Single `setState` per action** | Merge all state changes into one `setState(() { ... })` call. Calling `setState` twice in the same callback causes a double rebuild. |
+| **Long-lived streams** | Create `StreamController` in `initState`, cancel in `dispose`. Never create `Stream.periodic(...)` inline in `build()` — it leaks on every rebuild. |
+| **Catch specific exceptions** | Use `on ProviderNotFoundException` (or the exact type) instead of `catch (_)` to avoid hiding real errors. |
+
+> Deep-dive: [`docs/architecture/technical-deep-dive.md`](../architecture/technical-deep-dive.md)
 
 ---
 
@@ -99,7 +109,7 @@ After adding/changing annotations, run:
 dart run build_runner build
 ```
 
-> Deep-dive: [`docs/architecture/technical-deep-dive.md`](architecture/technical-deep-dive.md)
+> Deep-dive: [`docs/architecture/technical-deep-dive.md`](../architecture/technical-deep-dive.md)
 
 ---
 
@@ -117,4 +127,4 @@ Two generators must be run after changes:
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Conventions</sub>
+<sub>Promsell POS CE · v0.9.1 · Conventions</sub>

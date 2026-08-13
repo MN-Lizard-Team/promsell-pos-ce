@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class SalesPreviewCard extends StatelessWidget {
   const SalesPreviewCard({
@@ -17,7 +18,7 @@ class SalesPreviewCard extends StatelessWidget {
   final bool ultraCompactMode;
 
   IconData get _modeIcon =>
-      ultraCompactMode ? Icons.density_small : Icons.shopping_bag_outlined;
+      ultraCompactMode ? TablerIcons.layout : TablerIcons.basket;
 
   String _modeLabel(BuildContext context) {
     final l10n = context.l10n;
@@ -62,19 +63,19 @@ class SalesPreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _buildRow(
-            icon: Icons.attach_money_outlined,
+            icon: TablerIcons.currencyBaht,
             label: context.l10n.settingsCurrency,
             value: currency,
             st: st,
           ),
           _buildRow(
-            icon: Icons.calendar_today_outlined,
+            icon: TablerIcons.calendar,
             label: context.l10n.settingsDateFormat,
             value: dateFormat,
             st: st,
           ),
           _buildRow(
-            icon: Icons.folder_copy_outlined,
+            icon: TablerIcons.folder,
             label: context.l10n.settingsMaxDrafts,
             value: maxDrafts.toString(),
             st: st,

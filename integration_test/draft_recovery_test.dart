@@ -8,9 +8,9 @@ import 'robot_pattern/sale_robot.dart';
 import 'robot_pattern/checkout_robot.dart';
 
 /// Journey 3: Draft Cart Recovery
-/// 
+///
 /// Scenario: Cashier starts a sale, app crashes, cart is recovered
-/// 
+///
 /// GIVEN cashier has items in cart
 /// WHEN app is force-closed (simulate crash)
 /// AND app is reopened
@@ -54,12 +54,12 @@ void main() {
       final expectedTotal = Money.fromDouble(215.0); // 45 + 120 + 50
       saleRobot.verifyCartTotal(expectedTotal);
 
-      // Verify draft saved to database
-      await tester.pump(const Duration(milliseconds: 500));
-      var draftCarts = await TestApp.database.select(
-        TestApp.database.draftCarts,
-      ).get();
-      
+      // Autosave debounce is 1.5s — wait past it before asserting DB (Wave B).
+      await tester.pump(const Duration(milliseconds: 1600));
+      var draftCarts = await TestApp.database
+          .select(TestApp.database.draftCarts)
+          .get();
+
       expect(
         draftCarts.where((d) => !d.isArchived).length,
         1,
@@ -67,16 +67,12 @@ void main() {
       );
 
       final draftId = draftCarts.first.id;
-      
+
       var draftItems = await (TestApp.database.select(
         TestApp.database.draftCartItems,
       )..where((item) => item.cartId.equals(draftId))).get();
-      
-      expect(
-        draftItems.length,
-        3,
-        reason: 'Should have 3 items in draft',
-      );
+
+      expect(draftItems.length, 3, reason: 'Should have 3 items in draft');
 
       // WHEN: Simulate app crash and restart
       await TestApp.restartApp(tester);
@@ -109,10 +105,10 @@ void main() {
       await checkoutRobot.closeReceipt();
 
       // THEN: Verify draft is cleared after completing sale
-      draftCarts = await TestApp.database.select(
-        TestApp.database.draftCarts,
-      ).get();
-      
+      draftCarts = await TestApp.database
+          .select(TestApp.database.draftCarts)
+          .get();
+
       expect(
         draftCarts.where((d) => !d.isArchived).isEmpty,
         true,
@@ -120,7 +116,9 @@ void main() {
       );
     });
 
-    testWidgets('Draft is NOT loaded if user explicitly cleared cart', (tester) async {
+    testWidgets('Draft is NOT loaded if user explicitly cleared cart', (
+      tester,
+    ) async {
       saleRobot = SaleRobot(tester);
 
       await TestApp.pumpApp(tester);
@@ -133,8 +131,8 @@ void main() {
       saleRobot.verifyCartItem('Coffee', quantity: 1);
       saleRobot.verifyCartItem('Burger', quantity: 1);
 
-      // Wait for draft to save
-      await tester.pump(const Duration(milliseconds: 500));
+      // Wait for draft to save (autosave debounce 1.5s)
+      await tester.pump(const Duration(milliseconds: 1600));
 
       // Remove items manually (user clears cart)
       await saleRobot.removeFromCart('Coffee');
@@ -142,8 +140,8 @@ void main() {
 
       saleRobot.verifyCartEmpty();
 
-      // Wait for draft to be marked as archived/cleared
-      await tester.pump(const Duration(milliseconds: 500));
+      // Wait for draft to be marked as archived/cleared (autosave debounce)
+      await tester.pump(const Duration(milliseconds: 1600));
 
       // Restart app
       await TestApp.restartApp(tester);
@@ -198,8 +196,8 @@ void main() {
 
       saleRobot.verifyCartItem('Coffee', quantity: 3);
 
-      // Wait for draft save
-      await tester.pump(const Duration(milliseconds: 500));
+      // Wait for draft save (autosave debounce 1.5s)
+      await tester.pump(const Duration(milliseconds: 1600));
 
       // Restart app
       await TestApp.restartApp(tester);
@@ -210,7 +208,9 @@ void main() {
       saleRobot.verifyCartTotal(Money.fromDouble(135.0)); // 45 * 3
     });
 
-    testWidgets('Draft recovery with empty cart does not crash', (tester) async {
+    testWidgets('Draft recovery with empty cart does not crash', (
+      tester,
+    ) async {
       saleRobot = SaleRobot(tester);
 
       await TestApp.pumpApp(tester);

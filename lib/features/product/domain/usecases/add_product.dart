@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
+import 'package:promsell_pos_ce/core/exceptions/duplicate_sku_exception.dart';
 import 'package:promsell_pos_ce/core/utils/validators.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
@@ -31,15 +32,21 @@ class AddProduct {
   }) async {
     Validators.productName(name);
     Validators.price(price);
+    if (cost != null) Validators.cost(cost);
     Validators.stock(stock);
     Validators.barcode(barcode);
+    final normalizedSku = Validators.sku(sku);
     if (barcode != null && barcode.isNotEmpty) {
       final exists = await _repository.barcodeExists(barcode);
       if (exists) throw DuplicateBarcodeException(barcode);
     }
+    if (normalizedSku != null && normalizedSku.isNotEmpty) {
+      final skuExists = await _repository.skuExists(normalizedSku);
+      if (skuExists) throw DuplicateSkuException(normalizedSku);
+    }
     return _repository.addProduct(
       name: name.trim(),
-      sku: sku,
+      sku: normalizedSku,
       barcode: barcode,
       price: price,
       cost: cost,

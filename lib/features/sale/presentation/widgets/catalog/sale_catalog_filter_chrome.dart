@@ -5,9 +5,10 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/category_filter_chips.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/view_mode.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_filter_bar.dart';
 
-/// Unified Sale catalog filter chrome: categories + tools in one card.
+/// Sale catalog filter chrome — paper tools row + category tabs (no admin card mush).
 class SaleCatalogFilterChrome extends StatelessWidget {
   const SaleCatalogFilterChrome({
     super.key,
@@ -35,76 +36,68 @@ class SaleCatalogFilterChrome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pos = context.posTheme;
     final l10n = context.l10n;
 
-    // Wireframe: "Tab Category" left, "Filter" right, chips below.
     return Material(
-      color: theme.colorScheme.surface,
-      elevation: 0.5,
-      shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(16),
+      color: pos.billStubPaper,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: pos.billStubBorder),
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (showCategories)
-              Row(
-                children: [
+            Row(
+              children: [
+                if (showCategories)
                   Text(
                     l10n.saleCategoryTabsLabel,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onSurface,
                     ),
-                  ),
+                  )
+                else
                   const Spacer(),
-                  if (hasRecommended) ...[
-                    _RecommendedToggle(
-                      selected: recommendedOnly,
-                      label: l10n.saleRecommendedFilter,
-                      onChanged: onRecommendedChanged,
-                      compact: true,
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  // compact avoids Expanded-in-unbounded-Row from PillButton.
-                  SaleFilterBar(productState: productState, compact: true),
-                  const SizedBox(width: 4),
-                  _ViewModeToggle(
-                    viewMode: viewMode,
-                    onChanged: onViewModeChanged,
+                if (showCategories) const Spacer(),
+                // Recommended = merchandising; filter + view = list tools.
+                if (hasRecommended) ...[
+                  _ToolChip(
+                    selected: recommendedOnly,
+                    icon: recommendedOnly
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    tooltip: l10n.saleRecommendedFilter,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onRecommendedChanged(!recommendedOnly);
+                    },
+                    accentWhenSelected: true,
                   ),
+                  const SizedBox(width: 8),
+                  Container(width: 1, height: 24, color: pos.billStubBorder),
+                  const SizedBox(width: 8),
                 ],
-              )
-            else
-              Row(
-                children: [
-                  if (hasRecommended) ...[
-                    _RecommendedToggle(
-                      selected: recommendedOnly,
-                      label: l10n.saleRecommendedFilter,
-                      onChanged: onRecommendedChanged,
-                      compact: true,
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  SaleFilterBar(productState: productState, compact: true),
-                  const SizedBox(width: 4),
-                  _ViewModeToggle(
-                    viewMode: viewMode,
-                    onChanged: onViewModeChanged,
-                  ),
-                ],
-              ),
+                SaleFilterBar(productState: productState, compact: true),
+                const SizedBox(width: 6),
+                _ViewModeToggle(
+                  viewMode: viewMode,
+                  onChanged: onViewModeChanged,
+                ),
+              ],
+            ),
             if (showCategories) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               CategoryFilterChips(
                 categories: categories,
                 selectedCategoryId: productState.categoryFilter,
                 onCategorySelected: onCategorySelected,
-                padding: const EdgeInsets.symmetric(horizontal: 0),
+                padding: EdgeInsets.zero,
               ),
             ],
           ],
@@ -114,72 +107,56 @@ class SaleCatalogFilterChrome extends StatelessWidget {
   }
 }
 
-class _RecommendedToggle extends StatelessWidget {
-  const _RecommendedToggle({
+/// Outline tool chip — paper language (not filled primary unless active filter).
+class _ToolChip extends StatelessWidget {
+  const _ToolChip({
     required this.selected,
-    required this.label,
-    required this.onChanged,
-    this.compact = false,
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    this.accentWhenSelected = false,
   });
 
   final bool selected;
-  final String label;
-  final ValueChanged<bool> onChanged;
-  final bool compact;
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  final bool accentWhenSelected;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bg = selected
+    final pos = context.posTheme;
+    final bg = selected && accentWhenSelected
         ? theme.colorScheme.tertiaryContainer
-        : theme.colorScheme.surface;
-    final fg = selected
-        ? theme.colorScheme.onTertiaryContainer
+        : pos.billStubPaper;
+    final border = selected && accentWhenSelected
+        ? theme.colorScheme.tertiary.withValues(alpha: 0.45)
+        : pos.billStubBorder;
+    final fg = selected && accentWhenSelected
+        ? theme.colorScheme.tertiary
         : theme.colorScheme.onSurfaceVariant;
-    final border = selected
-        ? theme.colorScheme.tertiary.withValues(alpha: 0.55)
-        : theme.colorScheme.outlineVariant.withValues(alpha: 0.9);
 
-    return Material(
-      color: bg,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-        side: BorderSide(color: border),
-      ),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onChanged(!selected);
-        },
-        borderRadius: BorderRadius.circular(22),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 10 : 12,
-            vertical: 8,
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: tooltip,
+        child: Material(
+          color: bg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: border),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                selected ? Icons.star_rounded : Icons.star_outline_rounded,
-                size: 18,
-                color: selected ? theme.colorScheme.tertiary : fg,
-              ),
-              if (!compact) ...[
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: fg,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ],
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 36,
+              height: 36,
+              child: Icon(icon, size: 18, color: fg),
+            ),
           ),
         ),
       ),
@@ -195,13 +172,16 @@ class _ViewModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final pos = context.posTheme;
 
     return Material(
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-      borderRadius: BorderRadius.circular(12),
+      color: pos.billStubPaper,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: pos.billStubBorder),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(3),
+        padding: const EdgeInsets.all(2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -243,18 +223,18 @@ class _ViewModeButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: selected ? theme.colorScheme.surface : Colors.transparent,
-        elevation: selected ? 1 : 0,
-        shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(9),
+        color: selected
+            ? theme.colorScheme.primary.withValues(alpha: 0.12)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: () {
             HapticFeedback.selectionClick();
             onTap();
           },
-          borderRadius: BorderRadius.circular(9),
+          borderRadius: BorderRadius.circular(8),
           child: SizedBox(
-            width: 36,
+            width: 32,
             height: 32,
             child: Icon(
               icon,

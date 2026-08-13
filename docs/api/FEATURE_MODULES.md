@@ -1,6 +1,6 @@
 # Feature Modules API Reference
 
-> **Scope note (v0.9.0):** This file documents a **subset** of APIs. Full feature list (13): `customer`, `daily_close`, `history`, `home`, `inventory`, `onboarding`, `product`, `promotion`, `receipt`, `report`, `restaurant_table`, `sale`, `settings` under `lib/features/`.
+> **Scope note (v0.9.1):** This file documents a **subset** of APIs. Full feature list (13): `customer`, `daily_close`, `history`, `home`, `inventory`, `onboarding`, `product`, `promotion`, `receipt`, `report`, `restaurant_table`, `sale`, `settings` under `lib/features/`.
 
 
 Public APIs for feature-level domain models, repositories, and use cases.
@@ -23,62 +23,36 @@ class Product extends Equatable {
   final String name;                  // Required
   final String? sku;                  // Stock Keeping Unit
   final String? barcode;              // EAN-13/8, UPC-A, Code 128
-  final String? barcodeImagePath;     // Generated barcode PNG
-  final String? categoryId;           // Foreign key to categories
   final Money price;                  // Selling price (required)
-  final Money? cost;                  // Purchase cost (optional)
-  final double stock;                 // Current inventory level
-  final bool trackStock;              // Enable stock tracking
-  final bool isActive;                // Soft delete flag
+  final Money cost;                   // Purchase cost (defaults to Money.zero)
+  final int stock;                    // Current inventory level
+  final String? categoryId;           // Foreign key to categories
+  final String? imageUrl;             // Product image URL
   final String? imagePath;            // Product image path
   final String? imageThumbnailPath;   // 200x200 thumbnail
+  final String? barcodeImagePath;     // Generated barcode PNG
   final String? description;          // Product description (v0.8.9+)
+  final String? brand;                // Brand name
+  final String? unit;                 // Unit of measure
+  final String? supplier;             // Supplier name
+  final bool isRecommended;           // Recommended flag
+  final bool isActive;                // Soft delete flag
+  final bool trackStock;              // Enable stock tracking
+  final List<ProductOptionGroup> optionGroups;  // Modifier groups
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int version;                  // Optimistic locking version
 }
 ```
 
 #### Computed Properties
 
 ```dart
-// Profit per unit
-Money get profit => cost != null ? price - cost! : Money.zero;
+// In-stock check (non-tracking products always in stock)
+bool get isInStock => !trackStock || stock > 0;
 
-// Profit margin percentage
-double get profitMargin {
-  if (cost == null || cost!.isZero) return 0.0;
-  return (profit.value / price.value) * 100;
-}
-
-// Markup percentage
-double get markup {
-  if (cost == null || cost!.isZero) return 0.0;
-  return (profit.value / cost!.value) * 100;
-}
-
-// ROI (Return on Investment)
-double get roi => markup;  // Alias for markup
-
-// Total stock value at cost
-Money get stockValue => (cost ?? Money.zero) * stock;
-
-// Total stock revenue at selling price
-Money get stockRevenue => price * stock;
-
-// Total stock profit
-Money get stockProfit => profit * stock;
-```
-
-#### Business Logic
-
-```dart
-// Stock level checks
-bool get isLowStock => trackStock && stock > 0 && stock <= 10;
-bool get isOutOfStock => trackStock && stock <= 0;
-bool get hasStock => !trackStock || stock > 0;
-
-// Validation
-bool get isValid => name.isNotEmpty && price > Money.zero;
+// Deprecated alias for categoryId
+String? get category => categoryId;
 ```
 
 ### ProductRepository
@@ -90,18 +64,40 @@ bool get isValid => name.isNotEmpty && price > Money.zero;
 ```dart
 abstract class ProductRepository {
   // Queries
-  Stream<List<Product>> watchAllProducts();
-  Stream<Product?> watchProductById(String id);
-  Future<Product?> getById(String id);
-  Future<Product?> getByBarcode(String barcode);
+  Stream<List<Product>> watchAllProducts({int? limit});
+  Future<List<Product>> getActiveProducts();
+  Future<List<Product>> getAllProducts();   // active + inactive
+  Future<int> getProductCount();            // non-deleted count
+  Future<Product?> getProductById(String id);
+  Future<Product?> getProductByBarcode(String barcode);
   Future<bool> barcodeExists(String barcode, {String? excludeId});
+  Future<bool> skuExists(String sku, {String? excludeId});
   
   // Mutations
-  Future<void> insertProduct(Product product);
-  Future<void> updateProduct(Product product);
+  Future<String> addProduct({
+    required String name,
+    String? sku,
+    String? barcode,
+    required double price,
+    double? cost,
+    required int stock,
+    String? categoryId,
+    String? imageUrl,
+    String? imagePath,
+    String? imageThumbnailPath,
+    bool trackStock = true,
+    bool isActive = true,
+    String? description,
+    String? brand,
+    String? unit,
+    String? supplier,
+    bool isRecommended = false,
+    List<ProductOptionGroup> optionGroups = const [],
+  });
+  Future<void> updateProduct(Product product, {List<ProductOptionGroup>? optionGroups});
+  Future<void> bulkUpdateBarcodes(List<({String id, String barcode})> updates);
   Future<void> deleteProduct(String id);
-  Future<void> updateStock(String productId, double newStock);
-  Future<void> adjustStock(String productId, double delta, String reason);
+  Future<void> restoreProduct(String id);   // Undo soft delete
 }
 ```
 
@@ -109,13 +105,13 @@ abstract class ProductRepository {
 
 ```dart
 // Watch products (reactive)
-final products$ = repository.watchAllProducts();
+final products$ = repository.watchAllProducts(limit: 100);
 await for (final products in products$) {
   print('Product count: ${products.length}');
 }
 
 // Get single product
-final product = await repository.getById('abc-123');
+final product = await repository.getProductById('abc-123');
 if (product != null) {
   print('Price: ${product.price}');
 }
@@ -124,13 +120,6 @@ if (product != null) {
 final exists = await repository.barcodeExists(
   '2001234567890',
   excludeId: currentProductId,  // Exclude self when editing
-);
-
-// Adjust stock with audit trail
-await repository.adjustStock(
-  'product-id',
-  -5.0,  // Decrease by 5
-  'Damaged items removed',
 );
 ```
 
@@ -148,17 +137,21 @@ class AddProduct {
   final ProductRepository _repository;
   final ProductImageService _imageService;
   
-  Future<void> call({
+  Future<String> call({
     required String name,
     required Money price,
     String? sku,
     String? barcode,
     String? categoryId,
     Money? cost,
-    double stock = 0,
+    int stock = 0,
     bool trackStock = true,
     String? localImagePath,
     String? description,
+    String? brand,
+    String? unit,
+    String? supplier,
+    bool isRecommended = false,
   }) async {
     // Validate barcode uniqueness
     if (barcode != null && barcode.isNotEmpty) {
@@ -176,25 +169,25 @@ class AddProduct {
       thumbnailPath = await _imageService.generateThumbnail(savedImagePath);
     }
     
-    final product = Product(
-      id: IdGenerator.newId(),
+    // Delegate to repository (returns generated ID)
+    return _repository.addProduct(
       name: name,
-      price: price,
+      price: price.value,
+      cost: cost?.value,
       sku: sku,
       barcode: barcode,
       categoryId: categoryId,
-      cost: cost,
       stock: stock,
       trackStock: trackStock,
       isActive: true,
       imagePath: savedImagePath,
       imageThumbnailPath: thumbnailPath,
       description: description,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      brand: brand,
+      unit: unit,
+      supplier: supplier,
+      isRecommended: isRecommended,
     );
-    
-    await _repository.insertProduct(product);
   }
 }
 ```
@@ -246,43 +239,48 @@ class AdjustStock {
 ```dart
 class Sale extends Equatable {
   final String id;
-  final String saleNumber;            // Auto-generated (e.g., "S-2024-001")
-  final List<SaleItem> items;         // Line items
-  final Money subtotal;               // Sum of all items
-  final Money discountAmount;         // Manual discount
-  final Money taxAmount;              // VAT/sales tax
-  final Money total;                  // Subtotal - discount + tax
-  final PaymentMethod paymentMethod;  // cash, card, promptpay, etc.
+  final String? receiptNumber;        // Nullable receipt number
+  final String status;                // 'COMPLETED', 'VOIDED', etc.
+  final Money subtotalAmount;         // Sum of all items
+  final String? discountType;         // 'PERCENT' or flat amount type
+  final double? discountValue;        // % or flat amount (stays double)
+  final Money discountAmount;         // Calculated discount amount
+  final String vatMode;               // 'NONE', 'EXCLUSIVE', 'INCLUSIVE'
+  final double vatRate;               // VAT rate % (stays double)
+  final Money vatAmount;              // Calculated VAT amount
+  final Money totalAmount;            // Subtotal - discount + VAT + service
+  final String paymentMethod;         // cash, card, promptpay, etc.
+  final Money? amountReceived;        // Cash received (for change calc)
+  final Money? changeAmount;          // Change due
+  final String? note;                 // Sale-level note
+  final String? paymentReference;     // Payment reference (e.g., biller ID)
+  final String? sendingBankCode;      // PromptPay sending bank code
+  final String orderType;             // dine-in, takeaway, delivery (default 'delivery')
+  final String orderChannel;          // walkin, phone, online (default 'walkin')
+  final String? externalOrderRef;     // External order reference
+  final String? tableId;              // Restaurant table reference
+  final double serviceChargeRate;     // Service charge % (stays double)
+  final Money serviceChargeAmount;    // Calculated service charge
   final String? customerId;           // Optional customer reference
   final String? promotionId;          // Optional promotion applied
-  final Money? promotionDiscountAmount;  // Discount from promotion
-  final String? orderType;            // dine-in, takeaway, delivery
-  final String? orderChannel;         // walk-in, phone, online
-  final String? tableId;              // Restaurant table reference
-  final double? serviceChargeRate;    // Service charge % (e.g., 0.10 = 10%)
-  final Money? serviceChargeAmount;   // Calculated service charge
-  final DateTime createdAt;
+  final Money promotionDiscountAmount;// Discount from promotion
   final DateTime? voidedAt;           // Soft delete for voided sales
+  final String? voidReason;           // Reason for voiding
+  final DateTime createdAt;
+  final List<SaleItem> items;         // Line items
+  final List<SalePayment> payments;   // Multi-tender payment lines
 }
 ```
 
 #### Computed Properties
 
 ```dart
-// Grand total including service charge
-Money get grandTotal {
-  final base = total;
-  if (serviceChargeAmount != null) {
-    return base + serviceChargeAmount!;
-  }
-  return base;
-}
-
 // Is this sale voided?
-bool get isVoided => voidedAt != null;
+bool get isVoided => status == 'VOIDED';
 
-// Total item count
-int get totalItems => items.fold(0, (sum, item) => sum + item.quantity);
+// Single-tender: first payment method; multi may use header [paymentMethod]
+String get primaryPaymentMethod =>
+    payments.length == 1 ? payments.first.method : paymentMethod;
 ```
 
 ### SaleItem Entity
@@ -290,41 +288,67 @@ int get totalItems => items.fold(0, (sum, item) => sum + item.quantity);
 ```dart
 class SaleItem extends Equatable {
   final String id;
+  final String saleId;                // Parent sale reference
   final String productId;
   final String productName;           // Snapshot for history
-  final int quantity;
   final Money price;                  // Price at time of sale
-  final Money lineTotal;              // quantity * price + options
-  final List<ProductOption>? options; // Selected modifiers (v0.8.9+)
-  final String? note;                 // Special instructions (v0.8.8+)
+  final int qty;                      // Quantity sold
+  final Money subtotal;               // qty * price
+  final Money discountAmount;         // Line-level discount (defaults to zero)
+  final Money vatAmount;              // Line-level VAT (defaults to zero)
+  final String? note;                 // Special instructions
+  final List<SelectedProductOption> selectedOptions;  // Selected modifiers
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;          // Soft delete
+  final int version;                  // Optimistic locking version
+  final String? deviceId;             // Device that created the line
 }
 ```
 
 ### CartState
 
-**Path:** `lib/features/sale/presentation/bloc/cart_bloc.dart`
+**Path:** `lib/features/sale/presentation/bloc/cart_state.dart`
 
 #### State Properties
 
 ```dart
 class CartState extends Equatable {
   final List<CartItem> items;
-  final Money itemsSubtotal;          // Sum of all line totals
-  final Money cartDiscountAmount;     // Manual cart-level discount
-  final Money total;                  // Subtotal - discount
-  final double serviceChargeRate;     // From settings (restaurant mode)
-  final Money serviceChargeAmount;    // Calculated service charge
-  final Money grandTotal;             // total + serviceCharge
+  final String note;                  // Cart-level note
+  final String? cartDiscountType;     // 'PERCENT' or flat amount type
+  final double? cartDiscountValue;    // % or flat amount
+  final String orderType;             // dine-in, takeaway, delivery (default 'delivery')
+  final String orderChannel;          // walkin, phone, online (default 'walkin')
+  final String? externalOrderRef;     // External order reference
+  final String? tableId;              // Restaurant table reference
+  final double? serviceChargeRate;    // From settings (restaurant mode)
   final String? customerId;
   final String? promotionId;
-  final Money? promotionDiscountAmount;
-  final String? orderType;            // dine-in, takeaway, delivery
-  final String? orderChannel;         // walk-in, phone, online
-  final String? tableId;
-  final AppError? error;              // Typed error
+  final double promotionDiscountAmount;  // Promotion discount (double baht)
   final String? stockWarning;         // Low stock warnings
+  final String? errorMessage;         // Error message (not AppError)
+  final String? lastFailedBarcode;    // Barcode that failed lookup
+  final int errorNonce;               // Error increment counter
+  final bool paymentLocked;           // Lock cart during payment
+
+  // Private cached computed values (populated by copyWith)
+  final Money? _cachedItemsSubtotal;
+  final Money? _cachedCartDiscountAmount;
+  final Money? _cachedTotal;
+  final Money? _cachedServiceChargeAmount;
+
+  // Computed getters (use cache if available, else compute on the fly)
+  Money get itemsSubtotal => _cachedItemsSubtotal ?? _computeItemsSubtotal();
+  Money get cartDiscountAmount => _cachedCartDiscountAmount ?? _computeCartDiscountAmount();
+  Money get total => _cachedTotal ?? _computeTotal();
+  Money get serviceChargeAmount => _cachedServiceChargeAmount ?? _computeServiceChargeAmount();
+
+  // Payable SSOT (SC default + VAT) for display and checkout alignment
+  SalePayableTotals payableTotals(Settings settings);
 }
 ```
+
+> **Note (v0.9.1):** `grandTotal` was removed — use `payableTotals(settings)` as the SSOT for payable calculations.
 
 #### Cart Events
 
@@ -364,16 +388,40 @@ CartCleared()
 
 ```dart
 abstract class SaleRepository {
-  // Queries
-  Stream<List<Sale>> watchAllSales();
-  Stream<Sale?> watchSaleById(String id);
-  Future<Sale?> getById(String id);
-  Future<List<Sale>> getSalesByDateRange(DateTime start, DateTime end);
-  Future<String> generateSaleNumber();
-  
   // Mutations
-  Future<void> insertSale(Sale sale);
-  Future<void> voidSale(String saleId);  // Soft delete
+  Future<Sale> createSale({
+    required List<CartItem> items,
+    required String paymentMethod,
+    required String vatMode,
+    required double vatRate,
+    String? cartDiscountType,
+    double? cartDiscountValue,
+    Money? cartDiscountAmount,
+    Money? amountReceived,
+    Money? changeAmount,
+    String? note,
+    String? paymentReference,
+    String? sendingBankCode,
+    List<SalePayment>? payments,
+    String orderType = 'delivery',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    Money serviceChargeAmount = Money.zero,
+    String? customerId,
+    String? promotionId,
+    Money promotionDiscountAmount = Money.zero,
+  });
+
+  // Queries
+  Future<List<Sale>> getSales({DateTime? from, DateTime? to});
+  Future<Sale?> getSaleById(String id);
+  Stream<List<Sale>> watchRecentSales({int limit = 20});
+  Stream<List<Sale>> watchSales({DateTime? from, DateTime? to});
+
+  // Void
+  Future<void> voidSale(String saleId, {String? reason});  // Soft delete
 }
 ```
 
@@ -386,65 +434,99 @@ abstract class SaleRepository {
 ```dart
 @injectable
 class CreateSale {
-  CreateSale(this._saleRepository, this._productRepository);
-  
-  final SaleRepository _saleRepository;
-  final ProductRepository _productRepository;
-  
+  const CreateSale(this._repository, this._settingsRepo);
+
+  final SaleRepository _repository;
+  final SettingsRepository _settingsRepo;
+
   Future<Sale> call({
     required List<CartItem> items,
-    required Money subtotal,
-    required Money discountAmount,
-    required Money total,
-    required PaymentMethod paymentMethod,
+    required String paymentMethod,
+    required String vatMode,
+    required double vatRate,
+    String? cartDiscountType,
+    double? cartDiscountValue,
+    Money? cartDiscountAmount,
+    Money? amountReceived,
+    Money? changeAmount,
+    String? note,
+    String? paymentReference,
+    String? sendingBankCode,
+    List<SalePayment>? payments,
+    String orderType = 'delivery',
+    String orderChannel = 'walkin',
+    String? externalOrderRef,
+    String? tableId,
+    double serviceChargeRate = 0.0,
+    Money serviceChargeAmount = Money.zero,
     String? customerId,
     String? promotionId,
-    Money? promotionDiscountAmount,
-    String? orderType,
-    String? orderChannel,
-    String? tableId,
-    double? serviceChargeRate,
-    Money? serviceChargeAmount,
+    Money promotionDiscountAmount = Money.zero,
   }) async {
-    // Generate sale number
-    final saleNumber = await _saleRepository.generateSaleNumber();
-    
-    // Convert cart items to sale items
-    final saleItems = items.map((item) => SaleItem(
-      id: IdGenerator.newId(),
-      productId: item.product.id,
-      productName: item.product.name,
-      quantity: item.quantity,
-      price: item.product.price,
-      lineTotal: item.lineTotal,
-      options: item.options,
-      note: item.note,
-    )).toList();
-    
-    final sale = Sale(
-      id: IdGenerator.newId(),
-      saleNumber: saleNumber,
-      items: saleItems,
-      subtotal: subtotal,
-      discountAmount: discountAmount,
-      taxAmount: Money.zero,  // Future: calculate tax
-      total: total,
+    // Validate cart + items
+    Validators.nonEmptyCart(items);
+    for (final item in items) {
+      Validators.qty(item.qty);
+      Validators.price(item.product.price.value);
+    }
+
+    // Sales-day lock check
+    final settings = await _settingsRepo.load();
+    if (SalesDayLock.isCreateBlocked(
+      dailyCloseLock: settings.dailyCloseLock,
+      lastClosedDate: settings.lastClosedDate,
+    )) {
+      throw const BusinessRuleError(SalesDayLock.ruleDayClosed);
+    }
+
+    // Fiscal policy: clamp VAT rate and cart discount against settings
+    final safeVatRate = vatRate.clamp(0.0, 100.0);
+    // ... clamp cart discount type/value against settings limits ...
+
+    // Recompute money from lines + clamped type/value (Wave D / AH-2.3)
+    final itemsSubtotal = items.fold(Money.zero, (sum, i) => sum + i.subtotal);
+    final recomputedCartDiscount = CartDiscountMath.amountFromTypeValue(
+      type: safeCartDiscountType,
+      value: safeCartDiscountValue,
+      itemsSubtotal: itemsSubtotal,
+    );
+    final recomputedPromo = CartDiscountMath.clampPromotionToBase(
+      itemsSubtotal: itemsSubtotal,
+      cartDiscountAmount: recomputedCartDiscount,
+      promotionDiscount: promotionDiscountAmount,
+    );
+    final recomputedServiceCharge = CartDiscountMath.serviceChargeFromRate(
+      itemsSubtotal: itemsSubtotal,
+      cartDiscountAmount: recomputedCartDiscount,
+      promotionDiscountAmount: recomputedPromo,
+      serviceChargeRate: safeServiceChargeRate,
+    );
+
+    // Delegate to repository (creates sale + items + payments, decrements stock)
+    return _repository.createSale(
+      items: items,
       paymentMethod: paymentMethod,
-      customerId: customerId,
-      promotionId: promotionId,
-      promotionDiscountAmount: promotionDiscountAmount,
+      vatMode: vatMode,
+      vatRate: safeVatRate,
+      cartDiscountType: safeCartDiscountType,
+      cartDiscountValue: safeCartDiscountValue,
+      cartDiscountAmount: recomputedCartDiscount,
+      amountReceived: amountReceived,
+      changeAmount: changeAmount,
+      note: note,
+      paymentReference: paymentReference,
+      sendingBankCode: sendingBankCode,
+      payments: payments,
       orderType: orderType,
       orderChannel: orderChannel,
+      externalOrderRef: externalOrderRef,
       tableId: tableId,
-      serviceChargeRate: serviceChargeRate,
-      serviceChargeAmount: serviceChargeAmount,
-      createdAt: DateTime.now(),
+      serviceChargeRate: safeServiceChargeRate,
+      serviceChargeAmount: recomputedServiceCharge,
+      customerId: customerId,
+      promotionId: promotionId,
+      promotionDiscountAmount: recomputedPromo,
     );
-    
-    // Insert sale (triggers inventory decrement in repository)
-    await _saleRepository.insertSale(sale);
-    
-    return sale;
   }
 }
 ```
@@ -457,7 +539,7 @@ class VoidSale {
   VoidSale(this._saleRepository, this._productRepository);
   
   Future<void> call(String saleId) async {
-    final sale = await _saleRepository.getById(saleId);
+    final sale = await _saleRepository.getSaleById(saleId);
     if (sale == null) {
       throw NotFoundError('Sale', id: saleId);
     }
@@ -580,35 +662,39 @@ abstract class PromotionRepository {
 
 **Path:** `lib/features/settings/domain/entities/settings.dart`
 
-Settings is split into 15 typed group entities (as of v0.8.9):
+Settings is split into 14 typed group entities (as of v0.9.1):
 
 ```dart
 class Settings extends Equatable {
-  final GeneralSettings general;
-  final ShopInfoSettings shopInfo;
-  final ReceiptSettings receipt;
-  final DiscountPolicySettings discountPolicy;
-  final PromptPaySettings promptPay;
-  final ImageSettings image;
-  final BarcodeSettings barcode;
-  final DeviceSettings device;
-  final DatabaseSettings database;
-  final BackupSettings backup;
-  final ThemeSettings theme;
-  final RestaurantSettings restaurant;  // v0.8.9+
-  // ... 3 more groups
+  final ShopInfo shopInfo;
+  final ReceiptConfig receiptConfig;
+  final TaxConfig taxConfig;
+  final DiscountConfig discountConfig;
+  final StockConfig stockConfig;
+  final ImageConfig imageConfig;
+  final PaymentConfig paymentConfig;
+  final DeviceConfig deviceConfig;
+  final UiConfig uiConfig;
+  final DailyCloseConfig dailyCloseConfig;
+  final BackupConfig backupConfig;
+  final DraftConfig draftConfig;
+  final BarcodeConfig barcodeConfig;
+  final BusinessConfig businessConfig;
+  final bool onboardingCompleted;
+  final int skuLastCounter;
+  final String skuAutoGeneratePrefix;
 }
 ```
 
-### Example: GeneralSettings
+### Example: UiConfig
 
 ```dart
-class GeneralSettings extends Equatable {
+class UiConfig extends Equatable {
   final String locale;                // 'th' or 'en'
-  final String currencyCode;          // 'THB'
-  final String currencySymbol;        // '฿'
-  final ThemeMode themeMode;          // light, dark, system
-  final bool compactCartMode;         // Compact cart UI (v0.8.8+)
+  final String themeMode;             // 'light', 'dark', 'system'
+  final String dateFormat;            // Date format string
+  final bool ultraCompactMode;        // Ultra-compact cart UI
+  final bool accessibilityMode;       // Accessibility mode
 }
 ```
 
@@ -638,8 +724,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> load() async { ... }
   
   // Update specific group
-  Future<void> updateGeneral(GeneralSettings general) async { ... }
-  Future<void> updateShopInfo(ShopInfoSettings shopInfo) async { ... }
+  Future<void> updateShopInfo(ShopInfo shopInfo) async { ... }
+  Future<void> updateReceiptConfig(ReceiptConfig receiptConfig) async { ... }
   
   // Auto-save with debounce (500ms)
   void scheduleAutoSave(Settings settings) { ... }
@@ -675,7 +761,7 @@ lib/features/<feature>/
 ```dart
 // Domain interface (abstract)
 abstract class ProductRepository {
-  Future<Product?> getById(String id);
+  Future<Product?> getProductById(String id);
 }
 
 // Data implementation (concrete)
@@ -686,7 +772,7 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductLocalDatasource _localDatasource;
   
   @override
-  Future<Product?> getById(String id) async {
+  Future<Product?> getProductById(String id) async {
     final data = await _localDatasource.getProductById(id);
     if (data == null) return null;
     return Product.fromData(data);  // Map database model to domain entity
@@ -696,4 +782,4 @@ class ProductRepositoryImpl implements ProductRepository {
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Feature Modules API</sub>
+<sub>Promsell POS CE · v0.9.1 · Feature Modules API</sub>

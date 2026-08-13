@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product_option_
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/option_edit_sheet.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/option_group_edit_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class OptionGroupsEditor extends StatefulWidget {
   const OptionGroupsEditor({
@@ -62,7 +63,7 @@ class _OptionGroupsEditorState extends State<OptionGroupsEditor> {
       confirmLabel: l10n.delete,
       cancelLabel: l10n.cancel,
       destructive: true,
-      confirmIcon: Icons.delete_outline_rounded,
+      confirmIcon: TablerIcons.trash,
     );
     if (!confirmed || !mounted) return;
     setState(() => _groups.removeAt(index));
@@ -105,7 +106,7 @@ class _OptionGroupsEditorState extends State<OptionGroupsEditor> {
       confirmLabel: l10n.delete,
       cancelLabel: l10n.cancel,
       destructive: true,
-      confirmIcon: Icons.delete_outline_rounded,
+      confirmIcon: TablerIcons.trash,
     );
     if (!confirmed || !mounted) return;
     setState(() {
@@ -161,7 +162,7 @@ class _OptionGroupsEditorState extends State<OptionGroupsEditor> {
             alignment: Alignment.centerLeft,
             child: FilledButton.tonalIcon(
               onPressed: _addGroup,
-              icon: const Icon(Icons.add),
+              icon: const Icon(TablerIcons.plus),
               label: Text(l10n.addOptionGroup),
             ),
           ),
@@ -233,7 +234,7 @@ class _GroupCard extends StatelessWidget {
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 20),
+                  icon: const Icon(TablerIcons.dotsVertical, size: 20),
                   onSelected: (v) {
                     if (v == 'edit') onEdit();
                     if (v == 'delete') onDelete();
@@ -243,7 +244,7 @@ class _GroupCard extends StatelessWidget {
                       value: 'edit',
                       child: Row(
                         children: [
-                          const Icon(Icons.edit_outlined, size: 18),
+                          const Icon(TablerIcons.edit, size: 18),
                           const SizedBox(width: 8),
                           Text(l10n.editOptionGroup),
                         ],
@@ -253,7 +254,7 @@ class _GroupCard extends StatelessWidget {
                       value: 'delete',
                       child: Row(
                         children: [
-                          const Icon(Icons.delete_outline, size: 18),
+                          const Icon(TablerIcons.trash, size: 18),
                           const SizedBox(width: 8),
                           Text(l10n.deleteOptionGroup),
                         ],
@@ -279,12 +280,12 @@ class _GroupCard extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       IconButton(
-                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        icon: const Icon(TablerIcons.edit, size: 18),
                         onPressed: () => onEditOption(i),
                         visualDensity: VisualDensity.compact,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 18),
+                        icon: const Icon(TablerIcons.trash, size: 18),
                         onPressed: () => onDeleteOption(i),
                         visualDensity: VisualDensity.compact,
                       ),
@@ -296,7 +297,7 @@ class _GroupCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: onAddOption,
-                icon: const Icon(Icons.add, size: 18),
+                icon: const Icon(TablerIcons.plus, size: 18),
                 label: Text(l10n.addOption),
               ),
             ),

@@ -57,7 +57,34 @@ class _OptionEditSheetState extends State<_OptionEditSheet> {
   void _save() {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
-    final price = double.tryParse(_priceCtrl.text.trim()) ?? 0.0;
+    if (name.length > 100) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.optionNameTooLong)));
+      return;
+    }
+    final priceText = _priceCtrl.text.trim();
+    final price = double.tryParse(priceText) ?? 0.0;
+    // Validate priceDelta: reject NaN/Infinity, limit to 2 decimals,
+    // and cap absolute value to a reasonable maximum.
+    if (price.isNaN || price.isInfinite) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.optionPriceInvalid)));
+      return;
+    }
+    if ((price * 100).roundToDouble() / 100 != price) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.optionPriceTooManyDecimals)),
+      );
+      return;
+    }
+    if (price.abs() > 999999.99) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.optionPriceTooLarge)));
+      return;
+    }
     final base =
         widget.existing ??
         ProductOption(id: IdGenerator.newId(), groupId: '', name: name);
@@ -118,6 +145,7 @@ class _OptionEditSheetState extends State<_OptionEditSheet> {
               controller: _priceCtrl,
               labelText: l10n.optionPriceDelta,
               hintText: l10n.optionPriceDeltaHint,
+              helperText: l10n.optionPriceDeltaHelper,
               suffixText: currency,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,

@@ -21,7 +21,7 @@ abstract final class CheckoutShellNav {
         continue;
       }
       if (!poppedShell &&
-          (name == SalePaymentRoutes.paymentSheet ||
+          (SalePaymentRoutes.isPaymentPage(name) ||
               name == SalePaymentRoutes.checkoutPage)) {
         nav.pop();
         poppedShell = true;

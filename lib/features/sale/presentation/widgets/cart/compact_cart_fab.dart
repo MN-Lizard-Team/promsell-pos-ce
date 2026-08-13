@@ -84,13 +84,18 @@ class _CompactCartFabState extends State<CompactCartFab>
             BlocSelector<DraftBloc, DraftState, int>(
               selector: (s) => s.openBillCount,
               builder: (context, openCount) {
+                final pos = context.posTheme;
                 if (openCount <= 0) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(right: 10),
                   child: Material(
                     color: theme.colorScheme.secondaryContainer,
                     borderRadius: BorderRadius.circular(16),
-                    elevation: 4,
+                    elevation: pos.elevFab,
+                    shadowColor: pos.shadowKey.withValues(
+                      alpha: pos.shadowFabNeutralAlpha,
+                    ),
+                    surfaceTintColor: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
                       onTap: () => SavedBillsPage.open(context),
@@ -112,10 +117,10 @@ class _CompactCartFabState extends State<CompactCartFab>
               },
             ),
             BlocBuilder<CartBloc, CartState>(
+              // Payable inputs only — display uses payableTotals.
               buildWhen: (prev, curr) =>
                   prev.itemCount != curr.itemCount ||
                   prev.total != curr.total ||
-                  prev.grandTotal != curr.grandTotal ||
                   prev.itemsSubtotal != curr.itemsSubtotal ||
                   prev.cartDiscountAmount != curr.cartDiscountAmount ||
                   prev.serviceChargeAmount != curr.serviceChargeAmount ||
@@ -123,7 +128,8 @@ class _CompactCartFabState extends State<CompactCartFab>
                       curr.promotionDiscountAmount ||
                   prev.serviceChargeRate != curr.serviceChargeRate ||
                   prev.cartDiscountType != curr.cartDiscountType ||
-                  prev.cartDiscountValue != curr.cartDiscountValue,
+                  prev.cartDiscountValue != curr.cartDiscountValue ||
+                  prev.paymentLocked != curr.paymentLocked,
               builder: (ctx, state) {
                 final count = state.itemCount;
                 final total = state.payableTotals(settings).payableTotal;
@@ -132,29 +138,38 @@ class _CompactCartFabState extends State<CompactCartFab>
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Pay (orange) — money CTA only when cart has lines.
                     if (count > 0) ...[
-                      Material(
-                        color: pos.ctaFill,
-                        borderRadius: BorderRadius.circular(16),
-                        elevation: 6,
-                        child: InkWell(
+                      Semantics(
+                        button: true,
+                        label: ctx.l10n.checkoutButton,
+                        child: Material(
+                          color: pos.ctaFill,
                           borderRadius: BorderRadius.circular(16),
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            navigateToCheckout(ctx);
-                          },
-                          child: const SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: Icon(
-                              Icons.payments_outlined,
-                              color: Colors.white,
+                          elevation: pos.elevFabActive,
+                          shadowColor: pos.ctaFill.withValues(
+                            alpha: pos.shadowFabCtaAlpha,
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              navigateToCheckout(ctx);
+                            },
+                            child: SizedBox(
+                              width: 48,
+                              height: 48,
+                              child: Icon(
+                                Icons.payments_outlined,
+                                color: pos.ctaOnFill,
+                              ),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
                     ],
+                    // Cart review FAB — bag + qty (qty badge, never error red).
                     TweenAnimationBuilder<double>(
                       key: ValueKey('fab_bounce_$count'),
                       tween: Tween(begin: 1.15, end: 1.0),
@@ -171,95 +186,122 @@ class _CompactCartFabState extends State<CompactCartFab>
                             child: child,
                           );
                         },
-                        child: Material(
-                          color: theme.colorScheme.primary,
-                          borderRadius: BorderRadius.circular(16),
-                          elevation: 6,
-                          shadowColor: theme.colorScheme.shadow,
-                          child: InkWell(
+                        child: Semantics(
+                          button: true,
+                          label: count == 0
+                              ? ctx.l10n.cartBottomLabel
+                              : '${ctx.l10n.cartBottomLabel}, $count',
+                          child: Material(
+                            color: count == 0
+                                ? theme.colorScheme.primaryContainer
+                                : theme.colorScheme.primary,
                             borderRadius: BorderRadius.circular(16),
-                            onTapDown: (_) => _pressController.forward(),
-                            onTapCancel: () => _pressController.reverse(),
-                            onTap: () {
-                              _pressController.reverse();
-                              HapticFeedback.selectionClick();
-                              openCartReviewPage(ctx);
-                            },
-                            onLongPress: () => _confirmExitCompact(ctx),
-                            child: count == 0
-                                ? SizedBox(
-                                    width: 56,
-                                    height: 56,
-                                    child: Icon(
-                                      Icons.shopping_bag_outlined,
-                                      color: theme.colorScheme.onPrimary,
-                                      size: 24,
-                                    ),
+                            elevation: count == 0
+                                ? pos.elevFab
+                                : pos.elevFabActive,
+                            shadowColor: count == 0
+                                ? pos.shadowKey.withValues(
+                                    alpha: pos.shadowFabNeutralAlpha,
                                   )
-                                : Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      12,
-                                      10,
-                                      14,
-                                      10,
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Stack(
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Icon(
-                                              Icons.shopping_bag_outlined,
-                                              color:
-                                                  theme.colorScheme.onPrimary,
-                                              size: 22,
-                                            ),
-                                            Positioned(
-                                              top: -6,
-                                              right: -8,
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 5,
-                                                      vertical: 1,
+                                : theme.colorScheme.primary.withValues(
+                                    alpha: pos.shadowFabCtaAlpha,
+                                  ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTapDown: (_) => _pressController.forward(),
+                              onTapCancel: () => _pressController.reverse(),
+                              onTap: () {
+                                _pressController.reverse();
+                                HapticFeedback.selectionClick();
+                                openCartReviewPage(ctx);
+                              },
+                              onLongPress: () => _confirmExitCompact(ctx),
+                              child: count == 0
+                                  ? SizedBox(
+                                      width: 52,
+                                      height: 52,
+                                      child: Icon(
+                                        Icons.shopping_bag_outlined,
+                                        color: theme
+                                            .colorScheme
+                                            .onPrimaryContainer,
+                                        size: 24,
+                                      ),
+                                    )
+                                  : Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        10,
+                                        14,
+                                        10,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              Icon(
+                                                Icons.shopping_bag_outlined,
+                                                color:
+                                                    theme.colorScheme.onPrimary,
+                                                size: 22,
+                                              ),
+                                              Positioned(
+                                                top: -6,
+                                                right: -8,
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 5,
+                                                        vertical: 1,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        pos.qtyBadgeBackground,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          10,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary,
+                                                      width: 1.25,
                                                     ),
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      theme.colorScheme.error,
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                child: Text(
-                                                  '$count',
-                                                  style: TextStyle(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .onError,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                  child: Text(
+                                                    '$count',
+                                                    style: TextStyle(
+                                                      color: pos
+                                                          .qtyBadgeForeground,
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 10),
-                                        MoneyText(
-                                          value: total.value,
-                                          currency: currency,
-                                          style: theme.textTheme.labelLarge
-                                              ?.copyWith(
-                                                fontWeight: FontWeight.w800,
-                                                color:
-                                                    theme.colorScheme.onPrimary,
-                                                fontFamily: 'NotoSansThai',
-                                              ),
-                                          color: theme.colorScheme.onPrimary,
-                                        ),
-                                      ],
+                                            ],
+                                          ),
+                                          const SizedBox(width: 10),
+                                          MoneyText(
+                                            value: total.value,
+                                            currency: currency,
+                                            style: theme.textTheme.labelLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w800,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onPrimary,
+                                                  fontFamily: 'NotoSansThai',
+                                                ),
+                                            color: theme.colorScheme.onPrimary,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
+                            ),
                           ),
                         ),
                       ),

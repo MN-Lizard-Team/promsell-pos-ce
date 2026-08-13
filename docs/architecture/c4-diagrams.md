@@ -1,4 +1,4 @@
-# C4 Diagrams & Data Flows — Promsell POS CE (v0.9.0)
+# C4 Diagrams & Data Flows — Promsell POS CE (v0.9.1)
 
 System context, container diagram, component diagram, and data flow sequences for all stock-mutating operations.
 
@@ -34,9 +34,9 @@ System context, container diagram, component diagram, and data flow sequences fo
 ```
 
 **Key characteristics:**
-- **Zero network dependencies** — fully offline by design
-- **Single-user per device** — no authentication layer
-- **Local-only persistence** — all data in SQLite on device
+- **Offline-first selling** — no developer server; optional `INTERNET` only for product image URLs
+- **Single-user per device** — store PIN, not multi-user auth
+- **Local-only persistence** — SQLCipher SQLite on device
 
 ---
 
@@ -57,7 +57,8 @@ System context, container diagram, component diagram, and data flow sequences fo
                          ▼
 ┌────────────────────────────────────────────────────┐
 │  Domain Layer                                      │
-│  Pure Dart: Entities + UseCases + Repo interfaces  │
+│  Entities + UseCases + Repo interfaces             │
+│  (should be Flutter-free; leaks remain — AH-1)     │
 └────────────────────────┬───────────────────────────┘
                 injected │ implementations
                          ▼
@@ -66,7 +67,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 │  Repo impls + Datasources + Services                         │
 │  ReceiptPdfService (80mm thermal PDF)                        │
 │  PromptPayQrCode (EMVCo QR widget)                           │
-│  SlipVerifier (bank slip Mini-QR decoding)                   │
+│  slip_verifier (bank slip Mini-QR decoding)                  │
 │  SlipScannerDialog (QR camera scanner)                       │
 │  Ean13Generator (@injectable, EAN-13 + Luhn check digit)     │
 │  BackupExportService + BackupRestoreService (export/share; same-device restore)       │
@@ -78,7 +79,7 @@ System context, container diagram, component diagram, and data flow sequences fo
                          ▼
 ┌─────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                 │
-│  15 tables • schema v28 • WAL • FK ON • UUIDv4 PKs  │
+│  16 tables • schema v30 • WAL • FK ON • UUIDv4 PKs  │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -87,7 +88,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 | Layer | Can depend on | Cannot depend on |
 |-------|---------------|------------------|
 | **Presentation** | Domain | Data (directly) |
-| **Domain** | Nothing (pure Dart) | Flutter, Drift, packages |
+| **Domain** | Nothing (target) | Flutter, Drift, packages — **not CI-enforced**; settings still import Flutter |
 | **Data** | Domain (implements interfaces) | Presentation |
 
 ---
@@ -100,8 +101,8 @@ System context, container diagram, component diagram, and data flow sequences fo
 ┌──────────────────── Presentation ───────────────────────┐
 │                                                         │
 │     SalePage ──┐  HistoryPage ──┐   ReportPage─┐        │
-│  CheckoutPage  │   VoidDialog   │              │        │
-│  PaymentSheet  │                │              │        │
+│  CheckoutPage  │   VoidSaleDialog│             │        │
+│  PaymentPage   │                │              │        │
 │  CheckoutBody  │                │              │        │
 │                ▼                ▼              ▼        │
 │    CartBloc/DraftBloc/  HistoryBloc   ReportCubit       │
@@ -114,6 +115,8 @@ System context, container diagram, component diagram, and data flow sequences fo
 │  CreateSale   VoidSale   AdjustStock  GetSales          │
 │  GetProducts  WatchSaleHistory  WatchReport             │
 │  GetSaleById  WatchSales  WatchRecentSales              │
+│  WatchReport → ReportRepository (not HistoryRepository) │
+│  VoidSale is owned by HistoryBloc, not CheckoutBloc     │
 │                                                         │
 └─────────┬─────────────┬─────────────┬───────────────────┘
           │             │             │
@@ -140,7 +143,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 ┌───────────────────── Storage ───────────────────────────┐
 │                                                         │
 │  SQLite (Drift)                                         │
-│  15 tables • schema v28 • WAL • FK ON • UUIDv4 PKs      │
+│  16 tables • schema v30 • WAL • FK ON • UUIDv4 PKs      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -202,7 +205,7 @@ Merchant → HistoryPage [Tap "Void Sale"]
                 │  TRANSACTION BEGIN
                 │
                 ├──→ SELECT sale WHERE id = saleId
-                │       └── if status == VOIDED → throw StateError
+                │       └── if status == VOIDED → throw BusinessRuleError
                 │
                 ├──→ UPDATE sales SET status=VOIDED, voidedAt, voidReason
                 │
@@ -224,7 +227,7 @@ Merchant → HistoryPage [Tap "Void Sale"]
 
 | Scenario | Behavior |
 |----------|----------|
-| Already voided | Throws `StateError` — UI shows error snackbar |
+| Already voided | Throws `BusinessRuleError` — UI shows error snackbar |
 | Product deleted since sale | Skip stock restore, still log reversal with `balanceAfter = -1` |
 | Network interruption | N/A — fully local operation |
 
@@ -239,25 +242,28 @@ Merchant → AdjustStockDialog [Enter qty ±, reason, confirm]
              │
              └─→ AdjustStock.call(productId, qtyChange, reason)
                     │
-                ┌───┘
+                    ├──→ AppLockService.requireSensitiveSession()
+                    │       └── if store PIN on + session locked → throw
+                    │
+                    └──→ InventoryRepository.adjustStock()
+                             │
+                ┌────────────┘
                 │  TRANSACTION BEGIN
                 │
-                ├──→ ProductRepository.getProductById()
-                │       └── returns Product(stock = currentStock)
+                ├──→ SELECT product WHERE id = productId
+                │       └── if not found → throw StateError
                 │
                 ├── newStock = currentStock + qtyChange
                 │       └── if newStock < 0 → throw (insufficient stock)
                 │
-                ├──→ ProductRepository.updateProduct(stock: newStock)
-                │       UPDATE products SET stock = newStock
+                ├──→ UPDATE products SET stock = newStock
                 │
-                ├──→ InventoryLogService.logAdjustment()
-                │       INSERT inventory_logs
+                ├──→ INSERT inventory_logs
                 │       (type=ADJUSTMENT_IN or ADJUSTMENT_OUT)
                 │
                 │  TRANSACTION COMMIT
-                └───┬──────────────────────────┘
-                    │
+                └───────────┬────────────────────┘
+                            │
 AdjustStockDialog ← success → close dialog + refresh product
 ```
 
@@ -294,4 +300,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · schema v28 · 15 tables · C4 Diagrams & Data Flows</sub>
+<sub>Promsell POS CE · v0.9.1 · schema v30 · 16 tables · C4 Diagrams & Data Flows</sub>

@@ -33,7 +33,20 @@ class HistoryState extends Equatable {
       final receipt = s.receiptNumber?.toLowerCase() ?? '';
       final payment = s.paymentMethod.toLowerCase();
       final amount = s.totalAmount.value.toStringAsFixed(2);
-      return receipt.contains(q) || payment.contains(q) || amount.contains(q);
+      // H16: Also search in customer ID, product names, notes, and void reason.
+      final customerId = s.customerId?.toLowerCase() ?? '';
+      final note = s.note?.toLowerCase() ?? '';
+      final voidReason = s.voidReason?.toLowerCase() ?? '';
+      final productNames = s.items
+          .map((i) => i.productName.toLowerCase())
+          .join(' ');
+      return receipt.contains(q) ||
+          payment.contains(q) ||
+          amount.contains(q) ||
+          customerId.contains(q) ||
+          note.contains(q) ||
+          voidReason.contains(q) ||
+          productNames.contains(q);
     }).toList();
   }
 

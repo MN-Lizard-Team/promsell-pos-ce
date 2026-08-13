@@ -22,4 +22,7 @@ class FakeSettingsRepository implements SettingsRepository {
 
   @override
   Future<void> saveBarcodeLastCounter(int counter) async {}
+
+  @override
+  Future<void> saveSkuLastCounter(int counter) async {}
 }

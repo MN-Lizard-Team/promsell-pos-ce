@@ -1,42 +1,47 @@
-# Integration Tests
+# Integration Tests (device E2E)
 
-End-to-end tests for PromSell POS CE covering critical user journeys.
+Robot-pattern UI journeys for PromSell POS CE.
 
-## Quick Start
+## Honesty first
+
+| Claim | Reality |
+|-------|---------|
+| Always green on CI | **No** — `ci.yml` only formats/analyzes this folder. `release-trust.yml` **blocks** `all_tests.dart --flavor dev` on tags / money-path PRs |
+| Money-path gate | **Host** `test/integration/` + `release-trust.yml` |
+| Device required | **Yes** — Android/iOS emulator or hardware |
+
+Status: [`docs/testing/E2E_IMPLEMENTATION_STATUS.md`](../docs/testing/E2E_IMPLEMENTATION_STATUS.md)  
+Guide: [`docs/testing/E2E_TEST_GUIDE.md`](../docs/testing/E2E_TEST_GUIDE.md)
+
+## Quick start
 
 ```bash
-# Run all E2E tests
-flutter test integration_test/
+# Analyze (no device)
+flutter analyze integration_test/
 
-# Run specific journey
+# Runtime — needs supported device/emulator
 flutter test integration_test/sale_happy_path_test.dart
+flutter test integration_test/
 ```
 
-## Test Coverage
+## Journeys (scaffold)
 
-| Journey | File | Scenarios |
-|---------|------|-----------|
-| Happy Path Sale | `sale_happy_path_test.dart` | Cash sale, empty cart validation, quantity adjustment |
-| Restaurant Order | `restaurant_order_test.dart` | Table selection, modifiers, service charge, order types |
-| Draft Recovery | `draft_recovery_test.dart` | App restart, cart persistence, manual clear |
-| Product Management | `product_management_test.dart` | CRUD operations, stock adjustment, validation |
-| Promotion Application | `promotion_application_test.dart` | Percent/fixed discounts, expiry validation |
+| Journey | File |
+|---------|------|
+| Happy path sale | `sale_happy_path_test.dart` |
+| Restaurant order | `restaurant_order_test.dart` |
+| Draft recovery | `draft_recovery_test.dart` |
+| Product management | `product_management_test.dart` |
+| Promotion application | `promotion_application_test.dart` |
 
 ## Architecture
 
-- **Robot Pattern:** Semantic UI interaction methods
-- **Test Fixtures:** Pre-seeded database with realistic data
-- **In-Memory DB:** Fast, isolated test execution
+- **Robot pattern** — semantic UI helpers  
+- **Fixtures** — seeded catalog / tables / promos  
+- **In-memory DB** — intended isolation (see status for DI risks)  
 
-## Documentation
+## Prefer for automated integrity
 
-See [E2E Test Guide](../docs/testing/E2E_TEST_GUIDE.md) for complete documentation.
-
-## Test Data
-
-- 20 products (5 categories)
-- 3 restaurant tables
-- 2 active promotions
-- 3 customers
-
-All data is seeded automatically via `TestFixtures.seedAll()`.
+```bash
+flutter test test/integration/
+```

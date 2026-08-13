@@ -21,7 +21,10 @@ abstract final class CheckoutTenderHelpers {
       ];
     }
     final cashPart = Money.fromDouble(double.tryParse(splitCashText) ?? 0);
-    final other = (payableTotal - cashPart).clampToZero();
+    final other = remainingOtherAmount(
+      payableTotal: payableTotal,
+      splitCashText: splitCashText,
+    );
     final otherMethod = method == 'cash' ? 'promptpay' : method;
     return [
       if (cashPart > Money.zero)
@@ -34,6 +37,32 @@ abstract final class CheckoutTenderHelpers {
           sortOrder: 1,
         ),
     ];
+  }
+
+  /// Display/SSOT helper: other-leg amount for split tender (same clamp as
+  /// [buildTenders]). Does not insert payments.
+  static Money remainingOtherAmount({
+    required Money payableTotal,
+    required String splitCashText,
+  }) {
+    final cashPart = Money.fromDouble(double.tryParse(splitCashText) ?? 0);
+    return (payableTotal - cashPart).clampToZero();
+  }
+
+  /// Cash change against the **cash tender leg**, not the full bill (Wave P2).
+  ///
+  /// - Pure cash (cash leg == payable): change = max(0, received − payable)
+  /// - Split / mixed with cash leg: change = max(0, received − cashTender)
+  /// - No cash leg: 0
+  static double changeForCashLeg({
+    required double received,
+    required double payableTotal,
+    required double cashTenderAmount,
+  }) {
+    if (cashTenderAmount <= 0) return 0;
+    final base = cashTenderAmount;
+    final change = received - base;
+    return change > 0 ? change : 0;
   }
 
   static List<double> quickAmounts(double total) {

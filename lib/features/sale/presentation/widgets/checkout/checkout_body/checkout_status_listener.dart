@@ -20,11 +20,17 @@ class CheckoutFlowFlags {
   bool inPaymentFlow = false;
   Timer? processingTimeoutTimer;
 
+  /// Called when the 30s processing snack fires so the body can re-enable CTA.
+  VoidCallback? onProcessingTimeout;
+
   void startProcessingTimeout(BuildContext ctx) {
     processingTimeoutTimer?.cancel();
     processingTimeoutTimer = Timer(const Duration(seconds: 30), () {
       if (!ctx.mounted) return;
-      // Do not unlock submitted while CreateSale may still complete.
+      // Wave P3: re-enable Pay CTA. Do not invent success; if CreateSale still
+      // finishes, success/failure listeners clear flags again.
+      submitted = false;
+      onProcessingTimeout?.call();
       AppSnackBar.error(ctx, ctx.l10n.saleTimeout);
     });
   }
@@ -114,11 +120,9 @@ class CheckoutStatusListener extends StatelessWidget {
 
           checkoutBloc.add(const CheckoutReset());
 
-          final showReceipt =
-              sale != null &&
-              settings.showPostSalePreview &&
-              settings.receiptPreviewStyle != 'none';
-          if (showReceipt) {
+          // Always show success hero (change / Next sale). Receipt paper
+          // preview inside the dialog still respects post-sale settings.
+          if (sale != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!hostContext.mounted) return;
               SaleReceiptDialog.show(hostContext, sale, settings);

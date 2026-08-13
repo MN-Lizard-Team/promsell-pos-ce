@@ -7,10 +7,10 @@ import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
 
 void main() {
-  late MockSaleRepository mockRepo;
+  late MockReportRepository mockRepo;
 
   setUp(() {
-    mockRepo = MockSaleRepository();
+    mockRepo = MockReportRepository();
   });
 
   group('GetReport', () {

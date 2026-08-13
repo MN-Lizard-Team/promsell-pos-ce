@@ -1,6 +1,6 @@
 # Changelog — v0.8.x — Promsell POS CE
 
-> Current release notes: [CHANGELOG.md](../../CHANGELOG.md) (v0.9.0+).  
+> Current release notes: [CHANGELOG.md](../../CHANGELOG.md) (v0.9.1+).  
 > Older series: [0.7.x](CHANGELOG-07x.md) · [0.6.x](CHANGELOG-06x.md) · [0.5.x](CHANGELOG-05x.md) · [0.4.x](CHANGELOG-04x.md) · [0.3.x](CHANGELOG-03x.md) · [0.2.x](CHANGELOG-02x.md) · [0.1.x](CHANGELOG-01x.md).
 
 ---
@@ -524,13 +524,13 @@ Full barcode system (scan, manual entry, generation, settings) + image UX cleanu
 
 Older versions are archived by minor version:
 
-- [v0.7.x](docs/changelog/CHANGELOG-07x.md)
-- [v0.6.x](docs/changelog/CHANGELOG-06x.md)
-- [v0.5.x](docs/changelog/CHANGELOG-05x.md)
-- [v0.4.x](docs/changelog/CHANGELOG-04x.md)
-- [v0.3.x](docs/changelog/CHANGELOG-03x.md)
-- [v0.2.x](docs/changelog/CHANGELOG-02x.md)
-- [v0.1.x](docs/changelog/CHANGELOG-01x.md)
+- [v0.7.x](CHANGELOG-07x.md)
+- [v0.6.x](CHANGELOG-06x.md)
+- [v0.5.x](CHANGELOG-05x.md)
+- [v0.4.x](CHANGELOG-04x.md)
+- [v0.3.x](CHANGELOG-03x.md)
+- [v0.2.x](CHANGELOG-02x.md)
+- [v0.1.x](CHANGELOG-01x.md)
 
 ---
 

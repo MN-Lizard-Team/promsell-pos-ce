@@ -8,6 +8,14 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/quick_edit/quick_edit_sheet.dart';
 
+/// Quick-edit actions for name / price / stock from product preview.
+///
+/// These intentionally dispatch [ProductUpdated] WITHOUT `optionGroups` so
+/// the data layer's `updateProduct` (not `updateProductWithOptionGroups`) is
+/// used. Option groups are therefore preserved as-is in the database and
+/// not re-fetched/replaced on a quick edit. If a future quick-edit surface
+/// exposes option groups, pass `optionGroups: product.optionGroups` to keep
+/// them in sync instead of silently dropping them.
 mixin QuickEditMixin<T extends StatefulWidget> on State<T> {
   Product get product;
   void onProductUpdated(Product updated) {}

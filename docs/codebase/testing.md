@@ -1,8 +1,8 @@
-# Testing — Promsell POS CE v0.9.0
+# Testing — Promsell POS CE v0.9.1
 
 Automated tests across unit, widget, and integration layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests). Coverage and counts drift with the suite — prefer CI.
 
-> **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
+> **Main reference:** [`CODEBASE.md`](../../CODEBASE.md) — system overview, architecture, links
 
 ---
 
@@ -34,15 +34,15 @@ test/
 ├── features/
 │   ├── sale/                   # Use case, BLoC, repo, datasource, widget tests
 │   │   └── presentation/
-│   │       ├── pages/          # SalePage, CartReviewPage, CheckoutPage, PaymentSheet
+│   │       ├── pages/          # SalePage, CartReviewPage, CheckoutPage, PaymentPage, SavedBillsPage, SaleFilterPage, SaleProductSearchPage
 │   │       └── widgets/
-│   │           ├── cart/       # CartItemCard, CartItemRow, CartQtyButton, CartQtyStepper, CartDetailRow, CartDottedLineRow, CartTotalBar, CompactCartFab, CartBottomSheet (CartItemTile, CartSummaryFooter), CartItemRow (CartItemPrice)
+│   │           ├── cart/       # CartItemCard, CartQtyButton, CartDetailRow, CartDottedLineRow, CompactCartFab, CartReviewFooter, CartLineActions lock, DockedCartPanel
 │   │           ├── catalog/    # SaleProductCard
 │   │           ├── checkout/   # CheckoutTotalCard
-│   │           ├── drafts/     # DraftTile, DraftSearchBar, park actions
-│   │       ├── pages/          # + SavedBillsPage (full-page saved bills)
+│   │           ├── drafts/     # DraftTile, DraftSearchBar, park actions, drafts_bottom_sheet
 │   │           ├── payment/    # PaymentWidgets
-│   │           └── promptpay/  # PaymentStatusCard
+│   │           ├── promptpay/  # PaymentStatusCard
+│   │           └── shared/
 │   ├── product/                # Use case, BLoC, repo, datasource, widget tests
 │   │   └── presentation/widgets/  # CategoryPicker, CategoryFilterBar, ProductCardShell, ProductFormCubit, ProductHeroImage
 │   ├── history/                # Use case, BLoC, repo tests
@@ -78,82 +78,55 @@ test/
 
 ## Integration Tests (E2E)
 
-**Location:** `integration_test/`
-**Status:** ✅ 30 tests compiling, ready for runtime validation
-**Updated:** 2026-07-10
+**Location:** `integration_test/`  
+**Status (honest, 2026-08-13):** Scaffold + analyze on main CI. Runtime is **not** on `ci.yml`. Trust **blocks** emulator `--flavor dev` on tags / money-path PRs. Not “E2E ready.”  
+**Map:** [`docs/testing/CI.md`](../testing/CI.md)
 
-### Test Architecture
+| Layer | Path | CI | Notes |
+|-------|------|----|-------|
+| **Host integration (money net)** | `test/integration/` | **Fail-closed** via `release-trust.yml` | Real repos + in-memory Drift |
+| **Device E2E (UI journeys)** | `integration_test/` | Main CI = **format + analyze only**. Trust = **blocking** `all_tests.dart --flavor dev` | Scaffold / flake; flavor is **dev** |
+| **Manual smoke** | `RELEASE_0.9_SMOKE.md` · `RELEASE_1.0_SMOKE.md` | Human | 1.0 sheet is still **No-Go** |
 
-**Robot Pattern** - Maintainable test helpers:
+### Device E2E — what is true
+
+- Robot pattern + fixtures exist under `integration_test/`
+- `ci.yml` does **not** run device tests (`continue-on-error` is gone)
+- Tags `v*` and money-path PRs **block** on the emulator job — green smoke ≠ 1.0 Go
+- Known risks: TestApp DI, money asserts vs formatters, EN finders, missing `Key`s
+- Do **not** market “E2E ready” until a hard-gated smoke subset is green 3× (POST-090 B4 / V092-D)
+
+### Architecture (scaffold)
+
 ```
 integration_test/
-├── helpers/
-│   ├── test_app.dart              # Test app wrapper with in-memory DB
-│   ├── test_fixtures.dart          # 20 products, 5 categories, realistic data
-│   └── test_utils.dart             # Common assertions and Finder extensions
-├── robot_pattern/
-│   ├── robot_base.dart             # Base robot class
-│   ├── sale_robot.dart             # Sale flow helpers
-│   ├── checkout_robot.dart         # Checkout helpers
-│   ├── product_robot.dart          # Product CRUD helpers
-│   └── restaurant_robot.dart       # Restaurant flow helpers
-├── sale_happy_path_test.dart       # 3 test cases - Cash sale flow
-├── draft_recovery_test.dart        # 5 test cases - Cart persistence
-├── product_management_test.dart    # 9 test cases - CRUD + stock
-├── promotion_application_test.dart # 8 test cases - Discount system
-├── restaurant_order_test.dart      # 5 test cases - Dine-in + modifiers
-└── all_tests.dart                  # Test entry point
+├── helpers/          # test_app, fixtures, utils
+├── robot_pattern/    # sale, checkout, product, restaurant robots
+├── sale_happy_path_test.dart
+├── draft_recovery_test.dart
+├── product_management_test.dart
+├── promotion_application_test.dart
+├── restaurant_order_test.dart
+└── all_tests.dart
 ```
 
-### Critical User Journeys Covered
-
-1. **Happy Path Sale** (3 tests)
-   - Add products to cart → checkout → cash payment → receipt generation
-   - Inventory decremented correctly
-   - Sale recorded in database
-
-2. **Restaurant Order Flow** (5 tests)
-   - Table selection → add items with modifiers → service charge calculation
-   - Order type (dine-in/takeaway/delivery)
-   - Table status management
-
-3. **Draft Cart Recovery** (5 tests)
-   - Cart persistence across app restart
-   - Auto-save on modifications
-   - Recovery after force close
-
-4. **Product Management** (9 tests)
-   - Create/update/delete products
-   - Stock adjustments with reason tracking
-   - Barcode generation and validation
-   - Product history logs
-
-5. **Promotion Application** (8 tests)
-   - Percent and fixed discounts
-   - Date-based activation
-   - Receipt showing promotion details
-
-### Running E2E Tests
+### Running device E2E (requires device/emulator)
 
 ```bash
-# Run all integration tests
-flutter test integration_test/
-
-# Run specific journey
-flutter test integration_test/sale_happy_path_test.dart
-
-# Analyze test code
 flutter analyze integration_test/
+# Requires supported device — will fail with "No supported devices" on desktop-only hosts:
+flutter test integration_test/sale_happy_path_test.dart
 ```
 
-### Test Data
-- 20 products (Coffee, Thai Milk Tea, Pad Thai, etc.)
-- 5 categories (Drinks, Food, Snacks, Desserts, Merchandise)
-- 3 restaurant tables
-- 2 active promotions
-- 3 customer records
+### Prefer for money-path automation
 
-For detailed E2E test guide, see [docs/testing/E2E_TEST_GUIDE.md](../testing/E2E_TEST_GUIDE.md).
+```bash
+flutter test test/integration/
+# or full trust list:
+# .github/workflows/release-trust.yml
+```
+
+Details: [E2E_TEST_GUIDE.md](../testing/E2E_TEST_GUIDE.md) · [E2E_IMPLEMENTATION_STATUS.md](../testing/E2E_IMPLEMENTATION_STATUS.md)
 
 ## Test layers
 
@@ -170,23 +143,33 @@ For detailed E2E test guide, see [docs/testing/E2E_TEST_GUIDE.md](../testing/E2E
 
 ### Coverage
 
-| Feature | Coverage |
-|---------|----------|
-| inventory | 96.3% |
-| report | 88.5% |
-| onboarding | 82.1% |
-| history | 76.8% |
-| product | 70.2% |
-| daily_close | 60.2% |
-| settings | 61.9% |
-| sale | 53.0% |
-| core | 47.4% |
-| l10n | 30.6% |
-| receipt | 19.6% |
-| **Total** | **56.0%** |
+**CI gates**
 
-> Low-coverage areas: `l10n` (generated code), `receipt` (PDF platform plugins), `core` (generated DI/DB code).
+| Gate | Value | Enforcement |
+|------|------:|-------------|
+| Global (excludes generated/l10n) | **60%** → ladder 70 → 80 | Hard via `tool/check_path_coverage.dart` on `ci.yml` |
+| **sale-logic** = sale `domain/` + `data/` + `lib/core/domain/` | **≥80%** | Hard `--fail` via `tool/check_path_coverage.dart` |
+| Full sale tree + `core/domain` (incl. presentation) | report only | Soft until ≥80 + buffer |
+
+```bash
+flutter test --coverage --exclude-tags stress
+dart run tool/check_path_coverage.dart --fail --min-global=60 --min-sale-logic=80
+```
+
+**Measured snapshot (2026-08-13, after excludes):**
+
+| Bucket | Coverage |
+|--------|----------|
+| global | **63.7%** |
+| sale-logic (money path) | **92.4%** |
+| sale/domain | 90.0% |
+| sale/data | 93.6% |
+| sale/presentation | 58.1% |
+| sale+domain full tree | 62.4% |
+
+> Prefer money-path tests + **sale-logic** hard gate over covering PDF/camera/UI chrome for vanity %.  
+> Policy: `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md` §B3.
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Testing</sub>
+<sub>Promsell POS CE · v0.9.1 · Testing</sub>

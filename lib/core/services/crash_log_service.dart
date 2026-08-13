@@ -116,7 +116,12 @@ class CrashLogService {
       final file = await _getLogFile();
       if (!await file.exists()) return 0;
       return await file.length();
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning(
+        'CrashLogService: getLogSizeBytes failed',
+        error: e,
+        stack: stack,
+      );
       return 0;
     }
   }

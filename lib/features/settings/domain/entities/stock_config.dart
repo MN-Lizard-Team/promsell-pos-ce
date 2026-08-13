@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 class StockConfig extends Equatable {
-  const StockConfig({this.allowOversell = false, this.lowStockThreshold = 5});
+  const StockConfig({this.allowOversell = false, this.lowStockThreshold = 5})
+    : assert(lowStockThreshold >= 1, 'lowStockThreshold must be at least 1');
 
   final bool allowOversell;
   final int lowStockThreshold;

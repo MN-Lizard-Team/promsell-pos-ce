@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -54,7 +55,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Open bills'), findsWidgets);
-    expect(find.text('No saved bills yet'), findsOneWidget);
+    expect(find.text('No open bills yet'), findsOneWidget);
+    // Collapsed: search is icon only until tapped.
+    expect(
+      find.byKey(const ValueKey('sale_bills_search_icon')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('sale_bills_search')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('sale_bills_search_icon')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('sale_bills_search')), findsOneWidget);
   });
 
   testWidgets('lists draft tiles when repo returns drafts', (tester) async {

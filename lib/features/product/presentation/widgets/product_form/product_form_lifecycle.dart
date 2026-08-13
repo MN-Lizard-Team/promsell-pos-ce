@@ -45,20 +45,20 @@ class ProductFormLifecycle {
     required bool Function() isRecommended,
     required bool Function() trackStock,
     required List<ProductOptionGroup> Function() optionGroups,
-  })  : _product = product,
-        _isEditing = isEditing,
-        _isMounted = isMounted,
-        _isSubmitted = isSubmitted,
-        _setSubmitted = setSubmitted,
-        _setDeleting = setDeleting,
-        _setIsDirty = setIsDirty,
-        _onStateChanged = onStateChanged,
-        _selectedCategory = selectedCategory,
-        _categoryWasChanged = categoryWasChanged,
-        _isActive = isActive,
-        _isRecommended = isRecommended,
-        _trackStock = trackStock,
-        _optionGroups = optionGroups;
+  }) : _product = product,
+       _isEditing = isEditing,
+       _isMounted = isMounted,
+       _isSubmitted = isSubmitted,
+       _setSubmitted = setSubmitted,
+       _setDeleting = setDeleting,
+       _setIsDirty = setIsDirty,
+       _onStateChanged = onStateChanged,
+       _selectedCategory = selectedCategory,
+       _categoryWasChanged = categoryWasChanged,
+       _isActive = isActive,
+       _isRecommended = isRecommended,
+       _trackStock = trackStock,
+       _optionGroups = optionGroups;
 
   final GlobalKey<FormState> formKey;
   final GlobalKey<ProductFormViewState> formViewKey;
@@ -186,9 +186,7 @@ class ProductFormLifecycle {
       context,
       isEditing: _isEditing(),
     );
-    if (action == UnsavedDialogAction.save &&
-        context.mounted &&
-        _isMounted()) {
+    if (action == UnsavedDialogAction.save && context.mounted && _isMounted()) {
       submit(context);
     } else if (action == UnsavedDialogAction.discard &&
         context.mounted &&

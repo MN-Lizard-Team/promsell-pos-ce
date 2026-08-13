@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/clear_orphaned_images.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ClearImageCacheButton extends StatelessWidget {
   const ClearImageCacheButton({super.key});
@@ -13,7 +14,7 @@ class ClearImageCacheButton extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     return OutlinedButton.icon(
-      icon: const Icon(Icons.delete_sweep_outlined),
+      icon: const Icon(TablerIcons.trash),
       label: Text(l10n.clearImageCache),
       style: OutlinedButton.styleFrom(
         foregroundColor: theme.colorScheme.error,
@@ -28,7 +29,7 @@ class ClearImageCacheButton extends StatelessWidget {
           confirmLabel: l10n.delete,
           cancelLabel: l10n.cancel,
           destructive: true,
-          confirmIcon: Icons.cleaning_services_outlined,
+          confirmIcon: TablerIcons.brush,
         );
         if (!confirmed) return;
         final usecase = GetIt.I<ClearOrphanedImages>();

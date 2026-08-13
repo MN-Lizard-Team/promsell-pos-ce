@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form/sales_shared_widgets.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class SalesDisplaySection extends StatelessWidget {
   const SalesDisplaySection({
@@ -34,7 +35,7 @@ class SalesDisplaySection extends StatelessWidget {
             children: [
               SalesSharedWidgets.buildSwitchTile(
                 context: context,
-                icon: Icons.density_small,
+                icon: TablerIcons.layout,
                 title: l10n.settingsUltraCompactMode,
                 subtitle: l10n.settingsUltraModeSubtitle,
                 value: settings.ultraCompactMode,

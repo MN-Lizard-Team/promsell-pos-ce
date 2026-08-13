@@ -1,24 +1,80 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
+import 'package:promsell_pos_ce/features/report/domain/repositories/report_repository.dart';
+import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/report/domain/utils/date_range_presets.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 
 @lazySingleton
 class ReportCubit extends Cubit<ReportState> {
-  ReportCubit({required WatchReport watchReport})
-    : _watchReport = watchReport,
-      super(
-        ReportState(
-          from: DateRangePresets.today().$1,
-          to: DateRangePresets.today().$2,
-        ),
-      );
+  ReportCubit({
+    required WatchReport watchReport,
+    required ReportRepository reportRepository,
+    required ReportCalculatorService calculator,
+  }) : _watchReport = watchReport,
+       _reportRepository = reportRepository,
+       _calculator = calculator,
+       super(
+         ReportState(
+           from: DateRangePresets.today().$1,
+           to: DateRangePresets.today().$2,
+         ),
+       );
 
   final WatchReport _watchReport;
+  final ReportRepository _reportRepository;
+  final ReportCalculatorService _calculator;
   StreamSubscription? _sub;
+  StreamSubscription? _previousSub;
+
+  /// Cached productId → Product map for profit/margin calculations.
+  /// Refreshed on each new range subscription so deleted/updated products
+  /// are reflected. Null while the first fetch is in flight.
+  Map<String, Product>? _productLookup;
+
+  /// Monotonic request id so late stream events from a cancelled range
+  /// cannot overwrite the active period (Wave R1).
+  int _rangeGen = 0;
+  Future<void> _rangeQueue = Future<void>.value();
+
+  /// Stale-while-revalidate snapshot only — never skip live subscription.
+  /// Entries expire after [_cacheTtl] to avoid showing stale data when the
+  /// user re-visits a range after a long absence.
+  final Map<String, _CacheEntry> _cache = {};
+
+  /// Home deep-link: switch Report shell page to History sub-tab.
+  final _tabRequests = StreamController<int>.broadcast();
+  Stream<int> get tabRequests => _tabRequests.stream;
+  int? _pendingTabIndex;
+
+  static String _cacheKey(DateTime from, DateTime to) =>
+      '${DateTime(from.year, from.month, from.day).millisecondsSinceEpoch}|'
+      '${DateTime(to.year, to.month, to.day).millisecondsSinceEpoch}';
+
+  /// Cache validity window. Entries older than this are treated as misses.
+  static const _cacheTtl = Duration(minutes: 5);
+
+  /// Request History sub-tab (works even when ReportPage is already mounted).
+  void requestHistoryTab() {
+    if (_tabRequests.hasListener) {
+      if (!_tabRequests.isClosed) _tabRequests.add(1);
+      return;
+    }
+    _pendingTabIndex = 1;
+  }
+
+  /// Consumes a pending sub-tab index once (init / first frame).
+  int? takePendingTabIndex() {
+    final v = _pendingTabIndex;
+    _pendingTabIndex = null;
+    return v;
+  }
 
   /// Resets range to today and (re)subscribes. Call when opening Report page.
   Future<void> openToday() async {
@@ -29,36 +85,223 @@ class ReportCubit extends Cubit<ReportState> {
   Future<void> load() async {
     final from = state.from ?? DateRangePresets.today().$1;
     final to = state.to ?? DateRangePresets.today().$2;
-    await changeDateRange(from, to);
+    // Pull-to-refresh must re-subscribe (force miss).
+    await changeDateRange(from, to, forceRefresh: true);
   }
 
-  Future<void> changeDateRange(DateTime from, DateTime to) async {
-    // Clear sales so UI cannot present previous-period totals as current truth.
+  /// Changes the active period and always attaches a live [WatchReport] for it.
+  ///
+  /// [forceRefresh] skips showing cached sales during loading (still re-watches).
+  Future<void> changeDateRange(
+    DateTime from,
+    DateTime to, {
+    bool forceRefresh = false,
+  }) {
+    final request = _rangeQueue.then((_) {
+      return _changeDateRangeNow(from, to, forceRefresh: forceRefresh);
+    });
+    _rangeQueue = request.catchError((Object error, StackTrace stack) {
+      AppLogger.error(
+        'ReportCubit._rangeQueue failed',
+        error: error,
+        stack: stack,
+      );
+    });
+    return request;
+  }
+
+  Future<void> _changeDateRangeNow(
+    DateTime from,
+    DateTime to, {
+    required bool forceRefresh,
+  }) async {
+    if (to.isBefore(from)) {
+      final swapped = from;
+      from = to;
+      to = swapped;
+    }
+    final key = _cacheKey(from, to);
+    final gen = ++_rangeGen;
+
+    await _sub?.cancel();
+    await _previousSub?.cancel();
+    if (isClosed || gen != _rangeGen) return;
+    _sub = null;
+    _previousSub = null;
+
+    // Refresh product cost lookup for profit analytics (fire-and-forget;
+    // _applySales will use whatever is available and re-emit when it lands).
+    unawaited(_refreshProductLookup(gen));
+
+    final cached = forceRefresh ? null : _cache[key]?.dataIfFresh;
+    final span = to.difference(from).inDays + 1;
+    final previousTo = from.subtract(const Duration(days: 1));
+    final previousFrom = previousTo.subtract(Duration(days: span - 1));
     emit(
       state.copyWith(
         from: from,
         to: to,
-        status: ReportStatus.loading,
-        sales: const [],
+        status: cached == null ? ReportStatus.loading : ReportStatus.success,
+        sales: cached?.sales ?? const [],
+        previousSales: const [],
+        dailyRevenue: cached?.dailyRevenue ?? const [],
+        profit: cached?.profit,
+        previousProfit: null,
       ),
     );
-    await _sub?.cancel();
-    _sub = _watchReport(from: from, to: to).listen(
+
+    final subscription = _watchReport(from: from, to: to).listen(
       (sales) {
-        if (isClosed) return;
-        emit(state.copyWith(status: ReportStatus.success, sales: sales));
+        if (isClosed || gen != _rangeGen) return;
+        _applySales(key, from, to, sales, gen);
       },
       onError: (e) {
         AppLogger.error('ReportCubit.changeDateRange failed', error: e);
-        if (isClosed) return;
-        emit(state.copyWith(status: ReportStatus.failure, sales: const []));
+        if (isClosed || gen != _rangeGen) return;
+        emit(
+          state.copyWith(
+            status: ReportStatus.failure,
+            sales: const [],
+            dailyRevenue: const [],
+            profit: null,
+            previousProfit: null,
+          ),
+        );
+      },
+    );
+    if (isClosed || gen != _rangeGen) {
+      await subscription.cancel();
+      return;
+    }
+    _sub = subscription;
+
+    _previousSub = _watchReport(from: previousFrom, to: previousTo).listen(
+      (previousSales) {
+        if (isClosed || gen != _rangeGen) return;
+        emit(state.copyWith(previousSales: previousSales));
+      },
+      onError: (error) {
+        AppLogger.error('ReportCubit.previousPeriod failed', error: error);
+        if (isClosed || gen != _rangeGen) return;
+        // Clear previous sales so the UI doesn't show stale comparison data
+        // when the previous period query failed.
+        emit(state.copyWith(previousSales: const [], previousProfit: null));
       },
     );
   }
 
+  void _applySales(
+    String key,
+    DateTime from,
+    DateTime to,
+    List<Sale> sales,
+    int gen,
+  ) {
+    final daily = _calculator.dailyRevenueBetween(sales, from, to);
+    final profit = _buildProfit(sales);
+    final data = ReportData(
+      sales: sales,
+      from: from,
+      to: to,
+      totals: _calculator.periodTotals(sales),
+      dailyRevenue: daily,
+      profit: profit,
+      previousPeriod: state.previousSales.isEmpty
+          ? null
+          : ReportData(
+              sales: state.previousSales,
+              from: from.subtract(
+                Duration(days: to.difference(from).inDays + 1),
+              ),
+              to: from.subtract(const Duration(days: 1)),
+              totals: _calculator.periodTotals(state.previousSales),
+              dailyRevenue: const [],
+              profit: _buildProfit(state.previousSales),
+            ),
+    );
+    emit(
+      state.copyWith(
+        status: ReportStatus.success,
+        sales: sales,
+        dailyRevenue: daily,
+        profit: profit,
+        previousProfit: data.previousPeriod?.profit,
+        productLookup: _productLookup ?? const {},
+        lastUpdated: DateTime.now(),
+      ),
+    );
+    _cache[key] = _CacheEntry(data: data, storedAt: DateTime.now());
+    const maxCachedRanges = 10;
+    // Evict the oldest entry by storedAt (approximate LRU).
+    while (_cache.length > maxCachedRanges) {
+      final oldest = _cache.entries.reduce(
+        (a, b) => a.value.storedAt.isBefore(b.value.storedAt) ? a : b,
+      );
+      _cache.remove(oldest.key);
+    }
+  }
+
+  /// Builds [ProfitAnalytics] for [sales] using the cached product lookup.
+  /// Returns null when the lookup has not loaded yet.
+  ProfitAnalytics? _buildProfit(List<Sale> sales) {
+    final lookup = _productLookup;
+    if (lookup == null) return null;
+    if (sales.isEmpty) return ProfitAnalytics.empty;
+    return _calculator.profitAnalytics(sales, lookup);
+  }
+
+  /// Fetches products that appear in the current period and stores them as a
+  /// productId → Product map. Re-emits the current sales snapshot so profit
+  /// metrics appear once the lookup lands, even if the sales stream has
+  /// already delivered data.
+  Future<void> _refreshProductLookup(int gen) async {
+    try {
+      final productIds = state.sales
+          .expand((s) => s.items)
+          .map((i) => i.productId)
+          .toSet()
+          .toList();
+      // If no sales yet, fetch nothing — lookup will be empty until sales
+      // arrive, then a subsequent range change will trigger a real fetch.
+      final lookup = productIds.isEmpty
+          ? <String, Product>{}
+          : await _reportRepository.getProductCostLookup(productIds);
+      if (isClosed || gen != _rangeGen) return;
+      _productLookup = lookup;
+      // Re-apply current sales so profit metrics are computed with the new
+      // lookup. Only re-emit if we already have sales (success state).
+      if (state.sales.isNotEmpty && state.status == ReportStatus.success) {
+        final key = _cacheKey(state.from!, state.to!);
+        _applySales(key, state.from!, state.to!, state.sales, gen);
+      }
+    } catch (e) {
+      AppLogger.error('ReportCubit._refreshProductLookup failed', error: e);
+    }
+  }
+
+  /// Drop all snapshots (e.g. after external invalidation hooks).
+  void clearCache() => _cache.clear();
+
   @override
   Future<void> close() {
     _sub?.cancel();
+    _previousSub?.cancel();
+    _cache.clear();
+    unawaited(_tabRequests.close());
     return super.close();
+  }
+}
+
+/// Cache entry with a timestamp for TTL-based eviction.
+class _CacheEntry {
+  const _CacheEntry({required this.data, required this.storedAt});
+
+  final ReportData data;
+  final DateTime storedAt;
+
+  /// Returns [data] if still within the TTL window, otherwise null.
+  ReportData? get dataIfFresh {
+    final age = DateTime.now().difference(storedAt);
+    return age < ReportCubit._cacheTtl ? data : null;
   }
 }

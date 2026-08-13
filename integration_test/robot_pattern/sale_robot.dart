@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import '../helpers/test_utils.dart';
 import 'robot_base.dart';
 
@@ -8,9 +9,16 @@ import 'robot_base.dart';
 class SaleRobot extends RobotBase {
   SaleRobot(super.tester);
 
-  /// Navigate to sale page
+  /// Navigate to sale page.
+  ///
+  /// Taps the Sale tab in the bottom navigation. Uses `find.byIcon` with
+  /// `.first` because both active and inactive icons may be present.
   Future<void> navigateToSalePage() async {
-    await tap(find.byIcon(Icons.point_of_sale_outlined));
+    final saleIcon = find.byIcon(TablerIcons.buildingStore);
+    if (saleIcon.evaluate().isNotEmpty) {
+      await tester.tap(saleIcon.first);
+      await tester.pump(const Duration(milliseconds: 800));
+    }
   }
 
   /// Find product card by name
@@ -21,7 +29,10 @@ class SaleRobot extends RobotBase {
   /// Add product to cart by tapping product card
   Future<void> addProductToCart(String productName) async {
     final productCard = findProductCard(productName);
-    expectVisible(productCard, reason: 'Product "$productName" should be visible');
+    expectVisible(
+      productCard,
+      reason: 'Product "$productName" should be visible',
+    );
     await tap(productCard);
   }
 
@@ -96,7 +107,13 @@ class SaleRobot extends RobotBase {
 
   /// Proceed to checkout
   Future<void> proceedToCheckout() async {
-    final checkoutBtn = find.text('Checkout')
+    // Prefer the stable ValueKey used by cart_review_footer; fall back to
+    // localized text for older layouts.
+    final checkoutBtn = find
+        .byKey(const ValueKey('sale_cart_checkout_cta'))
+        .or(find.text('Checkout'))
+        .or(find.text('Pay'))
+        .or(find.text('ชำระเงิน'))
         .or(find.text('Next'))
         .or(find.byIcon(Icons.arrow_forward));
     await tap(checkoutBtn);
@@ -147,7 +164,8 @@ class SaleRobot extends RobotBase {
 
   /// Open draft cart menu (if exists)
   Future<void> openDraftMenu() async {
-    final draftBtn = find.byIcon(Icons.drafts)
+    final draftBtn = find
+        .byIcon(Icons.drafts)
         .or(find.text('Drafts'))
         .or(find.byIcon(Icons.bookmark_border));
     if (draftBtn.evaluate().isNotEmpty) {
@@ -157,7 +175,8 @@ class SaleRobot extends RobotBase {
 
   /// Save current cart as draft
   Future<void> saveDraft() async {
-    final saveBtn = find.text('Save Draft')
+    final saveBtn = find
+        .text('Save Draft')
         .or(find.byIcon(Icons.save))
         .or(find.text('Hold'));
     await tap(saveBtn);

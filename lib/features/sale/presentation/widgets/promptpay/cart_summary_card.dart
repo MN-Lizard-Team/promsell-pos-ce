@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 
 class CartSummaryCard extends StatelessWidget {
   const CartSummaryCard({
@@ -29,16 +30,18 @@ class CartSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pos = context.posTheme;
     final showCount = isExpanded ? items.length : 5;
     final visibleItems = items.take(showCount).toList();
 
-    return Card(
-      elevation: 0,
+    return Material(
+      elevation: pos.elevFlat,
+      color: pos.billStubPaper,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(pos.billStubRadius),
+        side: BorderSide(color: pos.billStubBorder),
       ),
-      margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -60,14 +63,14 @@ class CartSummaryCard extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
+                    color: pos.qtyBadgeBackground,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '${items.length}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.onPrimaryContainer,
+                      color: pos.qtyBadgeForeground,
                     ),
                   ),
                 ),
@@ -117,7 +120,7 @@ class CartSummaryCard extends StatelessWidget {
                 onPressed: onToggleExpand,
                 child: Text(isExpanded ? showLessLabel : showMoreLabel),
               ),
-            const Divider(height: 24),
+            Divider(height: 24, color: pos.billStubBorder),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -131,6 +134,7 @@ class CartSummaryCard extends StatelessWidget {
                   value: total,
                   currency: currency,
                   style: theme.textTheme.headlineSmall?.copyWith(
+                    fontFamily: 'NotoSansThai',
                     fontWeight: FontWeight.w800,
                     color: theme.colorScheme.primary,
                   ),

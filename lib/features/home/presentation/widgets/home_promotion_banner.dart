@@ -18,13 +18,14 @@ class HomePromotionBanner extends StatefulWidget {
 }
 
 class _HomePromotionBannerState extends State<HomePromotionBanner>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _controller;
   late final Animation<double> _floatAnimation;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 4000),
@@ -36,7 +37,20 @@ class _HomePromotionBannerState extends State<HomePromotionBanner>
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _controller.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      if (!_controller.isAnimating) {
+        _controller.repeat(reverse: true);
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
@@ -64,103 +78,121 @@ class _HomePromotionBannerState extends State<HomePromotionBanner>
         : l10n.homeNoActivePromotion;
     final cta = hasPromo ? l10n.promotionsTitle : l10n.homePromotionBannerCta;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      child: Material(
-        borderRadius: BorderRadius.circular(20),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: widget.onTap,
+    final semanticsLabel = hasPromo
+        ? '${l10n.promotionsTitle}: ${promo.name}, ${_discountLabel(context, promo)}'
+        : l10n.homeCreatePromotion;
+
+    return Semantics(
+      button: true,
+      label: semanticsLabel,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Material(
           borderRadius: BorderRadius.circular(20),
-          child: Container(
-            height: 130,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.promotionGradientStart,
-                  AppColors.promotionGradientEnd,
-                ],
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              height: 130,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.promotionGradientStart,
+                    AppColors.promotionGradientEnd,
+                  ],
+                ),
               ),
-            ),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    top: 16,
-                    bottom: 16,
-                    right: 130,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: onPrimary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: onPrimary.withValues(alpha: 0.7),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: onPrimary,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          cta,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: AppColors.promotionGradientEnd,
-                            fontWeight: FontWeight.w700,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      top: 16,
+                      bottom: 16,
+                      right: 130,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            color: onPrimary,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: onPrimary.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: onPrimary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            cta,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: AppColors.promotionGradientEnd,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Positioned(
-                  right: 22,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(0, _floatAnimation.value),
-                          child: child,
-                        );
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/home/home_promotion_banner.png',
-                          height: 90,
-                          fit: BoxFit.contain,
+                  Positioned(
+                    right: 22,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _floatAnimation.value),
+                            child: child,
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            'assets/images/home/home_promotion_banner.png',
+                            height: 90,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const SizedBox(
+                                  height: 90,
+                                  width: 90,
+                                  child: Icon(
+                                    Icons.campaign_outlined,
+                                    size: 48,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

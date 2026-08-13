@@ -76,15 +76,19 @@ class SubmitProductUseCase {
         ? null
         : input.supplier.trim();
 
-    String? imagePath = input.imagePath;
-    String? imageThumbnailPath = input.imageThumbnailPath;
+    // Preserve image paths even when the local file is currently missing.
+    // Clearing them here would silently destroy the reference on every edit
+    // (e.g. after a cache clear), making the image unrecoverable even if the
+    // file returns via sync/restore. UnifiedImageWidget already renders a
+    // placeholder for non-existent paths, so we keep the path and only log.
+    final imagePath = input.imagePath;
+    final imageThumbnailPath = input.imageThumbnailPath;
     if (imagePath != null &&
         imagePath.isNotEmpty &&
         !File(imagePath).existsSync()) {
-      imagePath = null;
-      imageThumbnailPath = null;
       AppLogger.warning(
-        'Image file not found at submit, clearing path: ${input.imagePath}',
+        'Image file not found at submit, keeping path for recovery: '
+        '${input.imagePath}',
       );
     }
 

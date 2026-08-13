@@ -12,10 +12,22 @@ class DraftInitialized extends DraftEvent {
 }
 
 class DraftSwitched extends DraftEvent {
-  const DraftSwitched(this.draftId);
+  const DraftSwitched(
+    this.draftId, {
+    this.paymentLocked = false,
+    this.liveCart,
+  });
   final String draftId;
+
+  /// When true, bloc rejects switch (cart frozen mid-checkout).
+  final bool paymentLocked;
+
+  /// Live cart to **force-save** onto the current active draft before loading
+  /// [draftId]. Prevents losing edits still inside the autosave debounce window.
+  final CartState? liveCart;
+
   @override
-  List<Object?> get props => [draftId];
+  List<Object?> get props => [draftId, paymentLocked, liveCart];
 }
 
 class DraftCreated extends DraftEvent {
@@ -26,18 +38,35 @@ class DraftCreated extends DraftEvent {
 }
 
 class DraftDeleted extends DraftEvent {
-  const DraftDeleted(this.draftId);
+  const DraftDeleted(this.draftId, {this.paymentLocked = false});
   final String draftId;
+
+  /// When true, bloc rejects delete (cart frozen mid-checkout).
+  final bool paymentLocked;
+
   @override
-  List<Object?> get props => [draftId];
+  List<Object?> get props => [draftId, paymentLocked];
 }
 
 class DraftRenamed extends DraftEvent {
-  const DraftRenamed({required this.draftId, required this.name});
+  const DraftRenamed({
+    required this.draftId,
+    required this.name,
+    this.paymentLocked = false,
+  });
   final String draftId;
   final String name;
+
+  /// When true, bloc rejects rename mid-payment.
+  final bool paymentLocked;
+
   @override
-  List<Object?> get props => [draftId, name];
+  List<Object?> get props => [draftId, name, paymentLocked];
+}
+
+/// Recompute [DraftState.draftCount] / [DraftState.openBillCount] from DB.
+class DraftCountsRefreshRequested extends DraftEvent {
+  const DraftCountsRefreshRequested();
 }
 
 class DraftAutoSaveRequested extends DraftEvent {
@@ -60,11 +89,18 @@ class DraftForceSaveRequested extends DraftEvent {
 }
 
 /// Park current bill: force-save active draft then create a new empty draft.
-/// Optional [name] is applied to the **parked** draft (not the new empty one).
+///
+/// Name policy on the **parked** draft (via [DraftNaming.resolveParkName]):
+/// - [name] non-null (long-press / explicit): trim, or auto if empty
+/// - [name] null (1-tap): keep existing active name if set; else auto
+///
+/// New empty draft always gets [DraftNaming.forNewEmptyBill].
 /// Does not clear cart — UI clears only after success.
 class DraftParkRequested extends DraftEvent {
   const DraftParkRequested(this.cartState, {this.name});
   final CartState cartState;
+
+  /// When non-null, treated as explicit name intent (even if empty string).
   final String? name;
   @override
   List<Object?> get props => [cartState, name];

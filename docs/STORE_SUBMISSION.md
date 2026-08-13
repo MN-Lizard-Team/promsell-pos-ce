@@ -1,13 +1,48 @@
 # Store Submission Checklist
 
-Last updated: **2026-07-17** | Version: **0.9.0+1**  
-Trust package: `docs/plan/V090-TRUST/` · Smoke: `docs/testing/RELEASE_0.9_SMOKE.md`
+Last updated: **2026-08-11** | Version: **0.9.1+1** (store cut still **0.9 → 1.0** human)  
+Trust package: `docs/plan/COMPLETE/V090-TRUST/` · Smoke 0.9: `docs/testing/RELEASE_0.9_SMOKE.md` · Smoke 1.0 plan: `docs/testing/RELEASE_1.0_SMOKE.md`  
+Post-0.9 management: `docs/plan/UN-COMPLETE/POST-090-MANAGE/` · Play WS: `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md`
+
+---
+
+## A0 — Release-day freeze (Must vs Should)
+
+**Frozen 2026-07-20** for POST-090 Wave 0. Operator signs production only when **Must** is complete.
+
+### Must (block production Play)
+
+| ID | Item | Owner | In-repo? | Status |
+|----|------|-------|----------|--------|
+| A1 | Production keystore + dual custody (not throwaway JKS) | Operator | Runbook only | ⬜ |
+| A2 | Play Data safety form ตรง `PRIVACY_POLICY` (local PII, no dev collection) | Operator | Guidance | ⬜ |
+| A2b | Content rating + Free + Thailand (+ contact email) | Operator | — | ⬜ |
+| A3 | Signed **prod** AAB with real keystore (CI **requires** secrets on `v*` tags) | Operator + DevOps | `release-aab.yml` fail-closed on tags (2026-07-20) | ⬜ secrets still operator |
+| A4 | Upload AAB to Play (internal/closed first) | Operator | — | ⬜ |
+| A5 | Post-submit smoke on **prod** build per `RELEASE_1.0_SMOKE` Must | QA/Operator | Smoke template | ⬜ |
+| B-trust | `release-trust.yml` green on release tag | Maintainer | Yes | ✅ path exists |
+| Honesty | Listing: not tax invoice, same-device restore, AGPL | Maintainer | Metadata staged | ✅ |
+
+### Should (1.0.x / polish — do not block internal track)
+
+| Item | Notes |
+|------|--------|
+| Tablet 7"/10" screenshots | Empty slots today |
+| Feature graphic designer refresh | Staged brand banner OK |
+| Stable privacy URL (not only GitHub blob) | Preferred for long-term |
+| PIN default-on (E0c) | **Shipped in 0.9.1** (onboarding finish/skip). Not a Console-form blocker |
+
+### Explicit non-blockers for internal testing
+
+- Device `integration_test/` not run on main CI (format/analyze only). Trust **blocks** emulator `--flavor dev` on tags / money-path PRs — see [`docs/testing/CI.md`](testing/CI.md)
+- Phase M / Phase 2b not shipped  
+- iOS App Store full cut (separate track)  
 
 ---
 
 ## Pre-Flight (Code)
 
-- [x] Version `0.9.0+1` in `pubspec.yaml`
+- [x] Version `0.9.1+1` in `pubspec.yaml`
 - [x] Android / iOS display name **Promsell**
 - [x] Permissions: CAMERA (product photos + barcode), storage for exports; INTERNET optional (remote product images only)
 - [x] iOS privacy usage strings present (`Info.plist`)
@@ -88,24 +123,69 @@ Also kept under repo `screenshots/`.
 
 **Play Console (human — not done by git alone)**
 
-- [ ] Data safety form in Play Console
+- [ ] Data safety form in Play Console (use **A2 draft answers** below)
 - [ ] Production release keystore (not throwaway E2) + dual custody
 - [ ] Upload production-signed AAB
 - [ ] Content rating + Free pricing + Thailand
 - [ ] Contact `mnlizard.official@gmail.com`
 
+### A2 — Play Data safety draft answers (fill Console; 2026-07-20)
+
+Align with `docs/PRIVACY_POLICY.md`. **No developer-operated collection/server.**
+
+| Console topic | Answer (draft) |
+|---------------|----------------|
+| Does the app collect/share user data with the developer? | **No** developer collection; data stays on device |
+| Location | Not collected by app for analytics |
+| Personal info | **May be stored on device only:** shop name/phone, optional customer name/phone/email, PromptPay ID, product photos |
+| Financial info | Sales totals/payment method labels stored **on device** for POS; not sent to Promsell servers |
+| Photos | Product images chosen by merchant — local storage |
+| App activity / crash | Local crash log only (PII sanitized); no Firebase Analytics by default |
+| Encryption in transit | N/A for core offline POS (no required network) |
+| Encryption at rest | SQLCipher + optional AES-GCM backup; key in platform secure storage |
+| Data deletion | Uninstall / clear app data; merchant can delete customers/sales in-app; **SQLCipher key loss without backup = permanent** |
+| Children | Not directed at children |
+| Account creation | No cloud account |
+
+Operator still must click through Play Console forms — this table is the honesty SSOT.
+
 ---
 
 ## Manual steps (operator)
 
-### 1. Production keystore
+### 1. Production keystore + dual custody (A1 runbook)
+
+**Never use** `promsell-throwaway-release.jks` for Play. Loss of the production keystore = cannot update the app on Play.
+
+#### Generate (once)
 
 ```bash
 cd android/app
-keytool -genkey -v -keystore promsell-release-key.jks   -keyalg RSA -keysize 2048 -validity 10000   -alias promsell   -storepass YOUR_STRONG_PASSWORD   -keypass YOUR_STRONG_PASSWORD   -dname "CN=Promsell, O=Promsell, C=TH"
+keytool -genkey -v -keystore promsell-release-key.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -alias promsell \
+  -storepass YOUR_STRONG_PASSWORD \
+  -keypass YOUR_STRONG_PASSWORD \
+  -dname "CN=Promsell, O=Promsell, C=TH"
 ```
 
-`keystore.properties` (gitignored):
+#### Dual custody (required)
+
+| Copy | Location | Access |
+|------|----------|--------|
+| **Primary** | Operator password manager + encrypted disk (not git) | Day-to-day signing / CI secrets |
+| **Sealed backup** | Second person or offline sealed media | Break-glass only; inventory annually |
+| **CI** | GitHub Actions secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Repo admin only |
+
+Checklist:
+
+- [ ] Primary JKS stored outside repo  
+- [ ] Sealed backup exists and is tested (list aliases with `keytool -list`)  
+- [ ] Passwords not in chat/email plaintext  
+- [ ] Throwaway keystore never uploaded to Play  
+- [ ] Tag releases fail without CI secrets (`release-aab.yml` A3)  
+
+#### Local `keystore.properties` (gitignored)
 
 ```properties
 storeFile=promsell-release-key.jks
@@ -131,7 +211,7 @@ flutter build appbundle --release --flavor prod -t lib/main_prod.dart
 
 ### 4. App Store Connect (optional)
 
-Bundle `com.promsell.promsellPosCe` · same privacy URL · export compliance for SQLCipher/AES
+Bundle `com.promsell.promsell_pos_ce` · same privacy URL · export compliance for SQLCipher/AES
 
 ---
 
@@ -153,7 +233,7 @@ Bundle `com.promsell.promsellPosCe` · same privacy URL · export compliance for
 
 | Item | Value |
 |------|--------|
-| Version | 0.9.0+1 |
+| Version | 0.9.1+1 |
 | Privacy URL | https://github.com/teeprakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
 | Source | https://github.com/teeprakorn1/promsell-pos-ce |
 | Android ID | `com.promsell.promsell_pos_ce` |
@@ -166,5 +246,5 @@ Bundle `com.promsell.promsellPosCe` · same privacy URL · export compliance for
 
 | ID | Status |
 |----|--------|
-| **E4** CI release + secrets-optional AAB | ✅ `release-aab.yml` (2026-07-17) |
+| **E4** CI release + **fail-closed** signed AAB on `v*` / dispatch | ✅ `release-aab.yml` (secrets required; no `require_signed_aab` input) |
 | **E5** Screenshots + graphic + privacy + listing honesty | ✅ **Staged 2026-07-17** — operator still submits in consoles |

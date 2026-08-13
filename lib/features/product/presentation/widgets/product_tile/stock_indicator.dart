@@ -9,12 +9,14 @@ class StockIndicator extends StatelessWidget {
     this.trackStock = true,
     this.compact = false,
     this.lowStockThreshold = 5,
+    this.showStockLabel = false,
   });
 
   final int stock;
   final bool trackStock;
   final bool compact;
   final int lowStockThreshold;
+  final bool showStockLabel;
 
   ({Color color, IconData icon, String label}) _resolve(BuildContext context) {
     final l10n = context.l10n;
@@ -52,22 +54,26 @@ class StockIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final resolved = _resolve(context);
+    final label = showStockLabel && trackStock && stock > 0
+        ? '${context.l10n.stockOnHand} ${resolved.label}'
+        : resolved.label;
 
     if (compact) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(resolved.icon, size: 14, color: resolved.color),
-          const SizedBox(width: 4),
+          Icon(resolved.icon, size: 10, color: resolved.color),
+          const SizedBox(width: 2),
           Flexible(
             child: Text(
-              resolved.label,
+              label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: resolved.color,
                 fontWeight: FontWeight.w600,
-                fontSize: 12,
+                fontSize: 9,
+                height: 1.0,
               ),
             ),
           ),
@@ -87,7 +93,7 @@ class StockIndicator extends StatelessWidget {
           Icon(resolved.icon, size: 14, color: resolved.color),
           const SizedBox(width: 4),
           Text(
-            resolved.label,
+            label,
             style: theme.textTheme.bodySmall?.copyWith(
               color: resolved.color,
               fontWeight: FontWeight.w700,

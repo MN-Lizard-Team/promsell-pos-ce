@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_detail_row.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
 class CartProductDetailSheet {
   CartProductDetailSheet._();
@@ -19,31 +22,17 @@ class CartProductDetailSheet {
     final theme = Theme.of(context);
     final l10n = context.l10n;
     final currency = context.read<SettingsCubit>().state.settings.currency;
-    showModalBottomSheet(
+    final pos = context.posTheme;
+
+    PosBottomSheet.show<void>(
       context: context,
-      enableDrag: true,
-      showDragHandle: false,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               Row(
                 children: [
                   ProductAvatar(
@@ -51,6 +40,8 @@ class CartProductDetailSheet {
                     imageThumbnailPath: item.product.imageThumbnailPath,
                     imageUrl: item.product.imageUrl,
                     size: 64,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -60,7 +51,7 @@ class CartProductDetailSheet {
                         Text(
                           item.product.name,
                           style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -73,17 +64,29 @@ class CartProductDetailSheet {
                       ],
                     ),
                   ),
+                  MoneyText(
+                    value: item.subtotal.value,
+                    currency: currency,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'NotoSansThai',
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
+              Divider(height: 1, color: pos.billStubBorder),
+              const SizedBox(height: 12),
               if (item.selectedOptions.isNotEmpty) ...[
                 Text(
                   l10n.selectOptions,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.secondary,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 for (final opt in item.selectedOptions)
                   CartDetailRow(
                     '${opt.groupName}: ${opt.optionName}',
@@ -95,7 +98,7 @@ class CartProductDetailSheet {
               ],
               CartDetailRow(
                 l10n.receiptLabelSubtotal,
-                '$currency${item.product.price.value.toStringAsFixed(2)} x ${item.qty}',
+                '$currency${item.product.price.value.toStringAsFixed(2)} × ${item.qty}',
               ),
               CartDetailRow(l10n.quantityLabel, '${item.qty}'),
               MoneyDetailRow(
@@ -110,27 +113,31 @@ class CartProductDetailSheet {
                   '-$currency${item.discountAmount.value.toStringAsFixed(2)}',
                 ),
               if (item.note != null && item.note!.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   l10n.itemNoteLabel,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.secondary,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.35,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: pos.billStubBorder),
                   ),
                   child: Text(item.note!),
                 ),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               _StockStatusRow(item: item, theme: theme, l10n: l10n),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               if (onEditNote != null || onEditDiscount != null) ...[
                 Row(
                   children: [
@@ -143,6 +150,13 @@ class CartProductDetailSheet {
                           },
                           icon: const Icon(Icons.note_alt_outlined, size: 18),
                           label: Text(l10n.itemNoteLabel),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, 44),
+                            side: BorderSide(color: pos.billStubBorder),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
                     if (onEditNote != null && onEditDiscount != null)
@@ -159,6 +173,13 @@ class CartProductDetailSheet {
                             size: 18,
                           ),
                           label: Text(l10n.discountSectionLabel),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, 44),
+                            side: BorderSide(color: pos.billStubBorder),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
                   ],
@@ -167,10 +188,19 @@ class CartProductDetailSheet {
               ],
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: FilledButton(
                   onPressed: () => Navigator.of(sheetContext).pop(),
-                  icon: const Icon(Icons.close),
-                  label: Text(l10n.close),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 48),
+                    backgroundColor: theme.colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.close,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
             ],
@@ -190,7 +220,7 @@ class _StockStatusRow extends StatelessWidget {
 
   final CartItem item;
   final ThemeData theme;
-  final dynamic l10n;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +251,7 @@ class _StockStatusRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
@@ -231,7 +261,7 @@ class _StockStatusRow extends StatelessWidget {
             '$label (${l10n.stockRemaining(stock)})',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

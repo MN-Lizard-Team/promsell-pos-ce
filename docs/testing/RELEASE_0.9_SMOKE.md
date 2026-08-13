@@ -45,7 +45,7 @@ Run on a **real device or emulator** after schema upgrade / fresh install. Mark 
 
 - No SQLCipher **key recovery** / cross-device restore (same-device only)
 - ~~Full encrypted-file restore round-trip~~ **automated Pass 2026-07-17** (`backup_restore_service_test`); OS share-sheet re-import on device still optional
-- Main CI device `integration_test/` may still `continue-on-error`. **Money path fail-closed:** `.github/workflows/release-trust.yml` (C7); optional signed AAB: `.github/workflows/release-aab.yml` (E4)
+- Main CI does **not** run device `integration_test/` (format/analyze only). **Money path + emulator smoke fail-closed** on tags / money-path PRs: `.github/workflows/release-trust.yml`. Signed AAB on `v*` **requires** secrets: `.github/workflows/release-aab.yml`. See [`CI.md`](CI.md).
 - `injection_container.config.dart` is gitignored — run `dart run build_runner build` after clone
 - **Signed AAB dry-run (E2):** **Pass 2026-07-17** — throwaway keystore (gitignored) produced `build/app/outputs/bundle/prodRelease/app-prod-release.aab` (91.5MB). **Do not use throwaway key for Play Store.** Production keystore remains merchant/operator owned.
 

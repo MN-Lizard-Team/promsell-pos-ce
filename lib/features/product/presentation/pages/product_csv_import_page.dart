@@ -95,6 +95,7 @@ class _ProductCsvImportPageState extends State<ProductCsvImportPage> {
     return switch (key) {
       'csvNoData' => l10n.csvNoData,
       'csvInvalidFormat' => l10n.csvInvalidFormat,
+      'csvInvalidEncoding' => l10n.csvInvalidEncoding,
       'csvTooManyRows' => l10n.csvTooManyRows(kCsvImportMaxDataRows),
       'csvFileTooLarge' => l10n.csvFileTooLarge(kCsvImportMaxMb),
       'csvImportError' => l10n.csvImportError,
@@ -166,14 +167,19 @@ class _ProductCsvImportPageState extends State<ProductCsvImportPage> {
       String? content;
       try {
         final bytes = await platformFile.readAsBytes();
-        content = utf8.decode(bytes, allowMalformed: true);
-      } catch (_) {
-        if (platformFile.path != null) {
-          content = await File(platformFile.path!).readAsString(encoding: utf8);
+        // Strict UTF-8 decode — reject malformed sequences instead of
+        // silently replacing them with U+FFFD (prevents data corruption).
+        content = utf8.decode(bytes);
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _errorKey = 'csvInvalidEncoding';
+          });
         }
+        return;
       }
 
-      if (content == null || content.trim().isEmpty) {
+      if (content.trim().isEmpty) {
         if (mounted) {
           setState(() {
             _isLoading = false;

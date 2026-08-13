@@ -15,6 +15,7 @@
 
 ### Sale tab
 
+- **AppBar subtitle** — Locale-aware date/time + open bill count (e.g. "27 ก.ค. 2026 • 10:37 • บิลที่ 3"), updates every 30 seconds
 1. Use the search bar or category chips to narrow the product catalog
 2. Tap any product card to add it to the cart — out-of-stock products appear dimmed and cannot be tapped (unless **Allow oversell** is enabled in Settings → Stock)
 3. If a product in your cart goes out of stock (e.g. stock adjusted elsewhere), a snackbar warns you with the product name; the item stays in the cart with qty clamped to available stock
@@ -135,7 +136,7 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 | **Show shop info on receipt** | Toggle on/off |
 | **Auto print prompt** | Ask to print receipt after sale |
 | **Receipt preview style** | `thermal` / `card` / `none` |
-| **Show pre-sale preview** | Show preview in PaymentSheet |
+| **Show pre-sale preview** | Show preview in PaymentPage |
 | **Show post-sale preview** | Show preview in success dialog |
 
 ### PromptPay Settings
@@ -155,8 +156,8 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 
 ### Store PIN lock (v0.9.0)
 
-- Optional Settings → Store PIN lock (min **6** digits, PBKDF2)
-- When enabled, PIN is required for: **void sale**, **backup export/restore**, **turn backup encryption off**, **stock adjust**, **CSV product import**, **PromptPay ID/biller changes**
+- Required on new install (onboarding finish/skip). Settings → Store PIN lock (min **6** digits, PBKDF2); may be turned off later if the code still allows
+- When enabled, PIN is required for: **void sale**, **backup export/restore**, **turn backup encryption off**, **AdjustStock**, **CSV product import**, **PromptPay ID/biller changes**. Product-form / quick-edit stock and price are **not** PIN-gated
 - Session grace (~2 min); cleared when app goes to background
 - Too many wrong attempts → temporary lockout **persists** across app restart
 
@@ -192,7 +193,7 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 - **Description** — "Offline-first mobile POS for small businesses"
 - **Built with** — Tech stack summary (Flutter, Drift SQLite)
 - **Contact** — Support email (mnlizard.official@gmail.com)
-- **Privacy Policy** — Opens in-app `PrivacyPolicyPage` with 7 sections: Data Collection, Third-Party Services, Data Storage, Backup Encryption, Customer Data, Permissions, Contact
+- **Privacy Policy** — Opens in-app `PrivacyPolicyPage` with 8 sections: Data Collection, Third-Party Services, Data Storage, Backup Encryption, Customer Data, Crash Logging, Permissions, Contact
 - **Open Source License** — Opens in-app `AppLicensePage` showing full AGPL-3.0 license text (loaded from `LICENSE` file, selectable for copy)
 - **Footer** — Copyright notice "© 2026 Promsell POS CE · AGPL-3.0"
 

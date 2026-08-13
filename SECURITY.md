@@ -57,7 +57,7 @@ Promsell is an **offline-first local app** with no required network for core POS
 5. **Inventory audit trail** — stock changes logged in `inventory_logs`
 6. **Backup export** — WAL checkpoint → DB copy → AES-256-GCM (PBKDF2 PIN, min length 6). Encryption default **on** when the setting key is missing (v0.9); can be turned off with store PIN (if enabled) + confirmation
 7. **Backup restore (same-device)** — Settings → Backup can restore a `.enc` / SQLCipher `.db` export on **this device** (needs the existing SQLCipher key in secure storage). Cross-device / after uninstall is **not** supported. Plain SQLite files are rejected
-8. **Store PIN lock** — optional PIN (min **6**) with PBKDF2 hashing + attempt lockout **persisted in secure storage** (survives cold start); gates void, backup export/restore, stock adjust, CSV import, PromptPay edits, and disabling backup encryption
+8. **Store PIN lock** — PIN (min **6**) with PBKDF2 hashing + attempt lockout **persisted in secure storage** (survives cold start). **Default-on for new installs (POST-090 E0c):** onboarding **finish** and **skip** require creating a store PIN before `onboardingCompleted` (`showCreateStorePinDialog` + `setPin`). Existing installs that already completed onboarding without a PIN are unchanged until the user enables PIN in Settings. **Domain re-check:** `VoidSale`, `AdjustStock`, `ImportProducts` (CSV), `BackupExportService` / `BackupRestoreService`, and settings updates that change `promptpayId` / `billerId` call `AppLockService.requireSensitiveSession()`. **Not gated:** product-form / quick-edit writes of `stock` / `price` / `cost` (see V092-B.1). PIN does **not** protect inventory on every path.
 9. **Crash logs** — PII patterns sanitized **on write**
 10. **Image sandbox** — product image delete restricted under app `images/` directory
 11. **No server by default** — no remote API keys in core flow
@@ -80,11 +80,12 @@ Promsell is an **offline-first local app** with no required network for core POS
 
 ## Security changelog (recent)
 
-- **0.9.0** — SQLCipher production path; backup encrypt default on; **same-device in-app restore**; store PIN min 6 + PBKDF2 + **persisted** lockout; gates void/backup/stock/CSV/PromptPay; crash sanitize on write; image delete sandbox; schema **v28**; checkout failure unlocks cart
+- **0.9.1+ (working tree)** — schema **v30** (`barcode_lower` / `sku_lower` uniques). PIN still default-on for new installs. Stock PIN remains AdjustStock + CSV only.
+- **0.9.0** — SQLCipher production path; backup encrypt default on; **same-device in-app restore**; store PIN min 6 + PBKDF2 + **persisted** lockout; gates void/backup/AdjustStock/CSV/PromptPay; crash sanitize on write; image delete sandbox; schema **v28** at that cut; checkout failure unlocks cart
 - **0.8.x** — See prior SECURITY entries and CHANGELOG (barcode uniqueness, orphaned images, crash export sanitize, restaurant/CRM isolation)
 
 ## Security testing expectations
 
-- Unit/widget tests on CI; integration suite may be non-blocking
-- Manual smoke: encrypted open, cash/PromptPay sale, void, draft, daily close, backup export/restore (see `docs/testing/RELEASE_0.9_SMOKE.md`)
-- CI: unit/widget coverage floor 50%; money-path fail-closed via `.github/workflows/release-trust.yml`; optional signed AAB via `release-aab.yml` when keystore secrets are set
+- Unit/widget tests on CI. Device E2E is **not** on main CI — see [`docs/testing/CI.md`](docs/testing/CI.md)
+- Manual smoke: encrypted open, cash/PromptPay sale, void, draft, daily close, backup export/restore (see `docs/testing/RELEASE_0.9_SMOKE.md`). `RELEASE_1.0_SMOKE` is still **No-Go**
+- CI: unit/widget coverage floor 60% (global) + sale-logic ≥80% via `tool/check_path_coverage.dart`; money-path + **blocking** emulator smoke via `.github/workflows/release-trust.yml` on tags / money-path PRs; signed prod AAB on `v*` **requires** `ANDROID_KEYSTORE_*` (`release-aab.yml` fail-closed — no optional / `require_signed_aab` input)

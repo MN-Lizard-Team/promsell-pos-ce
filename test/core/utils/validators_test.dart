@@ -33,12 +33,16 @@ void main() {
       expect(() => Validators.barcode(barcode), throwsArgumentError);
     });
 
-    test('throws for barcode with spaces', () {
-      expect(() => Validators.barcode('ABC 123'), throwsArgumentError);
+    test('strips spaces and returns cleaned barcode', () {
+      expect(Validators.barcode('ABC 123'), 'ABC123');
     });
 
-    test('throws for barcode with special characters', () {
-      expect(() => Validators.barcode('ABC-123'), throwsArgumentError);
+    test('strips hyphens and returns cleaned barcode', () {
+      expect(Validators.barcode('ABC-123'), 'ABC123');
+    });
+
+    test('throws for barcode with non-separator special characters', () {
+      expect(() => Validators.barcode('ABC@123'), throwsArgumentError);
     });
   });
 
@@ -147,6 +151,37 @@ void main() {
 
     test('throws for wrong mobile length', () {
       expect(() => Validators.promptpayId('081234567'), throwsArgumentError);
+    });
+
+    test('returns null for empty / non-digit cleaned', () {
+      expect(Validators.promptpayId(''), isNull);
+      expect(Validators.promptpayId('abc'), isNull);
+    });
+
+    test('accepts valid Thai citizen ID checksum', () {
+      // Known-valid pattern: use digits that pass mod-11.
+      // 1 1 0 0 7 0 0 0 0 0 0 0 0 → compute checksum for demo fixture:
+      // Common test ID used in TH docs: 1234567890121 is invalid; use generated.
+      const raw12 = '110070000000';
+      var sum = 0;
+      for (var i = 0; i < 12; i++) {
+        sum += int.parse(raw12[i]) * (13 - i);
+      }
+      final checksum = (11 - (sum % 11)) % 10;
+      final id = '$raw12$checksum';
+      expect(Validators.promptpayId(id), id);
+    });
+
+    test('throws for invalid citizen ID length', () {
+      expect(() => Validators.promptpayId('123456789012'), throwsArgumentError);
+    });
+
+    test('throws for invalid citizen ID checksum', () {
+      // 13 digits starting with 1.. but wrong checksum digit.
+      expect(
+        () => Validators.promptpayId('1234567890123'),
+        throwsArgumentError,
+      );
     });
   });
 }

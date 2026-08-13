@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart'
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/image_settings_labels.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ImageQualityTile extends StatelessWidget {
   const ImageQualityTile({
@@ -29,11 +30,7 @@ class ImageQualityTile extends StatelessWidget {
           color: st.iconContainerBackground,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.high_quality_outlined,
-          color: st.softAccent,
-          size: 24,
-        ),
+        child: Icon(TablerIcons.star, color: st.softAccent, size: 24),
       ),
       title: Text(
         l10n.settingsImageQuality,
@@ -43,7 +40,7 @@ class ImageQualityTile extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        qualityLabel(settings.imageQuality),
+        qualityLabel(settings.imageQuality, l10n),
         style: theme.textTheme.bodyMedium?.copyWith(
           color: st.softTextSecondary,
           fontSize: 14,

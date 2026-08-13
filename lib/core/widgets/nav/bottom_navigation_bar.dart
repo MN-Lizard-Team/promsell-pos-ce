@@ -2,8 +2,10 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:promsell_pos_ce/core/widgets/nav/bottom_navigation_bar/icon_with_badge.dart';
 import 'package:promsell_pos_ce/core/widgets/nav/nav_swipe_helper.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 
 class AppBottomNavigationBar extends StatefulWidget {
   const AppBottomNavigationBar({
@@ -170,6 +172,9 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
                             : colorScheme.onSurfaceVariant.withValues(
                                 alpha: 0.6,
                               ),
+                        svgString: isActive
+                            ? (item.svgActiveString ?? item.svgString)
+                            : item.svgString,
                         badgeCount: item.badgeCount,
                         badgeColor: item.badgeColor ?? colorScheme.error,
                         isActive: isActive,
@@ -277,11 +282,26 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
       ),
       child: Transform.rotate(
         angle: -math.pi / 4,
-        child: Icon(
-          isActive ? item.activeIcon : item.icon,
-          color: colorScheme.onPrimary,
-          size: 28,
-        ),
+        child: item.svgString != null
+            ? SizedBox(
+                width: 24,
+                height: 24,
+                child: SvgPicture.string(
+                  isActive
+                      ? (item.svgActiveString ?? item.svgString!)
+                      : item.svgString!,
+                  fit: BoxFit.contain,
+                  colorFilter: ColorFilter.mode(
+                    colorScheme.onPrimary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              )
+            : Icon(
+                isActive ? item.activeIcon : item.icon,
+                color: colorScheme.onPrimary,
+                size: 28,
+              ),
       ),
     );
   }
@@ -299,49 +319,46 @@ class _AppBottomNavigationBarState extends State<AppBottomNavigationBar>
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            // Shadow outside ClipRRect — clipped blur would hide dock lift.
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
               height: AppBottomNavigationBar._height + bottomPadding,
-              child: ClipRRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                  child: Container(
-                    decoration: BoxDecoration(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  boxShadow: context.posTheme.shadowDockUp,
+                ),
+                child: ClipRRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: ColoredBox(
                       color: colorScheme.surface.withValues(alpha: 0.8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.shadow.withValues(alpha: 0.12),
-                          blurRadius: 16,
-                          offset: const Offset(0, -4),
+                      child: SafeArea(
+                        top: false,
+                        child: Row(
+                          children: [
+                            for (int i = 0; i < _centerIndex; i++)
+                              _buildRegularItem(
+                                i,
+                                widget.items[i],
+                                theme,
+                                colorScheme,
+                              ),
+                            const SizedBox(width: 80),
+                            for (
+                              int i = _centerIndex + 1;
+                              i < widget.items.length;
+                              i++
+                            )
+                              _buildRegularItem(
+                                i,
+                                widget.items[i],
+                                theme,
+                                colorScheme,
+                              ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: Row(
-                        children: [
-                          for (int i = 0; i < _centerIndex; i++)
-                            _buildRegularItem(
-                              i,
-                              widget.items[i],
-                              theme,
-                              colorScheme,
-                            ),
-                          const SizedBox(width: 80),
-                          for (
-                            int i = _centerIndex + 1;
-                            i < widget.items.length;
-                            i++
-                          )
-                            _buildRegularItem(
-                              i,
-                              widget.items[i],
-                              theme,
-                              colorScheme,
-                            ),
-                        ],
                       ),
                     ),
                   ),
@@ -374,6 +391,8 @@ class NavItem {
     required this.icon,
     required this.activeIcon,
     required this.label,
+    this.svgString,
+    this.svgActiveString,
     this.badgeCount,
     this.badgeColor,
     this.longPressActions,
@@ -382,6 +401,11 @@ class NavItem {
 
   final IconData icon;
   final IconData activeIcon;
+
+  /// Inline SVG string. When provided, used instead of [icon].
+  final String? svgString;
+  final String? svgActiveString;
+
   final String label;
 
   final int? badgeCount;
@@ -391,4 +415,6 @@ class NavItem {
   final Map<String, String>? longPressActions;
 
   final ValueChanged<String>? onLongPressAction;
+
+  bool get isSvg => svgString != null;
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/image_settings_labels.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ImagePreviewCard extends StatelessWidget {
   const ImagePreviewCard({
@@ -37,7 +38,7 @@ class ImagePreviewCard extends StatelessWidget {
               color: st.iconContainerBackground,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(Icons.image_outlined, color: st.softAccent, size: 28),
+            child: Icon(TablerIcons.photo, color: st.softAccent, size: 28),
           ),
           const SizedBox(height: 12),
           Text(
@@ -50,15 +51,15 @@ class ImagePreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _buildRow(
-            icon: Icons.width_normal_outlined,
+            icon: TablerIcons.arrowsHorizontal,
             label: l10n.settingsImageMaxWidth,
-            value: widthLabel(imageMaxWidth),
+            value: widthLabel(imageMaxWidth, l10n),
             st: st,
           ),
           _buildRow(
-            icon: Icons.high_quality_outlined,
+            icon: TablerIcons.star,
             label: l10n.settingsImageQuality,
-            value: qualityLabel(imageQuality),
+            value: qualityLabel(imageQuality, l10n),
             st: st,
           ),
         ],

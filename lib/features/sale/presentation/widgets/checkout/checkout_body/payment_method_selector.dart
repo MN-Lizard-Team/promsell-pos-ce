@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment/payment_widgets.dart';
 
+/// Payment method picker — 2×2 grid (PromptPay optional 4th cell).
 class PaymentMethodSelector extends StatelessWidget {
   const PaymentMethodSelector({
     super.key,
@@ -15,60 +16,49 @@ class PaymentMethodSelector extends StatelessWidget {
   final bool promptpayEnabled;
   final ValueChanged<String> onChanged;
 
+  void _select(String value) {
+    HapticFeedback.selectionClick();
+    onChanged(value);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: PaymentMethodCard(
-            icon: Icons.payments_outlined,
-            label: context.l10n.cash,
-            selected: method == 'cash',
-            onTap: () {
-              HapticFeedback.selectionClick();
-              onChanged('cash');
-            },
-          ),
+    final l = context.l10n;
+    final methods = <({String id, IconData icon, String label})>[
+      (id: 'cash', icon: Icons.payments_outlined, label: l.cash),
+      (id: 'transfer', icon: Icons.account_balance_outlined, label: l.transfer),
+      (id: 'card', icon: Icons.credit_card, label: l.card),
+      if (promptpayEnabled)
+        (
+          id: 'promptpay',
+          icon: Icons.account_balance_wallet_outlined,
+          label: l.promptpay,
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: PaymentMethodCard(
-            icon: Icons.account_balance_outlined,
-            label: context.l10n.transfer,
-            selected: method == 'transfer',
-            onTap: () {
-              HapticFeedback.selectionClick();
-              onChanged('transfer');
-            },
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: PaymentMethodCard(
-            icon: Icons.credit_card,
-            label: context.l10n.card,
-            selected: method == 'card',
-            onTap: () {
-              HapticFeedback.selectionClick();
-              onChanged('card');
-            },
-          ),
-        ),
-        if (promptpayEnabled) ...[
-          const SizedBox(width: 8),
-          Expanded(
-            child: PaymentMethodCard(
-              icon: Icons.account_balance_wallet_outlined,
-              label: context.l10n.promptpay,
-              selected: method == 'promptpay',
-              onTap: () {
-                HapticFeedback.selectionClick();
-                onChanged('promptpay');
-              },
-            ),
-          ),
-        ],
-      ],
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Two columns; height grows with label wrap.
+        const gap = 8.0;
+        final cellW = (constraints.maxWidth - gap) / 2;
+        return Wrap(
+          key: const ValueKey('sale_payment_method_grid'),
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final m in methods)
+              SizedBox(
+                width: cellW,
+                child: PaymentMethodCard(
+                  icon: m.icon,
+                  label: m.label,
+                  selected: method == m.id,
+                  onTap: () => _select(m.id),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

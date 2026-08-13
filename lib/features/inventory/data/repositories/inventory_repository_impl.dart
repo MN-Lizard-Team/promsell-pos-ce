@@ -20,13 +20,21 @@ class InventoryRepositoryImpl implements InventoryRepository {
     required String reason,
   }) async {
     await _db.transaction(() async {
-      // Get current product
-      final product = await (_db.select(
-        _db.products,
-      )..where((p) => p.id.equals(productId))).getSingleOrNull();
+      // Get current product (exclude soft-deleted rows).
+      final product =
+          await (_db.select(_db.products)
+                ..where((p) => p.id.equals(productId) & p.deletedAt.isNull()))
+              .getSingleOrNull();
 
       if (product == null) {
-        throw StateError('Product not found: $productId');
+        throw StateError('Product not found or deleted: $productId');
+      }
+
+      // Refuse stock adjustments on products that don't track stock.
+      if (!product.trackStock) {
+        throw StateError(
+          'Cannot adjust stock: product "$productId" does not track stock.',
+        );
       }
 
       final now = DateTime.now();

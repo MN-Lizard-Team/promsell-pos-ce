@@ -1,15 +1,19 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:sqlite3/open.dart' as sqlite3_open;
+import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 import 'package:promsell_pos_ce/main.dart' as app;
 
 /// Test app wrapper that provides isolated in-memory database
 /// and proper dependency injection for E2E tests
 class TestApp {
   TestApp._();
-  
+
   static AppDatabase? _database;
   static bool _isConfigured = false;
 
@@ -20,12 +24,26 @@ class TestApp {
       return;
     }
 
-    // Create in-memory database
+    if (Platform.isAndroid) {
+      sqlite3_open.open.overrideFor(
+        sqlite3_open.OperatingSystem.android,
+        openCipherOnAndroid,
+      );
+    }
+
     _database = AppDatabase.forTesting(NativeDatabase.memory());
+    await _database!
+        .into(_database!.appSettings)
+        .insertOnConflictUpdate(
+          AppSettingsCompanion.insert(
+            key: 'onboardingCompleted',
+            value: 'true',
+          ),
+        );
 
     // Configure DI with test database
     await _configureDependenciesForTesting();
-    
+
     _isConfigured = true;
   }
 
@@ -61,30 +79,34 @@ class TestApp {
     await _database?.close();
     _database = null;
     _isConfigured = false;
-    
+
     // Reset GetIt
     await sl.reset();
   }
 
   /// Configure dependencies with test database
   static Future<void> _configureDependenciesForTesting() async {
-    // Reset GetIt if already configured
-    if (sl.isRegistered<AppDatabase>()) {
-      await sl.reset();
-    }
-
-    // Register test database
-    sl.registerSingleton<AppDatabase>(_database!);
-
-    // Let the app configure other dependencies
+    // Start from a clean container, then replace the generated database
+    // registration with the isolated in-memory test database.
+    await sl.reset();
     configureDependencies();
+    await sl.unregister<AppDatabase>();
+    sl.registerSingleton<AppDatabase>(_database!);
   }
 
-  /// Pump the full app for integration testing
+  /// Pump the full app for integration testing.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) because the app has continuous timers
+  /// (clock, auto-refresh streams) that never settle — `pumpAndSettle` would
+  /// block for the 10s default timeout on every call.
+  ///
+  /// Skips [initialize] if already configured — callers that seed data in
+  /// `setUp` must call `initialize()` + `seedAll()` themselves, then call
+  /// `pumpApp()` which will NOT wipe the seeded rows.
   static Future<void> pumpApp(WidgetTester tester) async {
-    await initialize();
-    app.runPromsellApp();
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    if (!_isConfigured) await initialize();
+    app.runPromsellApp(configure: false);
+    await tester.pump(const Duration(seconds: 3));
   }
 
   /// Restart the app (for testing persistence scenarios)
@@ -94,7 +116,7 @@ class TestApp {
     await tester.pump();
 
     // Restart app
-    app.runPromsellApp();
+    app.runPromsellApp(configure: false);
     await tester.pumpAndSettle(const Duration(seconds: 3));
   }
 }

@@ -7,9 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+## [0.9.1] - 2026-08-11
+
+**Not tagged yet.** Disk / `pubspec` is `0.9.1+1`. Latest GitHub tag remains **v0.9.0**.
+
+Sale / Report / History / Onboarding redesign, product soft-delete, schema **v30**. Receipts stay **sales receipts** even when a shop Tax ID is printed.
+
+### Highlights
+
+- **Cashier UX** — full-page cart review, sticky settle dock, multi-bill board, payment-lock while checking out.
+- **Onboarding** — four steps, store-PIN gate on finish/skip, ready-to-sell summary.
+- **Reports** — net revenue hero, profit/margin when cost is set, period delta, History as a Report sub-tab, PDF/CSV export.
+- **Catalog integrity** — soft-delete + undo; `barcodeLower` (v29) and `skuLower` (v30) unique indexes.
+- **Receipt Tax ID** — prints the shop tax-ID line; multi-page A4; live preview. **Do not treat this as a Thai tax invoice.** A 0.9.1 code path still flips the PDF title when Tax ID is set (V092-A.1).
+
+### Fixed
+
+- `barcodeLower` was always NULL; now written on insert/update/bulk.
+- Soft-delete order: DB row first, then images (no orphan paths on DB failure).
+- Barcode validator now strips spaces/hyphens; CSV import rejects intra-file duplicate barcodes.
+- Tax ID dropped on onboarding Skip; onboarding vs settings length rules disagreed.
+- Checkout failure left the cart payment-locked; now unlocks without clearing lines.
+- History void reported success on failure; search fired every keystroke; empty-items crash.
+- Report CSV formula injection (`" =SUM…"`); PDF row cap ignored `maxRows`; date/time padding.
+- Draft rotation deleted the active draft before creating its replacement.
+- PDF font crash on missing assets; `SaleReceiptActions` global busy flag; `changeAmount` null crash.
+
+### Added
+
+- Store-PIN dialog on onboarding; SKU auto-generate settings.
+- Product pagination, `product_audits`, grid view, restore-after-soft-delete.
+- `CreateSale` recomputes payable from lines; `VoidSale` requires a sensitive session.
+- Backup 512 MB cap + isolate PBKDF2; CI performance job.
+- Host tests expanded (~2028 passing, coverage ~63.7% at cut).
+
+### Changed
+
+- Sale split into catalog / cart / checkout; cash change from the cash tender only.
+- Settings rebuilds narrowed with `buildWhen`; backup `changePin` requires the current PIN.
+- `grandTotal` removed — use `payableTotals` SSOT.
+- Docs honesty (DOC-SSOT) + README refresh: PIN default-on for new installs; AAB on `v*` fail-closed; README is the public map; CI behaviour in `docs/testing/CI.md`.
+
+### Security
+
+- Soft-deleted products are rejected on update, adjust, and sale insert.
+- Unique barcode/SKU checks include soft-deleted rows so restore cannot collide.
+
+### Breaking / migration
+
+- Auto-upgrade to schema **v30** (v29 barcode_lower + dedupe; v30 sku_lower unique — **no SKU dedupe**, mixed-case duplicates can fail the upgrade).
+- Delete is soft-delete; recover with `restoreProduct`.
+- `AppLockService.setPin` throws if a PIN already exists — use `changePin`.
+
+### Known limitations
+
+- No GitHub tag `v0.9.1` yet.
+- Receipt title can still become ใบกำกับภาษี when Tax ID is set (code; listing denies it).
+- `sku_lower` unique has no pre-dedupe (V092-C.2).
+- Tablet landscape / dual-pane still incomplete.
+- `file_picker 12.0.0-beta.7` and pinned `image_picker_android 0.8.13+19`.
+
+`flutter analyze` → **0 issues** · `flutter test` → **~2028 passing** · coverage **~63.7%**
+
 ## [0.9.0] - 2026-07-17
 
-Trust cut for offline single-device POS: money-path integrity, encryption, store PIN, same-device backup restore, release gates, and store-facing honesty. Schema **v28** (15 tables, incl. `sale_payments`).
+Trust cut for offline single-device POS: money-path integrity, encryption, store PIN, same-device backup restore, release gates, and store-facing honesty. Schema **v28** at this cut (15 tables, incl. `sale_payments`).
+
+> **Historical:** PIN was still described as Optional, AAB as secrets-optional, coverage floor 50%. Those are **not** current — see 0.9.1. Do not copy this block into store copy.
 
 ### Highlights
 
@@ -37,7 +103,7 @@ Trust cut for offline single-device POS: money-path integrity, encryption, store
 - Cart/checkout freeze types; sale write split (insert/void/query helpers); multi-tender model.
 - CI: `release-trust.yml`, `release-aab.yml`; store screenshots + feature graphic tooling.
 - Receipt domain `ReceiptDocument` / builder; day-close + report tender-aware totals.
-- Trust epic docs under `docs/plan/V090-TRUST/`; expanded unit/integration trust suite.
+- Trust epic docs under `docs/plan/COMPLETE/V090-TRUST/`; expanded unit/integration trust suite.
 
 ### Changed
 
@@ -84,4 +150,9 @@ Full notes for **0.8.x** and earlier live under [`docs/changelog/`](docs/changel
 | 0.3.x | [CHANGELOG-03x.md](docs/changelog/CHANGELOG-03x.md) |
 | 0.2.x | [CHANGELOG-02x.md](docs/changelog/CHANGELOG-02x.md) |
 | 0.1.x | [CHANGELOG-01x.md](docs/changelog/CHANGELOG-01x.md) |
+
+---
+
+[0.9.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.9...v0.9.0
 

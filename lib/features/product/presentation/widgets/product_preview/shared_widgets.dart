@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 const productPreviewTabPadding = EdgeInsets.fromLTRB(16, 16, 16, 96);
 
@@ -179,7 +180,7 @@ class InfoListItem extends StatelessWidget {
                 if (onTap != null) ...[
                   const SizedBox(width: 8),
                   Icon(
-                    trailingIcon ?? Icons.chevron_right,
+                    trailingIcon ?? TablerIcons.chevronRight,
                     size: 18,
                     color: cs.onSurfaceVariant,
                   ),
@@ -261,7 +262,9 @@ class _CollapsiblePreviewCardState extends State<CollapsiblePreviewCard> {
                     ),
                   ),
                   Icon(
-                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                    _isExpanded
+                        ? TablerIcons.chevronUp
+                        : TablerIcons.chevronDown,
                     color: cs.onSurfaceVariant,
                   ),
                 ],

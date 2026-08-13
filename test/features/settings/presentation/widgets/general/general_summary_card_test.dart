@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_summary_card.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -14,8 +15,8 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.language_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.settings), findsOneWidget);
+      expect(find.byIcon(TablerIcons.language), findsOneWidget);
     });
 
     testWidgets('does not show accessibility ON/OFF badges', (tester) async {
@@ -37,7 +38,7 @@ void main() {
           themeMode: ThemeMode.light,
         ),
       );
-      expect(find.byIcon(Icons.wb_sunny), findsOneWidget);
+      expect(find.byIcon(TablerIcons.sun), findsOneWidget);
 
       await tester.pumpApp(
         const GeneralSummaryCard(
@@ -45,7 +46,7 @@ void main() {
           themeMode: ThemeMode.dark,
         ),
       );
-      expect(find.byIcon(Icons.nights_stay), findsOneWidget);
+      expect(find.byIcon(TablerIcons.moon), findsOneWidget);
 
       await tester.pumpApp(
         const GeneralSummaryCard(
@@ -53,7 +54,7 @@ void main() {
           themeMode: ThemeMode.system,
         ),
       );
-      expect(find.byIcon(Icons.brightness_auto), findsOneWidget);
+      expect(find.byIcon(TablerIcons.brightnessAuto), findsOneWidget);
     });
   });
 }

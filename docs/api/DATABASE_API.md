@@ -25,25 +25,27 @@ Complete guide to Drift database access patterns, repository implementations, an
 ```dart
 @DriftDatabase(tables: [
   Products,
-  Categories,
   Sales,
   SaleItems,
-  Customers,
-  Promotions,
-  RestaurantTables,
-  ProductOptionGroups,
-  ProductOptions,
+  SalePayments,
+  Categories,
   InventoryLogs,
+  ProductAudits,
+  AppSettings,
   DraftCarts,
   DraftCartItems,
   DailyCloses,
-  AppSettings,
+  RestaurantTables,
+  ProductOptionGroups,
+  ProductOptions,
+  Customers,
+  Promotions,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 28;  // Current schema version (v0.9.0)
+  int get schemaVersion => 30;  // Current schema version (v0.9.1)
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -644,7 +646,7 @@ Stream<CartState> _mapLoadedToState() async* {
 
 ```dart
 @override
-int get schemaVersion => 28;  // Increment on each schema change
+int get schemaVersion => 30;  // Increment on each schema change
 ```
 
 ### Migration Pattern
@@ -787,4 +789,4 @@ Benefits:
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Database API Reference</sub>
+<sub>Promsell POS CE · v0.9.1 · Database API Reference</sub>

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 
 /// Lightweight image cache manager.
 ///
@@ -31,8 +32,12 @@ class ImageCacheService {
           total += await entity.length();
         }
       }
-    } catch (_) {
-      // Directory might not exist or be inaccessible
+    } catch (e, stack) {
+      AppLogger.warning(
+        'image_cache_service: getCacheSize failed',
+        error: e,
+        stack: stack,
+      );
     }
     return total;
   }
@@ -46,7 +51,13 @@ class ImageCacheService {
           await entity.delete();
         }
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        'image_cache_service: clearCache failed',
+        error: e,
+        stack: stack,
+      );
+    }
   }
 
   /// Evicts oldest files if cache exceeds [maxSizeMB].
@@ -66,7 +77,12 @@ class ImageCacheService {
           files[entity] = stat.modified;
         }
       }
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning(
+        'image_cache_service: evictIfNeeded listing failed',
+        error: e,
+        stack: stack,
+      );
       return;
     }
 
@@ -80,7 +96,13 @@ class ImageCacheService {
         final size = await entry.key.length();
         await entry.key.delete();
         currentSize -= size;
-      } catch (_) {}
+      } catch (e, stack) {
+        AppLogger.warning(
+          'image_cache_service: evictIfNeeded delete failed',
+          error: e,
+          stack: stack,
+        );
+      }
     }
   }
 
@@ -106,6 +128,12 @@ class ImageCacheService {
       if (await file.exists()) {
         await file.delete();
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        'image_cache_service: _deleteIfUnderImages failed',
+        error: e,
+        stack: stack,
+      );
+    }
   }
 }

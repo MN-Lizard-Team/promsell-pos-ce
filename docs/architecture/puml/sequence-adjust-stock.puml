@@ -4,31 +4,38 @@ title Manual Stock Adjustment Flow
 actor Merchant
 participant "AdjustStockDialog" as UI
 participant "AdjustStock" as UC
-participant "ProductRepository" as PRepo
-participant "InventoryLogService" as ILS
+participant "AppLockService" as AppLock
+participant "InventoryRepository" as InvRepo
 database "SQLite" as DB
 
 Merchant -> UI: Open adjust dialog\n(enter qty ± and reason)
 Merchant -> UI: Tap "Confirm"
 
 UI -> UC: call(productId, qtyChange, reason)
-
-group Drift Transaction
-    UC -> PRepo: getProductById(productId)
-    PRepo --> UC: Product(stock=currentStock)
-
-    UC -> UC: newStock = currentStock + qtyChange
-    alt newStock < 0
-        UC --> UI: throw (insufficient stock)
-    end
-
-    UC -> PRepo: updateProduct(stock: newStock)
-    PRepo -> DB: UPDATE products SET stock = newStock
-
-    UC -> ILS: logAdjustment(productId, qtyChange, newStock, reason)
-    ILS -> DB: INSERT inventory_logs\n(type=ADJUSTMENT_IN or ADJUSTMENT_OUT)
+UC -> AppLock: requireSensitiveSession()
+alt Store PIN on + session locked
+    AppLock --> UC: throw BusinessRuleError("AppLockRequired")
+    UC --> UI: error
 end
 
+UC -> InvRepo: adjustStock(productId, qtyChange, reason)
+
+group Drift Transaction
+    InvRepo -> DB: SELECT product WHERE id = productId
+    alt product not found
+        InvRepo --> UC: throw StateError
+    end
+
+    InvRepo -> InvRepo: newStock = currentStock + qtyChange
+    alt newStock < 0
+        InvRepo --> UC: throw (insufficient stock)
+    end
+
+    InvRepo -> DB: UPDATE products SET stock = newStock
+    InvRepo -> DB: INSERT inventory_logs\n(type=ADJUSTMENT_IN or ADJUSTMENT_OUT)
+end
+
+InvRepo --> UC: success
 UC --> UI: success
 UI --> Merchant: Close dialog + refresh product
 

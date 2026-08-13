@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
@@ -116,6 +117,7 @@ void showProductPreviewPage(BuildContext context, Product product) {
         child: ProductPreviewPage(
           product: product,
           generateBarcode: sl<GenerateBarcode>(),
+          generateSku: sl<GenerateSku>(),
           watchInventoryLogs: sl<WatchInventoryLogs>(),
         ),
       ),

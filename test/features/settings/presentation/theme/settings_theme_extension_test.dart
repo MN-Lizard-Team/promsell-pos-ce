@@ -5,7 +5,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_th
 void main() {
   group('SettingsThemeExtension', () {
     test('light has expected defaults', () {
-      expect(SettingsThemeExtension.light.cardRadius, 20);
+      expect(SettingsThemeExtension.light.cardRadius, 16);
       expect(SettingsThemeExtension.light.dividerIndent, 68);
       expect(SettingsThemeExtension.light.tileMinHeight, 64);
       expect(SettingsThemeExtension.light.iconSize, 40);
@@ -13,7 +13,7 @@ void main() {
     });
 
     test('dark uses AppColors surface stack', () {
-      expect(SettingsThemeExtension.dark.cardRadius, 20);
+      expect(SettingsThemeExtension.dark.cardRadius, 16);
       expect(SettingsThemeExtension.dark.dividerIndent, 68);
       expect(SettingsThemeExtension.dark.cardBackground, AppColors.darkCard);
       expect(

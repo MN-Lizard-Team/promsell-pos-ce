@@ -49,6 +49,7 @@ void main() {
 
   setUp(() {
     registerFallbackValue(const CartCleared());
+    registerFallbackValue(const CartCleared(force: true));
     registerFallbackValue(const CartPaymentLockChanged(true));
     registerFallbackValue(const DraftRotated());
     mockCreateSale = MockCreateSale();
@@ -128,7 +129,9 @@ void main() {
             .having((s) => s.lastSale, 'lastSale', tSale),
       ],
       verify: (_) {
-        verify(() => mockCartBloc.add(const CartCleared())).called(1);
+        verify(
+          () => mockCartBloc.add(const CartCleared(force: true)),
+        ).called(1);
         verify(() => mockDraftBloc.add(const DraftRotated())).called(1);
       },
     );
@@ -180,6 +183,7 @@ void main() {
         verify(
           () => mockCartBloc.add(const CartPaymentLockChanged(false)),
         ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared(force: true)));
         verifyNever(() => mockCartBloc.add(const CartCleared()));
       },
     );
@@ -228,6 +232,7 @@ void main() {
         verify(
           () => mockCartBloc.add(const CartPaymentLockChanged(false)),
         ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared(force: true)));
         verifyNever(() => mockCartBloc.add(const CartCleared()));
       },
     );
@@ -250,6 +255,63 @@ void main() {
             .having((s) => s.status, 'status', CheckoutStatus.failure)
             .having((s) => s.errorMessage, 'errorMessage', isNotNull),
       ],
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'rejects confirm when any line is unavailable (Wave A3)',
+      build: buildBloc,
+      setUp: () {
+        when(() => mockCartBloc.state).thenReturn(
+          CartState(
+            items: [
+              CartItem(
+                product: Product(
+                  id: 'p1',
+                  name: 'Gone',
+                  price: Money.fromDouble(100),
+                  stock: 10,
+                  isActive: true,
+                  trackStock: true,
+                  createdAt: tNow,
+                  updatedAt: tNow,
+                ),
+                qty: 1,
+                isAvailable: false,
+              ),
+            ],
+          ),
+        );
+      },
+      act: (b) => b.add(
+        const CheckoutConfirmed(
+          paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
+        ),
+      ),
+      expect: () => [
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.failure)
+            .having((s) => s.errorMessage, 'errorMessage', 'productInactive'),
+      ],
+      verify: (_) {
+        verifyNever(() => mockCartBloc.add(const CartPaymentLockChanged(true)));
+        verifyNever(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+          ),
+        );
+      },
     );
 
     blocTest<CheckoutBloc, CheckoutState>(
@@ -703,6 +765,7 @@ void main() {
         verify(
           () => mockCartBloc.add(const CartPaymentLockChanged(false)),
         ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared(force: true)));
         verifyNever(() => mockCartBloc.add(const CartCleared()));
       },
     );
@@ -766,6 +829,7 @@ void main() {
         verify(
           () => mockCartBloc.add(const CartPaymentLockChanged(false)),
         ).called(greaterThanOrEqualTo(1));
+        verifyNever(() => mockCartBloc.add(const CartCleared(force: true)));
         verifyNever(() => mockCartBloc.add(const CartCleared()));
       },
     );
@@ -880,6 +944,92 @@ void main() {
         ).called(greaterThanOrEqualTo(1));
       },
     );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'Wave P1: ignores cancel while processing (no mid-write unlock)',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 80));
+          return tSale;
+        });
+      },
+      act: (b) async {
+        b.add(
+          const CheckoutConfirmed(
+            paymentMethod: 'promptpay',
+            vatMode: 'NONE',
+            vatRate: 0,
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        b.add(const CheckoutPaymentConfirmed(paymentReference: 'REF-1'));
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        // Mid-CreateSale cancel must no-op.
+        b.add(const CheckoutPaymentCancelled());
+      },
+      wait: const Duration(milliseconds: 120),
+      expect: () => [
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.waitingPayment,
+        ),
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.processing,
+        ),
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.success,
+        ),
+      ],
+      verify: (_) {
+        verify(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+          ),
+        ).called(1);
+      },
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'Wave P1: cancel from idle is no-op',
+      build: buildBloc,
+      act: (b) => b.add(const CheckoutPaymentCancelled()),
+      expect: () => [],
+      verify: (_) {
+        verifyNever(
+          () => mockCartBloc.add(const CartPaymentLockChanged(false)),
+        );
+      },
+    );
   });
 
   group('CheckoutReset', () {
@@ -891,7 +1041,9 @@ void main() {
       act: (b) => b.add(const CheckoutReset()),
       expect: () => [const CheckoutState()],
       verify: (_) {
-        verify(() => mockCartBloc.add(const CartCleared())).called(1);
+        verify(
+          () => mockCartBloc.add(const CartCleared(force: true)),
+        ).called(1);
       },
     );
   });

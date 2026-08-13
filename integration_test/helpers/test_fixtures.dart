@@ -222,8 +222,7 @@ class TestFixtures {
     AppDatabase db,
     String name,
   ) async {
-    final query = db.select(db.products)
-      ..where((p) => p.name.equals(name));
+    final query = db.select(db.products)..where((p) => p.name.equals(name));
     return query.getSingleOrNull();
   }
 
@@ -232,8 +231,7 @@ class TestFixtures {
     AppDatabase db,
     String name,
   ) async {
-    final query = db.select(db.categories)
-      ..where((c) => c.name.equals(name));
+    final query = db.select(db.categories)..where((c) => c.name.equals(name));
     return query.getSingleOrNull();
   }
 
@@ -252,8 +250,7 @@ class TestFixtures {
     AppDatabase db,
     String name,
   ) async {
-    final query = db.select(db.promotions)
-      ..where((p) => p.name.equals(name));
+    final query = db.select(db.promotions)..where((p) => p.name.equals(name));
     return query.getSingleOrNull();
   }
 }

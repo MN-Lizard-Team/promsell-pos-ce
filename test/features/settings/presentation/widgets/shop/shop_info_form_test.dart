@@ -14,12 +14,13 @@ void main() {
           initialShopName: 'My Shop',
           initialAddress: '123 Street',
           initialPhone: '0812345678',
+          initialTaxId: '',
           onSave: (_) {},
         ),
       );
 
       expect(find.byType(FormSectionCard), findsOneWidget);
-      expect(find.byType(AppTextField), findsNWidgets(3));
+      expect(find.byType(AppTextField), findsNWidgets(4));
       expect(find.text('Details'), findsOneWidget);
     });
 
@@ -33,6 +34,7 @@ void main() {
           initialShopName: 'My Shop',
           initialAddress: '123 Street',
           initialPhone: '0812345678',
+          initialTaxId: '',
           onSave: (v) => saved = v,
         ),
       );
@@ -45,6 +47,7 @@ void main() {
       expect(saved?.shopName, 'New Shop');
       expect(saved?.address, '123 Street');
       expect(saved?.phone, '0812345678');
+      expect(saved?.taxId, '');
     });
 
     testWidgets('submit fails when shop name empty', (tester) async {
@@ -57,6 +60,7 @@ void main() {
           initialShopName: 'My Shop',
           initialAddress: '',
           initialPhone: '',
+          initialTaxId: '',
           onSave: (_) => called = true,
         ),
       );
@@ -84,6 +88,7 @@ void main() {
             initialShopName: name,
             initialAddress: address,
             initialPhone: phone,
+            initialTaxId: '',
             onSave: (v) {
               name = v.shopName;
               address = v.address;

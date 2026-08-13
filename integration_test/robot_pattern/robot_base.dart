@@ -7,13 +7,19 @@ abstract class RobotBase {
 
   final WidgetTester tester;
 
-  /// Wait and settle after action
+  /// Wait and settle after action.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) because the app has continuous timers
+  /// (clock, auto-refresh streams) that never settle — `pumpAndSettle` would
+  /// block for the 10s default timeout on every call.
   Future<void> settle() async {
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
   /// Wait for duration
-  Future<void> wait([Duration duration = const Duration(milliseconds: 500)]) async {
+  Future<void> wait([
+    Duration duration = const Duration(milliseconds: 500),
+  ]) async {
     await tester.pump(duration);
   }
 

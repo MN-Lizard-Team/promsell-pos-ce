@@ -1,6 +1,6 @@
-# Core Modules & Feature Modules — Promsell POS CE (v0.9.0)
+# Core Modules & Feature Modules — Promsell POS CE (v0.9.1)
 
-> **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
+> **Main reference:** [`CODEBASE.md`](../../CODEBASE.md) — system overview, architecture, links
 
 ---
 
@@ -10,7 +10,7 @@
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#0D5D6B` primary Teal, `#FF6B00` accent Orange, `#0D1B2A` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, **schema v28** (**15 tables**), UUID PKs, WAL + FK pragma, batch seed, SQLCipher open path. Sync columns on core tables. Notable: v24 barcode unique; v25 product brand/unit/supplier/`is_recommended`; **v26 unique `daily_closes(close_date)`**; **v27 unique `sales.receipt_number`**; **v28 `sale_payments` multi-tender**. Money amounts stored as REAL baht (domain `Money` satang in memory). |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, **schema v30** (**16 tables**), UUID PKs, WAL + FK pragma, batch seed, SQLCipher open path. Sync columns on core tables. Notable: v24 barcode unique; v25 product brand/unit/supplier/`is_recommended`; **v26 unique `daily_closes(close_date)`**; **v27 unique `sales.receipt_number`**; **v28 `sale_payments` multi-tender**; **v29 case-insensitive `barcode_lower` unique index**; **v30 case-insensitive `sku_lower` unique index**. Money amounts stored as REAL baht (domain `Money` satang in memory). |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -19,6 +19,7 @@
 | `OverlayToast` | `lib/core/widgets/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow |
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `MoneyUtils` | `lib/core/utils/` | Centralized monetary rounding (`round(double)`) for VAT, discount, and total calculations |
+| `DateFormatter` | `lib/core/utils/` | Locale-aware date/time formatting utility; maps app language codes to intl locales (`th`→`th_TH`, `en`→`en_US`); extensible for future locales via `_localeFor()` |
 | `payment_method_helper.dart` | `lib/core/utils/` | Normalize raw DB values (`เงินสด` → `cash`) and localize for display |
 | `SlipVerifier` | `lib/core/utils/` | Decodes Thai bank transfer slip Mini-QR; returns `SlipVerifyResult` with `SlipErrorType` categorization |
 | `BarcodeScannerDialog` | `lib/core/widgets/` | Fullscreen barcode scanner supporting EAN-13/8, UPC-A/E, Code 128/39, ITF, QR Code, DataMatrix, PDF417, Aztec, Codabar; haptic feedback, first-detect lock, manual entry fallback with inline validation, auto-clearing error overlay, auto-open manual entry timer. Shared `ScanOverlayPainter` |
@@ -26,6 +27,7 @@
 | `showImageSourceSheet()` | `lib/core/widgets/image_source_sheet.dart` | Shared bottom-sheet helper for gallery/camera/remove image actions; used by ProductFormPage |
 | `DuplicateBarcodeException` | `lib/core/exceptions/` | Thrown when barcode already exists on another product |
 | `SoundPlayer` | `lib/core/utils/` | Lightweight audio player for PromptPay confirmation feedback (`audioplayers`) |
+| `safe_text_controller.dart` | `lib/core/widgets/primitives/` | Dispose helpers for `TextEditingController` — `unfocusForDialogClose()` and `disposeTextEditingControllerAfterFrame()` prevent use-after-dispose races during route/IME teardown |
 | `Ean13Generator` | `lib/core/utils/` | `@injectable` EAN-13 compliant barcode generator with Luhn check digit; default prefix `200` (GS1 internal use range); pads 1-2 digit prefixes to 3 digits; per-instance counter persisted via `initCounter()`/`currentCounter`; injected into `GenerateBarcode`, `BatchGenerateBarcodes`, and `SettingsCubit` |
 | `GenerateBarcode` | `lib/features/product/domain/usecases/` | `@injectable` use case wrapping `Ean13Generator.generate()` with DB collision check (`barcodeExists`, `excludeId` for self-collision) + retry (max 10) + counter persistence to Settings on every attempt (not just success) |
 | `BatchGenerateBarcodes` | `lib/features/product/domain/usecases/` | `@injectable` use case that syncs `Ean13Generator.initCounter()` from persisted settings, finds all active products without barcodes, generates unique EAN-13 for each, and updates them in a single `bulkUpdateBarcodes()` call (Drift batch) for single stream event |

@@ -10,6 +10,7 @@ import 'package:promsell_pos_ce/core/widgets/search/search_result_tile.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/usecases/watch_inventory_logs.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
@@ -28,6 +29,8 @@ import '../../../../helpers/mocks.dart';
 class _FakeProductSearchChanged extends Fake implements ProductSearchChanged {}
 
 class _MockGenerateBarcode extends Mock implements GenerateBarcode {}
+
+class _MockGenerateSku extends Mock implements GenerateSku {}
 
 void main() {
   late MockProductBloc mockProductBloc;
@@ -174,6 +177,10 @@ void main() {
       sl.unregister<GenerateBarcode>();
     }
     sl.registerSingleton<GenerateBarcode>(_MockGenerateBarcode());
+    if (sl.isRegistered<GenerateSku>()) {
+      sl.unregister<GenerateSku>();
+    }
+    sl.registerSingleton<GenerateSku>(_MockGenerateSku());
     if (sl.isRegistered<WatchInventoryLogs>()) {
       sl.unregister<WatchInventoryLogs>();
     }

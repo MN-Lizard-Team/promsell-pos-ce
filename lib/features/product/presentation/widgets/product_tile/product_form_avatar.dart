@@ -34,17 +34,19 @@ class ProductFormAvatar extends StatelessWidget {
     );
   }
 
-  void _showPreview(BuildContext context) {
+  Future<void> _showPreview(BuildContext context) async {
     final path = imagePath;
     final url = imageUrl;
     if ((path == null || path.isEmpty) && (url == null || url.isEmpty)) {
       return;
     }
 
-    ImageViewerDialog.showSingle(
-      context,
-      ImageViewerDialog.providerFromPaths(imagePath: path, imageUrl: url),
+    final provider = await ImageViewerDialog.providerFromPathsAsync(
+      imagePath: path,
+      imageUrl: url,
     );
+    // ignore: use_build_context_synchronously
+    ImageViewerDialog.showSingle(context, provider);
   }
 }
 

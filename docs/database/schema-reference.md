@@ -1,6 +1,6 @@
-# Schema Reference — Promsell POS CE (schema v28)
+# Schema Reference — Promsell POS CE (schema v30)
 
-Detailed column reference for all **15** database tables, indexes, seed data, and enum values.
+Detailed column reference for all **16** database tables, indexes, seed data, and enum values.
 
 > **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
 
@@ -17,11 +17,13 @@ Source: `lib/core/database/tables/products_table.dart`
 | `id` | TEXT | No | — | **PK**, UUIDv4 |
 | `name` | TEXT | No | — | length 1–200 |
 | `sku` | TEXT | Yes | — | |
+| `skuLower` | TEXT | Yes | — | LOWER(sku) shadow column for case-insensitive unique index (schema **v30**) |
 | `barcode` | TEXT | Yes | — | Partial unique index (v24) when non-null/non-empty; uppercase on save/lookup; runtime uniqueness for active products |
+| `barcodeLower` | TEXT | Yes | — | LOWER(barcode) shadow column for case-insensitive unique index (schema **v29**) |
 | `price` | REAL | No | — | Baht on disk; domain maps via `Money` |
 | `cost` | REAL | Yes | — | |
 | `stock` | INTEGER | No | `0` | |
-| `categoryId` | TEXT | Yes | — | **FK** → `categories.id` (Drift `references`; default RESTRICT/NO ACTION) |
+| `categoryId` | TEXT | Yes | — | **FK** → `categories.id` (`onDelete: KeyAction.setNull`) |
 | `imageUrl` | TEXT | Yes | — | Network URL for future online sync |
 | `imagePath` | TEXT | Yes | — | Local file path from gallery/camera pick |
 | `imageThumbnailPath` | TEXT | Yes | — | Local thumbnail path (200px) for small avatar display |
@@ -342,20 +344,45 @@ Source: `lib/core/database/tables/promotions_table.dart` — added schema v21
 | `version` | INTEGER | No | `1` | Sync |
 | `deviceId` | TEXT | Yes | — | Sync |
 
+### ProductAudits
+
+Source: `lib/core/database/tables/product_audit_table.dart`
+
+Audit trail for product changes (create, update, delete). Tracks which field changed, old/new values, and timestamp.
+
+| Column | Type | Nullable | Default | Constraint |
+|--------|------|----------|---------|------------|
+| `id` | TEXT | No | — | **PK**, UUIDv4 |
+| `productId` | TEXT | No | — | Logical ref → products (no FK) |
+| `action` | TEXT | No | — | `CREATE` \| `UPDATE` \| `DELETE` \| `RESTORE` |
+| `fieldName` | TEXT | Yes | — | Field that changed (null for CREATE/DELETE) |
+| `oldValue` | TEXT | Yes | — | Previous value (null for CREATE) |
+| `newValue` | TEXT | Yes | — | New value (null for DELETE) |
+| `version` | INTEGER | No | `1` | Sync |
+| `changedAt` | DATETIME | No | `currentDateAndTime` | |
+| `deviceId` | TEXT | Yes | — | Sync |
+
+> `productId` has no FK constraint — audit trail must survive product deletion.
+
 ---
 
 ## Indexes
 
-Created in `_createIndexes()` during `onCreate` and `onUpgrade`.
+Created in `_createIndexes()`, which runs on **`onCreate` and `from < 2` only** — not at the end of every later upgrade.
 
 | Index | Table | Column(s) | Purpose |
 |-------|-------|-----------|---------|
 | `idx_products_category_id` | products | `category_id` | Filter products by category |
 | `idx_products_is_active` | products | `is_active` | Filter active products for sale catalog |
 | `idx_products_barcode_unique` | products | `barcode` (partial) | **UNIQUE** where `barcode IS NOT NULL AND barcode != ''` (schema **v24**) |
+| `idx_products_barcode_lower_unique` | products | `barcode_lower` (partial) | **UNIQUE** case-insensitive where `barcode_lower IS NOT NULL AND barcode_lower != ''` (schema **v29**) |
+| `idx_products_sku` | products | `sku` (partial) | Where `sku IS NOT NULL AND sku != ''` |
+| `idx_products_sku_lower_unique` | products | `sku_lower` (partial) | **UNIQUE** case-insensitive where `sku_lower IS NOT NULL AND sku_lower != ''` (schema **v30**) |
+| `idx_products_deleted_at` | products | `deleted_at` | Soft-delete filter |
 | `idx_sales_created_at` | sales | `created_at` | Date-range queries in history/reports |
 | `idx_sales_status` | sales | `status` | Filter completed vs voided sales |
 | `idx_sale_items_sale_id` | sale_items | `sale_id` | Fetch items for a specific sale |
+| `idx_sale_items_product_id` | sale_items | `product_id` | Fetch items for a specific product |
 | `idx_inventory_logs_product_id` | inventory_logs | `product_id` | Product stock audit trail |
 | `idx_draft_cart_items_cart_id` | draft_cart_items | `cart_id` | Fetch items for a draft cart |
 | `idx_daily_closes_close_date_unique` | daily_closes | `close_date` | **UNIQUE** one close row per business day (schema **v26**) |
@@ -369,11 +396,33 @@ Created in `_createIndexes()` during `onCreate` and `onUpgrade`.
 | `idx_promotions_active` | promotions | `is_active` | Filter active promotions (v21) |
 | `idx_sales_customer_id` | sales | `customer_id` | Customer purchase history (v21) |
 
-### Barcode uniqueness (current · v0.9.0)
+### Barcode uniqueness (current · v0.9.1)
 
-- **DB:** partial unique index `idx_products_barcode_unique` on `products(barcode)` where barcode is non-null and non-empty (schema **v24**).
-- **Runtime:** `ProductLocalDatasource` validates uniqueness for active products (case-insensitive), excludes soft-deleted rows, length 1–50 when set.
+- **DB:** partial unique index `idx_products_barcode_unique` on `products(barcode)` where barcode is non-null and non-empty (schema **v24**). Indexes do **not** add `AND deleted_at IS NULL`.
+- **DB (case-insensitive):** partial unique index `idx_products_barcode_lower_unique` on `products(barcode_lower)` where `barcode_lower` is non-null and non-empty (schema **v29**).
+- **Runtime:** app-layer checks may skip soft-deleted rows. The unique **index** still covers deleted rows. Policy: [V092-C.4](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-C-STOCK.md).
 - Empty/null barcodes are allowed on multiple products.
+
+### SKU uniqueness (current · v0.9.1)
+
+- **DB (upgrade path v30):** unique index `idx_products_sku_lower_unique` on `sku_lower` WHERE non-null/non-empty. **No SKU dedupe** before `CREATE UNIQUE` (V092-C.2). `_createIndexes()` on a **fresh** install does **not** create this unique (non-unique `idx_products_sku` only).
+- **Runtime:** app-layer SKU checks. Index does **not** exclude `deleted_at`.
+- Empty/null SKUs are allowed on multiple products.
+
+---
+
+## Triggers
+
+Created in `_createIndexes()`, which runs on **`onCreate` and `from < 2` only** — not at the end of every later upgrade.
+
+| Trigger | Table | Event | Condition | Action |
+|---------|-------|-------|-----------|--------|
+| `chk_products_price_positive` | products | BEFORE INSERT | `NEW.price <= 0` | `RAISE(ABORT, 'Price must be greater than 0')` |
+| `chk_products_price_positive_update` | products | BEFORE UPDATE | `NEW.price <= 0` | `RAISE(ABORT, 'Price must be greater than 0')` |
+| `chk_products_cost_nonneg` | products | BEFORE INSERT | `NEW.cost IS NOT NULL AND NEW.cost < 0` | `RAISE(ABORT, 'Cost cannot be negative')` |
+| `chk_products_cost_nonneg_update` | products | BEFORE UPDATE | `NEW.cost IS NOT NULL AND NEW.cost < 0` | `RAISE(ABORT, 'Cost cannot be negative')` |
+
+> **Note:** No CHECK trigger on `stock` — oversell allows negative stock when `allowOversell` setting is enabled.
 
 ---
 
@@ -393,11 +442,11 @@ Keys added by **Sale Integrity** (written at runtime by `ReceiptNumberService` a
 
 | Key | Example value | Description |
 |-----|---------------|-------------|
-| `receipt_seq` | `"42"` | Current daily receipt sequence counter (resets each day) |
-| `receipt_date` | `"260527"` | Date of last receipt (YYMMDD); triggers reset when day changes |
-| `device_prefix` | `"A1"` | 2-char device prefix for receipt numbers |
+| `receiptSequence` | `"42"` | Current daily receipt sequence (`ReceiptNumberService`) |
+| `receiptSequenceDate` | `"260527"` | Date of last receipt (YYMMDD) |
+| `devicePrefix` | `"A1"` | 2-char device prefix (same key as Settings `devicePrefix`) |
 
-Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
+Keys managed by **SettingsRepositoryImpl** (read/written at runtime; some seeded by `_seedR4Settings()`, `_seedR45Settings()`, `_seedR5Settings()` during migrations):
 
 | Key | Default | Added in |
 |-----|---------|----------|
@@ -410,8 +459,11 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 | `imageMaxWidth` | `"800"` | v0.6.0 |
 | `imageQuality` | `"80"` | v0.6.0 |
 | `deviceId` | generated UUID | R5; backfilled on all existing rows in v13 |
+| `devicePrefix` | `""` | R5 (seeded); runtime value e.g. `"A1"` |
 | `onboardingCompleted` | `false` | R5 |
 | `dailyCloseLock` | `false` | R5 |
+| `lastClosedDate` | `""` | R5 |
+| `accessibilityMode` | `false` | R5 |
 
 ---
 
@@ -463,4 +515,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime):
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · schema v28 · 15 tables · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.1 · schema v30 · 16 tables · SQLCipher AES-256</sub>

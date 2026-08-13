@@ -28,6 +28,7 @@ class Product extends Equatable {
     this.optionGroups = const [],
     required this.createdAt,
     required this.updatedAt,
+    this.version = 1,
   });
 
   final String id;
@@ -52,6 +53,7 @@ class Product extends Equatable {
   final List<ProductOptionGroup> optionGroups;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int version;
 
   bool get isInStock => !trackStock || stock > 0;
 
@@ -81,6 +83,7 @@ class Product extends Equatable {
     List<ProductOptionGroup>? optionGroups,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? version,
   }) {
     return Product(
       id: id ?? this.id,
@@ -121,6 +124,7 @@ class Product extends Equatable {
       optionGroups: optionGroups ?? this.optionGroups,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      version: version ?? this.version,
     );
   }
 
@@ -148,5 +152,6 @@ class Product extends Equatable {
     optionGroups,
     createdAt,
     updatedAt,
+    version,
   ];
 }

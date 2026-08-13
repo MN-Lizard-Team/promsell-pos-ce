@@ -60,7 +60,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byType(Card));
+      await tester.tap(find.byType(PaymentMethodCard));
       await tester.pump();
       expect(tapped, isTrue);
     });

@@ -25,6 +25,9 @@ class ReceiptLabels {
     this.voidedAt,
     this.reprint,
     this.notTaxInvoice,
+    this.taxId,
+    this.taxInvoice,
+    this.thankYou,
   });
 
   final String receipt;
@@ -60,4 +63,13 @@ class ReceiptLabels {
   final String? voidedAt;
   final String? reprint;
   final String? notTaxInvoice;
+
+  /// Localized "Tax ID" label (shown when taxId is present on the receipt).
+  final String? taxId;
+
+  /// Localized "Tax Invoice" title (shown when taxId is present).
+  final String? taxInvoice;
+
+  /// Localized default "Thank you" footer message.
+  final String? thankYou;
 }

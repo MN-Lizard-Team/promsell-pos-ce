@@ -53,7 +53,12 @@ class _OptionGroupEditSheetState extends State<_OptionGroupEditSheet> {
 
   void _save() {
     final name = _nameCtrl.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.optionGroupNameRequired)),
+      );
+      return;
+    }
     final base =
         widget.existing ??
         ProductOptionGroup(id: IdGenerator.newId(), productId: '', name: name);

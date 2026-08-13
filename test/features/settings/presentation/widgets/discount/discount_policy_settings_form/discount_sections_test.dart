@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_policy_settings_form/discount_toggles_section.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_policy_settings_form/discount_default_section.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_policy_settings_form/discount_limits_section.dart';
@@ -52,7 +53,7 @@ void main() {
       );
 
       expect(find.text('LIMITS'), findsOneWidget);
-      expect(find.byIcon(Icons.percent_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.percentage), findsOneWidget);
       expect(find.byIcon(Icons.trending_down_outlined), findsOneWidget);
     });
 

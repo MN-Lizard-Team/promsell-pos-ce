@@ -14,7 +14,8 @@ class ProductRobot extends RobotBase {
 
   /// Open add product form
   Future<void> openAddProductForm() async {
-    final addBtn = find.byIcon(Icons.add)
+    final addBtn = find
+        .byIcon(Icons.add)
         .or(find.text('Add Product'))
         .or(find.byType(FloatingActionButton));
     await tap(addBtn);
@@ -32,13 +33,15 @@ class ProductRobot extends RobotBase {
     bool trackStock = true,
   }) async {
     // Name
-    final nameField = find.widgetWithText(TextFormField, 'Name')
+    final nameField = find
+        .widgetWithText(TextFormField, 'Name')
         .or(find.widgetWithText(TextField, 'Name'));
     await enterText(nameField, name);
 
     // SKU
     if (sku != null) {
-      final skuField = find.widgetWithText(TextFormField, 'SKU')
+      final skuField = find
+          .widgetWithText(TextFormField, 'SKU')
           .or(find.widgetWithText(TextField, 'SKU'));
       if (skuField.evaluate().isNotEmpty) {
         await enterText(skuField, sku);
@@ -47,7 +50,8 @@ class ProductRobot extends RobotBase {
 
     // Barcode
     if (barcode != null) {
-      final barcodeField = find.widgetWithText(TextFormField, 'Barcode')
+      final barcodeField = find
+          .widgetWithText(TextFormField, 'Barcode')
           .or(find.widgetWithText(TextField, 'Barcode'));
       if (barcodeField.evaluate().isNotEmpty) {
         await enterText(barcodeField, barcode);
@@ -55,13 +59,15 @@ class ProductRobot extends RobotBase {
     }
 
     // Price
-    final priceField = find.widgetWithText(TextFormField, 'Price')
+    final priceField = find
+        .widgetWithText(TextFormField, 'Price')
         .or(find.widgetWithText(TextField, 'Price'));
     await enterText(priceField, price.toString());
 
     // Cost
     if (cost != null) {
-      final costField = find.widgetWithText(TextFormField, 'Cost')
+      final costField = find
+          .widgetWithText(TextFormField, 'Cost')
           .or(find.widgetWithText(TextField, 'Cost'));
       if (costField.evaluate().isNotEmpty) {
         await enterText(costField, cost.toString());
@@ -70,7 +76,8 @@ class ProductRobot extends RobotBase {
 
     // Initial stock
     if (initialStock != null) {
-      final stockField = find.widgetWithText(TextFormField, 'Stock')
+      final stockField = find
+          .widgetWithText(TextFormField, 'Stock')
           .or(find.widgetWithText(TextField, 'Stock'))
           .or(find.widgetWithText(TextFormField, 'Initial Stock'));
       if (stockField.evaluate().isNotEmpty) {
@@ -80,7 +87,8 @@ class ProductRobot extends RobotBase {
 
     // Category
     if (category != null) {
-      final categoryField = find.text('Category')
+      final categoryField = find
+          .text('Category')
           .or(find.text('Select Category'));
       if (categoryField.evaluate().isNotEmpty) {
         await tap(categoryField);
@@ -99,7 +107,8 @@ class ProductRobot extends RobotBase {
 
   /// Save product form
   Future<void> saveProduct() async {
-    final saveBtn = find.text('Save')
+    final saveBtn = find
+        .text('Save')
         .or(find.text('Create'))
         .or(find.byIcon(Icons.check));
     await tap(saveBtn);
@@ -139,21 +148,20 @@ class ProductRobot extends RobotBase {
 
   /// Navigate to stock tab (in product details)
   Future<void> openStockTab() async {
-    final stockTab = find.text('Stock')
-        .or(find.text('Inventory'));
+    final stockTab = find.text('Stock').or(find.text('Inventory'));
     await tap(stockTab);
   }
 
   /// Navigate to history tab (in product details)
   Future<void> openHistoryTab() async {
-    final historyTab = find.text('History')
-        .or(find.text('Logs'));
+    final historyTab = find.text('History').or(find.text('Logs'));
     await tap(historyTab);
   }
 
   /// Open stock adjustment dialog
   Future<void> openStockAdjustment() async {
-    final adjustBtn = find.text('Adjust Stock')
+    final adjustBtn = find
+        .text('Adjust Stock')
         .or(find.text('Adjust'))
         .or(find.byIcon(Icons.edit));
     await tap(adjustBtn);
@@ -171,13 +179,15 @@ class ProductRobot extends RobotBase {
     await tap(find.text(type));
 
     // Enter quantity
-    final qtyField = find.widgetWithText(TextField, 'Quantity')
+    final qtyField = find
+        .widgetWithText(TextField, 'Quantity')
         .or(find.byType(TextField));
     await enterText(qtyField, quantity.toString());
 
     // Enter reason
     if (reason != null) {
-      final reasonField = find.widgetWithText(TextField, 'Reason')
+      final reasonField = find
+          .widgetWithText(TextField, 'Reason')
           .or(find.widgetWithText(TextFormField, 'Reason'));
       if (reasonField.evaluate().isNotEmpty) {
         await enterText(reasonField, reason);
@@ -191,7 +201,9 @@ class ProductRobot extends RobotBase {
   /// Verify stock level
   void verifyStockLevel(int expectedStock) {
     expectVisible(
-      find.textContaining('Stock').and(find.textContaining(expectedStock.toString())),
+      find
+          .textContaining('Stock')
+          .and(find.textContaining(expectedStock.toString())),
       reason: 'Stock should be $expectedStock',
     );
   }
@@ -212,12 +224,12 @@ class ProductRobot extends RobotBase {
   /// Delete product
   Future<void> deleteProduct(String name) async {
     await openProductDetails(name);
-    final deleteBtn = find.byIcon(Icons.delete)
-        .or(find.text('Delete'));
+    final deleteBtn = find.byIcon(Icons.delete).or(find.text('Delete'));
     await tap(deleteBtn);
-    
+
     // Confirm deletion
-    final confirmBtn = find.text('Delete')
+    final confirmBtn = find
+        .text('Delete')
         .or(find.text('Confirm'))
         .or(find.text('Yes'));
     await tap(confirmBtn);
@@ -226,8 +238,7 @@ class ProductRobot extends RobotBase {
   /// Edit product
   Future<void> editProduct(String name) async {
     await openProductDetails(name);
-    final editBtn = find.byIcon(Icons.edit)
-        .or(find.text('Edit'));
+    final editBtn = find.byIcon(Icons.edit).or(find.text('Edit'));
     await tap(editBtn);
   }
 
@@ -241,15 +252,13 @@ class ProductRobot extends RobotBase {
 
   /// Close product details
   Future<void> closeProductDetails() async {
-    final backBtn = find.byIcon(Icons.arrow_back)
-        .or(find.byIcon(Icons.close));
+    final backBtn = find.byIcon(Icons.arrow_back).or(find.byIcon(Icons.close));
     await tap(backBtn);
   }
 
   /// Filter by category
   Future<void> filterByCategory(String categoryName) async {
-    final filterBtn = find.byIcon(Icons.filter_list)
-        .or(find.text('Filter'));
+    final filterBtn = find.byIcon(Icons.filter_list).or(find.text('Filter'));
     if (filterBtn.evaluate().isNotEmpty) {
       await tap(filterBtn);
     }

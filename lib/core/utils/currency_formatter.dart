@@ -34,8 +34,16 @@ class CurrencyFormatter {
 
   /// Formats [amount] with thousand separators and a currency [symbol] prefix.
   /// Example: symbol `฿`, amount `1500` → `฿1,500.00`
-  static String formatGroupedWithSymbol(double amount, String symbol) =>
-      '$symbol${formatGrouped(amount)}';
+  static String formatGroupedWithSymbol(
+    double amount,
+    String symbol, {
+    String? locale,
+  }) {
+    final formatted = locale == null
+        ? formatGrouped(amount)
+        : NumberFormat('#,##0.00', locale).format(amount);
+    return '$symbol$formatted';
+  }
 
   /// Formats an integer quantity with thousand separators.
   static String formatGroupedInt(int value) => _groupedInteger.format(value);
@@ -55,7 +63,8 @@ class CurrencyFormatter {
     } else if (amount >= 1000) {
       return '$symbol${(amount / 1000).toStringAsFixed(1)}K';
     }
-    return '$symbol${amount.toInt()}';
+    // Small values: show 2 decimals for consistency with format().
+    return '$symbol${amount.toStringAsFixed(2)}';
   }
 
   /// Formats a [Money] value using the standard Thai Baht format.

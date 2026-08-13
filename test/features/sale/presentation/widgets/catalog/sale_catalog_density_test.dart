@@ -118,6 +118,14 @@ void main() {
     await pumpCatalog(tester);
 
     expect(find.byType(SaleModeSwitcher), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('sale_catalog_current_bill')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('sale_catalog_open_bills')),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('sale_catalog_park_cta')), findsOneWidget);
   });
 }

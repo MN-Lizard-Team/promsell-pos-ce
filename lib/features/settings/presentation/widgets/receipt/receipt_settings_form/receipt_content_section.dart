@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/receipt/receipt_settings_form/receipt_shared_widgets.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ReceiptContentSection extends StatelessWidget {
   const ReceiptContentSection({
@@ -44,7 +45,7 @@ class ReceiptContentSection extends StatelessWidget {
               ),
               ReceiptSharedWidgets.buildSwitchTile(
                 context: context,
-                icon: Icons.info_outline,
+                icon: TablerIcons.infoCircle,
                 title: context.l10n.settingsShowShopInfo,
                 value: s.showShopInfoOnReceipt,
                 onChanged: (v) =>
@@ -67,18 +68,16 @@ class ReceiptContentSection extends StatelessWidget {
   Widget _buildPaperSizeTile(BuildContext context, Settings s) {
     final st = context.settingsTheme;
     final l10n = context.l10n;
-    final label = s.receiptSize == 'A4'
-        ? l10n.receiptSizeA4
-        : l10n.receiptSize80mm;
+    final label = switch (s.receiptSize) {
+      'A4' => l10n.receiptSizeA4,
+      '58mm' => l10n.receiptSize58mm,
+      _ => l10n.receiptSize80mm,
+    };
 
     return Material(
       type: MaterialType.transparency,
       child: ListTile(
-        leading: Icon(
-          Icons.crop_portrait_outlined,
-          color: st.softAccent,
-          size: 22,
-        ),
+        leading: Icon(TablerIcons.rectangle, color: st.softAccent, size: 22),
         title: Text(
           l10n.settingsReceiptSize,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -103,16 +102,28 @@ class ReceiptContentSection extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ListTile(
+                    title: Text(l10n.receiptSize58mm),
+                    subtitle: Text(l10n.receiptSize58mmDesc),
+                    trailing: s.receiptSize == '58mm'
+                        ? Icon(TablerIcons.check, color: st.softAccent)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, '58mm'),
+                  ),
+                  ListTile(
                     title: Text(l10n.receiptSize80mm),
-                    trailing: s.receiptSize != 'A4'
-                        ? Icon(Icons.check, color: st.softAccent)
+                    subtitle: Text(l10n.receiptSize80mmDesc),
+                    trailing:
+                        s.receiptSize == '80mm' ||
+                            (s.receiptSize != 'A4' && s.receiptSize != '58mm')
+                        ? Icon(TablerIcons.check, color: st.softAccent)
                         : null,
                     onTap: () => Navigator.pop(ctx, '80mm'),
                   ),
                   ListTile(
                     title: Text(l10n.receiptSizeA4),
+                    subtitle: Text(l10n.receiptSizeA4Desc),
                     trailing: s.receiptSize == 'A4'
-                        ? Icon(Icons.check, color: st.softAccent)
+                        ? Icon(TablerIcons.check, color: st.softAccent)
                         : null,
                     onTap: () => Navigator.pop(ctx, 'A4'),
                   ),
@@ -137,11 +148,7 @@ class ReceiptContentSection extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: ListTile(
-        leading: Icon(
-          Icons.receipt_long_outlined,
-          color: st.softAccent,
-          size: 22,
-        ),
+        leading: Icon(TablerIcons.receipt2, color: st.softAccent, size: 22),
         title: Text(
           l10n.settingsReceiptNote,
           style: theme.textTheme.titleLarge?.copyWith(
@@ -224,7 +231,9 @@ class _NoteDialogState extends State<_NoteDialog> {
         ),
         FilledButton(
           onPressed: () {
-            widget.onUpdate(widget.settings.copyWith(receiptNote: _ctrl.text));
+            widget.onUpdate(
+              widget.settings.copyWith(receiptNote: _ctrl.text.trim()),
+            );
             Navigator.of(context).pop();
           },
           style: FilledButton.styleFrom(backgroundColor: st.softAccent),

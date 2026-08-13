@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_tile_builders.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class PromptpayBillerIdTile extends StatelessWidget {
   const PromptpayBillerIdTile({
@@ -37,11 +38,7 @@ class PromptpayBillerIdTile extends StatelessWidget {
           color: st.iconContainerBackground,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.receipt_long_outlined,
-          color: st.softAccent,
-          size: 24,
-        ),
+        child: Icon(TablerIcons.receipt2, color: st.softAccent, size: 24),
       ),
       title: Text(
         l10n.settingsBillerId,
@@ -126,6 +123,17 @@ class _BillerIdDialogState extends State<_BillerIdDialog> {
     super.dispose();
   }
 
+  /// NISO 7064 Mod 11,10 checksum (Thai national ID / PromptPay biller ID).
+  static bool _verifyChecksum(String digits) {
+    if (digits.length < 2) return false;
+    var sum = 0;
+    for (var i = 0; i < digits.length - 1; i++) {
+      sum += int.parse(digits[i]) * (digits.length - i);
+    }
+    final check = (11 - (sum % 11)) % 10;
+    return check == int.parse(digits[digits.length - 1]);
+  }
+
   void _pop() {
     unfocusForDialogClose();
     Navigator.of(context).pop();
@@ -168,6 +176,9 @@ class _BillerIdDialogState extends State<_BillerIdDialog> {
               final clean = v.replaceAll(RegExp(r'[^0-9]'), '');
               if (clean.length != 13 && clean.length != 15) {
                 return 'Must be 13 or 15 digits';
+              }
+              if (!_verifyChecksum(clean)) {
+                return 'Invalid checksum — please verify the ID';
               }
               return null;
             },

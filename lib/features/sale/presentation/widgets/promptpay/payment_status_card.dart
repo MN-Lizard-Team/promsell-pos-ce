@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 
 class PaymentStatusCard extends StatelessWidget {
   const PaymentStatusCard({
@@ -17,18 +18,17 @@ class PaymentStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pos = context.posTheme;
     final hasBank = sendingBankCode != null && sendingBankCode!.isNotEmpty;
-    return Card(
-      elevation: 0,
+    final border = hasBank ? theme.colorScheme.primary : pos.billStubBorder;
+    return Material(
+      elevation: pos.elevFlat,
+      color: pos.billStubPaper,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: hasBank
-              ? theme.colorScheme.primary
-              : theme.colorScheme.outlineVariant,
-        ),
+        borderRadius: BorderRadius.circular(pos.billStubRadius),
+        side: BorderSide(color: border, width: hasBank ? 1.5 : 1),
       ),
-      margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

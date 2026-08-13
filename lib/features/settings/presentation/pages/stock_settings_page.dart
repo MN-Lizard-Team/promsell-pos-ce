@@ -8,12 +8,23 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/se
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_switch_tile.dart';
 
-class StockSettingsPage extends StatelessWidget {
+class StockSettingsPage extends StatefulWidget {
   const StockSettingsPage({super.key});
 
   @override
+  State<StockSettingsPage> createState() => _StockSettingsPageState();
+}
+
+class _StockSettingsPageState extends State<StockSettingsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();
@@ -241,7 +252,7 @@ class _StockPreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '${l10n.settingsStockPolicy} Preview',
+            l10n.settingsPreview(l10n.settingsStockPolicy),
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               fontSize: 18,
@@ -252,13 +263,15 @@ class _StockPreviewCard extends StatelessWidget {
           _buildRow(
             icon: Icons.shopping_cart_outlined,
             label: l10n.allowOversell,
-            value: allowOversell ? l10n.settingsOversellAllowed : 'Blocked',
+            value: allowOversell
+                ? l10n.settingsOversellAllowed
+                : l10n.stockBlocked,
             st: st,
           ),
           _buildRow(
             icon: Icons.warning_amber_outlined,
             label: l10n.lowStockThreshold,
-            value: '$lowStockThreshold items',
+            value: l10n.itemsCount(lowStockThreshold),
             st: st,
           ),
         ],

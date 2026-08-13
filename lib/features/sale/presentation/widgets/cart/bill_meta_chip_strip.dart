@@ -8,12 +8,13 @@ import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dar
 import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_review_body.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/customer_selector.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/promotion_selector.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
-/// Collapsed customer / promo / note / discount chips above bill lines.
+/// Bill meta as **paper stubs** (ticket language) — not M3 filter pills / mint wash.
 class BillMetaChipStrip extends StatelessWidget {
   const BillMetaChipStrip({super.key});
 
@@ -36,15 +37,15 @@ class BillMetaChipStrip extends StatelessWidget {
           p.cartDiscountAmount != c.cartDiscountAmount,
       builder: (context, cart) {
         return SizedBox(
-          height: 44,
+          height: 40,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             children: [
               _CustomerChip(cart: cart),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _PromoChip(cart: cart),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _MetaChip(
                 icon: cart.note.trim().isEmpty
                     ? Icons.sticky_note_2_outlined
@@ -56,7 +57,7 @@ class BillMetaChipStrip extends StatelessWidget {
                 onTap: () => CartReviewBody.showCartNote(context, cart),
               ),
               if (enableCartDiscount) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 _MetaChip(
                   icon: Icons.sell_outlined,
                   label: cart.hasCartDiscount
@@ -143,26 +144,34 @@ class _MetaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bg = filled
-        ? theme.colorScheme.primaryContainer
-        : theme.colorScheme.surfaceContainerLow;
-    final fg = filled
-        ? theme.colorScheme.onPrimaryContainer
-        : theme.colorScheme.onSurfaceVariant;
+    final pos = context.posTheme;
+    final scheme = theme.colorScheme;
+    // Paper stub — stronger border when filled; never primaryContainer mint.
+    final borderColor = filled
+        ? pos.activeBillRail.withValues(alpha: 0.45)
+        : pos.billStubBorder;
+    final fg = filled ? scheme.onSurface : scheme.onSurfaceVariant;
 
     return Material(
-      color: bg,
-      borderRadius: BorderRadius.circular(20),
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.18),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: borderColor),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: fg),
-              const SizedBox(width: 6),
+              Icon(
+                icon,
+                size: 15,
+                color: filled ? pos.activeBillRail : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 5),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 140),
                 child: Text(
@@ -171,7 +180,7 @@ class _MetaChip extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: fg,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'NotoSansThai',
                   ),
                 ),

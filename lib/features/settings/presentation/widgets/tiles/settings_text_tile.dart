@@ -32,51 +32,56 @@ class SettingsTextTile extends StatelessWidget {
     final st = context.settingsTheme;
     final accent = accentColor ?? st.softAccent;
 
-    return ListTile(
-      minTileHeight: st.tileMinHeight,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: icon != null
-          ? Container(
-              width: st.iconSize,
-              height: st.iconSize,
-              decoration: BoxDecoration(
-                color: st.iconContainerBackground,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: accent, size: 24),
-            )
-          : null,
-      title: Text(
-        title,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
+    return Semantics(
+      button: true,
+      label: title,
+      value: value,
+      child: ListTile(
+        minTileHeight: st.tileMinHeight,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: icon != null
+            ? Container(
+                width: st.iconSize,
+                height: st.iconSize,
+                decoration: BoxDecoration(
+                  color: st.iconContainerBackground,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: accent, size: 24),
+              )
+            : null,
+        title: Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
-      ),
-      subtitle: value.isNotEmpty
-          ? Text(
-              value,
-              maxLines: maxLines,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: st.softAccent,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+        subtitle: value.isNotEmpty
+            ? Text(
+                value,
+                maxLines: maxLines,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: st.softAccent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              )
+            : Text(
+                context.l10n.tapToSet,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: st.mutedText,
+                  fontSize: 14,
+                ),
               ),
-            )
-          : Text(
-              context.l10n.tapToSet,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: st.mutedText,
-                fontSize: 14,
-              ),
-            ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: st.softTextSecondary,
-        size: 24,
+        trailing: Icon(
+          Icons.chevron_right,
+          color: st.softTextSecondary,
+          size: 24,
+        ),
+        onTap: () => _showEditDialog(context),
       ),
-      onTap: () => _showEditDialog(context),
     );
   }
 

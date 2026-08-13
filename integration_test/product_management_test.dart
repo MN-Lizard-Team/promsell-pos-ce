@@ -6,9 +6,9 @@ import 'helpers/test_fixtures.dart';
 import 'robot_pattern/product_robot.dart';
 
 /// Journey 4: Product Management Flow
-/// 
+///
 /// Scenario: Shop owner creates product, adjusts stock, verifies history
-/// 
+///
 /// GIVEN shop owner opens product page
 /// WHEN taps "Add Product"
 /// AND enters product details
@@ -70,7 +70,7 @@ void main() {
         TestApp.database,
         'Test Widget',
       );
-      
+
       expect(product, isNotNull, reason: 'Product should be saved');
       expect(product!.price, 299.0, reason: 'Price should be 299.00');
       expect(product.stock, 50, reason: 'Initial stock should be 50');
@@ -125,9 +125,9 @@ void main() {
       final logs = await (TestApp.database.select(
         TestApp.database.inventoryLogs,
       )..where((log) => log.productId.equals(coffeeInitial.id))).get();
-      
+
       expect(logs.isNotEmpty, true, reason: 'Should have inventory log');
-      
+
       final latestLog = logs.last;
       expect(latestLog.type, 'ADJUSTMENT_IN');
       expect(latestLog.qtyChange, 25);
@@ -136,7 +136,7 @@ void main() {
 
       // Navigate to history tab to verify UI shows log
       await productRobot.openHistoryTab();
-      
+
       productRobot.verifyInventoryLog(
         type: 'ADJUSTMENT_IN',
         quantity: 25,
@@ -178,7 +178,7 @@ void main() {
         TestApp.database,
         'Invalid Product',
       );
-      
+
       // Product should not be created with invalid price
       expect(
         product == null || product.price >= 0,
@@ -227,7 +227,7 @@ void main() {
       final logs = await (TestApp.database.select(
         TestApp.database.inventoryLogs,
       )..where((log) => log.productId.equals(burgerInitial.id))).get();
-      
+
       final latestLog = logs.last;
       expect(latestLog.type, 'ADJUSTMENT_OUT');
       expect(latestLog.qtyChange, -10);
@@ -245,10 +245,7 @@ void main() {
       await productRobot.editProduct('Coffee');
 
       // Update price
-      await productRobot.fillProductForm(
-        name: 'Coffee Premium',
-        price: 55.0,
-      );
+      await productRobot.fillProductForm(name: 'Coffee Premium', price: 55.0);
 
       await productRobot.saveProduct();
       await tester.pumpAndSettle();
@@ -258,7 +255,7 @@ void main() {
         TestApp.database,
         'Coffee Premium',
       );
-      
+
       expect(coffee, isNotNull, reason: 'Updated product should exist');
       expect(coffee!.price, 55.0, reason: 'Price should be updated');
     });
@@ -285,7 +282,7 @@ void main() {
         TestApp.database,
         'Delivery Fee',
       );
-      
+
       expect(service, isNotNull);
       expect(service!.trackStock, false, reason: 'Should not track stock');
       expect(service.stock, 0, reason: 'Stock should be 0 for service items');
@@ -333,11 +330,7 @@ void main() {
         TestApp.database,
         'Pizza Slice',
       );
-      expect(
-        pizzaAfter!.isActive,
-        false,
-        reason: 'Product should be inactive',
-      );
+      expect(pizzaAfter!.isActive, false, reason: 'Product should be inactive');
     });
   });
 }

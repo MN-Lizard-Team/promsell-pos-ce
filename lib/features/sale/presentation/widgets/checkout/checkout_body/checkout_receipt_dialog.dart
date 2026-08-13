@@ -19,6 +19,11 @@ class CheckoutReceiptDialog {
     required double? amountReceived,
     required double? changeAmount,
     required String? note,
+    double? cartDiscount,
+    double? promotionDiscount,
+    double? serviceCharge,
+    double? serviceChargeRate,
+    String? notTaxInvoiceDisclaimer,
   }) {
     showDialog(
       context: context,
@@ -74,6 +79,11 @@ class CheckoutReceiptDialog {
                               amountReceived: amountReceived,
                               changeAmount: changeAmount,
                               note: note,
+                              cartDiscount: cartDiscount,
+                              promotionDiscount: promotionDiscount,
+                              serviceCharge: serviceCharge,
+                              serviceChargeRate: serviceChargeRate,
+                              notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
                             ),
                           ),
                         ),

@@ -48,7 +48,23 @@ class _BarPainter extends CustomPainter {
     final w = size.width;
     final barWidth = w / (data.length * 2);
     final maxVal = data.reduce(math.max);
-    if (maxVal == 0) return;
+    if (maxVal == 0) {
+      for (int i = 0; i < data.length; i++) {
+        final barWidth = w / (data.length * 2);
+        final x = i * (w / data.length) + (w / data.length - barWidth) / 2;
+        final rect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, h - 4, barWidth, 4),
+          const Radius.circular(2),
+        );
+        canvas.drawRRect(
+          rect,
+          Paint()
+            ..color = color.withValues(alpha: 0.2)
+            ..style = PaintingStyle.fill,
+        );
+      }
+      return;
+    }
 
     for (int i = 0; i < data.length; i++) {
       final barH = (data[i] / maxVal) * h * 0.8;

@@ -38,4 +38,75 @@ void main() {
     expect(q.first, 87);
     expect(q, contains(90));
   });
+
+  test('remainingOtherAmount mirrors split clamp', () {
+    expect(
+      CheckoutTenderHelpers.remainingOtherAmount(
+        payableTotal: Money.fromDouble(100),
+        splitCashText: '40',
+      ),
+      Money.fromDouble(60),
+    );
+    expect(
+      CheckoutTenderHelpers.remainingOtherAmount(
+        payableTotal: Money.fromDouble(100),
+        splitCashText: '0',
+      ),
+      Money.fromDouble(100),
+    );
+    expect(
+      CheckoutTenderHelpers.remainingOtherAmount(
+        payableTotal: Money.fromDouble(100),
+        splitCashText: '150',
+      ),
+      Money.zero,
+    );
+  });
+
+  group('changeForCashLeg (Wave P2)', () {
+    test('pure cash overpay uses payable as cash leg', () {
+      expect(
+        CheckoutTenderHelpers.changeForCashLeg(
+          received: 150,
+          payableTotal: 100,
+          cashTenderAmount: 100,
+        ),
+        50,
+      );
+    });
+
+    test('split cash leg: change = received − cash tender not full bill', () {
+      // Bill 100, cash 40, received 50 → change 10 (not 50-100).
+      expect(
+        CheckoutTenderHelpers.changeForCashLeg(
+          received: 50,
+          payableTotal: 100,
+          cashTenderAmount: 40,
+        ),
+        10,
+      );
+    });
+
+    test('underpay cash leg → 0 change', () {
+      expect(
+        CheckoutTenderHelpers.changeForCashLeg(
+          received: 30,
+          payableTotal: 100,
+          cashTenderAmount: 40,
+        ),
+        0,
+      );
+    });
+
+    test('no cash leg → 0', () {
+      expect(
+        CheckoutTenderHelpers.changeForCashLeg(
+          received: 100,
+          payableTotal: 100,
+          cashTenderAmount: 0,
+        ),
+        0,
+      );
+    });
+  });
 }

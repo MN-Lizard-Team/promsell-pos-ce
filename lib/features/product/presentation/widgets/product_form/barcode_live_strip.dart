@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/product/presentation/utils/barcode_symbology.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Compact live barcode glyph under the product form barcode field.
 class BarcodeLiveStrip extends StatelessWidget {
@@ -111,7 +112,7 @@ class BarcodeLiveStrip extends StatelessWidget {
                 AppSnackBar.info(context, l10n.copyBarcode);
               }
             },
-            icon: Icon(Icons.copy_outlined, color: cs.onSurface),
+            icon: Icon(TablerIcons.copy, color: cs.onSurface),
           ),
         ],
       ),

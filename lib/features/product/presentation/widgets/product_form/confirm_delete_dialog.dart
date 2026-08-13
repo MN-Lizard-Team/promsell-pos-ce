@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Product delete confirm — title question + product name as [detail].
 Future<bool> showConfirmDeleteDialog(BuildContext context, String productName) {
@@ -13,6 +14,6 @@ Future<bool> showConfirmDeleteDialog(BuildContext context, String productName) {
     confirmLabel: l10n.delete,
     cancelLabel: l10n.cancel,
     destructive: true,
-    confirmIcon: Icons.delete_outline_rounded,
+    confirmIcon: TablerIcons.trash,
   );
 }

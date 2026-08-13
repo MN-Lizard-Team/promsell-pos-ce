@@ -40,17 +40,36 @@ class DateRangePresetChips extends StatelessWidget {
     }
 
     Widget chip(String label, DateRangePresetKind kind) {
-      return ChoiceChip(
+      final scheme = Theme.of(context).colorScheme;
+      final isSelected = selected == kind;
+      // Report filter chips use primary teal selection (not the global orange
+      // accent chip theme which reads as a Pay/CTA state).
+      return FilterChip(
         label: Text(label),
-        selected: selected == kind,
+        selected: isSelected,
+        showCheckmark: false,
         onSelected: (_) => apply(kind),
-        visualDensity: VisualDensity.compact,
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        selectedColor: scheme.primaryContainer,
+        backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        labelStyle: TextStyle(
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: isSelected
+              ? scheme.onPrimaryContainer
+              : scheme.onSurfaceVariant,
+        ),
+        side: BorderSide(
+          color: isSelected
+              ? scheme.primary.withValues(alpha: 0.55)
+              : scheme.outline.withValues(alpha: 0.35),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        materialTapTargetSize: MaterialTapTargetSize.padded,
       );
     }
 
     return SizedBox(
-      height: 40,
+      height: 52,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [

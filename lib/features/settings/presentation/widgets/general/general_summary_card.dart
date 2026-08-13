@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class GeneralSummaryCard extends StatelessWidget {
   const GeneralSummaryCard({
@@ -30,9 +31,9 @@ class GeneralSummaryCard extends StatelessWidget {
 
   IconData _themeIcon() {
     return switch (themeMode) {
-      ThemeMode.light => Icons.wb_sunny,
-      ThemeMode.dark => Icons.nights_stay,
-      ThemeMode.system => Icons.brightness_auto,
+      ThemeMode.light => TablerIcons.sun,
+      ThemeMode.dark => TablerIcons.moon,
+      ThemeMode.system => TablerIcons.brightnessAuto,
     };
   }
 
@@ -67,11 +68,7 @@ class GeneralSummaryCard extends StatelessWidget {
               color: st.iconContainerBackground,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              Icons.settings_outlined,
-              color: st.softAccent,
-              size: 28,
-            ),
+            child: Icon(TablerIcons.settings, color: st.softAccent, size: 28),
           ),
           const SizedBox(height: 12),
           Text(
@@ -89,7 +86,7 @@ class GeneralSummaryCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               _buildBadge(
-                icon: Icons.language_outlined,
+                icon: TablerIcons.language,
                 label: _languageLabel(context),
                 color: st.softAccent,
                 st: st,

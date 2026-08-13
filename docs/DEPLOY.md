@@ -2,7 +2,9 @@
 
 > How to build, sign, and distribute Promsell for Android and iOS.
 >
-> **Related docs:** [`ARCHITECTURE.md`](ARCHITECTURE.md) (system design) · [`DATABASE.md`](DATABASE.md) (schema) · [`USAGE.md`](USAGE.md) (setup & usage)
+> **Related docs:** [`ARCHITECTURE.md`](ARCHITECTURE.md) (system design) · [`DATABASE.md`](DATABASE.md) (schema) · [`USAGE.md`](USAGE.md) (setup & usage) · [`testing/CI.md`](testing/CI.md) (what GitHub Actions actually runs)
+>
+> **Release tags:** `.github/workflows/release-aab.yml` on `v*` calls `release-trust.yml` then builds a signed **prod** AAB. Missing `ANDROID_KEYSTORE_*` **fails the job**. This is not a Play upload.
 
 ---
 
@@ -120,7 +122,7 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
 ```yaml
-version: 0.9.0+1
+version: 0.9.1+1
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```
@@ -159,7 +161,7 @@ Update `CHANGELOG.md` with a new entry for every public release.
 - [ ] Promotion management: create percent/fixed discount promotion with date range
 - [ ] Product options: add option groups, select options in cart, verify price delta
 - [ ] Report/History merged: verify TabBar sub-tabs in Report page
-- [ ] Product form and payment sheet checked for keyboard/overflow behavior
+- [ ] Product form and payment page checked for keyboard/overflow behavior
 - [ ] Light, dark, and system theme modes checked
 - [ ] Thai and English locale checked after `flutter gen-l10n`
 - [ ] Barcode generation and display checked (generate from Product Preview, verify image quality)
@@ -175,7 +177,7 @@ Before distributing a build with UI changes:
 4. Open a cart line menu (⋯) → discount / note / duplicate / remove; confirm remove shows undo snackbar.
 5. Verify receipt-style cart lines (avatar, name, qty steppers, line total, discount badge when applied). Verify sticky payable total and Park / Pay CTAs. Verify totals match checkout with VAT/SC enabled.
 6. Tap the bottom cart bar (or compact FAB) → verify full-page `CartReviewPage` opens; product image zoom; row detail; qty +/− / long-press keypad; line ⋯ actions; live payable; **Add items** / back returns to catalog with cart preserved.
-7. From cart, tap **Pay** (retail) → cart review pops, payment sheet on sale root (no empty cart under payment). Restaurant: Pay → `CheckoutPage`; cart icon on checkout reopens `CartReviewPage`.
+7. From cart, tap **Pay** (retail) → cart review pops, payment page on sale root (no empty cart under payment). Restaurant: Pay → `CheckoutPage`; cart icon on checkout reopens `CartReviewPage`.
 8. Enable ultra-compact in Settings → sale shows FAB instead of bottom bar; long-press FAB to exit compact.
 9. Line action sheet → apply a 10% discount — verify discount badge and updated subtotal.
 10. Tap **Apply cart discount** → apply a fixed amount — verify breakdown on payment / checkout (Subtotal → discounts → Total); verify receipt preview pinch-to-zoom works.
@@ -200,7 +202,7 @@ Before distributing a build with UI changes:
 22. In Settings, verify **Max drafts** input (default 30, range 5–100), **Compact cart**, and **Ultra-compact cart** toggles appear.
 23. In History tab, verify **search bar** appears — filter by receipt number, payment method, or amount.
 24. In Settings, verify **Backup reminder** banner appears if `backupReminderDays` threshold is exceeded.
-25. In Settings → **About** section, tap **About App** — verify app icon, name "Promsell POS CE", version + build number, description, tech stack, and contact email. Tap **Privacy Policy** — verify in-app page renders 6 sections (Data Collection, Third-Party Services, Data Storage, Backup Encryption, Permissions, Contact). Tap **Open Source License** — verify full AGPL-3.0 license text is displayed and selectable. Verify footer "© 2026 Promsell POS CE · AGPL-3.0".
+25. In Settings → **About** section, tap **About App** — verify app icon, name "Promsell POS CE", version + build number, description, tech stack, and contact email. Tap **Privacy Policy** — verify in-app page renders 8 sections (Data Collection, Third-Party Services, Data Storage, Backup Encryption, Customer Data, Crash Logging, Permissions, Contact). Tap **Open Source License** — verify full AGPL-3.0 license text is displayed and selectable. Verify footer "© 2026 Promsell POS CE · AGPL-3.0".
 
 ---
 

@@ -12,9 +12,9 @@ import 'robot_pattern/sale_robot.dart';
 import 'robot_pattern/checkout_robot.dart';
 
 /// Journey 5: Promotion Application
-/// 
+///
 /// Scenario: Customer receives discount from active promotion
-/// 
+///
 /// GIVEN there is an active promotion
 /// WHEN cashier adds products
 /// AND proceeds to checkout
@@ -58,7 +58,7 @@ void main() {
       // Burger (120) x 3 = 360
       // Pizza Slice (95) x 4 = 380
       // Total = 965 (close to 1000)
-      
+
       for (var i = 0; i < 5; i++) {
         await saleRobot.addProductToCart('Coffee');
       }
@@ -98,7 +98,7 @@ void main() {
       // Verify sale recorded with promotion
       final sales = await TestApp.database.select(TestApp.database.sales).get();
       expect(sales.length, 1);
-      
+
       final sale = sales.first;
       expect(sale.promotionId, promotion.id);
       expect(
@@ -106,11 +106,7 @@ void main() {
         144.75,
         reason: 'Promotion discount should be recorded',
       );
-      expect(
-        sale.totalAmount,
-        820.25,
-        reason: 'Total should include discount',
-      );
+      expect(sale.totalAmount, 820.25, reason: 'Total should include discount');
     });
 
     testWidgets('Apply 50 THB fixed promotion', (tester) async {
@@ -132,7 +128,7 @@ void main() {
       // Add products
       await saleRobot.addProductToCart('Burger'); // 120
       await saleRobot.addProductToCart('Ice Cream'); // 50
-      
+
       final subtotal = Money.fromDouble(170.0);
       saleRobot.verifyCartTotal(subtotal);
 
@@ -169,19 +165,21 @@ void main() {
       // Create expired promotion
       final yesterday = DateTime.now().subtract(const Duration(days: 2));
       final twoDaysAgo = DateTime.now().subtract(const Duration(days: 3));
-      
-      await TestApp.database.into(TestApp.database.promotions).insert(
-        PromotionsCompanion.insert(
-          id: 'promo-expired',
-          name: 'Expired Promo',
-          type: const Value('PERCENT'),
-          value: const Value(20.0),
-          startDate: Value(twoDaysAgo),
-          endDate: Value(yesterday),
-          isActive: const Value(true),
-          createdAt: Value(twoDaysAgo),
-        ),
-      );
+
+      await TestApp.database
+          .into(TestApp.database.promotions)
+          .insert(
+            PromotionsCompanion.insert(
+              id: 'promo-expired',
+              name: 'Expired Promo',
+              type: const Value('PERCENT'),
+              value: const Value(20.0),
+              startDate: Value(twoDaysAgo),
+              endDate: Value(yesterday),
+              isActive: const Value(true),
+              createdAt: Value(twoDaysAgo),
+            ),
+          );
 
       await TestApp.pumpApp(tester);
       await saleRobot.navigateToSalePage();
@@ -221,7 +219,7 @@ void main() {
 
       // THEN: Receipt should show promotion details
       checkoutRobot.verifyPaymentComplete();
-      
+
       // Verify promotion name visible
       expect(
         find.textContaining('15% Discount'),
@@ -237,7 +235,9 @@ void main() {
       );
     });
 
-    testWidgets('Multiple promotions - only one can be applied', (tester) async {
+    testWidgets('Multiple promotions - only one can be applied', (
+      tester,
+    ) async {
       saleRobot = SaleRobot(tester);
       checkoutRobot = CheckoutRobot(tester);
 
@@ -253,7 +253,7 @@ void main() {
 
       // Try to apply second promotion (should replace first)
       await checkoutRobot.applyPromotion('50 THB Off');
-      
+
       // Should now show 50 THB discount instead
       checkoutRobot.verifyDiscountAmount(Money.fromDouble(50.0));
       checkoutRobot.verifyGrandTotal(Money.fromDouble(70.0)); // 120 - 50
@@ -274,10 +274,11 @@ void main() {
       checkoutRobot.verifyDiscountAmount(Money.fromDouble(6.75));
 
       // Remove promotion (if UI supports it)
-      final removeBtn = find.byIcon(Icons.close)
+      final removeBtn = find
+          .byIcon(Icons.close)
           .or(find.text('Remove'))
           .or(find.byIcon(Icons.clear));
-      
+
       if (removeBtn.evaluate().isNotEmpty) {
         await tester.tap(removeBtn.first);
         await tester.pumpAndSettle();
@@ -293,19 +294,21 @@ void main() {
 
       // Create inactive promotion
       final tomorrow = DateTime.now().add(const Duration(days: 1));
-      
-      await TestApp.database.into(TestApp.database.promotions).insert(
-        PromotionsCompanion.insert(
-          id: 'promo-inactive',
-          name: 'Inactive Promo',
-          type: const Value('PERCENT'),
-          value: const Value(30.0),
-          startDate: Value(DateTime.now()),
-          endDate: Value(tomorrow),
-          isActive: const Value(false), // Inactive
-          createdAt: Value(DateTime.now()),
-        ),
-      );
+
+      await TestApp.database
+          .into(TestApp.database.promotions)
+          .insert(
+            PromotionsCompanion.insert(
+              id: 'promo-inactive',
+              name: 'Inactive Promo',
+              type: const Value('PERCENT'),
+              value: const Value(30.0),
+              startDate: Value(DateTime.now()),
+              endDate: Value(tomorrow),
+              isActive: const Value(false), // Inactive
+              createdAt: Value(DateTime.now()),
+            ),
+          );
 
       await TestApp.pumpApp(tester);
       await saleRobot.navigateToSalePage();

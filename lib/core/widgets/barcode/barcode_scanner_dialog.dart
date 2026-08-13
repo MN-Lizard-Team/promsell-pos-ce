@@ -348,8 +348,7 @@ class _BarcodeScannerDialogState extends State<BarcodeScannerDialog>
                 AnimatedBuilder(
                   animation: _laserCurve,
                   builder: (context, child) {
-                    final showLaser =
-                        !session.scanned && _errorText == null;
+                    final showLaser = !session.scanned && _errorText == null;
                     final laserY = showLaser ? _laserCurve.value : null;
                     return CustomPaint(
                       size: MediaQuery.sizeOf(context),

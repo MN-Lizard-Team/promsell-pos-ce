@@ -63,6 +63,25 @@ class SettingsCubit extends Cubit<SettingsState> {
     _persistenceService.scheduleSave(updated);
   }
 
+  Future<bool> saveAndApply(Settings settings) async {
+    final previous = state.settings;
+    emit(state.copyWith(status: SettingsStatus.saving));
+    try {
+      await _persistenceService.saveImmediately(settings);
+      emit(SettingsState(status: SettingsStatus.saved, settings: settings));
+      return true;
+    } catch (e) {
+      emit(
+        SettingsState(
+          status: SettingsStatus.failure,
+          settings: previous,
+          errorMessage: e.toString(),
+        ),
+      );
+      return false;
+    }
+  }
+
   Future<void> update(Settings settings) async {
     final previous = state.settings;
     emit(

@@ -39,9 +39,12 @@ class RichProductListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<SettingsCubit>().state.settings;
-    final currency = settings.currency;
-    final lowStockThreshold = settings.lowStockThreshold;
+    final currency = context.select(
+      (SettingsCubit c) => c.state.settings.currency,
+    );
+    final lowStockThreshold = context.select(
+      (SettingsCubit c) => c.state.settings.lowStockThreshold,
+    );
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final isLow =
@@ -274,10 +277,9 @@ class RichProductListTile extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.all(2),
                           constraints: const BoxConstraints(
-                            minWidth: 40,
-                            minHeight: 40,
+                            minWidth: 48,
+                            minHeight: 48,
                           ),
-                          visualDensity: VisualDensity.compact,
                         ),
                       ],
                     ),

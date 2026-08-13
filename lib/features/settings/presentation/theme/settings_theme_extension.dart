@@ -65,7 +65,7 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     iconContainerBackground: Color(0xFFD0ECEF),
     // Divider starts after icon well (40) + gap (12) + left pad (16) ≈ 68
     dividerIndent: 68,
-    cardRadius: 20,
+    cardRadius: 16,
     sectionGap: 16,
     tileMinHeight: 64,
     iconSize: 40,
@@ -89,7 +89,7 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     mutedText: AppColors.darkTextSecondary,
     iconContainerBackground: Color(0xFF0A4A52),
     dividerIndent: 68,
-    cardRadius: 20,
+    cardRadius: 16,
     sectionGap: 16,
     tileMinHeight: 64,
     iconSize: 40,

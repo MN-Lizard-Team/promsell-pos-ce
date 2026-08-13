@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/painting.dart' show imageCache;
 import 'package:image/image.dart' as img_lib;
 import 'package:path/path.dart' as p;
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +8,7 @@ import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:promsell_pos_ce/core/image/image_cache_service.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/services/image_permission_exception.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -39,8 +41,8 @@ class ProductImageServiceImpl implements ProductImageService {
 
   ProductImageServiceImpl(
     this._settingsRepository, {
-    ImagePicker? picker,
-    ImageCacheService? cacheService,
+    @ignoreParam ImagePicker? picker,
+    @ignoreParam ImageCacheService? cacheService,
   }) : _picker = picker ?? ImagePicker(),
        _cacheService = cacheService ?? ImageCacheService();
 
@@ -86,6 +88,10 @@ class ProductImageServiceImpl implements ProductImageService {
   @override
   Future<void> deleteImages(String? imagePath, String? thumbnailPath) async {
     await _cacheService.deleteImage(imagePath, thumbnailPath);
+    // Clear Flutter's in-memory image cache so stale decoded images
+    // don't persist after a product image is replaced or removed.
+    imageCache.clear();
+    imageCache.clearLiveImages();
   }
 
   @override
@@ -170,6 +176,13 @@ class ProductImageServiceImpl implements ProductImageService {
     final newPath = p.join(dir.path, '$newProductId.jpg');
     final newThumbPath = p.join(dir.path, '${newProductId}_thumb.jpg');
 
+    // Guard against concurrent renames overwriting each other.
+    final newFile = File(newPath);
+    if (await newFile.exists()) {
+      // Target already exists — assume already renamed, return existing paths.
+      return ImagePaths(fullPath: newPath, thumbnailPath: newThumbPath);
+    }
+
     await oldFile.rename(newPath);
 
     final oldThumbPath = _thumbPathFromFull(oldPath);
@@ -211,7 +224,13 @@ class ProductImageServiceImpl implements ProductImageService {
           }
         }
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        'product_image_service: clearOrphanedImages failed',
+        error: e,
+        stack: stack,
+      );
+    }
     return deleted;
   }
 
@@ -225,7 +244,13 @@ class ProductImageServiceImpl implements ProductImageService {
           total += await entity.length();
         }
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        'product_image_service: getCacheSizeBytes failed',
+        error: e,
+        stack: stack,
+      );
+    }
     return total;
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/domain/entities/restaurant_table.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_event.dart';
@@ -163,7 +164,11 @@ class _TableManagementPageState extends State<TableManagementPage> {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      disposeTextEditingControllerAfterFrame(nameCtrl);
+      disposeTextEditingControllerAfterFrame(zoneCtrl);
+      disposeTextEditingControllerAfterFrame(seatsCtrl);
+    });
   }
 
   Future<void> _confirmDelete(

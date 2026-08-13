@@ -1,4 +1,4 @@
-# Query Patterns — Promsell POS CE (v0.9.0)
+# Query Patterns — Promsell POS CE (v0.9.1)
 
 Common Drift query patterns used in the datasource layer.
 
@@ -116,18 +116,19 @@ Future<List<Sale>> querySalesByDateRange(DateTime from, DateTime to) async {
 }
 ```
 
-## Watch recent sales (stream with limit)
+## Watch / hydrate recent sales (batched — not N+1)
+
+SSOT: `SaleQueryLocalDatasource.hydrateSales` in
+`lib/features/sale/data/datasources/sale_query_local_datasource.dart`.
 
 ```dart
-Stream<List<Sale>> watchRecentSales({int limit = 20}) {
-  final query = select(sales)
-    ..orderBy([(s) => OrderingTerm.desc(s.createdAt)])
-    ..limit(limit);
-  return query.watch().asyncMap((rows) async {
-    // fetch items for each sale
-  });
-}
+// After selecting sale rows:
+// 1) one query: sale_items WHERE saleId.isIn(ids)
+// 2) one query: sale_payments WHERE saleId.isIn(ids)
+// 3) map into Sale aggregates
 ```
+
+Do **not** loop `get items for each sale`.
 
 ## Upsert draft cart (debounced auto-save)
 
@@ -160,4 +161,4 @@ Future<void> upsertDraft(String cartId, SaleState state) async {
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Query Patterns</sub>
+<sub>Promsell POS CE · v0.9.1 · Query Patterns</sub>

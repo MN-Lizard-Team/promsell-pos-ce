@@ -1,11 +1,38 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/core/utils/crypto_utils.dart';
+
+/// Isolate payload for PBKDF2 key derivation.
+class _Pbkdf2Params {
+  const _Pbkdf2Params(
+    this.password,
+    this.salt,
+    this.iterations,
+    this.keyLength,
+  );
+  final String password;
+  final Uint8List salt;
+  final int iterations;
+  final int keyLength;
+}
+
+/// Pure top-level PBKDF2-HMAC-SHA256 (RFC 2898) — runs inside an isolate
+/// so the 100K-iteration loop does not block the UI thread.
+/// Delegates to the shared [pbkdf2] implementation.
+Uint8List _pbkdf2Isolate(_Pbkdf2Params params) {
+  return pbkdf2(
+    password: params.password,
+    salt: params.salt,
+    iterations: params.iterations,
+    keyLength: params.keyLength,
+  );
+}
 
 @LazySingleton()
 class BackupEncryptionService {
@@ -15,6 +42,8 @@ class BackupEncryptionService {
   static const _v1 = 0x01;
   static const _v2 = 0x02;
   static const minPinLength = 6;
+  static const maxFileBytes = 512 * 1024 * 1024;
+  static const _pbkdf2Iterations = 100000;
 
   /// Encrypts a file using AES-256-GCM with a PIN-derived key.
   ///
@@ -37,10 +66,13 @@ class BackupEncryptionService {
     if (!await sourceFile.exists()) {
       throw StateError('Source file not found: $sourcePath');
     }
+    if (await sourceFile.length() > maxFileBytes) {
+      throw StateError('BACKUP_TOO_LARGE');
+    }
 
     final salt = _generateRandomBytes(_saltLength);
     final nonce = _generateRandomBytes(_nonceLength);
-    final key = _deriveKey(trimmed, salt, _v2);
+    final key = await _deriveKey(trimmed, salt, _v2);
 
     final plaintext = await sourceFile.readAsBytes();
     final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
@@ -72,6 +104,9 @@ class BackupEncryptionService {
     final sourceFile = File(sourcePath);
     if (!await sourceFile.exists()) {
       throw StateError('Encrypted file not found: $sourcePath');
+    }
+    if (await sourceFile.length() > maxFileBytes) {
+      throw StateError('BACKUP_TOO_LARGE');
     }
 
     final data = await sourceFile.readAsBytes();
@@ -111,7 +146,7 @@ class BackupEncryptionService {
       ciphertext = Uint8List.sublistView(data, _saltLength + _nonceLength);
     }
 
-    final key = _deriveKey(pin, salt, version);
+    final key = await _deriveKey(pin, salt, version);
     final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
 
     final encrypted = enc.Encrypted(ciphertext);
@@ -142,16 +177,39 @@ class BackupEncryptionService {
         try {
           final f = File(restoredPath);
           if (await f.exists()) await f.delete();
-        } catch (_) {}
+        } catch (e, stack) {
+          AppLogger.warning(
+            'backup_encryption: cleanup of restored file failed',
+            error: e,
+            stack: stack,
+          );
+        }
       }
     }
   }
 
-  enc.Key _deriveKey(String pin, Uint8List salt, int version) {
+  Future<enc.Key> _deriveKey(String pin, Uint8List salt, int version) async {
     if (version == _v2) {
-      return _pbkdf2(pin, salt, 100000, _keyLength);
+      final keyBytes = await _pbkdf2InIsolate(
+        pin,
+        salt,
+        _pbkdf2Iterations,
+        _keyLength,
+      );
+      return enc.Key(keyBytes);
     }
     return _deriveKeyV1(pin, salt);
+  }
+
+  /// Runs PBKDF2 in a background isolate to avoid blocking the UI.
+  static Future<Uint8List> _pbkdf2InIsolate(
+    String password,
+    Uint8List salt,
+    int iterations,
+    int keyLength,
+  ) async {
+    final params = _Pbkdf2Params(password, salt, iterations, keyLength);
+    return Isolate.run(() => _pbkdf2Isolate(params));
   }
 
   /// Legacy weak key derivation (v1). Kept for backward compatibility.
@@ -167,44 +225,6 @@ class BackupEncryptionService {
       keyBytes[i] = block[i % block.length];
     }
     return enc.Key(Uint8List.fromList(keyBytes));
-  }
-
-  /// PBKDF2-HMAC-SHA256 key derivation (RFC 2898).
-  enc.Key _pbkdf2(
-    String password,
-    Uint8List salt,
-    int iterations,
-    int keyLength,
-  ) {
-    final passwordBytes = Uint8List.fromList(utf8.encode(password));
-    final hmac = Hmac(sha256, passwordBytes);
-    const blockLength = 32; // SHA-256 output length
-    final blocksNeeded = (keyLength + blockLength - 1) ~/ blockLength;
-    final result = <int>[];
-
-    for (var blockIndex = 1; blockIndex <= blocksNeeded; blockIndex++) {
-      // U_1 = HMAC(password, salt || INT_32_BE(blockIndex))
-      final saltAndIndex = Uint8List(salt.length + 4);
-      saltAndIndex.setAll(0, salt);
-      saltAndIndex[salt.length] = (blockIndex >> 24) & 0xFF;
-      saltAndIndex[salt.length + 1] = (blockIndex >> 16) & 0xFF;
-      saltAndIndex[salt.length + 2] = (blockIndex >> 8) & 0xFF;
-      saltAndIndex[salt.length + 3] = blockIndex & 0xFF;
-
-      var u = hmac.convert(saltAndIndex).bytes;
-      final block = Uint8List.fromList(u);
-
-      for (var i = 1; i < iterations; i++) {
-        u = hmac.convert(u).bytes;
-        for (var j = 0; j < block.length; j++) {
-          block[j] ^= u[j];
-        }
-      }
-
-      result.addAll(block);
-    }
-
-    return enc.Key(Uint8List.fromList(result.sublist(0, keyLength)));
   }
 
   Uint8List _generateRandomBytes(int length) {

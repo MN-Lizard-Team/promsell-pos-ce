@@ -13,6 +13,7 @@ import 'package:promsell_pos_ce/features/product/presentation/widgets/product_pr
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class SummaryCard extends StatelessWidget {
   const SummaryCard({
@@ -109,13 +110,15 @@ class SummaryCard extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: hasImage
-                          ? () => ImageViewerDialog.showSingle(
-                              context,
-                              ImageViewerDialog.providerFromPaths(
-                                imagePath: product.imagePath,
-                                imageUrl: product.imageUrl,
-                              ),
-                            )
+                          ? () async {
+                              final provider =
+                                  await ImageViewerDialog.providerFromPathsAsync(
+                                    imagePath: product.imagePath,
+                                    imageUrl: product.imageUrl,
+                                  );
+                              // ignore: use_build_context_synchronously
+                              ImageViewerDialog.showSingle(context, provider);
+                            }
                           : null,
                       borderRadius: BorderRadius.circular(16),
                       child: ProductAvatar(
@@ -147,7 +150,7 @@ class SummaryCard extends StatelessWidget {
                           if (product.isRecommended)
                             SummaryChip(
                               label: l10n.productRecommended,
-                              icon: Icons.star_rounded,
+                              icon: TablerIcons.starFilled,
                               color: cs.tertiaryContainer,
                               onColor: cs.onTertiaryContainer,
                             ),
@@ -206,7 +209,7 @@ class SummaryCard extends StatelessWidget {
                                     width: 44,
                                     height: 44,
                                     child: Icon(
-                                      Icons.copy_outlined,
+                                      TablerIcons.copy,
                                       size: 18,
                                       color: cs.primary,
                                     ),
@@ -253,7 +256,7 @@ class SummaryCard extends StatelessWidget {
                       product.cost.value,
                       currency,
                     ),
-                    icon: Icons.local_offer_outlined,
+                    icon: TablerIcons.tag,
                     iconColor: cs.primary,
                     iconBgColor: cs.primaryContainer,
                   ),
@@ -267,7 +270,7 @@ class SummaryCard extends StatelessWidget {
                       currency,
                     ),
                     valueColor: cs.tertiary,
-                    icon: Icons.paid_outlined,
+                    icon: TablerIcons.coin,
                     iconColor: cs.tertiary,
                     iconBgColor: cs.tertiaryContainer,
                   ),
@@ -292,7 +295,7 @@ class SummaryCard extends StatelessWidget {
                       key: ValueKey('${product.stock}-$unit'),
                       label: l10n.remainingStock,
                       value: stockValue,
-                      icon: Icons.inventory_2_outlined,
+                      icon: TablerIcons.box,
                       iconColor: cs.secondary,
                       iconBgColor: cs.secondaryContainer,
                     ),

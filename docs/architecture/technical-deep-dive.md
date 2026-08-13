@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE (v0.9.0)
+# Technical Deep-Dive — Promsell POS CE (v0.9.1)
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 
@@ -27,7 +27,7 @@ Multiple `BlocListener`s subscribed to the same BLoC receive emissions in **subs
 |-------------|----------|--------|
 | `@LazySingleton` | `ProductBloc` | Shared across Sale + Product tabs — same product list everywhere |
 | `@LazySingleton` | `CategoryBloc` | Shared across Product + Category Management — same category list everywhere |
-| `@LazySingleton` | `CartBloc`, `DraftBloc`, `CheckoutBloc` | Shared single instances across SalePage, cart sheet/review, CheckoutPage/PaymentSheet — prevents split-brain state |
+| `@LazySingleton` | `CartBloc`, `DraftBloc`, `CheckoutBloc` | Shared single instances across SalePage, cart sheet/review, CheckoutPage/PaymentPage — prevents split-brain state |
 | `@LazySingleton` | `SettingsCubit` | Global app state (locale, theme) — must persist across navigation |
 | `@LazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()` |
 
@@ -66,19 +66,20 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │                  ReorderCategories                        │
 │  CartBloc ──→ (cart state, product add/remove/qty)        │
 │  DraftBloc ──→ DraftCartRepository (persist/load drafts)  │
-│  CheckoutBloc ──→ CreateSale, VoidSale                    │
+│  CheckoutBloc ──→ CreateSale only                         │
+│  HistoryBloc ──→ VoidSale                                 │
 │  SettingsCubit ──→ SettingsRepository, Ean13Generator     │
 │  ReportCubit (lazySingleton) ──→ WatchReport              │
 │  InventoryLogCubit ──→ WatchInventoryLogs                 │
 │                                                           │
 └──────────┬────────────────────────────────────────────────┘
            │
-           ▼
-┌─────────────────── Use Cases ────────────────────────────────────────────────┐
+           │
+┌──────────▼──────── Use Cases ────────────────────────────────────────────────┐
 │                                                                              │
 │  CreateSale ──→ SaleRepository                                               │
 │  VoidSale ──→ SaleRepository                                                 │
-│  AdjustStock ──→ ProductRepository + InventoryLogService                     │
+│  AdjustStock ──→ InventoryRepository + AppLockService                        │
 │  GetProducts / Add / Update / Delete ──→ ProductRepository                   │
 │  GenerateBarcode ──→ ProductRepository + SettingsRepository + Ean13Generator │
 │  BatchGenerateBarcodes ──→ ProductRepository + SettingsRepository +          │
@@ -87,13 +88,13 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  GetSales / GetSaleById ──→ SaleRepository                                   │
 │  WatchSaleHistory ──→ HistoryRepository                                      │
 │  WatchSales / WatchRecentSales ──→ SaleRepository                            │
-│  WatchReport ──→ HistoryRepository                                           │
+│  WatchReport ──→ ReportRepository                                            │
 │  WatchInventoryLogs ──→ InventoryLogRepository                               │
 │                                                                              │
 └──────────┬───────────────────────────────────────────────────────────────────┘
            │
-           ▼
-┌─────────────────── Repositories ────────────────────────────┐
+           │
+┌──────────▼──────── Repositories ────────────────────────────┐
 │                                                             │
 │  SaleRepository ──→ SaleLocalDatasource                     │
 │  ProductRepository ──→ ProductLocalDatasource               │
@@ -107,8 +108,8 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │                                                             │
 └──────────┬──────────────────────────────────────────────────┘
            │
-           ▼
-┌─────────────────── Datasources & Services ──────────────────┐
+           │
+┌──────────▼──────── Datasources & Services ──────────────────┐
 │                                                             │
 │  SaleLocalDatasource ──→ AppDatabase                        │
 │       ├──→ ReceiptNumberService ──→ AppDatabase             │
@@ -124,16 +125,15 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  ReceiptPdfService (stateless)                              │
 │  PromptPayQrCode (stateless)                                │
 │  SlipVerifier (stateless)                                   │
-│  BackupService (stateless)                                  │
+│  BackupExportService + BackupRestoreService (stateless)      │
 │                                                             │
 └──────────┬──────────────────────────────────────────────────┘
            │
-           ▼
-┌─────────────────── Database ────────────────────────────────┐
-│                                                             │
-│  AppDatabase (singleton)                                    │
-│  SQLite • Drift ORM • 15 tables • schema v28 • WAL • FK ON • SQLCipher │
-│                                                             │
+           │
+┌──────────▼─────────────── Database ─────────────────────────┐
+│                  AppDatabase (singleton)                    │
+│                SQLite • Drift ORM • 16 tables               │
+│             • schema v30 • WAL • FK ON • SQLCipher          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -174,14 +174,23 @@ Every stock-mutating operation runs inside a **single Drift transaction** to gua
 All domain-layer errors use the `AppError` sealed class for type-safe error handling:
 
 ```dart
-sealed class AppError {
+sealed class AppError extends Equatable {
   const AppError();
-  
-  factory AppError.validation(String message) = ValidationError;
-  factory AppError.notFound(String message) = NotFoundError;
-  factory AppError.conflict(String message) = ConflictError;
-  factory AppError.insufficientStock(String productName, int available) = InsufficientStockError;
 }
+
+// Domain Errors
+final class ValidationError extends AppError { ... }      // message + field
+final class NotFoundError extends AppError { ... }         // resource + id
+final class BusinessRuleError extends AppError { ... }     // rule + details
+
+// Infrastructure Errors
+final class DatabaseError extends AppError { ... }         // message + operation
+final class NetworkError extends AppError { ... }          // statusCode + message
+final class FileSystemError extends AppError { ... }       // message + path
+
+// Permission + Unknown
+final class PermissionDeniedError extends AppError { ... } // permission
+final class UnknownError extends AppError { ... }          // message + stackTrace
 ```
 
 Benefits:
@@ -204,7 +213,7 @@ All **domain** currency math uses the `Money` value object (`lib/core/domain/mon
 
 | Layer | Strategy |
 |-------|----------|
-| **Datasource** | Throw `AppError` on constraint violations (e.g. `AppError.conflict()` for duplicate barcode) |
+| **Datasource** | Throw `AppError` subtypes on constraint violations (e.g. `BusinessRuleError('InsufficientStock')` for low stock) |
 | **Repository** | Catches DB exceptions, wraps in `AppError` types |
 | **Use Case** | Propagates `AppError` — no silent swallowing |
 | **BLoC/Cubit** | Catches in event handler, emits error state with `AppError` |
@@ -226,10 +235,10 @@ try {
 
 | Error | Source | Handling |
 |-------|--------|----------|
-| Insufficient stock | `SaleLocalDatasource` | Throw `AppError.insufficientStock()` before writes; BLoC shows localized snackbar |
-| Double void | `SaleLocalDatasource` | `AppError.conflict("Already voided")` → UI error snackbar |
-| Product not found | Repository | Returns `null` → use case throws `AppError.notFound()` |
-| Duplicate barcode | `ProductLocalDatasource` | `AppError.conflict()` from runtime validation → UI shows error |
+| Insufficient stock | `SaleInsertWriter` | Throw `BusinessRuleError('InsufficientStock')` before writes; BLoC shows localized snackbar |
+| Double void | `SaleVoidWriter` | `BusinessRuleError('SaleAlreadyVoided')` → UI error snackbar |
+| Product not found | `SaleInsertWriter` | `NotFoundError('Product', id: ...)` → BLoC shows localized snackbar |
+| Duplicate barcode | Use Case (AddProduct/UpdateProduct) | `DuplicateBarcodeException` → BLoC catches, emits `BusinessRuleError('DuplicateBarcode')` → UI shows error |
 | DB corruption | SQLite | Drift WAL recovery; worst case: app reinstall |
 | Encryption key loss | SQLCipher | **Permanent data loss** — requires backup restore or fresh start |
 
@@ -272,4 +281,4 @@ try {
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Technical Deep-Dive</sub>
+<sub>Promsell POS CE · v0.9.1 · Technical Deep-Dive</sub>

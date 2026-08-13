@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_total_card.dart';
 
@@ -5,7 +6,9 @@ import '../../../../../helpers/pump_app.dart';
 
 void main() {
   group('CheckoutTotalCard', () {
-    testWidgets('renders total amount with no discounts', (tester) async {
+    testWidgets('hides when no discount/VAT/SC lines (due is sticky hero)', (
+      tester,
+    ) async {
       await tester.pumpApp(
         const CheckoutTotalCard(
           itemsSubtotal: 100,
@@ -19,10 +22,17 @@ void main() {
         ),
       );
 
-      expect(find.textContaining('฿100'), findsOneWidget);
+      // No second amount-due hero — empty breakdown.
+      expect(
+        find.byKey(const ValueKey('sale_checkout_breakdown')),
+        findsNothing,
+      );
+      expect(find.textContaining('฿100'), findsNothing);
     });
 
-    testWidgets('renders subtotal when item discounts exist', (tester) async {
+    testWidgets('shows collapsible bill details when item discounts exist', (
+      tester,
+    ) async {
       await tester.pumpApp(
         const CheckoutTotalCard(
           itemsSubtotal: 200,
@@ -33,14 +43,19 @@ void main() {
           vatRate: 0,
           effectiveTotal: 180,
           currency: '฿',
+          initiallyExpanded: true,
         ),
       );
 
+      expect(
+        find.byKey(const ValueKey('sale_checkout_breakdown')),
+        findsOneWidget,
+      );
       expect(find.textContaining('200'), findsOneWidget);
       expect(find.textContaining('-'), findsOneWidget);
     });
 
-    testWidgets('renders cart discount when present', (tester) async {
+    testWidgets('renders cart discount when expanded', (tester) async {
       await tester.pumpApp(
         const CheckoutTotalCard(
           itemsSubtotal: 200,
@@ -51,6 +66,7 @@ void main() {
           vatRate: 0,
           effectiveTotal: 170,
           currency: '฿',
+          initiallyExpanded: true,
         ),
       );
 

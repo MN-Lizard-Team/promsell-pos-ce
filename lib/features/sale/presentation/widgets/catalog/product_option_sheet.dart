@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class ProductOptionSheet extends StatefulWidget {
@@ -22,14 +24,17 @@ class ProductOptionSheet extends StatefulWidget {
     required Product product,
     required void Function(List<SelectedProductOption> options) onConfirm,
   }) {
-    showModalBottomSheet(
+    // Modal routes sit under MaterialApp; re-provide SettingsCubit so tests
+    // (and any navigator that isn't under the root app provider) still work.
+    final settingsCubit = context.read<SettingsCubit>();
+    PosBottomSheet.show<void>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      showDragHandle: true,
+      builder: (_) => BlocProvider.value(
+        value: settingsCubit,
+        child: ProductOptionSheet(product: product, onConfirm: onConfirm),
       ),
-      builder: (_) =>
-          ProductOptionSheet(product: product, onConfirm: onConfirm),
     );
   }
 
@@ -106,17 +111,7 @@ class _ProductOptionSheetState extends State<ProductOptionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            // Material handle from PosBottomSheet — no hand-drawn bar.
             Text(
               l10n.optionsFor(widget.product.name),
               style: theme.textTheme.titleMedium?.copyWith(
@@ -141,6 +136,13 @@ class _ProductOptionSheetState extends State<ProductOptionSheet> {
               ),
             ),
             const SizedBox(height: 12),
+            // Price summary — base + options = total.
+            _PriceSummary(
+              basePrice: widget.product.price,
+              selected: _buildSelected(),
+              currency: currency,
+            ),
+            const SizedBox(height: 8),
             FilledButton(
               onPressed: _allRequiredSatisfied
                   ? () {
@@ -255,6 +257,69 @@ class _OptionGroupSection extends StatelessWidget {
               visualDensity: VisualDensity.compact,
             ),
       ],
+    );
+  }
+}
+
+/// Sticky price summary: Base + Options = Total.
+class _PriceSummary extends StatelessWidget {
+  const _PriceSummary({
+    required this.basePrice,
+    required this.selected,
+    required this.currency,
+  });
+  final Money basePrice;
+  final List<SelectedProductOption> selected;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final optionsTotal = selected.fold<double>(
+      0,
+      (sum, o) => sum + o.priceDelta.value,
+    );
+    final total = basePrice.value + optionsTotal;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${l10n.basePrice}: $currency ${basePrice.value.toStringAsFixed(2)}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+                if (optionsTotal > 0)
+                  Text(
+                    '${l10n.optionsLabel}: +$currency ${optionsTotal.toStringAsFixed(2)}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Text(
+            '$currency ${total.toStringAsFixed(2)}',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

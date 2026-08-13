@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.9.0
+# CODEBASE.md — Promsell POS CE v0.9.1
 
 ## System overview
 
@@ -18,8 +18,8 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   MaterialApp wrapped in BlocBuilder<SettingsCubit>  │
 │   5-tab NavigationBar shell with lazy-loaded tabs    │
 └────────────────────────┬─────────────────────────────┘
-                         ▼
-┌───────────────────────────────────────────────────────────────────────────────────────┐
+                         │
+┌────────────────────────▼──────────────────────────────────────────────────────────────┐
 │   lib/features/ — Feature modules                                                     │
 │   sale/       — Cart, checkout, draft, discount, restaurant order type/channel        │
 │               + table selector, service charge, product options in cart               │
@@ -32,11 +32,11 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   customer/   — Customer CRUD, CustomerBloc, list/form pages with search              │
 │   promotion/  — Promotion CRUD, PromotionBloc, percent/fixed discount, dates          │
 │   home/       — Home dashboard (hero card, stats row, menu grid, promo banner)        │
-│   report/     — Analytics dashboard + History sub-tab (TabBar, merged)                │
+│   report/     — Analytics dashboard (ReportCubit, profit/margin, export)              │
 │   settings/   — Locale, theme, shop info, business type, service charge               │
 └────────────────────────┬──────────────────────────────────────────────────────────────┘
-                         ▼
-┌───────────────────────────────────────────────────────────────────────────────┐
+                         │
+┌────────────────────────▼──────────────────────────────────────────────────────┐
 │   lib/core/ — Cross-cutting infrastructure                                    │
 │   database/   — Drift schema, tables, DAOs                                    │
 │   di/         — injectable + get_it DI                                        │
@@ -47,8 +47,8 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   utils/      — IdGenerator, payment_method, Ean13Generator (@injectable)     │
 │   widgets/    — shared UI primitives                                          │
 └───────────────────────┬───────────────────────────────────────────────────────┘
-                        ▼
-┌──────────────────────────────────────────────────────────┐
+                        │
+┌───────────────────────▼──────────────────────────────────┐
 │   lib/l10n/ — Localization                               │
 │   app_th.arb  — Thai (template)                          │
 │   app_en.arb  — English                                  │
@@ -68,7 +68,7 @@ features/<name>/
 │   ├── datasources/          # Drift DAO wrappers
 │   └── repositories/         # Repository implementations
 ├── domain/
-│   ├── entities/             # Pure Dart models (no Flutter imports)
+│   ├── entities/             # Domain models (should be Flutter-free; settings still import Flutter)
 │   ├── repositories/         # Abstract interfaces
 │   └── usecases/             # Business logic
 └── presentation/
@@ -82,16 +82,16 @@ features/<name>/
         └── deprecated/       #   OPTIONAL — backward-compat aliases only
 ```
 
-**Dependency rule:** `presentation → domain ← data`. Domain has zero external dependencies.
+**Dependency rule:** `presentation → domain ← data`. **Target, not a CI fact** (AH-1.1). Known leaks: settings Flutter types; CloseDay → sale data; some product use cases.
 
 > **Widget folder convention (ADR-024):** Every widget file MUST be in a subfolder — no flat files in `widgets/` root. Domain subfolders are mandatory; `shared/` and `deprecated/` are created only when needed.
 
 ### Data flow (per feature)
 
 ```
-┌──────────────┐    events   ┌──────────────┐    calls     ┌──────────────┐
+┌──────────────┐    events   ┌──────────────┐    calls    ┌──────────────┐
 │ Presentation │ ──────────▶ │  BLoC/Cubit  │ ──────────▶ │  Use Cases   │
-│  (Widgets)   │             │  (State)     │              │  (Domain)    │
+│  (Widgets)   │             │  (State)     │             │  (Domain)    │
 └──────────────┘ ◀────────── └──────────────┘ ◀────────── └──────────────┘
                     state         │ result                      │ interface
                                   ▼                             ▼
@@ -150,10 +150,10 @@ features/<name>/
 │  │  Home Page → Customer/Promotion Pages         │   │
 │  │            ↕ Menu Grid (6 buttons)            │   │
 │  │                                               │   │
-│  │  Settings Root → 15 sub-pages (2-level)       │   │
+│  │  Settings Root → 16 sub-pages (2-level)       │   │
 │  └───────────────────────────────────────────────┘   │
 │                                                      │
-│  Overlay: Onboarding (6-step, first-launch)          │
+│  Overlay: Onboarding (4-step, first-launch)          │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -165,15 +165,16 @@ features/<name>/
 - **Theme system** lives in `lib/core/theme/` — `AppColors` (static palette), `AppTheme` (light/dark `ThemeData` with Material 3), and `SettingsThemeExtension` (settings-specific surface/accent tokens). All hardcoded `Color(0xFF...)` outside this folder is forbidden.
 - Shared visual behavior should live in `lib/core/theme/` and `lib/core/widgets/` before being duplicated in feature pages.
 - Sale layouts are adaptive:
-  - Compact screens use a product catalog with a delivery-style `CartBottomBar` (item count badge + total + checkout; tap/pull-up to open `CartBottomSheet`).
-  - Expanded screens keep the cart pane visible beside the product grid via `CartContent` (expanded mode with `ReorderableListView` + `Dismissible`).
-  - **Compact Cart Mode** (toggle in Settings → General, default ON) shows `CartBottomBar`; OFF uses the classic taller cart chrome (bottom bar / sheet — not a separate `CartPanel` class).
+  - **Phone / narrow**: catalog + sticky `CartBottomBar` (count badge + **payable** total + open review / pay). Tap opens full-page cart via `openCartReviewPage` → `CartReviewPage` (not a bottom sheet).
+  - **Tablet / wide** (≥ `tabletSplitBreakpoint`): `SaleDualPane` — catalog + always-on `DockedCartPanel` (line parity with review + shared `CartReviewFooter`).
+  - **Ultra compact**: `CompactCartFab` over catalog (same payable SSOT).
+  - Amount due / pay labels use `CartState.payableTotals(settings)` only — not legacy `grandTotal`.
   - `SaleDashboardHeader` shows shop name + today's revenue/sales count/cart total in a horizontal scrollable row.
   - `SaleFilterBar` provides 3 dropdown filters (Category/Sort/Stock) replacing the old category chips.
 - User-facing strings must remain localized through ARB files and accessed with `context.l10n`.
 - Empty/error states should prefer `AppEmptyState`; money values should prefer `MoneyText`.
 - Compact constrained areas should avoid fixed-height `Column` content that can trigger `RenderFlex` overflow.
-- **Product tiles** use `BlocSelector<CategoryBloc>` (not `BlocBuilder`) to rebuild only when the relevant category changes.
+- **Product tiles** use `BlocSelector<CategoryBloc>` (not `BlocBuilder`) to rebuild only when the relevant category changes; `context.select` is used for `SettingsCubit` fields (`currency`, `lowStockThreshold`) — not `context.watch`.
 - **Product cards** (`ProductCardShell`) use flat `Container` + `BoxDecoration` (no `Card` elevation) for clean `Dismissible` integration in both list and grid modes.
 - **Navigation helpers** (`showProductEditPage`, `showProductPreviewPage`, `confirmDeleteProduct`, `DeleteBackground`) are centralized in `product_navigation.dart` — no duplicate `_showEdit`/`_showPreview` in tiles or pages.
 - **Snackbars** should use `AppSnackBar.info/success/error` — not raw `ScaffoldMessenger.showSnackBar`.
@@ -185,12 +186,12 @@ features/<name>/
 | Document | Content |
 |----------|---------|
 | [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (60+ entries) + Feature modules table (13 features under `lib/features/`) |
-| [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (15 group entities), Localization, DI, Code generation |
+| [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (14 group entities), Localization, DI, Code generation |
 | [`docs/codebase/file-dependency-map.md`](docs/codebase/file-dependency-map.md) | If-you-change-X-update-Y rules for all entities, BLoCs, datasources |
 | [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (multi-layer suite; run flutter test) + test layer techniques |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema **v28** overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-024) + barcode DI graph |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema **v30** overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-026) + barcode DI graph |
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.9.1 · Codebase Reference</sub>

@@ -12,13 +12,25 @@ import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_th
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_switch_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
-class BarcodeSettingsPage extends StatelessWidget {
+class BarcodeSettingsPage extends StatefulWidget {
   const BarcodeSettingsPage({super.key});
 
   @override
+  State<BarcodeSettingsPage> createState() => _BarcodeSettingsPageState();
+}
+
+class _BarcodeSettingsPageState extends State<BarcodeSettingsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();
@@ -38,7 +50,7 @@ class BarcodeSettingsPage extends StatelessWidget {
               title: l10n.settingsGeneral,
               children: [
                 SettingsSwitchTile(
-                  icon: Icons.camera_alt_outlined,
+                  icon: TablerIcons.camera,
                   title: l10n.enableBarcodeScan,
                   subtitle: l10n.enableBarcodeScanHint,
                   accentColor: accent,
@@ -48,7 +60,7 @@ class BarcodeSettingsPage extends StatelessWidget {
                   },
                 ),
                 SettingsSwitchTile(
-                  icon: Icons.volume_up_outlined,
+                  icon: TablerIcons.volume,
                   title: l10n.playBeepOnScan,
                   subtitle: l10n.playBeepOnScanHint,
                   accentColor: accent,
@@ -58,7 +70,7 @@ class BarcodeSettingsPage extends StatelessWidget {
                   },
                 ),
                 SettingsSwitchTile(
-                  icon: Icons.repeat,
+                  icon: TablerIcons.repeat,
                   title: l10n.continuousScan,
                   subtitle: l10n.continuousScanHint,
                   accentColor: accent,

@@ -79,7 +79,7 @@ class ReceiptPreviewCard extends StatelessWidget {
     final vat = vatInfo;
     final footer =
         footerOverride ??
-        (s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!');
+        (s.receiptNote.isNotEmpty ? s.receiptNote : (l.thankYou ?? ''));
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 320),
@@ -94,7 +94,7 @@ class ReceiptPreviewCard extends StatelessWidget {
             children: [
               if (isVoided) ...[
                 Text(
-                  l.voided ?? 'VOIDED',
+                  l.voided ?? '',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.error,
@@ -103,14 +103,14 @@ class ReceiptPreviewCard extends StatelessWidget {
                 ),
                 if (voidReason != null && voidReason!.isNotEmpty)
                   Text(
-                    '${l.voidReason ?? 'Reason'}: $voidReason',
+                    '${l.voidReason ?? ''}: $voidReason',
                     style: theme.textTheme.bodySmall,
                     textAlign: TextAlign.center,
                   ),
               ],
               if (isReprint)
                 Text(
-                  l.reprint ?? 'REPRINT',
+                  l.reprint ?? '',
                   style: theme.textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -219,15 +219,15 @@ class ReceiptPreviewCard extends StatelessWidget {
               if (promotionDiscount != null && promotionDiscount! > 0)
                 _row(
                   theme,
-                  l.promotionDiscount ?? l.promotion ?? 'Promotion',
+                  l.promotionDiscount ?? l.promotion ?? '',
                   '-${_money(promotionDiscount!)}',
                 ),
               if (serviceCharge != null && serviceCharge! > 0)
                 _row(
                   theme,
                   (serviceChargeRate != null && serviceChargeRate! > 0)
-                      ? '${l.serviceCharge ?? 'Service charge'} ${serviceChargeRate!.toStringAsFixed(0)}%'
-                      : (l.serviceCharge ?? 'Service charge'),
+                      ? '${l.serviceCharge ?? ''} ${serviceChargeRate!.toStringAsFixed(0)}%'
+                      : (l.serviceCharge ?? ''),
                   _money(serviceCharge!),
                 ),
               if (vat != null) ...[

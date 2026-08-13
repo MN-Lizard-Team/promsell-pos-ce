@@ -92,7 +92,23 @@ class _CartQtyDialogContentState extends State<_CartQtyDialogContent> {
 
     var clamped = qty;
     if (widget.item.product.trackStock && !widget.allowOversell) {
-      clamped = qty.clamp(1, widget.item.product.stock);
+      // Match CartLineActions / CartBloc: subtract other lines of same SKU.
+      final otherQty = widget.bloc.state.items
+          .where(
+            (i) =>
+                i.product.id == widget.item.product.id &&
+                i.lineId != widget.item.lineId,
+          )
+          .fold<int>(0, (s, i) => s + i.qty);
+      final maxForLine = (widget.item.product.stock - otherQty).clamp(
+        0,
+        999999,
+      );
+      if (maxForLine <= 0) {
+        _pop();
+        return;
+      }
+      clamped = qty.clamp(1, maxForLine);
     }
     _pop();
     if (clamped != widget.item.qty) {

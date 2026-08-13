@@ -5,7 +5,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 class ImageViewerInfoSheet {
   ImageViewerInfoSheet._();
 
-  static void show(BuildContext context, ImageProvider image) {
+  static Future<void> show(BuildContext context, ImageProvider image) async {
     String source = 'Unknown';
     String? path;
     int? fileSize;
@@ -14,14 +14,15 @@ class ImageViewerInfoSheet {
       source = 'Local file';
       path = image.file.path;
       try {
-        fileSize = image.file.lengthSync();
+        fileSize = await image.file.length();
       } catch (_) {}
     } else if (image is CachedNetworkImageProvider) {
       source = 'Network';
       path = image.url;
     }
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
+      // ignore: use_build_context_synchronously
       context: context,
       enableDrag: true,
       showDragHandle: false,

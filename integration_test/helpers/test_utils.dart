@@ -13,15 +13,15 @@ class TestUtils {
     Duration pollInterval = const Duration(milliseconds: 100),
   }) async {
     final end = DateTime.now().add(timeout);
-    
+
     while (DateTime.now().isBefore(end)) {
       await tester.pumpAndSettle(pollInterval);
-      
+
       if (finder.evaluate().isNotEmpty) {
         return;
       }
     }
-    
+
     throw TestFailure(
       'Widget not found after ${timeout.inSeconds}s: ${finder.toString()}',
     );
@@ -35,25 +35,22 @@ class TestUtils {
     Duration pollInterval = const Duration(milliseconds: 100),
   }) async {
     final end = DateTime.now().add(timeout);
-    
+
     while (DateTime.now().isBefore(end)) {
       await tester.pumpAndSettle(pollInterval);
-      
+
       if (finder.evaluate().isEmpty) {
         return;
       }
     }
-    
+
     throw TestFailure(
       'Widget still visible after ${timeout.inSeconds}s: ${finder.toString()}',
     );
   }
 
   /// Tap and wait for animations
-  static Future<void> tapAndSettle(
-    WidgetTester tester,
-    Finder finder,
-  ) async {
+  static Future<void> tapAndSettle(WidgetTester tester, Finder finder) async {
     await tester.tap(finder);
     await tester.pumpAndSettle();
   }
@@ -81,21 +78,18 @@ class TestUtils {
         await tester.ensureVisible(finder);
         return;
       }
-      
+
       await tester.drag(scrollable, Offset(0, -delta));
       await tester.pumpAndSettle();
     }
-    
+
     throw TestFailure(
       'Widget not found after $maxScrolls scrolls: ${finder.toString()}',
     );
   }
 
   /// Navigate to tab by icon
-  static Future<void> navigateToTab(
-    WidgetTester tester,
-    IconData icon,
-  ) async {
+  static Future<void> navigateToTab(WidgetTester tester, IconData icon) async {
     final navBar = find.byType(NavigationBar);
     final navRail = find.byType(NavigationRail);
 
@@ -110,13 +104,14 @@ class TestUtils {
     } else {
       throw TestFailure('Navigation bar or rail not found');
     }
-    
+
     await tester.pumpAndSettle();
   }
 
   /// Find button by text (handles various button types)
   static Finder findButton(String text) {
-    return find.widgetWithText(ElevatedButton, text)
+    return find
+        .widgetWithText(ElevatedButton, text)
         .or(find.widgetWithText(TextButton, text))
         .or(find.widgetWithText(FilledButton, text))
         .or(find.widgetWithText(OutlinedButton, text));
@@ -142,7 +137,7 @@ extension FinderExtensions on Finder {
   Finder or(Finder other) {
     return FinderOr(this, other);
   }
-  
+
   Finder and(Finder other) {
     return FinderAnd(this, other);
   }

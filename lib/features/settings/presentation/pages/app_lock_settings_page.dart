@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
@@ -125,8 +126,8 @@ class _AppLockSettingsPageState extends State<AppLockSettingsPage> {
         ],
       ),
     );
-    c1.dispose();
-    c2.dispose();
+    disposeTextEditingControllerAfterFrame(c1);
+    disposeTextEditingControllerAfterFrame(c2);
     return result;
   }
 

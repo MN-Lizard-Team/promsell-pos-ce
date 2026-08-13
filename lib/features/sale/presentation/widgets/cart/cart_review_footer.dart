@@ -13,7 +13,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 
 /// Sticky settle dock: Amount due + Park / Pay.
 ///
-/// Money SSOT: [CartState.payableTotals] only (not [CartState.grandTotal]).
+/// Money SSOT: [CartState.payableTotals] only.
 class CartReviewFooter extends StatefulWidget {
   const CartReviewFooter({super.key});
 
@@ -50,26 +50,15 @@ class _CartReviewFooterState extends State<CartReviewFooter> {
         final amountLabel =
             '$currency${due.value.toStringAsFixed(due.value == due.value.roundToDouble() ? 0 : 2)}';
 
+        // Ticket stub continuum — elevFlat (no second floating card).
         return Material(
-          elevation: 0,
-          color: theme.colorScheme.surface,
+          elevation: pos.elevFlat,
+          color: pos.billStubPaper,
+          surfaceTintColor: Colors.transparent,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border(
-                top: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withValues(
-                    alpha: 0.55,
-                  ),
-                ),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.colorScheme.shadow.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+              color: pos.billStubPaper,
+              border: Border(top: BorderSide(color: pos.billStubBorder)),
             ),
             child: SafeArea(
               top: false,
@@ -209,75 +198,96 @@ class _CartReviewFooterState extends State<CartReviewFooter> {
                           ],
                         ],
                         const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: OutlinedButton.icon(
-                                key: const ValueKey('sale_cart_park_cta'),
-                                onPressed: state.isEmpty
-                                    ? null
-                                    : () => DraftParkActions.parkCurrentBill(
-                                        context,
-                                      ),
-                                onLongPress: state.isEmpty
-                                    ? null
-                                    : () => DraftParkActions.parkCurrentBill(
-                                        context,
-                                        promptForName: true,
-                                      ),
-                                icon: const Icon(
-                                  Icons.pause_circle_outline,
-                                  size: 20,
-                                ),
-                                label: Text(
-                                  context.l10n.parkAndNext,
-                                  style: const TextStyle(
-                                    fontFamily: 'NotoSansThai',
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  minimumSize: Size(0, pos.ctaMinHeight),
-                                  foregroundColor: theme.colorScheme.primary,
-                                  side: BorderSide(
-                                    color: theme.colorScheme.primary.withValues(
-                                      alpha: 0.45,
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final stack = constraints.maxWidth < 420;
+                            final park = OutlinedButton.icon(
+                              key: const ValueKey('sale_cart_park_cta'),
+                              onPressed: state.isEmpty
+                                  ? null
+                                  : () => DraftParkActions.parkCurrentBill(
+                                      context,
                                     ),
+                              onLongPress: state.isEmpty
+                                  ? null
+                                  : () => DraftParkActions.parkCurrentBill(
+                                      context,
+                                      promptForName: true,
+                                    ),
+                              icon: const Icon(
+                                Icons.pause_circle_outline,
+                                size: 20,
+                              ),
+                              label: Text(
+                                context.l10n.parkBill,
+                                style: const TextStyle(
+                                  fontFamily: 'NotoSansThai',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: Size(
+                                  stack ? double.infinity : 0,
+                                  pos.ctaMinHeight,
+                                ),
+                                foregroundColor: pos.parkCtaForeground,
+                                side: BorderSide(
+                                  color: pos.parkCtaBorder.withValues(
+                                    alpha: 0.55,
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              flex: 5,
-                              child: FilledButton.icon(
-                                key: const ValueKey('sale_cart_checkout_cta'),
-                                onPressed: state.isEmpty
-                                    ? null
-                                    : () => navigateToCheckout(context),
-                                icon: const Icon(
-                                  Icons.payments_outlined,
-                                  size: 22,
-                                ),
-                                label: Text(
-                                  context.l10n.payAmount(amountLabel),
-                                  style: const TextStyle(
-                                    fontFamily: 'NotoSansThai',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                style: FilledButton.styleFrom(
-                                  minimumSize: Size(0, pos.ctaMinHeight),
-                                  backgroundColor: pos.ctaFill,
-                                  foregroundColor: pos.ctaOnFill,
+                            );
+                            final pay = FilledButton.icon(
+                              key: const ValueKey('sale_cart_checkout_cta'),
+                              onPressed: state.isEmpty
+                                  ? null
+                                  : () => navigateToCheckout(context),
+                              icon: const Icon(
+                                Icons.payments_outlined,
+                                size: 22,
+                              ),
+                              label: Text(
+                                context.l10n.payAmount(amountLabel),
+                                style: const TextStyle(
+                                  fontFamily: 'NotoSansThai',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ),
-                          ],
+                              style: FilledButton.styleFrom(
+                                minimumSize: Size(
+                                  stack ? double.infinity : 0,
+                                  pos.ctaMinHeight,
+                                ),
+                                backgroundColor: pos.ctaFill,
+                                foregroundColor: pos.ctaOnFill,
+                                elevation: pos.elevPaperActive,
+                                shadowColor: pos.ctaFill.withValues(
+                                  alpha: pos.shadowFabCtaAlpha,
+                                ),
+                              ),
+                            );
+                            if (stack) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  park,
+                                  const SizedBox(height: 8),
+                                  pay,
+                                ],
+                              );
+                            }
+                            return Row(
+                              children: [
+                                Expanded(flex: 3, child: park),
+                                const SizedBox(width: 10),
+                                Expanded(flex: 5, child: pay),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),

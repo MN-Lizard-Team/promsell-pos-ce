@@ -1,7 +1,10 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/inventory/data/datasources/inventory_log_local_datasource.dart';
 import 'package:promsell_pos_ce/features/inventory/data/repositories/inventory_repository_impl.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
@@ -14,6 +17,8 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 import '../helpers/fake_database.dart';
 import '../helpers/fake_settings_repository.dart';
+
+class _MockStorage extends Mock implements FlutterSecureStorage {}
 
 void main() {
   late AppDatabase db;
@@ -37,8 +42,27 @@ void main() {
       inventoryLogService: inventoryLogService,
       settingsRepo: fakeSettingsRepo,
     );
+    // In-memory secure storage map: lock disabled (no enabled flag).
+    final map = <String, String>{};
+    final storage = _MockStorage();
+    when(() => storage.read(key: any(named: 'key'))).thenAnswer((inv) async {
+      return map[inv.namedArguments[#key] as String];
+    });
+    when(
+      () => storage.write(
+        key: any(named: 'key'),
+        value: any(named: 'value'),
+      ),
+    ).thenAnswer((inv) async {
+      map[inv.namedArguments[#key] as String] =
+          inv.namedArguments[#value] as String;
+    });
+    when(() => storage.delete(key: any(named: 'key'))).thenAnswer((inv) async {
+      map.remove(inv.namedArguments[#key] as String);
+    });
     adjustStock = AdjustStock(
       InventoryRepositoryImpl(db, InventoryLogLocalDatasource(db)),
+      AppLockService(storage: storage),
     );
   });
 

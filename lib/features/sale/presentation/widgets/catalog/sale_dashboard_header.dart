@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
@@ -9,33 +11,53 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
-class SaleDashboardHeader extends StatelessWidget {
+class SaleDashboardHeader extends StatefulWidget {
   const SaleDashboardHeader({super.key});
+
+  @override
+  State<SaleDashboardHeader> createState() => _SaleDashboardHeaderState();
+}
+
+class _SaleDashboardHeaderState extends State<SaleDashboardHeader> {
+  late final Stream<List<Sale>> _salesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+    _salesStream = sl<SaleRepository>().watchSales(
+      from: todayStart,
+      to: todayEnd,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final settings = context.watch<SettingsCubit>().state.settings;
-    final shopName = settings.shopName;
-    final currency = settings.currency;
-
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+    final shopName = context.select(
+      (SettingsCubit c) => c.state.settings.shopName,
+    );
+    final currency = context.select(
+      (SettingsCubit c) => c.state.settings.currency,
+    );
 
     final cartState = context.select<CartBloc, CartState>((bloc) => bloc.state);
 
     return StreamBuilder<List<Sale>>(
-      stream: sl<SaleRepository>().watchSales(from: todayStart, to: todayEnd),
+      stream: _salesStream,
       builder: (ctx, snapshot) {
         final sales = snapshot.data ?? const [];
         final totals = SalesPeriodTotals.from(sales);
         final revenue = totals.netRevenue.value;
         final salesCount = totals.salesCount;
         final cartCount = cartState.itemCount;
-        // Payable SSOT (VAT + default SC) — not CartState.total/grandTotal.
-        final cartTotal = cartState.payableTotals(settings).payableTotal;
+        // Payable SSOT (VAT + default SC) — not CartState.total.
+        final cartTotal = cartState
+            .payableTotals(ctx.read<SettingsCubit>().state.settings)
+            .payableTotal;
 
         final revenueStr = revenue.toStringAsFixed(
           revenue == revenue.roundToDouble() ? 0 : 2,

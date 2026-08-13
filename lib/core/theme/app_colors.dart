@@ -74,6 +74,7 @@ class AppColors {
   static const Color darkCard = Color(0xFF242424);
   static const Color darkOutline = Color(0xFF3D3D3D);
 
+  static const Color darkPrimary = Color(0xFF2A8B96);
   static const Color darkPrimaryContainer = Color(0xFF0E7C8A);
   static const Color darkOnPrimaryContainer = Color(0xFFB0E0E6);
   static const Color darkOnPrimary = Color(0xFFB0E0E6);

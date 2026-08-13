@@ -68,6 +68,29 @@ void main() {
     );
 
     blocTest<SettingsCubit, SettingsState>(
+      'saveAndApply persists before applying settings',
+      setUp: () {
+        when(
+          () => mockPersistence.saveImmediately(any()),
+        ).thenAnswer((_) async {});
+      },
+      build: buildCubit,
+      act: (c) async {
+        final saved = await c.saveAndApply(
+          const Settings().copyWith(onboardingCompleted: true),
+        );
+        expect(saved, isTrue);
+      },
+      expect: () => [
+        const SettingsState(status: SettingsStatus.saving),
+        SettingsState(
+          status: SettingsStatus.saved,
+          settings: const Settings().copyWith(onboardingCompleted: true),
+        ),
+      ],
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
       'update emits saving then saved',
       setUp: () {
         when(

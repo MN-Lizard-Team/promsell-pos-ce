@@ -8,11 +8,13 @@ import 'package:promsell_pos_ce/core/utils/sound_player.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/promptpay/promptpay_payment_page/promptpay_layout.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/promptpay/promptpay_payment_page/promptpay_slip_handler.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/promptpay/promptpay_payment_page/promptpay_sticky_footer.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/promptpay/timer_chip.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/promptpay/timer_progress_bar.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_primary_app_bar.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/promptpay_qr_code.dart'
     show buildPromptPayQrPayload;
@@ -53,6 +55,9 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
   bool _cartExpanded = false;
   Timer? _autoConfirmTimer;
   double _lastProgress = 1.0;
+
+  /// One-shot guard so manual + slip auto-confirm cannot double-fire.
+  bool _confirming = false;
 
   @override
   void initState() {
@@ -99,12 +104,22 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
     setState(() => _remainingSeconds += 60);
   }
 
+  void _stopAllTimers() {
+    _timer?.cancel();
+    _timer = null;
+    _autoConfirmTimer?.cancel();
+    _autoConfirmTimer = null;
+  }
+
   void _confirm() {
+    // Wave P1: cancel countdown + slip auto-confirm so neither re-fires.
+    if (_confirming) return;
+    _confirming = true;
     HapticFeedback.mediumImpact();
     if (widget.settings.promptPaySoundEnabled) {
       SoundPlayer.playConfirmation();
     }
-    _timer?.cancel();
+    _stopAllTimers();
     widget.bloc.add(
       CheckoutPaymentConfirmed(
         paymentReference: _referenceCtrl.text.trim(),
@@ -114,8 +129,10 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
   }
 
   void _cancel() {
+    // Wave P1: drop auto-confirm so cancel cannot race a late confirm.
     HapticFeedback.mediumImpact();
-    _timer?.cancel();
+    _stopAllTimers();
+    _confirming = false;
     widget.bloc.add(const CheckoutPaymentCancelled());
   }
 
@@ -152,6 +169,12 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final pos = context.posTheme;
+    final title =
+        widget.billTotal != null &&
+            (widget.billTotal! - widget.total).abs() > 0.009
+        ? l10n.promptPayShareTitle
+        : l10n.promptPayFullBillTitle;
 
     return PopScope(
       canPop: false,
@@ -160,13 +183,9 @@ class _PromptPayPaymentPageState extends State<PromptPayPaymentPage> {
         _cancel();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.billTotal != null &&
-                    (widget.billTotal! - widget.total).abs() > 0.009
-                ? l10n.promptPayShareTitle
-                : l10n.promptPayFullBillTitle,
-          ),
+        backgroundColor: pos.catalogBackground,
+        appBar: PosPrimaryAppBar(
+          title: Text(title),
           automaticallyImplyLeading: false,
           actions: [
             IconButton(

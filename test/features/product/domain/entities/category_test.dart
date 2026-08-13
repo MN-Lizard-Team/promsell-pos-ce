@@ -87,7 +87,7 @@ void main() {
       expect(cat2.updatedAt, later);
     });
 
-    test('props exclude createdAt and updatedAt', () {
+    test('props include createdAt and updatedAt', () {
       final catWithDiffDates = Category(
         id: 'cat-001',
         name: 'Drinks',
@@ -98,7 +98,8 @@ void main() {
         updatedAt: DateTime(2024, 6, 1),
       );
 
-      expect(tCategory, equals(catWithDiffDates));
+      // Categories with different timestamps are NOT equal.
+      expect(tCategory, isNot(equals(catWithDiffDates)));
     });
   });
 }

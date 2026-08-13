@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/image_settings_labels.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class DemoImagePreview extends StatelessWidget {
   const DemoImagePreview({
@@ -52,14 +53,14 @@ class DemoImagePreview extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildTag(
-                icon: Icons.width_normal_outlined,
+                icon: TablerIcons.arrowsHorizontal,
                 label: '$width px',
                 st: st,
               ),
               const SizedBox(width: 8),
               _buildTag(
-                icon: Icons.high_quality_outlined,
-                label: qualityLabel(quality),
+                icon: TablerIcons.star,
+                label: qualityLabel(quality, l10n),
                 st: st,
               ),
             ],

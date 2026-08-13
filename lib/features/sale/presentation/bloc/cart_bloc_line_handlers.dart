@@ -2,14 +2,22 @@ part of 'cart_bloc.dart';
 
 /// Line CRUD, restore, bulk, reorder, catalog refresh.
 mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
+  SettingsRepository get settingsRepo;
+
   bool rejectIfPaymentLocked(Emitter<CartState> emit);
   int qtyInCart(String productId, {String? excludeLineId});
+  int maxQtyForLine({
+    required int stock,
+    required int othersQty,
+    required bool stockLimited,
+  });
   void schedulePromoRecompute();
 
   void onProductAdded(CartProductAdded event, Emitter<CartState> emit) {
     if (rejectIfPaymentLocked(emit)) return;
     final p = event.product;
     final qtyToAdd = event.qty;
+    if (qtyToAdd <= 0) return;
     final options = event.selectedOptions;
     final hasOptions = options.isNotEmpty;
     final existing = hasOptions
@@ -23,7 +31,13 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
     if (existing >= 0) {
       final currentQty = updated[existing].qty;
       final newQty = currentQty + qtyToAdd;
-      if (stockLimited && inCartQty >= p.stock) {
+      final others = inCartQty - currentQty;
+      final maxForLine = maxQtyForLine(
+        stock: p.stock,
+        othersQty: others,
+        stockLimited: stockLimited,
+      );
+      if (stockLimited && maxForLine <= 0) {
         emit(
           state.copyWith(
             errorMessage: 'outOfStock',
@@ -32,16 +46,16 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
         );
         return;
       }
-      final maxForLine = stockLimited
-          ? (p.stock - (inCartQty - currentQty)).clamp(0, p.stock)
-          : 999999;
       updated[existing] = updated[existing].copyWith(
-        qty: stockLimited
-            ? newQty.clamp(0, maxForLine).toInt().toInt()
-            : newQty,
+        qty: stockLimited ? newQty.clamp(1, maxForLine).toInt() : newQty,
       );
     } else {
-      if (stockLimited && inCartQty >= p.stock) {
+      final maxForLine = maxQtyForLine(
+        stock: p.stock,
+        othersQty: inCartQty,
+        stockLimited: stockLimited,
+      );
+      if (stockLimited && maxForLine <= 0) {
         emit(
           state.copyWith(
             errorMessage: 'outOfStock',
@@ -50,21 +64,9 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
         );
         return;
       }
-      final remaining = stockLimited
-          ? (p.stock - inCartQty).clamp(0, p.stock)
-          : qtyToAdd;
       final clampedQty = stockLimited
-          ? qtyToAdd.clamp(1, remaining > 0 ? remaining : 1).toInt()
+          ? qtyToAdd.clamp(1, maxForLine).toInt()
           : qtyToAdd;
-      if (stockLimited && remaining <= 0) {
-        emit(
-          state.copyWith(
-            errorMessage: 'outOfStock',
-            errorNonce: state.errorNonce + 1,
-          ),
-        );
-        return;
-      }
       updated.add(
         CartItem(product: p, qty: clampedQty, selectedOptions: options),
       );
@@ -89,29 +91,45 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
       add(CartProductRemoved(event.productId, lineId: event.lineId));
       return;
     }
+    var outOfStock = false;
     final updated = state.items.map((i) {
       final matches = event.lineId != null
           ? i.lineId == event.lineId
           : i.product.id == event.productId;
-      if (matches) {
-        final stockLimited = i.product.trackStock && !event.allowOversell;
-        final others = qtyInCart(i.product.id, excludeLineId: i.lineId);
-        final maxForLine = stockLimited
-            ? (i.product.stock - others).clamp(1, i.product.stock)
-            : 999999;
-        final clamped = stockLimited
-            ? event.qty.clamp(1, maxForLine).toInt()
-            : event.qty.clamp(1, 999999).toInt();
-        return i.copyWith(qty: clamped);
+      if (!matches) return i;
+      final stockLimited = i.product.trackStock && !event.allowOversell;
+      final others = qtyInCart(i.product.id, excludeLineId: i.lineId);
+      final maxForLine = maxQtyForLine(
+        stock: i.product.stock,
+        othersQty: others,
+        stockLimited: stockLimited,
+      );
+      if (stockLimited && maxForLine <= 0) {
+        outOfStock = true;
+        return i;
       }
-      return i;
+      final clamped = stockLimited
+          ? event.qty.clamp(1, maxForLine).toInt()
+          : event.qty.clamp(1, 999999).toInt();
+      return i.copyWith(qty: clamped);
     }).toList();
+    if (outOfStock) {
+      emit(
+        state.copyWith(
+          errorMessage: 'outOfStock',
+          errorNonce: state.errorNonce + 1,
+        ),
+      );
+      return;
+    }
     emit(state.copyWith(items: updated, errorMessage: null));
     schedulePromoRecompute();
   }
 
   void onCartCleared(CartCleared event, Emitter<CartState> emit) {
-    // Always allow clear (post-sale / reset); drops payment lock.
+    // User clear mid-pay must not drop lock (freeze/live desync).
+    // System paths pass force: true (post-sale, park, checkout reset).
+    if (!event.force && rejectIfPaymentLocked(emit)) return;
     emit(const CartState());
   }
 
@@ -136,26 +154,60 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
     schedulePromoRecompute();
   }
 
-  void onCartItemRestored(CartItemRestored event, Emitter<CartState> emit) {
+  Future<void> onCartItemRestored(
+    CartItemRestored event,
+    Emitter<CartState> emit,
+  ) async {
     if (rejectIfPaymentLocked(emit)) return;
-    final updated = List<CartItem>.from(state.items);
-    final existing = updated.indexWhere((i) => i.lineId == event.item.lineId);
-    if (existing >= 0) {
-      updated[existing] = event.item;
-    } else {
-      updated.add(event.item);
+    final item = event.item;
+    // Load allowOversell from settings to respect the toggle on undo.
+    final settings = await settingsRepo.load();
+    final stockLimited = item.product.trackStock && !settings.allowOversell;
+    final others = qtyInCart(item.product.id, excludeLineId: item.lineId);
+    final maxForLine = maxQtyForLine(
+      stock: item.product.stock,
+      othersQty: others,
+      stockLimited: stockLimited,
+    );
+    if (stockLimited && maxForLine <= 0) {
+      emit(
+        state.copyWith(
+          errorMessage: 'outOfStock',
+          errorNonce: state.errorNonce + 1,
+        ),
+      );
+      return;
     }
-    emit(state.copyWith(items: updated));
+    final restored = stockLimited && item.qty > maxForLine
+        ? item.copyWith(qty: maxForLine)
+        : item;
+    final updated = List<CartItem>.from(state.items);
+    final existing = updated.indexWhere((i) => i.lineId == restored.lineId);
+    if (existing >= 0) {
+      updated[existing] = restored;
+    } else {
+      updated.add(restored);
+    }
+    emit(state.copyWith(items: updated, errorMessage: null));
     schedulePromoRecompute();
   }
 
-  void onCartItemDuplicated(CartItemDuplicated event, Emitter<CartState> emit) {
+  Future<void> onCartItemDuplicated(
+    CartItemDuplicated event,
+    Emitter<CartState> emit,
+  ) async {
     if (rejectIfPaymentLocked(emit)) return;
     final item = event.item;
-    // allowOversell not on event — treat trackStock as limited (safe default).
-    final stockLimited = item.product.trackStock;
+    // Load allowOversell from settings to respect the toggle on duplicate.
+    final settings = await settingsRepo.load();
+    final stockLimited = item.product.trackStock && !settings.allowOversell;
     final existingQty = qtyInCart(item.product.id);
-    if (stockLimited && existingQty >= item.product.stock) {
+    final maxForLine = maxQtyForLine(
+      stock: item.product.stock,
+      othersQty: existingQty,
+      stockLimited: stockLimited,
+    );
+    if (stockLimited && maxForLine <= 0) {
       emit(
         state.copyWith(
           errorMessage: 'outOfStock',
@@ -166,9 +218,17 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
     }
 
     final duplicateQty = stockLimited
-        ? item.qty.clamp(1, item.product.stock - existingQty).toInt()
+        ? item.qty.clamp(1, maxForLine).toInt()
         : item.qty;
-    if (duplicateQty <= 0) return;
+    if (duplicateQty <= 0) {
+      emit(
+        state.copyWith(
+          errorMessage: 'outOfStock',
+          errorNonce: state.errorNonce + 1,
+        ),
+      );
+      return;
+    }
 
     final duplicate = CartItem(
       product: item.product,
@@ -179,16 +239,20 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
       selectedOptions: item.selectedOptions,
       isAvailable: item.isAvailable,
     );
-    emit(state.copyWith(items: [...state.items, duplicate]));
+    emit(
+      state.copyWith(items: [...state.items, duplicate], errorMessage: null),
+    );
     schedulePromoRecompute();
   }
 
-  void onProductsRefreshed(
+  Future<void> onProductsRefreshed(
     CartProductsRefreshed event,
     Emitter<CartState> emit,
-  ) {
+  ) async {
     if (rejectIfPaymentLocked(emit)) return;
     if (state.isEmpty) return;
+    final settings = await settingsRepo.load();
+    final allowOversell = settings.allowOversell;
     final productMap = {for (final Product p in event.products) p.id: p};
     final updated = <CartItem>[];
     final outOfStockNames = <String>[];
@@ -201,13 +265,38 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
         updated.add(item.copyWith(isAvailable: false));
         continue;
       }
-      if (p.trackStock && p.stock == 0) {
+      // Validate selectedOptions against the updated product's option groups.
+      // Drop any options whose group or option ID no longer exists.
+      final validOptions = <SelectedProductOption>[];
+      for (final opt in item.selectedOptions) {
+        final group = p.optionGroups
+            .where((g) => g.id == opt.groupId)
+            .firstOrNull;
+        if (group == null) continue; // group deleted
+        final optionExists = group.options.any((o) => o.id == opt.optionId);
+        if (!optionExists) continue; // option deleted
+        validOptions.add(opt);
+      }
+      // Only enforce stock limits when trackStock is on AND oversell is off.
+      if (p.trackStock && !allowOversell && p.stock == 0) {
         outOfStockNames.add(p.name);
-        updated.add(item.copyWith(product: p, qty: item.qty));
-      } else if (p.trackStock && item.qty > p.stock) {
-        updated.add(item.copyWith(product: p, qty: p.stock));
+        updated.add(
+          item.copyWith(
+            product: p,
+            qty: item.qty,
+            selectedOptions: validOptions,
+          ),
+        );
+      } else if (p.trackStock && !allowOversell && item.qty > p.stock) {
+        updated.add(
+          item.copyWith(
+            product: p,
+            qty: p.stock,
+            selectedOptions: validOptions,
+          ),
+        );
       } else {
-        updated.add(item.copyWith(product: p));
+        updated.add(item.copyWith(product: p, selectedOptions: validOptions));
       }
     }
 

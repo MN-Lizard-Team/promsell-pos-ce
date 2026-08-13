@@ -183,7 +183,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Water'), findsOneWidget);
-      expect(find.textContaining('3 ×'), findsOneWidget);
+      // Qty lives in cluster once; unit price as "@ …" meta (not "3 ×").
+      expect(find.text('3'), findsWidgets);
+      expect(find.textContaining('@'), findsOneWidget);
     });
   });
 }

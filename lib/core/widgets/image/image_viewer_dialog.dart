@@ -1,12 +1,10 @@
-import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog/image_page.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog/image_viewer_info_sheet.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog/image_viewer_page_indicator.dart';
 import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog/image_viewer_toolbar_button.dart';
-import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog/image_viewer_utils.dart';
+import 'package:promsell_pos_ce/core/widgets/image/image_viewer_dialog/image_viewer_utils.dart'
+    as image_viewer_utils;
 
 class ImageViewerDialog extends StatefulWidget {
   const ImageViewerDialog({
@@ -39,19 +37,27 @@ class ImageViewerDialog extends StatefulWidget {
     );
   }
 
+  /// Synchronous convenience — delegates to [providerFromPaths].
+  /// Prefer [providerFromPathsAsync] for event handlers to avoid UI jank.
   static ImageProvider providerFromPaths({
     String? imagePath,
     String? imageUrl,
   }) {
-    if (imagePath != null &&
-        imagePath.isNotEmpty &&
-        File(imagePath).existsSync()) {
-      return FileImage(File(imagePath));
-    }
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      return CachedNetworkImageProvider(imageUrl);
-    }
-    return const AssetImage('');
+    return image_viewer_utils.providerFromPaths(
+      imagePath: imagePath,
+      imageUrl: imageUrl,
+    );
+  }
+
+  /// Async variant — resolves the provider without blocking the UI thread.
+  static Future<ImageProvider> providerFromPathsAsync({
+    String? imagePath,
+    String? imageUrl,
+  }) {
+    return image_viewer_utils.providerFromPathsAsync(
+      imagePath: imagePath,
+      imageUrl: imageUrl,
+    );
   }
 
   @override
@@ -61,7 +67,7 @@ class ImageViewerDialog extends StatefulWidget {
 class _ImageViewerDialogState extends State<ImageViewerDialog> {
   late final PageController _pageController;
   late int _currentIndex;
-  final Map<int, ZoomController> _zoomControllers = {};
+  final Map<int, image_viewer_utils.ZoomController> _zoomControllers = {};
 
   @override
   void initState() {
@@ -79,8 +85,11 @@ class _ImageViewerDialogState extends State<ImageViewerDialog> {
     super.dispose();
   }
 
-  ZoomController _getZoomController(int index) {
-    return _zoomControllers.putIfAbsent(index, () => ZoomController());
+  image_viewer_utils.ZoomController _getZoomController(int index) {
+    return _zoomControllers.putIfAbsent(
+      index,
+      () => image_viewer_utils.ZoomController(),
+    );
   }
 
   void _onPageChanged(int index) {
@@ -147,7 +156,9 @@ class _ImageViewerDialogState extends State<ImageViewerDialog> {
                       children: [
                         ImageViewerToolbarButton(
                           icon: Icons.share,
-                          onTap: () => shareImage(widget.images[_currentIndex]),
+                          onTap: () => image_viewer_utils.shareImage(
+                            widget.images[_currentIndex],
+                          ),
                         ),
                         const SizedBox(width: 8),
                         ImageViewerToolbarButton(

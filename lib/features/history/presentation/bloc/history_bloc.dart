@@ -135,7 +135,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
         state.copyWith(
           voidingSaleId: null,
           // Keep list data; signal failure via error key for snack.
-          status: HistoryStatus.success,
+          status: state.status,
           errorMessage: mapHistoryVoidErrorKey(e),
         ),
       );
@@ -143,8 +143,8 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   }
 
   @override
-  Future<void> close() {
-    _sub?.cancel();
+  Future<void> close() async {
+    await _sub?.cancel();
     return super.close();
   }
 }

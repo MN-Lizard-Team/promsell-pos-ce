@@ -15,7 +15,11 @@ class ShopInfoSettingsPage extends StatefulWidget {
   State<ShopInfoSettingsPage> createState() => _ShopInfoSettingsPageState();
 }
 
-class _ShopInfoSettingsPageState extends State<ShopInfoSettingsPage> {
+class _ShopInfoSettingsPageState extends State<ShopInfoSettingsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   /// Stable key so [ShopInfoForm] is not recreated on every settings rebuild
   /// (which would dispose TextEditingControllers mid-frame).
   final _formKey = GlobalKey<ShopInfoFormState>();
@@ -26,44 +30,81 @@ class _ShopInfoSettingsPageState extends State<ShopInfoSettingsPage> {
     form.submit();
   }
 
+  Future<bool> _confirmExit(BuildContext context) async {
+    final form = _formKey.currentState;
+    if (form == null || !form.isDirty) return true;
+    final l10n = context.l10n;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.unsavedChangesTitle),
+        content: Text(l10n.unsavedChangesMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.discardChanges),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();
         final l10n = context.l10n;
 
-        return SettingsLeafChrome(
-          title: l10n.settingsShopInfo,
-          header: ShopPreviewCard(
-            shopName: s.shopName,
-            address: s.address,
-            phone: s.phone,
-          ),
-          bottomNavigationBar: StickyActionBar(
-            primaryLabel: l10n.save,
-            onPrimary: () => _save(context),
-          ),
-          children: [
-            ShopInfoForm(
-              key: _formKey,
-              initialShopName: s.shopName,
-              initialAddress: s.address,
-              initialPhone: s.phone,
-              onSave: (values) {
-                cubit.updateField(
-                  (settings) => settings.copyWith(
-                    shopName: values.shopName,
-                    address: values.address,
-                    phone: values.phone,
-                  ),
-                );
-                if (!context.mounted) return;
-                AppSnackBar.success(context, l10n.settingsSaved);
-              },
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) async {
+            if (didPop) return;
+            if (await _confirmExit(context) && context.mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: SettingsLeafChrome(
+            title: l10n.settingsShopInfo,
+            header: ShopPreviewCard(
+              shopName: s.shopName,
+              address: s.address,
+              phone: s.phone,
             ),
-          ],
+            bottomNavigationBar: StickyActionBar(
+              primaryLabel: l10n.save,
+              onPrimary: () => _save(context),
+            ),
+            children: [
+              ShopInfoForm(
+                key: _formKey,
+                initialShopName: s.shopName,
+                initialAddress: s.address,
+                initialPhone: s.phone,
+                initialTaxId: s.taxId,
+                onSave: (values) {
+                  cubit.updateField(
+                    (settings) => settings.copyWith(
+                      shopName: values.shopName,
+                      address: values.address,
+                      phone: values.phone,
+                      taxId: values.taxId,
+                    ),
+                  );
+                  if (!context.mounted) return;
+                  AppSnackBar.success(context, l10n.settingsSaved);
+                },
+              ),
+            ],
+          ),
         );
       },
     );

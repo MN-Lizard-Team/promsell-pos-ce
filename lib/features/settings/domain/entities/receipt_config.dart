@@ -10,7 +10,7 @@ class ReceiptConfig extends Equatable {
     this.showPostSalePreview = true,
   });
 
-  /// Stored for future PDF paper size; UI hidden until PDF honors it.
+  /// Paper size for PDF/preview: `58mm` | `80mm` (default) | `A4`.
   final String receiptSize;
   final String receiptPreviewStyle;
   final String receiptNote;

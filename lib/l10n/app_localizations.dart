@@ -137,13 +137,13 @@ abstract class AppLocalizations {
   /// No description provided for @navHistory.
   ///
   /// In th, this message translates to:
-  /// **'ประวัติ'**
+  /// **'ประวัติการขาย'**
   String get navHistory;
 
   /// No description provided for @navReport.
   ///
   /// In th, this message translates to:
-  /// **'รายงาน'**
+  /// **'สรุปยอด'**
   String get navReport;
 
   /// No description provided for @navSettings.
@@ -278,6 +278,30 @@ abstract class AppLocalizations {
   /// **'บันทึกการขายเรียบร้อย'**
   String get saleSavedSuccess;
 
+  /// No description provided for @saleSuccessTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ชำระเงินสำเร็จ'**
+  String get saleSuccessTitle;
+
+  /// No description provided for @saleSuccessSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ใบเสร็จ #{number}'**
+  String saleSuccessSubtitle(String number);
+
+  /// No description provided for @changeDue.
+  ///
+  /// In th, this message translates to:
+  /// **'เงินทอน'**
+  String get changeDue;
+
+  /// No description provided for @nextSale.
+  ///
+  /// In th, this message translates to:
+  /// **'ขายบิลถัดไป'**
+  String get nextSale;
+
   /// No description provided for @productAddedToCart.
   ///
   /// In th, this message translates to:
@@ -407,8 +431,26 @@ abstract class AppLocalizations {
   /// No description provided for @searchProducts.
   ///
   /// In th, this message translates to:
-  /// **'ค้นหาสินค้า...'**
+  /// **'ค้นหาสินค้า บาร์โค้ด และ อื่นๆ...'**
   String get searchProducts;
+
+  /// No description provided for @searchProductsHint.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อค้นหาสินค้า บาร์โค้ด และอื่นๆ...'**
+  String get searchProductsHint;
+
+  /// No description provided for @tapToSearch.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อค้นหา'**
+  String get tapToSearch;
+
+  /// No description provided for @searchActive.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังค้นหา'**
+  String get searchActive;
 
   /// No description provided for @recentSearches.
   ///
@@ -422,11 +464,53 @@ abstract class AppLocalizations {
   /// **'ยังไม่มีสินค้า'**
   String get noProductsYet;
 
+  /// No description provided for @noProductsYetHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มสินค้าชิ้นแรกของคุณหรือนำเข้าจาก CSV เพื่อเริ่มต้น'**
+  String get noProductsYetHint;
+
   /// No description provided for @errorOccurred.
   ///
   /// In th, this message translates to:
   /// **'เกิดข้อผิดพลาด'**
   String get errorOccurred;
+
+  /// No description provided for @receiptPrintFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'การพิมพ์ล้มเหลว กรุณาตรวจสอบเครื่องพิมพ์แล้วลองอีกครั้ง'**
+  String get receiptPrintFailed;
+
+  /// No description provided for @receiptShareFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถแชร์ใบเสร็จได้ กรุณาลองอีกครั้ง'**
+  String get receiptShareFailed;
+
+  /// No description provided for @receiptPdfFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถสร้าง PDF ใบเสร็จได้'**
+  String get receiptPdfFailed;
+
+  /// No description provided for @receiptPrintSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'พิมพ์ใบเสร็จสำเร็จ'**
+  String get receiptPrintSuccess;
+
+  /// No description provided for @receiptShareSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'แชร์ใบเสร็จสำเร็จ'**
+  String get receiptShareSuccess;
+
+  /// No description provided for @receiptTaxInvoice.
+  ///
+  /// In th, this message translates to:
+  /// **'ใบกำกับภาษี'**
+  String get receiptTaxInvoice;
 
   /// No description provided for @retry.
   ///
@@ -553,6 +637,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ชื่อสินค้า *'**
   String get productNameLabel;
+
+  /// No description provided for @productNameHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น อเมริกาโน้เย็น แกรนด์'**
+  String get productNameHint;
 
   /// No description provided for @productNameRequired.
   ///
@@ -698,11 +788,23 @@ abstract class AppLocalizations {
   /// **'บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น'**
   String get invalidBarcode;
 
+  /// No description provided for @invalidBarcodeFormat.
+  ///
+  /// In th, this message translates to:
+  /// **'บาร์โค้ดต้องมีแค่ตัวอักษรและตัวเลข (ห้ามมีช่องว่าง ขีดกลาง หรืออักขระพิเศษ)'**
+  String get invalidBarcodeFormat;
+
   /// No description provided for @categoryLabel.
   ///
   /// In th, this message translates to:
   /// **'หมวดหมู่'**
   String get categoryLabel;
+
+  /// No description provided for @categoryHelper.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่บังคับ — ช่วยจัดหมวดหมู่สินค้าใน POS'**
+  String get categoryHelper;
 
   /// No description provided for @showProduct.
   ///
@@ -745,6 +847,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ลบสินค้าแล้ว'**
   String get productDeleted;
+
+  /// No description provided for @productDeletedWithName.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบ {name} แล้ว'**
+  String productDeletedWithName(String name);
+
+  /// No description provided for @productDeletedShort.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบสินค้าแล้ว'**
+  String get productDeletedShort;
 
   /// No description provided for @stockUpdated.
   ///
@@ -806,10 +920,16 @@ abstract class AppLocalizations {
   /// **'ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…'**
   String get searchHistoryHint;
 
+  /// No description provided for @searchSales.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหายอดขาย'**
+  String get searchSales;
+
   /// No description provided for @noSearchResults.
   ///
   /// In th, this message translates to:
-  /// **'ไม่พบการตั้งค่า'**
+  /// **'ไม่พบรายการขาย'**
   String get noSearchResults;
 
   /// No description provided for @noSalesYet.
@@ -817,6 +937,42 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ยังไม่มีรายการขาย'**
   String get noSalesYet;
+
+  /// No description provided for @noSalesInRange.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีรายการขายในช่วงวันที่ที่เลือก'**
+  String get noSalesInRange;
+
+  /// No description provided for @changeDateRange.
+  ///
+  /// In th, this message translates to:
+  /// **'เปลี่ยนช่วงวันที่'**
+  String get changeDateRange;
+
+  /// No description provided for @searchResultsCount.
+  ///
+  /// In th, this message translates to:
+  /// **'{n} รายการ'**
+  String searchResultsCount(int n);
+
+  /// No description provided for @noResultsInDateRange.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบในช่วงวันที่นี้ ลองเปลี่ยนช่วงวันที่'**
+  String get noResultsInDateRange;
+
+  /// No description provided for @searchingInRange.
+  ///
+  /// In th, this message translates to:
+  /// **'ค้นหาในช่วง: {range}'**
+  String searchingInRange(Object range);
+
+  /// No description provided for @tapToExpandHint.
+  ///
+  /// In th, this message translates to:
+  /// **'แตะเพื่อดูรายละเอียดเพิ่มเติม'**
+  String get tapToExpandHint;
 
   /// No description provided for @noDailyClosesYet.
   ///
@@ -833,7 +989,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportTitle.
   ///
   /// In th, this message translates to:
-  /// **'รายงาน'**
+  /// **'สรุปยอดขาย'**
   String get reportTitle;
 
   /// No description provided for @totalRevenue.
@@ -1034,6 +1190,12 @@ abstract class AppLocalizations {
   /// **'เบอร์โทรศัพท์'**
   String get settingsPhone;
 
+  /// No description provided for @settingsTaxId.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขประจำตัวผู้เสียภาษี'**
+  String get settingsTaxId;
+
   /// No description provided for @settingsSales.
   ///
   /// In th, this message translates to:
@@ -1124,6 +1286,18 @@ abstract class AppLocalizations {
   /// **'เบอร์โทรศัพท์ไม่ถูกต้อง'**
   String get phoneInvalid;
 
+  /// No description provided for @taxIdInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก'**
+  String get taxIdInvalid;
+
+  /// No description provided for @taxIdChecksumInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง กรุณาตรวจสอบเลข 13 หลักอีกครั้ง'**
+  String get taxIdChecksumInvalid;
+
   /// No description provided for @shopInfoEmptyPreview.
   ///
   /// In th, this message translates to:
@@ -1153,6 +1327,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'แชร์ใบเสร็จ'**
   String get shareReceipt;
+
+  /// No description provided for @reprintReceipt.
+  ///
+  /// In th, this message translates to:
+  /// **'พิมพ์ใบเสร็จอีกครั้ง'**
+  String get reprintReceipt;
+
+  /// No description provided for @shareReceiptCopy.
+  ///
+  /// In th, this message translates to:
+  /// **'แชร์สำเนา'**
+  String get shareReceiptCopy;
 
   /// No description provided for @receiptLabelReceipt.
   ///
@@ -1267,6 +1453,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ตัวอย่างใบเสร็จ'**
   String get receiptPreview;
+
+  /// No description provided for @viewReceipt.
+  ///
+  /// In th, this message translates to:
+  /// **'ดูใบเสร็จ'**
+  String get viewReceipt;
+
+  /// No description provided for @hideReceipt.
+  ///
+  /// In th, this message translates to:
+  /// **'ซ่อนใบเสร็จ'**
+  String get hideReceipt;
 
   /// No description provided for @vatModeNone.
   ///
@@ -1538,6 +1736,12 @@ abstract class AppLocalizations {
   /// **'อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้'**
   String get allowOversellHint;
 
+  /// No description provided for @stockBlocked.
+  ///
+  /// In th, this message translates to:
+  /// **'บล็อค'**
+  String get stockBlocked;
+
   /// No description provided for @lowStockThreshold.
   ///
   /// In th, this message translates to:
@@ -1607,7 +1811,7 @@ abstract class AppLocalizations {
   /// No description provided for @cartDiscount.
   ///
   /// In th, this message translates to:
-  /// **'ส่วนลดทั้งบิล'**
+  /// **'ส่วนลดท้ายบิล'**
   String get cartDiscount;
 
   /// No description provided for @applyCartDiscount.
@@ -1802,6 +2006,18 @@ abstract class AppLocalizations {
   /// **'ใช้งานอยู่'**
   String get activeDraftLabel;
 
+  /// No description provided for @openBillsSectionSelling.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังขาย'**
+  String get openBillsSectionSelling;
+
+  /// No description provided for @openBillsSectionParked.
+  ///
+  /// In th, this message translates to:
+  /// **'พักไว้'**
+  String get openBillsSectionParked;
+
   /// No description provided for @draftNameHint.
   ///
   /// In th, this message translates to:
@@ -1847,7 +2063,7 @@ abstract class AppLocalizations {
   /// No description provided for @untitledDraft.
   ///
   /// In th, this message translates to:
-  /// **'บิล'**
+  /// **'บิลไม่มีชื่อ'**
   String get untitledDraft;
 
   /// No description provided for @noMatchingItems.
@@ -1865,13 +2081,13 @@ abstract class AppLocalizations {
   /// No description provided for @noSavedBills.
   ///
   /// In th, this message translates to:
-  /// **'ยังไม่มีบิลที่บันทึก'**
+  /// **'ยังไม่มีบิลเปิด'**
   String get noSavedBills;
 
   /// No description provided for @noSavedBillsHint.
   ///
   /// In th, this message translates to:
-  /// **'พักบิลจากหน้าขายเพื่อเก็บไว้ที่นี่'**
+  /// **'พักบิลจากหน้าขายเพื่อเปิดที่นี่'**
   String get noSavedBillsHint;
 
   /// No description provided for @groupView.
@@ -1957,12 +2173,6 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'{d} วันที่แล้ว'**
   String timeAgoDays(int d);
-
-  /// No description provided for @searchResultsCount.
-  ///
-  /// In th, this message translates to:
-  /// **'{n} รายการ'**
-  String searchResultsCount(int n);
 
   /// No description provided for @confirmPaymentAmount.
   ///
@@ -2306,6 +2516,12 @@ abstract class AppLocalizations {
   /// **'ขนาดใบเสร็จ'**
   String get settingsReceiptSize;
 
+  /// No description provided for @receiptSize58mm.
+  ///
+  /// In th, this message translates to:
+  /// **'58mm (กระดาษความร้อน)'**
+  String get receiptSize58mm;
+
   /// No description provided for @receiptSize80mm.
   ///
   /// In th, this message translates to:
@@ -2317,6 +2533,24 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'A4'**
   String get receiptSizeA4;
+
+  /// No description provided for @receiptSize58mmDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'กระทัดรัด — เครื่องพิมพ์พกพาขนาดเล็ก'**
+  String get receiptSize58mmDesc;
+
+  /// No description provided for @receiptSize80mmDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'มาตรฐาน — เครื่องพิมพ์ความร้อนทั่วไป'**
+  String get receiptSize80mmDesc;
+
+  /// No description provided for @receiptSizeA4Desc.
+  ///
+  /// In th, this message translates to:
+  /// **'เอกสาร — สำหรับส่งอีเมล/ส่งออก PDF'**
+  String get receiptSizeA4Desc;
 
   /// No description provided for @settingsMaxDrafts.
   ///
@@ -2768,6 +3002,18 @@ abstract class AppLocalizations {
   /// **'ยืนยัน'**
   String get confirm;
 
+  /// No description provided for @basePrice.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาหลัก'**
+  String get basePrice;
+
+  /// No description provided for @optionsLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวเลือก'**
+  String get optionsLabel;
+
   /// No description provided for @dbHealthTitle.
   ///
   /// In th, this message translates to:
@@ -2833,6 +3079,36 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ข้อมูลร้าน'**
   String get onboardingShopInfoTitle;
+
+  /// No description provided for @onboardingShopInfoSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลนี้จะแสดงบนใบเสร็จของร้าน'**
+  String get onboardingShopInfoSubtitle;
+
+  /// No description provided for @onboardingRequiredLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'จำเป็น'**
+  String get onboardingRequiredLabel;
+
+  /// No description provided for @onboardingOptionalLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่บังคับ'**
+  String get onboardingOptionalLabel;
+
+  /// No description provided for @onboardingReceiptPreviewTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอย่างหัวใบเสร็จ'**
+  String get onboardingReceiptPreviewTitle;
+
+  /// No description provided for @onboardingReceiptPreviewEmpty.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อร้านจะแสดงตรงนี้'**
+  String get onboardingReceiptPreviewEmpty;
 
   /// No description provided for @onboardingShopNameLabel.
   ///
@@ -3050,6 +3326,132 @@ abstract class AppLocalizations {
   /// **'แยกจากราคา'**
   String get onboardingExclusive;
 
+  /// No description provided for @onboardingTrustOffline.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้งานได้แม้ไม่มีอินเทอร์เน็ต'**
+  String get onboardingTrustOffline;
+
+  /// No description provided for @onboardingTrustLocal.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลอยู่บนอุปกรณ์นี้'**
+  String get onboardingTrustLocal;
+
+  /// No description provided for @onboardingTrustEncrypted.
+  ///
+  /// In th, this message translates to:
+  /// **'พื้นที่จัดเก็บเข้ารหัส'**
+  String get onboardingTrustEncrypted;
+
+  /// No description provided for @onboardingStepOf.
+  ///
+  /// In th, this message translates to:
+  /// **'ขั้นตอนที่ {step} จาก {total}'**
+  String onboardingStepOf(int step, int total);
+
+  /// No description provided for @onboardingVatNoneHelp.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีการเพิ่ม VAT ในการขาย'**
+  String get onboardingVatNoneHelp;
+
+  /// No description provided for @onboardingVatInclusiveHelp.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาที่แสดงรวม VAT แล้ว'**
+  String get onboardingVatInclusiveHelp;
+
+  /// No description provided for @onboardingVatExclusiveHelp.
+  ///
+  /// In th, this message translates to:
+  /// **'ระบบจะบวก VAT เพิ่มจากราคาที่แสดง'**
+  String get onboardingVatExclusiveHelp;
+
+  /// No description provided for @onboardingPromptPaySecurity.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่บังคับ ข้อมูลจะเก็บไว้บนอุปกรณ์นี้และใช้สร้าง QR รับเงิน'**
+  String get onboardingPromptPaySecurity;
+
+  /// No description provided for @onboardingDateExample.
+  ///
+  /// In th, this message translates to:
+  /// **'ตัวอย่าง: {date}'**
+  String onboardingDateExample(String date);
+
+  /// No description provided for @onboardingCurrencyBaht.
+  ///
+  /// In th, this message translates to:
+  /// **'฿ บาท'**
+  String get onboardingCurrencyBaht;
+
+  /// No description provided for @onboardingCurrencyUsd.
+  ///
+  /// In th, this message translates to:
+  /// **'\$ ดอลลาร์'**
+  String get onboardingCurrencyUsd;
+
+  /// No description provided for @onboardingCurrencyEur.
+  ///
+  /// In th, this message translates to:
+  /// **'€ ยูโร'**
+  String get onboardingCurrencyEur;
+
+  /// No description provided for @onboardingCurrencyJpy.
+  ///
+  /// In th, this message translates to:
+  /// **'¥ เยน'**
+  String get onboardingCurrencyJpy;
+
+  /// No description provided for @onboardingReadySummary.
+  ///
+  /// In th, this message translates to:
+  /// **'พื้นที่ร้านของคุณพร้อมสำหรับการขายแรกแล้ว'**
+  String get onboardingReadySummary;
+
+  /// No description provided for @onboardingLocalSecuritySummary.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลถูกเก็บไว้ในเครื่องและได้รับการปกป้องบนอุปกรณ์นี้'**
+  String get onboardingLocalSecuritySummary;
+
+  /// No description provided for @onboardingSetupComplete.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งค่าเรียบร้อย'**
+  String get onboardingSetupComplete;
+
+  /// No description provided for @onboardingSecurityProtected.
+  ///
+  /// In th, this message translates to:
+  /// **'ปกป้องด้วย PIN ร้าน'**
+  String get onboardingSecurityProtected;
+
+  /// No description provided for @onboardingFirstSaleHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ขั้นตอนถัดไป: เริ่มขายรายการแรกของคุณ'**
+  String get onboardingFirstSaleHint;
+
+  /// No description provided for @onboardingSummaryStore.
+  ///
+  /// In th, this message translates to:
+  /// **'ร้านค้า'**
+  String get onboardingSummaryStore;
+
+  /// No description provided for @onboardingSummaryCurrency.
+  ///
+  /// In th, this message translates to:
+  /// **'สกุลเงิน'**
+  String get onboardingSummaryCurrency;
+
+  /// No description provided for @onboardingSummaryTax.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาษี'**
+  String get onboardingSummaryTax;
+
   /// No description provided for @dailyCloseLoadError.
   ///
   /// In th, this message translates to:
@@ -3151,6 +3553,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'081-234-5678'**
   String get phoneHint;
+
+  /// No description provided for @taxIdHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขประจำตัวผู้เสียภาษี 13 หลัก (เช่น 1234567890123)'**
+  String get taxIdHint;
 
   /// No description provided for @categoryManagementTitle.
   ///
@@ -3296,11 +3704,23 @@ abstract class AppLocalizations {
   /// **'ไม่มีสินค้าในหมวดหมู่นี้'**
   String get noProductsInCategory;
 
+  /// No description provided for @noSearchResultsHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ลองใช้คำค้นหาอื่นหรือตรวจสอบการสะกด'**
+  String get noSearchResultsHint;
+
   /// No description provided for @clearFilters.
   ///
   /// In th, this message translates to:
   /// **'ล้างตัวกรอง'**
   String get clearFilters;
+
+  /// No description provided for @selected.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกแล้ว'**
+  String get selected;
 
   /// No description provided for @startTypingToSearch.
   ///
@@ -3373,6 +3793,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'บาร์โค้ด'**
   String get barcodeLabel;
+
+  /// No description provided for @barcodeHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น 8850012345678'**
+  String get barcodeHint;
 
   /// No description provided for @costLabel.
   ///
@@ -3607,6 +4033,24 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'สร้างบาร์โค้ดไม่สำเร็จ'**
   String get barcodeGenerationError;
+
+  /// No description provided for @generateSku.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้าง SKU'**
+  String get generateSku;
+
+  /// No description provided for @skuGenerated.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้าง SKU แล้ว'**
+  String get skuGenerated;
+
+  /// No description provided for @skuGenerationError.
+  ///
+  /// In th, this message translates to:
+  /// **'สร้าง SKU ไม่สำเร็จ'**
+  String get skuGenerationError;
 
   /// No description provided for @batchGenerateBarcodes.
   ///
@@ -3875,7 +4319,7 @@ abstract class AppLocalizations {
   /// No description provided for @skuHelper.
   ///
   /// In th, this message translates to:
-  /// **'รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SHIRT-RED-L'**
+  /// **'รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SKU00001 หรือ SHIRT-RED-L ถ้าไม่มี ให้แตะ สร้าง SKU'**
   String get skuHelper;
 
   /// No description provided for @imagePicked.
@@ -4195,6 +4639,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ราคาขาย'**
   String get sellingPrice;
+
+  /// No description provided for @priceHint.
+  ///
+  /// In th, this message translates to:
+  /// **'เช่น 45.00'**
+  String get priceHint;
 
   /// No description provided for @profit.
   ///
@@ -4571,7 +5021,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterReset.
   ///
   /// In th, this message translates to:
-  /// **'รีเซ็ต'**
+  /// **'ล้าง'**
   String get filterReset;
 
   /// No description provided for @filterShowResults.
@@ -4586,10 +5036,28 @@ abstract class AppLocalizations {
   /// **'ดูผลลัพธ์ ({count})'**
   String filterShowResultsCount(int count);
 
+  /// No description provided for @filterDone.
+  ///
+  /// In th, this message translates to:
+  /// **'เสร็จ'**
+  String get filterDone;
+
+  /// No description provided for @filterRemainingCount.
+  ///
+  /// In th, this message translates to:
+  /// **'เหลือ {count} รายการ'**
+  String filterRemainingCount(int count);
+
+  /// No description provided for @filterPriceCustom.
+  ///
+  /// In th, this message translates to:
+  /// **'กำหนดเอง'**
+  String get filterPriceCustom;
+
   /// No description provided for @filterPriceRange.
   ///
   /// In th, this message translates to:
-  /// **'ช่วงราคา'**
+  /// **'ราคา'**
   String get filterPriceRange;
 
   /// No description provided for @filterPriceMin.
@@ -4603,6 +5071,72 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'สูงสุด'**
   String get filterPriceMax;
+
+  /// No description provided for @filterCategoryChipHint.
+  ///
+  /// In th, this message translates to:
+  /// **'หมวดใช้แถบด้านบน'**
+  String get filterCategoryChipHint;
+
+  /// No description provided for @filterPriceOrderHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ต่ำสุดต้อง ≤ สูงสุด'**
+  String get filterPriceOrderHint;
+
+  /// No description provided for @filterPriceQuickUnder50.
+  ///
+  /// In th, this message translates to:
+  /// **'≤ {currency}50'**
+  String filterPriceQuickUnder50(String currency);
+
+  /// No description provided for @filterPriceQuick51to100.
+  ///
+  /// In th, this message translates to:
+  /// **'{currency}51–100'**
+  String filterPriceQuick51to100(String currency);
+
+  /// No description provided for @filterPriceQuick101to200.
+  ///
+  /// In th, this message translates to:
+  /// **'{currency}101–200'**
+  String filterPriceQuick101to200(String currency);
+
+  /// No description provided for @filterPriceQuickOver200.
+  ///
+  /// In th, this message translates to:
+  /// **'≥ {currency}201'**
+  String filterPriceQuickOver200(String currency);
+
+  /// No description provided for @sortChipDefault.
+  ///
+  /// In th, this message translates to:
+  /// **'ปกติ'**
+  String get sortChipDefault;
+
+  /// No description provided for @sortChipName.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อ'**
+  String get sortChipName;
+
+  /// No description provided for @sortChipPriceAsc.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคา ↑'**
+  String get sortChipPriceAsc;
+
+  /// No description provided for @sortChipPriceDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคา ↓'**
+  String get sortChipPriceDesc;
+
+  /// No description provided for @sortChipStock.
+  ///
+  /// In th, this message translates to:
+  /// **'สต็อก'**
+  String get sortChipStock;
 
   /// No description provided for @filterActiveCount.
   ///
@@ -4711,6 +5245,120 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ค่าบริการ'**
   String get serviceCharge;
+
+  /// No description provided for @averageTransactionValue.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดเฉลี่ยต่อบิล'**
+  String get averageTransactionValue;
+
+  /// No description provided for @grossRevenue.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขายรวมก่อนหัก void'**
+  String get grossRevenue;
+
+  /// No description provided for @promotionDiscount.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนลดโปรโมชั่น'**
+  String get promotionDiscount;
+
+  /// No description provided for @orderTypeBreakdown.
+  ///
+  /// In th, this message translates to:
+  /// **'ประเภทคำสั่งซื้อ'**
+  String get orderTypeBreakdown;
+
+  /// No description provided for @orderChannelBreakdown.
+  ///
+  /// In th, this message translates to:
+  /// **'ช่องทางการสั่งซื้อ'**
+  String get orderChannelBreakdown;
+
+  /// No description provided for @peakHours.
+  ///
+  /// In th, this message translates to:
+  /// **'ช่วงเวลาขายดี'**
+  String get peakHours;
+
+  /// No description provided for @uniqueCustomers.
+  ///
+  /// In th, this message translates to:
+  /// **'ลูกค้าไม่ซ้ำ'**
+  String get uniqueCustomers;
+
+  /// No description provided for @repeatCustomers.
+  ///
+  /// In th, this message translates to:
+  /// **'ลูกค้าซื้อซ้ำ'**
+  String get repeatCustomers;
+
+  /// No description provided for @promotionOrders.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลที่ใช้โปรโมชั่น'**
+  String get promotionOrders;
+
+  /// No description provided for @voidReasons.
+  ///
+  /// In th, this message translates to:
+  /// **'เหตุผลที่ยกเลิก'**
+  String get voidReasons;
+
+  /// No description provided for @profitability.
+  ///
+  /// In th, this message translates to:
+  /// **'ความคุ้มทุน'**
+  String get profitability;
+
+  /// No description provided for @grossProfit.
+  ///
+  /// In th, this message translates to:
+  /// **'กำไรขั้นต้น'**
+  String get grossProfit;
+
+  /// No description provided for @profitMargin.
+  ///
+  /// In th, this message translates to:
+  /// **'อัตรากำไร'**
+  String get profitMargin;
+
+  /// No description provided for @totalCost.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้นทุนรวม'**
+  String get totalCost;
+
+  /// No description provided for @costCoverage.
+  ///
+  /// In th, this message translates to:
+  /// **'ความครอบคลุมต้นทุน'**
+  String get costCoverage;
+
+  /// No description provided for @costCoverageIncomplete.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้อมูลต้นทุนไม่ครบ ({withCost}/{total} รายการ)'**
+  String costCoverageIncomplete(Object total, Object withCost);
+
+  /// No description provided for @costCoverageUnavailable.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่มีข้อมูลต้นทุน'**
+  String get costCoverageUnavailable;
+
+  /// No description provided for @insights.
+  ///
+  /// In th, this message translates to:
+  /// **'ภาพรวม'**
+  String get insights;
+
+  /// No description provided for @orderBreakdown.
+  ///
+  /// In th, this message translates to:
+  /// **'การกระจายคำสั่งซื้อ'**
+  String get orderBreakdown;
 
   /// No description provided for @tableNumber.
   ///
@@ -4874,6 +5522,12 @@ abstract class AppLocalizations {
   /// **'ชื่อกลุ่ม'**
   String get optionGroupName;
 
+  /// No description provided for @optionGroupNameRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกชื่อกลุ่ม'**
+  String get optionGroupNameRequired;
+
   /// No description provided for @optionGroupNameHint.
   ///
   /// In th, this message translates to:
@@ -4945,6 +5599,36 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ราคาเพิ่มเติม (สามารถเป็น 0)'**
   String get optionPriceDeltaHint;
+
+  /// No description provided for @optionPriceDeltaHelper.
+  ///
+  /// In th, this message translates to:
+  /// **'เพิ่มจากราคาหลัก เช่น 5.00 จะเพิ่ม 5.00 ให้ราคาสินค้า'**
+  String get optionPriceDeltaHelper;
+
+  /// No description provided for @optionNameTooLong.
+  ///
+  /// In th, this message translates to:
+  /// **'ชื่อตัวเลือกต้องไม่เกิน 100 ตัวอักษร'**
+  String get optionNameTooLong;
+
+  /// No description provided for @optionPriceInvalid.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาต้องเป็นตัวเลขที่ถูกต้อง'**
+  String get optionPriceInvalid;
+
+  /// No description provided for @optionPriceTooManyDecimals.
+  ///
+  /// In th, this message translates to:
+  /// **'ราคาต้องมีไม่เกิน 2 ตำแหน่งทศนิยม'**
+  String get optionPriceTooManyDecimals;
+
+  /// No description provided for @optionPriceTooLarge.
+  ///
+  /// In th, this message translates to:
+  /// **'การปรับราคาใหญ่เกินไป (สูงสุด 999999.99)'**
+  String get optionPriceTooLarge;
 
   /// No description provided for @deleteOptionGroup.
   ///
@@ -5678,6 +6362,12 @@ abstract class AppLocalizations {
   /// **'รูปแบบไฟล์ไม่ถูกต้อง'**
   String get csvInvalidFormat;
 
+  /// No description provided for @csvInvalidEncoding.
+  ///
+  /// In th, this message translates to:
+  /// **'ไฟล์ไม่ใช่ UTF-8 ที่ถูกต้อง กรุณาบันทึก CSV เป็น UTF-8 แล้วลองอีกครั้ง'**
+  String get csvInvalidEncoding;
+
   /// No description provided for @csvFileTooLarge.
   ///
   /// In th, this message translates to:
@@ -6062,12 +6752,6 @@ abstract class AppLocalizations {
   /// **'ข้อมูลเพิ่มเติม'**
   String get productFormSectionExtra;
 
-  /// No description provided for @profitMargin.
-  ///
-  /// In th, this message translates to:
-  /// **'อัตรากำไร'**
-  String get profitMargin;
-
   /// No description provided for @notSpecified.
   ///
   /// In th, this message translates to:
@@ -6259,6 +6943,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'รหัสปัจจุบัน: {code} — รหัสใหม่จะแทนที่ของเดิม'**
   String barcodeReplaceMessage(String code);
+
+  /// No description provided for @skuReplaceTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'แทนที่ SKU?'**
+  String get skuReplaceTitle;
+
+  /// No description provided for @skuReplaceMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสปัจจุบัน: {code} — รหัสใหม่จะแทนที่ของเดิม'**
+  String skuReplaceMessage(String code);
 
   /// No description provided for @barcodePreviewEmpty.
   ///
@@ -6530,6 +7226,126 @@ abstract class AppLocalizations {
   /// **'กำหนดเอง'**
   String get datePresetCustom;
 
+  /// No description provided for @dateFilterSheetTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกช่วงวันที่'**
+  String get dateFilterSheetTitle;
+
+  /// No description provided for @dateFilterSheetSubtitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกหมวดหมู่ที่กำหนดไว้ หรือกำหนดช่วงวันที่เอง'**
+  String get dateFilterSheetSubtitle;
+
+  /// No description provided for @dateFilterCategoryTile.
+  ///
+  /// In th, this message translates to:
+  /// **'หมวดหมู่'**
+  String get dateFilterCategoryTile;
+
+  /// No description provided for @dateFilterCategoryDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'วันนี้ • เมื่อวาน • 7 วัน • เดือนนี้'**
+  String get dateFilterCategoryDesc;
+
+  /// No description provided for @dateFilterCustomTile.
+  ///
+  /// In th, this message translates to:
+  /// **'กำหนดเอง'**
+  String get dateFilterCustomTile;
+
+  /// No description provided for @dateFilterCustomDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกวันเริ่มต้นและวันสิ้นสุดเอง'**
+  String get dateFilterCustomDesc;
+
+  /// No description provided for @dateFilterCustomPick.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกช่วงวันที่'**
+  String get dateFilterCustomPick;
+
+  /// No description provided for @dateFilterCustomChange.
+  ///
+  /// In th, this message translates to:
+  /// **'เปลี่ยนช่วงวันที่'**
+  String get dateFilterCustomChange;
+
+  /// No description provided for @dateFilterCustomApply.
+  ///
+  /// In th, this message translates to:
+  /// **'ใช้ช่วงนี้'**
+  String get dateFilterCustomApply;
+
+  /// No description provided for @dateFilterCustomCurrent.
+  ///
+  /// In th, this message translates to:
+  /// **'ช่วงที่เลือก'**
+  String get dateFilterCustomCurrent;
+
+  /// No description provided for @dateFilterPickYear.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกปี'**
+  String get dateFilterPickYear;
+
+  /// No description provided for @dateFilterPickMonth.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกเดือน'**
+  String get dateFilterPickMonth;
+
+  /// No description provided for @dateFilterSelectYear.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกปีนี้'**
+  String get dateFilterSelectYear;
+
+  /// No description provided for @dateFilterSelectMonth.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกเดือนนี้'**
+  String get dateFilterSelectMonth;
+
+  /// No description provided for @dateFilterThisYear.
+  ///
+  /// In th, this message translates to:
+  /// **'ปีนี้'**
+  String get dateFilterThisYear;
+
+  /// No description provided for @dateFilterLastYear.
+  ///
+  /// In th, this message translates to:
+  /// **'ปีก่อน'**
+  String get dateFilterLastYear;
+
+  /// No description provided for @dateFilterThisMonth.
+  ///
+  /// In th, this message translates to:
+  /// **'เดือนนี้'**
+  String get dateFilterThisMonth;
+
+  /// No description provided for @dateFilterUseToday.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งเป็นวันนี้'**
+  String get dateFilterUseToday;
+
+  /// No description provided for @dateFilterTipTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เกร็ดความรู้'**
+  String get dateFilterTipTitle;
+
+  /// No description provided for @dateFilterTipBody.
+  ///
+  /// In th, this message translates to:
+  /// **'หมวดหมู่เหมาะกับดูสรุปรายวัน/รายสัปดาห์ ส่วนกำหนดเองเหมาะกับการเปรียบเทียบช่วงเวลาแบบยืดหยุ่น'**
+  String get dateFilterTipBody;
+
   /// No description provided for @reportAverage.
   ///
   /// In th, this message translates to:
@@ -6722,6 +7538,24 @@ abstract class AppLocalizations {
   /// **'ไม่มียอดขายในช่วงนี้'**
   String get reportNoSalesInPeriod;
 
+  /// No description provided for @reportEmptyDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'ลองเปลี่ยนช่วงวันที่ หรือเริ่มขายสินค้าเพื่อดูสรุปยอดที่นี่'**
+  String get reportEmptyDesc;
+
+  /// No description provided for @reportErrorDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่สามารถโหลดข้อมูลได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง'**
+  String get reportErrorDesc;
+
+  /// No description provided for @reportLoadingDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังเรียกข้อมูลยอดขาย...'**
+  String get reportLoadingDesc;
+
   /// No description provided for @currentBill.
   ///
   /// In th, this message translates to:
@@ -6733,6 +7567,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'บิล ({count})'**
   String currentBillWithCount(int count);
+
+  /// No description provided for @saleBillAt.
+  ///
+  /// In th, this message translates to:
+  /// **'บิลที่ {count}'**
+  String saleBillAt(int count);
+
+  /// No description provided for @productCountAt.
+  ///
+  /// In th, this message translates to:
+  /// **'สินค้า {count} รายการ'**
+  String productCountAt(int count);
 
   /// No description provided for @viewBill.
   ///
@@ -6818,6 +7664,12 @@ abstract class AppLocalizations {
   /// **'ใบเสร็จการขาย — ไม่ใช่ใบกำกับภาษี'**
   String get receiptNotTaxInvoice;
 
+  /// No description provided for @receiptTaxId.
+  ///
+  /// In th, this message translates to:
+  /// **'เลขประจำตัวผู้เสียภาษี'**
+  String get receiptTaxId;
+
   /// No description provided for @receiptReprint.
   ///
   /// In th, this message translates to:
@@ -6835,6 +7687,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'พักบิล'**
   String get parkBill;
+
+  /// No description provided for @parkBillConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'พักบิลนี้?'**
+  String get parkBillConfirmTitle;
+
+  /// No description provided for @parkBillConfirmMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'บันทึกตะกร้านี้ แล้วเริ่มบิลว่างให้ลูกค้าถัดไป — เปิดบิลที่พักได้จากรายการบิลเปิด'**
+  String get parkBillConfirmMessage;
 
   /// No description provided for @parkBillNameTitle.
   ///
@@ -7231,6 +8095,120 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'พยายามผิดหลายครั้ง ลองใหม่ใน {seconds} วินาที'**
   String appLockLockedOut(int seconds);
+
+  /// No description provided for @onboardingStorePinTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งรหัส PIN ร้าน'**
+  String get onboardingStorePinTitle;
+
+  /// No description provided for @onboardingStorePinBody.
+  ///
+  /// In th, this message translates to:
+  /// **'จำเป็นสำหรับยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (อย่างน้อย {min} หลัก) เก็บไว้เอง — ไม่มีระบบกู้ PIN'**
+  String onboardingStorePinBody(int min);
+
+  /// No description provided for @onboardingStorePinRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า'**
+  String get onboardingStorePinRequired;
+
+  /// No description provided for @exportPdf.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออก PDF'**
+  String get exportPdf;
+
+  /// No description provided for @exportCsv.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออก CSV'**
+  String get exportCsv;
+
+  /// No description provided for @exportReport.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกรายงาน'**
+  String get exportReport;
+
+  /// No description provided for @exportNoData.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีข้อมูลให้ส่งออก'**
+  String get exportNoData;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกไม่สำเร็จ'**
+  String get exportFailed;
+
+  /// No description provided for @revenueTrend.
+  ///
+  /// In th, this message translates to:
+  /// **'แนวโน้มยอดขาย'**
+  String get revenueTrend;
+
+  /// No description provided for @dailyRevenue.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขายรายวัน'**
+  String get dailyRevenue;
+
+  /// No description provided for @periodComparison.
+  ///
+  /// In th, this message translates to:
+  /// **'เทียบกับช่วงก่อนหน้า'**
+  String get periodComparison;
+
+  /// No description provided for @periodChangePositive.
+  ///
+  /// In th, this message translates to:
+  /// **'+{percent}%'**
+  String periodChangePositive(String percent);
+
+  /// No description provided for @periodChangeNegative.
+  ///
+  /// In th, this message translates to:
+  /// **'{percent}%'**
+  String periodChangeNegative(String percent);
+
+  /// No description provided for @periodChangeZero.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่เปลี่ยนแปลง'**
+  String get periodChangeZero;
+
+  /// No description provided for @previousPeriod.
+  ///
+  /// In th, this message translates to:
+  /// **'ช่วงก่อนหน้า'**
+  String get previousPeriod;
+
+  /// No description provided for @chartNoData.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีข้อมูลสำหรับกราฟ'**
+  String get chartNoData;
+
+  /// No description provided for @dateRangeSeparator.
+  ///
+  /// In th, this message translates to:
+  /// **' – '**
+  String get dateRangeSeparator;
+
+  /// No description provided for @percentagePointsUnit.
+  ///
+  /// In th, this message translates to:
+  /// **'จุด'**
+  String get percentagePointsUnit;
+
+  /// No description provided for @reportSectionLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่วนรายงาน'**
+  String get reportSectionLabel;
 }
 
 class _AppLocalizationsDelegate

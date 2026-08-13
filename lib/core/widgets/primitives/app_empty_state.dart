@@ -8,6 +8,8 @@ class AppEmptyState extends StatelessWidget {
     this.message,
     this.actionLabel,
     this.onAction,
+    this.secondaryActionLabel,
+    this.onSecondaryAction,
   });
 
   final IconData icon;
@@ -15,6 +17,8 @@ class AppEmptyState extends StatelessWidget {
   final String? message;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final String? secondaryActionLabel;
+  final VoidCallback? onSecondaryAction;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +83,15 @@ class AppEmptyState extends StatelessWidget {
                   FilledButton.tonal(
                     onPressed: onAction,
                     child: Text(actionLabel!),
+                  ),
+                ],
+                if (secondaryActionLabel != null &&
+                    onSecondaryAction != null &&
+                    !compact) ...[
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: onSecondaryAction,
+                    child: Text(secondaryActionLabel!),
                   ),
                 ],
               ],

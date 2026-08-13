@@ -6,10 +6,10 @@ title Promsell POS CE — Container Diagram
 Person(merchant, "Merchant", "Shop owner / cashier")
 
 System_Boundary(app, "Promsell POS CE (Flutter App)") {
-    Container(ui, "Presentation Layer", "Flutter Widgets + BLoC/Cubit", "5-tab shell: Sale, Products, History, Report, Settings")
-    Container(domain, "Domain Layer", "Pure Dart", "Entities, Use Cases, Repository interfaces")
-    Container(data, "Data Layer", "Drift + SharedPreferences", "Repository impls, Datasources, Services")
-    ContainerDb(sqlite, "SQLite Database", "Drift ORM", "15 tables · schema v28, WAL, FK ON, UUIDv4 PKs, SQLCipher AES-256")
+    Container(ui, "Presentation Layer", "Flutter Widgets + BLoC/Cubit", "5-tab shell: Home, Products, Sale, Report, Settings")
+    Container(domain, "Domain Layer", "Dart (target: Flutter-free)", "Entities, Use Cases, Repository interfaces")
+    Container(data, "Data Layer", "Drift + SQLCipher", "Repository impls, Datasources, Services")
+    ContainerDb(sqlite, "SQLite Database", "Drift ORM", "16 tables · schema v30, WAL, FK ON, UUIDv4 PKs, SQLCipher AES-256")
     Container(pdf, "ReceiptPdfService", "pdf + printing packages", "80mm thermal PDF generation")
 }
 

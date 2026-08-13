@@ -68,7 +68,10 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
         _db.draftCarts,
       )..where((t) => t.id.equals(cartId))).write(
         DraftCartsCompanion(
-          name: name != null ? Value(name) : const Value.absent(),
+          // Null or blank → omit (do not wipe custom/auto names on autosave).
+          name: (name != null && name.trim().isNotEmpty)
+              ? Value(name.trim())
+              : const Value.absent(),
           note: Value(snapshot.note.isEmpty ? null : snapshot.note),
           cartDiscountType: Value(snapshot.cartDiscountType),
           cartDiscountValue: Value(snapshot.cartDiscountValue),
@@ -323,7 +326,12 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       return list
           .map((e) => SelectedProductOption.fromJson(e as Map<String, dynamic>))
           .toList();
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning(
+        'draft_cart_local: parseSelectedOptions failed',
+        error: e,
+        stack: stack,
+      );
       return const [];
     }
   }

@@ -2,7 +2,19 @@
 
 ## Overview
 
-This guide covers the End-to-End (E2E) integration test suite for PromSell POS CE. The E2E tests verify critical user journeys from start to finish using the robot pattern for maintainability.
+This guide covers the **device** End-to-End (E2E) suite under `integration_test/` for PromSell POS CE (robot pattern).
+
+### Prerequisites & honesty (read first)
+
+| Requirement | Notes |
+|-------------|--------|
+| **Android or iOS device/emulator** | `flutter test integration_test/` needs a supported mobile target. Desktop-only hosts fail with *No supported devices*. |
+| **Main CI** | Does **not** run device tests (format + analyze only). See [`CI.md`](./CI.md). |
+| **Money integrity gate** | Use host suite: `test/integration/` + `.github/workflows/release-trust.yml` (fail-closed). |
+| **Manual cashier evidence** | `docs/testing/RELEASE_0.9_SMOKE.md` (0.9) · `RELEASE_1.0_SMOKE.md` (1.0 plan). |
+| **Status SSOT** | [`E2E_IMPLEMENTATION_STATUS.md`](./E2E_IMPLEMENTATION_STATUS.md) — scaffold, not “always green”. |
+
+**Known risks before debugging flakes:** test DI bootstrap, UI money format vs `Money.toString()`, EN-only finders, missing `Key`s. See POST-090 **B4**.
 
 ## Test Architecture
 
@@ -19,12 +31,16 @@ integration_test/
 │   ├── sale_robot.dart        # Sale/POS interactions
 │   ├── checkout_robot.dart    # Checkout/payment interactions
 │   ├── product_robot.dart     # Product management interactions
-│   └── restaurant_robot.dart  # Restaurant mode interactions
+│   ├── restaurant_robot.dart  # Restaurant mode interactions
+│   └── report_robot.dart      # Report/dashboard interactions
 ├── sale_happy_path_test.dart
 ├── restaurant_order_test.dart
 ├── draft_recovery_test.dart
 ├── product_management_test.dart
 ├── promotion_application_test.dart
+├── report_flow_test.dart
+├── screenshot_test.dart
+├── README.md
 └── all_tests.dart             # Test entry point
 ```
 
@@ -161,8 +177,14 @@ flutter test integration_test/ --verbose
 ```
 
 ### Run in CI
+
+`ci.yml` does **not** invoke `flutter test integration_test/`. `release-trust.yml` **blocks** on `all_tests.dart --flavor dev` for tags / money-path PRs. Green `ci.yml` is not device E2E. Green trust smoke is not 1.0 Go.
+
+Money-path PRs should stay green on:
+
 ```bash
-flutter test integration_test/ --coverage
+flutter test test/integration/
+# plus the file list in .github/workflows/release-trust.yml
 ```
 
 ---
@@ -324,7 +346,7 @@ Comment out other tests to run only the failing one.
 ## Performance
 
 ### Current Execution Time
-- **All 5 journeys:** ~3-4 minutes
+- **All 7 journey/scenario files:** ~4-6 minutes
 - **Single journey:** ~30-60 seconds
 
 ### Optimization Tips
@@ -337,16 +359,10 @@ Comment out other tests to run only the failing one.
 
 ## CI Integration
 
-E2E tests run in GitHub Actions CI pipeline after unit tests:
+SSOT: [`CI.md`](./CI.md)
 
-```yaml
-- name: Run integration tests
-  run: flutter test integration_test/
-```
-
-**Current status:** `continue-on-error: true` (for initial rollout)
-
-**Target:** Remove `continue-on-error` once all tests are stable
+- `ci.yml`: format + analyze `integration_test/` — **no** device run
+- `release-trust.yml`: blocking `flutter test integration_test/all_tests.dart --flavor dev -t lib/main_dev.dart`
 
 ---
 

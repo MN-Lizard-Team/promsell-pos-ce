@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 
 import '../../../../helpers/fake_database.dart';
@@ -92,23 +93,60 @@ void main() {
       expect(product.price, Money.fromDouble(200.0));
     });
 
-    test('deleteProduct removes product', () async {
+    test('deleteProduct soft-deletes product (hidden from queries)', () async {
       final id = IdGenerator.newId();
-      await datasource.insertProduct(companion(id: id));
+      await datasource.insertProduct(companion(id: id, name: 'Gone'));
 
       await datasource.deleteProduct(id);
 
-      final product = await datasource.getProductById(id);
-      expect(product, isNull);
+      // Soft-deleted products are hidden from all active queries.
+      expect(await datasource.getProductById(id), isNull);
+      expect(
+        await datasource.getAllProducts(),
+        everyElement(isNot(predicate<Product>((p) => p.id == id))),
+      );
+      expect(
+        await datasource.getActiveProducts(),
+        everyElement(isNot(predicate<Product>((p) => p.id == id))),
+      );
+      // Row still exists in the table (soft-delete, not hard delete).
+      final raw = await (db.select(
+        db.products,
+      )..where((p) => p.id.equals(id))).getSingleOrNull();
+      expect(raw, isNotNull);
+      expect(raw!.deletedAt, isNotNull);
+      expect(raw.isActive, isFalse);
+    });
+
+    test('soft-deleted product is excluded from watchAllProducts', () async {
+      final id = IdGenerator.newId();
+      await datasource.insertProduct(companion(id: id, name: 'Hidden'));
+      await datasource.deleteProduct(id);
+
+      final rows = await datasource.watchAllProducts().first;
+      expect(rows, everyElement(isNot(predicate<Product>((p) => p.id == id))));
+    });
+
+    test('soft-deleted product is excluded from getProductByBarcode', () async {
+      final id = IdGenerator.newId();
+      await datasource.insertProduct(
+        companion(
+          id: id,
+          name: 'Scan',
+        ).copyWith(barcode: const Value('SOFTDEL001')),
+      );
+      await datasource.deleteProduct(id);
+
+      expect(await datasource.getProductByBarcode('SOFTDEL001'), isNull);
     });
 
     test('getProductByBarcode returns matching product', () async {
       final id = IdGenerator.newId();
       await datasource.insertProduct(
-        companion(
-          id: id,
-          name: 'Cola',
-        ).copyWith(barcode: const Value('1234567890123')),
+        companion(id: id, name: 'Cola').copyWith(
+          barcode: const Value('1234567890123'),
+          barcodeLower: const Value('1234567890123'),
+        ),
       );
 
       final product = await datasource.getProductByBarcode('1234567890123');
@@ -131,6 +169,7 @@ void main() {
         await datasource.insertProduct(
           companion(id: id, name: 'Cola').copyWith(
             barcode: const Value('1234567890123'),
+            barcodeLower: const Value('1234567890123'),
             isActive: const Value(false),
           ),
         );
@@ -145,10 +184,10 @@ void main() {
     test('barcodeExistsAnyStatus respects excludeId', () async {
       final id = IdGenerator.newId();
       await datasource.insertProduct(
-        companion(
-          id: id,
-          name: 'Cola',
-        ).copyWith(barcode: const Value('1234567890123')),
+        companion(id: id, name: 'Cola').copyWith(
+          barcode: const Value('1234567890123'),
+          barcodeLower: const Value('1234567890123'),
+        ),
       );
 
       expect(

@@ -2,25 +2,31 @@
 title Void Sale Flow — Atomic Transaction
 
 actor Merchant
-participant "HistoryPage" as UI
+participant "History UI" as UI
+participant "HistoryBloc" as HB
 participant "VoidSale" as UC
+participant "AppLockService" as PIN
 participant "SaleRepositoryImpl" as Repo
-participant "SaleLocalDatasource" as DS
+participant "SaleVoidWriter" as DS
+participant "SaleDayGuard" as DG
 participant "InventoryLogService" as ILS
-database "SQLite" as DB
+database "SQLCipher SQLite" as DB
 
-Merchant -> UI: Tap "Void Sale" button
-UI -> UI: Show confirm dialog\n(optional reason input)
-Merchant -> UI: Confirm void
-
-UI -> UC: call(saleId, reason)
+Merchant -> UI: Tap Void
+UI -> UI: Confirm dialog + optional reason
+Merchant -> UI: Confirm
+UI -> HB: SaleVoidRequested
+HB -> UC: call(saleId, reason)
+UC -> PIN: requireSensitiveSession()\n(if store PIN on)
 UC -> Repo: voidSale(saleId, reason)
 Repo -> DS: voidSale(saleId, reason)
 
 group Drift Transaction
+    DS -> DG: assertVoidAllowed (in TX)
+    DG -> DB: app_settings + daily_closes
     DS -> DB: SELECT sale WHERE id = saleId
     alt status == VOIDED
-        DS --> Repo: throw StateError("Already voided")
+        DS --> Repo: throw BusinessRuleError("SaleAlreadyVoided")
     end
 
     DS -> DB: UPDATE sales SET\nstatus=VOIDED,\nvoidedAt=now,\nvoidReason=reason

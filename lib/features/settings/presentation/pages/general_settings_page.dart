@@ -6,12 +6,23 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/g
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_summary_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 
-class GeneralSettingsPage extends StatelessWidget {
+class GeneralSettingsPage extends StatefulWidget {
   const GeneralSettingsPage({super.key});
 
   @override
+  State<GeneralSettingsPage> createState() => _GeneralSettingsPageState();
+}
+
+class _GeneralSettingsPageState extends State<GeneralSettingsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (prev, curr) => prev.settings != curr.settings,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();

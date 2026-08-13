@@ -4,6 +4,7 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:promsell_pos_ce/core/database/db_key_store.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:sqlite3/open.dart' as sqlite3_open;
 import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 
@@ -61,6 +62,7 @@ class EncryptedDatabaseOpener {
     final dir = await getApplicationDocumentsDirectory();
     final file = File(p.join(dir.path, _dbName));
     final hexKey = await DbKeyStore.getOrCreateKey();
+    await _recoverInterruptedMigration(file, hexKey);
 
     if (await file.exists() && await _isPlainSqlite(file)) {
       await _migrateToEncrypted(file, hexKey);
@@ -70,6 +72,93 @@ class EncryptedDatabaseOpener {
       file,
       setup: (rawDb) => rawDb.execute("PRAGMA key=\"x'$hexKey'\""),
     );
+  }
+
+  /// Repairs files left by a process interruption during plain→encrypted
+  /// migration before Drift opens the database.
+  static Future<void> _recoverInterruptedMigration(
+    File file,
+    String hexKey,
+  ) async {
+    final backup = File('${file.path}.bak');
+    final encrypted = File('${file.path}.enc');
+    final plainTemp = File('${file.path}.plain-migrating');
+    final hasArtifacts =
+        await backup.exists() ||
+        await encrypted.exists() ||
+        await plainTemp.exists();
+    if (!hasArtifacts) return;
+
+    if (await file.exists()) {
+      if (await _isPlainSqlite(file)) {
+        // The source survived. Discard incomplete migration artifacts and let
+        // the normal migration path start from the intact plain database.
+        await _safeDelete(backup);
+        await _safeDelete(encrypted);
+        await _safeDelete(plainTemp);
+        return;
+      }
+
+      try {
+        await _validateEncryptedCopy(file, hexKey);
+        // The encrypted replacement is usable. Remove any plaintext remnants.
+        await _safeDelete(backup);
+        await _safeDelete(encrypted);
+        await _safeDelete(plainTemp);
+        return;
+      } catch (e, stack) {
+        AppLogger.warning(
+          'database_opener: encrypted copy validation failed, falling through to recovery',
+          error: e,
+          stack: stack,
+        );
+      }
+
+      final recovery = await _firstExisting([plainTemp, backup]);
+      if (recovery == null) {
+        throw StateError('DATABASE_RECOVERY_FAILED');
+      }
+      await _safeDelete(file);
+      await recovery.rename(file.path);
+      await _safeDelete(backup);
+      await _safeDelete(encrypted);
+      await _safeDelete(plainTemp);
+      return;
+    }
+
+    // A crash after removing the live path leaves either an encrypted
+    // candidate or a plain recovery copy. Prefer the validated encrypted file.
+    if (await encrypted.exists()) {
+      try {
+        await _validateEncryptedCopy(encrypted, hexKey);
+        await encrypted.rename(file.path);
+        await _safeDelete(backup);
+        await _safeDelete(plainTemp);
+        return;
+      } catch (e, stack) {
+        AppLogger.warning(
+          'database_opener: encrypted candidate corrupt, restoring plain copy',
+          error: e,
+          stack: stack,
+        );
+      }
+    }
+
+    final recovery = await _firstExisting([plainTemp, backup]);
+    if (recovery == null) {
+      throw StateError('DATABASE_RECOVERY_FAILED');
+    }
+    await recovery.rename(file.path);
+    await _safeDelete(encrypted);
+    await _safeDelete(backup);
+    await _safeDelete(plainTemp);
+  }
+
+  static Future<File?> _firstExisting(List<File> candidates) async {
+    for (final candidate in candidates) {
+      if (await candidate.exists()) return candidate;
+    }
+    return null;
   }
 
   /// Checks if the database file is plain (unencrypted) SQLite.
@@ -82,7 +171,12 @@ class EncryptedDatabaseOpener {
         if (bytes[i] != _sqliteHeader[i]) return false;
       }
       return true;
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning(
+        'database_opener: _isPlainSqlite check failed',
+        error: e,
+        stack: stack,
+      );
       return false;
     }
   }
@@ -99,11 +193,14 @@ class EncryptedDatabaseOpener {
     final encPath = '${plain.path}.enc';
     final backup = File(backupPath);
     final enc = File(encPath);
+    final plainTemp = File('${plain.path}.plain-migrating');
+    var replacementCompleted = false;
 
-    // Remove any stale temp file from a previous failed attempt.
+    // Remove stale output from a previous interrupted attempt. A stale
+    // encrypted candidate must never be mistaken for a valid migration.
     if (await enc.exists()) await enc.delete();
 
-    // Keep a backup in case migration fails.
+    // Keep one recovery copy while the source is still plain.
     await plain.copy(backupPath);
 
     try {
@@ -120,19 +217,81 @@ class EncryptedDatabaseOpener {
         await db.close();
       }
 
-      // Swap files atomically on the same filesystem.
-      await plain.delete();
-      await enc.rename(plain.path);
+      await _validateEncryptedCopy(enc, hexKey);
 
-      // Remove backup on success.
-      if (await backup.exists()) await backup.delete();
-    } catch (e) {
-      // Restore backup on any error.
-      if (await backup.exists() && !await plain.exists()) {
-        await backup.copy(plain.path);
+      // Keep the old file recoverable until the encrypted output has been
+      // installed successfully. Rename is same-filesystem and avoids copying
+      // a partially written candidate over the live path.
+      await plain.rename(plainTemp.path);
+      try {
+        await enc.rename(plain.path);
+        replacementCompleted = true;
+        await plainTemp.delete();
+      } catch (e, stack) {
+        AppLogger.warning(
+          'database_opener: encrypted rename failed, attempting plain restore',
+          error: e,
+          stack: stack,
+        );
+        if (!await plain.exists() && await plainTemp.exists()) {
+          await plainTemp.rename(plain.path);
+        }
+        rethrow;
       }
-      if (await enc.exists()) await enc.delete();
-      rethrow;
+    } finally {
+      // A plaintext backup is useful only while the migration is in flight.
+      // Never leave it behind after either success or a restored failure path.
+      if (replacementCompleted || await plain.exists()) {
+        await _safeDelete(backup);
+      }
+      await _safeDelete(enc);
+      await _safeDelete(plainTemp);
+    }
+  }
+
+  static Future<void> _validateEncryptedCopy(
+    File encrypted,
+    String hexKey,
+  ) async {
+    if (!await encrypted.exists() || await encrypted.length() < 16) {
+      throw StateError('ENCRYPTED_MIGRATION_OUTPUT_INVALID');
+    }
+
+    final db = _PlainDatabase(
+      NativeDatabase(
+        encrypted,
+        setup: (rawDb) => rawDb.execute("PRAGMA key=\"x'$hexKey'\""),
+      ),
+    );
+    try {
+      final integrity = await db
+          .customSelect('PRAGMA integrity_check')
+          .getSingle();
+      if (integrity.data.values.first != 'ok') {
+        throw StateError('ENCRYPTED_MIGRATION_INTEGRITY_FAILED');
+      }
+      final tableCount = await db
+          .customSelect(
+            "SELECT COUNT(*) AS count FROM sqlite_master WHERE type='table'",
+          )
+          .getSingle();
+      if ((tableCount.data['count'] as int? ?? 0) == 0) {
+        throw StateError('ENCRYPTED_MIGRATION_SCHEMA_EMPTY');
+      }
+    } finally {
+      await db.close();
+    }
+  }
+
+  static Future<void> _safeDelete(File file) async {
+    try {
+      if (await file.exists()) await file.delete();
+    } catch (e, stack) {
+      AppLogger.warning(
+        'database_opener: _safeDelete failed for ${file.path}',
+        error: e,
+        stack: stack,
+      );
     }
   }
 }

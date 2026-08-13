@@ -74,6 +74,21 @@ void main() {
       expect(result, contains('[CITIZEN_ID]'));
     });
 
+    test('recordError sanitizes PII on write (not only export)', () async {
+      await service.recordError(
+        Exception('leak 0812345678 PromptPay ID: 1234567890123'),
+        StackTrace.current,
+        context: 'pin',
+      );
+
+      final logFile = File('${tempDir.path}/crash_logs/crash_log.txt');
+      final content = await logFile.readAsString();
+      expect(content, isNot(contains('0812345678')));
+      expect(content, isNot(contains('1234567890123')));
+      expect(content, contains('[PHONE]'));
+      expect(content, contains('[PROMPTPAY_ID]'));
+    });
+
     test('exportLogs returns path when logs exist', () async {
       await service.recordError(Exception('export test'), StackTrace.current);
 

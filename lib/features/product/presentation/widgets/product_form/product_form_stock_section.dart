@@ -12,6 +12,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_shared.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Stock-tab widgets extracted from [ProductFormView].
 
@@ -103,11 +104,17 @@ class ProductFormStockQuantitySection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  OutlinedButton.icon(
-                    key: const ValueKey('product-form-adjust-stock'),
-                    onPressed: onAdjustStock,
-                    icon: const Icon(Icons.tune_outlined),
-                    label: Text(l10n.adjustStock),
+                  Flexible(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('product-form-adjust-stock'),
+                      onPressed: onAdjustStock,
+                      icon: const Icon(TablerIcons.adjustments),
+                      label: Text(
+                        l10n.adjustStock,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -116,7 +123,7 @@ class ProductFormStockQuantitySection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    Icons.info_outline,
+                    TablerIcons.infoCircle,
                     size: 16,
                     color: cs.onSurfaceVariant,
                   ),
@@ -244,7 +251,11 @@ class ProductFormStockStatusBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.tune, size: 18, color: status.onContainerColor),
+              Icon(
+                TablerIcons.adjustments,
+                size: 18,
+                color: status.onContainerColor,
+              ),
               const SizedBox(width: 2),
               Text(
                 l10n.editLowStockThreshold,
@@ -454,7 +465,7 @@ class ProductFormStockValueCard extends StatelessWidget {
             children: [
               if (cost > 0) ...[
                 ProductFormStockValueRow(
-                  icon: Icons.account_balance_wallet_outlined,
+                  icon: TablerIcons.wallet,
                   label: l10n.productPreviewStockValue,
                   value: CurrencyFormatter.formatGroupedWithSymbol(
                     stockValue,
@@ -464,7 +475,7 @@ class ProductFormStockValueCard extends StatelessWidget {
                 const SizedBox(height: 8),
               ],
               ProductFormStockValueRow(
-                icon: Icons.point_of_sale_outlined,
+                icon: TablerIcons.receipt,
                 label: l10n.productPreviewStockValueSale,
                 value: CurrencyFormatter.formatGroupedWithSymbol(
                   saleValue,
@@ -474,7 +485,7 @@ class ProductFormStockValueCard extends StatelessWidget {
               if (cost > 0) ...[
                 const SizedBox(height: 8),
                 ProductFormStockValueRow(
-                  icon: Icons.trending_up_outlined,
+                  icon: TablerIcons.trendingUp,
                   label: l10n.productPreviewPotentialProfit,
                   value: CurrencyFormatter.formatGroupedWithSymbol(
                     potentialProfit,

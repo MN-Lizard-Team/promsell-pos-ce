@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class DiscountPresetEditForm extends StatelessWidget {
   const DiscountPresetEditForm({
@@ -30,11 +31,7 @@ class DiscountPresetEditForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle(
-          context,
-          Icons.label_outline,
-          l10n.discountPresetName,
-        ),
+        _buildSectionTitle(context, TablerIcons.tag, l10n.discountPresetName),
         const SizedBox(height: 8),
         TextFormField(
           initialValue: preset.name,
@@ -70,7 +67,7 @@ class DiscountPresetEditForm extends StatelessWidget {
         const SizedBox(height: 20),
         _buildSectionTitle(
           context,
-          Icons.category_outlined,
+          TablerIcons.category,
           l10n.discountPresetType,
         ),
         const SizedBox(height: 8),
@@ -84,7 +81,7 @@ class DiscountPresetEditForm extends StatelessWidget {
         const SizedBox(height: 20),
         _buildSectionTitle(
           context,
-          Icons.format_list_numbered,
+          TablerIcons.listNumbers,
           l10n.discountPresetValues,
         ),
         const SizedBox(height: 8),
@@ -106,7 +103,7 @@ class DiscountPresetEditForm extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: () => _confirmDelete(context),
-              icon: Icon(Icons.delete_outline, size: 18, color: st.danger),
+              icon: Icon(TablerIcons.trash, size: 18, color: st.danger),
               label: Text(
                 l10n.deleteDiscountPreset,
                 style: TextStyle(color: st.danger),
@@ -234,7 +231,7 @@ class _AddValueChip extends StatelessWidget {
     final st = context.settingsTheme;
     final l10n = context.l10n;
     return ActionChip(
-      avatar: Icon(Icons.add, size: 18, color: st.softAccent),
+      avatar: Icon(TablerIcons.plus, size: 18, color: st.softAccent),
       label: Text(
         l10n.addPresetValue,
         style: TextStyle(

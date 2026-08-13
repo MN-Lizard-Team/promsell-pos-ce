@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_tile_builders.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class PromptpayIdTile extends StatelessWidget {
   const PromptpayIdTile({
@@ -38,11 +39,7 @@ class PromptpayIdTile extends StatelessWidget {
           color: st.iconContainerBackground,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.account_balance_wallet_outlined,
-          color: st.softAccent,
-          size: 24,
-        ),
+        child: Icon(TablerIcons.wallet, color: st.softAccent, size: 24),
       ),
       title: Text(
         l10n.settingsPromptpayId,

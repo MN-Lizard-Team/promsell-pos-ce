@@ -43,8 +43,8 @@ All sections under "Flutter", "Android toolchain", and "Connected device" should
                             ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │  3. Run                                                          │
-│  flutter run (debug) · flutter run --release (perf test)         │
-│  Flavors: dev (main_dev.dart) · prod (main_prod.dart)            │
+│  flutter run --flavor dev -t lib/main_dev.dart                   │
+│  Release: --release --flavor prod -t lib/main_prod.dart          │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -78,23 +78,24 @@ flutter gen-l10n
 
 ## Running the app
 
+Bare `flutter run` is **not** supported. Flavors `dev` / `prod` are required.
+
 ### Debug mode (with hot reload)
 
 ```bash
-flutter run
+flutter run --flavor dev -t lib/main_dev.dart
 ```
 
-### With flavor
+### Production flavor (still debug runtime)
 
 ```bash
-flutter run --flavor dev -t lib/main_dev.dart
 flutter run --flavor prod -t lib/main_prod.dart
 ```
 
 ### Release mode (performance testing)
 
 ```bash
-flutter run --release
+flutter run --release --flavor prod -t lib/main_prod.dart
 ```
 
 ---
@@ -118,7 +119,7 @@ flutter build appbundle --release --flavor prod -t lib/main_prod.dart
 ### iOS
 
 ```bash
-flutter build ios --release
+flutter build ios --release --flavor prod -t lib/main_prod.dart
 ```
 
 Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
@@ -160,7 +161,7 @@ Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 | [`docs/testing/RELEASE_0.9_SMOKE.md`](testing/RELEASE_0.9_SMOKE.md) | v0.9.0 release smoke checklist |
 | [`SECURITY.md`](../SECURITY.md) | Encryption, PIN gates, backup honesty |
 | [`docs/PRIVACY_POLICY.md`](PRIVACY_POLICY.md) | Privacy (local data vs developer servers) |
-| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.0 notes + archive links |
+| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.1 notes + archive links |
 
 ---
 
@@ -172,8 +173,8 @@ Promsell stores all POS data in an encrypted SQLite file on the device (SQLCiphe
 1. **Settings → Backup** — keep **Encrypt backups** on (default). Choose a PIN of at least **6** characters and store it offline.
 2. **Backup Now** regularly (or enable the reminder). Share the file to cloud/USB you control — not only on the same phone.
 3. **Same-device restore** — use **Restore** on the same device to re-apply a previous `.enc` or SQLCipher `.db` export. Restart the app after restore.
-4. **Not supported in 0.9.0** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
-5. **Key loss = data loss** without an off-device export. There is no key recovery phrase in CE 0.9.0.
+4. **Not supported in 0.9.1** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
+5. **Key loss = data loss** without an off-device export. There is no key recovery phrase in CE 0.9.1.
 
 See also [SECURITY.md](../SECURITY.md) and [Privacy Policy](PRIVACY_POLICY.md).
 

@@ -37,10 +37,17 @@ class Money extends Equatable implements Comparable<Money> {
   /// Creates a [Money] from a decimal Baht [value].
   /// Uses round-half-up rounding to the nearest satang.
   factory Money.fromDouble(double value) {
+    if (value.isNaN || value.isInfinite) {
+      throw ArgumentError('Money value must be a finite number, got: $value');
+    }
     // Multiply by 100 and round to nearest integer with half-up rule.
     final satang = (value * 100 + (value >= 0 ? 0.5 : -0.5)).truncate();
     return Money._(satang);
   }
+
+  /// Creates a [Money] from an exact satang (minor unit) value.
+  /// Use this for precise integer arithmetic to avoid floating-point errors.
+  const factory Money.fromSatang(int satang) = Money._;
 
   // ---------------------------------------------------------------------------
   // Accessors

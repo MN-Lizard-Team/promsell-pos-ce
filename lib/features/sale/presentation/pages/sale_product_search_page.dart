@@ -18,6 +18,8 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/utils/sale_add_to_cart.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/barcode_wedge_listener.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/svg_icon.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/sale_barcode_scanner.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
@@ -62,7 +64,8 @@ class _SaleProductSearchPageState extends State<SaleProductSearchPage> {
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _focusNode.unfocus();
+    disposeTextEditingControllerAfterFrame(_searchController);
     _focusNode.dispose();
     super.dispose();
   }
@@ -302,7 +305,11 @@ class _SaleProductSearchPageState extends State<SaleProductSearchPage> {
                 if (barcodeEnabled)
                   IconButton(
                     key: const ValueKey('sale-search-scan'),
-                    icon: const Icon(Icons.qr_code_scanner, size: 22),
+                    icon: SvgIcon(
+                      'barcode-scan-icon',
+                      size: 22,
+                      color: theme.colorScheme.onPrimary,
+                    ),
                     tooltip: l10n.scanBarcode,
                     onPressed: _onScan,
                   ),

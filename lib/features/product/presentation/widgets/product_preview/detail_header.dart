@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class DetailHeader extends StatelessWidget {
   const DetailHeader({
@@ -55,7 +56,7 @@ class DetailHeader extends StatelessWidget {
         children: [
           IconButton(
             tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-            icon: Icon(Icons.arrow_back, color: onPrimary),
+            icon: Icon(TablerIcons.arrowLeft, color: onPrimary),
             onPressed: onBack,
           ),
           Expanded(
@@ -92,9 +93,7 @@ class DetailHeader extends StatelessWidget {
                   ? context.l10n.deactivate
                   : context.l10n.activate,
               icon: Icon(
-                isActive
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
+                isActive ? TablerIcons.eye : TablerIcons.eyeOff,
                 color: onPrimary,
               ),
               onPressed: onToggleActive,
@@ -102,7 +101,7 @@ class DetailHeader extends StatelessWidget {
           if (onMenu != null)
             IconButton(
               tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
-              icon: Icon(Icons.more_vert, color: onPrimary),
+              icon: Icon(TablerIcons.dotsVertical, color: onPrimary),
               onPressed: onMenu,
             ),
         ],

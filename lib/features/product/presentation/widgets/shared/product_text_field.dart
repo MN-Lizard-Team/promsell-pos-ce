@@ -18,6 +18,7 @@ class ProductTextField extends StatelessWidget {
     this.textInputAction,
     this.onFieldSubmitted,
     this.helperText,
+    this.hintText,
     this.onChanged,
     this.suffix,
     this.suffixText,
@@ -37,6 +38,7 @@ class ProductTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onFieldSubmitted;
   final String? helperText;
+  final String? hintText;
   final ValueChanged<String>? onChanged;
   final Widget? suffix;
   final String? suffixText;
@@ -52,6 +54,7 @@ class ProductTextField extends StatelessWidget {
       controller: controller,
       labelText: labelText,
       helperText: helperText,
+      hintText: hintText,
       prefixIcon: icon,
       showPrefixIcon: showIcon,
       suffix: suffix,

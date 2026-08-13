@@ -12,6 +12,7 @@ import 'package:promsell_pos_ce/features/product/presentation/utils/stock_status
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/inventory_log_helper.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/shared_widgets.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class StockTab extends StatelessWidget {
   const StockTab({
@@ -108,7 +109,7 @@ class StockTab extends StatelessWidget {
                       OutlinedButton.icon(
                         key: const ValueKey('product-preview-adjust-stock'),
                         onPressed: onAdjustStock,
-                        icon: const Icon(Icons.tune_outlined),
+                        icon: const Icon(TablerIcons.adjustments, size: 18),
                         label: Text(l10n.adjustStock),
                       ),
                   ],
@@ -119,7 +120,7 @@ class StockTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
-                        Icons.info_outline,
+                        TablerIcons.infoCircle,
                         size: 16,
                         color: cs.onSurfaceVariant,
                       ),
@@ -150,7 +151,7 @@ class StockTab extends StatelessWidget {
               children: [
                 if (product.cost > Money.zero)
                   InfoListItem(
-                    icon: Icons.account_balance_wallet_outlined,
+                    icon: TablerIcons.wallet,
                     label: l10n.productPreviewStockValue,
                     value: MoneyText(
                       value: stockValue.value,
@@ -163,7 +164,7 @@ class StockTab extends StatelessWidget {
                 if (product.cost > Money.zero)
                   Divider(height: 1, color: dividerColor),
                 InfoListItem(
-                  icon: Icons.point_of_sale_outlined,
+                  icon: TablerIcons.receipt,
                   label: l10n.productPreviewStockValueSale,
                   value: MoneyText(
                     value: saleValue.value,
@@ -176,7 +177,7 @@ class StockTab extends StatelessWidget {
                 if (product.cost > Money.zero) ...[
                   Divider(height: 1, color: dividerColor),
                   InfoListItem(
-                    icon: Icons.trending_up_outlined,
+                    icon: TablerIcons.trendingUp,
                     label: l10n.productPreviewPotentialProfit,
                     value: MoneyText(
                       value: potentialProfit.value,
@@ -298,7 +299,7 @@ class _StockSummarySection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InfoListItem(
-                icon: Icons.shopping_cart_outlined,
+                icon: TablerIcons.shoppingCart,
                 label: l10n.productPreviewTotalSold,
                 value: Text(
                   '$totalSold ${l10n.quantityLabel}',
@@ -308,7 +309,7 @@ class _StockSummarySection extends StatelessWidget {
               ),
               Divider(height: 1, color: dividerColor),
               InfoListItem(
-                icon: Icons.add_circle_outline,
+                icon: TablerIcons.circlePlus,
                 label: l10n.productPreviewTotalIn,
                 value: Text(
                   '$totalIn ${l10n.quantityLabel}',
@@ -318,14 +319,14 @@ class _StockSummarySection extends StatelessWidget {
               ),
               Divider(height: 1, color: dividerColor),
               InfoListItem(
-                icon: Icons.remove_circle_outline,
+                icon: TablerIcons.circleMinus,
                 label: l10n.productPreviewTotalOut,
                 value: Text('$totalOut ${l10n.quantityLabel}'),
               ),
               if (lastLog != null) ...[
                 Divider(height: 1, color: dividerColor),
                 InfoListItem(
-                  icon: Icons.update,
+                  icon: TablerIcons.refresh,
                   label: l10n.productPreviewLastUpdate,
                   value: Text(
                     '${dateFormat.format(lastLog.createdAt)} ${timeFormat.format(lastLog.createdAt)}',

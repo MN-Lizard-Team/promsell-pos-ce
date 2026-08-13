@@ -7,5 +7,14 @@ class GetProducts {
   const GetProducts(this._repository);
   final ProductRepository _repository;
 
-  Stream<List<Product>> call() => _repository.watchAllProducts();
+  Stream<List<Product>> call({int? limit}) =>
+      _repository.watchAllProducts(limit: limit);
+}
+
+@injectable
+class GetProductCount {
+  const GetProductCount(this._repository);
+  final ProductRepository _repository;
+
+  Future<int> call() => _repository.getProductCount();
 }

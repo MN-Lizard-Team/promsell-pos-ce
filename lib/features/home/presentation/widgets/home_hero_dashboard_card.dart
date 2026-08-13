@@ -12,6 +12,7 @@ class HomeHeroDashboardCard extends StatefulWidget {
     required this.todayRevenue,
     required this.todaySalesCount,
     required this.trendData,
+    this.currency = '฿',
     this.isLoading = false,
     this.onTap,
   });
@@ -19,6 +20,7 @@ class HomeHeroDashboardCard extends StatefulWidget {
   final Money todayRevenue;
   final int todaySalesCount;
   final List<double> trendData;
+  final String currency;
   final bool isLoading;
   final VoidCallback? onTap;
 
@@ -28,6 +30,12 @@ class HomeHeroDashboardCard extends StatefulWidget {
 
 class _HomeHeroDashboardCardState extends State<HomeHeroDashboardCard> {
   double _displayRevenue = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayRevenue = widget.isLoading ? 0 : widget.todayRevenue.value;
+  }
 
   @override
   void didUpdateWidget(HomeHeroDashboardCard oldWidget) {
@@ -90,7 +98,7 @@ class _HomeHeroDashboardCardState extends State<HomeHeroDashboardCard> {
                                 curve: Curves.easeOutCubic,
                                 fractionDigits: 0,
                                 thousandSeparator: ',',
-                                prefix: '฿ ',
+                                prefix: '${widget.currency} ',
                                 textStyle: theme.textTheme.headlineLarge
                                     ?.copyWith(
                                       fontWeight: FontWeight.w900,
@@ -102,7 +110,7 @@ class _HomeHeroDashboardCardState extends State<HomeHeroDashboardCard> {
                                 style: theme.textTheme.headlineLarge?.copyWith(
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -0.5,
-                                  color: const Color(0xFF105D67),
+                                  color: cs.primary,
                                 ),
                               ),
                             ],

@@ -20,15 +20,15 @@ class ProductFormStockActions {
     required VoidCallback onMarkDirtyListenerRemoved,
     required VoidCallback onMarkDirtyListenerRestored,
     required VoidCallback onStateChanged,
-  })  : _product = product,
-        _isEditing = isEditing,
-        _isMounted = isMounted,
-        _trackStock = trackStock,
-        _setTrackStock = setTrackStock,
-        _markDirty = markDirty,
-        _onMarkDirtyListenerRemoved = onMarkDirtyListenerRemoved,
-        _onMarkDirtyListenerRestored = onMarkDirtyListenerRestored,
-        _onStateChanged = onStateChanged;
+  }) : _product = product,
+       _isEditing = isEditing,
+       _isMounted = isMounted,
+       _trackStock = trackStock,
+       _setTrackStock = setTrackStock,
+       _markDirty = markDirty,
+       _onMarkDirtyListenerRemoved = onMarkDirtyListenerRemoved,
+       _onMarkDirtyListenerRestored = onMarkDirtyListenerRestored,
+       _onStateChanged = onStateChanged;
 
   final TextEditingController stockCtrl;
   final TextEditingController unitCtrl;
@@ -55,8 +55,9 @@ class ProductFormStockActions {
         .firstOrNull;
     if (latest == null) return;
     final currentStock = int.tryParse(stockCtrl.text) ?? latest.stock;
-    final unit =
-        unitCtrl.text.trim().isEmpty ? latest.unit : unitCtrl.text.trim();
+    final unit = unitCtrl.text.trim().isEmpty
+        ? latest.unit
+        : unitCtrl.text.trim();
     final newStock = await showAdjustStockDialog(
       context,
       productId: latest.id,

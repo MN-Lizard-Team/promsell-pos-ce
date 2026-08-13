@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/features/inventory/domain/inventory_log_reasons.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class InventoryLogHelper {
   InventoryLogHelper._();
@@ -11,11 +12,11 @@ class InventoryLogHelper {
   static const typeAdjustmentOut = 'ADJUSTMENT_OUT';
 
   static IconData iconForType(String type) => switch (type) {
-    typeSale => Icons.shopping_cart_outlined,
-    typeVoidReversal => Icons.undo,
-    typeAdjustmentIn => Icons.add_circle_outline,
-    typeAdjustmentOut => Icons.remove_circle_outline,
-    _ => Icons.help_outline,
+    typeSale => TablerIcons.shoppingCart,
+    typeVoidReversal => TablerIcons.arrowBackUp,
+    typeAdjustmentIn => TablerIcons.circlePlus,
+    typeAdjustmentOut => TablerIcons.circleMinus,
+    _ => TablerIcons.helpCircle,
   };
 
   static String labelForType(AppLocalizations l10n, String type) =>

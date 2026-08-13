@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
+import 'package:promsell_pos_ce/core/exceptions/optimistic_lock_exception.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_barcodes.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/restore_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
@@ -30,15 +33,19 @@ class _ProductsError extends ProductEvent {
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc({
     required GetProducts getProducts,
+    required GetProductCount getProductCount,
     required AddProduct addProduct,
     required UpdateProduct updateProduct,
     required DeleteProduct deleteProduct,
+    required RestoreProduct restoreProduct,
     required BatchGenerateBarcodes batchGenerateBarcodes,
     required ImportProducts importProducts,
   }) : _getProducts = getProducts,
+       _getProductCount = getProductCount,
        _addProduct = addProduct,
        _updateProduct = updateProduct,
        _deleteProduct = deleteProduct,
+       _restoreProduct = restoreProduct,
        _batchGenerateBarcodes = batchGenerateBarcodes,
        _importProducts = importProducts,
        super(const ProductState()) {
@@ -48,11 +55,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ProductAdded>(_onAdded);
     on<ProductUpdated>(_onUpdated);
     on<ProductDeleted>(_onDeleted);
+    on<ProductRestored>(_onRestored);
     on<ProductSearchChanged>(_onSearchChanged);
     on<ProductCategoryFilterChanged>(_onCategoryFilterChanged);
     on<ProductStockFilterChanged>(_onStockFilterChanged);
     on<ProductSortChanged>(_onSortChanged);
     on<ProductPriceRangeChanged>(_onPriceRangeChanged);
+    on<ProductListFiltersApplied>(_onListFiltersApplied);
     on<BarcodesBatchGenerated>(_onBatchGenerated);
     on<ProductBatchResultConsumed>(_onBatchResultConsumed);
     on<ProductTabChanged>(_onTabChanged);
@@ -62,9 +71,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   }
 
   final GetProducts _getProducts;
+  final GetProductCount _getProductCount;
   final AddProduct _addProduct;
   final UpdateProduct _updateProduct;
   final DeleteProduct _deleteProduct;
+  final RestoreProduct _restoreProduct;
   final BatchGenerateBarcodes _batchGenerateBarcodes;
   final ImportProducts _importProducts;
   StreamSubscription<List<Product>>? _sub;
@@ -73,25 +84,48 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final Map<ProductSurface, _FilterSnapshot> _filterSnapshots = {};
   ProductSurface? _activeSurface;
 
+  /// Pagination threshold — if catalog exceeds this, stream uses LIMIT to
+  /// avoid loading all products into memory. Sale search still works within
+  /// the loaded set; user can load more via [ProductLoadMore] event.
+  static const int _paginationThreshold = 500;
+
   Future<void> _onSubscribed(
     ProductsSubscribed event,
     Emitter<ProductState> emit,
   ) async {
     emit(state.copyWith(status: ProductStatus.loading));
     await _sub?.cancel();
-    _sub = _getProducts().listen(
+
+    // Fetch total count to decide whether to paginate.
+    final totalCount = await _getProductCount();
+    final limit = totalCount > _paginationThreshold
+        ? _paginationThreshold
+        : null;
+
+    _sub = _getProducts(limit: limit).listen(
       (products) => add(_ProductsUpdated(products)),
       onError: (Object e) => add(_ProductsError(e.toString())),
     );
   }
 
   void _onProductsUpdated(_ProductsUpdated event, Emitter<ProductState> emit) {
+    // Preserve saveStatus when saving/saved so stream updates don't
+    // overwrite the save result before form listeners can react.
+    final preserveSave =
+        state.saveStatus == ProductSaveStatus.saving ||
+        state.saveStatus == ProductSaveStatus.saved;
+    // Update totalCount if we loaded all products (no pagination).
+    // When paginated, products.length is the loaded count, not total.
+    final newTotal = event.products.length > state.totalProductCount
+        ? event.products.length
+        : state.totalProductCount;
     emit(
       state.copyWith(
         status: ProductStatus.success,
         products: event.products,
+        totalProductCount: newTotal,
         error: null,
-        saveStatus: ProductSaveStatus.idle,
+        saveStatus: preserveSave ? null : ProductSaveStatus.idle,
       ),
     );
   }
@@ -177,6 +211,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           error: const BusinessRuleError('DuplicateBarcode'),
         ),
       );
+    } on OptimisticLockException catch (e) {
+      emit(
+        state.copyWith(
+          saveStatus: ProductSaveStatus.error,
+          error: BusinessRuleError('OptimisticLock: ${e.entityId}'),
+        ),
+      );
     } catch (e) {
       emit(
         state.copyWith(
@@ -193,11 +234,26 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ) async {
     emit(state.copyWith(saveStatus: ProductSaveStatus.saving));
     try {
+      // Capture product name before delete for undo snack.
+      final product = state.products.firstWhere(
+        (p) => p.id == event.id,
+        orElse: () => Product(
+          id: event.id,
+          name: '',
+          price: Money.zero,
+          stock: 0,
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
       await _deleteProduct(event.id);
       emit(
         state.copyWith(
           saveStatus: ProductSaveStatus.saved,
           products: state.products.where((p) => p.id != event.id).toList(),
+          lastDeletedProductId: event.id,
+          lastDeletedProductName: product.name,
         ),
       );
     } catch (e) {
@@ -205,6 +261,27 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         state.copyWith(
           saveStatus: ProductSaveStatus.error,
           error: DatabaseError(e.toString(), operation: 'delete'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onRestored(
+    ProductRestored event,
+    Emitter<ProductState> emit,
+  ) async {
+    try {
+      await _restoreProduct(event.id);
+      emit(
+        state.copyWith(
+          lastDeletedProductId: null,
+          lastDeletedProductName: null,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          error: DatabaseError(e.toString(), operation: 'restore'),
         ),
       );
     }
@@ -255,6 +332,19 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     Emitter<ProductState> emit,
   ) {
     emit(state.copyWith(priceRange: event.priceRange));
+  }
+
+  void _onListFiltersApplied(
+    ProductListFiltersApplied event,
+    Emitter<ProductState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        stockFilter: event.stockFilter,
+        productSort: event.productSort,
+        priceRange: event.priceRange,
+      ),
+    );
   }
 
   Future<void> _onBatchGenerated(

@@ -143,7 +143,7 @@ void main() {
       // net 200, SC 20, preTax 220, VAT 15.4, payable 235.4
       expect(t.serviceChargeAmount, Money.fromDouble(20));
       expect(t.payableTotal, t.preTaxTotal + t.vatAmount);
-      expect(t.payableTotal, isNot(cart.grandTotal));
+      expect(t.payableTotal, isNot(cart.total + cart.serviceChargeAmount));
     });
 
     test('retail ignores default SC', () {

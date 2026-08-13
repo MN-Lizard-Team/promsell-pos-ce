@@ -78,6 +78,7 @@ class ReceiptDocument extends Equatable {
     this.voidReason,
     this.voidedAt,
     this.isReprint = false,
+    this.taxId = '',
     this.notTaxInvoiceDisclaimer,
   });
 
@@ -85,6 +86,10 @@ class ReceiptDocument extends Equatable {
   final bool showShopInfo;
   final String address;
   final String phone;
+
+  /// Thai Tax ID (เลขประจำตัวผู้เสียภาษี 13 หลัก).
+  /// When non-empty, the receipt qualifies as a tax invoice.
+  final String taxId;
 
   final String receiptNumber;
   final DateTime createdAt;
@@ -99,7 +104,7 @@ class ReceiptDocument extends Equatable {
   final String currency;
   final String dateFormat;
 
-  /// Paper size for PDF: `80mm` (thermal) or `A4`.
+  /// Paper size for PDF: `58mm` | `80mm` (thermal) or `A4`.
   final String receiptSize;
 
   final List<ReceiptLineItem> items;
@@ -153,6 +158,7 @@ class ReceiptDocument extends Equatable {
     showShopInfo,
     address,
     phone,
+    taxId,
     receiptNumber,
     createdAt,
     paymentMethodLabel,

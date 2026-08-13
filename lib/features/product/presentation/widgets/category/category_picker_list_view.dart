@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
@@ -31,12 +32,20 @@ class CategoryPickerListView extends StatefulWidget {
 
 class _CategoryPickerListViewState extends State<CategoryPickerListView> {
   final _searchCtrl = TextEditingController();
-  String _query = '';
+  final _searchText = ValueNotifier<String>('');
 
   @override
   void dispose() {
-    _searchCtrl.dispose();
+    FocusManager.instance.primaryFocus?.unfocus();
+    disposeTextEditingControllerAfterFrame(_searchCtrl);
+    _searchText.dispose();
     super.dispose();
+  }
+
+  void _clearSearch() {
+    _searchCtrl.clear();
+    _searchText.value = '';
+    setState(() {});
   }
 
   @override
@@ -47,25 +56,38 @@ class _CategoryPickerListViewState extends State<CategoryPickerListView> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-          child: SearchBar(
+          child: TextField(
             controller: _searchCtrl,
-            hintText: context.l10n.searchCategories,
-            leading: const Icon(Icons.search),
-            trailing: [
-              if (_query.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    _searchCtrl.clear();
-                    setState(() => _query = '');
-                  },
-                ),
-            ],
-            elevation: const WidgetStatePropertyAll(0),
-            backgroundColor: WidgetStatePropertyAll(
-              theme.colorScheme.surfaceContainerHigh,
+            decoration: InputDecoration(
+              hintText: context.l10n.searchCategories,
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: ValueListenableBuilder<String>(
+                valueListenable: _searchText,
+                builder: (context, text, _) {
+                  if (text.isEmpty) return const SizedBox.shrink();
+                  return IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: _clearSearch,
+                  );
+                },
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: theme.colorScheme.surfaceContainerHigh,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
             ),
-            onChanged: (v) => setState(() => _query = v.toLowerCase()),
+            textInputAction: TextInputAction.search,
+            onChanged: (v) {
+              _searchText.value = v;
+              setState(() {});
+            },
           ),
         ),
         Expanded(
@@ -76,10 +98,11 @@ class _CategoryPickerListViewState extends State<CategoryPickerListView> {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final filtered = _query.isEmpty
+              final query = _searchText.value.toLowerCase();
+              final filtered = query.isEmpty
                   ? state.categories
                   : state.categories
-                        .where((c) => c.name.toLowerCase().contains(_query))
+                        .where((c) => c.name.toLowerCase().contains(query))
                         .toList();
 
               if (state.categories.isEmpty) {

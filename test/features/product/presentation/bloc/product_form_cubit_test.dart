@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_draft.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
@@ -12,20 +13,28 @@ class _MockSettingsLocalDatasource extends Mock
 
 class _MockGenerateBarcode extends Mock implements GenerateBarcode {}
 
+class _MockGenerateSku extends Mock implements GenerateSku {}
+
 void main() {
   late _MockSettingsLocalDatasource mockStorage;
   late _MockGenerateBarcode mockGenerateBarcode;
+  late _MockGenerateSku mockGenerateSku;
 
   setUp(() {
     mockStorage = _MockSettingsLocalDatasource();
     mockGenerateBarcode = _MockGenerateBarcode();
+    mockGenerateSku = _MockGenerateSku();
     when(() => mockStorage.getString(any())).thenAnswer((_) async => null);
     when(() => mockStorage.setString(any(), any())).thenAnswer((_) async {});
   });
 
   group('ProductFormCubit', () {
     test('initial state is idle with empty draft', () {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       expect(cubit.state.status, ProductFormStatus.idle);
       expect(cubit.state.draft, const ProductDraft());
       expect(cubit.state.isDirty, isFalse);
@@ -33,7 +42,11 @@ void main() {
     });
 
     test('syncDraftFromControllers updates draft with all fields', () {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       cubit.syncDraftFromControllers(
         name: 'Coffee',
         price: '50.00',
@@ -66,7 +79,11 @@ void main() {
     });
 
     test('saveDraftToStorage persists draft as JSON', () async {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       cubit.syncDraftFromControllers(
         name: 'Test',
         price: '10.00',
@@ -86,7 +103,11 @@ void main() {
     });
 
     test('saveDraftToStorage does nothing when not dirty', () async {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       await cubit.saveDraftToStorage();
 
       verifyNever(() => mockStorage.setString(any(), any()));
@@ -94,7 +115,11 @@ void main() {
     });
 
     test('saveDraftToStorage does nothing when submitted', () async {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       cubit.syncDraftFromControllers(
         name: 'Test',
         price: '10.00',
@@ -113,7 +138,11 @@ void main() {
     });
 
     test('clearDraft writes empty string to storage', () async {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       await cubit.clearDraft();
 
       verify(() => mockStorage.setString(any(), '')).called(1);
@@ -128,7 +157,11 @@ void main() {
         ),
       ).thenAnswer((_) async => 'GEN123456');
 
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       final result = await cubit.generateBarcode();
 
       expect(result, 'GEN123456');
@@ -145,7 +178,11 @@ void main() {
         ),
       ).thenThrow(Exception('Failed'));
 
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
 
       expect(() => cubit.generateBarcode(), throwsA(isA<Exception>()));
       await Future.delayed(const Duration(milliseconds: 100));
@@ -155,7 +192,11 @@ void main() {
     });
 
     test('restoreDraft sets draft and marks dirty', () {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       const draft = ProductDraft(name: 'Restored', price: '20.00');
       cubit.restoreDraft(draft);
 
@@ -165,7 +206,11 @@ void main() {
     });
 
     test('reset returns to initial state', () {
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       cubit.syncDraftFromControllers(
         name: 'Test',
         price: '10.00',
@@ -191,7 +236,11 @@ void main() {
         () => mockStorage.getString(any()),
       ).thenAnswer((_) async => draftJson);
 
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       await Future.delayed(const Duration(milliseconds: 100));
 
       expect(cubit.state.draft.name, 'Saved');
@@ -203,7 +252,11 @@ void main() {
     test('does not emit draft when storage returns empty', () async {
       when(() => mockStorage.getString(any())).thenAnswer((_) async => '');
 
-      final cubit = ProductFormCubit(mockStorage, mockGenerateBarcode);
+      final cubit = ProductFormCubit(
+        mockStorage,
+        mockGenerateBarcode,
+        mockGenerateSku,
+      );
       await Future.delayed(const Duration(milliseconds: 100));
 
       expect(cubit.state.draft, const ProductDraft());

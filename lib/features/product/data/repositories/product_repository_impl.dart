@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
@@ -18,13 +20,17 @@ class ProductRepositoryImpl implements ProductRepository {
   static final _barcodeImageService = BarcodeImageService();
 
   @override
-  Stream<List<Product>> watchAllProducts() => _datasource.watchAllProducts();
+  Stream<List<Product>> watchAllProducts({int? limit}) =>
+      _datasource.watchAllProducts(limit: limit);
 
   @override
   Future<List<Product>> getActiveProducts() => _datasource.getActiveProducts();
 
   @override
   Future<List<Product>> getAllProducts() => _datasource.getAllProducts();
+
+  @override
+  Future<int> getProductCount() => _datasource.getProductCount();
 
   @override
   Future<Product?> getProductById(String id) => _datasource.getProductById(id);
@@ -43,6 +49,11 @@ class ProductRepositoryImpl implements ProductRepository {
       barcode.toUpperCase(),
       excludeId: excludeId,
     );
+  }
+
+  @override
+  Future<bool> skuExists(String sku, {String? excludeId}) async {
+    return _datasource.skuExistsAnyStatus(sku, excludeId: excludeId);
   }
 
   @override
@@ -80,7 +91,11 @@ class ProductRepositoryImpl implements ProductRepository {
     }
 
     String? barcodeImagePath;
-    final normalizedBarcode = barcode?.toUpperCase().trim();
+    // Apply same normalization as Validators.barcode (strip separators, uppercase).
+    final cleanedBarcode = barcode == null || barcode.trim().isEmpty
+        ? null
+        : barcode.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
+    final normalizedBarcode = cleanedBarcode;
     if (normalizedBarcode != null && normalizedBarcode.isNotEmpty) {
       // Check barcode uniqueness before generating image
       final exists = await _datasource.barcodeExistsAnyStatus(
@@ -101,7 +116,9 @@ class ProductRepositoryImpl implements ProductRepository {
         id: id,
         name: name,
         sku: Value(sku),
+        skuLower: Value(sku?.toLowerCase()),
         barcode: Value(normalizedBarcode),
+        barcodeLower: Value(normalizedBarcode?.toLowerCase()),
         price: price,
         cost: Value(cost),
         stock: Value(stock),
@@ -128,6 +145,11 @@ class ProductRepositoryImpl implements ProductRepository {
           optionGroups,
         );
       }
+      await _datasource.logProductAudit(
+        productId: id,
+        action: 'CREATE',
+        newValue: name,
+      );
       return id;
     } catch (e) {
       if (finalImagePath != null) {
@@ -147,11 +169,16 @@ class ProductRepositoryImpl implements ProductRepository {
   }) async {
     final existing = await _datasource.getProductById(product.id);
 
+    // --- Image rename (file system, outside DB transaction) ---
+    // If the DB update fails later, we roll back the rename below.
     String? finalImagePath = product.imagePath;
     String? finalThumbPath = product.imageThumbnailPath;
+    String? originalImagePathBeforeRename;
+    String? renamedImagePath;
     if (product.imagePath != null && product.imagePath!.isNotEmpty) {
       final imageName = p.basenameWithoutExtension(product.imagePath!);
       if (imageName != product.id) {
+        originalImagePathBeforeRename = product.imagePath;
         final renamed = await _imageService.renameImages(
           product.imagePath,
           product.id,
@@ -159,6 +186,7 @@ class ProductRepositoryImpl implements ProductRepository {
         if (renamed != null) {
           finalImagePath = renamed.fullPath;
           finalThumbPath = renamed.thumbnailPath;
+          renamedImagePath = renamed.fullPath;
         }
       }
     }
@@ -178,7 +206,11 @@ class ProductRepositoryImpl implements ProductRepository {
     }
 
     String? barcodeImagePath;
-    final normalizedBarcode = product.barcode?.toUpperCase().trim();
+    // Apply same normalization as Validators.barcode (strip separators, uppercase).
+    final normalizedBarcode =
+        product.barcode == null || product.barcode!.trim().isEmpty
+        ? null
+        : product.barcode!.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
     if (normalizedBarcode != null && normalizedBarcode.isNotEmpty) {
       final existingBarcode = existing?.barcode?.toUpperCase().trim();
       if (existingBarcode == normalizedBarcode &&
@@ -194,13 +226,16 @@ class ProductRepositoryImpl implements ProductRepository {
           throw Exception('Barcode already exists: $normalizedBarcode');
         }
 
-        if (existing?.barcodeImagePath != null) {
-          await _barcodeImageService.delete(product.id);
-        }
-        barcodeImagePath = await _barcodeImageService.generate(
+        // Generate new barcode image BEFORE deleting old one so that
+        // a generation failure doesn't leave the product without an image.
+        final newBarcodeImage = await _barcodeImageService.generate(
           barcode: normalizedBarcode,
           productId: product.id,
         );
+        if (existing?.barcodeImagePath != null) {
+          await _barcodeImageService.delete(product.id);
+        }
+        barcodeImagePath = newBarcodeImage;
       }
     } else if (existing?.barcodeImagePath != null) {
       await _barcodeImageService.delete(product.id);
@@ -212,7 +247,9 @@ class ProductRepositoryImpl implements ProductRepository {
       id: Value(product.id),
       name: Value(product.name),
       sku: Value(product.sku),
+      skuLower: Value(product.sku?.toLowerCase()),
       barcode: Value(normalizedBarcode),
+      barcodeLower: Value(normalizedBarcode?.toLowerCase()),
       price: Value(product.price.value),
       cost: Value(product.cost.value),
       stock: Value(product.stock),
@@ -229,15 +266,102 @@ class ProductRepositoryImpl implements ProductRepository {
       supplier: Value(product.supplier),
       isRecommended: Value(product.isRecommended),
       updatedAt: Value(now),
+      version: Value(product.version),
     );
-    if (optionGroups == null) {
-      await _datasource.updateProduct(companion);
-    } else {
-      await _datasource.updateProductWithOptionGroups(companion, optionGroups);
+
+    // --- Build audit entries (will be written atomically with the update) ---
+    final auditEntries =
+        <({String fieldName, String oldValue, String newValue})>[];
+    if (existing != null) {
+      if (existing.price.value != product.price.value) {
+        auditEntries.add((
+          fieldName: 'price',
+          oldValue: existing.price.value.toStringAsFixed(2),
+          newValue: product.price.value.toStringAsFixed(2),
+        ));
+      }
+      if (existing.stock != product.stock) {
+        auditEntries.add((
+          fieldName: 'stock',
+          oldValue: existing.stock.toString(),
+          newValue: product.stock.toString(),
+        ));
+      }
+      if (existing.cost.value != product.cost.value) {
+        auditEntries.add((
+          fieldName: 'cost',
+          oldValue: existing.cost.value.toStringAsFixed(2),
+          newValue: product.cost.value.toStringAsFixed(2),
+        ));
+      }
+      if (existing.name != product.name) {
+        auditEntries.add((
+          fieldName: 'name',
+          oldValue: existing.name,
+          newValue: product.name,
+        ));
+      }
+      if (existing.barcode != normalizedBarcode) {
+        auditEntries.add((
+          fieldName: 'barcode',
+          oldValue: existing.barcode ?? '',
+          newValue: normalizedBarcode ?? '',
+        ));
+      }
+      if (existing.sku != product.sku) {
+        auditEntries.add((
+          fieldName: 'sku',
+          oldValue: existing.sku ?? '',
+          newValue: product.sku ?? '',
+        ));
+      }
+      if (existing.isActive != product.isActive) {
+        auditEntries.add((
+          fieldName: 'isActive',
+          oldValue: existing.isActive.toString(),
+          newValue: product.isActive.toString(),
+        ));
+      }
     }
 
+    // --- Atomic DB update + audit logging in a single transaction ---
+    try {
+      await _datasource.updateProductWithAudit(
+        companion,
+        optionGroups,
+        auditEntries,
+      );
+    } catch (e) {
+      // Compensating rollback: if the DB update failed, undo the image rename
+      // so we don't leave orphaned files with the product ID name.
+      if (renamedImagePath != null && originalImagePathBeforeRename != null) {
+        try {
+          await _imageService.renameImages(
+            renamedImagePath,
+            p.basenameWithoutExtension(originalImagePathBeforeRename),
+          );
+        } catch (rollbackError) {
+          dev.log(
+            'Image rename rollback failed for product ${product.id}: $rollbackError',
+            level: 900,
+            name: 'ProductRepository',
+          );
+        }
+      }
+      rethrow;
+    }
+
+    // --- Best-effort old image cleanup (after successful update) ---
     if (imageChanged || imageRemoved) {
-      await _imageService.deleteImages(oldImagePath, oldThumbPath);
+      try {
+        await _imageService.deleteImages(oldImagePath, oldThumbPath);
+      } catch (e) {
+        dev.log(
+          'Old image cleanup failed for product ${product.id}: $e',
+          level: 900,
+          name: 'ProductRepository',
+        );
+      }
     }
   }
 
@@ -280,13 +404,36 @@ class ProductRepositoryImpl implements ProductRepository {
     }
 
     final product = await _datasource.getProductById(id);
-    if (product != null) {
-      await _imageService.deleteImages(
-        product.imagePath,
-        product.imageThumbnailPath,
-      );
-      await _barcodeImageService.delete(id);
-    }
+    // Soft-delete in DB first so a failure doesn't leave orphaned image paths.
     await _datasource.deleteProduct(id);
+    await _datasource.logProductAudit(
+      productId: id,
+      action: 'DELETE',
+      newValue: product?.name,
+    );
+    if (product != null) {
+      // Best-effort image cleanup — failures here don't roll back the soft-delete
+      // (orphaned files are a storage concern, not a data-integrity concern).
+      try {
+        await _imageService.deleteImages(
+          product.imagePath,
+          product.imageThumbnailPath,
+        );
+        await _barcodeImageService.delete(id);
+      } catch (e) {
+        // Log warning but don't fail the delete operation.
+        dev.log(
+          'Image cleanup failed for deleted product $id: $e',
+          level: 900,
+          name: 'ProductRepository',
+        );
+      }
+    }
+  }
+
+  @override
+  Future<void> restoreProduct(String id) async {
+    await _datasource.restoreProduct(id);
+    await _datasource.logProductAudit(productId: id, action: 'RESTORE');
   }
 }

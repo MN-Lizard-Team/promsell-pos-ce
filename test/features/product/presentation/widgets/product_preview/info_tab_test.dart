@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/info_tab.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -83,14 +84,14 @@ void main() {
       await tester.pumpApp(InfoTab(product: p, category: null));
 
       expect(find.text('Acme'), findsOneWidget);
-      expect(find.byIcon(Icons.business_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.building), findsOneWidget);
     });
 
     testWidgets('renders recommended status', (tester) async {
       final p = product.copyWith(isRecommended: true);
       await tester.pumpApp(InfoTab(product: p, category: null));
 
-      expect(find.byIcon(Icons.star), findsOneWidget);
+      expect(find.byIcon(TablerIcons.starFilled), findsOneWidget);
     });
 
     testWidgets('renders supplier when present', (tester) async {
@@ -98,7 +99,7 @@ void main() {
       await tester.pumpApp(InfoTab(product: p, category: null));
 
       expect(find.text('Bean Co'), findsOneWidget);
-      expect(find.byIcon(Icons.local_shipping_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.truck), findsOneWidget);
     });
 
     testWidgets('renders options summary when option groups exist', (

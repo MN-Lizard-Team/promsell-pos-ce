@@ -6,11 +6,17 @@ class Products extends Table {
   TextColumn get id => text()();
   TextColumn get name => text().withLength(min: 1, max: 200)();
   TextColumn get sku => text().nullable()();
-  TextColumn get barcode => text().nullable()();
+  TextColumn get skuLower => text().nullable()();
+  TextColumn get barcode => text().nullable().withLength(max: 100)();
+  TextColumn get barcodeLower => text().nullable()();
   RealColumn get price => real()();
   RealColumn get cost => real().nullable()();
   IntColumn get stock => integer().withDefault(const Constant(0))();
-  TextColumn get categoryId => text().nullable().references(Categories, #id)();
+  TextColumn get categoryId => text().nullable().references(
+    Categories,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
   TextColumn get imageUrl => text().nullable()();
   TextColumn get imagePath => text().nullable()();
   TextColumn get imageThumbnailPath => text().nullable()();

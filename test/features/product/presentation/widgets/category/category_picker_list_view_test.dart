@@ -93,7 +93,7 @@ void main() {
         categoryBloc: mockCategoryBloc,
       );
 
-      await tester.enterText(find.byType(SearchBar), 'drink');
+      await tester.enterText(find.byType(TextField), 'drink');
       await tester.pump();
 
       expect(find.text('Drinks'), findsOneWidget);

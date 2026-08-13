@@ -1,8 +1,8 @@
-# File Dependency Map — Promsell POS CE (v0.9.0)
+# File Dependency Map — Promsell POS CE (v0.9.1)
 
 If you change a file, these are the files that must also be updated.
 
-> **Main reference:** [`CODEBASE.md`](../CODEBASE.md) — system overview, architecture, links
+> **Main reference:** [`CODEBASE.md`](../../CODEBASE.md) — system overview, architecture, links
 
 ---
 
@@ -12,14 +12,13 @@ If you change a file, these are the files that must also be updated.
 |----------------|-------------|
 | Drift table definition (`lib/core/database/tables/`) | Run `build_runner build` |
 | `app_th.arb` | `app_en.arb` (add matching key) + `flutter gen-l10n` |
-| `Settings` aggregate root | `SettingsRepositoryImpl`, `SettingsCubit`, `SettingsMapper`, all settings pages & widgets |
 | `injection_container.dart` / DI annotations | Run `build_runner build` |
 | Payment method values in DB | `payment_method_helper.dart` normalization map |
 | Shared UI behavior | `lib/core/widgets/` tests under `test/core/widgets/` |
 | Feature UI strings | Both ARB files + generated localization files |
 | Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |
 | Feature `widgets/` folder | Corresponding page file import + widget tests |
-| `Settings` aggregate root (13 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all settings pages & widgets |
+| `Settings` aggregate root (14 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all settings pages & widgets |
 | `SettingsMapper` | `SettingsRepositoryImpl` tests (mock `getAll()` return values); legacy migration handling |
 | Extracted widget (e.g. `CartItemCard`) | Parent page import update + widget test under `test/features/<name>/presentation/widgets/` |
 | Domain extension (e.g. `ReportCalculator`) | Pure Dart test under `test/features/<name>/domain/extensions/` |
@@ -51,7 +50,28 @@ If you change a file, these are the files that must also be updated.
 | `InventoryLog` entity | Update `inventory_log_test.dart` props count + `InventoryLogRepositoryImpl` mapping |
 | `InventoryLogCubit` constructor | Update mock in `test/helpers/mocks.dart` + inject `MockWatchInventoryLogs` in tests |
 | `InventoryLogLocalDatasource` | Update `InventoryLogRepositoryImpl` tests to inject mock datasource |
+| `ProductBloc._onProductsUpdated` | Update `product_bloc_test.dart` expectations — `saveStatus` is now preserved when `saving`/`saved` (not reset to `idle`) |
+| `ProductListPage` (stream/pagination/refresh) | Verify `product_list_page_test.dart` — periodic stream is now `StreamController`-based; `_onRefresh` uses `Completer` not `Future.delayed`; `_resolveProductBloc` catches `ProviderNotFoundException` only |
+| `ProductFormPage` callbacks | Verify `product_form_page_test.dart` — callbacks now use single `setState` (no double rebuild); create flow matches product by name + `createdAt` |
+| `ProductSearchBar` controller sync | Verify search bar tests — cursor position is preserved when syncing from bloc state |
+| `RichProductListTile` / `ProductFormView` | Uses `context.select` for `SettingsCubit` fields — if new settings fields are needed, add specific `context.select` lines |
+| `SaleAppBar` (clock stream) | Now `StatefulWidget` with `StreamController` in `initState`/`dispose` — verify `sale_page_test.dart` still passes; do not create `Stream.periodic` inline in `build` |
+| `SaleDashboardHeader` | Now `StatefulWidget` with cached `_salesStream` in `initState` — stream is created once, not per rebuild; uses `context.select` for `shopName`/`currency` |
+| `SaleCatalog` | Uses `context.select` for `currency`/`lowStockThreshold`/`ultraCompactMode` (in `State.build`, not `BlocBuilder.builder`); catches `ProviderNotFoundException` only |
+| `CartBottomBar` | Uses `context.select` for `currency`/`dayClosed`; `_bounceTimer` is a `Timer` cancelled in `dispose` — do not use `Future.delayed` for bounce |
+| `SaleProductCard` | Uses `context.select` for `allowOversell`/`lowStockThreshold` (not `context.read`) — ensures rebuild when settings change |
+| `_SaleViewState` (SalePage) | Uses `context.select` for `barcodeScanEnabled`; `dispose()` catches `StateError` only (not catch-all) |
+| `CheckoutBody` restaurant seeding | Deferred to `addPostFrameCallback` — do not mutate `_orderType`/`_orderChannel`/`_selectedTableId`/`_externalRefCtrl` inside `BlocBuilder.builder` |
+| `OnboardingPage` (locale/currency/progress) | Locale now read from `SettingsCubit` state (not local `_locale`); currency read from `_currencyCtrl.text`; `BlocBuilder` has `buildWhen` for `settings` only; `_finish()` validates shopName before proceeding |
+| `OnboardingPage` (layout redesign) | Now uses `PageView` with `_pageController` (4 steps: Shop → Preferences → Business → Done); `_currentStep` tracks page index; `_goToStep`/`_onNext`/`_onBack` handle navigation; `bottomNavigationBar` is `OnboardingBottomBar` (sticky) |
+| `OnboardingShopSection` | shopName `TextField` has `onChanged` callback wired to `setState` for progress bar updates — do not remove |
+| `OnboardingHeroSection` | **Redesigned**: gradient background (primary → primaryLight) + PNG image at 25% opacity as texture overlay + icon + text; uses `context.l10n.appTitle`; `isDark` selects gradient colors and image variant; `errorBuilder` returns empty `SizedBox` |
+| `OnboardingProgressBar` | **Redesigned**: step dots (4 `AnimatedContainer` dots with connecting lines) instead of `LinearProgressIndicator`; active dot expands to 28px |
+| `OnboardingSection` | **Redesigned**: `Card` with rounded 20px, no border (was 16px + outline border); no `Container` wrapper |
+| `OnboardingDoneSection` | Simplified: no inline `FilledButton` (moved to `OnboardingBottomBar`); shows completion text only |
+| `OnboardingBottomBar` | **New file**: sticky bottom navigation bar with Back/Skip (left) + Next/Finish (right); step-aware labels; uses `theme.colorScheme.surface` background with top border |
+| `BrandChoiceChip` | `selectedColor` uses `colorScheme.tertiary` (orange accent) not `colorScheme.primary` (teal) — matches `chipTheme.selectedColor` |
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · File Dependency Map</sub>
+<sub>Promsell POS CE · v0.9.1 · File Dependency Map</sub>

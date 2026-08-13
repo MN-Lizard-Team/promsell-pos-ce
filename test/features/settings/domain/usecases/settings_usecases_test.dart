@@ -1,15 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/failures/settings_failure.dart';
 import 'package:promsell_pos_ce/features/settings/domain/usecases/get_settings.dart';
 import 'package:promsell_pos_ce/features/settings/domain/usecases/update_setting_group.dart';
 import 'package:promsell_pos_ce/features/settings/domain/usecases/update_settings.dart';
 
+import '../../../../helpers/fake_app_lock.dart';
 import '../../../../helpers/mocks.dart';
 
 void main() {
   late MockSettingsRepository mockRepo;
+  late AppLockService appLock;
 
   setUpAll(() {
     registerFallbackValue(const Settings());
@@ -17,6 +21,7 @@ void main() {
 
   setUp(() {
     mockRepo = MockSettingsRepository();
+    appLock = fakeAppLock();
   });
 
   group('SettingsFailure', () {
@@ -84,7 +89,10 @@ void main() {
   group('UpdateSettings', () {
     late UpdateSettings useCase;
 
-    setUp(() => useCase = UpdateSettings(mockRepo));
+    setUp(() {
+      useCase = UpdateSettings(mockRepo, appLock);
+      when(() => mockRepo.load()).thenAnswer((_) async => const Settings());
+    });
 
     test('returns null on success', () async {
       const settings = Settings();
@@ -105,12 +113,30 @@ void main() {
       expect(failure, isA<SettingsSaveFailure>());
       verify(() => mockRepo.save(settings)).called(1);
     });
+
+    test('blocks PromptPay id change when session locked', () async {
+      await appLock.setPin('123456');
+      appLock.lockSession();
+      when(() => mockRepo.load()).thenAnswer((_) async => const Settings());
+
+      await expectLater(
+        () => useCase(const Settings().copyWith(promptpayId: '0812345678')),
+        throwsA(
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            AppLockService.ruleAppLockRequired,
+          ),
+        ),
+      );
+      verifyNever(() => mockRepo.save(any()));
+    });
   });
 
   group('UpdateSettingGroup', () {
     late UpdateSettingGroup useCase;
 
-    setUp(() => useCase = UpdateSettingGroup(mockRepo));
+    setUp(() => useCase = UpdateSettingGroup(mockRepo, appLock));
 
     test('applies mapper and saves', () async {
       const current = Settings();
@@ -138,6 +164,40 @@ void main() {
 
       expect(result, current);
       expect(failure, isA<SettingsSaveFailure>());
+    });
+
+    test('blocks billerId change when session locked', () async {
+      await appLock.setPin('123456');
+      appLock.lockSession();
+      const current = Settings();
+
+      await expectLater(
+        () => useCase(current, (s) => s.copyWith(billerId: '1234567890123')),
+        throwsA(
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            AppLockService.ruleAppLockRequired,
+          ),
+        ),
+      );
+      verifyNever(() => mockRepo.save(any()));
+    });
+
+    test('allows PromptPay change when session unlocked', () async {
+      await appLock.setPin('123456');
+      // setPin unlocks session
+      const current = Settings();
+      when(() => mockRepo.save(any())).thenAnswer((_) async {});
+
+      final (result, failure) = await useCase(
+        current,
+        (s) => s.copyWith(promptpayId: '0812345678'),
+      );
+
+      expect(failure, isNull);
+      expect(result!.promptpayId, '0812345678');
+      verify(() => mockRepo.save(any())).called(1);
     });
   });
 }

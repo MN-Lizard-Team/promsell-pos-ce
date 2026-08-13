@@ -1,17 +1,42 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_encryption_service.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_export_service.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_restore_service.dart';
 
 class _MockDb extends Mock implements AppDatabase {}
+
+class _MockStorage extends Mock implements FlutterSecureStorage {}
+
+/// Lock disabled (no enabled flag) — domain gate allows.
+AppLockService _unlockedAppLock() {
+  final map = <String, String>{};
+  final storage = _MockStorage();
+  when(() => storage.read(key: any(named: 'key'))).thenAnswer((inv) async {
+    return map[inv.namedArguments[#key] as String];
+  });
+  when(
+    () => storage.write(
+      key: any(named: 'key'),
+      value: any(named: 'value'),
+    ),
+  ).thenAnswer((inv) async {
+    map[inv.namedArguments[#key] as String] =
+        inv.namedArguments[#value] as String;
+  });
+  when(() => storage.delete(key: any(named: 'key'))).thenAnswer((inv) async {
+    map.remove(inv.namedArguments[#key] as String);
+  });
+  return AppLockService(storage: storage);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +78,12 @@ void main() {
     db = _MockDb();
     when(() => db.close()).thenAnswer((_) async {});
     encryption = BackupEncryptionService();
-    service = BackupRestoreService(db, encryption);
+    service = BackupRestoreService(
+      db,
+      encryption,
+      _unlockedAppLock(),
+      candidateValidator: (_) async {},
+    );
   });
 
   tearDown(() async {
@@ -171,6 +201,30 @@ void main() {
       verify(() => db.close()).called(1);
     },
   );
+
+  test('invalid candidate is rejected before closing the live DB', () async {
+    final invalidService = BackupRestoreService(
+      db,
+      encryption,
+      _unlockedAppLock(),
+      candidateValidator: (_) async =>
+          throw StateError('INVALID_BACKUP_SCHEMA'),
+    );
+    final backup = File(p.join(temp.path, 'invalid.db'));
+    await backup.writeAsBytes(sqlCipherLikePayload());
+
+    await expectLater(
+      () => invalidService.restoreFromPath(sourcePath: backup.path),
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'm',
+          'INVALID_BACKUP_SCHEMA',
+        ),
+      ),
+    );
+    verifyNever(() => db.close());
+  });
 
   test('wrong PIN on .enc fails and leaves live DB unchanged', () async {
     final original = sqlCipherLikePayload(80);

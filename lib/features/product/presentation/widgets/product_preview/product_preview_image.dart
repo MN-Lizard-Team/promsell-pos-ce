@@ -104,15 +104,15 @@ class _ProductPreviewImageState extends State<ProductPreviewImage>
     super.dispose();
   }
 
-  void _showFullImage(BuildContext context) {
+  Future<void> _showFullImage(BuildContext context) async {
     if (!_hasImage) return;
-    ImageViewerDialog.showSingle(
-      context,
-      ImageViewerDialog.providerFromPaths(
-        imagePath: product.imagePath,
-        imageUrl: product.imageUrl,
-      ),
+    final provider = await ImageViewerDialog.providerFromPathsAsync(
+      imagePath: product.imagePath,
+      imageUrl: product.imageUrl,
     );
+    if (!mounted) return;
+    // ignore: use_build_context_synchronously
+    ImageViewerDialog.showSingle(context, provider);
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ShopPreviewCard extends StatelessWidget {
   const ShopPreviewCard({
@@ -41,7 +42,7 @@ class ShopPreviewCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
-              Icons.storefront_outlined,
+              TablerIcons.buildingStore,
               color: st.softAccent,
               size: 28,
             ),

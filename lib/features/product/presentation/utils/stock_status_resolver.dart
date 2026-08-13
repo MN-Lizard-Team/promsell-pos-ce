@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 enum StockLevel { notTracked, outOfStock, lowStock, inStock }
 
@@ -35,7 +36,7 @@ ResolvedStockStatus resolveStockStatus({
     return ResolvedStockStatus(
       level: StockLevel.notTracked,
       label: l10n.stockTrackingDisabled,
-      icon: Icons.remove_circle_outline,
+      icon: TablerIcons.circleMinus,
       color: cs.onSurfaceVariant,
       containerColor: cs.surfaceContainerHighest,
       onContainerColor: cs.onSurfaceVariant,
@@ -48,7 +49,7 @@ ResolvedStockStatus resolveStockStatus({
     return ResolvedStockStatus(
       level: StockLevel.outOfStock,
       label: l10n.outOfStock,
-      icon: Icons.error_outline,
+      icon: TablerIcons.alertCircle,
       color: cs.error,
       containerColor: cs.errorContainer,
       onContainerColor: cs.onErrorContainer,
@@ -59,7 +60,7 @@ ResolvedStockStatus resolveStockStatus({
     return ResolvedStockStatus(
       level: StockLevel.lowStock,
       label: l10n.lowStock,
-      icon: Icons.warning_amber_outlined,
+      icon: TablerIcons.alertTriangle,
       color: cs.tertiary,
       containerColor: cs.tertiaryContainer,
       onContainerColor: cs.onTertiaryContainer,
@@ -69,7 +70,7 @@ ResolvedStockStatus resolveStockStatus({
   return ResolvedStockStatus(
     level: StockLevel.inStock,
     label: l10n.inStock,
-    icon: Icons.check_circle_outline,
+    icon: TablerIcons.circleCheck,
     color: cs.primary,
     containerColor: cs.primaryContainer,
     onContainerColor: cs.onPrimaryContainer,

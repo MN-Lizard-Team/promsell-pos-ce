@@ -37,31 +37,51 @@
 
 ### Next (post-0.9)
 
-- [ ] Phase M — INTEGER satang columns (or wired `MoneyConverter` end-to-end)
-- [ ] Phase 2b — cross-device restore / key recovery
+> **v0.9.2 integrity slice (SSOT for the next GitHub tag):** [`docs/plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md`](../plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) · backlog [`BACKLOG.md`](../plan/UN-COMPLETE/V092-INTEGRITY/BACKLOG.md) · gate [`GATE-TO-TAG.md`](../plan/UN-COMPLETE/V092-INTEGRITY/GATE-TO-TAG.md)  
+> **Architecture-first sequencing (SSOT before Play):** [`docs/plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md`](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) · backlog [`BACKLOG.md`](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/BACKLOG.md) · gate [`GATE-TO-PLAY.md`](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md)  
+> **Store / QA / Phase M·2b / UX (SSOT after AH-GATE-1):** [`docs/plan/UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md`](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) · [`POST-090-BACKLOG.md`](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md)  
+> **Docs tree honesty (does not gate the tag or Play):** [`docs/plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md`](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) · [`BACKLOG.md`](../plan/UN-COMPLETE/DOC-SSOT/BACKLOG.md)  
+> Prior epic: [`docs/plan/COMPLETE/V090-TRUST/`](../plan/COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) (GitHub trust-cut COMPLETE; Play still human)
+
+| Track | Items | Plan |
+|-------|--------|------|
+| **V092-INTEGRITY** | Withdraw tax-invoice claim, PIN on every money entry, no stale stock overwrite, host VAT+void, device void+PIN, docs↔CI | [V092-INTEGRITY](../plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) — **gates tag `v0.9.2` only** |
+| **DOC-SSOT** | Plan git+index, README shots/version, USAGE flavors, data handbook, ARCH/ADR wording, CI.md | [DOC-SSOT](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) — **does not gate tag or Play** |
+| **ARCH-HARDEN** | Domain fence, CloseDay ports, day-lock-in-TX, money boundary, read models, AH-GATE-1 | [ARCH-HARDEN-1.0](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) |
+| **WS-A Play 1.0** | Production keystore, Data safety, signed AAB, Console submit, post-smoke | [WS-A](../plan/UN-COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md) — **A4/A5 production path gated by AH-GATE-1** |
+| **WS-B QA** | E2E doc honesty, expand release-trust, `RELEASE_1.0_SMOKE`, coverage policy | [WS-B](../plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md) |
+| **WS-C Phase M** | INTEGER satang columns / `MoneyConverter` end-to-end | [WS-C](../plan/UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) — after AH fiscal decision |
+| **WS-D Phase 2b** | Cross-device restore / key export (threat model first) | [WS-D](../plan/UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md) |
+| **WS-E Product UX** | PIN default-on spec, tablet dual-pane, thermal, a11y | [WS-E](../plan/UN-COMPLETE/POST-090-MANAGE/WS-E-PRODUCT-UX.md) |
+
+- [ ] **V092-INTEGRITY + V092-GATE** — tag `v0.9.2` ([GATE-TO-TAG](../plan/UN-COMPLETE/V092-INTEGRITY/GATE-TO-TAG.md) currently **BLOCKED**)
+- [ ] **DOC-SSOT Must (DOC-1)** — commit plan tree + index + README/USAGE honesty ([DOC-SSOT](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md))
+- [ ] **ARCH-HARDEN AH-0…AH-2 + AH-GATE-1** — architecture before Play production ([GATE-TO-PLAY](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md) currently **BLOCKED**)
+- [ ] **POST-090 Must for store (after gate):** A1–A5 + B2 — see [POST-090-BACKLOG](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md)
+- [ ] Phase M — INTEGER satang / `MoneyConverter` — **after** AH-2.6 decision + B1 (B1 done)
+- [ ] Phase 2b — cross-device restore / key recovery — **after** D0 (done) + D1+
 - [ ] Tablet dual-pane sale + orientation policy
-- [ ] Play Console production cut (keystore, Data safety, AAB)
+- [ ] Play Console production cut (keystore, Data safety, AAB) — **not before AH-GATE-1**
 
 ### Release timeline
 
 ```
-v0.4.x → v0.5.x → v0.6.x → v0.7.x → v0.8.x → v0.9.0 trust cut
-  schema    cashier   tools     ops       brand     SQLCipher +
-  integrity UX        cart      PromptPay CRM       PIN + restore
+v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → V092-INTEGRITY → ARCH-HARDEN-1.0 → POST-090 Play → 1.0
+  schema …   SQLCipher+PIN     tax/PIN/stock    fence+fiscal gate     A1–A5+B2 smoke
 ```
 
 ---
 
 ## Future
 
-- [ ] **[CE]** Receipt printing via Bluetooth thermal printer — *Help wanted*
+- [ ] **[CE]** Receipt printing via Bluetooth thermal printer — *Help wanted* (scaffold: WS-E E2)
 - [x] PDF receipt export and share (v0.3.0)
 - [ ] **[Pro]** Multi-shop support
 - [ ] **[Pro]** Cloud backup and restore
 - [x] CSV export for products and sales (v0.6.0)
-- [x] Customer management (CRM CRUD) (v0.9.0) — not a full loyalty program
+- [x] Customer management (CRM CRUD) (v0.8.9) — not a full loyalty program
 - [ ] **[CE]** More languages (Lao, Khmer, Burmese, Vietnamese) — *Help wanted*
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.0 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.1 · Post-0.9 plan · AGPL-3.0</sub>

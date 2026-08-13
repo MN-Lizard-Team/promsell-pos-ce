@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/core/database/tables/daily_closes_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/draft_cart_items_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/draft_carts_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/inventory_logs_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/product_audit_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/products_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/sale_items_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/sale_payments_table.dart';
@@ -28,6 +29,7 @@ part 'app_database.g.dart';
     SalePayments,
     Categories,
     InventoryLogs,
+    ProductAudits,
     AppSettings,
     DraftCarts,
     DraftCartItems,
@@ -44,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 30;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -211,16 +213,11 @@ class AppDatabase extends _$AppDatabase {
           ('draft_carts', 'deleted_at'),
         ];
         for (final (table, column) in conversions) {
-          try {
-            await customStatement(
-              "UPDATE $table SET $column = CAST(strftime('%s', $column) AS INTEGER) * 1000 WHERE typeof($column) = 'text'",
-            );
-          } catch (e) {
-            AppLogger.warning(
-              'Schema v12 migration failed for $table.$column',
-              error: e,
-            );
-          }
+          // A failed conversion must abort the migration. Continuing would
+          // advance schema_version while leaving mixed TEXT/INTEGER values.
+          await customStatement(
+            "UPDATE $table SET $column = CAST(strftime('%s', $column) AS INTEGER) * 1000 WHERE typeof($column) = 'text'",
+          );
         }
       }
       if (from < 13) {
@@ -234,9 +231,13 @@ class AppDatabase extends _$AppDatabase {
         await _addColumnIfNotExists('categories', 'icon_name', 'TEXT');
       }
       if (from < 16) {
+        // Older databases may contain duplicate barcodes. Normalize first so
+        // the invariant is established instead of failing before v17.
+        await _deduplicateBarcodes();
         await _createBarcodeUniqueIndex();
       }
       if (from < 17) {
+        // Keep this pass for databases that entered v17 without the index.
         await _deduplicateBarcodes();
         await _createBarcodeUniqueIndex();
       }
@@ -435,6 +436,34 @@ DELETE FROM daily_closes WHERE id NOT IN (
           'ON sale_payments (sale_id)',
         );
       }
+      if (from < 29) {
+        // Add case-insensitive barcode column for indexed lookups.
+        await _addColumnIfNotExists('products', 'barcode_lower', 'TEXT');
+        await customStatement(
+          'UPDATE products SET barcode_lower = LOWER(barcode) '
+          'WHERE barcode IS NOT NULL AND barcode != \'\'',
+        );
+        // Deduplicate case-insensitively before creating unique index.
+        await _deduplicateBarcodesLower();
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_lower_unique '
+          'ON products(barcode_lower) '
+          'WHERE barcode_lower IS NOT NULL AND barcode_lower != \'\'',
+        );
+      }
+      if (from < 30) {
+        // Add case-insensitive SKU column for indexed lookups.
+        await _addColumnIfNotExists('products', 'sku_lower', 'TEXT');
+        await customStatement(
+          'UPDATE products SET sku_lower = LOWER(sku) '
+          'WHERE sku IS NOT NULL AND sku != \'\'',
+        );
+        await customStatement(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_sku_lower_unique '
+          'ON products(sku_lower) '
+          'WHERE sku_lower IS NOT NULL AND sku_lower != \'\'',
+        );
+      }
       if (from < 27) {
         // Dedupe non-null receipt numbers (keep latest created_at), then unique.
         await customStatement('''
@@ -459,6 +488,7 @@ WHERE receipt_number IS NOT NULL
     beforeOpen: (details) async {
       await customStatement('PRAGMA journal_mode=WAL');
       await customStatement('PRAGMA foreign_keys=ON');
+      await customStatement('PRAGMA synchronous=NORMAL');
     },
   );
 
@@ -469,9 +499,50 @@ WHERE receipt_number IS NOT NULL
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_products_is_active ON products (is_active)',
     );
+    // Index for soft-delete filter (every query filters deletedAt.isNull()).
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_products_deleted_at ON products (deleted_at)',
+    );
+    // Index for SKU uniqueness checks (case-insensitive via sku_lower).
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_products_sku ON products (sku) '
+      "WHERE sku IS NOT NULL AND sku != ''",
+    );
+    // Data integrity CHECK constraints (enforced at DB level).
+    await customStatement(
+      'CREATE TRIGGER IF NOT EXISTS chk_products_price_positive '
+      'BEFORE INSERT ON products '
+      'WHEN NEW.price <= 0 '
+      'BEGIN SELECT RAISE(ABORT, \'Price must be greater than 0\'); END',
+    );
+    await customStatement(
+      'CREATE TRIGGER IF NOT EXISTS chk_products_price_positive_update '
+      'BEFORE UPDATE ON products '
+      'WHEN NEW.price <= 0 '
+      'BEGIN SELECT RAISE(ABORT, \'Price must be greater than 0\'); END',
+    );
+    // Note: No CHECK constraint on stock — oversell allows negative stock.
+    await customStatement(
+      'CREATE TRIGGER IF NOT EXISTS chk_products_cost_nonneg '
+      'BEFORE INSERT ON products '
+      'WHEN NEW.cost IS NOT NULL AND NEW.cost < 0 '
+      'BEGIN SELECT RAISE(ABORT, \'Cost cannot be negative\'); END',
+    );
+    await customStatement(
+      'CREATE TRIGGER IF NOT EXISTS chk_products_cost_nonneg_update '
+      'BEFORE UPDATE ON products '
+      'WHEN NEW.cost IS NOT NULL AND NEW.cost < 0 '
+      'BEGIN SELECT RAISE(ABORT, \'Cost cannot be negative\'); END',
+    );
     // Conditional unique index created in v24 migration
     await customStatement(
       "CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique ON products(barcode) WHERE barcode IS NOT NULL AND barcode != ''",
+    );
+    // Case-insensitive barcode index (v29)
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_lower_unique '
+      'ON products(barcode_lower) '
+      'WHERE barcode_lower IS NOT NULL AND barcode_lower != \'\'',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales (created_at)',
@@ -492,6 +563,11 @@ WHERE receipt_number IS NOT NULL
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_sale_items_product_id ON sale_items (product_id)',
+    );
+    // Ensure option-group index exists for fresh installs (also in v20 migration).
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_product_option_groups_product_id '
+      'ON product_option_groups (product_id)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_inventory_logs_product_id ON inventory_logs (product_id)',
@@ -570,132 +646,150 @@ WHERE receipt_number IS NOT NULL
   Future<void> deduplicateBarcodesForTest() => _deduplicateBarcodes();
 
   Future<void> _deduplicateBarcodes() async {
-    try {
-      final duplicates = await customSelect('''
-        SELECT barcode FROM products
-        WHERE barcode IS NOT NULL AND barcode != ''
-        GROUP BY barcode HAVING COUNT(*) > 1
-      ''').get();
+    final duplicates = await customSelect('''
+      SELECT barcode FROM products
+      WHERE barcode IS NOT NULL AND barcode != ''
+      GROUP BY barcode HAVING COUNT(*) > 1
+    ''').get();
 
-      if (duplicates.isEmpty) return;
+    if (duplicates.isEmpty) return;
 
-      var clearedCount = 0;
-      for (final row in duplicates) {
-        final barcode = row.read<String>('barcode');
+    var clearedCount = 0;
+    for (final row in duplicates) {
+      final barcode = row.read<String>('barcode');
 
-        // Keep the product with latest updated_at; prefer active products
-        final keepId = await customSelect(
-          '''SELECT id FROM products
-             WHERE barcode = ?
-             ORDER BY is_active DESC, updated_at DESC
-             LIMIT 1''',
-          variables: [Variable.withString(barcode)],
-        ).getSingle();
+      // Keep the product with latest updated_at; prefer active products.
+      final keepId = await customSelect(
+        '''SELECT id FROM products
+           WHERE barcode = ?
+           ORDER BY is_active DESC, updated_at DESC
+           LIMIT 1''',
+        variables: [Variable.withString(barcode)],
+      ).getSingle();
 
-        final result = await customUpdate(
-          '''UPDATE products SET barcode = NULL
-             WHERE barcode = ? AND id != ?''',
-          updates: {products},
-          variables: [
-            Variable.withString(barcode),
-            Variable.withString(keepId.read<String>('id')),
-          ],
-        );
-        clearedCount += result;
-      }
-
-      AppLogger.warning(
-        'Schema v17: cleared $clearedCount duplicate barcodes '
-        'across ${duplicates.length} groups.',
+      final result = await customUpdate(
+        '''UPDATE products SET barcode = NULL
+           WHERE barcode = ? AND id != ?''',
+        updates: {products},
+        variables: [
+          Variable.withString(barcode),
+          Variable.withString(keepId.read<String>('id')),
+        ],
       );
-    } catch (e) {
-      AppLogger.error('Schema v17: barcode dedup failed', error: e);
+      clearedCount += result;
     }
+
+    AppLogger.warning(
+      'Schema v17: cleared $clearedCount duplicate barcodes '
+      'across ${duplicates.length} groups.',
+    );
+  }
+
+  /// Deduplicates barcodes case-insensitively — keeps one product per
+  /// [LOWER(barcode)] group before creating the barcode_lower unique index.
+  Future<void> _deduplicateBarcodesLower() async {
+    final duplicates = await customSelect('''
+      SELECT LOWER(barcode) as barcode_lower FROM products
+      WHERE barcode IS NOT NULL AND barcode != ''
+      GROUP BY LOWER(barcode) HAVING COUNT(*) > 1
+    ''').get();
+
+    if (duplicates.isEmpty) return;
+
+    var clearedCount = 0;
+    for (final row in duplicates) {
+      final lower = row.read<String>('barcode_lower');
+
+      final keepId = await customSelect(
+        '''SELECT id FROM products
+           WHERE LOWER(barcode) = ?
+           ORDER BY is_active DESC, updated_at DESC
+           LIMIT 1''',
+        variables: [Variable.withString(lower)],
+      ).getSingle();
+
+      final result = await customUpdate(
+        '''UPDATE products SET barcode = NULL, barcode_lower = NULL
+           WHERE LOWER(barcode) = ? AND id != ?''',
+        updates: {products},
+        variables: [
+          Variable.withString(lower),
+          Variable.withString(keepId.read<String>('id')),
+        ],
+      );
+      clearedCount += result;
+    }
+
+    AppLogger.warning(
+      'Schema v29: cleared $clearedCount case-insensitive duplicate barcodes '
+      'across ${duplicates.length} groups.',
+    );
   }
 
   Future<void> _backfillCategoryIds() async {
-    try {
-      final dupes = await customSelect(
-        'SELECT name, COUNT(*) as cnt FROM categories '
-        'GROUP BY name HAVING cnt > 1',
-      ).get();
+    final dupes = await customSelect(
+      'SELECT name, COUNT(*) as cnt FROM categories '
+      'GROUP BY name HAVING cnt > 1',
+    ).get();
 
-      if (dupes.isNotEmpty) {
-        AppLogger.warning(
-          'Schema v14: found ${dupes.length} duplicate category names. '
-          'Using first match for backfill.',
-        );
-      }
-
-      await customStatement('''
-        UPDATE products
-        SET category_id = (
-          SELECT id FROM categories
-          WHERE categories.name = products.category_id
-          LIMIT 1
-        )
-        WHERE category_id IS NOT NULL
-      ''');
-    } catch (e) {
-      AppLogger.warning('Schema v14 categoryId backfill failed', error: e);
+    if (dupes.isNotEmpty) {
+      AppLogger.warning(
+        'Schema v14: found ${dupes.length} duplicate category names. '
+        'Using first match for backfill.',
+      );
     }
+
+    await customStatement('''
+      UPDATE products
+      SET category_id = (
+        SELECT id FROM categories
+        WHERE categories.name = products.category_id
+        LIMIT 1
+      )
+      WHERE category_id IS NOT NULL
+    ''');
   }
 
   Future<void> _createBarcodeUniqueIndex() async {
-    try {
-      final duplicates = await customSelect('''
-        SELECT barcode, COUNT(*) as cnt FROM products
-        WHERE barcode IS NOT NULL AND barcode != ''
-        GROUP BY barcode HAVING cnt > 1
-      ''').get();
+    final duplicates = await customSelect('''
+      SELECT barcode, COUNT(*) as cnt FROM products
+      WHERE barcode IS NOT NULL AND barcode != ''
+      GROUP BY barcode HAVING cnt > 1
+    ''').get();
 
-      if (duplicates.isNotEmpty) {
-        AppLogger.warning(
-          'Schema v16: found ${duplicates.length} duplicate barcodes. '
-          'Skipping unique index creation. Clean duplicates manually.',
-        );
-        return;
-      }
-
-      await customStatement(
-        'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique ON products (barcode)',
-      );
-    } catch (e) {
-      AppLogger.error(
-        'Schema v16: barcode unique index creation failed',
-        error: e,
+    if (duplicates.isNotEmpty) {
+      throw StateError(
+        'Schema v16 cannot create barcode unique index: '
+        '${duplicates.length} duplicate barcode groups remain',
       );
     }
+
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique '
+      "ON products (barcode) WHERE barcode IS NOT NULL AND barcode != ''",
+    );
   }
 
   Future<void> _backfillDeviceId() async {
-    try {
-      final result = await customSelect(
-        "SELECT value FROM app_settings WHERE key = 'deviceId'",
-      ).getSingleOrNull();
-      final deviceId = result?.read<String>('value') ?? '';
-      if (deviceId.isEmpty) return;
+    final result = await customSelect(
+      "SELECT value FROM app_settings WHERE key = 'deviceId'",
+    ).getSingleOrNull();
+    final deviceId = result?.read<String>('value') ?? '';
+    if (deviceId.isEmpty) return;
 
-      const tables = [
-        'sales',
-        'sale_items',
-        'draft_carts',
-        'draft_cart_items',
-        'daily_closes',
-        'inventory_logs',
-      ];
-      for (final table in tables) {
-        try {
-          await customStatement(
-            "UPDATE $table SET device_id = ? WHERE device_id IS NULL OR device_id = ''",
-            [deviceId],
-          );
-        } catch (e) {
-          AppLogger.warning('Schema v13 backfill failed for $table', error: e);
-        }
-      }
-    } catch (e) {
-      AppLogger.warning('Schema v13 deviceId backfill failed', error: e);
+    const tables = [
+      'sales',
+      'sale_items',
+      'draft_carts',
+      'draft_cart_items',
+      'daily_closes',
+      'inventory_logs',
+    ];
+    for (final table in tables) {
+      await customStatement(
+        "UPDATE $table SET device_id = ? WHERE device_id IS NULL OR device_id = ''",
+        [deviceId],
+      );
     }
   }
 

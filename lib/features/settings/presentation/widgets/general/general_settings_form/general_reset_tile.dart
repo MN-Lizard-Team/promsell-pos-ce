@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class GeneralResetTile extends StatelessWidget {
   const GeneralResetTile({
@@ -45,7 +46,7 @@ class GeneralResetTile extends StatelessWidget {
               color: st.iconContainerBackground,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.restore, color: st.mutedText, size: 24),
+            child: Icon(TablerIcons.history, color: st.mutedText, size: 24),
           ),
           title: Text(
             l10n.generalSettingsReset,
@@ -86,7 +87,7 @@ class GeneralResetTile extends StatelessWidget {
       confirmLabel: l10n.generalSettingsReset,
       cancelLabel: l10n.cancel,
       destructive: true,
-      confirmIcon: Icons.restart_alt,
+      confirmIcon: TablerIcons.refresh,
     );
     if (!confirmed || !context.mounted) return;
     HapticFeedback.lightImpact();

@@ -16,6 +16,16 @@ void main() {
     mockDs = MockProductLocalDatasource();
     mockImageService = MockProductImageService();
     repo = ProductRepositoryImpl(mockDs, mockImageService);
+    // Default stub: audit logging is a no-op (called by add/update/delete).
+    when(
+      () => mockDs.logProductAudit(
+        productId: any(named: 'productId'),
+        action: any(named: 'action'),
+        fieldName: any(named: 'fieldName'),
+        oldValue: any(named: 'oldValue'),
+        newValue: any(named: 'newValue'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   setUpAll(() {
@@ -84,12 +94,16 @@ void main() {
       when(
         () => mockDs.getProductById(any()),
       ).thenAnswer((_) async => tProduct);
-      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+      when(
+        () => mockDs.updateProductWithAudit(any(), any(), any()),
+      ).thenAnswer((_) async {});
 
       await repo.updateProduct(tProduct);
 
       final captured =
-          verify(() => mockDs.updateProduct(captureAny())).captured.single
+          verify(
+                () => mockDs.updateProductWithAudit(captureAny(), any(), any()),
+              ).captured.single
               as ProductsCompanion;
       expect(captured.id.value, tProduct.id);
       expect(captured.name.value, tProduct.name);
@@ -114,7 +128,9 @@ void main() {
       when(
         () => mockImageService.renameImages(any(), any()),
       ).thenAnswer((_) async => null);
-      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+      when(
+        () => mockDs.updateProductWithAudit(any(), any(), any()),
+      ).thenAnswer((_) async {});
 
       await repo.updateProduct(updatedProduct);
 
@@ -141,7 +157,9 @@ void main() {
       when(
         () => mockImageService.deleteImages(any(), any()),
       ).thenAnswer((_) async {});
-      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+      when(
+        () => mockDs.updateProductWithAudit(any(), any(), any()),
+      ).thenAnswer((_) async {});
 
       await repo.updateProduct(updatedProduct);
 
@@ -165,7 +183,9 @@ void main() {
       when(
         () => mockImageService.renameImages(any(), any()),
       ).thenAnswer((_) async => null);
-      when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+      when(
+        () => mockDs.updateProductWithAudit(any(), any(), any()),
+      ).thenAnswer((_) async {});
 
       await repo.updateProduct(updatedProduct);
 
@@ -260,12 +280,14 @@ void main() {
         when(
           () => mockImageService.renameImages(any(), any()),
         ).thenAnswer((_) async => null);
-        when(() => mockDs.updateProduct(any())).thenAnswer((_) async {});
+        when(
+          () => mockDs.updateProductWithAudit(any(), any(), any()),
+        ).thenAnswer((_) async {});
 
         await repo.updateProduct(updatedProduct);
 
         verifyInOrder([
-          () => mockDs.updateProduct(any()),
+          () => mockDs.updateProductWithAudit(any(), any(), any()),
           () => mockImageService.deleteImages(
             '/old/path.jpg',
             '/old/path_thumb.jpg',
@@ -295,7 +317,7 @@ void main() {
           () => mockImageService.renameImages(any(), any()),
         ).thenAnswer((_) async => null);
         when(
-          () => mockDs.updateProduct(any()),
+          () => mockDs.updateProductWithAudit(any(), any(), any()),
         ).thenThrow(Exception('DB error'));
 
         expect(

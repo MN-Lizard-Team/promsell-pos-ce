@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/promptpay_qr_code.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class PromptpayPreviewCard extends StatelessWidget {
   const PromptpayPreviewCard({
@@ -49,11 +50,7 @@ class PromptpayPreviewCard extends StatelessWidget {
                 color: accentColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                Icons.qr_code_scanner_outlined,
-                color: accentColor,
-                size: 28,
-              ),
+              child: Icon(TablerIcons.scan, color: accentColor, size: 28),
             ),
           const SizedBox(height: 12),
           Text(
@@ -69,11 +66,7 @@ class PromptpayPreviewCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: st.softTextSecondary,
-                  size: 16,
-                ),
+                Icon(TablerIcons.wallet, color: st.softTextSecondary, size: 16),
                 const SizedBox(width: 6),
                 Text(
                   promptpayId,

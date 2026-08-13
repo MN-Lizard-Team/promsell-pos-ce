@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt/receipt_preview/receipt_preview_data.dart';
-import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_avatar.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/receipt_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 class ReceiptPreviewThermal extends StatelessWidget {
@@ -79,22 +79,27 @@ class ReceiptPreviewThermal extends StatelessWidget {
     final vat = vatInfo;
     final footer =
         footerOverride ??
-        (s.receiptNote.isNotEmpty ? s.receiptNote : 'Thank you!');
+        (s.receiptNote.isNotEmpty ? s.receiptNote : (l.thankYou ?? ''));
+
+    final receiptTheme = context.receiptTheme;
+    final paperMax = receiptTheme.paperWidthForSize(s.receiptSize);
+    final ink = receiptTheme.ink;
+    final paper = receiptTheme.paper;
 
     return Container(
-      constraints: const BoxConstraints(maxWidth: 280),
+      constraints: BoxConstraints(maxWidth: paperMax),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(4),
+        color: paper,
+        borderRadius: BorderRadius.circular(receiptTheme.thermalRadius),
         border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.45),
         ),
       ),
       child: DefaultTextStyle(
         style: TextStyle(
-          color: theme.colorScheme.onSurface,
-          fontSize: 11,
+          color: ink,
+          fontSize: 13,
           height: 1.3,
           fontFamily: 'NotoSansThai',
         ),
@@ -104,7 +109,7 @@ class ReceiptPreviewThermal extends StatelessWidget {
           children: [
             if (isVoided) ...[
               _center(
-                l.voided ?? 'VOIDED',
+                l.voided ?? '',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -113,14 +118,14 @@ class ReceiptPreviewThermal extends StatelessWidget {
               ),
               if (voidReason != null && voidReason!.isNotEmpty)
                 _center(
-                  '${l.voidReason ?? 'Reason'}: $voidReason',
+                  '${l.voidReason ?? ''}: $voidReason',
                   style: const TextStyle(fontSize: 9),
                 ),
               const SizedBox(height: 4),
             ],
             if (isReprint)
               _center(
-                l.reprint ?? 'REPRINT',
+                l.reprint ?? '',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -182,32 +187,22 @@ class ReceiptPreviewThermal extends StatelessWidget {
               Text('${l.promotion}: ${l.promotionName}'),
             const SizedBox(height: 6),
             _divider(theme),
+            // True thermal: text lines only (no product photos on paper).
             ...items.map(
               (item) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 3),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (item.imagePath != null ||
-                        item.imageThumbnailPath != null ||
-                        item.imageUrl != null) ...[
-                      ProductAvatar(
-                        imagePath: item.imagePath,
-                        imageThumbnailPath: item.imageThumbnailPath,
-                        imageUrl: item.imageUrl,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 8),
-                    ],
                     Expanded(
                       child: Text(
                         '${item.name} x${item.qty}',
-                        style: const TextStyle(fontSize: 10),
+                        style: TextStyle(fontSize: 10, color: ink),
                       ),
                     ),
                     Text(
                       _money(item.subtotal),
-                      style: const TextStyle(fontSize: 10),
+                      style: TextStyle(fontSize: 10, color: ink),
                     ),
                   ],
                 ),
@@ -218,14 +213,14 @@ class ReceiptPreviewThermal extends StatelessWidget {
               _row(l.cartDiscount, '-${_money(cartDiscount!)}'),
             if (promotionDiscount != null && promotionDiscount! > 0)
               _row(
-                l.promotionDiscount ?? l.promotion ?? 'Promotion',
+                l.promotionDiscount ?? l.promotion ?? '',
                 '-${_money(promotionDiscount!)}',
               ),
             if (serviceCharge != null && serviceCharge! > 0)
               _row(
                 (serviceChargeRate != null && serviceChargeRate! > 0)
-                    ? '${l.serviceCharge ?? 'Service charge'} ${serviceChargeRate!.toStringAsFixed(0)}%'
-                    : (l.serviceCharge ?? 'Service charge'),
+                    ? '${l.serviceCharge ?? ''} ${serviceChargeRate!.toStringAsFixed(0)}%'
+                    : (l.serviceCharge ?? ''),
                 _money(serviceCharge!),
               ),
             if (vat != null) ...[
@@ -244,10 +239,25 @@ class ReceiptPreviewThermal extends StatelessWidget {
             ],
             if (note != null && note!.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text('${l.note}: $note', style: const TextStyle(fontSize: 9)),
+              Text(
+                '${l.note}: $note',
+                style: TextStyle(fontSize: 9, color: ink),
+              ),
             ],
             const SizedBox(height: 8),
-            _center(footer, style: const TextStyle(fontSize: 10)),
+            _center(footer, style: TextStyle(fontSize: 10, color: ink)),
+            const SizedBox(height: 10),
+            // Tear / cut edge — thermal paper metaphor.
+            CustomPaint(
+              key: const ValueKey('receipt_thermal_cut_line'),
+              painter: _ThermalCutLinePainter(
+                color: ink.withValues(alpha: 0.45),
+                dash: receiptTheme.cutDash,
+                gap: receiptTheme.cutGap,
+                stroke: receiptTheme.cutStroke,
+              ),
+              size: const Size(double.infinity, 8),
+            ),
           ],
         ),
       ),
@@ -284,4 +294,41 @@ class ReceiptPreviewThermal extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// Dashed cut line under thermal preview (printer tear cue).
+class _ThermalCutLinePainter extends CustomPainter {
+  _ThermalCutLinePainter({
+    required this.color,
+    this.dash = 4,
+    this.gap = 3,
+    this.stroke = 1,
+  });
+
+  final Color color;
+  final double dash;
+  final double gap;
+  final double stroke;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = stroke
+      ..style = PaintingStyle.stroke;
+    var x = 0.0;
+    final y = size.height / 2;
+    while (x < size.width) {
+      final end = (x + dash).clamp(0.0, size.width);
+      canvas.drawLine(Offset(x, y), Offset(end, y), paint);
+      x += dash + gap;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ThermalCutLinePainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.dash != dash ||
+      oldDelegate.gap != gap ||
+      oldDelegate.stroke != stroke;
 }

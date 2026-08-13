@@ -5,7 +5,7 @@ class DateRangePresets {
   static DateTime startOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
 
   static DateTime endOfDay(DateTime d) =>
-      DateTime(d.year, d.month, d.day, 23, 59, 59, 999);
+      DateTime(d.year, d.month, d.day, 23, 59, 59, 999, 999);
 
   static (DateTime from, DateTime to) today([DateTime? now]) {
     final n = now ?? DateTime.now();

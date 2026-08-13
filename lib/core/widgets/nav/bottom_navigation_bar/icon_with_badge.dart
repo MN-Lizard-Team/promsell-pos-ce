@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class IconWithBadge extends StatelessWidget {
   const IconWithBadge({
     super.key,
     required this.icon,
     required this.color,
+    this.svgString,
     this.badgeCount,
     required this.badgeColor,
     required this.isActive,
@@ -12,6 +14,7 @@ class IconWithBadge extends StatelessWidget {
 
   final IconData icon;
   final Color color;
+  final String? svgString;
   final int? badgeCount;
   final Color badgeColor;
   final bool isActive;
@@ -33,7 +36,18 @@ class IconWithBadge extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Icon(icon, color: color, size: iconSize),
+          if (svgString != null)
+            SizedBox(
+              width: iconSize,
+              height: iconSize,
+              child: SvgPicture.string(
+                svgString!,
+                fit: BoxFit.contain,
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              ),
+            )
+          else
+            Icon(icon, color: color, size: iconSize),
           if (hasBadge)
             Positioned(
               top: 0,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 
 class SearchHistoryState {
@@ -27,7 +28,12 @@ class SearchHistoryCubit extends Cubit<SearchHistoryState> {
     try {
       final list = (jsonDecode(raw) as List).cast<String>();
       emit(SearchHistoryState(searches: list));
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning(
+        'SearchHistoryCubit: load failed to parse JSON',
+        error: e,
+        stack: stack,
+      );
       emit(const SearchHistoryState());
     }
   }

@@ -7,6 +7,12 @@ mixin CartBlocBarcodeHandlers on Bloc<CartEvent, CartState> {
 
   bool rejectIfPaymentLocked(Emitter<CartState> emit);
   int qtyInCart(String productId, {String? excludeLineId});
+  int maxQtyForLine({
+    required int stock,
+    required int othersQty,
+    required bool stockLimited,
+  });
+  void schedulePromoRecompute();
 
   static const barcodeDebounce = Duration(milliseconds: 1000);
   String? lastScannedBarcode;
@@ -45,7 +51,13 @@ mixin CartBlocBarcodeHandlers on Bloc<CartEvent, CartState> {
         final inCartQty = qtyInCart(p.id);
         if (existing >= 0) {
           final currentQty = updated[existing].qty;
-          if (stockLimited && inCartQty >= p.stock) {
+          final others = inCartQty - currentQty;
+          final maxForLine = maxQtyForLine(
+            stock: p.stock,
+            othersQty: others,
+            stockLimited: stockLimited,
+          );
+          if (stockLimited && maxForLine <= 0) {
             emit(
               state.copyWith(
                 errorMessage: 'outOfStock',
@@ -56,16 +68,16 @@ mixin CartBlocBarcodeHandlers on Bloc<CartEvent, CartState> {
             return;
           }
           final newQty = currentQty + 1;
-          final maxForLine = stockLimited
-              ? (p.stock - (inCartQty - currentQty)).clamp(0, p.stock)
-              : 999999;
           updated[existing] = updated[existing].copyWith(
-            qty: stockLimited
-                ? newQty.clamp(0, maxForLine).toInt().toInt()
-                : newQty,
+            qty: stockLimited ? newQty.clamp(1, maxForLine).toInt() : newQty,
           );
         } else {
-          if (stockLimited && inCartQty >= p.stock) {
+          final maxForLine = maxQtyForLine(
+            stock: p.stock,
+            othersQty: inCartQty,
+            stockLimited: stockLimited,
+          );
+          if (stockLimited && maxForLine <= 0) {
             emit(
               state.copyWith(
                 errorMessage: 'outOfStock',
@@ -84,6 +96,7 @@ mixin CartBlocBarcodeHandlers on Bloc<CartEvent, CartState> {
             lastFailedBarcode: null,
           ),
         );
+        schedulePromoRecompute();
       } else {
         // Allow immediate re-scan after create-product recovery CTA.
         lastScannedAt = null;

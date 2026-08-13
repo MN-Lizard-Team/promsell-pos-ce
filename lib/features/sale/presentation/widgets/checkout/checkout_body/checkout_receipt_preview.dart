@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt/receipt_preview.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
+import 'package:promsell_pos_ce/features/receipt/domain/services/receipt_line_name.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
@@ -18,6 +19,10 @@ class CheckoutReceiptPreview extends StatelessWidget {
     required this.amountReceived,
     required this.changeAmount,
     required this.onTapPreview,
+    this.cartDiscount,
+    this.promotionDiscount,
+    this.serviceCharge,
+    this.serviceChargeRate,
   });
 
   final Settings settings;
@@ -29,11 +34,18 @@ class CheckoutReceiptPreview extends StatelessWidget {
   final double? amountReceived;
   final double? changeAmount;
   final VoidCallback onTapPreview;
+  final double? cartDiscount;
+  final double? promotionDiscount;
+  final double? serviceCharge;
+  final double? serviceChargeRate;
 
   List<ReceiptPreviewItem> get _previewItems => items
       .map(
         (i) => ReceiptPreviewItem(
-          name: i.product.name,
+          name: receiptLineName(
+            productName: i.product.name,
+            selectedOptions: i.selectedOptions,
+          ),
           qty: i.qty,
           price: i.product.price.value,
           subtotal: i.subtotal.value,
@@ -45,19 +57,27 @@ class CheckoutReceiptPreview extends StatelessWidget {
       .toList();
 
   ReceiptLabels _buildLabels(BuildContext context) {
+    final l = context.l10n;
     return ReceiptLabels(
-      receipt: context.l10n.receiptLabelReceipt,
-      payment: context.l10n.receiptLabelPayment,
+      receipt: l.receiptLabelReceipt,
+      payment: l.receiptLabelPayment,
       paymentMethodLabel: localizePaymentMethod(context, method),
-      total: context.l10n.receiptLabelTotal,
-      received: context.l10n.receiptLabelReceived,
-      change: context.l10n.receiptLabelChange,
-      note: context.l10n.receiptLabelNote,
-      vat: context.l10n.receiptLabelVat,
-      vatIncluded: context.l10n.receiptLabelVatIncluded(settings.vatRate),
-      subtotal: context.l10n.receiptLabelSubtotal,
-      itemDiscounts: context.l10n.receiptItemDiscounts,
-      cartDiscount: context.l10n.receiptCartDiscount,
+      total: l.receiptLabelTotal,
+      received: l.receiptLabelReceived,
+      change: l.receiptLabelChange,
+      note: l.receiptLabelNote,
+      vat: l.receiptLabelVat,
+      vatIncluded: l.receiptLabelVatIncluded(settings.vatRate),
+      subtotal: l.receiptLabelSubtotal,
+      itemDiscounts: l.receiptItemDiscounts,
+      cartDiscount: l.receiptCartDiscount,
+      serviceCharge: l.serviceCharge,
+      promotion: l.receiptLabelPromotion,
+      promotionDiscount: l.receiptLabelPromotionDiscount,
+      notTaxInvoice: l.receiptNotTaxInvoice,
+      taxId: l.receiptTaxId,
+      taxInvoice: l.receiptTaxInvoice,
+      thankYou: l.receiptThankYouDefault,
     );
   }
 
@@ -94,10 +114,16 @@ class CheckoutReceiptPreview extends StatelessWidget {
             items: previewItems,
             total: effectiveTotal,
             vatInfo: vatInfo,
-            paymentMethod: method,
+            // Localized method — not raw `cash` / `promptpay`.
+            paymentMethod: labels.paymentMethodLabel,
             amountReceived: amountReceived,
             changeAmount: changeAmount,
             note: note,
+            cartDiscount: cartDiscount,
+            promotionDiscount: promotionDiscount,
+            serviceCharge: serviceCharge,
+            serviceChargeRate: serviceChargeRate,
+            notTaxInvoiceDisclaimer: labels.notTaxInvoice,
           ),
         ),
         const SizedBox(height: 20),

@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_line_actions.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_review_body.dart';
 
 /// Shared cart title row: bill name + item count + clear all + drafts.
@@ -76,12 +77,15 @@ class CartReviewHeader extends StatelessWidget {
           ),
           BlocBuilder<CartBloc, CartState>(
             buildWhen: (p, c) =>
-                p.isEmpty != c.isEmpty || p.itemCount != c.itemCount,
+                p.isEmpty != c.isEmpty ||
+                p.itemCount != c.itemCount ||
+                p.paymentLocked != c.paymentLocked,
             builder: (context, state) {
+              final locked = CartLineActions.isPaymentLocked(context);
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (!state.isEmpty)
+                  if (!state.isEmpty && !locked)
                     TextButton(
                       onPressed: () => CartReviewBody.clearCart(context, state),
                       style: TextButton.styleFrom(

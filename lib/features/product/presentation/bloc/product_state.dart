@@ -2,7 +2,17 @@ import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
+import 'package:promsell_pos_ce/features/product/domain/utils/product_list_filters.dart';
 import 'package:promsell_pos_ce/features/product/domain/utils/product_search.dart';
+
+export 'package:promsell_pos_ce/features/product/domain/utils/product_list_filters.dart'
+    show
+        PriceRange,
+        ProductListFilterSpec,
+        ProductSort,
+        StockFilter,
+        applyProductListFilters,
+        kNoCategoryFilter;
 
 const Object _unset = Object();
 
@@ -13,34 +23,13 @@ enum ProductSaveStatus { idle, saving, saved, error }
 /// Isolated from [ProductStatus] so catalog stream updates don't race CSV import UI.
 enum ProductImportStatus { idle, importing, success, failure }
 
-const String kNoCategoryFilter = '__none__';
-
-enum StockFilter { all, lowStock, outOfStock }
-
 enum ProductTabFilter { all, category, stock }
-
-enum ProductSort { default_, nameAsc, priceLowHigh, priceHighLow, stockLowHigh }
-
-class PriceRange extends Equatable {
-  const PriceRange({this.min, this.max});
-
-  final double? min;
-  final double? max;
-
-  bool get isActive => min != null || max != null;
-
-  PriceRange copyWith({double? min, double? max}) {
-    return PriceRange(min: min ?? this.min, max: max ?? this.max);
-  }
-
-  @override
-  List<Object?> get props => [min, max];
-}
 
 class ProductState extends Equatable {
   const ProductState({
     this.status = ProductStatus.initial,
     this.products = const [],
+    this.totalProductCount = 0,
     this.searchQuery = '',
     this.categoryFilter,
     this.stockFilter = StockFilter.all,
@@ -53,10 +42,16 @@ class ProductState extends Equatable {
     this.isBatchGenerating = false,
     this.importResult,
     this.importStatus = ProductImportStatus.idle,
+    this.lastDeletedProductId,
+    this.lastDeletedProductName,
   });
 
   final ProductStatus status;
   final List<Product> products;
+
+  /// Total non-deleted product count (from DB, not products.length).
+  /// Used for "Showing X of Y" indicator and pagination decisions.
+  final int totalProductCount;
   final String searchQuery;
   final String? categoryFilter;
   final StockFilter stockFilter;
@@ -73,6 +68,10 @@ class ProductState extends Equatable {
   final bool isBatchGenerating;
   final ProductImportResult? importResult;
   final ProductImportStatus importStatus;
+
+  /// ID + name of the last soft-deleted product (for Undo snack).
+  final String? lastDeletedProductId;
+  final String? lastDeletedProductName;
 
   String? get errorMessage {
     final e = error;
@@ -98,62 +97,26 @@ class ProductState extends Equatable {
   ///
   /// Sale passes [pauseFiltersOnSearch]: false so category filters stay on,
   /// then matches are ranked within the filtered set.
+  ///
+  /// Delegates to [applyProductListFilters] (single pipeline with sheet preview).
   List<Product> filteredProducts({
     int lowStockThreshold = 5,
     bool pauseFiltersOnSearch = true,
+    bool activeOnly = false,
   }) {
-    final rawQuery = searchQuery.trim();
-    if (rawQuery.isNotEmpty && pauseFiltersOnSearch) {
-      return matchProductList(products, rawQuery);
-    }
-
-    var result = List<Product>.of(products);
-    if (categoryFilter != null) {
-      if (categoryFilter == kNoCategoryFilter) {
-        result = result.where((p) => p.categoryId == null).toList();
-      } else {
-        result = result.where((p) => p.categoryId == categoryFilter).toList();
-      }
-    }
-    if (stockFilter == StockFilter.lowStock) {
-      final threshold = lowStockThreshold < 1 ? 1 : lowStockThreshold;
-      result = result
-          .where((p) => p.trackStock && p.stock > 0 && p.stock <= threshold)
-          .toList();
-    } else if (stockFilter == StockFilter.outOfStock) {
-      result = result.where((p) => p.trackStock && p.stock == 0).toList();
-    }
-    if (priceRange != null) {
-      if (priceRange!.min != null) {
-        result = result
-            .where((p) => p.price.value >= priceRange!.min!)
-            .toList();
-      }
-      if (priceRange!.max != null) {
-        result = result
-            .where((p) => p.price.value <= priceRange!.max!)
-            .toList();
-      }
-    }
-    if (rawQuery.isNotEmpty) {
-      // Keep filters, then ranked matches only (includeInactive so sale can
-      // still apply isActive itself).
-      result = matchProductList(result, rawQuery, includeInactive: true);
-    } else {
-      switch (productSort) {
-        case ProductSort.nameAsc:
-          result = result..sort((a, b) => a.name.compareTo(b.name));
-        case ProductSort.priceLowHigh:
-          result = result..sort((a, b) => a.price.compareTo(b.price));
-        case ProductSort.priceHighLow:
-          result = result..sort((a, b) => b.price.compareTo(a.price));
-        case ProductSort.stockLowHigh:
-          result = result..sort((a, b) => a.stock.compareTo(b.stock));
-        case ProductSort.default_:
-          break;
-      }
-    }
-    return result;
+    return applyProductListFilters(
+      products,
+      ProductListFilterSpec(
+        categoryFilter: categoryFilter,
+        stockFilter: stockFilter,
+        productSort: productSort,
+        priceRange: priceRange,
+        searchQuery: searchQuery,
+        lowStockThreshold: lowStockThreshold,
+        pauseFiltersOnSearch: pauseFiltersOnSearch,
+        activeOnly: activeOnly,
+      ),
+    );
   }
 
   /// Backward-compatible getter (threshold 5). Prefer [filteredProducts].
@@ -164,6 +127,9 @@ class ProductState extends Equatable {
       categoryFilter != null ||
       stockFilter != StockFilter.all ||
       (priceRange?.isActive ?? false);
+
+  /// True when there are more products to load (loaded < total).
+  bool get hasMoreProducts => products.length < totalProductCount;
 
   /// Search-only matches (name / SKU / barcode). Ignores category, stock, price
   /// filters. Ranked via [matchProductList]; inactive excluded by default.
@@ -179,6 +145,7 @@ class ProductState extends Equatable {
   ProductState copyWith({
     ProductStatus? status,
     List<Product>? products,
+    int? totalProductCount,
     String? searchQuery,
     Object? categoryFilter = _unset,
     StockFilter? stockFilter,
@@ -191,10 +158,13 @@ class ProductState extends Equatable {
     bool? isBatchGenerating,
     Object? importResult = _unset,
     ProductImportStatus? importStatus,
+    Object? lastDeletedProductId = _unset,
+    Object? lastDeletedProductName = _unset,
   }) {
     return ProductState(
       status: status ?? this.status,
       products: products ?? this.products,
+      totalProductCount: totalProductCount ?? this.totalProductCount,
       searchQuery: searchQuery ?? this.searchQuery,
       categoryFilter: identical(categoryFilter, _unset)
           ? this.categoryFilter
@@ -215,6 +185,12 @@ class ProductState extends Equatable {
           ? this.importResult
           : importResult as ProductImportResult?,
       importStatus: importStatus ?? this.importStatus,
+      lastDeletedProductId: identical(lastDeletedProductId, _unset)
+          ? this.lastDeletedProductId
+          : lastDeletedProductId as String?,
+      lastDeletedProductName: identical(lastDeletedProductName, _unset)
+          ? this.lastDeletedProductName
+          : lastDeletedProductName as String?,
     );
   }
 
@@ -222,6 +198,7 @@ class ProductState extends Equatable {
   List<Object?> get props => [
     status,
     products,
+    totalProductCount,
     searchQuery,
     categoryFilter,
     stockFilter,
@@ -234,5 +211,7 @@ class ProductState extends Equatable {
     isBatchGenerating,
     importResult,
     importStatus,
+    lastDeletedProductId,
+    lastDeletedProductName,
   ];
 }

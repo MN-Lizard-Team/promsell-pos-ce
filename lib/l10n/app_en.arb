@@ -6,8 +6,8 @@
   "navHome": "Home",
   "navSale": "Sale",
   "navProducts": "Products",
-  "navHistory": "History",
-  "navReport": "Report",
+  "navHistory": "Sales History",
+  "navReport": "Summary",
   "navSettings": "Settings",
   "salePageTitle": "Sale",
   "salePageSubtitle": "Add products and complete the sale",
@@ -44,6 +44,17 @@
   "quickCashExact": "Exact cash",
   "noProducts": "No products",
   "saleSavedSuccess": "Sale saved successfully",
+  "saleSuccessTitle": "Payment complete",
+  "saleSuccessSubtitle": "Receipt #{number}",
+  "@saleSuccessSubtitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "changeDue": "Change due",
+  "nextSale": "Next sale",
   "productAddedToCart": "{name} added",
   "@productAddedToCart": {
     "placeholders": {
@@ -86,10 +97,20 @@
   "insufficientCash": "Insufficient cash received",
   "remainingAmount": "Remaining",
   "productsTitle": "Products",
-  "searchProducts": "Search products...",
+  "searchProducts": "Search products, barcode, and more...",
+  "searchProductsHint": "Tap to search products, barcode, and more...",
+  "tapToSearch": "Tap to search",
+  "searchActive": "Search active",
   "recentSearches": "Recent searches",
   "noProductsYet": "No products yet",
+  "noProductsYetHint": "Add your first product or import from CSV to get started.",
   "errorOccurred": "An error occurred",
+  "receiptPrintFailed": "Printing failed. Please check the printer and try again.",
+  "receiptShareFailed": "Could not share the receipt. Please try again.",
+  "receiptPdfFailed": "Failed to generate the receipt PDF.",
+  "receiptPrintSuccess": "Receipt printed successfully.",
+  "receiptShareSuccess": "Receipt shared successfully.",
+  "receiptTaxInvoice": "Tax Invoice",
   "retry": "Retry",
   "noCategory": "No category",
   "stockLabel": "Stock: {count}",
@@ -146,6 +167,7 @@
   "addProduct": "Add Product",
   "editProductTitle": "Edit Product",
   "productNameLabel": "Product name *",
+  "productNameHint": "e.g., Iced Americano Large",
   "productNameRequired": "Please enter product name",
   "productNameTooLong": "Product name is too long (max 100 characters)",
   "quickEditStockSet": "Set",
@@ -177,7 +199,9 @@
   "quantityRequired": "Please enter quantity",
   "invalidQuantity": "Invalid quantity",
   "invalidBarcode": "Barcode must be alphanumeric (letters and numbers only)",
+  "invalidBarcodeFormat": "Barcode must contain only letters and numbers (no spaces, hyphens, or special characters)",
   "categoryLabel": "Category",
+  "categoryHelper": "Optional — helps organize products in POS",
   "showProduct": "Show product",
   "productVisibility": "Product visibility",
   "save": "Save",
@@ -185,6 +209,13 @@
   "productActivated": "Product activated",
   "productDeactivated": "Product deactivated",
   "productDeleted": "Product deleted",
+  "productDeletedWithName": "{name} deleted",
+  "@productDeletedWithName": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "productDeletedShort": "Product deleted",
   "stockUpdated": "Stock updated",
   "stockUpdateCancelled": "Stock not changed",
   "stockUpdateInvalid": "Invalid stock value",
@@ -195,8 +226,15 @@
   "stockZeroWarning": "Product won't appear in sale when stock is 0",
   "historyTitle": "Sale History",
   "searchHistoryHint": "Search receipt, payment, amount…",
-  "noSearchResults": "No settings found",
+  "searchSales": "Search sales",
+  "noSearchResults": "No sales found",
   "noSalesYet": "No sales yet",
+  "noSalesInRange": "No sales in the selected date range",
+  "changeDateRange": "Change date range",
+  "searchResultsCount": "{count} results found",
+  "noResultsInDateRange": "No results in this date range. Try changing the date range.",
+  "searchingInRange": "Searching within: {range}",
+  "tapToExpandHint": "Tap to see more details",
   "noDailyClosesYet": "No daily closes yet",
   "noteLabel": "Note: {note}",
   "@noteLabel": {
@@ -206,7 +244,7 @@
       }
     }
   },
-  "reportTitle": "Report",
+  "reportTitle": "Sales Summary",
   "totalRevenue": "Total Revenue",
   "salesCount": "{count} sales",
   "@salesCount": {
@@ -254,6 +292,7 @@
   "settingsShopName": "Shop Name",
   "settingsAddress": "Address",
   "settingsPhone": "Phone",
+  "settingsTaxId": "Tax ID",
   "settingsSales": "Sales",
   "settingsCurrency": "Currency",
   "settingsDateFormat": "Date Format",
@@ -269,11 +308,15 @@
   "shopNameTooLong": "Shop name is too long",
   "addressTooLong": "Address is too long",
   "phoneInvalid": "Invalid phone number",
+  "taxIdInvalid": "Tax ID must be 13 digits",
+  "taxIdChecksumInvalid": "Tax ID checksum is invalid. Please check the 13-digit number.",
   "shopInfoEmptyPreview": "Your shop info will appear here",
   "langThai": "ภาษาไทย",
   "langEnglish": "English",
   "printReceipt": "Print Receipt",
   "shareReceipt": "Share Receipt",
+  "reprintReceipt": "Reprint Receipt",
+  "shareReceiptCopy": "Share Copy",
   "receiptLabelReceipt": "Receipt",
   "receiptLabelPayment": "Payment",
   "receiptLabelTotal": "Total",
@@ -300,6 +343,8 @@
   "receiptPreviewStyleCard": "Card",
   "receiptPreviewStyleNone": "None",
   "receiptPreview": "Receipt Preview",
+  "viewReceipt": "View receipt",
+  "hideReceipt": "Hide receipt",
   "vatModeNone": "None",
   "vatModeInclusive": "Inclusive",
   "vatModeExclusive": "Exclusive",
@@ -380,6 +425,7 @@
   "settingsStockPolicy": "Stock Policy",
   "allowOversell": "Allow overselling",
   "allowOversellHint": "Allow adding items beyond available stock",
+  "stockBlocked": "Blocked",
   "lowStockThreshold": "Low stock warning (qty)",
   "lowStockWarning": "Low stock",
   "inStock": "In stock",
@@ -438,6 +484,8 @@
   "deleteDraftConfirm": "Delete this bill?",
   "draftLimitReached": "Maximum 10 bills reached. Please delete an old one first.",
   "activeDraftLabel": "Active",
+  "openBillsSectionSelling": "Selling now",
+  "openBillsSectionParked": "Parked",
   "draftNameHint": "Bill name (optional)",
   "switchDraft": "Switch to this bill",
   "cartCleared": "Cart cleared",
@@ -445,11 +493,11 @@
   "itemsLabel": "items",
   "searchCartItems": "Search items...",
   "searchDrafts": "Search bills...",
-  "untitledDraft": "Bill",
+  "untitledDraft": "Untitled bill",
   "noMatchingItems": "No matching items",
   "noMatchingDrafts": "No drafts match your search",
-  "noSavedBills": "No saved bills yet",
-  "noSavedBillsHint": "Park a bill from the sale screen to save it here",
+  "noSavedBills": "No open bills yet",
+  "noSavedBillsHint": "Park a bill from the sale screen to open it here",
   "groupView": "Group view",
   "listView": "List view",
   "gridView": "Grid view",
@@ -568,8 +616,12 @@
   "totalDiscountLabel": "Total discount",
   "@totalDiscountLabel": {},
   "settingsReceiptSize": "Receipt Size",
+  "receiptSize58mm": "58mm (Thermal)",
   "receiptSize80mm": "80mm (Thermal)",
   "receiptSizeA4": "A4",
+  "receiptSize58mmDesc": "Compact — small portable printers",
+  "receiptSize80mmDesc": "Standard — most thermal printers",
+  "receiptSizeA4Desc": "Document — for PDF email/export",
   "settingsMaxDrafts": "Max Drafts",
   "settingsCompactCartMode": "Delivery-style Cart",
   "settingsUltraCompactMode": "Ultra Compact Mode",
@@ -673,6 +725,8 @@
   "reopenDayConfirmTitle": "Reopen Day?",
   "reopenDayConfirmMessage": "This will unlock the day. Sales will count toward a new close.",
   "confirm": "Confirm",
+  "basePrice": "Base price",
+  "optionsLabel": "Options",
   "dbHealthTitle": "Database Health",
   "dbHealthFileSize": "Database file size",
   "dbHealthLarge": "LARGE",
@@ -684,6 +738,11 @@
   "dbHealthVacuumDescription": "Vacuum rebuilds the database file to reclaim unused space and reduce fragmentation.",
   "onboardingWelcome": "Welcome",
   "onboardingShopInfoTitle": "Shop Info",
+  "onboardingShopInfoSubtitle": "This information appears on your receipts.",
+  "onboardingRequiredLabel": "Required",
+  "onboardingOptionalLabel": "Optional",
+  "onboardingReceiptPreviewTitle": "Receipt header preview",
+  "onboardingReceiptPreviewEmpty": "Your shop name will appear here",
   "onboardingShopNameLabel": "Shop name",
   "onboardingShopNameHint": "My Shop",
   "onboardingAddressLabel": "Address",
@@ -720,6 +779,38 @@
   "onboardingNone": "None",
   "onboardingInclusive": "Inclusive",
   "onboardingExclusive": "Exclusive",
+  "onboardingTrustOffline": "Works offline",
+  "onboardingTrustLocal": "Data stays on this device",
+  "onboardingTrustEncrypted": "Encrypted storage",
+  "onboardingStepOf": "Step {step} of {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "step": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "onboardingVatNoneHelp": "No VAT is added to sales.",
+  "onboardingVatInclusiveHelp": "Displayed prices already include VAT.",
+  "onboardingVatExclusiveHelp": "VAT is added to the displayed price.",
+  "onboardingPromptPaySecurity": "Optional. Stored locally on this device and used to create payment QR codes.",
+  "onboardingDateExample": "Example: {date}",
+  "@onboardingDateExample": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "onboardingCurrencyBaht": "฿ THB",
+  "onboardingCurrencyUsd": "$ USD",
+  "onboardingCurrencyEur": "€ EUR",
+  "onboardingCurrencyJpy": "¥ JPY",
+  "onboardingReadySummary": "Your workspace is ready for the first sale.",
+  "onboardingLocalSecuritySummary": "Your data is stored locally and protected on this device.",
+  "onboardingSetupComplete": "Setup complete",
+  "onboardingSecurityProtected": "Security PIN protected",
+  "onboardingFirstSaleHint": "Your next step: start your first sale.",
+  "onboardingSummaryStore": "Store",
+  "onboardingSummaryCurrency": "Currency",
+  "onboardingSummaryTax": "Tax",
   "dailyCloseLoadError": "Error: {message}",
   "@dailyCloseLoadError": {
     "placeholders": {
@@ -776,6 +867,8 @@
   "@addressHint": {},
   "phoneHint": "081-234-5678",
   "@phoneHint": {},
+  "taxIdHint": "13-digit Tax ID (e.g. 1234567890123)",
+  "@taxIdHint": {},
   "categoryManagementTitle": "Manage Categories",
   "noCategoriesYet": "No categories yet",
   "uncategorized": "Uncategorized",
@@ -814,7 +907,9 @@
   "addProductTitle": "Add Product",
   "noCategorySelected": "No category selected",
   "noProductsInCategory": "No products in this category",
+  "noSearchResultsHint": "Try different keywords or check your spelling.",
   "clearFilters": "Clear filters",
+  "selected": "selected",
   "startTypingToSearch": "Start typing to search",
   "searchByNameSkuBarcode": "Search by name, SKU, or barcode",
   "tryDifferentKeyword": "Try a different keyword",
@@ -831,6 +926,7 @@
   "na": "N/A",
   "skuLabel": "SKU",
   "barcodeLabel": "Barcode",
+  "barcodeHint": "e.g., 8850012345678",
   "costLabel": "Cost ({currency})",
   "@costLabel": {
     "placeholders": {
@@ -891,6 +987,9 @@
   "generateBarcode": "Generate Barcode",
   "barcodeGenerated": "Barcode generated",
   "barcodeGenerationError": "Failed to generate barcode",
+  "generateSku": "Generate SKU",
+  "skuGenerated": "SKU generated",
+  "skuGenerationError": "Failed to generate SKU",
   "batchGenerateBarcodes": "Generate Missing Barcodes",
   "batchGenerateBarcodesHint": "Generate barcodes for all products without one",
   "batchGenerateConfirmTitle": "Generate Barcodes",
@@ -935,7 +1034,7 @@
   "barcodeHelpNoBarcodeTitle": "Product has no barcode?",
   "barcodeHelpNoBarcodeBody": "If the product doesn't have a barcode, you can generate one automatically in the product form (Advanced tab). This lets you scan it later at the checkout.",
   "barcodeHelper": "Scan or type the barcode on the product packaging. If none, tap Generate Barcode.",
-  "skuHelper": "Internal product code (optional). Example: SHIRT-RED-L",
+  "skuHelper": "Internal product code (optional). Example: SKU00001 or SHIRT-RED-L. If none, tap Generate SKU.",
   "imagePicked": "Image added",
   "imagePickFailed": "Could not add image. Please try again.",
   "storagePermissionDenied": "Storage permission is required to pick images. Please grant storage access in settings.",
@@ -989,6 +1088,7 @@
   "contactBody": "For questions: mnlizard.official@gmail.com",
   "productPreviewSystemInfo": "System Info",
   "sellingPrice": "Selling Price",
+  "priceHint": "e.g., 45.00",
   "profit": "Profit",
   "dateCreated": "Created",
   "dateUpdated": "Updated",
@@ -1065,7 +1165,7 @@
   "cartBottomLabel": "Cart",
   "saleCategoryTabsLabel": "Category",
   "filterPageTitle": "Filter Products",
-  "filterReset": "Reset",
+  "filterReset": "Clear",
   "filterShowResults": "Show Results",
   "filterShowResultsCount": "Show Results ({count})",
   "@filterShowResultsCount": {
@@ -1075,9 +1175,50 @@
       }
     }
   },
-  "filterPriceRange": "Price Range",
+  "filterDone": "Done",
+  "filterRemainingCount": "{count} items",
+  "@filterRemainingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterPriceCustom": "Custom range",
+  "filterPriceRange": "Price",
   "filterPriceMin": "Min",
   "filterPriceMax": "Max",
+  "filterCategoryChipHint": "Categories stay on the bar above",
+  "filterPriceOrderHint": "Min must be ≤ Max",
+  "filterPriceQuickUnder50": "≤ {currency}50",
+  "@filterPriceQuickUnder50": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "filterPriceQuick51to100": "{currency}51–100",
+  "@filterPriceQuick51to100": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "filterPriceQuick101to200": "{currency}101–200",
+  "@filterPriceQuick101to200": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "filterPriceQuickOver200": "≥ {currency}201",
+  "@filterPriceQuickOver200": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "sortChipDefault": "Default",
+  "sortChipName": "Name",
+  "sortChipPriceAsc": "Price ↑",
+  "sortChipPriceDesc": "Price ↓",
+  "sortChipStock": "Stock",
   "filterActiveCount": "{count} active",
   "@filterActiveCount": {
     "placeholders": {
@@ -1103,6 +1244,26 @@
   "externalOrderRef": "External Order Ref",
   "externalOrderRefHint": "Delivery platform order number (optional)",
   "serviceCharge": "Service Charge",
+  "averageTransactionValue": "Average transaction",
+  "grossRevenue": "Gross revenue",
+  "promotionDiscount": "Promotion discount",
+  "cartDiscount": "Cart discount",
+  "orderTypeBreakdown": "Order type",
+  "orderChannelBreakdown": "Order channel",
+  "peakHours": "Peak hours",
+  "uniqueCustomers": "Unique customers",
+  "repeatCustomers": "Repeat customers",
+  "promotionOrders": "Promotion orders",
+  "voidReasons": "Void reasons",
+  "profitability": "Profitability",
+  "grossProfit": "Gross profit",
+  "profitMargin": "Profit margin",
+  "totalCost": "Total cost",
+  "costCoverage": "Cost coverage",
+  "costCoverageIncomplete": "Cost data incomplete ({withCost}/{total} items)",
+  "costCoverageUnavailable": "No cost data available",
+  "insights": "Insights",
+  "orderBreakdown": "Order breakdown",
   "tableNumber": "Table",
   "selectTable": "Select Table",
   "noTable": "No table assigned",
@@ -1130,6 +1291,7 @@
   "addOptionGroup": "Add Option Group",
   "editOptionGroup": "Edit Option Group",
   "optionGroupName": "Group Name",
+  "optionGroupNameRequired": "Please enter a group name",
   "optionGroupNameHint": "e.g., Size, Add-ons, Spice Level",
   "optionSelectionType": "Selection Type",
   "optionSelectionSingle": "Single Choice",
@@ -1142,6 +1304,11 @@
   "optionNameHint": "e.g., Small, Extra Shot, No Ice",
   "optionPriceDelta": "Price Adjustment",
   "optionPriceDeltaHint": "Additional cost (can be 0)",
+  "optionPriceDeltaHelper": "Added to base price. e.g., 5.00 adds 5.00 to the product price.",
+  "optionNameTooLong": "Option name must be 100 characters or fewer.",
+  "optionPriceInvalid": "Price must be a valid number.",
+  "optionPriceTooManyDecimals": "Price must have at most 2 decimal places.",
+  "optionPriceTooLarge": "Price adjustment is too large (max 999999.99).",
   "deleteOptionGroup": "Delete Option Group",
   "confirmDeleteOptionGroup": "Delete this option group and all its options?",
   "deleteOption": "Delete Option",
@@ -1341,6 +1508,7 @@
   "csvImportError": "Failed to read CSV file",
   "csvNoData": "No data found in CSV file",
   "csvInvalidFormat": "Invalid file format",
+  "csvInvalidEncoding": "File is not valid UTF-8. Please save the CSV as UTF-8 encoding and try again.",
   "csvFileTooLarge": "File is too large (max {maxMb} MB)",
   "@csvFileTooLarge": {
     "placeholders": {
@@ -1568,6 +1736,15 @@
       }
     }
   },
+  "skuReplaceTitle": "Replace SKU?",
+  "skuReplaceMessage": "Current code: {code}. A new code will replace it.",
+  "@skuReplaceMessage": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "barcodePreviewEmpty": "Preview appears when you enter or generate a barcode",
   "scanModeContinuous": "Continuous",
   "scanModeSingle": "Single",
@@ -1681,6 +1858,26 @@
   "datePresetLast7Days": "Last 7 days",
   "datePresetThisMonth": "This month",
   "datePresetCustom": "Custom",
+  "dateFilterSheetTitle": "Select date range",
+  "dateFilterSheetSubtitle": "Choose a preset category or pick a custom range",
+  "dateFilterCategoryTile": "Categories",
+  "dateFilterCategoryDesc": "Today • Yesterday • Last 7 days • This month",
+  "dateFilterCustomTile": "Custom",
+  "dateFilterCustomDesc": "Pick your own start and end dates",
+  "dateFilterCustomPick": "Pick date range",
+  "dateFilterCustomChange": "Change date range",
+  "dateFilterCustomApply": "Use this range",
+  "dateFilterCustomCurrent": "Selected range",
+  "dateFilterPickYear": "Pick year",
+  "dateFilterPickMonth": "Pick month",
+  "dateFilterSelectYear": "Select this year",
+  "dateFilterSelectMonth": "Select this month",
+  "dateFilterThisYear": "This year",
+  "dateFilterLastYear": "Last year",
+  "dateFilterThisMonth": "This month",
+  "dateFilterUseToday": "Set to today",
+  "dateFilterTipTitle": "Tip",
+  "dateFilterTipBody": "Categories are great for quick daily/weekly summaries. Custom range is ideal for flexible period comparisons.",
   "reportAverage": "Average",
   "reportRecent": "Recent",
   "paymentMethodShare": "{percent}%",
@@ -1741,9 +1938,28 @@
     }
   },
   "reportNoSalesInPeriod": "No sales in this period",
+  "reportEmptyDesc": "Try a different date range or start selling to see your report here.",
+  "reportErrorDesc": "Couldn't load data. Check your connection and try again.",
+  "reportLoadingDesc": "Fetching sales data...",
   "currentBill": "Current bill",
   "currentBillWithCount": "Bill ({count})",
   "@currentBillWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saleBillAt": "Bill #{count}",
+  "@saleBillAt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productCountAt": "{count} products",
+  "@productCountAt": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -1778,9 +1994,12 @@
   "billParked": "Bill set aside — ready for next customer.",
   "receiptThankYouDefault": "Thank you!",
   "receiptNotTaxInvoice": "Sale receipt — not a tax invoice",
+  "receiptTaxId": "Tax ID",
   "receiptReprint": "REPRINT",
   "receiptShareVoidBlocked": "Cannot share a voided sale as a normal receipt. Print shows VOID.",
   "parkBill": "Park bill",
+  "parkBillConfirmTitle": "Park this bill?",
+  "parkBillConfirmMessage": "Save this cart and open a new empty bill for the next customer. You can open parked bills anytime.",
   "parkBillNameTitle": "Name this bill (optional)",
   "currentBillNamed": "{name} ({count})",
   "@currentBillNamed": {
@@ -1906,5 +2125,39 @@
     "placeholders": {
       "seconds": { "type": "int" }
     }
-  }
+  },
+  "onboardingStorePinTitle": "Set store PIN",
+  "onboardingStorePinBody": "Required for void, backup, stock adjust, CSV import, and PromptPay changes. Keep it offline-safe (min {min} digits).",
+  "@onboardingStorePinBody": {
+    "placeholders": {
+      "min": { "type": "int" }
+    }
+  },
+  "onboardingStorePinRequired": "Store PIN is required to finish setup",
+  "exportPdf": "Export PDF",
+  "exportCsv": "Export CSV",
+  "exportReport": "Export report",
+  "exportNoData": "No data to export",
+  "exportFailed": "Export failed",
+  "revenueTrend": "Revenue Trend",
+  "dailyRevenue": "Daily Revenue",
+  "periodComparison": "vs Previous Period",
+  "periodChangePositive": "+{percent}%",
+  "@periodChangePositive": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "periodChangeNegative": "{percent}%",
+  "@periodChangeNegative": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "periodChangeZero": "No change",
+  "previousPeriod": "Previous period",
+  "chartNoData": "No data for chart",
+  "dateRangeSeparator": " – ",
+  "percentagePointsUnit": "pp",
+  "reportSectionLabel": "Report section"
 }

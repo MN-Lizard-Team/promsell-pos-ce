@@ -1,11 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/category_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_category.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/utils/csv_product_parser.dart';
+
+import '../../../../helpers/fake_app_lock.dart';
 
 class MockProductRepository extends Mock implements ProductRepository {}
 
@@ -17,13 +21,15 @@ void main() {
   late MockProductRepository products;
   late MockCategoryRepository categories;
   late MockAddCategory addCategory;
+  late AppLockService appLock;
   late ImportProducts useCase;
 
   setUp(() {
     products = MockProductRepository();
     categories = MockCategoryRepository();
     addCategory = MockAddCategory();
-    useCase = ImportProducts(products, categories, addCategory);
+    appLock = fakeAppLock();
+    useCase = ImportProducts(products, categories, addCategory, appLock);
 
     when(
       () => categories.watchCategories(),
@@ -135,5 +141,33 @@ void main() {
         trackStock: any(named: 'trackStock'),
       ),
     ).called(1);
+  });
+
+  test('blocks CSV import when store PIN on and session locked', () async {
+    await appLock.setPin('123456');
+    appLock.lockSession();
+
+    await expectLater(
+      () => useCase([const CsvProductRow(sourceRow: 2, name: 'X', price: 1)]),
+      throwsA(
+        isA<BusinessRuleError>().having(
+          (e) => e.rule,
+          'rule',
+          AppLockService.ruleAppLockRequired,
+        ),
+      ),
+    );
+    verifyNever(
+      () => products.addProduct(
+        name: any(named: 'name'),
+        sku: any(named: 'sku'),
+        barcode: any(named: 'barcode'),
+        price: any(named: 'price'),
+        cost: any(named: 'cost'),
+        stock: any(named: 'stock'),
+        categoryId: any(named: 'categoryId'),
+        trackStock: any(named: 'trackStock'),
+      ),
+    );
   });
 }

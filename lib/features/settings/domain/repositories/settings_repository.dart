@@ -6,4 +6,7 @@ abstract interface class SettingsRepository {
 
   /// Patch only the barcode sequence counter (avoids full-document clobber).
   Future<void> saveBarcodeLastCounter(int counter);
+
+  /// Patch only the SKU sequence counter (avoids full-document clobber).
+  Future<void> saveSkuLastCounter(int counter);
 }

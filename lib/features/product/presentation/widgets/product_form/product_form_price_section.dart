@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/stable_listenable_builder.dart';
 import 'package:promsell_pos_ce/features/product/domain/utils/product_pricing_insights.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Price-tab widgets extracted from [ProductFormView] (insights, markup, delta).
 
@@ -115,7 +116,7 @@ class ProductFormPriceInsights extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.info_outline,
+                      TablerIcons.infoCircle,
                       color: cs.onSurfaceVariant,
                       size: 20,
                     ),
@@ -148,11 +149,7 @@ class ProductFormPriceInsights extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: cs.error,
-                      size: 20,
-                    ),
+                    Icon(TablerIcons.alertTriangle, color: cs.error, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

@@ -1,7 +1,9 @@
 # Release trust gate — fail-closed money path (sale / draft / integrity).
-# Does NOT soft-fail. Use before tags / store cut; main CI still soft-fails
-# full device `integration_test/` (emulator-dependent).
+# Does NOT soft-fail. Use before tags / store cut.
 name: Release Trust
+
+permissions:
+  contents: read
 
 on:
   workflow_call:
@@ -15,11 +17,23 @@ on:
     paths:
       - 'lib/features/sale/**'
       - 'lib/features/daily_close/**'
+      - 'lib/features/inventory/**'
+      - 'lib/features/product/**'
+      - 'lib/features/promotion/**'
+      - 'lib/features/settings/**'
       - 'lib/core/domain/**'
+      - 'lib/core/database/**'
       - 'lib/core/services/app_lock_service.dart'
       - 'lib/features/settings/data/services/backup_*.dart'
       - 'test/integration/**'
       - 'test/features/sale/**'
+      - 'test/features/daily_close/**'
+      - 'test/features/settings/data/services/backup_*.dart'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'android/**'
+      - 'lib/main_prod.dart'
+      - '.github/workflows/ci.yml'
       - '.github/workflows/release-trust.yml'
       - '.github/workflows/release-aab.yml'
 
@@ -35,7 +49,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -65,17 +79,73 @@ jobs:
             test/features/sale/data/datasources/sale_write_helpers_test.dart \
             test/integration/sale_integrity_test.dart \
             test/integration/checkout_flow_test.dart \
+            test/integration/multi_tender_daily_close_test.dart \
+            test/integration/backup_money_continuity_test.dart \
             test/features/sale/domain/usecases/create_sale_test.dart \
             test/features/sale/domain/usecases/void_sale_test.dart \
             test/features/sale/domain/services/sale_payable_calculator_test.dart \
+            test/features/sale/domain/services/sale_payable_golden_test.dart \
             test/features/sale/domain/services/sales_day_lock_test.dart \
             test/features/sale/presentation/bloc/cart_bloc_test.dart \
             test/features/sale/presentation/bloc/checkout_bloc_test.dart \
             test/features/sale/presentation/bloc/draft_bloc_test.dart \
+            test/features/sale/presentation/bloc/cart_discount_policy_test.dart \
+            test/features/sale/data/services/receipt_number_service_test.dart \
             test/core/services/app_lock_service_test.dart \
+            test/core/services/store_pin_setup_test.dart \
+            test/core/services/crash_log_service_test.dart \
+            test/core/image/image_cache_service_sandbox_test.dart \
+            test/core/database/db_key_store_test.dart \
+            test/features/product/domain/usecases/import_products_test.dart \
+            test/features/settings/domain/usecases/settings_usecases_test.dart \
+            test/features/settings/domain/services/settings_sensitive_fields_test.dart \
             test/features/settings/data/services/backup_encryption_service_test.dart \
             test/features/settings/data/services/backup_restore_service_test.dart \
             test/features/daily_close
 
-      - name: Format check (lib + test)
-        run: dart format --set-exit-if-changed lib/ test/
+      - name: Format check (lib + test + integration)
+        run: dart format --set-exit-if-changed lib/ test/ integration_test/
+
+  android-smoke:
+    name: Android release smoke (blocking)
+    needs: money-path
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.4
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate l10n
+        run: flutter gen-l10n
+
+      - name: Generate Drift / injectable code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Run blocking Android smoke suite
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          force-avd-creation: true
+          emulator-options: -no-window -no-audio -no-boot-anim
+          disable-animations: true
+          script: flutter test integration_test/all_tests.dart --flavor dev -t lib/main_dev.dart
+
+      - name: Upload Android smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-smoke-diagnostics
+          path: |
+            build/screenshots/
+            build/test-results/
+          if-no-files-found: ignore

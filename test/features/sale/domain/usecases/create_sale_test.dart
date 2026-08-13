@@ -37,10 +37,24 @@ void main() {
         paymentMethod: any(named: 'paymentMethod'),
         vatMode: any(named: 'vatMode'),
         vatRate: any(named: 'vatRate'),
+        cartDiscountType: any(named: 'cartDiscountType'),
+        cartDiscountValue: any(named: 'cartDiscountValue'),
+        cartDiscountAmount: any(named: 'cartDiscountAmount'),
         amountReceived: any(named: 'amountReceived'),
         changeAmount: any(named: 'changeAmount'),
         note: any(named: 'note'),
         paymentReference: any(named: 'paymentReference'),
+        sendingBankCode: any(named: 'sendingBankCode'),
+        payments: any(named: 'payments'),
+        orderType: any(named: 'orderType'),
+        orderChannel: any(named: 'orderChannel'),
+        externalOrderRef: any(named: 'externalOrderRef'),
+        tableId: any(named: 'tableId'),
+        serviceChargeRate: any(named: 'serviceChargeRate'),
+        serviceChargeAmount: any(named: 'serviceChargeAmount'),
+        customerId: any(named: 'customerId'),
+        promotionId: any(named: 'promotionId'),
+        promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
       ),
     ).thenAnswer((_) async => tSale);
 
@@ -60,9 +74,24 @@ void main() {
         paymentMethod: 'cash',
         vatMode: 'NONE',
         vatRate: 0,
+        cartDiscountType: null,
+        cartDiscountValue: null,
+        cartDiscountAmount: Money.zero,
         amountReceived: Money.fromDouble(500.0),
         changeAmount: Money.fromDouble(300.0),
+        note: null,
         paymentReference: null,
+        sendingBankCode: null,
+        payments: null,
+        orderType: 'delivery',
+        orderChannel: 'walkin',
+        externalOrderRef: null,
+        tableId: null,
+        serviceChargeRate: 0.0,
+        serviceChargeAmount: Money.zero,
+        customerId: null,
+        promotionId: null,
+        promotionDiscountAmount: Money.zero,
       ),
     ).called(1);
   });
@@ -218,6 +247,7 @@ void main() {
       serviceChargeRate: 200, // clamp → 100
     );
 
+    // tCartItem: 2×100 = 200; 20% cart disc = 40; SC 100% of net 160 = 160
     verify(
       () => mockRepo.createSale(
         items: any(named: 'items'),
@@ -226,7 +256,7 @@ void main() {
         vatRate: 100.0,
         cartDiscountType: 'PERCENT',
         cartDiscountValue: 20.0,
-        cartDiscountAmount: any(named: 'cartDiscountAmount'),
+        cartDiscountAmount: Money.fromDouble(40),
         amountReceived: any(named: 'amountReceived'),
         changeAmount: any(named: 'changeAmount'),
         note: any(named: 'note'),
@@ -238,12 +268,153 @@ void main() {
         externalOrderRef: any(named: 'externalOrderRef'),
         tableId: any(named: 'tableId'),
         serviceChargeRate: 100.0,
+        serviceChargeAmount: Money.fromDouble(160),
+        customerId: any(named: 'customerId'),
+        promotionId: any(named: 'promotionId'),
+        promotionDiscountAmount: Money.zero,
+      ),
+    ).called(1);
+  });
+
+  test(
+    'Wave D recomputes cartDiscountAmount ignoring stale client amount',
+    () async {
+      when(
+        () => mockRepo.createSale(
+          items: any(named: 'items'),
+          paymentMethod: any(named: 'paymentMethod'),
+          vatMode: any(named: 'vatMode'),
+          vatRate: any(named: 'vatRate'),
+          cartDiscountType: any(named: 'cartDiscountType'),
+          cartDiscountValue: any(named: 'cartDiscountValue'),
+          cartDiscountAmount: any(named: 'cartDiscountAmount'),
+          amountReceived: any(named: 'amountReceived'),
+          changeAmount: any(named: 'changeAmount'),
+          note: any(named: 'note'),
+          paymentReference: any(named: 'paymentReference'),
+          sendingBankCode: any(named: 'sendingBankCode'),
+          payments: any(named: 'payments'),
+          orderType: any(named: 'orderType'),
+          orderChannel: any(named: 'orderChannel'),
+          externalOrderRef: any(named: 'externalOrderRef'),
+          tableId: any(named: 'tableId'),
+          serviceChargeRate: any(named: 'serviceChargeRate'),
+          serviceChargeAmount: any(named: 'serviceChargeAmount'),
+          customerId: any(named: 'customerId'),
+          promotionId: any(named: 'promotionId'),
+          promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
+        ),
+      ).thenAnswer((_) async => tSale);
+
+      // Client lies: amount 1 but type 10% of 200 should be 20.
+      await useCase(
+        items: [tCartItem],
+        paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
+        cartDiscountType: 'PERCENT',
+        cartDiscountValue: 10,
+        cartDiscountAmount: Money.fromDouble(1),
+        serviceChargeRate: 10,
+        serviceChargeAmount: Money.fromDouble(999), // ignored
+        promotionDiscountAmount: Money.fromDouble(5),
+      );
+
+      // cart 20; promo 5; net 175; SC 10% = 17.5
+      verify(
+        () => mockRepo.createSale(
+          items: any(named: 'items'),
+          paymentMethod: any(named: 'paymentMethod'),
+          vatMode: any(named: 'vatMode'),
+          vatRate: any(named: 'vatRate'),
+          cartDiscountType: 'PERCENT',
+          cartDiscountValue: 10.0,
+          cartDiscountAmount: Money.fromDouble(20),
+          amountReceived: any(named: 'amountReceived'),
+          changeAmount: any(named: 'changeAmount'),
+          note: any(named: 'note'),
+          paymentReference: any(named: 'paymentReference'),
+          sendingBankCode: any(named: 'sendingBankCode'),
+          payments: any(named: 'payments'),
+          orderType: any(named: 'orderType'),
+          orderChannel: any(named: 'orderChannel'),
+          externalOrderRef: any(named: 'externalOrderRef'),
+          tableId: any(named: 'tableId'),
+          serviceChargeRate: 10.0,
+          serviceChargeAmount: Money.fromDouble(17.5),
+          customerId: any(named: 'customerId'),
+          promotionId: any(named: 'promotionId'),
+          promotionDiscountAmount: Money.fromDouble(5),
+        ),
+      ).called(1);
+    },
+  );
+
+  test('Wave D clamps inflated promotion to post-cart base', () async {
+    when(
+      () => mockRepo.createSale(
+        items: any(named: 'items'),
+        paymentMethod: any(named: 'paymentMethod'),
+        vatMode: any(named: 'vatMode'),
+        vatRate: any(named: 'vatRate'),
+        cartDiscountType: any(named: 'cartDiscountType'),
+        cartDiscountValue: any(named: 'cartDiscountValue'),
+        cartDiscountAmount: any(named: 'cartDiscountAmount'),
+        amountReceived: any(named: 'amountReceived'),
+        changeAmount: any(named: 'changeAmount'),
+        note: any(named: 'note'),
+        paymentReference: any(named: 'paymentReference'),
+        sendingBankCode: any(named: 'sendingBankCode'),
+        payments: any(named: 'payments'),
+        orderType: any(named: 'orderType'),
+        orderChannel: any(named: 'orderChannel'),
+        externalOrderRef: any(named: 'externalOrderRef'),
+        tableId: any(named: 'tableId'),
+        serviceChargeRate: any(named: 'serviceChargeRate'),
         serviceChargeAmount: any(named: 'serviceChargeAmount'),
         customerId: any(named: 'customerId'),
         promotionId: any(named: 'promotionId'),
         promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
       ),
-    ).called(1);
+    ).thenAnswer((_) async => tSale);
+
+    await useCase(
+      items: [tCartItem], // 200
+      paymentMethod: 'cash',
+      vatMode: 'NONE',
+      vatRate: 0,
+      cartDiscountType: 'PERCENT',
+      cartDiscountValue: 50, // 100
+      promotionDiscountAmount: Money.fromDouble(500), // cap → 100
+    );
+
+    final promo = verify(
+      () => mockRepo.createSale(
+        items: any(named: 'items'),
+        paymentMethod: any(named: 'paymentMethod'),
+        vatMode: any(named: 'vatMode'),
+        vatRate: any(named: 'vatRate'),
+        cartDiscountType: any(named: 'cartDiscountType'),
+        cartDiscountValue: any(named: 'cartDiscountValue'),
+        cartDiscountAmount: any(named: 'cartDiscountAmount'),
+        amountReceived: any(named: 'amountReceived'),
+        changeAmount: any(named: 'changeAmount'),
+        note: any(named: 'note'),
+        paymentReference: any(named: 'paymentReference'),
+        sendingBankCode: any(named: 'sendingBankCode'),
+        payments: any(named: 'payments'),
+        orderType: any(named: 'orderType'),
+        orderChannel: any(named: 'orderChannel'),
+        externalOrderRef: any(named: 'externalOrderRef'),
+        tableId: any(named: 'tableId'),
+        serviceChargeRate: any(named: 'serviceChargeRate'),
+        serviceChargeAmount: any(named: 'serviceChargeAmount'),
+        customerId: any(named: 'customerId'),
+        promotionId: any(named: 'promotionId'),
+        promotionDiscountAmount: captureAny(named: 'promotionDiscountAmount'),
+      ),
+    ).captured.single;
+    expect(promo, Money.fromDouble(100));
   });
 
   test('clamps amount cart discount to maxDiscountAmount when > 0', () async {
@@ -295,7 +466,7 @@ void main() {
         vatRate: any(named: 'vatRate'),
         cartDiscountType: captureAny(named: 'cartDiscountType'),
         cartDiscountValue: captureAny(named: 'cartDiscountValue'),
-        cartDiscountAmount: any(named: 'cartDiscountAmount'),
+        cartDiscountAmount: captureAny(named: 'cartDiscountAmount'),
         amountReceived: any(named: 'amountReceived'),
         changeAmount: any(named: 'changeAmount'),
         note: any(named: 'note'),
@@ -316,5 +487,7 @@ void main() {
     // Type string is preserved; amount branch is case-insensitive in CreateSale.
     expect((captured[0] as String).toUpperCase(), 'AMOUNT'.toUpperCase());
     expect(captured[1], 30.0);
+    // Wave D: amount recomputed from clamped value (not client-supplied).
+    expect(captured[2], Money.fromDouble(30));
   });
 }

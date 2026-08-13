@@ -83,5 +83,18 @@ void main() {
       expect(find.text('Cost'), findsOneWidget);
       expect(find.text('Profit'), findsOneWidget);
     });
+
+    testWidgets('uses custom currency symbol when provided', (tester) async {
+      await tester.pumpApp(
+        HomeStatsRow(
+          revenue: Money.fromDouble(1500000),
+          cost: Money.fromDouble(500000),
+          profit: Money.fromDouble(1000000),
+          currency: '\$',
+        ),
+      );
+
+      expect(find.text('\$1.5M'), findsOneWidget);
+    });
   });
 }

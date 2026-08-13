@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/pages/sale_filter_page.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_filter_sheet.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class SaleFilterBar extends StatelessWidget {
@@ -17,45 +20,56 @@ class SaleFilterBar extends StatelessWidget {
 
   final ProductState productState;
 
-  /// Prefer icon-only control (single-row chrome with category chips).
+  /// Denser layout in the catalog tools row. Label still shows when filters
+  /// are on, or when width is comfortable.
   final bool compact;
 
+  /// Badge = stock + price only (sort is not a filter).
   int get _activeFilterCount {
     var count = 0;
     if (productState.stockFilter != StockFilter.all) count++;
-    if (productState.productSort != ProductSort.default_) count++;
     if (productState.priceRange?.isActive ?? false) count++;
     return count;
   }
 
   void _openFilterSheet(BuildContext context) {
+    HapticFeedback.selectionClick();
     final productBloc = context.read<ProductBloc>();
     final categoryBloc = context.read<CategoryBloc>();
     final settings = context.read<SettingsCubit>().state.settings;
-    final sheetRadius = context.posTheme.sheetTopRadius;
-    showModalBottomSheet<void>(
+    PosBottomSheet.show<void>(
       context: context,
       isScrollControlled: true,
-      useSafeArea: true,
-      enableDrag: true,
-      showDragHandle: false,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(sheetRadius)),
-      ),
-      builder: (_) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: productBloc),
-          BlocProvider.value(value: categoryBloc),
-        ],
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * 0.85,
-          child: SaleFilterPage(
-            currency: settings.currency,
-            asSheet: true,
-            lowStockThreshold: settings.lowStockThreshold,
+      showDragHandle: true,
+      builder: (_) {
+        final maxH = PosBottomSheet.fractionHeight(
+          context,
+          PosBottomSheet.filterFraction,
+        );
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: productBloc),
+            BlocProvider.value(value: categoryBloc),
+          ],
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxH),
+            child: SaleFilterSheet(
+              currency: settings.currency,
+              lowStockThreshold: settings.lowStockThreshold,
+            ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  void _clearFilters(BuildContext context) {
+    HapticFeedback.selectionClick();
+    context.read<ProductBloc>().add(
+      const ProductListFiltersApplied(
+        stockFilter: StockFilter.all,
+        productSort: ProductSort.default_,
+        priceRange: null,
       ),
     );
   }
@@ -64,27 +78,37 @@ class SaleFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final activeCount = _activeFilterCount;
-    final hasActive = activeCount > 0;
+    final hasFilters = activeCount > 0;
+    final width = MediaQuery.sizeOf(context).width;
+    // Icon-only only when idle + truly narrow. Filters on → always show "กรอง".
+    final iconOnly = !hasFilters && width < (compact ? 360 : 340);
 
-    // Icon-only on narrow widths or compact chrome keeps tools from overflowing.
-    final narrow = MediaQuery.sizeOf(context).width < 360;
-    return PillButton(
-      icon: Icons.tune_rounded,
+    final semanticLabel = hasFilters
+        ? '${l10n.filterPageTitle}, $activeCount'
+        : l10n.filterPageTitle;
+
+    return FilterPillButton(
+      icon: Icons.filter_list_rounded,
       label: l10n.filterMore,
-      active: hasActive,
-      badgeCount: hasActive ? activeCount : null,
-      iconOnly: compact || (narrow && !hasActive),
+      semanticLabel: semanticLabel,
+      active: hasFilters,
+      badgeCount: hasFilters ? activeCount : null,
+      iconOnly: iconOnly,
       onTap: () => _openFilterSheet(context),
+      onClear: hasFilters ? () => _clearFilters(context) : null,
     );
   }
 }
 
-/// Compact pill used by Sale filter chrome.
-class PillButton extends StatelessWidget {
-  const PillButton({
+/// Catalog filter trigger — paper when idle; soft primary when filters on.
+///
+/// Avoids full teal tank + error-red badge (reads as Pay / alarm, not filter).
+class FilterPillButton extends StatelessWidget {
+  const FilterPillButton({
     super.key,
     required this.icon,
     required this.label,
+    required this.semanticLabel,
     required this.active,
     required this.onTap,
     this.badgeCount,
@@ -94,99 +118,133 @@ class PillButton extends StatelessWidget {
 
   final IconData icon;
   final String label;
+  final String semanticLabel;
   final bool active;
   final VoidCallback onTap;
   final int? badgeCount;
   final VoidCallback? onClear;
   final bool iconOnly;
 
+  /// Match catalog tool row (~36), not full 48 CTA height.
+  static const _radius = 10.0;
+  static const double _height = 36;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bgColor = active
-        ? theme.colorScheme.primary
-        : theme.colorScheme.surface;
-    final fgColor = active
-        ? theme.colorScheme.onPrimary
-        : theme.colorScheme.onSurfaceVariant;
-    final border = active
-        ? BorderSide.none
-        : BorderSide(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.9),
-          );
+    final pos = context.posTheme;
+    final scheme = theme.colorScheme;
+    final l10n = context.l10n;
 
-    return Material(
-      color: bgColor,
-      elevation: active ? 1 : 0,
-      shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-        side: border,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: iconOnly ? 10 : 12,
-            vertical: 8,
+    final bgColor = active ? scheme.primaryContainer : pos.billStubPaper;
+    final fgColor = active
+        ? scheme.onPrimaryContainer
+        : scheme.onSurfaceVariant;
+    final border = active
+        ? BorderSide(color: scheme.primary, width: 1.5)
+        : BorderSide(color: pos.billStubBorder);
+
+    return Semantics(
+      button: true,
+      selected: active,
+      label: semanticLabel,
+      enabled: true,
+      child: Tooltip(
+        message: semanticLabel,
+        child: Material(
+          color: bgColor,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(_radius),
+            side: border,
           ),
-          child: Row(
-            // Always shrink-wrap — safe inside wireframe header Rows.
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(icon, size: 18, color: fgColor),
-                  if (badgeCount != null && badgeCount! > 0)
-                    Positioned(
-                      top: -6,
-                      right: -8,
-                      child: Container(
-                        constraints: const BoxConstraints(
-                          minWidth: 16,
-                          minHeight: 16,
+          child: InkWell(
+            onTap: onTap,
+            onLongPress: onClear,
+            borderRadius: BorderRadius.circular(_radius),
+            child: SizedBox(
+              height: _height,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: iconOnly ? 8 : 10,
+                  right: onClear != null ? 4 : (iconOnly ? 8 : 10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(icon, size: 18, color: fgColor),
+                        if (badgeCount != null && badgeCount! > 0)
+                          Positioned(
+                            top: -4,
+                            right: -6,
+                            child: ExcludeSemantics(
+                              child: Container(
+                                constraints: const BoxConstraints(
+                                  minWidth: 14,
+                                  minHeight: 14,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 3,
+                                ),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: scheme.primary,
+                                  borderRadius: BorderRadius.circular(7),
+                                  border: Border.all(
+                                    color: bgColor,
+                                    width: 1.25,
+                                  ),
+                                ),
+                                child: Text(
+                                  '$badgeCount',
+                                  style: TextStyle(
+                                    color: scheme.onPrimary,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (!iconOnly) ...[
+                      const SizedBox(width: 5),
+                      Text(
+                        label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: active
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: fgColor,
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.error,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: bgColor, width: 1.5),
-                        ),
-                        child: Text(
-                          '$badgeCount',
-                          style: TextStyle(
-                            color: theme.colorScheme.onError,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    if (onClear != null) ...[
+                      const SizedBox(width: 2),
+                      // Compact × — long-press on pill also clears.
+                      Tooltip(
+                        message: l10n.filterReset,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: onClear,
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(Icons.close, size: 14, color: fgColor),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                    ],
+                  ],
+                ),
               ),
-              if (!iconOnly) ...[
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                    color: fgColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              if (onClear != null) ...[
-                const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: onClear,
-                  child: Icon(Icons.close, size: 16, color: fgColor),
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),

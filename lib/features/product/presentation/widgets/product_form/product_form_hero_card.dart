@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/product/presentation/utils/sellability_
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/summary_widgets.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_tile/product_hero_image.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Summary under DetailHeader: image, sellability, live name, price/stock metrics.
 /// SKU/barcode are edited on Codes only; hero may show a soft "no barcode" chip.
@@ -176,7 +177,7 @@ class ProductFormHeroCard extends StatelessWidget {
                         if (isRecommended)
                           SummaryChip(
                             label: l10n.productRecommended,
-                            icon: Icons.star,
+                            icon: TablerIcons.starFilled,
                             color: cs.primaryContainer,
                             onColor: cs.onPrimaryContainer,
                             onTap: () => onGoToTab(0),
@@ -184,7 +185,7 @@ class ProductFormHeroCard extends StatelessWidget {
                         if (noBarcode)
                           SummaryChip(
                             label: l10n.heroNoBarcode,
-                            icon: Icons.qr_code_2_outlined,
+                            icon: TablerIcons.qrcode,
                             color: cs.tertiaryContainer,
                             onColor: cs.onTertiaryContainer,
                             onTap: () => onGoToTab(3),

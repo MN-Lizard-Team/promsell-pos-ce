@@ -14,17 +14,21 @@ import '../../../../helpers/mocks.dart';
 
 void main() {
   late MockGetProducts mockGetProducts;
+  late MockGetProductCount mockGetProductCount;
   late MockAddProduct mockAddProduct;
   late MockUpdateProduct mockUpdateProduct;
   late MockDeleteProduct mockDeleteProduct;
+  late MockRestoreProduct mockRestoreProduct;
   late MockBatchGenerateBarcodes mockBatchGenerateBarcodes;
   late MockImportProducts mockImportProducts;
 
   setUp(() {
     mockGetProducts = MockGetProducts();
+    mockGetProductCount = MockGetProductCount();
     mockAddProduct = MockAddProduct();
     mockUpdateProduct = MockUpdateProduct();
     mockDeleteProduct = MockDeleteProduct();
+    mockRestoreProduct = MockRestoreProduct();
     mockBatchGenerateBarcodes = MockBatchGenerateBarcodes();
     mockImportProducts = MockImportProducts();
   });
@@ -35,9 +39,11 @@ void main() {
 
   ProductBloc buildBloc() => ProductBloc(
     getProducts: mockGetProducts,
+    getProductCount: mockGetProductCount,
     addProduct: mockAddProduct,
     updateProduct: mockUpdateProduct,
     deleteProduct: mockDeleteProduct,
+    restoreProduct: mockRestoreProduct,
     batchGenerateBarcodes: mockBatchGenerateBarcodes,
     importProducts: mockImportProducts,
   );
@@ -51,8 +57,9 @@ void main() {
     blocTest<ProductBloc, ProductState>(
       'ProductsSubscribed emits loading then success',
       setUp: () {
+        when(() => mockGetProductCount()).thenAnswer((_) async => 2);
         when(
-          () => mockGetProducts(),
+          () => mockGetProducts(limit: any(named: 'limit')),
         ).thenAnswer((_) => Stream.value([tProduct, tProduct2]));
       },
       build: buildBloc,
@@ -62,6 +69,7 @@ void main() {
         ProductState(
           status: ProductStatus.success,
           products: [tProduct, tProduct2],
+          totalProductCount: 2,
         ),
       ],
     );
@@ -219,6 +227,66 @@ void main() {
         const ProductState(
           importStatus: ProductImportStatus.success,
           importResult: ProductImportResult(importedCount: 3),
+        ),
+      ],
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'Bug 8: stream update preserves saveStatus when saving (race condition regression)',
+      setUp: () {
+        when(() => mockGetProductCount()).thenAnswer((_) async => 2);
+        when(
+          () => mockGetProducts(limit: any(named: 'limit')),
+        ).thenAnswer((_) => Stream.value([tProduct, tProduct2]));
+      },
+      seed: () => ProductState(
+        status: ProductStatus.success,
+        products: [tProduct],
+        saveStatus: ProductSaveStatus.saving,
+      ),
+      build: buildBloc,
+      act: (b) => b.add(const ProductsSubscribed()),
+      expect: () => [
+        ProductState(
+          status: ProductStatus.loading,
+          products: [tProduct],
+          saveStatus: ProductSaveStatus.saving,
+        ),
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct, tProduct2],
+          totalProductCount: 2,
+          saveStatus: ProductSaveStatus.saving,
+        ),
+      ],
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'Bug 8: stream update preserves saveStatus when saved (race condition regression)',
+      setUp: () {
+        when(() => mockGetProductCount()).thenAnswer((_) async => 2);
+        when(
+          () => mockGetProducts(limit: any(named: 'limit')),
+        ).thenAnswer((_) => Stream.value([tProduct, tProduct2]));
+      },
+      seed: () => ProductState(
+        status: ProductStatus.success,
+        products: [tProduct],
+        saveStatus: ProductSaveStatus.saved,
+      ),
+      build: buildBloc,
+      act: (b) => b.add(const ProductsSubscribed()),
+      expect: () => [
+        ProductState(
+          status: ProductStatus.loading,
+          products: [tProduct],
+          saveStatus: ProductSaveStatus.saved,
+        ),
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct, tProduct2],
+          totalProductCount: 2,
+          saveStatus: ProductSaveStatus.saved,
         ),
       ],
     );

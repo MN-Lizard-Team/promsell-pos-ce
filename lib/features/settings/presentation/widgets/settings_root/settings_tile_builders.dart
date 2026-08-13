@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_list_page.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/pages/table_management_page.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
@@ -58,9 +59,9 @@ class SettingsTileBuilders {
 
   static IconData themeIcon(Settings s) {
     return switch (s.themeMode) {
-      ThemeMode.light => Icons.wb_sunny,
-      ThemeMode.dark => Icons.nights_stay,
-      ThemeMode.system => Icons.brightness_auto,
+      ThemeMode.light => TablerIcons.sun,
+      ThemeMode.dark => TablerIcons.moon,
+      ThemeMode.system => TablerIcons.brightnessAuto,
     };
   }
 
@@ -121,21 +122,21 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
-        icon: Icons.settings_outlined,
+        icon: TablerIcons.settings,
         title: l10n.settingsGeneral,
         accent: st.softAccent,
         subtitle: '${localeLabel(context, s)} · ${themeLabel(context, s)}',
         page: const GeneralSettingsPage(),
       ),
       SettingsTileData(
-        icon: Icons.image_outlined,
+        icon: TablerIcons.photo,
         title: l10n.settingsImages,
         accent: st.softAccent,
         subtitle: '${s.imageMaxWidth}px · ${s.imageQuality}%',
         page: const ImageSettingsPage(),
       ),
       SettingsTileData(
-        icon: Icons.qr_code_scanner_outlined,
+        icon: TablerIcons.scan,
         title: l10n.barcodeSettings,
         accent: st.softAccent,
         statusChip: s.barcodeScanEnabled
@@ -159,7 +160,7 @@ class SettingsTileBuilders {
     final shopComplete = s.shopInfo.isComplete;
     return [
       SettingsTileData(
-        icon: Icons.store_outlined,
+        icon: TablerIcons.buildingStore,
         title: l10n.settingsShopInfo,
         accent: st.softAccent,
         subtitle: s.shopName.isNotEmpty ? s.shopName : null,
@@ -173,7 +174,7 @@ class SettingsTileBuilders {
         page: const ShopInfoSettingsPage(),
       ),
       SettingsTileData(
-        icon: Icons.point_of_sale_outlined,
+        icon: TablerIcons.deviceMobile,
         title: l10n.settingsSales,
         accent: st.softAccent,
         subtitle: '${s.currency} · ${s.vatMode}',
@@ -188,7 +189,7 @@ class SettingsTileBuilders {
         page: const SalesSettingsPage(),
       ),
       SettingsTileData(
-        icon: Icons.receipt_long_outlined,
+        icon: TablerIcons.receipt2,
         title: l10n.settingsReceipt,
         accent: st.softAccent,
         subtitle: s.receiptSize,
@@ -204,7 +205,7 @@ class SettingsTileBuilders {
         page: const ReceiptSettingsPage(),
       ),
       SettingsTileData(
-        icon: Icons.inventory_2_outlined,
+        icon: TablerIcons.box,
         title: l10n.settingsStockPolicy,
         accent: st.softAccent,
         subtitle: '${s.lowStockThreshold}',
@@ -228,7 +229,7 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
-        icon: Icons.local_offer_outlined,
+        icon: TablerIcons.tag,
         title: l10n.settingsDiscountPolicy,
         accent: st.softAccent,
         subtitle:
@@ -246,7 +247,7 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
-        icon: Icons.qr_code_2_outlined,
+        icon: TablerIcons.qrcode,
         title: l10n.promptpay,
         accent: st.softAccent,
         subtitle: s.promptpayId.isNotEmpty
@@ -273,7 +274,7 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
-        icon: Icons.lock_clock_outlined,
+        icon: TablerIcons.lock,
         title: l10n.settingsDailyCloseTitle,
         accent: st.softAccent,
         subtitle: l10n.settingsDailyCloseSubtitle,
@@ -290,7 +291,7 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
-        icon: Icons.backup_outlined,
+        icon: TablerIcons.databaseExport,
         title: l10n.settingsBackup,
         accent: st.softAccent,
         subtitle: s.backupReminderDays == 0
@@ -300,32 +301,19 @@ class SettingsTileBuilders {
         page: const BackupSettingsPage(),
       ),
       SettingsTileData(
-        icon: Icons.pin_outlined,
+        icon: TablerIcons.pin,
         title: l10n.appLockTitle,
         accent: st.softAccent,
         subtitle: l10n.appLockSubtitle,
         page: const AppLockSettingsPage(),
       ),
       SettingsTileData(
-        icon: Icons.storage_outlined,
+        icon: TablerIcons.database,
         title: l10n.settingsDbHealthTitle,
         accent: st.softAccent,
         subtitle: l10n.settingsDbHealthSubtitle,
         page: const DbHealthPage(),
       ),
-    ];
-  }
-
-  /// @Deprecated Prefer [dayCloseTiles] + [backupDataTiles].
-  static List<SettingsTileData> systemTiles(
-    BuildContext context,
-    Settings s,
-    SettingsThemeExtension st,
-    AppLocalizations l10n,
-  ) {
-    return [
-      ...dayCloseTiles(context, s, st, l10n),
-      ...backupDataTiles(context, s, st, l10n),
     ];
   }
 
@@ -337,7 +325,7 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
-        icon: Icons.info_outline,
+        icon: TablerIcons.infoCircle,
         title: l10n.aboutApp,
         accent: st.softAccent,
         subtitle: l10n.agplShort,
@@ -354,7 +342,7 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
-        icon: Icons.table_restaurant_outlined,
+        icon: TablerIcons.toolsKitchen2,
         title: l10n.tableManagement,
         accent: st.softAccent,
         subtitle: l10n.tableManagementSubtitle,

@@ -58,29 +58,41 @@ void main() {
     );
   });
 
-  group('PaymentSheet', () {
-    testWidgets('renders with cart total', (tester) async {
+  group('PaymentPage', () {
+    testWidgets('renders full-page payment shell', (tester) async {
       when(
         () => mockCartBloc.state,
       ).thenReturn(CartState(items: [CartItem(product: testProduct, qty: 3)]));
 
       await tester.pumpApp(
-        const PaymentSheet(),
+        const PaymentPage(),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byType(PaymentSheet), findsOneWidget);
+      expect(find.byType(PaymentPage), findsOneWidget);
+      expect(find.byKey(const ValueKey('sale_payment_page')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('sale_payment_method_grid')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('sale_checkout_sticky_payable')),
+        findsOneWidget,
+      );
+      expect(find.text('Amount due'), findsWidgets);
     });
 
-    testWidgets('shows payment method chips', (tester) async {
+    testWidgets('shows payment method cards in grid (3 without PromptPay)', (
+      tester,
+    ) async {
       when(
         () => mockCartBloc.state,
       ).thenReturn(CartState(items: [CartItem(product: testProduct, qty: 1)]));
 
       await tester.pumpApp(
-        const PaymentSheet(),
+        const PaymentPage(),
         cartBloc: mockCartBloc,
         checkoutBloc: mockCheckoutBloc,
         settingsCubit: mockSettingsCubit,
@@ -97,7 +109,7 @@ void main() {
         );
 
         await tester.pumpApp(
-          const PaymentSheet(),
+          const PaymentPage(),
           cartBloc: mockCartBloc,
           checkoutBloc: mockCheckoutBloc,
           settingsCubit: mockSettingsCubit,

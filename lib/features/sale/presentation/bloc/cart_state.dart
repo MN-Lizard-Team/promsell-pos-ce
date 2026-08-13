@@ -29,12 +29,10 @@ class CartState extends Equatable {
     Money? cachedCartDiscountAmount,
     Money? cachedTotal,
     Money? cachedServiceChargeAmount,
-    Money? cachedGrandTotal,
   }) : _cachedItemsSubtotal = cachedItemsSubtotal,
        _cachedCartDiscountAmount = cachedCartDiscountAmount,
        _cachedTotal = cachedTotal,
-       _cachedServiceChargeAmount = cachedServiceChargeAmount,
-       _cachedGrandTotal = cachedGrandTotal;
+       _cachedServiceChargeAmount = cachedServiceChargeAmount;
 
   final List<CartItem> items;
   final String note;
@@ -62,7 +60,6 @@ class CartState extends Equatable {
   final Money? _cachedCartDiscountAmount;
   final Money? _cachedTotal;
   final Money? _cachedServiceChargeAmount;
-  final Money? _cachedGrandTotal;
 
   Money get itemsSubtotal {
     if (_cachedItemsSubtotal != null) return _cachedItemsSubtotal;
@@ -82,11 +79,6 @@ class CartState extends Equatable {
   Money get serviceChargeAmount {
     if (_cachedServiceChargeAmount != null) return _cachedServiceChargeAmount;
     return _computeServiceChargeAmount();
-  }
-
-  Money get grandTotal {
-    if (_cachedGrandTotal != null) return _cachedGrandTotal;
-    return _computeGrandTotal();
   }
 
   Money _computeItemsSubtotal() =>
@@ -120,8 +112,6 @@ class CartState extends Equatable {
     if (rate == null || rate <= 0) return Money.zero;
     return total * (rate / 100);
   }
-
-  Money _computeGrandTotal() => total + serviceChargeAmount;
 
   /// Payable SSOT (SC default + VAT) for display and checkout alignment.
   SalePayableTotals payableTotals(Settings settings) =>
@@ -218,7 +208,6 @@ class CartState extends Equatable {
       cachedCartDiscountAmount: newState._computeCartDiscountAmount(),
       cachedTotal: newState._computeTotal(),
       cachedServiceChargeAmount: newState._computeServiceChargeAmount(),
-      cachedGrandTotal: newState._computeGrandTotal(),
     );
   }
 

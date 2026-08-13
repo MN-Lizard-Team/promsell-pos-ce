@@ -25,15 +25,14 @@ class ProductHeroImage extends StatelessWidget {
       (imagePath != null && imagePath!.isNotEmpty) ||
       (imageUrl != null && imageUrl!.isNotEmpty);
 
-  void _showPreview(BuildContext context) {
+  Future<void> _showPreview(BuildContext context) async {
     if (!_hasImage) return;
-    ImageViewerDialog.showSingle(
-      context,
-      ImageViewerDialog.providerFromPaths(
-        imagePath: imagePath,
-        imageUrl: imageUrl,
-      ),
+    final provider = await ImageViewerDialog.providerFromPathsAsync(
+      imagePath: imagePath,
+      imageUrl: imageUrl,
     );
+    // ignore: use_build_context_synchronously
+    ImageViewerDialog.showSingle(context, provider);
   }
 
   @override

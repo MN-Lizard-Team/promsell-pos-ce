@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/receipt/receipt_summary_card.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -17,7 +17,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.receipt_long_outlined), findsWidgets);
+      expect(find.byIcon(TablerIcons.receipt2), findsWidgets);
     });
 
     testWidgets('renders card style icon', (tester) async {
@@ -31,7 +31,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.credit_card_outlined), findsWidgets);
+      expect(find.byIcon(TablerIcons.creditCard), findsWidgets);
     });
 
     testWidgets('renders none style icon', (tester) async {
@@ -45,7 +45,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.visibility_off_outlined), findsWidgets);
+      expect(find.byIcon(TablerIcons.eyeOff), findsWidgets);
     });
 
     testWidgets('shows ON for shop info enabled', (tester) async {
@@ -115,7 +115,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.notes_outlined), findsNothing);
+      expect(find.byIcon(TablerIcons.notes), findsNothing);
     });
 
     testWidgets('shows note row when note is not empty', (tester) async {
@@ -129,7 +129,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.notes_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.notes), findsOneWidget);
       expect(find.text('Thank you'), findsOneWidget);
     });
   });

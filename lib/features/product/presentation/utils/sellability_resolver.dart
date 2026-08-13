@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/features/product/presentation/utils/stock_status_resolver.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/summary_widgets.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Why a product is / is not sellable — used for chip label + deep-link tab.
 enum SellabilityKind {
@@ -40,7 +41,7 @@ SellabilityStatus resolveSellabilityStatus({
     return SellabilityStatus(
       kind: SellabilityKind.disabled,
       label: l10n.disabled,
-      icon: Icons.visibility_off_outlined,
+      icon: TablerIcons.eyeOff,
       color: cs.errorContainer,
       onColor: cs.onErrorContainer,
     );
@@ -49,7 +50,7 @@ SellabilityStatus resolveSellabilityStatus({
     return SellabilityStatus(
       kind: SellabilityKind.needPrice,
       label: needPriceLabel ?? l10n.setSellingPrice,
-      icon: Icons.price_change_outlined,
+      icon: TablerIcons.currencyBaht,
       color: cs.errorContainer,
       onColor: cs.onErrorContainer,
     );
@@ -58,7 +59,7 @@ SellabilityStatus resolveSellabilityStatus({
     return SellabilityStatus(
       kind: SellabilityKind.notTracked,
       label: l10n.stockTrackingDisabled,
-      icon: Icons.remove_circle_outline,
+      icon: TablerIcons.circleMinus,
       color: cs.secondaryContainer,
       onColor: cs.onSecondaryContainer,
     );
@@ -90,7 +91,7 @@ SellabilityStatus resolveSellabilityStatus({
     StockLevel.inStock || StockLevel.notTracked => SellabilityStatus(
       kind: SellabilityKind.ready,
       label: l10n.readyToSell,
-      icon: Icons.check_circle_outline,
+      icon: TablerIcons.circleCheck,
       color: cs.primaryContainer,
       onColor: cs.onPrimaryContainer,
     ),

@@ -14,7 +14,6 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_list/view_mode.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/open_bills_strip.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_catalog_filter_chrome.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_mode_switcher.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/catalog/sale_product_card.dart';
@@ -61,9 +60,15 @@ class _SaleCatalogState extends State<SaleCatalog> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<SettingsCubit>().state.settings;
-    final currency = settings.currency;
-    final threshold = settings.lowStockThreshold;
+    final currency = context.select(
+      (SettingsCubit c) => c.state.settings.currency,
+    );
+    final threshold = context.select(
+      (SettingsCubit c) => c.state.settings.lowStockThreshold,
+    );
+    final isUltra = context.select(
+      (SettingsCubit c) => c.state.settings.ultraCompactMode,
+    );
     // Must use State.build context for select/watch — not BlocBuilder's parent
     // Element when that Element is not the one currently building.
     final categories = context.select<CategoryBloc, List<Category>>(
@@ -78,7 +83,7 @@ class _SaleCatalogState extends State<SaleCatalog> {
     ProductBloc productBloc;
     try {
       productBloc = context.read<ProductBloc>();
-    } catch (_) {
+    } on ProviderNotFoundException {
       productBloc = sl<ProductBloc>();
     }
 
@@ -106,14 +111,12 @@ class _SaleCatalogState extends State<SaleCatalog> {
             );
           }
 
-          final activeProducts = state
-              .filteredProducts(
-                lowStockThreshold: threshold,
-                pauseFiltersOnSearch:
-                    SearchSurfaceConfig.saleListFiltered.pauseFiltersOnSearch,
-              )
-              .where((product) => product.isActive)
-              .toList();
+          final activeProducts = state.filteredProducts(
+            lowStockThreshold: threshold,
+            pauseFiltersOnSearch:
+                SearchSurfaceConfig.saleListFiltered.pauseFiltersOnSearch,
+            activeOnly: true,
+          );
           final hasRecommended = activeProducts.any((p) => p.isRecommended);
           if (_recommendedOnly && !hasRecommended && mounted) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -124,15 +127,13 @@ class _SaleCatalogState extends State<SaleCatalog> {
           }
           final products = _prepareProducts(activeProducts);
           final terminalInset = 12 + widget.bottomContentInset;
-          final isUltra = settings.ultraCompactMode;
           final showMultiBillChrome = !isUltra && openBillCount > 1;
 
           return CustomScrollView(
             slivers: [
+              // Bill bar includes open-bills ticket strip (single chrome band).
               if (showMultiBillChrome)
                 const SliverToBoxAdapter(child: SaleModeSwitcher()),
-              if (showMultiBillChrome)
-                const SliverToBoxAdapter(child: OpenBillsStrip()),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -197,14 +198,9 @@ class _SaleCatalogState extends State<SaleCatalog> {
                   sliver: SliverList.separated(
                     itemCount: products.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    // 92: room for name + 1 meta line + stock + price/add
-                    // without bottom RenderFlex overflow on device text scale.
-                    itemBuilder: (_, i) => SizedBox(
-                      height: 92,
-                      child: SaleProductCard(
-                        product: products[i],
-                        currency: currency,
-                      ),
+                    itemBuilder: (_, i) => SaleProductCard(
+                      product: products[i],
+                      currency: currency,
                     ),
                   ),
                 )
@@ -214,9 +210,8 @@ class _SaleCatalogState extends State<SaleCatalog> {
                   sliver: SliverGrid(
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 168,
-                          // Image 88 + body (name/meta/stock/price+add).
-                          mainAxisExtent: 200,
+                          maxCrossAxisExtent: 160,
+                          childAspectRatio: 0.62,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                         ),

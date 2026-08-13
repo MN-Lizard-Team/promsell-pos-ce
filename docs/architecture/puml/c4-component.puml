@@ -1,16 +1,17 @@
 @startuml C4_Component
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Promsell POS CE — Component Diagram (Sale Feature) v0.8.4
+title Promsell POS CE — Component Diagram (Sale + void via History) v0.9.1
 
 Container_Boundary(sale_feature, "Sale Feature") {
     Component(sale_page, "SalePage", "Flutter Widget", "Product catalog + cart + discount dialog + drafts sheet")
-    Component(payment_sheet, "PaymentSheet", "Flutter Widget", "Payment method, breakdown, cash input, confirm")
+    Component(payment_sheet, "PaymentPage", "Flutter Widget", "Payment method, breakdown, cash input, confirm")
     Component(cart_bloc, "CartBloc", "flutter_bloc", "Cart state + discount")
     Component(draft_bloc, "DraftBloc", "flutter_bloc", "Draft auto-save (1.5s debounce)")
-    Component(checkout_bloc, "CheckoutBloc", "flutter_bloc", "Checkout + payment confirmation")
+    Component(checkout_bloc, "CheckoutBloc", "flutter_bloc", "CreateSale only — not VoidSale")
+    Component(history_bloc, "HistoryBloc", "flutter_bloc", "VoidSale + history list")
     Component(create_sale_uc, "CreateSale", "Use Case", "Delegates to SaleRepository")
-    Component(void_sale_uc, "VoidSale", "Use Case", "Delegates to SaleRepository")
+    Component(void_sale_uc, "VoidSale", "Use Case", "PIN + day lock; SaleRepository")
     Component(sale_repo, "SaleRepository", "Interface", "Abstract contract")
     Component(sale_repo_impl, "SaleRepositoryImpl", "Implementation", "Delegates to datasource")
     Component(sale_ds, "SaleLocalDatasource", "Drift DAO", "Atomic insert + void transactions + discount writes")
@@ -27,6 +28,7 @@ Rel(sale_page, cart_bloc, "add events (cart, discount)")
 Rel(sale_page, draft_bloc, "draft events")
 Rel(payment_sheet, checkout_bloc, "CheckoutConfirmed (with discount params)")
 Rel(checkout_bloc, create_sale_uc, "call")
+Rel(history_bloc, void_sale_uc, "call")
 Rel(draft_bloc, draft_repo, "saveDraft / loadDraft / deleteDraft")
 Rel(create_sale_uc, sale_repo, "call")
 Rel(sale_repo, sale_repo_impl, "implements")

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class DiscountPolicySummaryCard extends StatelessWidget {
   const DiscountPolicySummaryCard({
@@ -60,11 +61,7 @@ class DiscountPolicySummaryCard extends StatelessWidget {
               color: st.iconContainerBackground,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              Icons.local_offer_outlined,
-              color: st.softAccent,
-              size: 28,
-            ),
+            child: Icon(TablerIcons.tag, color: st.softAccent, size: 28),
           ),
           const SizedBox(height: 12),
           Text(
@@ -78,8 +75,8 @@ class DiscountPolicySummaryCard extends StatelessWidget {
           const SizedBox(height: 12),
           _buildRow(
             icon: enableItemDiscount
-                ? Icons.check_circle_outline
-                : Icons.cancel_outlined,
+                ? TablerIcons.circleCheck
+                : TablerIcons.circleX,
             label: context.l10n.enableItemDiscount,
             value: enableItemDiscount
                 ? context.l10n.settingsOn
@@ -88,8 +85,8 @@ class DiscountPolicySummaryCard extends StatelessWidget {
           ),
           _buildRow(
             icon: enableCartDiscount
-                ? Icons.check_circle_outline
-                : Icons.cancel_outlined,
+                ? TablerIcons.circleCheck
+                : TablerIcons.circleX,
             label: context.l10n.enableCartDiscount,
             value: enableCartDiscount
                 ? context.l10n.settingsOn
@@ -97,19 +94,19 @@ class DiscountPolicySummaryCard extends StatelessWidget {
             st: st,
           ),
           _buildRow(
-            icon: Icons.settings_outlined,
+            icon: TablerIcons.settings,
             label: context.l10n.defaultDiscountType,
             value: _typeLabel(context),
             st: st,
           ),
           _buildRow(
-            icon: Icons.percent_outlined,
+            icon: TablerIcons.percentage,
             label: context.l10n.maxDiscountPercent,
             value: _percentLabel(context),
             st: st,
           ),
           _buildRow(
-            icon: Icons.trending_down_outlined,
+            icon: TablerIcons.trendingDown,
             label: context.l10n.maxDiscountAmount,
             value: _amountLabel(context),
             st: st,

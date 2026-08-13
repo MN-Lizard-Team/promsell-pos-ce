@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_bottom_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 /// Cart/checkout control to attach or clear an active promotion.
@@ -115,10 +118,9 @@ class PromotionSelector extends StatelessWidget {
     final promos = await sl<PromotionRepository>().getActivePromotions();
     if (!context.mounted) return;
 
-    final picked = await showModalBottomSheet<String?>(
+    final picked = await PosBottomSheet.show<String?>(
       context: context,
       isScrollControlled: true,
-      useSafeArea: true,
       builder: (ctx) =>
           _PromotionPickerSheet(promotions: promos, selectedId: selectedId),
     );
@@ -139,74 +141,126 @@ class _PromotionPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final pos = context.posTheme;
     final height = MediaQuery.sizeOf(context).height * 0.65;
 
     return SizedBox(
       height: height,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 8),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+            padding: const EdgeInsets.fromLTRB(20, 4, 8, 8),
             child: Row(
               children: [
+                Icon(
+                  Icons.local_offer_outlined,
+                  color: scheme.primary,
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     l10n.selectPromotion,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
                 if (selectedId != null)
                   TextButton(
                     onPressed: () => Navigator.pop(context, ''),
+                    style: TextButton.styleFrom(foregroundColor: scheme.error),
                     child: Text(l10n.clearPromotion),
                   ),
                 IconButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
           ),
+          Divider(height: 1, color: pos.billStubBorder),
           Expanded(
             child: promotions.isEmpty
-                ? Center(child: Text(l10n.noActivePromotions))
+                ? AppEmptyState(
+                    icon: Icons.local_offer_outlined,
+                    title: l10n.noActivePromotions,
+                  )
                 : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     itemCount: promotions.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    separatorBuilder: (_, _) => Divider(
+                      height: 1,
+                      indent: 56,
+                      color: pos.billStubBorder,
+                    ),
                     itemBuilder: (context, i) {
                       final p = promotions[i];
                       final selected = p.id == selectedId;
                       final valueLabel = p.type == PromotionType.percent
                           ? l10n.promotionPercentOff(p.value.toStringAsFixed(0))
                           : l10n.promotionAmountOff(p.value.toStringAsFixed(2));
-                      return ListTile(
-                        selected: selected,
-                        leading: Icon(
-                          selected
-                              ? Icons.local_offer
-                              : Icons.local_offer_outlined,
-                          color: Theme.of(context).colorScheme.primary,
+                      return Material(
+                        color: selected
+                            ? scheme.primary.withValues(alpha: 0.08)
+                            : Colors.transparent,
+                        child: InkWell(
+                          onTap: () => Navigator.pop(context, p.id),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  selected
+                                      ? Icons.local_offer
+                                      : Icons.local_offer_outlined,
+                                  color: scheme.primary,
+                                  size: 22,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        valueLabel,
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: scheme.onSurfaceVariant,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (selected)
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: scheme.primary,
+                                    size: 22,
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
-                        title: Text(p.name),
-                        subtitle: Text(valueLabel),
-                        trailing: selected
-                            ? Icon(
-                                Icons.check_circle,
-                                color: Theme.of(context).colorScheme.primary,
-                              )
-                            : null,
-                        onTap: () => Navigator.pop(context, p.id),
                       );
                     },
                   ),

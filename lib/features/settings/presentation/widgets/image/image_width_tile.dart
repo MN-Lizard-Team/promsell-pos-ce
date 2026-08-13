@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart'
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/image_settings_labels.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ImageWidthTile extends StatelessWidget {
   const ImageWidthTile({
@@ -30,7 +31,7 @@ class ImageWidthTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
-          Icons.width_normal_outlined,
+          TablerIcons.arrowsHorizontal,
           color: st.softAccent,
           size: 24,
         ),
@@ -43,7 +44,7 @@ class ImageWidthTile extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        widthLabel(settings.imageMaxWidth),
+        widthLabel(settings.imageMaxWidth, l10n),
         style: theme.textTheme.bodyMedium?.copyWith(
           color: st.softTextSecondary,
           fontSize: 14,

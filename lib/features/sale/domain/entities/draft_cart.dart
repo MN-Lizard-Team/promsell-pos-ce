@@ -28,12 +28,10 @@ class DraftCart extends Equatable {
     Money? cachedCartDiscountAmount,
     Money? cachedTotal,
     Money? cachedServiceChargeAmount,
-    Money? cachedGrandTotal,
   }) : _cachedRawTotal = cachedRawTotal,
        _cachedCartDiscountAmount = cachedCartDiscountAmount,
        _cachedTotal = cachedTotal,
-       _cachedServiceChargeAmount = cachedServiceChargeAmount,
-       _cachedGrandTotal = cachedGrandTotal;
+       _cachedServiceChargeAmount = cachedServiceChargeAmount;
 
   final String id;
   final List<CartItem> items;
@@ -60,7 +58,6 @@ class DraftCart extends Equatable {
   final Money? _cachedCartDiscountAmount;
   final Money? _cachedTotal;
   final Money? _cachedServiceChargeAmount;
-  final Money? _cachedGrandTotal;
 
   String get displayName => name?.isNotEmpty == true ? name! : '';
 
@@ -80,11 +77,6 @@ class DraftCart extends Equatable {
 
   Money get serviceChargeAmount {
     return _cachedServiceChargeAmount ?? _computeServiceChargeAmount();
-  }
-
-  /// Legacy field: items − cart disc only (no promo). Prefer [payableTotal].
-  Money get grandTotal {
-    return _cachedGrandTotal ?? _computeGrandTotalLegacy();
   }
 
   /// Customer charge using [SalePayableCalculator] (promo + SC + VAT).
@@ -131,12 +123,6 @@ class DraftCart extends Equatable {
     final net = (_rawTotal - cartDiscountAmount - promotionDiscountAmount)
         .clampToZero();
     return net * (rate / 100);
-  }
-
-  Money _computeGrandTotalLegacy() {
-    final net = (_rawTotal - cartDiscountAmount - promotionDiscountAmount)
-        .clampToZero();
-    return net + serviceChargeAmount;
   }
 
   factory DraftCart.withCache({
@@ -203,7 +189,6 @@ class DraftCart extends Equatable {
       cachedCartDiscountAmount: temp._computeCartDiscountAmount(),
       cachedTotal: temp._computeTotal(),
       cachedServiceChargeAmount: temp._computeServiceChargeAmount(),
-      cachedGrandTotal: temp._computeGrandTotalLegacy(),
     );
   }
 

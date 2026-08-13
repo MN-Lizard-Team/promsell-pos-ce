@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
@@ -181,6 +182,191 @@ void main() {
       act: (b) =>
           b.add(const CartItemQtyChanged(productId: 'prod-0001', qty: 0)),
       expect: () => [const CartState()],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'multi-line stock exhausted does not throw (Wave A1 clamp)',
+      build: buildBloc,
+      seed: () {
+        // stock=1 already held by other option line → maxForLine=0 (old code threw).
+        const optA = SelectedProductOption(
+          optionId: 'o1',
+          optionName: 'Large',
+          groupId: 'g1',
+          groupName: 'Size',
+        );
+        const optB = SelectedProductOption(
+          optionId: 'o2',
+          optionName: 'Small',
+          groupId: 'g1',
+          groupName: 'Size',
+        );
+        final p = tProduct.copyWith(stock: 1);
+        return CartState(
+          items: [
+            CartItem(
+              product: p,
+              qty: 1,
+              lineId: 'line-opt-a',
+              selectedOptions: const [optA],
+            ),
+            CartItem(
+              product: p,
+              qty: 1,
+              lineId: 'line-opt-b',
+              selectedOptions: const [optB],
+            ),
+          ],
+        );
+      },
+      act: (b) => b.add(
+        const CartItemQtyChanged(
+          productId: 'prod-0001',
+          qty: 2,
+          lineId: 'line-opt-a',
+        ),
+      ),
+      expect: () => [
+        isA<CartState>().having((s) => s.errorMessage, 'err', 'outOfStock'),
+      ],
+      errors: () => isEmpty,
+    );
+
+    blocTest<CartBloc, CartState>(
+      'clamps qty to remaining stock across option lines',
+      build: buildBloc,
+      seed: () {
+        final p = tProduct.copyWith(stock: 5);
+        return CartState(
+          items: [
+            CartItem(
+              product: p,
+              qty: 2,
+              lineId: 'line-opt-a',
+              selectedOptions: const [
+                SelectedProductOption(
+                  optionId: 'o1',
+                  optionName: 'Large',
+                  groupId: 'g1',
+                  groupName: 'Size',
+                ),
+              ],
+            ),
+            CartItem(
+              product: p,
+              qty: 2,
+              lineId: 'line-opt-b',
+              selectedOptions: const [
+                SelectedProductOption(
+                  optionId: 'o2',
+                  optionName: 'Small',
+                  groupId: 'g1',
+                  groupName: 'Size',
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+      act: (b) => b.add(
+        const CartItemQtyChanged(
+          productId: 'prod-0001',
+          qty: 10,
+          lineId: 'line-opt-a',
+        ),
+      ),
+      verify: (b) {
+        final a = b.state.items.firstWhere((i) => i.lineId == 'line-opt-a');
+        final total = b.state.items
+            .where((i) => i.product.id == 'prod-0001')
+            .fold<int>(0, (s, i) => s + i.qty);
+        expect(a.qty, 3); // max remaining = 5 - 2
+        expect(total, 5);
+        expect(b.state.errorMessage, isNull);
+      },
+    );
+  });
+
+  group('CartItemRestored stock', () {
+    blocTest<CartBloc, CartState>(
+      'rejects restore when other lines already use full stock',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+      },
+      seed: () {
+        final p = tProduct.copyWith(stock: 2);
+        return CartState(
+          items: [CartItem(product: p, qty: 2, lineId: 'kept')],
+        );
+      },
+      act: (b) {
+        final p = tProduct.copyWith(stock: 2);
+        b.add(
+          CartItemRestored(CartItem(product: p, qty: 1, lineId: 'undo-line')),
+        );
+      },
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.items, 'items', hasLength(1))
+            .having((s) => s.errorMessage, 'err', 'outOfStock'),
+      ],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'clamps restore qty to remaining stock',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+      },
+      seed: () {
+        final p = tProduct.copyWith(stock: 3);
+        return CartState(
+          items: [CartItem(product: p, qty: 2, lineId: 'kept')],
+        );
+      },
+      act: (b) {
+        final p = tProduct.copyWith(stock: 3);
+        b.add(
+          CartItemRestored(CartItem(product: p, qty: 5, lineId: 'undo-line')),
+        );
+      },
+      verify: (b) {
+        expect(b.state.items, hasLength(2));
+        final restored = b.state.items.firstWhere(
+          (i) => i.lineId == 'undo-line',
+        );
+        expect(restored.qty, 1);
+        expect(b.state.errorMessage, isNull);
+      },
+    );
+  });
+
+  group('CartItemDuplicated stock', () {
+    blocTest<CartBloc, CartState>(
+      'emits outOfStock when duplicate would exceed stock',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+      },
+      seed: () {
+        final p = tProduct.copyWith(stock: 2);
+        return CartState(
+          items: [CartItem(product: p, qty: 2, lineId: 'only')],
+        );
+      },
+      act: (b) => b.add(CartItemDuplicated(b.state.items.single)),
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.items, 'items', hasLength(1))
+            .having((s) => s.errorMessage, 'err', 'outOfStock'),
+      ],
     );
   });
 
@@ -396,6 +582,11 @@ void main() {
     blocTest<CartBloc, CartState>(
       'duplicates a line while preserving its options and note',
       build: buildBloc,
+      setUp: () {
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+      },
       seed: () => CartState(
         items: [
           CartItem(
@@ -509,6 +700,11 @@ void main() {
     blocTest<CartBloc, CartState>(
       'keeps out-of-stock items and sets stockWarning',
       build: buildBloc,
+      setUp: () {
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+      },
       seed: () => CartState(items: [tCartItem]),
       act: (b) => b.add(CartProductsRefreshed([tProduct.copyWith(stock: 0)])),
       expect: () => [
@@ -525,6 +721,11 @@ void main() {
     blocTest<CartBloc, CartState>(
       'clamps qty when stock is lower than cart qty',
       build: buildBloc,
+      setUp: () {
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+      },
       seed: () => CartState(
         items: [CartItem(product: tProduct, qty: 5, lineId: 'c')],
       ),
@@ -539,6 +740,11 @@ void main() {
     blocTest<CartBloc, CartState>(
       'includes deleted product name in warning and marks item unavailable (Bug 5)',
       build: buildBloc,
+      setUp: () {
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+      },
       seed: () => CartState(items: [tCartItem]),
       act: (b) => b.add(const CartProductsRefreshed([])),
       expect: () => [
@@ -566,6 +772,45 @@ void main() {
       expect: () => [
         cartWith([CartItem(product: tProduct, qty: 1, lineId: 'x')]),
       ],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'recomputes promotion after successful scan (Wave A2)',
+      build: () {
+        final past = DateTime(2024, 1, 1);
+        final now = DateTime(2025, 1, 1);
+        when(
+          () => mockProductRepo.getProductByBarcode('1234567890123'),
+        ).thenAnswer((_) async => tProduct);
+        when(
+          () => mockSettingsRepo.load(),
+        ).thenAnswer((_) async => const Settings());
+        when(() => mockPromotionRepo.getPromotionById('promo-1')).thenAnswer(
+          (_) async => Promotion(
+            id: 'promo-1',
+            name: '10% Off',
+            type: PromotionType.percent,
+            value: 10,
+            startDate: past,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+        return buildBloc();
+      },
+      seed: () => CartState(
+        items: [tCartItem], // 2 x 100 = 200
+        promotionId: 'promo-1',
+        promotionDiscountAmount: 20,
+      ),
+      act: (b) => b.add(const CartBarcodeScanned('1234567890123')),
+      wait: const Duration(milliseconds: 50),
+      verify: (b) {
+        // 3 x 100 = 300 → 10% = 30
+        expect(b.state.items.fold<int>(0, (s, i) => s + i.qty), 3);
+        expect(b.state.promotionDiscountAmount, 30);
+        verify(() => mockPromotionRepo.getPromotionById('promo-1')).called(1);
+      },
     );
 
     blocTest<CartBloc, CartState>(
@@ -638,13 +883,29 @@ void main() {
     );
 
     blocTest<CartBloc, CartState>(
-      'CartCleared always allowed and clears lock',
+      'CartCleared user path rejected while paymentLocked',
       build: buildBloc,
       seed: () => CartState(
         items: [CartItem(product: tProduct, qty: 2, lineId: 'x')],
         paymentLocked: true,
       ),
       act: (b) => b.add(const CartCleared()),
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.paymentLocked, 'locked', true)
+            .having((s) => s.items.length, 'items', 1)
+            .having((s) => s.errorMessage, 'err', 'paymentInProgress'),
+      ],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'CartCleared force clears while paymentLocked (post-sale/park)',
+      build: buildBloc,
+      seed: () => CartState(
+        items: [CartItem(product: tProduct, qty: 2, lineId: 'x')],
+        paymentLocked: true,
+      ),
+      act: (b) => b.add(const CartCleared(force: true)),
       expect: () => [const CartState()],
     );
 

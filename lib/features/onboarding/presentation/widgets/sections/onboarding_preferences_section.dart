@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/brand_choice_chip.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_section.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_segmented_control.dart';
+import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_selection_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -12,14 +13,18 @@ class OnboardingPreferencesSection extends StatelessWidget {
     required this.cardBg,
     required this.accentBrand,
     required this.settings,
+    this.currencyController,
     required this.dateFormat,
+    this.onCurrencyChanged,
     required this.onDateFormatChanged,
   });
 
   final Color cardBg;
   final Color accentBrand;
   final Settings settings;
+  final TextEditingController? currencyController;
   final String dateFormat;
+  final ValueChanged<String>? onCurrencyChanged;
   final ValueChanged<String> onDateFormatChanged;
 
   @override
@@ -34,65 +39,135 @@ class OnboardingPreferencesSection extends StatelessWidget {
         children: [
           Text(context.l10n.onboardingLanguage),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: [
-              BrandChoiceChip(
+          OnboardingSegmentedControl<String>(
+            segments: [
+              ButtonSegment(
+                value: 'th',
                 label: Text(context.l10n.onboardingThai),
-                selected: settings.locale.languageCode == 'th',
-                onSelected: (_) => context.read<SettingsCubit>().updateField(
-                  (_) => settings.copyWith(locale: const Locale('th')),
-                ),
               ),
-              BrandChoiceChip(
+              ButtonSegment(
+                value: 'en',
                 label: Text(context.l10n.onboardingEnglish),
-                selected: settings.locale.languageCode == 'en',
-                onSelected: (_) => context.read<SettingsCubit>().updateField(
-                  (_) => settings.copyWith(locale: const Locale('en')),
-                ),
               ),
             ],
+            selected: {settings.locale.languageCode},
+            onSelectionChanged: (selection) {
+              final locale = selection.first == 'th'
+                  ? const Locale('th')
+                  : const Locale('en');
+              context.read<SettingsCubit>().updateField(
+                (_) => settings.copyWith(locale: locale),
+              );
+            },
           ),
           const SizedBox(height: 16),
+          if (currencyController != null) ...[
+            OnboardingSelectionField<String>(
+              label: context.l10n.onboardingCurrency,
+              valueLabel: switch (currencyController!.text) {
+                '฿' => context.l10n.onboardingCurrencyBaht,
+                r'$' => context.l10n.onboardingCurrencyUsd,
+                '€' => context.l10n.onboardingCurrencyEur,
+                '¥' => context.l10n.onboardingCurrencyJpy,
+                _ => currencyController!.text,
+              },
+              icon: Icons.payments_outlined,
+              onTap: () async {
+                final selected = await OnboardingSelectionSheet.show<String>(
+                  context: context,
+                  title: context.l10n.onboardingCurrency,
+                  selected: currencyController!.text,
+                  options: [
+                    OnboardingSelectionOption(
+                      value: '฿',
+                      label: context.l10n.onboardingCurrencyBaht,
+                      icon: Icons.currency_exchange,
+                    ),
+                    OnboardingSelectionOption(
+                      value: r'$',
+                      label: context.l10n.onboardingCurrencyUsd,
+                      icon: Icons.currency_exchange,
+                    ),
+                    OnboardingSelectionOption(
+                      value: '€',
+                      label: context.l10n.onboardingCurrencyEur,
+                      icon: Icons.currency_exchange,
+                    ),
+                    OnboardingSelectionOption(
+                      value: '¥',
+                      label: context.l10n.onboardingCurrencyJpy,
+                      icon: Icons.currency_exchange,
+                    ),
+                  ],
+                );
+                if (selected == null || !context.mounted) return;
+                currencyController!.text = selected;
+                onCurrencyChanged?.call(selected);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
           Text(context.l10n.settingsTheme),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: [
-              BrandChoiceChip(
+          OnboardingSegmentedControl<ThemeMode>(
+            segments: [
+              ButtonSegment(
+                value: ThemeMode.light,
                 label: Text(context.l10n.settingsThemeLight),
-                selected: settings.themeMode == ThemeMode.light,
-                onSelected: (_) => context.read<SettingsCubit>().updateField(
-                  (_) => settings.copyWith(themeMode: ThemeMode.light),
-                ),
               ),
-              BrandChoiceChip(
+              ButtonSegment(
+                value: ThemeMode.dark,
                 label: Text(context.l10n.settingsThemeDark),
-                selected: settings.themeMode == ThemeMode.dark,
-                onSelected: (_) => context.read<SettingsCubit>().updateField(
-                  (_) => settings.copyWith(themeMode: ThemeMode.dark),
-                ),
               ),
-              BrandChoiceChip(
+              ButtonSegment(
+                value: ThemeMode.system,
                 label: Text(context.l10n.settingsThemeSystem),
-                selected: settings.themeMode == ThemeMode.system,
-                onSelected: (_) => context.read<SettingsCubit>().updateField(
-                  (_) => settings.copyWith(themeMode: ThemeMode.system),
-                ),
               ),
             ],
+            selected: {settings.themeMode},
+            onSelectionChanged: (selection) {
+              context.read<SettingsCubit>().updateField(
+                (_) => settings.copyWith(themeMode: selection.first),
+              );
+            },
           ),
           const SizedBox(height: 16),
           Text(context.l10n.onboardingDateFormat),
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: dateFormat,
-            items: const [
-              DropdownMenuItem(value: 'dd/MM/yyyy', child: Text('dd/MM/yyyy')),
-              DropdownMenuItem(value: 'MM/dd/yyyy', child: Text('MM/dd/yyyy')),
-              DropdownMenuItem(value: 'yyyy-MM-dd', child: Text('yyyy-MM-dd')),
-            ],
-            onChanged: (v) => onDateFormatChanged(v!),
+          OnboardingSelectionField<String>(
+            label: context.l10n.onboardingDateFormat,
+            valueLabel: dateFormat,
+            icon: Icons.calendar_today_outlined,
+            onTap: () async {
+              final selected = await OnboardingSelectionSheet.show<String>(
+                context: context,
+                title: context.l10n.onboardingDateFormat,
+                selected: dateFormat,
+                options: [
+                  const OnboardingSelectionOption(
+                    value: 'dd/MM/yyyy',
+                    label: 'dd/MM/yyyy',
+                    subtitle: '20/01/2026',
+                    icon: Icons.calendar_today_outlined,
+                  ),
+                  const OnboardingSelectionOption(
+                    value: 'MM/dd/yyyy',
+                    label: 'MM/dd/yyyy',
+                    subtitle: '01/20/2026',
+                    icon: Icons.calendar_today_outlined,
+                  ),
+                  const OnboardingSelectionOption(
+                    value: 'yyyy-MM-dd',
+                    label: 'yyyy-MM-dd',
+                    subtitle: '2026-01-20',
+                    icon: Icons.calendar_today_outlined,
+                  ),
+                ],
+              );
+              if (selected != null && context.mounted) {
+                onDateFormatChanged(selected);
+              }
+            },
           ),
         ],
       ),

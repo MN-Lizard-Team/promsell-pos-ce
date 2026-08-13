@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/category_field.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import '../../../../../helpers/mocks.dart';
 import '../../../../../helpers/pump_app.dart';
 
@@ -61,8 +62,8 @@ void main() {
         categoryBloc: mockCategoryBloc,
       );
 
-      expect(find.byIcon(Icons.keyboard_arrow_down_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.clear), findsNothing);
+      expect(find.byIcon(TablerIcons.chevronDown), findsOneWidget);
+      expect(find.byIcon(TablerIcons.x), findsNothing);
     });
 
     testWidgets('shows clear icon when category selected and clears on tap', (
@@ -77,7 +78,7 @@ void main() {
         categoryBloc: mockCategoryBloc,
       );
 
-      expect(find.byIcon(Icons.clear), findsOneWidget);
+      expect(find.byIcon(TablerIcons.x), findsOneWidget);
       await tester.tap(
         find.byKey(const ValueKey('product-form-category-clear')),
       );

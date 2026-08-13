@@ -94,6 +94,15 @@ class ProductDeleted extends ProductEvent {
   List<Object?> get props => [id];
 }
 
+/// Restores a soft-deleted product (undo delete).
+class ProductRestored extends ProductEvent {
+  const ProductRestored(this.id);
+  final String id;
+
+  @override
+  List<Object?> get props => [id];
+}
+
 class ProductSearchChanged extends ProductEvent {
   const ProductSearchChanged(this.query);
   final String query;
@@ -145,6 +154,24 @@ class ProductPriceRangeChanged extends ProductEvent {
 
   @override
   List<Object?> get props => [priceRange];
+}
+
+/// Atomic stock + sort + price apply (single emit) for sale filter sheet.
+///
+/// Category is intentionally omitted — sale chrome chips own category.
+class ProductListFiltersApplied extends ProductEvent {
+  const ProductListFiltersApplied({
+    required this.stockFilter,
+    required this.productSort,
+    this.priceRange,
+  });
+
+  final StockFilter stockFilter;
+  final ProductSort productSort;
+  final PriceRange? priceRange;
+
+  @override
+  List<Object?> get props => [stockFilter, productSort, priceRange];
 }
 
 class ProductTabChanged extends ProductEvent {

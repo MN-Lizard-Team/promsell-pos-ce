@@ -1,6 +1,6 @@
 # Changelog — v0.6.x — Promsell POS CE
 
-> Current release: [CHANGELOG.md](../../CHANGELOG.md) (v0.9.0+).  
+> Current release: [CHANGELOG.md](../../CHANGELOG.md) (v0.9.1+).  
 > 0.8.x notes: [CHANGELOG-08x.md](CHANGELOG-08x.md).
 
 ---

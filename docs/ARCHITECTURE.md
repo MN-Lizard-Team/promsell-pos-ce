@@ -1,4 +1,4 @@
-﻿# Architecture — Promsell POS CE (v0.9.0)
+﻿# Architecture — Promsell POS CE (v0.9.1)
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -16,7 +16,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 State management patterns (BLoC vs Cubit, singleton vs factory, stream lifecycle), dependency injection graph, transaction boundaries, error handling strategy, and performance & scaling characteristics.
 
 ### [Architecture Decision Records (ADRs)](architecture/adr/index.md)
-26 ADRs covering database ORM selection, state management, DI, transaction design, audit trail, settings architecture, widget decomposition, generated code management, dependency scanning, widget folder standardization, restaurant mode, and customer/promotion entities.
+ADRs 001–028 covering ORM, state, DI, transactions, audit trail, settings, widgets, generated code, barcodes, payable pipeline (027), and CE sync-metadata non-goals (028).
 
 ---
 
@@ -40,13 +40,14 @@ Offline-first mobile POS system — Flutter, Drift SQLite, BLoC/Cubit, Material 
 └────────────────────────┬────────────────────────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│   lib/core/ — Cross-cutting infrastructure                                      │
+│   lib/core/   — Cross-cutting infrastructure                                    │
 │   database/   — Drift schema, tables, DAOs                                      │
 │   di/         — injectable + get_it DI                                          │
 │   extensions/ — context.l10n helper                                             │
 │   image/      — Unified image system                                            │
-│   services/  — CrashLogService (PII sanitization, export/clear)                 │
-│   utils/      — IdGenerator, payment_method, Ean13Generator (@injectable)       │
+│   services/   — CrashLogService (PII sanitization, export/clear)                │
+│   utils/      — IdGenerator, payment_method, Ean13Generator,                    │
+│                 DateFormatter (@injectable)                                     │
 │   widgets/    — shared UI primitives                                            │
 └───────────────────────┬─────────────────────────────────────────────────────────┘
                         ▼
@@ -68,7 +69,7 @@ features/<name>/
 │   ├── datasources/          # Drift DAO wrappers
 │   └── repositories/         # Repository implementations
 ├── domain/
-│   ├── entities/             # Pure Dart models (no Flutter imports)
+│   ├── entities/             # Domain models (should be Flutter-free; settings still import Flutter)
 │   ├── repositories/         # Abstract interfaces
 │   └── usecases/             # Business logic
 └── presentation/
@@ -77,7 +78,7 @@ features/<name>/
     └── widgets/              # Extracted reusable widgets
 ```
 
-**Dependency rule:** `presentation → domain ← data`. Domain has zero external dependencies.
+**Dependency rule:** `presentation → domain ← data`. **Target, not a CI fact.** Domain is not fence-enforced (AH-1.1). Known leaks: settings `Locale`/`ThemeMode`; CloseDay → sale data; some product image/submit use cases.
 
 ### C4 Level 1 — System Context
 
@@ -103,12 +104,12 @@ features/<name>/
 ```
 
 **Key characteristics:**
-- **Zero network dependencies** — fully offline by design
-- **Single-user per device** — no authentication layer
-- **Local-only persistence** — all data in SQLite on device
+- **Offline-first selling** — no developer server; optional `INTERNET` only for product image URLs
+- **Single-user per device** — store PIN, not multi-user auth
+- **Local-only persistence** — SQLCipher SQLite on device
 
 > Full C4 Level 2-3 diagrams and data flows: [`docs/architecture/c4-diagrams.md`](architecture/c4-diagrams.md)
 
 ---
 
-<sub>Promsell POS CE · v0.9.0 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.9.1 · Architecture Document · Deep Technical Reference</sub>

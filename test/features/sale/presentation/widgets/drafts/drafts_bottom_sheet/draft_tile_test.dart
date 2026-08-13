@@ -20,11 +20,14 @@ void main() {
               total: 150.5,
               currency: '฿',
               isActive: true,
+              tableId: 'T-5',
+              previewItemName: 'Pad Thai',
               l10n: l10n,
               theme: theme,
               onSwitch: () {},
               onDelete: () {},
               onRename: (name) {},
+              onPay: () {},
             );
           },
         ),
@@ -33,6 +36,12 @@ void main() {
       expect(find.textContaining('Table 1'), findsOneWidget);
       expect(find.textContaining('Active'), findsOneWidget);
       expect(find.textContaining('150.50'), findsOneWidget);
+      expect(find.textContaining('T-5'), findsOneWidget);
+      expect(find.textContaining('Pad Thai'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('sale_bill_tile_pay_d1')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders untitled draft when name is empty', (tester) async {
@@ -58,8 +67,8 @@ void main() {
         ),
       );
 
-      // untitledDraft is product language "Bill" (not legacy "Draft").
-      expect(find.textContaining('Bill'), findsWidgets);
+      // untitledDraft is product language "Untitled bill".
+      expect(find.textContaining('Untitled bill'), findsOneWidget);
     });
 
     testWidgets('calls onSwitch when tapped', (tester) async {
@@ -86,7 +95,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byType(ListTile));
+      await tester.tap(find.byType(InkWell).first);
       await tester.pump();
       expect(switched, isTrue);
     });
@@ -115,11 +124,14 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.edit_outlined));
-      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('sale_bill_tile_more_d1')));
+      await tester.pumpAndSettle();
+      // Bottom sheet actions (not PopupMenu).
+      await tester.tap(find.byKey(const ValueKey('sale_bill_more_rename_d1')));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'New Name');
       await tester.tap(find.text('Save'));
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(renamed, isTrue);
     });
 
@@ -149,10 +161,12 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.delete_outline));
-      await tester.pump();
-      await tester.tap(find.widgetWithText(FilledButton, 'Delete bill'));
-      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('sale_bill_tile_more_d1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('sale_bill_more_delete_d1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.pumpAndSettle();
       expect(deleted, isTrue);
     });
   });

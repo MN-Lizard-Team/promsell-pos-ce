@@ -133,6 +133,30 @@ void main() {
       ]);
     });
 
+    test(
+      'Wave P2: multi-tender change recomputed from cash leg ignores client',
+      () async {
+        final product = await seedProduct(stock: 10, price: 100);
+        // Client sends full-bill style change (wrong); writer uses received-cash.
+        final sale = await saleDatasource.insertSaleWithItems(
+          items: [CartItem(product: product, qty: 1)],
+          paymentMethod: 'mixed',
+          vatMode: 'NONE',
+          vatRate: 0,
+          payments: [
+            SalePayment(method: 'cash', amount: Money.fromDouble(40)),
+            SalePayment(method: 'promptpay', amount: Money.fromDouble(60)),
+          ],
+          amountReceived: Money.fromDouble(50),
+          changeAmount: Money.fromDouble(999),
+        );
+
+        expect(sale.amountReceived?.value, 50);
+        // change = 50 − 40 cash leg = 10 (not 999, not 50−100).
+        expect(sale.changeAmount?.value, 10);
+      },
+    );
+
     test('insertSaleWithItems rejects tender sum mismatch', () async {
       final product = await seedProduct(stock: 10, price: 100);
       await expectLater(
@@ -148,6 +172,103 @@ void main() {
         ),
         throwsA(isA<BusinessRuleError>()),
       );
+    });
+
+    test(
+      'insertSaleWithItems rejects inactive / missing / expired promotion',
+      () async {
+        final product = await seedProduct(stock: 10, price: 100);
+        final now = DateTime.now();
+
+        Future<void> insertPromo({
+          required String id,
+          required bool isActive,
+          DateTime? start,
+          DateTime? end,
+        }) {
+          return db
+              .into(db.promotions)
+              .insert(
+                PromotionsCompanion.insert(
+                  id: id,
+                  name: 'Promo $id',
+                  isActive: Value(isActive),
+                  startDate: Value(
+                    start ?? now.subtract(const Duration(days: 1)),
+                  ),
+                  endDate: Value(end),
+                ),
+              );
+        }
+
+        await insertPromo(id: 'promo-inactive', isActive: false);
+        await insertPromo(
+          id: 'promo-future',
+          isActive: true,
+          start: now.add(const Duration(days: 2)),
+        );
+        await insertPromo(
+          id: 'promo-expired',
+          isActive: true,
+          start: now.subtract(const Duration(days: 10)),
+          end: now.subtract(const Duration(days: 1)),
+        );
+
+        for (final promoId in [
+          'promo-missing',
+          'promo-inactive',
+          'promo-future',
+          'promo-expired',
+        ]) {
+          final stockBefore = (await productDatasource.getProductById(
+            product.id,
+          ))!.stock;
+          await expectLater(
+            () => saleDatasource.insertSaleWithItems(
+              items: [CartItem(product: product, qty: 1)],
+              paymentMethod: 'cash',
+              vatMode: 'NONE',
+              vatRate: 0,
+              promotionId: promoId,
+              promotionDiscountAmount: Money.fromDouble(5),
+            ),
+            throwsA(isA<NotFoundError>()),
+            reason: promoId,
+          );
+          final stockAfter = (await productDatasource.getProductById(
+            product.id,
+          ))!.stock;
+          expect(stockAfter, stockBefore, reason: 'stock unchanged: $promoId');
+        }
+      },
+    );
+
+    test('insertSaleWithItems accepts active promotion in window', () async {
+      final product = await seedProduct(stock: 10, price: 100);
+      final now = DateTime.now();
+      await db
+          .into(db.promotions)
+          .insert(
+            PromotionsCompanion.insert(
+              id: 'promo-ok',
+              name: 'Active promo',
+              isActive: const Value(true),
+              startDate: Value(now.subtract(const Duration(days: 1))),
+              endDate: Value(now.add(const Duration(days: 7))),
+            ),
+          );
+
+      final sale = await saleDatasource.insertSaleWithItems(
+        items: [CartItem(product: product, qty: 1)],
+        paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
+        promotionId: 'promo-ok',
+        promotionDiscountAmount: Money.fromDouble(10),
+      );
+      expect(sale.promotionId, 'promo-ok');
+      expect(sale.promotionDiscountAmount, Money.fromDouble(10));
+      expect((await productDatasource.getProductById(product.id))!.stock, 9);
     });
 
     test(
@@ -559,10 +680,7 @@ void main() {
   /// CAS-style `stock = stock - ? AND stock >= ?` path never leaves negative
   /// stock when [allowOversell] is false, and never "loses" units under races.
   group('concurrent stock / double-sale (C4)', () {
-    Future<Object> trySale({
-      required Product product,
-      required int qty,
-    }) async {
+    Future<Object> trySale({required Product product, required int qty}) async {
       try {
         final sale = await saleDatasource.insertSaleWithItems(
           items: [CartItem(product: product, qty: qty)],
@@ -709,10 +827,7 @@ void main() {
         expect(failures, hasLength(1));
         final after = await productDatasource.getProductById(product.id);
         expect(after!.stock, 1);
-        expect(
-          successes.single.items.first.qty + after.stock,
-          3,
-        );
+        expect(successes.single.items.first.qty + after.stock, 3);
       },
     );
   });

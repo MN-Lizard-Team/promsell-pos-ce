@@ -18,15 +18,26 @@ class CheckoutRobot extends RobotBase {
 
   /// Select payment method
   Future<void> selectPaymentMethod(String method) async {
-    final methodBtn = find.text(method)
+    // Match EN, TH, or widget-with-text for resilience across locales.
+    final thMethod = method == 'Cash'
+        ? 'เงินสด'
+        : method == 'PromptPay'
+        ? 'พร้อมเพย์'
+        : method;
+    final methodBtn = find
+        .text(method)
+        .or(find.text(thMethod))
         .or(find.textContaining(method))
-        .or(find.widgetWithText(Card, method));
+        .or(find.textContaining(thMethod))
+        .or(find.widgetWithText(Card, method))
+        .or(find.widgetWithText(Card, thMethod));
     await tap(methodBtn);
   }
 
   /// Enter cash received amount
   Future<void> enterCashReceived(double amount) async {
-    final receivedField = find.widgetWithText(TextField, 'Received')
+    final receivedField = find
+        .widgetWithText(TextField, 'Received')
         .or(find.byType(TextField));
     await enterText(receivedField, amount.toString());
   }
@@ -41,7 +52,8 @@ class CheckoutRobot extends RobotBase {
     required String type,
     required double value,
   }) async {
-    final discountBtn = find.text('Discount')
+    final discountBtn = find
+        .text('Discount')
         .or(find.byIcon(Icons.discount))
         .or(find.text('Add Discount'));
     await tap(discountBtn);
@@ -59,10 +71,11 @@ class CheckoutRobot extends RobotBase {
 
   /// Apply promotion
   Future<void> applyPromotion(String promotionName) async {
-    final promoBtn = find.text('Promotion')
+    final promoBtn = find
+        .text('Promotion')
         .or(find.text('Apply Promotion'))
         .or(find.byIcon(Icons.local_offer));
-    
+
     if (promoBtn.evaluate().isNotEmpty) {
       await tap(promoBtn);
       await tap(find.text(promotionName));
@@ -74,7 +87,8 @@ class CheckoutRobot extends RobotBase {
 
   /// Add customer to sale
   Future<void> selectCustomer(String customerName) async {
-    final customerBtn = find.text('Customer')
+    final customerBtn = find
+        .text('Customer')
         .or(find.byIcon(Icons.person))
         .or(find.text('Add Customer'));
     await tap(customerBtn);
@@ -83,15 +97,19 @@ class CheckoutRobot extends RobotBase {
 
   /// Add note to sale
   Future<void> addNote(String note) async {
-    final noteField = find.widgetWithText(TextField, 'Note')
+    final noteField = find
+        .widgetWithText(TextField, 'Note')
         .or(find.byType(TextField));
     await enterText(noteField, note);
   }
 
   /// Complete payment
   Future<void> completePayment() async {
-    final completeBtn = find.text('Complete')
+    final completeBtn = find
+        .text('Complete')
         .or(find.text('Pay'))
+        .or(find.text('ชำระเงิน'))
+        .or(find.text('เสร็จสิ้น'))
         .or(find.text('Confirm Payment'))
         .or(find.byIcon(Icons.check));
     await tap(completeBtn);
@@ -100,7 +118,8 @@ class CheckoutRobot extends RobotBase {
   /// Verify payment complete (receipt shown)
   void verifyPaymentComplete() {
     expectVisible(
-      find.text('Receipt')
+      find
+          .text('Receipt')
           .or(find.text('Payment Complete'))
           .or(find.text('Success')),
       reason: 'Payment should be complete',
@@ -134,10 +153,16 @@ class CheckoutRobot extends RobotBase {
     );
   }
 
-  /// Close receipt and return to sale
+  /// Close receipt / success hero and return to sale (Next sale primary).
   Future<void> closeReceipt() async {
-    final closeBtn = find.text('Close')
+    final closeBtn = find
+        .byKey(const ValueKey('sale_success_next_cta'))
+        .or(find.text('Next sale'))
+        .or(find.text('ขายบิลถัดไป'))
+        .or(find.text('Close'))
+        .or(find.text('ปิด'))
         .or(find.text('Done'))
+        .or(find.text('เสร็จ'))
         .or(find.text('New Sale'))
         .or(find.byIcon(Icons.close));
     await tap(closeBtn);
@@ -145,8 +170,7 @@ class CheckoutRobot extends RobotBase {
 
   /// Print receipt
   Future<void> printReceipt() async {
-    final printBtn = find.text('Print')
-        .or(find.byIcon(Icons.print));
+    final printBtn = find.text('Print').or(find.byIcon(Icons.print));
     if (printBtn.evaluate().isNotEmpty) {
       await tap(printBtn);
     }
@@ -154,8 +178,7 @@ class CheckoutRobot extends RobotBase {
 
   /// Share receipt
   Future<void> shareReceipt() async {
-    final shareBtn = find.text('Share')
-        .or(find.byIcon(Icons.share));
+    final shareBtn = find.text('Share').or(find.byIcon(Icons.share));
     if (shareBtn.evaluate().isNotEmpty) {
       await tap(shareBtn);
     }
@@ -163,8 +186,7 @@ class CheckoutRobot extends RobotBase {
 
   /// Go back to cart
   Future<void> backToCart() async {
-    final backBtn = find.byIcon(Icons.arrow_back)
-        .or(find.text('Back'));
+    final backBtn = find.byIcon(Icons.arrow_back).or(find.text('Back'));
     await tap(backBtn);
   }
 

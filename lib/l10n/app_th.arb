@@ -6,8 +6,8 @@
   "navHome": "หน้าหลัก",
   "navSale": "ขายสินค้า",
   "navProducts": "สินค้า",
-  "navHistory": "ประวัติ",
-  "navReport": "รายงาน",
+  "navHistory": "ประวัติการขาย",
+  "navReport": "สรุปยอด",
   "navSettings": "ตั้งค่า",
   "salePageTitle": "ขายสินค้า",
   "salePageSubtitle": "เพิ่มสินค้าและทำรายการขาย",
@@ -44,6 +44,17 @@
   "quickCashExact": "รับพอดี",
   "noProducts": "ไม่มีสินค้า",
   "saleSavedSuccess": "บันทึกการขายเรียบร้อย",
+  "saleSuccessTitle": "ชำระเงินสำเร็จ",
+  "saleSuccessSubtitle": "ใบเสร็จ #{number}",
+  "@saleSuccessSubtitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "changeDue": "เงินทอน",
+  "nextSale": "ขายบิลถัดไป",
   "productAddedToCart": "เพิ่ม {name} แล้ว",
   "@productAddedToCart": {
     "placeholders": {
@@ -86,10 +97,20 @@
   "insufficientCash": "เงินที่รับมายังไม่ครบยอด",
   "remainingAmount": "ยอดขาด",
   "productsTitle": "สินค้า",
-  "searchProducts": "ค้นหาสินค้า...",
+  "searchProducts": "ค้นหาสินค้า บาร์โค้ด และ อื่นๆ...",
+  "searchProductsHint": "แตะเพื่อค้นหาสินค้า บาร์โค้ด และอื่นๆ...",
+  "tapToSearch": "แตะเพื่อค้นหา",
+  "searchActive": "กำลังค้นหา",
   "recentSearches": "ค้นหาล่าสุด",
   "noProductsYet": "ยังไม่มีสินค้า",
+  "noProductsYetHint": "เพิ่มสินค้าชิ้นแรกของคุณหรือนำเข้าจาก CSV เพื่อเริ่มต้น",
   "errorOccurred": "เกิดข้อผิดพลาด",
+  "receiptPrintFailed": "การพิมพ์ล้มเหลว กรุณาตรวจสอบเครื่องพิมพ์แล้วลองอีกครั้ง",
+  "receiptShareFailed": "ไม่สามารถแชร์ใบเสร็จได้ กรุณาลองอีกครั้ง",
+  "receiptPdfFailed": "ไม่สามารถสร้าง PDF ใบเสร็จได้",
+  "receiptPrintSuccess": "พิมพ์ใบเสร็จสำเร็จ",
+  "receiptShareSuccess": "แชร์ใบเสร็จสำเร็จ",
+  "receiptTaxInvoice": "ใบกำกับภาษี",
   "retry": "ลองอีกครั้ง",
   "noCategory": "ไม่มีหมวดหมู่",
   "stockLabel": "คงเหลือ: {count}",
@@ -146,6 +167,7 @@
   "addProduct": "เพิ่มสินค้า",
   "editProductTitle": "แก้ไขสินค้า",
   "productNameLabel": "ชื่อสินค้า *",
+  "productNameHint": "เช่น อเมริกาโน้เย็น แกรนด์",
   "productNameRequired": "กรุณาใส่ชื่อสินค้า",
   "productNameTooLong": "ชื่อสินค้ายาวเกินไป (สูงสุด 100 ตัวอักษร)",
   "quickEditStockSet": "ตั้งค่าใหม่",
@@ -177,7 +199,9 @@
   "quantityRequired": "กรุณาใส่จำนวน",
   "invalidQuantity": "จำนวนไม่ถูกต้อง",
   "invalidBarcode": "บาร์โค้ดต้องเป็นตัวอักษรและตัวเลขเท่านั้น",
+  "invalidBarcodeFormat": "บาร์โค้ดต้องมีแค่ตัวอักษรและตัวเลข (ห้ามมีช่องว่าง ขีดกลาง หรืออักขระพิเศษ)",
   "categoryLabel": "หมวดหมู่",
+  "categoryHelper": "ไม่บังคับ — ช่วยจัดหมวดหมู่สินค้าใน POS",
   "showProduct": "แสดงสินค้า",
   "productVisibility": "การมองเห็นสินค้า",
   "save": "บันทึก",
@@ -185,6 +209,13 @@
   "productActivated": "เปิดใช้งานสินค้าแล้ว",
   "productDeactivated": "ปิดการใช้งานสินค้าแล้ว",
   "productDeleted": "ลบสินค้าแล้ว",
+  "productDeletedWithName": "ลบ {name} แล้ว",
+  "@productDeletedWithName": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "productDeletedShort": "ลบสินค้าแล้ว",
   "stockUpdated": "อัปเดตสต็อกแล้ว",
   "stockUpdateCancelled": "ไม่ได้เปลี่ยนแปลงสต็อก",
   "stockUpdateInvalid": "ค่าสต็อกไม่ถูกต้อง",
@@ -195,8 +226,15 @@
   "stockZeroWarning": "สินค้าจะไม่แสดงในหน้าขายเมื่อสต็อก = 0",
   "historyTitle": "ประวัติการขาย",
   "searchHistoryHint": "ค้นหาเลขใบเสร็จ วิธีชำระ ยอดรวม…",
-  "noSearchResults": "ไม่พบการตั้งค่า",
+  "searchSales": "ค้นหายอดขาย",
+  "noSearchResults": "ไม่พบรายการขาย",
   "noSalesYet": "ยังไม่มีรายการขาย",
+  "noSalesInRange": "ไม่มีรายการขายในช่วงวันที่ที่เลือก",
+  "changeDateRange": "เปลี่ยนช่วงวันที่",
+  "searchResultsCount": "พบ {count} รายการ",
+  "noResultsInDateRange": "ไม่พบในช่วงวันที่นี้ ลองเปลี่ยนช่วงวันที่",
+  "searchingInRange": "ค้นหาในช่วง: {range}",
+  "tapToExpandHint": "แตะเพื่อดูรายละเอียดเพิ่มเติม",
   "noDailyClosesYet": "ยังไม่มีการปิดรับ",
   "noteLabel": "หมายเหตุ: {note}",
   "@noteLabel": {
@@ -206,7 +244,7 @@
       }
     }
   },
-  "reportTitle": "รายงาน",
+  "reportTitle": "สรุปยอดขาย",
   "totalRevenue": "ยอดขายรวม",
   "salesCount": "{count} รายการ",
   "@salesCount": {
@@ -254,6 +292,7 @@
   "settingsShopName": "ชื่อร้าน",
   "settingsAddress": "ที่อยู่",
   "settingsPhone": "เบอร์โทรศัพท์",
+  "settingsTaxId": "เลขประจำตัวผู้เสียภาษี",
   "settingsSales": "การขาย",
   "settingsCurrency": "สกุลเงิน",
   "settingsDateFormat": "รูปแบบวันที่",
@@ -269,11 +308,15 @@
   "shopNameTooLong": "ชื่อร้านยาวเกินไป",
   "addressTooLong": "ที่อยู่ยาวเกินไป",
   "phoneInvalid": "เบอร์โทรศัพท์ไม่ถูกต้อง",
+  "taxIdInvalid": "เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก",
+  "taxIdChecksumInvalid": "เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง กรุณาตรวจสอบเลข 13 หลักอีกครั้ง",
   "shopInfoEmptyPreview": "ข้อมูลร้านจะปรากฏที่นี่",
   "langThai": "ภาษาไทย",
   "langEnglish": "English",
   "printReceipt": "พิมพ์ใบเสร็จ",
   "shareReceipt": "แชร์ใบเสร็จ",
+  "reprintReceipt": "พิมพ์ใบเสร็จอีกครั้ง",
+  "shareReceiptCopy": "แชร์สำเนา",
   "receiptLabelReceipt": "ใบเสร็จ",
   "receiptLabelPayment": "ชำระเงิน",
   "receiptLabelTotal": "รวม",
@@ -293,6 +336,8 @@
   "receiptPreviewStyleCard": "การ์ด",
   "receiptPreviewStyleNone": "ไม่แสดง",
   "receiptPreview": "ตัวอย่างใบเสร็จ",
+  "viewReceipt": "ดูใบเสร็จ",
+  "hideReceipt": "ซ่อนใบเสร็จ",
   "vatModeNone": "ไม่มี",
   "vatModeInclusive": "รวมแล้ว",
   "vatModeExclusive": "แยกนอก",
@@ -373,6 +418,7 @@
   "settingsStockPolicy": "นโยบายสต็อค",
   "allowOversell": "อนุญาตขายเกินสต็อค",
   "allowOversellHint": "อนุญาตให้เพิ่มสินค้าเกินจำนวนคงเหลือได้",
+  "stockBlocked": "บล็อค",
   "lowStockThreshold": "เตือนสต็อคต่ำ (จำนวน)",
   "lowStockWarning": "สต็อคใกล้หมด",
   "inStock": "มีสินค้า",
@@ -431,6 +477,8 @@
   "deleteDraftConfirm": "ยืนยันลบบิลนี้?",
   "draftLimitReached": "บิลเต็ม  10 บิลแล้ว กรุณาลบบิลเก่าก่อน",
   "activeDraftLabel": "ใช้งานอยู่",
+  "openBillsSectionSelling": "กำลังขาย",
+  "openBillsSectionParked": "พักไว้",
   "draftNameHint": "ชื่อบิล (ไม่บังคับ)",
   "switchDraft": "สลับไปบิลนี้",
   "cartCleared": "ล้างตะกร้าแล้ว",
@@ -438,11 +486,11 @@
   "itemsLabel": "รายการ",
   "searchCartItems": "ค้นหาสินค้าในตะกร้า...",
   "searchDrafts": "ค้นหาบิล...",
-  "untitledDraft": "บิล",
+  "untitledDraft": "บิลไม่มีชื่อ",
   "noMatchingItems": "ไม่พบสินค้าที่ตรงกัน",
   "noMatchingDrafts": "ไม่พบบิลที่ตรงกัน",
-  "noSavedBills": "ยังไม่มีบิลที่บันทึก",
-  "noSavedBillsHint": "พักบิลจากหน้าขายเพื่อเก็บไว้ที่นี่",
+  "noSavedBills": "ยังไม่มีบิลเปิด",
+  "noSavedBillsHint": "พักบิลจากหน้าขายเพื่อเปิดที่นี่",
   "groupView": "มุมมองแบบกลุ่ม",
   "listView": "มุมมองรายการ",
   "gridView": "มุมมองตาราง",
@@ -560,8 +608,12 @@
   "itemsCount": "{count} รายการ",
   "totalDiscountLabel": "ส่วนลดทั้งหมด",
   "settingsReceiptSize": "ขนาดใบเสร็จ",
+  "receiptSize58mm": "58mm (กระดาษความร้อน)",
   "receiptSize80mm": "80mm (กระดาษความร้อน)",
   "receiptSizeA4": "A4",
+  "receiptSize58mmDesc": "กระทัดรัด — เครื่องพิมพ์พกพาขนาดเล็ก",
+  "receiptSize80mmDesc": "มาตรฐาน — เครื่องพิมพ์ความร้อนทั่วไป",
+  "receiptSizeA4Desc": "เอกสาร — สำหรับส่งอีเมล/ส่งออก PDF",
   "settingsMaxDrafts": "บิลสูงสุด",
   "settingsCompactCartMode": "ตะกร้าแบบ Delivery",
   "settingsUltraCompactMode": "โหมดกะทัดรัดมาก",
@@ -665,6 +717,8 @@
   "reopenDayConfirmTitle": "เปิดยอดใหม่?",
   "reopenDayConfirmMessage": "การดำเนินการนี้จะปลดล็อกวัน การขายจะถูกนับเข้ายอดใหม่",
   "confirm": "ยืนยัน",
+  "basePrice": "ราคาหลัก",
+  "optionsLabel": "ตัวเลือก",
   "dbHealthTitle": "สุขภาพฐานข้อมูล",
   "dbHealthFileSize": "ขนาดไฟล์ฐานข้อมูล",
   "dbHealthLarge": "ใหญ่",
@@ -676,6 +730,11 @@
   "dbHealthVacuumDescription": "บีบอัดจะสร้างไฟล์ฐานข้อมูลใหม่เพื่อคืนพื้นที่ว่างและลดการแตกกระจาย",
   "onboardingWelcome": "ยินดีต้อนรับ",
   "onboardingShopInfoTitle": "ข้อมูลร้าน",
+  "onboardingShopInfoSubtitle": "ข้อมูลนี้จะแสดงบนใบเสร็จของร้าน",
+  "onboardingRequiredLabel": "จำเป็น",
+  "onboardingOptionalLabel": "ไม่บังคับ",
+  "onboardingReceiptPreviewTitle": "ตัวอย่างหัวใบเสร็จ",
+  "onboardingReceiptPreviewEmpty": "ชื่อร้านจะแสดงตรงนี้",
   "onboardingShopNameLabel": "ชื่อร้าน",
   "onboardingShopNameHint": "ร้านค้าของฉัน",
   "onboardingAddressLabel": "ที่อยู่",
@@ -712,6 +771,38 @@
   "onboardingNone": "ไม่มี",
   "onboardingInclusive": "รวมในราคา",
   "onboardingExclusive": "แยกจากราคา",
+  "onboardingTrustOffline": "ใช้งานได้แม้ไม่มีอินเทอร์เน็ต",
+  "onboardingTrustLocal": "ข้อมูลอยู่บนอุปกรณ์นี้",
+  "onboardingTrustEncrypted": "พื้นที่จัดเก็บเข้ารหัส",
+  "onboardingStepOf": "ขั้นตอนที่ {step} จาก {total}",
+  "@onboardingStepOf": {
+    "placeholders": {
+      "step": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "onboardingVatNoneHelp": "ไม่มีการเพิ่ม VAT ในการขาย",
+  "onboardingVatInclusiveHelp": "ราคาที่แสดงรวม VAT แล้ว",
+  "onboardingVatExclusiveHelp": "ระบบจะบวก VAT เพิ่มจากราคาที่แสดง",
+  "onboardingPromptPaySecurity": "ไม่บังคับ ข้อมูลจะเก็บไว้บนอุปกรณ์นี้และใช้สร้าง QR รับเงิน",
+  "onboardingDateExample": "ตัวอย่าง: {date}",
+  "@onboardingDateExample": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "onboardingCurrencyBaht": "฿ บาท",
+  "onboardingCurrencyUsd": "$ ดอลลาร์",
+  "onboardingCurrencyEur": "€ ยูโร",
+  "onboardingCurrencyJpy": "¥ เยน",
+  "onboardingReadySummary": "พื้นที่ร้านของคุณพร้อมสำหรับการขายแรกแล้ว",
+  "onboardingLocalSecuritySummary": "ข้อมูลถูกเก็บไว้ในเครื่องและได้รับการปกป้องบนอุปกรณ์นี้",
+  "onboardingSetupComplete": "ตั้งค่าเรียบร้อย",
+  "onboardingSecurityProtected": "ปกป้องด้วย PIN ร้าน",
+  "onboardingFirstSaleHint": "ขั้นตอนถัดไป: เริ่มขายรายการแรกของคุณ",
+  "onboardingSummaryStore": "ร้านค้า",
+  "onboardingSummaryCurrency": "สกุลเงิน",
+  "onboardingSummaryTax": "ภาษี",
   "dailyCloseLoadError": "ข้อผิดพลาด: {message}",
   "@dailyCloseLoadError": {
     "placeholders": {
@@ -768,6 +859,8 @@
   "@addressHint": {},
   "phoneHint": "081-234-5678",
   "@phoneHint": {},
+  "taxIdHint": "เลขประจำตัวผู้เสียภาษี 13 หลัก (เช่น 1234567890123)",
+  "@taxIdHint": {},
   "categoryManagementTitle": "จัดการหมวดหมู่",
   "noCategoriesYet": "ยังไม่มีหมวดหมู่",
   "uncategorized": "ไม่มีหมวดหมู่",
@@ -806,7 +899,9 @@
   "addProductTitle": "เพิ่มสินค้า",
   "noCategorySelected": "ยังไม่เลือกหมวดหมู่",
   "noProductsInCategory": "ไม่มีสินค้าในหมวดหมู่นี้",
+  "noSearchResultsHint": "ลองใช้คำค้นหาอื่นหรือตรวจสอบการสะกด",
   "clearFilters": "ล้างตัวกรอง",
+  "selected": "เลือกแล้ว",
   "startTypingToSearch": "เริ่มพิมพ์เพื่อค้นหา",
   "searchByNameSkuBarcode": "ค้นหาด้วยชื่อ, SKU, หรือบาร์โค้ด",
   "tryDifferentKeyword": "ลองคำค้นหาอื่น",
@@ -823,6 +918,7 @@
   "na": "ไม่ระบุ",
   "skuLabel": "SKU",
   "barcodeLabel": "บาร์โค้ด",
+  "barcodeHint": "เช่น 8850012345678",
   "costLabel": "ต้นทุน ({currency})",
   "@costLabel": {
     "placeholders": {
@@ -883,6 +979,9 @@
   "generateBarcode": "สร้างบาร์โค้ด",
   "barcodeGenerated": "สร้างบาร์โค้ดแล้ว",
   "barcodeGenerationError": "สร้างบาร์โค้ดไม่สำเร็จ",
+  "generateSku": "สร้าง SKU",
+  "skuGenerated": "สร้าง SKU แล้ว",
+  "skuGenerationError": "สร้าง SKU ไม่สำเร็จ",
   "batchGenerateBarcodes": "สร้างบาร์โค้ดให้สินค้าที่ยังไม่มี",
   "batchGenerateBarcodesHint": "สร้างบาร์โค้ดให้สินค้าทุกชิ้นที่ยังไม่มีบาร์โค้ด",
   "batchGenerateConfirmTitle": "สร้างบาร์โค้ด",
@@ -927,7 +1026,7 @@
   "barcodeHelpNoBarcodeTitle": "สินค้าไม่มีบาร์โค้ด?",
   "barcodeHelpNoBarcodeBody": "ถ้าสินค้าไม่มีบาร์โค้ด คุณสามารถสร้างบาร์โค้ดอัตโนมัติได้ในหน้าข้อมูลสินค้า (แท็บขั้นสูง) เพื่อให้สามารถสแกนได้ในภายหลังที่หน้าขาย",
   "barcodeHelper": "สแกนหรือพิมพ์บาร์โค้ดบนบรรจุภัณฑ์สินค้า ถ้าไม่มี ให้แตะ สร้างบาร์โค้ด",
-  "skuHelper": "รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SHIRT-RED-L",
+  "skuHelper": "รหัสสินค้าภายใน (ไม่บังคับ) ตัวอย่าง: SKU00001 หรือ SHIRT-RED-L ถ้าไม่มี ให้แตะ สร้าง SKU",
   "imagePicked": "เพิ่มรูปภาพแล้ว",
   "imagePickFailed": "ไม่สามารถเพิ่มรูปภาพได้ โปรดลองอีกครั้ง",
   "storagePermissionDenied": "ต้องอนุญาตเข้าถึงคลังรูปเพื่อเลือกรูป กรุณาเปิดสิทธิ์การเข้าถึงในการตั้งค่า",
@@ -981,6 +1080,7 @@
   "contactBody": "สอบถามเพิ่มเติม: mnlizard.official@gmail.com",
   "productPreviewSystemInfo": "ข้อมูลระบบ",
   "sellingPrice": "ราคาขาย",
+  "priceHint": "เช่น 45.00",
   "profit": "กำไร",
   "dateCreated": "วันที่สร้าง",
   "dateUpdated": "วันที่อัปเดต",
@@ -1057,7 +1157,7 @@
   "cartBottomLabel": "ตะกร้า",
   "saleCategoryTabsLabel": "หมวดหมู่",
   "filterPageTitle": "กรองสินค้า",
-  "filterReset": "รีเซ็ต",
+  "filterReset": "ล้าง",
   "filterShowResults": "ดูผลลัพธ์",
   "filterShowResultsCount": "ดูผลลัพธ์ ({count})",
   "@filterShowResultsCount": {
@@ -1067,9 +1167,50 @@
       }
     }
   },
-  "filterPriceRange": "ช่วงราคา",
+  "filterDone": "เสร็จ",
+  "filterRemainingCount": "เหลือ {count} รายการ",
+  "@filterRemainingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterPriceCustom": "กำหนดเอง",
+  "filterPriceRange": "ราคา",
   "filterPriceMin": "ต่ำสุด",
   "filterPriceMax": "สูงสุด",
+  "filterCategoryChipHint": "หมวดใช้แถบด้านบน",
+  "filterPriceOrderHint": "ต่ำสุดต้อง ≤ สูงสุด",
+  "filterPriceQuickUnder50": "≤ {currency}50",
+  "@filterPriceQuickUnder50": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "filterPriceQuick51to100": "{currency}51–100",
+  "@filterPriceQuick51to100": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "filterPriceQuick101to200": "{currency}101–200",
+  "@filterPriceQuick101to200": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "filterPriceQuickOver200": "≥ {currency}201",
+  "@filterPriceQuickOver200": {
+    "placeholders": {
+      "currency": { "type": "String" }
+    }
+  },
+  "sortChipDefault": "ปกติ",
+  "sortChipName": "ชื่อ",
+  "sortChipPriceAsc": "ราคา ↑",
+  "sortChipPriceDesc": "ราคา ↓",
+  "sortChipStock": "สต็อก",
   "filterActiveCount": "ใช้งาน {count}",
   "@filterActiveCount": {
     "placeholders": {
@@ -1095,6 +1236,26 @@
   "externalOrderRef": "เลขอ้างอิงการสั่งซื้อ",
   "externalOrderRefHint": "หมายเลขคำสั่งซื้อจากแพลตฟอร์มจัดส่ง (ไม่บังคับ)",
   "serviceCharge": "ค่าบริการ",
+  "averageTransactionValue": "ยอดเฉลี่ยต่อบิล",
+  "grossRevenue": "ยอดขายรวมก่อนหัก void",
+  "promotionDiscount": "ส่วนลดโปรโมชั่น",
+  "cartDiscount": "ส่วนลดท้ายบิล",
+  "orderTypeBreakdown": "ประเภทคำสั่งซื้อ",
+  "orderChannelBreakdown": "ช่องทางการสั่งซื้อ",
+  "peakHours": "ช่วงเวลาขายดี",
+  "uniqueCustomers": "ลูกค้าไม่ซ้ำ",
+  "repeatCustomers": "ลูกค้าซื้อซ้ำ",
+  "promotionOrders": "บิลที่ใช้โปรโมชั่น",
+  "voidReasons": "เหตุผลที่ยกเลิก",
+  "profitability": "ความคุ้มทุน",
+  "grossProfit": "กำไรขั้นต้น",
+  "profitMargin": "อัตรากำไร",
+  "totalCost": "ต้นทุนรวม",
+  "costCoverage": "ความครอบคลุมต้นทุน",
+  "costCoverageIncomplete": "ข้อมูลต้นทุนไม่ครบ ({withCost}/{total} รายการ)",
+  "costCoverageUnavailable": "ยังไม่มีข้อมูลต้นทุน",
+  "insights": "ภาพรวม",
+  "orderBreakdown": "การกระจายคำสั่งซื้อ",
   "tableNumber": "โต๊ะ",
   "selectTable": "เลือกโต๊ะ",
   "noTable": "ยังไม่ได้กำหนดโต๊ะ",
@@ -1122,6 +1283,7 @@
   "addOptionGroup": "เพิ่มกลุ่มตัวเลือก",
   "editOptionGroup": "แก้ไขกลุ่มตัวเลือก",
   "optionGroupName": "ชื่อกลุ่ม",
+  "optionGroupNameRequired": "กรุณากรอกชื่อกลุ่ม",
   "optionGroupNameHint": "เช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด",
   "optionSelectionType": "ประเภทการเลือก",
   "optionSelectionSingle": "เลือกได้อย่างเดียว",
@@ -1134,6 +1296,11 @@
   "optionNameHint": "เช่น เล็ก, ช็อตเพิ่ม, ไม่ใส่น้ำแข็ง",
   "optionPriceDelta": "ราคาเพิ่มเติม",
   "optionPriceDeltaHint": "ราคาเพิ่มเติม (สามารถเป็น 0)",
+  "optionPriceDeltaHelper": "เพิ่มจากราคาหลัก เช่น 5.00 จะเพิ่ม 5.00 ให้ราคาสินค้า",
+  "optionNameTooLong": "ชื่อตัวเลือกต้องไม่เกิน 100 ตัวอักษร",
+  "optionPriceInvalid": "ราคาต้องเป็นตัวเลขที่ถูกต้อง",
+  "optionPriceTooManyDecimals": "ราคาต้องมีไม่เกิน 2 ตำแหน่งทศนิยม",
+  "optionPriceTooLarge": "การปรับราคาใหญ่เกินไป (สูงสุด 999999.99)",
   "deleteOptionGroup": "ลบกลุ่มตัวเลือก",
   "confirmDeleteOptionGroup": "ลบกลุ่มตัวเลือกนี้และตัวเลือกทั้งหมดในกลุ่ม?",
   "deleteOption": "ลบตัวเลือก",
@@ -1333,6 +1500,7 @@
   "csvImportError": "อ่านไฟล์ CSV ไม่สำเร็จ",
   "csvNoData": "ไม่พบข้อมูลในไฟล์ CSV",
   "csvInvalidFormat": "รูปแบบไฟล์ไม่ถูกต้อง",
+  "csvInvalidEncoding": "ไฟล์ไม่ใช่ UTF-8 ที่ถูกต้อง กรุณาบันทึก CSV เป็น UTF-8 แล้วลองอีกครั้ง",
   "csvFileTooLarge": "ไฟล์ใหญ่เกินไป (สูงสุด {maxMb} MB)",
   "@csvFileTooLarge": {
     "placeholders": {
@@ -1560,6 +1728,15 @@
       }
     }
   },
+  "skuReplaceTitle": "แทนที่ SKU?",
+  "skuReplaceMessage": "รหัสปัจจุบัน: {code} — รหัสใหม่จะแทนที่ของเดิม",
+  "@skuReplaceMessage": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "barcodePreviewEmpty": "พรีวิวจะแสดงเมื่อพิมพ์หรือสร้างบาร์โค้ด",
   "scanModeContinuous": "ต่อเนื่อง",
   "scanModeSingle": "ครั้งเดียว",
@@ -1673,6 +1850,26 @@
   "datePresetLast7Days": "7 วัน",
   "datePresetThisMonth": "เดือนนี้",
   "datePresetCustom": "กำหนดเอง",
+  "dateFilterSheetTitle": "เลือกช่วงวันที่",
+  "dateFilterSheetSubtitle": "เลือกหมวดหมู่ที่กำหนดไว้ หรือกำหนดช่วงวันที่เอง",
+  "dateFilterCategoryTile": "หมวดหมู่",
+  "dateFilterCategoryDesc": "วันนี้ • เมื่อวาน • 7 วัน • เดือนนี้",
+  "dateFilterCustomTile": "กำหนดเอง",
+  "dateFilterCustomDesc": "เลือกวันเริ่มต้นและวันสิ้นสุดเอง",
+  "dateFilterCustomPick": "เลือกช่วงวันที่",
+  "dateFilterCustomChange": "เปลี่ยนช่วงวันที่",
+  "dateFilterCustomApply": "ใช้ช่วงนี้",
+  "dateFilterCustomCurrent": "ช่วงที่เลือก",
+  "dateFilterPickYear": "เลือกปี",
+  "dateFilterPickMonth": "เลือกเดือน",
+  "dateFilterSelectYear": "เลือกปีนี้",
+  "dateFilterSelectMonth": "เลือกเดือนนี้",
+  "dateFilterThisYear": "ปีนี้",
+  "dateFilterLastYear": "ปีก่อน",
+  "dateFilterThisMonth": "เดือนนี้",
+  "dateFilterUseToday": "ตั้งเป็นวันนี้",
+  "dateFilterTipTitle": "เกร็ดความรู้",
+  "dateFilterTipBody": "หมวดหมู่เหมาะกับดูสรุปรายวัน/รายสัปดาห์ ส่วนกำหนดเองเหมาะกับการเปรียบเทียบช่วงเวลาแบบยืดหยุ่น",
   "reportAverage": "เฉลี่ย",
   "reportRecent": "ล่าสุด",
   "paymentMethodShare": "{percent}%",
@@ -1733,9 +1930,28 @@
     }
   },
   "reportNoSalesInPeriod": "ไม่มียอดขายในช่วงนี้",
+  "reportEmptyDesc": "ลองเปลี่ยนช่วงวันที่ หรือเริ่มขายสินค้าเพื่อดูสรุปยอดที่นี่",
+  "reportErrorDesc": "ไม่สามารถโหลดข้อมูลได้ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
+  "reportLoadingDesc": "กำลังเรียกข้อมูลยอดขาย...",
   "currentBill": "บิลปัจจุบัน",
   "currentBillWithCount": "บิล ({count})",
   "@currentBillWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "saleBillAt": "บิลที่ {count}",
+  "@saleBillAt": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productCountAt": "สินค้า {count} รายการ",
+  "@productCountAt": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -1770,9 +1986,12 @@
   "billParked": "พักบิลแล้ว — พร้อมลูกค้าถัดไป",
   "receiptThankYouDefault": "ขอบคุณครับ/ค่ะ!",
   "receiptNotTaxInvoice": "ใบเสร็จการขาย — ไม่ใช่ใบกำกับภาษี",
+  "receiptTaxId": "เลขประจำตัวผู้เสียภาษี",
   "receiptReprint": "พิมพ์ซ้ำ",
   "receiptShareVoidBlocked": "ไม่สามารถแชร์บิลที่ยกเลิกเป็นใบเสร็จปกติได้ — พิมพ์จะมีเครื่องหมายยกเลิก",
   "parkBill": "พักบิล",
+  "parkBillConfirmTitle": "พักบิลนี้?",
+  "parkBillConfirmMessage": "บันทึกตะกร้านี้ แล้วเริ่มบิลว่างให้ลูกค้าถัดไป — เปิดบิลที่พักได้จากรายการบิลเปิด",
   "parkBillNameTitle": "ตั้งชื่อบิล (ไม่บังคับ)",
   "currentBillNamed": "{name} ({count})",
   "@currentBillNamed": {
@@ -1898,5 +2117,39 @@
     "placeholders": {
       "seconds": { "type": "int" }
     }
-  }
+  },
+  "onboardingStorePinTitle": "ตั้งรหัส PIN ร้าน",
+  "onboardingStorePinBody": "จำเป็นสำหรับยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (อย่างน้อย {min} หลัก) เก็บไว้เอง — ไม่มีระบบกู้ PIN",
+  "@onboardingStorePinBody": {
+    "placeholders": {
+      "min": { "type": "int" }
+    }
+  },
+  "onboardingStorePinRequired": "ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า",
+  "exportPdf": "ส่งออก PDF",
+  "exportCsv": "ส่งออก CSV",
+  "exportReport": "ส่งออกรายงาน",
+  "exportNoData": "ไม่มีข้อมูลให้ส่งออก",
+  "exportFailed": "ส่งออกไม่สำเร็จ",
+  "revenueTrend": "แนวโน้มยอดขาย",
+  "dailyRevenue": "ยอดขายรายวัน",
+  "periodComparison": "เทียบกับช่วงก่อนหน้า",
+  "periodChangePositive": "+{percent}%",
+  "@periodChangePositive": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "periodChangeNegative": "{percent}%",
+  "@periodChangeNegative": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "periodChangeZero": "ไม่เปลี่ยนแปลง",
+  "previousPeriod": "ช่วงก่อนหน้า",
+  "chartNoData": "ไม่มีข้อมูลสำหรับกราฟ",
+  "dateRangeSeparator": " – ",
+  "percentagePointsUnit": "จุด",
+  "reportSectionLabel": "ส่วนรายงาน"
 }

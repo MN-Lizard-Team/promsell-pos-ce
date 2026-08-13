@@ -28,6 +28,13 @@ class ProductFilterTabs extends StatelessWidget {
         hasStock ||
         state.productSort != ProductSort.default_ ||
         (state.priceRange?.isActive ?? false);
+    // Count active filters for the badge on the sort/tune icon.
+    final activeFilterCount = [
+      hasCategory,
+      hasStock,
+      state.productSort != ProductSort.default_,
+      state.priceRange?.isActive ?? false,
+    ].where((v) => v).length;
 
     final cs = theme.colorScheme;
     final categoryLabel = _categoryChipLabel(context, state);
@@ -100,8 +107,8 @@ class ProductFilterTabs extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Badge(
-                    isLabelVisible: productSort != ProductSort.default_,
-                    smallSize: 8,
+                    isLabelVisible: activeFilterCount > 0,
+                    label: Text('$activeFilterCount'),
                     child: IconButton(
                       icon: Icon(Icons.tune, color: cs.onSurfaceVariant),
                       tooltip: l10n.filterSort,
@@ -118,10 +125,9 @@ class ProductFilterTabs extends StatelessWidget {
             IconButton(
               key: const ValueKey('product-list-clear-filters'),
               tooltip: l10n.clearFilters,
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               padding: EdgeInsets.zero,
-              iconSize: 18,
+              iconSize: 20,
               icon: Icon(Icons.close, color: cs.onSurfaceVariant),
               onPressed: () {
                 context.read<ProductBloc>().add(const ProductFiltersCleared());
@@ -470,37 +476,42 @@ class _FilterChip extends StatelessWidget {
                 left: const Radius.circular(24),
                 right: Radius.circular(onClear != null ? 0 : 24),
               ),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 14,
-                  right: onClear != null ? 4 : 14,
-                  top: 8,
-                  bottom: 8,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (icon != null) ...[
-                      Icon(icon, size: 16, color: onColor),
-                      const SizedBox(width: 6),
-                    ],
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: maxLabelWidth ?? 160,
-                      ),
-                      child: Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: onColor,
+              child: Semantics(
+                button: true,
+                selected: selected,
+                label: '$label${selected ? ', ${context.l10n.selected}' : ''}',
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 14,
+                    right: onClear != null ? 4 : 14,
+                    top: 12,
+                    bottom: 12,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, size: 16, color: onColor),
+                        const SizedBox(width: 6),
+                      ],
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: maxLabelWidth ?? 160,
+                        ),
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: onColor,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

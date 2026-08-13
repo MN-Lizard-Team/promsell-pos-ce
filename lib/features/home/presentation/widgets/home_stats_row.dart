@@ -10,6 +10,7 @@ class HomeStatsRow extends StatelessWidget {
     required this.revenue,
     required this.cost,
     required this.profit,
+    this.currency = '฿',
     this.isLoading = false,
     this.metricsUnknown = false,
     this.costUnknown = false,
@@ -18,6 +19,7 @@ class HomeStatsRow extends StatelessWidget {
   final Money revenue;
   final Money cost;
   final Money profit;
+  final String currency;
   final bool isLoading;
 
   /// Load failed — do not present zeros as a quiet day.
@@ -39,6 +41,7 @@ class HomeStatsRow extends StatelessWidget {
             child: _StatCard(
               label: l10n.homeRevenue,
               value: revenue,
+              currency: currency,
               icon: Icons.payments_outlined,
               iconColor: cs.primary,
               isLoading: isLoading,
@@ -50,6 +53,7 @@ class HomeStatsRow extends StatelessWidget {
             child: _StatCard(
               label: l10n.homeCost,
               value: cost,
+              currency: currency,
               icon: Icons.account_balance_wallet_outlined,
               iconColor: cs.secondary,
               isLoading: isLoading,
@@ -61,6 +65,7 @@ class HomeStatsRow extends StatelessWidget {
             child: _StatCard(
               label: l10n.homeProfit,
               value: profit,
+              currency: currency,
               icon: Icons.savings_outlined,
               iconColor: cs.tertiary,
               isLoading: isLoading,
@@ -78,6 +83,7 @@ class _StatCard extends StatelessWidget {
   const _StatCard({
     required this.label,
     required this.value,
+    required this.currency,
     required this.icon,
     required this.iconColor,
     this.isLoading = false,
@@ -87,6 +93,7 @@ class _StatCard extends StatelessWidget {
 
   final String label;
   final Money value;
+  final String currency;
   final IconData icon;
   final Color iconColor;
   final bool isLoading;
@@ -95,12 +102,13 @@ class _StatCard extends StatelessWidget {
 
   String _formatCompact(Money v) {
     final abs = v.value.abs();
+    final sign = v.value.isNegative ? '-' : '';
     if (abs >= 1000000) {
-      return '฿${(v.value / 1000000).toStringAsFixed(1)}M';
+      return '$sign$currency${(abs / 1000000).toStringAsFixed(1)}M';
     } else if (abs >= 1000) {
-      return '฿${(v.value / 1000).toStringAsFixed(1)}k';
+      return '$sign$currency${(abs / 1000).toStringAsFixed(1)}k';
     } else {
-      return CurrencyFormatter.format(v.value);
+      return '$sign${CurrencyFormatter.formatGroupedWithSymbol(abs, currency)}';
     }
   }
 

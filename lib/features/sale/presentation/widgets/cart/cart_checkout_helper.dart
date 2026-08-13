@@ -18,7 +18,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 
 typedef CheckoutLoadingSetter = void Function(bool loading);
 
-/// Opens checkout: **retail** → payment bottom sheet; **restaurant** → full page.
+/// Opens checkout: **retail** → payment page; **restaurant** → [CheckoutPage].
 ///
 /// Pass [cartBloc]/[checkoutBloc]/[draftBloc]/[settingsCubit] when [context]
 /// may sit **above** Sale providers (e.g. after popping Saved Bills on root nav).
@@ -83,8 +83,8 @@ void navigateToCheckout(
     return;
   }
 
-  // Retail: payment sheet on sale root. If cart review (page or legacy modal)
-  // is open, close it first so success only needs one pop.
+  // Retail: payment page on sale root. If cart review is open, close it first
+  // so success only needs one pop back to catalog.
   final navigator = Navigator.of(context);
   final route = ModalRoute.of(context);
   final openedFromModal = route is PopupRoute;
@@ -93,7 +93,7 @@ void navigateToCheckout(
   );
 
   void openPayment(BuildContext hostContext) {
-    showPaymentSheet(
+    openPaymentPage(
       hostContext,
       cartBloc: resolvedCart,
       checkoutBloc: resolvedCheckout,

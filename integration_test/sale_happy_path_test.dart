@@ -8,9 +8,9 @@ import 'robot_pattern/sale_robot.dart';
 import 'robot_pattern/checkout_robot.dart';
 
 /// Journey 1: Happy Path Sale (Retail Mode)
-/// 
+///
 /// Scenario: Cashier completes a simple cash sale
-/// 
+///
 /// GIVEN the app is in retail mode
 /// AND there are products in inventory
 /// WHEN cashier opens sale page
@@ -55,10 +55,10 @@ void main() {
         TestApp.database,
         'Burger',
       );
-      
+
       expect(coffee, isNotNull, reason: 'Coffee product should exist');
       expect(burger, isNotNull, reason: 'Burger product should exist');
-      
+
       final coffeeInitialStock = coffee!.stock;
       final burgerInitialStock = burger!.stock;
 
@@ -80,10 +80,10 @@ void main() {
 
       // WHEN: Select cash payment
       await checkoutRobot.selectPaymentMethod('Cash');
-      
+
       // Enter cash received (500 THB)
       await checkoutRobot.enterCashReceived(500.0);
-      
+
       // Verify change: 500 - 165 = 335
       final expectedChange = Money.fromDouble(335.0);
       checkoutRobot.verifyChange(expectedChange);
@@ -97,13 +97,9 @@ void main() {
       // Verify sale recorded in database
       final sales = await TestApp.database.select(TestApp.database.sales).get();
       expect(sales.length, 1, reason: 'One sale should be recorded');
-      
+
       final sale = sales.first;
-      expect(
-        sale.totalAmount,
-        165.0,
-        reason: 'Sale total should be 165.00',
-      );
+      expect(sale.totalAmount, 165.0, reason: 'Sale total should be 165.00');
       expect(
         sale.paymentMethod,
         'cash',
@@ -114,16 +110,12 @@ void main() {
         500.0,
         reason: 'Amount received should be 500.00',
       );
-      expect(
-        sale.changeAmount,
-        335.0,
-        reason: 'Change should be 335.00',
-      );
+      expect(sale.changeAmount, 335.0, reason: 'Change should be 335.00');
 
       // Verify sale items
-      final saleItems = await TestApp.database.select(
-        TestApp.database.saleItems,
-      ).get();
+      final saleItems = await TestApp.database
+          .select(TestApp.database.saleItems)
+          .get();
       expect(saleItems.length, 2, reason: 'Should have 2 sale items');
 
       // Verify inventory decremented
@@ -135,7 +127,7 @@ void main() {
         TestApp.database,
         'Burger',
       );
-      
+
       expect(
         coffeeAfter!.stock,
         coffeeInitialStock - 1,
@@ -148,14 +140,10 @@ void main() {
       );
 
       // Verify inventory logs created
-      final logs = await TestApp.database.select(
-        TestApp.database.inventoryLogs,
-      ).get();
-      expect(
-        logs.length,
-        2,
-        reason: 'Should have 2 inventory log entries',
-      );
+      final logs = await TestApp.database
+          .select(TestApp.database.inventoryLogs)
+          .get();
+      expect(logs.length, 2, reason: 'Should have 2 inventory log entries');
       expect(
         logs.where((l) => l.type == 'SALE').length,
         2,
@@ -165,13 +153,13 @@ void main() {
       // THEN: Close receipt and verify cart is cleared
       await checkoutRobot.closeReceipt();
       await tester.pumpAndSettle();
-      
+
       saleRobot.verifyCartEmpty();
 
       // Verify draft cart cleared
-      final draftCarts = await TestApp.database.select(
-        TestApp.database.draftCarts,
-      ).get();
+      final draftCarts = await TestApp.database
+          .select(TestApp.database.draftCarts)
+          .get();
       expect(
         draftCarts.where((d) => !d.isArchived).isEmpty,
         true,
@@ -191,12 +179,12 @@ void main() {
 
       // WHEN: Try to checkout with empty cart
       final checkoutBtn = find.text('Checkout');
-      
+
       // Button should be disabled or not visible
       if (checkoutBtn.evaluate().isNotEmpty) {
         await tester.tap(checkoutBtn);
         await tester.pumpAndSettle();
-        
+
         // Should show error or stay on sale page
         final onCheckout = find.text('Payment').evaluate().isNotEmpty;
         expect(

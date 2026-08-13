@@ -34,12 +34,14 @@ class Ean13Generator {
     }
     final p = raw.padLeft(3, '0');
     final now = DateTime.now();
-    final timePart = (now.millisecondsSinceEpoch % 10000).toString().padLeft(
-      4,
+    // Use microseconds for finer granularity to reduce collision risk in
+    // high-volume batch generation.
+    final timePart = (now.microsecondsSinceEpoch % 100000).toString().padLeft(
+      5,
       '0',
     );
     _incrementCounter();
-    final counterPart = (_counter % 100000).toString().padLeft(5, '0');
+    final counterPart = (_counter % 10000).toString().padLeft(4, '0');
     final twelveDigits = '$p$timePart$counterPart';
     final checkDigit = _computeCheckDigit(twelveDigits);
     return '$twelveDigits$checkDigit';

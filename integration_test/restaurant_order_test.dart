@@ -11,9 +11,9 @@ import 'robot_pattern/checkout_robot.dart';
 import 'robot_pattern/restaurant_robot.dart';
 
 /// Journey 2: Restaurant Order Flow
-/// 
+///
 /// Scenario: Waiter takes dine-in order with modifiers
-/// 
+///
 /// GIVEN the app is in restaurant mode
 /// AND there are tables available
 /// WHEN waiter opens sale page
@@ -36,14 +36,13 @@ void main() {
     setUp(() async {
       await TestApp.initialize();
       await TestFixtures.seedAll(TestApp.database);
-      
+
       // Enable restaurant mode in settings
-      await TestApp.database.into(TestApp.database.appSettings).insert(
-        AppSettingsCompanion.insert(
-          key: 'restaurantMode',
-          value: 'true',
-        ),
-      );
+      await TestApp.database
+          .into(TestApp.database.appSettings)
+          .insert(
+            AppSettingsCompanion.insert(key: 'restaurantMode', value: 'true'),
+          );
     });
 
     tearDown(() async {
@@ -107,7 +106,7 @@ void main() {
       // Verify sale recorded with table and service charge
       final sales = await TestApp.database.select(TestApp.database.sales).get();
       expect(sales.length, 1);
-      
+
       final sale = sales.first;
       expect(sale.tableId, 'table-005', reason: 'Table ID should be recorded');
       expect(sale.orderType, 'DINE_IN', reason: 'Order type should be DINE_IN');
@@ -143,36 +142,42 @@ void main() {
 
       // Create option group for Burger
       final optionGroupId = 'og-burger-extras';
-      await TestApp.database.into(TestApp.database.productOptionGroups).insert(
-        ProductOptionGroupsCompanion.insert(
-          id: optionGroupId,
-          productId: burgerId,
-          name: 'Add-ons',
-          isRequired: const Value(false),
-          createdAt: Value(TestFixtures.now),
-        ),
-      );
+      await TestApp.database
+          .into(TestApp.database.productOptionGroups)
+          .insert(
+            ProductOptionGroupsCompanion.insert(
+              id: optionGroupId,
+              productId: burgerId,
+              name: 'Add-ons',
+              isRequired: const Value(false),
+              createdAt: Value(TestFixtures.now),
+            ),
+          );
 
       // Create options
-      await TestApp.database.into(TestApp.database.productOptions).insert(
-        ProductOptionsCompanion.insert(
-          id: 'opt-extra-cheese',
-          groupId: optionGroupId,
-          name: 'Extra Cheese',
-          priceDelta: const Value(20.0),
-          createdAt: Value(TestFixtures.now),
-        ),
-      );
+      await TestApp.database
+          .into(TestApp.database.productOptions)
+          .insert(
+            ProductOptionsCompanion.insert(
+              id: 'opt-extra-cheese',
+              groupId: optionGroupId,
+              name: 'Extra Cheese',
+              priceDelta: const Value(20.0),
+              createdAt: Value(TestFixtures.now),
+            ),
+          );
 
-      await TestApp.database.into(TestApp.database.productOptions).insert(
-        ProductOptionsCompanion.insert(
-          id: 'opt-no-onions',
-          groupId: optionGroupId,
-          name: 'No Onions',
-          priceDelta: const Value(0.0),
-          createdAt: Value(TestFixtures.now),
-        ),
-      );
+      await TestApp.database
+          .into(TestApp.database.productOptions)
+          .insert(
+            ProductOptionsCompanion.insert(
+              id: 'opt-no-onions',
+              groupId: optionGroupId,
+              name: 'No Onions',
+              priceDelta: const Value(0.0),
+              createdAt: Value(TestFixtures.now),
+            ),
+          );
 
       await TestApp.pumpApp(tester);
       await saleRobot.navigateToSalePage();

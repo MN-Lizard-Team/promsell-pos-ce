@@ -74,7 +74,10 @@ void main() {
       final t = SalesPeriodTotals.from([sale]);
       expect(t.paymentBreakdown['cash'], 40);
       expect(t.paymentBreakdown['promptpay'], 60);
-      expect(t.paymentCounts['mixed'], 1);
+      // Counts follow tender legs (not header `mixed` only).
+      expect(t.paymentCounts['cash'], 1);
+      expect(t.paymentCounts['promptpay'], 1);
+      expect(t.paymentCounts['mixed'], isNull);
       expect(t.cashSales, Money.fromDouble(40));
     });
   });

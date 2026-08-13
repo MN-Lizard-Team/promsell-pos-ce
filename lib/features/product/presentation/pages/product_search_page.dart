@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/widgets/primitives/svg_icon.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/barcode/barcode_scanner_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
@@ -345,7 +346,11 @@ class _ProductSearchViewState extends State<_ProductSearchView> {
             if (barcodeEnabled)
               IconButton(
                 key: const ValueKey('product-search-scan'),
-                icon: const Icon(Icons.qr_code_scanner, size: 22),
+                icon: SvgIcon(
+                  'barcode-scan-icon',
+                  size: 22,
+                  color: theme.colorScheme.onPrimary,
+                ),
                 tooltip: l10n.scanBarcode,
                 onPressed: _onScan,
               ),

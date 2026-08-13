@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_encryption_service.dart';
 import 'package:share_plus/share_plus.dart';
@@ -11,7 +12,7 @@ import 'package:share_plus/share_plus.dart';
 /// Exports a consistent copy of the local SQLite DB for merchant backup.
 @LazySingleton()
 class BackupExportService {
-  BackupExportService(this._db, this._encryption);
+  BackupExportService(this._db, this._encryption, this._appLock);
 
   static const dbFileName = 'promsell_pos.db';
 
@@ -20,6 +21,7 @@ class BackupExportService {
 
   final AppDatabase _db;
   final BackupEncryptionService _encryption;
+  final AppLockService _appLock;
 
   /// Checkpoints WAL, copies DB, optionally encrypts, shares the file.
   /// Returns the shared file path. Caller should set lastBackupAt on success.
@@ -28,6 +30,7 @@ class BackupExportService {
     String? pin,
     required String shareSubject,
   }) async {
+    await _appLock.requireSensitiveSession();
     if (encrypt) {
       final p = pin?.trim() ?? '';
       if (p.isEmpty) {
@@ -38,30 +41,7 @@ class BackupExportService {
       }
     }
 
-    try {
-      await _db.customStatement('PRAGMA wal_checkpoint(FULL)');
-    } catch (e, st) {
-      AppLogger.error(
-        'BackupExportService: wal_checkpoint failed',
-        error: e,
-        stack: st,
-      );
-      throw StateError('CHECKPOINT_FAILED');
-    }
-
-    final docs = await getApplicationDocumentsDirectory();
-    final dbFile = File(p.join(docs.path, dbFileName));
-    if (!await dbFile.exists()) {
-      throw StateError('DB_MISSING');
-    }
-
-    final tempDir = await getTemporaryDirectory();
-    final stamp = DateTime.now()
-        .toIso8601String()
-        .replaceAll(':', '-')
-        .replaceAll('.', '-');
-    final copyPath = p.join(tempDir.path, 'promsell_backup_$stamp.db');
-    await dbFile.copy(copyPath);
+    final copyPath = await _createSnapshotCopy();
 
     String sharePath = copyPath;
     try {
@@ -85,10 +65,46 @@ class BackupExportService {
     }
   }
 
+  Future<String> _createSnapshotCopy() async {
+    return _db.exclusively(() async {
+      try {
+        await _db.customStatement('PRAGMA wal_checkpoint(TRUNCATE)');
+      } catch (e, st) {
+        AppLogger.error(
+          'BackupExportService: wal_checkpoint failed',
+          error: e,
+          stack: st,
+        );
+        throw StateError('CHECKPOINT_FAILED');
+      }
+
+      final docs = await getApplicationDocumentsDirectory();
+      final dbFile = File(p.join(docs.path, dbFileName));
+      if (!await dbFile.exists()) {
+        throw StateError('DB_MISSING');
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final stamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .replaceAll('.', '-');
+      final copyPath = p.join(tempDir.path, 'promsell_backup_$stamp.db');
+      await dbFile.copy(copyPath);
+      return copyPath;
+    });
+  }
+
   Future<void> _safeDelete(String path) async {
     try {
       final f = File(path);
       if (await f.exists()) await f.delete();
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        'backup_export: _safeDelete failed for $path',
+        error: e,
+        stack: stack,
+      );
+    }
   }
 }

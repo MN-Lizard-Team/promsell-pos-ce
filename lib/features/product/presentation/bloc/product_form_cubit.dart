@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_draft.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_state.dart';
 
@@ -14,13 +15,14 @@ export 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_
 
 @injectable
 class ProductFormCubit extends Cubit<ProductFormState> {
-  ProductFormCubit(this._storage, this._generateBarcode)
+  ProductFormCubit(this._storage, this._generateBarcode, this._generateSku)
     : super(const ProductFormState()) {
     _loadDraftFromStorage();
   }
 
   final SettingsLocalDatasource _storage;
   final GenerateBarcode _generateBarcode;
+  final GenerateSku _generateSku;
   static const _draftKey = 'product_form_draft_v3';
 
   final Completer<void> _draftLoaded = Completer<void>();
@@ -106,6 +108,23 @@ class ProductFormCubit extends Cubit<ProductFormState> {
     } catch (e, stack) {
       AppLogger.error(
         'ProductFormCubit.generateBarcode failed',
+        error: e,
+        stack: stack,
+      );
+      rethrow;
+    }
+  }
+
+  Future<String> generateSku({String? prefix, String? excludeId}) async {
+    try {
+      final sku = await _generateSku(prefix: prefix, excludeId: excludeId);
+      emit(
+        state.copyWith(draft: state.draft.copyWith(sku: sku), isDirty: true),
+      );
+      return sku;
+    } catch (e, stack) {
+      AppLogger.error(
+        'ProductFormCubit.generateSku failed',
         error: e,
         stack: stack,
       );

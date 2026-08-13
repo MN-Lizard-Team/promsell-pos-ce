@@ -27,10 +27,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProducts => 'Products';
 
   @override
-  String get navHistory => 'History';
+  String get navHistory => 'Sales History';
 
   @override
-  String get navReport => 'Report';
+  String get navReport => 'Summary';
 
   @override
   String get navSettings => 'Settings';
@@ -103,6 +103,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saleSavedSuccess => 'Sale saved successfully';
 
   @override
+  String get saleSuccessTitle => 'Payment complete';
+
+  @override
+  String saleSuccessSubtitle(String number) {
+    return 'Receipt #$number';
+  }
+
+  @override
+  String get changeDue => 'Change due';
+
+  @override
+  String get nextSale => 'Next sale';
+
+  @override
   String productAddedToCart(String name) {
     return '$name added';
   }
@@ -172,7 +186,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productsTitle => 'Products';
 
   @override
-  String get searchProducts => 'Search products...';
+  String get searchProducts => 'Search products, barcode, and more...';
+
+  @override
+  String get searchProductsHint =>
+      'Tap to search products, barcode, and more...';
+
+  @override
+  String get tapToSearch => 'Tap to search';
+
+  @override
+  String get searchActive => 'Search active';
 
   @override
   String get recentSearches => 'Recent searches';
@@ -181,7 +205,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noProductsYet => 'No products yet';
 
   @override
+  String get noProductsYetHint =>
+      'Add your first product or import from CSV to get started.';
+
+  @override
   String get errorOccurred => 'An error occurred';
+
+  @override
+  String get receiptPrintFailed =>
+      'Printing failed. Please check the printer and try again.';
+
+  @override
+  String get receiptShareFailed =>
+      'Could not share the receipt. Please try again.';
+
+  @override
+  String get receiptPdfFailed => 'Failed to generate the receipt PDF.';
+
+  @override
+  String get receiptPrintSuccess => 'Receipt printed successfully.';
+
+  @override
+  String get receiptShareSuccess => 'Receipt shared successfully.';
+
+  @override
+  String get receiptTaxInvoice => 'Tax Invoice';
 
   @override
   String get retry => 'Retry';
@@ -255,6 +303,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productNameLabel => 'Product name *';
+
+  @override
+  String get productNameHint => 'e.g., Iced Americano Large';
 
   @override
   String get productNameRequired => 'Please enter product name';
@@ -335,7 +386,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Barcode must be alphanumeric (letters and numbers only)';
 
   @override
+  String get invalidBarcodeFormat =>
+      'Barcode must contain only letters and numbers (no spaces, hyphens, or special characters)';
+
+  @override
   String get categoryLabel => 'Category';
+
+  @override
+  String get categoryHelper => 'Optional — helps organize products in POS';
 
   @override
   String get showProduct => 'Show product';
@@ -357,6 +415,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productDeleted => 'Product deleted';
+
+  @override
+  String productDeletedWithName(String name) {
+    return '$name deleted';
+  }
+
+  @override
+  String get productDeletedShort => 'Product deleted';
 
   @override
   String get stockUpdated => 'Stock updated';
@@ -390,10 +456,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHistoryHint => 'Search receipt, payment, amount…';
 
   @override
-  String get noSearchResults => 'No settings found';
+  String get searchSales => 'Search sales';
+
+  @override
+  String get noSearchResults => 'No sales found';
 
   @override
   String get noSalesYet => 'No sales yet';
+
+  @override
+  String get noSalesInRange => 'No sales in the selected date range';
+
+  @override
+  String get changeDateRange => 'Change date range';
+
+  @override
+  String searchResultsCount(int n) {
+    return '$n results';
+  }
+
+  @override
+  String get noResultsInDateRange =>
+      'No results in this date range. Try changing the date range.';
+
+  @override
+  String searchingInRange(Object range) {
+    return 'Searching within: $range';
+  }
+
+  @override
+  String get tapToExpandHint => 'Tap to see more details';
 
   @override
   String get noDailyClosesYet => 'No daily closes yet';
@@ -404,7 +496,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get reportTitle => 'Report';
+  String get reportTitle => 'Sales Summary';
 
   @override
   String get totalRevenue => 'Total Revenue';
@@ -512,6 +604,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsPhone => 'Phone';
 
   @override
+  String get settingsTaxId => 'Tax ID';
+
+  @override
   String get settingsSales => 'Sales';
 
   @override
@@ -557,6 +652,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneInvalid => 'Invalid phone number';
 
   @override
+  String get taxIdInvalid => 'Tax ID must be 13 digits';
+
+  @override
+  String get taxIdChecksumInvalid =>
+      'Tax ID checksum is invalid. Please check the 13-digit number.';
+
+  @override
   String get shopInfoEmptyPreview => 'Your shop info will appear here';
 
   @override
@@ -570,6 +672,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareReceipt => 'Share Receipt';
+
+  @override
+  String get reprintReceipt => 'Reprint Receipt';
+
+  @override
+  String get shareReceiptCopy => 'Share Copy';
 
   @override
   String get receiptLabelReceipt => 'Receipt';
@@ -630,6 +738,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get receiptPreview => 'Receipt Preview';
+
+  @override
+  String get viewReceipt => 'View receipt';
+
+  @override
+  String get hideReceipt => 'Hide receipt';
 
   @override
   String get vatModeNone => 'None';
@@ -780,6 +894,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allowOversellHint => 'Allow adding items beyond available stock';
 
   @override
+  String get stockBlocked => 'Blocked';
+
+  @override
   String get lowStockThreshold => 'Low stock warning (qty)';
 
   @override
@@ -917,6 +1034,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeDraftLabel => 'Active';
 
   @override
+  String get openBillsSectionSelling => 'Selling now';
+
+  @override
+  String get openBillsSectionParked => 'Parked';
+
+  @override
   String get draftNameHint => 'Bill name (optional)';
 
   @override
@@ -938,7 +1061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchDrafts => 'Search bills...';
 
   @override
-  String get untitledDraft => 'Bill';
+  String get untitledDraft => 'Untitled bill';
 
   @override
   String get noMatchingItems => 'No matching items';
@@ -947,11 +1070,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noMatchingDrafts => 'No drafts match your search';
 
   @override
-  String get noSavedBills => 'No saved bills yet';
+  String get noSavedBills => 'No open bills yet';
 
   @override
   String get noSavedBillsHint =>
-      'Park a bill from the sale screen to save it here';
+      'Park a bill from the sale screen to open it here';
 
   @override
   String get groupView => 'Group view';
@@ -999,11 +1122,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String timeAgoDays(int d) {
     return '$d d ago';
-  }
-
-  @override
-  String searchResultsCount(int n) {
-    return '$n results';
   }
 
   @override
@@ -1189,10 +1307,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsReceiptSize => 'Receipt Size';
 
   @override
+  String get receiptSize58mm => '58mm (Thermal)';
+
+  @override
   String get receiptSize80mm => '80mm (Thermal)';
 
   @override
   String get receiptSizeA4 => 'A4';
+
+  @override
+  String get receiptSize58mmDesc => 'Compact — small portable printers';
+
+  @override
+  String get receiptSize80mmDesc => 'Standard — most thermal printers';
+
+  @override
+  String get receiptSizeA4Desc => 'Document — for PDF email/export';
 
   @override
   String get settingsMaxDrafts => 'Max Drafts';
@@ -1436,6 +1566,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
+  String get basePrice => 'Base price';
+
+  @override
+  String get optionsLabel => 'Options';
+
+  @override
   String get dbHealthTitle => 'Database Health';
 
   @override
@@ -1469,6 +1605,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingShopInfoTitle => 'Shop Info';
+
+  @override
+  String get onboardingShopInfoSubtitle =>
+      'This information appears on your receipts.';
+
+  @override
+  String get onboardingRequiredLabel => 'Required';
+
+  @override
+  String get onboardingOptionalLabel => 'Optional';
+
+  @override
+  String get onboardingReceiptPreviewTitle => 'Receipt header preview';
+
+  @override
+  String get onboardingReceiptPreviewEmpty => 'Your shop name will appear here';
 
   @override
   String get onboardingShopNameLabel => 'Shop name';
@@ -1583,6 +1735,79 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingExclusive => 'Exclusive';
 
   @override
+  String get onboardingTrustOffline => 'Works offline';
+
+  @override
+  String get onboardingTrustLocal => 'Data stays on this device';
+
+  @override
+  String get onboardingTrustEncrypted => 'Encrypted storage';
+
+  @override
+  String onboardingStepOf(int step, int total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get onboardingVatNoneHelp => 'No VAT is added to sales.';
+
+  @override
+  String get onboardingVatInclusiveHelp =>
+      'Displayed prices already include VAT.';
+
+  @override
+  String get onboardingVatExclusiveHelp =>
+      'VAT is added to the displayed price.';
+
+  @override
+  String get onboardingPromptPaySecurity =>
+      'Optional. Stored locally on this device and used to create payment QR codes.';
+
+  @override
+  String onboardingDateExample(String date) {
+    return 'Example: $date';
+  }
+
+  @override
+  String get onboardingCurrencyBaht => '฿ THB';
+
+  @override
+  String get onboardingCurrencyUsd => '\$ USD';
+
+  @override
+  String get onboardingCurrencyEur => '€ EUR';
+
+  @override
+  String get onboardingCurrencyJpy => '¥ JPY';
+
+  @override
+  String get onboardingReadySummary =>
+      'Your workspace is ready for the first sale.';
+
+  @override
+  String get onboardingLocalSecuritySummary =>
+      'Your data is stored locally and protected on this device.';
+
+  @override
+  String get onboardingSetupComplete => 'Setup complete';
+
+  @override
+  String get onboardingSecurityProtected => 'Security PIN protected';
+
+  @override
+  String get onboardingFirstSaleHint =>
+      'Your next step: start your first sale.';
+
+  @override
+  String get onboardingSummaryStore => 'Store';
+
+  @override
+  String get onboardingSummaryCurrency => 'Currency';
+
+  @override
+  String get onboardingSummaryTax => 'Tax';
+
+  @override
   String dailyCloseLoadError(String message) {
     return 'Error: $message';
   }
@@ -1643,6 +1868,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneHint => '081-234-5678';
+
+  @override
+  String get taxIdHint => '13-digit Tax ID (e.g. 1234567890123)';
 
   @override
   String get categoryManagementTitle => 'Manage Categories';
@@ -1721,7 +1949,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noProductsInCategory => 'No products in this category';
 
   @override
+  String get noSearchResultsHint =>
+      'Try different keywords or check your spelling.';
+
+  @override
   String get clearFilters => 'Clear filters';
+
+  @override
+  String get selected => 'selected';
 
   @override
   String get startTypingToSearch => 'Start typing to search';
@@ -1758,6 +1993,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeLabel => 'Barcode';
+
+  @override
+  String get barcodeHint => 'e.g., 8850012345678';
 
   @override
   String costLabel(String currency) {
@@ -1883,6 +2121,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeGenerationError => 'Failed to generate barcode';
+
+  @override
+  String get generateSku => 'Generate SKU';
+
+  @override
+  String get skuGenerated => 'SKU generated';
+
+  @override
+  String get skuGenerationError => 'Failed to generate SKU';
 
   @override
   String get batchGenerateBarcodes => 'Generate Missing Barcodes';
@@ -2033,7 +2280,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skuHelper =>
-      'Internal product code (optional). Example: SHIRT-RED-L';
+      'Internal product code (optional). Example: SKU00001 or SHIRT-RED-L. If none, tap Generate SKU.';
 
   @override
   String get imagePicked => 'Image added';
@@ -2204,6 +2451,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellingPrice => 'Selling Price';
+
+  @override
+  String get priceHint => 'e.g., 45.00';
 
   @override
   String get profit => 'Profit';
@@ -2396,7 +2646,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterPageTitle => 'Filter Products';
 
   @override
-  String get filterReset => 'Reset';
+  String get filterReset => 'Clear';
 
   @override
   String get filterShowResults => 'Show Results';
@@ -2407,13 +2657,65 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get filterPriceRange => 'Price Range';
+  String get filterDone => 'Done';
+
+  @override
+  String filterRemainingCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get filterPriceCustom => 'Custom range';
+
+  @override
+  String get filterPriceRange => 'Price';
 
   @override
   String get filterPriceMin => 'Min';
 
   @override
   String get filterPriceMax => 'Max';
+
+  @override
+  String get filterCategoryChipHint => 'Categories stay on the bar above';
+
+  @override
+  String get filterPriceOrderHint => 'Min must be ≤ Max';
+
+  @override
+  String filterPriceQuickUnder50(String currency) {
+    return '≤ ${currency}50';
+  }
+
+  @override
+  String filterPriceQuick51to100(String currency) {
+    return '${currency}51–100';
+  }
+
+  @override
+  String filterPriceQuick101to200(String currency) {
+    return '${currency}101–200';
+  }
+
+  @override
+  String filterPriceQuickOver200(String currency) {
+    return '≥ ${currency}201';
+  }
+
+  @override
+  String get sortChipDefault => 'Default';
+
+  @override
+  String get sortChipName => 'Name';
+
+  @override
+  String get sortChipPriceAsc => 'Price ↑';
+
+  @override
+  String get sortChipPriceDesc => 'Price ↓';
+
+  @override
+  String get sortChipStock => 'Stock';
 
   @override
   String filterActiveCount(int count) {
@@ -2473,6 +2775,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get serviceCharge => 'Service Charge';
+
+  @override
+  String get averageTransactionValue => 'Average transaction';
+
+  @override
+  String get grossRevenue => 'Gross revenue';
+
+  @override
+  String get promotionDiscount => 'Promotion discount';
+
+  @override
+  String get orderTypeBreakdown => 'Order type';
+
+  @override
+  String get orderChannelBreakdown => 'Order channel';
+
+  @override
+  String get peakHours => 'Peak hours';
+
+  @override
+  String get uniqueCustomers => 'Unique customers';
+
+  @override
+  String get repeatCustomers => 'Repeat customers';
+
+  @override
+  String get promotionOrders => 'Promotion orders';
+
+  @override
+  String get voidReasons => 'Void reasons';
+
+  @override
+  String get profitability => 'Profitability';
+
+  @override
+  String get grossProfit => 'Gross profit';
+
+  @override
+  String get profitMargin => 'Margin';
+
+  @override
+  String get totalCost => 'Total cost';
+
+  @override
+  String get costCoverage => 'Cost coverage';
+
+  @override
+  String costCoverageIncomplete(Object total, Object withCost) {
+    return 'Cost data incomplete ($withCost/$total items)';
+  }
+
+  @override
+  String get costCoverageUnavailable => 'No cost data available';
+
+  @override
+  String get insights => 'Insights';
+
+  @override
+  String get orderBreakdown => 'Order breakdown';
 
   @override
   String get tableNumber => 'Table';
@@ -2558,6 +2919,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionGroupName => 'Group Name';
 
   @override
+  String get optionGroupNameRequired => 'Please enter a group name';
+
+  @override
   String get optionGroupNameHint => 'e.g., Size, Add-ons, Spice Level';
 
   @override
@@ -2592,6 +2956,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get optionPriceDeltaHint => 'Additional cost (can be 0)';
+
+  @override
+  String get optionPriceDeltaHelper =>
+      'Added to base price. e.g., 5.00 adds 5.00 to the product price.';
+
+  @override
+  String get optionNameTooLong =>
+      'Option name must be 100 characters or fewer.';
+
+  @override
+  String get optionPriceInvalid => 'Price must be a valid number.';
+
+  @override
+  String get optionPriceTooManyDecimals =>
+      'Price must have at most 2 decimal places.';
+
+  @override
+  String get optionPriceTooLarge =>
+      'Price adjustment is too large (max 999999.99).';
 
   @override
   String get deleteOptionGroup => 'Delete Option Group';
@@ -2986,6 +3369,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get csvInvalidFormat => 'Invalid file format';
 
   @override
+  String get csvInvalidEncoding =>
+      'File is not valid UTF-8. Please save the CSV as UTF-8 encoding and try again.';
+
+  @override
   String csvFileTooLarge(int maxMb) {
     return 'File is too large (max $maxMb MB)';
   }
@@ -3203,9 +3590,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productFormSectionExtra => 'More details';
 
   @override
-  String get profitMargin => 'Margin';
-
-  @override
   String get notSpecified => 'Not specified';
 
   @override
@@ -3310,6 +3694,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String barcodeReplaceMessage(String code) {
+    return 'Current code: $code. A new code will replace it.';
+  }
+
+  @override
+  String get skuReplaceTitle => 'Replace SKU?';
+
+  @override
+  String skuReplaceMessage(String code) {
     return 'Current code: $code. A new code will replace it.';
   }
 
@@ -3472,6 +3864,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get datePresetCustom => 'Custom';
 
   @override
+  String get dateFilterSheetTitle => 'Select date range';
+
+  @override
+  String get dateFilterSheetSubtitle =>
+      'Choose a preset category or pick a custom range';
+
+  @override
+  String get dateFilterCategoryTile => 'Categories';
+
+  @override
+  String get dateFilterCategoryDesc =>
+      'Today • Yesterday • Last 7 days • This month';
+
+  @override
+  String get dateFilterCustomTile => 'Custom';
+
+  @override
+  String get dateFilterCustomDesc => 'Pick your own start and end dates';
+
+  @override
+  String get dateFilterCustomPick => 'Pick date range';
+
+  @override
+  String get dateFilterCustomChange => 'Change date range';
+
+  @override
+  String get dateFilterCustomApply => 'Use this range';
+
+  @override
+  String get dateFilterCustomCurrent => 'Selected range';
+
+  @override
+  String get dateFilterPickYear => 'Pick year';
+
+  @override
+  String get dateFilterPickMonth => 'Pick month';
+
+  @override
+  String get dateFilterSelectYear => 'Select this year';
+
+  @override
+  String get dateFilterSelectMonth => 'Select this month';
+
+  @override
+  String get dateFilterThisYear => 'This year';
+
+  @override
+  String get dateFilterLastYear => 'Last year';
+
+  @override
+  String get dateFilterThisMonth => 'This month';
+
+  @override
+  String get dateFilterUseToday => 'Set to today';
+
+  @override
+  String get dateFilterTipTitle => 'Tip';
+
+  @override
+  String get dateFilterTipBody =>
+      'Categories are great for quick daily/weekly summaries. Custom range is ideal for flexible period comparisons.';
+
+  @override
   String get reportAverage => 'Average';
 
   @override
@@ -3577,11 +4032,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportNoSalesInPeriod => 'No sales in this period';
 
   @override
+  String get reportEmptyDesc =>
+      'Try a different date range or start selling to see your report here.';
+
+  @override
+  String get reportErrorDesc =>
+      'Couldn\'t load data. Check your connection and try again.';
+
+  @override
+  String get reportLoadingDesc => 'Fetching sales data...';
+
+  @override
   String get currentBill => 'Current bill';
 
   @override
   String currentBillWithCount(int count) {
     return 'Bill ($count)';
+  }
+
+  @override
+  String saleBillAt(int count) {
+    return 'Bill #$count';
+  }
+
+  @override
+  String productCountAt(int count) {
+    return '$count products';
   }
 
   @override
@@ -3633,6 +4109,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptNotTaxInvoice => 'Sale receipt — not a tax invoice';
 
   @override
+  String get receiptTaxId => 'Tax ID';
+
+  @override
   String get receiptReprint => 'REPRINT';
 
   @override
@@ -3641,6 +4120,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get parkBill => 'Park bill';
+
+  @override
+  String get parkBillConfirmTitle => 'Park this bill?';
+
+  @override
+  String get parkBillConfirmMessage =>
+      'Save this cart and open a new empty bill for the next customer. You can open parked bills anytime.';
 
   @override
   String get parkBillNameTitle => 'Name this bill (optional)';
@@ -3866,4 +4352,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String appLockLockedOut(int seconds) {
     return 'Too many attempts. Try again in ${seconds}s';
   }
+
+  @override
+  String get onboardingStorePinTitle => 'Set store PIN';
+
+  @override
+  String onboardingStorePinBody(int min) {
+    return 'Required for void, backup, stock adjust, CSV import, and PromptPay changes. Keep it offline-safe (min $min digits).';
+  }
+
+  @override
+  String get onboardingStorePinRequired =>
+      'Store PIN is required to finish setup';
+
+  @override
+  String get exportPdf => 'Export PDF';
+
+  @override
+  String get exportCsv => 'Export CSV';
+
+  @override
+  String get exportReport => 'Export report';
+
+  @override
+  String get exportNoData => 'No data to export';
+
+  @override
+  String get exportFailed => 'Export failed';
+
+  @override
+  String get revenueTrend => 'Revenue Trend';
+
+  @override
+  String get dailyRevenue => 'Daily Revenue';
+
+  @override
+  String get periodComparison => 'vs Previous Period';
+
+  @override
+  String periodChangePositive(String percent) {
+    return '+$percent%';
+  }
+
+  @override
+  String periodChangeNegative(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get periodChangeZero => 'No change';
+
+  @override
+  String get previousPeriod => 'Previous period';
+
+  @override
+  String get chartNoData => 'No data for chart';
+
+  @override
+  String get dateRangeSeparator => ' – ';
+
+  @override
+  String get percentagePointsUnit => 'pp';
+
+  @override
+  String get reportSectionLabel => 'Report section';
 }

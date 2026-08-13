@@ -1,3 +1,4 @@
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/home/presentation/widgets/home_hero_dashboard_card.dart';
@@ -49,6 +50,43 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tapped, isTrue);
+    });
+
+    testWidgets('displays custom currency symbol when provided', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        HomeHeroDashboardCard(
+          todayRevenue: Money.fromDouble(1500),
+          todaySalesCount: 5,
+          trendData: const [100, 200, 150, 300, 250, 400, 500],
+          currency: '\$',
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('\$'), findsWidgets);
+    });
+
+    testWidgets('displays correct value after animation settles', (
+      tester,
+    ) async {
+      await tester.pumpApp(
+        HomeHeroDashboardCard(
+          todayRevenue: Money.fromDouble(2500),
+          todaySalesCount: 10,
+          trendData: const [100, 200, 150, 300, 250, 400, 500],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is AnimatedFlipCounter && w.value == 2500,
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

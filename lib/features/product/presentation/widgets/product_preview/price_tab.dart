@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_preview/shared_widgets.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class PriceTab extends StatelessWidget {
   const PriceTab({super.key, required this.product, required this.currency});
@@ -44,7 +45,7 @@ class PriceTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InfoListItem(
-                icon: Icons.sell_outlined,
+                icon: TablerIcons.tag,
                 label: l10n.sellingPrice,
                 value: MoneyText(
                   value: product.price.value,
@@ -57,7 +58,7 @@ class PriceTab extends StatelessWidget {
               ),
               Divider(height: 1, color: dividerColor),
               InfoListItem(
-                icon: Icons.account_balance_wallet_outlined,
+                icon: TablerIcons.wallet,
                 label: l10n.productPreviewCost,
                 value: MoneyText(
                   value: product.cost.value,
@@ -70,8 +71,8 @@ class PriceTab extends StatelessWidget {
               Divider(height: 1, color: dividerColor),
               InfoListItem(
                 icon: profit >= Money.zero
-                    ? Icons.trending_up
-                    : Icons.trending_down,
+                    ? TablerIcons.trendingUp
+                    : TablerIcons.trendingDown,
                 label: l10n.profit,
                 value: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -98,7 +99,7 @@ class PriceTab extends StatelessWidget {
               ),
               Divider(height: 1, color: dividerColor),
               InfoListItem(
-                icon: Icons.percent,
+                icon: TablerIcons.percentage,
                 label: l10n.productPreviewMarkup,
                 value: Text(
                   '${markupPct.toStringAsFixed(0)}%',
@@ -158,7 +159,7 @@ class PriceTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InfoListItem(
-                  icon: Icons.point_of_sale_outlined,
+                  icon: TablerIcons.receipt,
                   label: l10n.productPreviewTotalRevenue,
                   value: MoneyText(
                     value: totalRevenue.value,
@@ -170,7 +171,7 @@ class PriceTab extends StatelessWidget {
                 ),
                 Divider(height: 1, color: dividerColor),
                 InfoListItem(
-                  icon: Icons.savings_outlined,
+                  icon: TablerIcons.coin,
                   label: l10n.productPreviewTotalProfit,
                   value: MoneyText(
                     value: totalProfit.value,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_text_field.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Preset retail / food-service units (same list as legacy UnitField).
 const kProductUnits = <String>[
@@ -118,7 +119,7 @@ class _UnitPickerSheetState extends State<_UnitPickerSheet> {
                         ListTile(
                           title: Text(unit),
                           trailing: widget.current == unit
-                              ? Icon(Icons.check_circle, color: cs.primary)
+                              ? Icon(TablerIcons.circleCheck, color: cs.primary)
                               : null,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

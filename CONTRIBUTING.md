@@ -14,13 +14,15 @@ cd promsell-pos-ce
 # 2. Install dependencies
 flutter pub get
 
-# 3. Generate code (generated files are NOT committed — see .gitignore)
+# 3. Generate code
+# Do not stage *.g.dart / *.config.dart. lib/l10n/app_localizations*.dart
+# are still tracked — include them if gen-l10n changed them.
 flutter gen-l10n
 dart run build_runner build --delete-conflicting-outputs
 
-# 4. Verify setup
-flutter analyze lib test
-flutter test
+# 4. Verify setup (matches ci.yml — see docs/testing/CI.md)
+flutter analyze
+flutter test --exclude-tags stress
 
 # 5. Create a branch
 git checkout -b feat/your-feature
@@ -170,15 +172,11 @@ Add E2E tests for:
 
 ### Running E2E Tests
 
+Needs a device/emulator. Main CI does **not** run these; trust does on tags / money-path PRs (`--flavor dev`). See [`docs/testing/CI.md`](docs/testing/CI.md).
+
 ```bash
-# Run all integration tests
-flutter test integration_test/
-
-# Run specific journey
-flutter test integration_test/sale_happy_path_test.dart
-
-# Analyze test code
 flutter analyze integration_test/
+flutter test integration_test/all_tests.dart --flavor dev -t lib/main_dev.dart
 ```
 
 ### E2E Test Coverage Checklist
@@ -230,28 +228,24 @@ See [docs/testing/E2E_TEST_GUIDE.md](docs/testing/E2E_TEST_GUIDE.md) for detaile
 
 The project has **automated tests** (run `flutter test --exclude-tags stress`; count drifts with the suite). All must pass before submitting a PR.
 
+Match [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Map: [`docs/testing/CI.md`](docs/testing/CI.md).
+
 ```bash
-# Run all tests (includes stress tests)
-flutter test
+flutter gen-l10n && dart run build_runner build --delete-conflicting-outputs
+flutter analyze
+flutter test --coverage --exclude-tags stress
+flutter test test/performance/ --no-pub --reporter compact
+dart format --set-exit-if-changed lib/ test/ integration_test/
+flutter analyze integration_test/
+dart run tool/check_path_coverage.dart --lcov coverage/lcov.info --fail --min-global=60 --min-sale-logic=80
+dart run tool/check_outdated.dart
 
-# Run without stress tests (faster — use for regular development)
-flutter test --exclude-tags stress
-
-# Run stress tests only (10k products, 50k sales — may take several minutes)
-flutter test --tags stress --timeout 600s
-
-# Run with coverage
-flutter test --coverage
-
-# Run a single test file
-flutter test test/integration/checkout_flow_test.dart
-
-# Analyze only our code (ignore other workspace projects)
-flutter analyze lib test
-
-# Dart format check
-dart format --output=none --set-exit-if-changed lib test
+# Money-path / tag also runs the host list in release-trust.yml
+# Device (emulator, not every PR):
+# flutter test integration_test/all_tests.dart --flavor dev -t lib/main_dev.dart
 ```
+
+Main CI does **not** run device E2E. Tags `v*` and money-path PRs **block** on the emulator job (`--flavor dev`).
 
 ### Test layers
 
@@ -290,11 +284,18 @@ test/
 │   ├── home/
 │   ├── history/
 │   ├── inventory/
+│   ├── daily_close/
+│   ├── onboarding/
+│   ├── receipt/
+│   ├── report/
+│   ├── restaurant_table/
 │   └── settings/
 ├── integration/
+│   ├── backup_money_continuity_test.dart
 │   ├── checkout_flow_test.dart
-│   ├── sale_integrity_test.dart
-│   └── onboarding_first_sale_test.dart
+│   ├── multi_tender_daily_close_test.dart
+│   ├── onboarding_first_sale_test.dart
+│   └── sale_integrity_test.dart
 ├── tool/
 │   └── seed_integration_test.dart  # Stress (@Tags(['stress']))
 ├── l10n/
@@ -323,7 +324,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.9.0) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.7.x).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.9.1) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.8.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)

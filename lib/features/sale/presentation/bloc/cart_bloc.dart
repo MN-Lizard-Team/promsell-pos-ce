@@ -7,6 +7,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_discount_policy.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
@@ -39,9 +40,13 @@ class CartBloc extends Bloc<CartEvent, CartState>
     on<CartRestored>(onCartRestored);
     on<CartItemRestored>(onCartItemRestored);
     on<CartItemDuplicated>(onCartItemDuplicated);
-    on<CartItemDiscountChanged>(onItemDiscountChanged);
+    // Async discount clamps load settings — sequential to avoid lost updates.
+    on<CartItemDiscountChanged>(
+      onItemDiscountChanged,
+      transformer: sequential(),
+    );
     on<CartItemDiscountCleared>(onItemDiscountCleared);
-    on<CartDiscountChanged>(onCartDiscountChanged);
+    on<CartDiscountChanged>(onCartDiscountChanged, transformer: sequential());
     on<CartDiscountCleared>(onCartDiscountCleared);
     on<CartNoteChanged>(onNoteChanged);
     on<CartProductsRefreshed>(onProductsRefreshed);
@@ -104,5 +109,19 @@ class CartBloc extends Bloc<CartEvent, CartState>
       sum += i.qty;
     }
     return sum;
+  }
+
+  /// Max qty for one line under stock limits. Always returns ≥ 0 (never
+  /// produces invalid `clamp(lo, hi)` with lo > hi).
+  @override
+  int maxQtyForLine({
+    required int stock,
+    required int othersQty,
+    required bool stockLimited,
+  }) {
+    if (!stockLimited) return 999999;
+    final remaining = stock - othersQty;
+    if (remaining <= 0) return 0;
+    return remaining > stock ? stock : remaining;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 
 class _MockStorage extends Mock implements FlutterSecureStorage {}
@@ -49,6 +50,30 @@ void main() {
     lock.lockSession();
     expect(lock.isSessionUnlocked, isFalse);
   });
+
+  test('requireSensitiveSession allows when lock disabled', () async {
+    await lock.requireSensitiveSession();
+  });
+
+  test(
+    'requireSensitiveSession throws when lock on and session cold',
+    () async {
+      await lock.setPin('123456');
+      lock.lockSession();
+      await expectLater(
+        () => lock.requireSensitiveSession(),
+        throwsA(
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            AppLockService.ruleAppLockRequired,
+          ),
+        ),
+      );
+      lock.unlockSession();
+      await lock.requireSensitiveSession();
+    },
+  );
 
   test('verifyPin success and wrong pin', () async {
     await lock.setPin('654321');
@@ -136,5 +161,46 @@ void main() {
     expect(restarted.isLockedOut, isFalse);
     restarted.lockSession();
     expect(await restarted.verifyPin('555555'), isTrue);
+  });
+
+  test('setPin refuses to overwrite existing PIN', () async {
+    await lock.setPin('123456');
+    expect(
+      () => lock.setPin('654321'),
+      throwsA(
+        isA<StateError>().having((e) => e.message, 'm', 'PIN_ALREADY_SET'),
+      ),
+    );
+    // Original PIN still works.
+    expect(await lock.verifyPin('123456'), isTrue);
+  });
+
+  test('changePin requires correct current PIN', () async {
+    await lock.setPin('123456');
+    lock.lockSession();
+    expect(
+      () => lock.changePin(currentPin: '000000', newPin: '999999'),
+      throwsA(isA<StateError>().having((e) => e.message, 'm', 'PIN_WRONG')),
+    );
+  });
+
+  test('changePin updates to new PIN after verifying current', () async {
+    await lock.setPin('123456');
+    lock.lockSession();
+    await lock.changePin(currentPin: '123456', newPin: '999999');
+    // Old PIN no longer works.
+    lock.lockSession();
+    expect(await lock.verifyPin('123456'), isFalse);
+    // New PIN works.
+    expect(await lock.verifyPin('999999'), isTrue);
+  });
+
+  test('changePin enforces min length on new PIN', () async {
+    await lock.setPin('123456');
+    lock.lockSession();
+    expect(
+      () => lock.changePin(currentPin: '123456', newPin: '123'),
+      throwsA(isA<StateError>().having((e) => e.message, 'm', 'PIN_TOO_SHORT')),
+    );
   });
 }

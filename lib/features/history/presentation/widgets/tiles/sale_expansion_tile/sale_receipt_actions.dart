@@ -18,6 +18,11 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart'
 class SaleReceiptActions {
   SaleReceiptActions._();
 
+  /// Guards against concurrent print/share operations per sale.
+  /// Using a Set of sale IDs allows printing sale A while sharing sale B,
+  /// and prevents a stuck flag from blocking all future operations.
+  static final Set<String> _busySaleIds = <String>{};
+
   static Future<Map<String, Uint8List>> _loadProductImages(Sale sale) async {
     final productRepo = sl<ProductRepository>();
     final images = <String, Uint8List>{};
@@ -30,7 +35,7 @@ class SaleReceiptActions {
           final file = File(path);
           if (await file.exists()) {
             final bytes = await file.readAsBytes();
-            if (bytes.lengthInBytes <= 400 * 1024) {
+            if (bytes.lengthInBytes > 0 && bytes.lengthInBytes <= 400 * 1024) {
               images[item.productId] = bytes;
             }
           }
@@ -57,17 +62,11 @@ class SaleReceiptActions {
       customerName = c?.name;
     }
     String? promotionName;
-    String? promotionDiscount;
     if (sale.promotionId != null) {
       final p = await sl<PromotionRepository>().getPromotionById(
         sale.promotionId!,
       );
       promotionName = p?.name;
-      if (sale.promotionDiscountAmount.isPositive) {
-        promotionDiscount = sale.promotionDiscountAmount.value.toStringAsFixed(
-          2,
-        );
-      }
     }
     return ReceiptLabels(
       receipt: l.receiptLabelReceipt,
@@ -88,11 +87,15 @@ class SaleReceiptActions {
       customerName: customerName,
       promotion: l.receiptLabelPromotion,
       promotionName: promotionName,
-      promotionDiscount: promotionDiscount,
+      // Row title only — never the money amount (amount is a separate column).
+      promotionDiscount: l.receiptLabelPromotionDiscount,
       voided: l.voided,
       voidReason: l.voidReason,
       reprint: l.receiptReprint,
       notTaxInvoice: l.receiptNotTaxInvoice,
+      taxId: l.receiptTaxId,
+      taxInvoice: l.receiptTaxInvoice,
+      thankYou: l.receiptThankYouDefault,
     );
   }
 
@@ -101,6 +104,8 @@ class SaleReceiptActions {
     Sale sale,
     Settings settings,
   ) async {
+    if (_busySaleIds.contains(sale.id)) return;
+    _busySaleIds.add(sale.id);
     try {
       final paymentMethodLabel = formatSalePaymentSummary(
         context,
@@ -136,11 +141,20 @@ class SaleReceiptActions {
         thankYouFallback: l.receiptThankYouDefault,
         notTaxInvoiceDisclaimer: l.receiptNotTaxInvoice,
       );
+      if (context.mounted) {
+        AppSnackBar.success(context, l.receiptPrintSuccess);
+      }
     } catch (e) {
       AppLogger.error('SaleReceiptActions.printReceipt failed', error: e);
       if (context.mounted) {
-        AppSnackBar.error(context, context.l10n.errorOccurred);
+        final l = context.l10n;
+        AppSnackBar.error(
+          context,
+          e is Exception ? l.receiptPrintFailed : l.receiptPdfFailed,
+        );
       }
+    } finally {
+      _busySaleIds.remove(sale.id);
     }
   }
 
@@ -155,6 +169,8 @@ class SaleReceiptActions {
       }
       return;
     }
+    if (_busySaleIds.contains(sale.id)) return;
+    _busySaleIds.add(sale.id);
     try {
       final paymentMethodLabel = formatSalePaymentSummary(
         context,
@@ -190,11 +206,16 @@ class SaleReceiptActions {
         thankYouFallback: l.receiptThankYouDefault,
         notTaxInvoiceDisclaimer: l.receiptNotTaxInvoice,
       );
+      if (context.mounted) {
+        AppSnackBar.success(context, l.receiptShareSuccess);
+      }
     } catch (e) {
       AppLogger.error('SaleReceiptActions.shareReceipt failed', error: e);
       if (context.mounted) {
-        AppSnackBar.error(context, context.l10n.errorOccurred);
+        AppSnackBar.error(context, context.l10n.receiptShareFailed);
       }
+    } finally {
+      _busySaleIds.remove(sale.id);
     }
   }
 }

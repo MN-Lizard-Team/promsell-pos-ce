@@ -46,23 +46,23 @@ void main() {
       expect(draft.serviceChargeAmount, Money.fromDouble(10));
     });
 
-    test('grandTotal includes service charge', () {
+    test('total + serviceChargeAmount includes service charge', () {
       final draft = DraftCart(
         id: 'd1',
         items: [CartItem(product: tProduct, qty: 2)],
         serviceChargeRate: 10.0,
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.grandTotal, Money.fromDouble(110));
+      expect(draft.total + draft.serviceChargeAmount, Money.fromDouble(110));
     });
 
-    test('grandTotal equals total when no service charge', () {
+    test('total + serviceChargeAmount equals total when no service charge', () {
       final draft = DraftCart(
         id: 'd1',
         items: [CartItem(product: tProduct, qty: 2)],
         updatedAt: DateTime(2025, 1, 1),
       );
-      expect(draft.grandTotal, draft.total);
+      expect(draft.total + draft.serviceChargeAmount, draft.total);
     });
 
     test('can set orderType to delivery', () {

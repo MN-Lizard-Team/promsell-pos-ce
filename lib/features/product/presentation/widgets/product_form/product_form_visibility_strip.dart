@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ProductFormVisibilityOutcomeStrip extends StatelessWidget {
   const ProductFormVisibilityOutcomeStrip({
@@ -36,9 +37,7 @@ class ProductFormVisibilityOutcomeStrip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isActive
-                    ? Icons.check_circle_outline
-                    : Icons.visibility_off_outlined,
+                isActive ? TablerIcons.circleCheck : TablerIcons.eyeOff,
                 size: 16,
                 color: isActive ? cs.primary : cs.error,
               ),
@@ -55,7 +54,7 @@ class ProductFormVisibilityOutcomeStrip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                isRecommended ? Icons.star : Icons.star_outline,
+                isRecommended ? TablerIcons.starFilled : TablerIcons.star,
                 size: 16,
                 color: isRecommended ? cs.primary : cs.onSurfaceVariant,
               ),

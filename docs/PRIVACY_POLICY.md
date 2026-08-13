@@ -1,6 +1,6 @@
 # Privacy Policy — Promsell
 
-Last updated: July 17, 2026
+Last updated: August 13, 2026
 
 ## 1. Data Collection
 Promsell does **not** collect or transmit personal data to **developer servers**. We do not run analytics, ads, or developer cloud sync. The app is offline-first.
@@ -8,7 +8,7 @@ Promsell does **not** collect or transmit personal data to **developer servers**
 **Local data on your device** may include business and optional contact data you enter, for example: sales and inventory; shop profile; optional customer name/phone/email; PromptPay ID; product photos; and local crash logs (with phone / PromptPay / citizen ID sanitization). That data stays on the device unless **you** export or share it (backup/share sheet). The live database uses SQLite with SQLCipher encryption at rest on supported builds.
 
 ## 2. Third-Party Services
-We do not use analytics, advertising, or cloud services. The app works entirely offline.
+We do not use analytics, advertising, or developer cloud services. **Core POS is offline.** Optional `INTERNET` is used only to load merchant-supplied product image URLs (see §7). There is no required network for selling.
 
 ## 3. Data Storage
 Your data remains on your device. You can **export** a backup (and share it via the OS share sheet), **restore a backup on the same device** from Settings → Backup (encrypted `.enc` or SQLCipher `.db` only), or clear data by uninstalling / clearing app storage.
