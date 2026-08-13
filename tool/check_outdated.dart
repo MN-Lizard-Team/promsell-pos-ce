@@ -6,10 +6,34 @@
 /// Exit codes:
 /// - 0: all direct dependencies are up to date or behind by < 1 major version
 /// - 1: one or more direct dependencies are behind by ≥ 1 major version
+///
+/// Packages with documented migration blockers can be added to
+/// [_intentionallyHeldBack] to exclude them from the gate.
 library;
 
 import 'dart:convert';
 import 'dart:io';
+
+/// Direct dependencies intentionally held back at a lower major version
+/// because upgrading requires a coordinated migration (breaking API,
+/// transitive dependency constraints, or encryption layer changes).
+///
+/// Each entry MUST have a tracking note explaining why it is held back.
+/// Review this list at least once per release cycle.
+const _intentionallyHeldBack = <String, String>{
+  // sqlite3 3.x removes open.overrideFor() and requires drift 2.32+.
+  // Migration tracked with sqlcipher_flutter_libs EOL removal.
+  'sqlite3': 'v0.9.x migration: needs drift 2.32+ + build hooks (see docs)',
+  // fl_chart 1.x has breaking chart API changes; defer until report
+  // refactor is stable.
+  'fl_chart': 'v0.9.x: report charts stable on 0.70.x; 1.x API break',
+  // flutter_secure_storage 11.x changes init API; defer until onboarding
+  // refactor lands.
+  'flutter_secure_storage': 'v0.9.x: 11.x init API break; defer onboarding',
+  // permission_handler 13.x changes permission model; defer until
+  // runtime-permission flow is audited.
+  'permission_handler': 'v0.9.x: 13.x permission model break; audit needed',
+};
 
 void main() {
   final file = File('pub-outdated.json');
@@ -25,6 +49,7 @@ void main() {
 
   final directDeps = _loadDirectDependencies();
   final warnings = <String>[];
+  final heldBack = <String>[];
 
   for (final pkg in packages) {
     final map = pkg as Map<String, dynamic>;
@@ -43,11 +68,28 @@ void main() {
 
     final targetMajor = _parseMajor(targetVersion);
     if (targetMajor > currentMajor) {
-      warnings.add(
-        '  $name: current=$current → resolvable=$targetVersion '
-        '(behind ${targetMajor - currentMajor} major version(s))',
-      );
+      if (_intentionallyHeldBack.containsKey(name)) {
+        heldBack.add(
+          '  $name: current=$current → resolvable=$targetVersion '
+          '(held back — ${_intentionallyHeldBack[name]})',
+        );
+      } else {
+        warnings.add(
+          '  $name: current=$current → resolvable=$targetVersion '
+          '(behind ${targetMajor - currentMajor} major version(s))',
+        );
+      }
     }
+  }
+
+  if (heldBack.isNotEmpty) {
+    stdout.writeln(
+      'ℹ️  Intentionally held back (excluded from gate):',
+    );
+    for (final h in heldBack) {
+      stdout.writeln(h);
+    }
+    stdout.writeln('');
   }
 
   if (warnings.isEmpty) {
