@@ -220,4 +220,33 @@ class BackupRestoreService {
     final file = File(path);
     if (await file.exists()) await file.delete();
   }
+
+  /// Deletes leftover `promsell_pos.pre_restore_*.db` files in the app
+  /// documents directory (V092-B.4).
+  ///
+  /// Call after the app starts and the live DB opens successfully. If a
+  /// restore failed mid-swap, the pre-restore file is intentionally kept
+  /// for rollback — this method only deletes files once the new DB is
+  /// healthy, so callers must invoke it after a successful DB open.
+  Future<int> cleanupPreRestoreBackups() async {
+    final docs = await getApplicationDocumentsDirectory();
+    final dir = Directory(docs.path);
+    if (!await dir.exists()) return 0;
+    final prefix = 'promsell_pos.pre_restore_';
+    final suffix = '.db';
+    var removed = 0;
+    await for (final entry in dir.list(followLinks: false)) {
+      final name = p.basename(entry.path);
+      if (entry is File && name.startsWith(prefix) && name.endsWith(suffix)) {
+        await _safeDelete(entry.path);
+        removed++;
+      }
+    }
+    if (removed > 0) {
+      AppLogger.info(
+        'BackupRestoreService: cleaned up $removed pre_restore file(s)',
+      );
+    }
+    return removed;
+  }
 }

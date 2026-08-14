@@ -74,10 +74,10 @@ class SalesPeriodTotals extends Equatable {
     var voidCount = 0;
     var vat = Money.zero;
     var discount = Money.zero;
-    final breakdown = <String, double>{};
+    final breakdownSatang = <String, int>{};
     final counts = <String, int>{};
-    final orderTypes = <String, double>{};
-    final orderChannels = <String, double>{};
+    final orderTypesSatang = <String, int>{};
+    final orderChannelsSatang = <String, int>{};
     final voidReasons = <String, int>{};
     var promotionCount = 0;
 
@@ -99,20 +99,23 @@ class SalesPeriodTotals extends Equatable {
       if (sale.promotionId != null || sale.promotionDiscountAmount.isPositive) {
         promotionCount++;
       }
-      orderTypes[sale.orderType] =
-          (orderTypes[sale.orderType] ?? 0) + sale.totalAmount.value;
-      orderChannels[sale.orderChannel] =
-          (orderChannels[sale.orderChannel] ?? 0) + sale.totalAmount.value;
+      orderTypesSatang[sale.orderType] =
+          (orderTypesSatang[sale.orderType] ?? 0) + sale.totalAmount.satang;
+      orderChannelsSatang[sale.orderChannel] =
+          (orderChannelsSatang[sale.orderChannel] ?? 0) +
+          sale.totalAmount.satang;
 
       if (sale.payments.isNotEmpty) {
         for (final pay in sale.payments) {
           final key = normalizePaymentMethod(pay.method);
-          breakdown[key] = (breakdown[key] ?? 0) + pay.amount.value;
+          breakdownSatang[key] =
+              (breakdownSatang[key] ?? 0) + pay.amount.satang;
           counts[key] = (counts[key] ?? 0) + 1;
         }
       } else {
         final key = normalizePaymentMethod(sale.paymentMethod);
-        breakdown[key] = (breakdown[key] ?? 0) + sale.totalAmount.value;
+        breakdownSatang[key] =
+            (breakdownSatang[key] ?? 0) + sale.totalAmount.satang;
         counts[key] = (counts[key] ?? 0) + 1;
       }
     }
@@ -126,14 +129,19 @@ class SalesPeriodTotals extends Equatable {
       discountAmount: discount,
       serviceChargeAmount: serviceCharge,
       promotionDiscountAmount: promotionDiscount,
-      paymentBreakdown: Map.unmodifiable(breakdown),
+      paymentBreakdown: _toBahtMap(breakdownSatang),
       paymentCounts: Map.unmodifiable(counts),
-      orderTypeBreakdown: Map.unmodifiable(orderTypes),
-      orderChannelBreakdown: Map.unmodifiable(orderChannels),
+      orderTypeBreakdown: _toBahtMap(orderTypesSatang),
+      orderChannelBreakdown: _toBahtMap(orderChannelsSatang),
       voidReasonBreakdown: Map.unmodifiable(voidReasons),
       promotionCount: promotionCount,
     );
   }
+
+  static Map<String, double> _toBahtMap(Map<String, int> satang) =>
+      Map.unmodifiable({
+        for (final entry in satang.entries) entry.key: entry.value / 100.0,
+      });
 
   static const empty = SalesPeriodTotals(
     netRevenue: Money.zero,

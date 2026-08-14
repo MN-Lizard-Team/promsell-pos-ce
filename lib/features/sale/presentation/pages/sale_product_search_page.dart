@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_app_bar_field.dart';
@@ -7,6 +8,7 @@ import 'package:promsell_pos_ce/core/widgets/search/search_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_history_cubit.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_result_tile.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/utils/product_search.dart';
 import 'package:promsell_pos_ce/features/product/domain/utils/search_surface_config.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
@@ -167,26 +169,27 @@ class _SaleProductSearchPageState extends State<SaleProductSearchPage> {
 
     setState(() {});
 
-    final products = context.read<ProductBloc>().state.products;
-    final exact = resolveExactBarcodeMatches(
-      products,
-      query,
-    ).where((p) => _config.includeInactive || p.isActive).toList();
-
-    if (exact.length == 1) {
-      final result = await saleAddToCart(context, exact.first);
+    // V092-E.3: exact barcode/SKU lookup goes to DB (not the paginated
+    // in-memory list) so items beyond the 500-row page are not missed.
+    final productRepo = sl<ProductRepository>();
+    final byBarcode = await productRepo.getProductByBarcode(query);
+    if (byBarcode != null) {
+      if (!mounted) return;
+      final result = await saleAddToCart(context, byBarcode);
       await _handleAddResult(result);
       return;
     }
-    if (exact.length > 1) {
+    final bySku = await productRepo.getProductBySku(query);
+    if (bySku != null) {
       if (!mounted) return;
-      AppSnackBar.info(
-        context,
-        context.l10n.barcodeAmbiguousCount(exact.length),
-      );
+      final result = await saleAddToCart(context, bySku);
+      await _handleAddResult(result);
       return;
     }
-    // Name/SKU search: keep ranked list; only mark history if there are hits.
+
+    // Name search: use the in-memory list (pagination is fine for display).
+    if (!mounted) return;
+    final products = context.read<ProductBloc>().state.products;
     final hits = matchProducts(
       products,
       query,
@@ -194,6 +197,7 @@ class _SaleProductSearchPageState extends State<SaleProductSearchPage> {
     );
     if (hits.isNotEmpty) {
       _markCommitted();
+      if (!mounted) return;
       await context.read<SearchHistoryCubit>().add(query);
     }
   }

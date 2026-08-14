@@ -1,6 +1,6 @@
 # Privacy Policy — Promsell
 
-Last updated: August 13, 2026
+Last updated: August 14, 2026
 
 ## 1. Data Collection
 Promsell does **not** collect or transmit personal data to **developer servers**. We do not run analytics, ads, or developer cloud sync. The app is offline-first.

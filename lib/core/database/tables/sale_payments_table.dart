@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/database/tables/sales_table.dart';
 
 /// Payment tender lines for a sale (multi-tender support).
@@ -11,6 +12,9 @@ class SalePayments extends Table {
   /// Normalized method: cash | transfer | card | promptpay | ...
   TextColumn get method => text()();
   RealColumn get amount => real()();
+  // Phase M (C1): INTEGER satang dual-write column.
+  IntColumn get amountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
   TextColumn get reference => text().nullable()();
   TextColumn get sendingBankCode => text().nullable()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();

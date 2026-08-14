@@ -48,6 +48,7 @@ class CheckoutStickyPayable extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 MoneyText(
+                  key: const Key('test_checkout_total_label'),
                   value: amount,
                   currency: currency,
                   style: theme.textTheme.headlineMedium?.copyWith(

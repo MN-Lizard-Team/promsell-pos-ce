@@ -449,7 +449,7 @@ class _SaleVoidInfoSection extends StatelessWidget {
             context.l10n.voidedAtLabel(
               DateFormat(
                 '${settings.dateFormat} HH:mm',
-                settings.locale.languageCode,
+                settings.localeCode,
               ).format(sale.voidedAt!),
             ),
             style: theme.textTheme.bodySmall?.copyWith(
@@ -539,6 +539,7 @@ class _SaleActionsBar extends StatelessWidget {
                   ),
                 )
               : FilledButton.tonalIcon(
+                  key: const Key('test_void_button'),
                   icon: const Icon(TablerIcons.ban, size: 18),
                   label: Text(context.l10n.voidSale),
                   style: FilledButton.styleFrom(

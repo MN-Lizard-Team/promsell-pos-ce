@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/customer/domain/entities/customer.dart';
 
@@ -25,7 +26,7 @@ class CustomerDatasourceImpl implements CustomerDatasource {
     phone: d.phone,
     email: d.email,
     note: d.note,
-    totalSpent: Money.fromDouble(d.totalSpent),
+    totalSpent: moneyFromSatangOrBaht(d.totalSpentSatang, d.totalSpent),
     visitCount: d.visitCount,
     createdAt: d.createdAt,
     updatedAt: d.updatedAt,
@@ -77,6 +78,8 @@ class CustomerDatasourceImpl implements CustomerDatasource {
           totalSpent: Value(totalSpent),
           visitCount: Value(visitCount),
           updatedAt: Value(DateTime.now()),
+          // Phase M (C2): dual-write satang.
+          totalSpentSatang: Value(Money.fromDouble(totalSpent)),
         ),
       );
 }

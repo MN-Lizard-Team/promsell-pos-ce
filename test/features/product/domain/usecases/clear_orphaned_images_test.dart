@@ -2,23 +2,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/services/orphan_image_cleaner.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/clear_orphaned_images.dart';
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
 
+class _MockOrphanImageCleaner extends Mock implements OrphanImageCleaner {}
+
 void main() {
   late MockProductRepository mockRepo;
-  late MockProductImageService mockImageService;
+  late _MockOrphanImageCleaner mockImageCleaner;
   late ClearOrphanedImages useCase;
 
   setUp(() {
     mockRepo = MockProductRepository();
-    mockImageService = MockProductImageService();
-    useCase = ClearOrphanedImages(mockRepo, mockImageService);
+    mockImageCleaner = _MockOrphanImageCleaner();
+    useCase = ClearOrphanedImages(mockRepo, mockImageCleaner);
   });
 
-  test('collects valid paths and delegates to imageService', () async {
+  test('collects valid paths and delegates to imageCleaner', () async {
     final products = [
       Product(
         id: 'p1',
@@ -46,14 +49,14 @@ void main() {
 
     when(() => mockRepo.getActiveProducts()).thenAnswer((_) async => products);
     when(
-      () => mockImageService.clearOrphanedImages(any()),
+      () => mockImageCleaner.clearOrphanedImages(any()),
     ).thenAnswer((_) async => 5);
 
     final result = await useCase();
 
     expect(result, 5);
     verify(
-      () => mockImageService.clearOrphanedImages([
+      () => mockImageCleaner.clearOrphanedImages([
         '/images/p1.jpg',
         '/images/p1_thumb.jpg',
       ]),
@@ -63,13 +66,13 @@ void main() {
   test('handles empty product list', () async {
     when(() => mockRepo.getActiveProducts()).thenAnswer((_) async => []);
     when(
-      () => mockImageService.clearOrphanedImages(any()),
+      () => mockImageCleaner.clearOrphanedImages(any()),
     ).thenAnswer((_) async => 0);
 
     final result = await useCase();
 
     expect(result, 0);
-    verify(() => mockImageService.clearOrphanedImages([])).called(1);
+    verify(() => mockImageCleaner.clearOrphanedImages([])).called(1);
   });
 
   test('skips empty string paths', () async {
@@ -89,12 +92,12 @@ void main() {
 
     when(() => mockRepo.getActiveProducts()).thenAnswer((_) async => products);
     when(
-      () => mockImageService.clearOrphanedImages(any()),
+      () => mockImageCleaner.clearOrphanedImages(any()),
     ).thenAnswer((_) async => 3);
 
     final result = await useCase();
 
     expect(result, 3);
-    verify(() => mockImageService.clearOrphanedImages([])).called(1);
+    verify(() => mockImageCleaner.clearOrphanedImages([])).called(1);
   });
 }

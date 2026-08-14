@@ -2,7 +2,7 @@
 
 **Parent:** [OVERVIEW.md](./OVERVIEW.md) · **Backlog:** [BACKLOG.md](./BACKLOG.md)  
 **IDs:** V092-E.1 … V092-E.5  
-**Status:** todo (wave V092-3, slow-parallel)
+**Status:** E.1 + E.3 done · E.2 partial (DB isolate ✓, PDF isolate deferred) · E.4 + E.5 deferred (wave V092-3)
 
 ---
 

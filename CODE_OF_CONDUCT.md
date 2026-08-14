@@ -32,9 +32,11 @@ Community leaders are responsible for clarifying and enforcing our standards of 
 
 This Code of Conduct applies within all community spaces, and also applies when an individual is officially representing the community in public spaces.
 
-## Enforcement
+## Reporting and Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported through the project issue tracker or by contacting the maintainers listed in the repository. All complaints will be reviewed and investigated promptly and fairly.
+Please report abusive, harassing, or otherwise unacceptable behavior privately to the maintainers at `mnlizard.official@gmail.com` with the subject `Code of Conduct report`. Include the relevant repository links, dates, and context when it is safe to do so. Do not open a public issue for a conduct report or publish another person’s private information.
+
+Reports will be reviewed and investigated promptly and fairly. Retaliation against anyone who reports a concern in good faith or participates in an investigation is not acceptable. Maintainers will protect confidentiality as far as practical while handling the report.
 
 Security vulnerabilities should be reported through the process in [SECURITY.md](SECURITY.md), not through a public issue.
 

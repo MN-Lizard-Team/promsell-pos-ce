@@ -3,7 +3,7 @@ import 'dart:developer' as dev;
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/exceptions/optimistic_lock_exception.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
@@ -21,6 +21,9 @@ abstract class ProductLocalDatasource {
   Future<int> getProductCount();
   Future<Product?> getProductById(String id);
   Future<Product?> getProductByBarcode(String barcode);
+
+  /// Case-insensitive SKU lookup (active, non-deleted). Empty → null.
+  Future<Product?> getProductBySku(String sku);
   Future<bool> barcodeExistsAnyStatus(String barcode, {String? excludeId});
 
   /// Case-insensitive SKU check across all products. Empty → false.
@@ -86,8 +89,8 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
       name: d.name,
       sku: d.sku,
       barcode: d.barcode,
-      price: Money.fromDouble(d.price),
-      cost: Money.fromDouble(d.cost ?? 0.0),
+      price: moneyFromSatangOrBaht(d.priceSatang, d.price),
+      cost: moneyFromSatangOrBaht(d.costSatang, d.cost ?? 0.0),
       stock: d.stock,
       categoryId: d.categoryId,
       imageUrl: d.imageUrl,
@@ -216,6 +219,21 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
     final rows =
         await (_db.select(_db.products)
               ..where((p) => p.barcodeLower.equals(lowerBarcode))
+              ..where((p) => p.isActive.equals(true))
+              ..where((p) => p.deletedAt.isNull())
+              ..orderBy([(p) => OrderingTerm.desc(p.updatedAt)])
+              ..limit(1))
+            .get();
+    return rows.isEmpty ? null : await _fromDataWithOptions(rows.first);
+  }
+
+  @override
+  Future<Product?> getProductBySku(String sku) async {
+    if (sku.trim().isEmpty) return null;
+    final lowerSku = sku.toLowerCase();
+    final rows =
+        await (_db.select(_db.products)
+              ..where((p) => p.skuLower.equals(lowerSku))
               ..where((p) => p.isActive.equals(true))
               ..where((p) => p.deletedAt.isNull())
               ..orderBy([(p) => OrderingTerm.desc(p.updatedAt)])
@@ -435,6 +453,8 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
               priceDelta: Value(option.priceDelta.value),
               sortOrder: Value(option.sortOrder),
               updatedAt: Value(now),
+              // Phase M (C2): dual-write satang.
+              priceDeltaSatang: Value(option.priceDelta),
             ),
           );
         } else {
@@ -447,6 +467,8 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
               sortOrder: Value(option.sortOrder),
               createdAt: Value(now),
               updatedAt: Value(now),
+              // Phase M (C2): dual-write satang.
+              priceDeltaSatang: Value(option.priceDelta),
             ),
           );
         }

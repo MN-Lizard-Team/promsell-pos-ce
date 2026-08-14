@@ -1,16 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/close_day.dart';
-import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
+
+import '../../../../helpers/fake_app_lock.dart';
 
 class MockDailyCloseRepository extends Mock implements DailyCloseRepository {}
 
-class MockSaleLocalDatasource extends Mock implements SaleLocalDatasource {}
+class MockSaleRepository extends Mock implements SaleRepository {}
 
 class FakeDailyClose extends Fake implements DailyClose {}
 
@@ -20,13 +24,15 @@ void main() {
   });
   group('CloseDay', () {
     late MockDailyCloseRepository mockRepo;
-    late MockSaleLocalDatasource mockSales;
+    late MockSaleRepository mockSales;
+    late AppLockService appLock;
     late CloseDay usecase;
 
     setUp(() {
       mockRepo = MockDailyCloseRepository();
-      mockSales = MockSaleLocalDatasource();
-      usecase = CloseDay(mockRepo, mockSales);
+      mockSales = MockSaleRepository();
+      appLock = fakeAppLock();
+      usecase = CloseDay(mockRepo, mockSales, appLock);
     });
 
     test('calculates expected cash and over/short correctly', () async {
@@ -61,7 +67,7 @@ void main() {
       ];
 
       when(
-        () => mockSales.querySales(
+        () => mockSales.getSales(
           from: any(named: 'from'),
           to: any(named: 'to'),
         ),
@@ -92,7 +98,7 @@ void main() {
         return inv.positionalArguments.first as DailyClose;
       });
       when(
-        () => mockSales.querySales(
+        () => mockSales.getSales(
           from: any(named: 'from'),
           to: any(named: 'to'),
         ),
@@ -163,7 +169,7 @@ void main() {
       ];
 
       when(
-        () => mockSales.querySales(
+        () => mockSales.getSales(
           from: any(named: 'from'),
           to: any(named: 'to'),
         ),
@@ -221,7 +227,7 @@ void main() {
         ];
 
         when(
-          () => mockSales.querySales(
+          () => mockSales.getSales(
             from: any(named: 'from'),
             to: any(named: 'to'),
           ),
@@ -241,6 +247,34 @@ void main() {
         expect(result.paymentBreakdown['cash'], 130);
         expect(result.paymentBreakdown['promptpay'], 120);
         expect(result.paymentBreakdown['mixed'], isNull);
+      },
+    );
+
+    // V092-B.3 regression: domain gate refuses when PIN on + locked.
+    test(
+      'throws BusinessRuleError AppLockRequired when PIN enabled and locked',
+      () async {
+        final locked = fakeAppLock();
+        await locked.setPin('147258');
+        locked.lockSession();
+        final gated = CloseDay(mockRepo, mockSales, locked);
+
+        await expectLater(
+          () => gated(
+            date: '2026-06-05',
+            openingCash: 0,
+            countedCash: 0,
+            deviceId: 'dev1',
+          ),
+          throwsA(
+            isA<BusinessRuleError>().having(
+              (e) => e.rule,
+              'rule',
+              AppLockService.ruleAppLockRequired,
+            ),
+          ),
+        );
+        verifyNever(() => mockRepo.save(any()));
       },
     );
   });

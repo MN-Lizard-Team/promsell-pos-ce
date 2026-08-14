@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/database/tables/sales_table.dart';
 
 @DataClassName('SaleItemData')
@@ -14,6 +15,15 @@ class SaleItems extends Table {
   RealColumn get discountAmount => real().withDefault(const Constant(0))();
   RealColumn get vatAmount => real().withDefault(const Constant(0))();
   RealColumn get subtotal => real()();
+  // Phase M (C1): INTEGER satang dual-write columns.
+  IntColumn get priceSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get discountAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get vatAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get subtotalSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
   TextColumn get note => text().nullable()();
   TextColumn get productOptionsJson => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

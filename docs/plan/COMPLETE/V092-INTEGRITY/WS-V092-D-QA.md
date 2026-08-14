@@ -2,7 +2,7 @@
 
 **Parent:** [OVERVIEW.md](./OVERVIEW.md) · **Backlog:** [BACKLOG.md](./BACKLOG.md)  
 **IDs:** V092-D.1 … V092-D.8  
-**Status:** todo (wave V092-2)
+**Status:** D.1–D.5 + D.7 done (wave V092-2) · D.6 + D.8 deferred
 
 ---
 

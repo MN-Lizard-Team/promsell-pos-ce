@@ -68,7 +68,10 @@ class EncryptedDatabaseOpener {
       await _migrateToEncrypted(file, hexKey);
     }
 
-    return NativeDatabase(
+    // V092-E.2: open the DB on a background isolate so first-run SQLCipher
+    // migrate does not stall the UI thread. The `setup` callback runs on
+    // the background isolate — `PRAGMA key` is the first statement.
+    return NativeDatabase.createInBackground(
       file,
       setup: (rawDb) => rawDb.execute("PRAGMA key=\"x'$hexKey'\""),
     );

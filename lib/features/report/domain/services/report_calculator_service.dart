@@ -42,7 +42,7 @@ class ReportCalculatorService {
   /// Computes daily revenue breakdown for charting (sparse — no zero-fill).
   List<DailyRevenue> dailyRevenue(List<Sale> sales) {
     final completed = completedSales(sales);
-    final byDay = <DateTime, double>{};
+    final byDaySatang = <DateTime, int>{};
     final countByDay = <DateTime, int>{};
     for (final s in completed) {
       final key = DateTime(
@@ -50,14 +50,17 @@ class ReportCalculatorService {
         s.createdAt.month,
         s.createdAt.day,
       );
-      byDay[key] = (byDay[key] ?? 0) + s.totalAmount.value;
+      byDaySatang[key] = (byDaySatang[key] ?? 0) + s.totalAmount.satang;
       countByDay[key] = (countByDay[key] ?? 0) + 1;
     }
-    final sortedKeys = byDay.keys.toList()..sort();
+    final sortedKeys = byDaySatang.keys.toList()..sort();
     return sortedKeys
         .map(
-          (d) =>
-              DailyRevenue(date: d, revenue: byDay[d]!, count: countByDay[d]!),
+          (d) => DailyRevenue(
+            date: d,
+            revenue: byDaySatang[d]! / 100.0,
+            count: countByDay[d]!,
+          ),
         )
         .toList();
   }
@@ -77,7 +80,7 @@ class ReportCalculatorService {
     final end = DateTime(to.year, to.month, to.day);
     final first = end.isBefore(start) ? end : start;
     final last = end.isBefore(start) ? start : end;
-    final byDay = <DateTime, double>{};
+    final byDaySatang = <DateTime, int>{};
     final countByDay = <DateTime, int>{};
 
     for (final s in completed) {
@@ -87,7 +90,7 @@ class ReportCalculatorService {
         s.createdAt.day,
       );
       if (day.isBefore(first) || day.isAfter(last)) continue;
-      byDay[day] = (byDay[day] ?? 0) + s.totalAmount.value;
+      byDaySatang[day] = (byDaySatang[day] ?? 0) + s.totalAmount.satang;
       countByDay[day] = (countByDay[day] ?? 0) + 1;
     }
 
@@ -100,7 +103,7 @@ class ReportCalculatorService {
       result.add(
         DailyRevenue(
           date: day,
-          revenue: byDay[day] ?? 0,
+          revenue: (byDaySatang[day] ?? 0) / 100.0,
           count: countByDay[day] ?? 0,
         ),
       );
@@ -122,20 +125,22 @@ class ReportCalculatorService {
   }) {
     final completed = completedSales(sales);
     final qtyById = <String, int>{};
-    final revById = <String, double>{};
-    final costById = <String, double>{};
+    final revByIdSatang = <String, int>{};
+    final costByIdSatang = <String, int>{};
     final nameById = <String, String>{};
     for (final s in completed) {
       for (final item in s.items) {
         nameById[item.productId] = item.productName;
         qtyById[item.productId] = (qtyById[item.productId] ?? 0) + item.qty;
-        revById[item.productId] =
-            (revById[item.productId] ?? 0) + item.subtotal.value;
+        revByIdSatang[item.productId] =
+            (revByIdSatang[item.productId] ?? 0) + item.subtotal.satang;
         if (productLookup != null) {
-          final unitCost = productLookup[item.productId]?.cost.value ?? 0;
-          if (unitCost > 0) {
-            costById[item.productId] =
-                (costById[item.productId] ?? 0) + unitCost * item.qty;
+          final unitCostSatang =
+              productLookup[item.productId]?.cost.satang ?? 0;
+          if (unitCostSatang > 0) {
+            costByIdSatang[item.productId] =
+                (costByIdSatang[item.productId] ?? 0) +
+                unitCostSatang * item.qty;
           }
         }
       }
@@ -154,8 +159,9 @@ class ReportCalculatorService {
       final display = disambiguate
           ? '$name (${e.key.substring(0, e.key.length.clamp(0, 4))})'
           : name;
-      final revenue = revById[e.key] ?? 0;
-      final cost = costById[e.key];
+      final revenue = (revByIdSatang[e.key] ?? 0) / 100.0;
+      final costSatang = costByIdSatang[e.key];
+      final cost = costSatang == null ? null : costSatang / 100.0;
       final profit = cost != null ? revenue - cost : null;
       final margin = (cost != null && revenue > 0)
           ? (profit! / revenue) * 100
@@ -199,12 +205,14 @@ class ReportCalculatorService {
   /// Revenue grouped by hour of day for completed sales.
   Map<int, double> hourlyRevenue(List<Sale> sales) {
     final completed = completedSales(sales);
-    final byHour = <int, double>{};
+    final byHourSatang = <int, int>{};
     for (final sale in completed) {
-      byHour[sale.createdAt.hour] =
-          (byHour[sale.createdAt.hour] ?? 0) + sale.totalAmount.value;
+      byHourSatang[sale.createdAt.hour] =
+          (byHourSatang[sale.createdAt.hour] ?? 0) + sale.totalAmount.satang;
     }
-    return Map.unmodifiable(byHour);
+    return Map.unmodifiable({
+      for (final entry in byHourSatang.entries) entry.key: entry.value / 100.0,
+    });
   }
 
   // Profit analytics
@@ -216,30 +224,29 @@ class ReportCalculatorService {
     Map<String, Product> productLookup,
   ) {
     final completed = completedSales(sales);
-    var lineRevenue = 0.0;
-    var lineCost = 0.0;
+    var lineRevenueSatang = 0;
+    var lineCostSatang = 0;
     var withCost = 0;
     var withoutCost = 0;
 
     for (final sale in completed) {
       for (final item in sale.items) {
         final product = productLookup[item.productId];
-        final unitCost = product?.cost.value ?? 0;
-        final itemRevenue = item.subtotal.value;
-        lineRevenue += itemRevenue;
-        if (product == null || unitCost <= 0) {
+        final unitCostSatang = product?.cost.satang ?? 0;
+        lineRevenueSatang += item.subtotal.satang;
+        if (product == null || unitCostSatang <= 0) {
           withoutCost++;
           continue;
         }
-        lineCost += unitCost * item.qty;
+        lineCostSatang += unitCostSatang * item.qty;
         withCost++;
       }
     }
 
-    final totalCost = Money.fromDouble(lineCost);
-    final lineRevenueMoney = Money.fromDouble(lineRevenue);
+    final totalCost = Money.fromSatang(lineCostSatang);
+    final lineRevenueMoney = Money.fromSatang(lineRevenueSatang);
     final grossProfit = lineRevenueMoney - totalCost;
-    final margin = lineRevenue <= 0
+    final margin = lineRevenueSatang <= 0
         ? 0.0
         : (grossProfit.satang * 100.0) / lineRevenueMoney.satang;
 

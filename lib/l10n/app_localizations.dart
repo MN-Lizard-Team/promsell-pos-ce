@@ -8048,6 +8048,12 @@ abstract class AppLocalizations {
   /// **'PIN ต้องมีอย่างน้อย {min} หลัก'**
   String appLockPinTooShort(int min);
 
+  /// No description provided for @appLockPinTooTrivial.
+  ///
+  /// In th, this message translates to:
+  /// **'PIN ง่ายเกินไป — กรุณาตั้ง PIN ที่ยากต่อการเดา'**
+  String get appLockPinTooTrivial;
+
   /// No description provided for @appLockIncorrectPin.
   ///
   /// In th, this message translates to:
@@ -8096,6 +8102,162 @@ abstract class AppLocalizations {
   /// **'พยายามผิดหลายครั้ง ลองใหม่ใน {seconds} วินาที'**
   String appLockLockedOut(int seconds);
 
+  /// No description provided for @appLockEnterCurrentPin.
+  ///
+  /// In th, this message translates to:
+  /// **'กรอก PIN เดิม'**
+  String get appLockEnterCurrentPin;
+
+  /// No description provided for @appLockChangePin.
+  ///
+  /// In th, this message translates to:
+  /// **'เปลี่ยน PIN'**
+  String get appLockChangePin;
+
+  /// No description provided for @appLockChangePinHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องใส่ PIN เดิมก่อน แล้วตั้ง PIN ใหม่'**
+  String get appLockChangePinHint;
+
+  /// No description provided for @appLockPinChanged.
+  ///
+  /// In th, this message translates to:
+  /// **'เปลี่ยน PIN แล้ว'**
+  String get appLockPinChanged;
+
+  /// No description provided for @appLockPinStatus.
+  ///
+  /// In th, this message translates to:
+  /// **'สถานะ PIN'**
+  String get appLockPinStatus;
+
+  /// No description provided for @appLockPinSetDate.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งล่าสุด: {date}'**
+  String appLockPinSetDate(String date);
+
+  /// No description provided for @appLockPinSetUnknown.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ทราบวันที่ตั้ง'**
+  String get appLockPinSetUnknown;
+
+  /// No description provided for @appLockSessionGraceTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เวลาผ่อนผัน session'**
+  String get appLockSessionGraceTitle;
+
+  /// No description provided for @appLockSessionGraceHint.
+  ///
+  /// In th, this message translates to:
+  /// **'หลังปลดล็อก PIN ระบบจะไม่ขอ PIN ซ้ำภายในระยะเวลานี้ — เลือก 0 เพื่อถามทุกครั้ง (single-action)'**
+  String get appLockSessionGraceHint;
+
+  /// No description provided for @appLockGraceSingleAction.
+  ///
+  /// In th, this message translates to:
+  /// **'ถามทุกครั้ง (single-action)'**
+  String get appLockGraceSingleAction;
+
+  /// No description provided for @appLockSessionGraceChanged.
+  ///
+  /// In th, this message translates to:
+  /// **'เปลี่ยนเวลาผ่อนผันแล้ว'**
+  String get appLockSessionGraceChanged;
+
+  /// No description provided for @appLockLockoutPolicyTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'นโยบายล็อกชั่วคราว'**
+  String get appLockLockoutPolicyTitle;
+
+  /// No description provided for @appLockLockoutPolicyHint.
+  ///
+  /// In th, this message translates to:
+  /// **'หลังพยายามผิดครบจำนวนที่กำหนด ระบบจะล็อกชั่วคราวและทวีคูณเวลาในแต่ละครั้งถัดไป'**
+  String get appLockLockoutPolicyHint;
+
+  /// No description provided for @appLockMaxFailedAttempts.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนพยายามผิดสูงสุด'**
+  String get appLockMaxFailedAttempts;
+
+  /// No description provided for @appLockMaxFailedAttemptsValue.
+  ///
+  /// In th, this message translates to:
+  /// **'ล็อกหลังผิด {n} ครั้ง'**
+  String appLockMaxFailedAttemptsValue(int n);
+
+  /// No description provided for @appLockBaseLockout.
+  ///
+  /// In th, this message translates to:
+  /// **'เวลาล็อกเริ่มต้น'**
+  String get appLockBaseLockout;
+
+  /// No description provided for @appLockBaseLockoutValue.
+  ///
+  /// In th, this message translates to:
+  /// **'เริ่มต้น {duration} (ทวีคูณสูงสุด 16 เท่า)'**
+  String appLockBaseLockoutValue(String duration);
+
+  /// No description provided for @appLockLockoutPolicyChanged.
+  ///
+  /// In th, this message translates to:
+  /// **'เปลี่ยนนโยบายล็อกแล้ว'**
+  String get appLockLockoutPolicyChanged;
+
+  /// No description provided for @appLockErasePin.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบ PIN ทิ้ง'**
+  String get appLockErasePin;
+
+  /// No description provided for @appLockErasePinTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบ PIN ที่เก็บไว้?'**
+  String get appLockErasePinTitle;
+
+  /// No description provided for @appLockErasePinConfirm.
+  ///
+  /// In th, this message translates to:
+  /// **'การกระทำนี้จะลบ PIN ที่เก็บไว้ถาวร — หากต้องการเปิดใช้ล็อกอีกครั้งจะต้องตั้ง PIN ใหม่ ไม่สามารถยกเลิกได้'**
+  String get appLockErasePinConfirm;
+
+  /// No description provided for @appLockErasePinHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบ PIN ที่เก็บไว้ถาวร — การเปิดใช้ใหม่ต้องตั้ง PIN ใหม่'**
+  String get appLockErasePinHint;
+
+  /// No description provided for @appLockPinErased.
+  ///
+  /// In th, this message translates to:
+  /// **'ลบ PIN แล้ว'**
+  String get appLockPinErased;
+
+  /// No description provided for @appLockDisableConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิดใช้ PIN ร้าน?'**
+  String get appLockDisableConfirmTitle;
+
+  /// No description provided for @appLockDisableConfirmBody.
+  ///
+  /// In th, this message translates to:
+  /// **'หากปิด PIN ร้าน ทุกคนที่เข้าถึงเครื่องนี้จะสามารถยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay ได้โดยไม่ต้องยืนยัน PIN ยังเก็บไว้ จึงเปิดใช้ใหม่ได้ภายหลังโดยไม่ต้องตั้งใหม่'**
+  String get appLockDisableConfirmBody;
+
+  /// No description provided for @appLockConfirmDisable.
+  ///
+  /// In th, this message translates to:
+  /// **'ปิด ฉันเข้าใจ'**
+  String get appLockConfirmDisable;
+
   /// No description provided for @onboardingStorePinTitle.
   ///
   /// In th, this message translates to:
@@ -8113,6 +8275,42 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า'**
   String get onboardingStorePinRequired;
+
+  /// No description provided for @onboardingSkipPin.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้าม'**
+  String get onboardingSkipPin;
+
+  /// No description provided for @onboardingSkipPinConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้ามการตั้ง PIN?'**
+  String get onboardingSkipPinConfirmTitle;
+
+  /// No description provided for @onboardingSkipPinConfirmBody.
+  ///
+  /// In th, this message translates to:
+  /// **'หากไม่ตั้ง PIN ร้าน ทุกคนที่เข้าถึงเครื่องนี้จะสามารถยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay ได้โดยไม่ต้องยืนยัน คุณสามารถเปิด PIN ได้ภายหลังใน การตั้งค่า → ล็อก PIN ร้าน'**
+  String get onboardingSkipPinConfirmBody;
+
+  /// No description provided for @onboardingSetupPinInstead.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้ง PIN แทน'**
+  String get onboardingSetupPinInstead;
+
+  /// No description provided for @onboardingConfirmSkipPin.
+  ///
+  /// In th, this message translates to:
+  /// **'ข้าม ฉันเข้าใจ'**
+  String get onboardingConfirmSkipPin;
+
+  /// No description provided for @onboardingPinSkippedHint.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ตั้ง PIN — เปิดได้ภายหลังใน การตั้งค่า → ล็อก PIN ร้าน'**
+  String get onboardingPinSkippedHint;
 
   /// No description provided for @exportPdf.
   ///

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
@@ -155,7 +157,7 @@ class _ReportPageState extends State<ReportPage>
   late final TabController _tabController;
   late final ReportCubit _cubit;
   late final HistoryBloc _historyBloc;
-  final _exportService = const ReportExportService();
+  final _exportService = ReportExportService(sl<AppLockService>());
   StreamSubscription<int>? _tabRequestSub;
   bool _isExporting = false;
 
@@ -213,7 +215,7 @@ class _ReportPageState extends State<ReportPage>
     final pos = context.posTheme;
     final onHistory = _tabController.index == 1;
     final settings = context.watch<SettingsCubit>().state.settings;
-    final appLocale = settings.locale.languageCode;
+    final appLocale = settings.localeCode;
     final dateFmt = DateFormat(settings.dateFormat, appLocale);
     return MultiBlocProvider(
       providers: [
@@ -459,6 +461,12 @@ class _ReportPageState extends State<ReportPage>
     final from = state.from ?? today.$1;
     final to = state.to ?? today.$2;
     if (_isExporting || state.status == ReportStatus.loading) return;
+    // V092-B.3: prompt store PIN before exporting totals + cost + margin.
+    final unlocked = await ensureAppUnlocked(
+      context,
+      title: l10n.appLockConfirmStock,
+    );
+    if (!unlocked || !context.mounted) return;
     _setExporting(true);
     final calculator = sl<ReportCalculatorService>();
     try {
@@ -485,7 +493,7 @@ class _ReportPageState extends State<ReportPage>
           pdfBytes: pdfBytes,
         );
       } else if (value == 'csv') {
-        final csvContent = _exportService.exportCsv(
+        final csvContent = await _exportService.exportCsv(
           ReportData(
             sales: state.sales,
             from: from,

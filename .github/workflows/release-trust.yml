@@ -77,7 +77,10 @@ jobs:
             test/integration/sale_integrity_test.dart \
             test/integration/checkout_flow_test.dart \
             test/integration/multi_tender_daily_close_test.dart \
+            test/integration/sale_vat_discount_void_close_test.dart \
+            test/integration/void_after_day_close_test.dart \
             test/integration/backup_money_continuity_test.dart \
+            test/integration/onboarding_first_sale_test.dart \
             test/features/sale/domain/usecases/create_sale_test.dart \
             test/features/sale/domain/usecases/void_sale_test.dart \
             test/features/sale/domain/services/sale_payable_calculator_test.dart \

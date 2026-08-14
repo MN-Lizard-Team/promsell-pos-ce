@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_day_guard.dart';
@@ -91,8 +91,10 @@ class SaleVoidWriter {
         }
 
         // Atomic restore: stock = stock + qty
+        // V092-C.1: bump version so a stale product form cannot overwrite.
         await _db.customUpdate(
-          'UPDATE products SET stock = stock + ?, updated_at = ? '
+          'UPDATE products SET stock = stock + ?, version = version + 1, '
+          'updated_at = ? '
           'WHERE id = ? AND track_stock = 1',
           variables: [
             Variable.withInt(entry.value),
@@ -117,7 +119,10 @@ class SaleVoidWriter {
       if (sale.customerId != null) {
         await _sideEffects.applyCustomerSpentDelta(
           customerId: sale.customerId!,
-          delta: -Money.fromDouble(sale.totalAmount),
+          delta: -moneyFromSatangOrBaht(
+            sale.totalAmountSatang,
+            sale.totalAmount,
+          ),
           visitDelta: -1,
         );
       }

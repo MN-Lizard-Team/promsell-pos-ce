@@ -17,12 +17,11 @@ This file is the **map**. Packages own detail. Do not treat COMPLETE folders as 
 
 | Package | Role | Start here |
 |---------|------|------------|
-| [V092-INTEGRITY](./UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) | Next GitHub tag `v0.9.2` only | [BACKLOG](./UN-COMPLETE/V092-INTEGRITY/BACKLOG.md) · [GATE-TO-TAG](./UN-COMPLETE/V092-INTEGRITY/GATE-TO-TAG.md) |
-| [ARCH-HARDEN-1.0](./UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) | Architecture before Play. **Paused until V092-GATE** | [BACKLOG](./UN-COMPLETE/ARCH-HARDEN-1.0/BACKLOG.md) · [GATE-TO-PLAY](./UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md) |
+| [ARCH-HARDEN-1.0](./UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) | Architecture before Play. **Resumed** — V092-GATE unlocked | [BACKLOG](./UN-COMPLETE/ARCH-HARDEN-1.0/BACKLOG.md) · [GATE-TO-PLAY](./UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md) |
 | [POST-090-MANAGE](./UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | Store / QA / Phase M / 2b after **AH-GATE-1** | [BACKLOG](./UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md) |
 | [DOC-SSOT](./UN-COMPLETE/DOC-SSOT/OVERVIEW.md) | Docs-tree honesty. Does **not** gate the tag or Play | [BACKLOG](./UN-COMPLETE/DOC-SSOT/BACKLOG.md) |
 
-**Current NOW:** V092-0 / V092-GATE (tag path). AH-0 is paused.
+**Current NOW:** V092-GATE **UNLOCKED** (2026-08-14) — `v0.9.2` may be cut. Next: resume AH-0.3+ (architecture fence).
 
 ---
 
@@ -30,6 +29,7 @@ This file is the **map**. Packages own detail. Do not treat COMPLETE folders as 
 
 | Package | Role |
 |---------|------|
+| [V092-INTEGRITY](./COMPLETE/V092-INTEGRITY/OVERVIEW.md) | v0.9.2 integrity slice — **GATE UNLOCKED** (2026-08-14) |
 | [V090-TRUST](./COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) | v0.9.0 GitHub trust-cut |
 | [080-PLAN](./COMPLETE/080-PLAN/080-OVERVIEW.md) | v0.8.1 quality / AppSettings |
 | [PSPOS-PHASE-1](./COMPLETE/PSPOS-PHASE-1/PSPOS-PHASE1-IMPLEMENTATION.md) | Phase 1 R1–R5 |
@@ -50,7 +50,7 @@ Never write a bare `G3` across packages. Those two G3s are different criteria.
 ## Sequencing
 
 ```
-V092-GATE (tag v0.9.2)
+V092-GATE ✅ UNLOCKED (2026-08-14) → tag v0.9.2
     → resume AH-0.3+ (architecture)
         → AH-GATE-1
             → POST-090 A4/A5 (Play production still needs A1–A5 + B2)
@@ -68,4 +68,4 @@ DOC-SSOT may land in parallel. It does not unlock either gate.
 
 ---
 
-<sub>Promsell POS CE · plan map · 2026-08-13</sub>
+<sub>Promsell POS CE · plan map · updated 2026-08-14 (V092-GATE unlocked)</sub>

@@ -144,7 +144,7 @@ void main() {
   });
 
   test('blocks CSV import when store PIN on and session locked', () async {
-    await appLock.setPin('123456');
+    await appLock.setPin('147258');
     appLock.lockSession();
 
     await expectLater(

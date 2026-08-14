@@ -18,10 +18,10 @@ Architecture docs describe **what the code does**, then what the fence *will* do
 **Files:** `docs/ARCHITECTURE.md`, `CODEBASE.md`, `docs/architecture/c4-diagrams.md`
 
 **Replace**
-- `Pure Dart models (no Flutter imports)` → `Domain models should be Flutter-free; settings still import Flutter (AH-1.4).`
-- `Domain has zero external dependencies.` → `Rule: presentation → domain ← data. Not CI-enforced (AH-1.1). Known leaks: settings Locale/ThemeMode; CloseDay → sale data; product image/submit.`
+- `Pure Dart models (no Flutter imports)` → `Domain models should be Flutter-free; dated exceptions are tracked by AH-1.1.`
+- `Domain has zero external dependencies.` → `Rule: presentation → domain ← data. CI-enforced by tool/check_domain_fence.dart; dated leaks remain for CloseDay, product image/submit, DraftNaming, and settings Locale/ThemeMode.`
 
-**Do not** add `tool/check_domain_fence` or say the fence exists.
+Do not duplicate the AH-1.1 implementation here; the executable fence lives in `tool/check_domain_fence.dart` and its status is tracked by ARCH-HARDEN.
 
 ---
 
@@ -51,14 +51,14 @@ Append thin Context / Decision / Consequences in `docs/architecture/adr/index.md
 |----|-----------|--------|
 | **ADR-027** | Payable pipeline (item → cart → promo → SC → VAT). SSOT: `SalePayableCalculator` / `payableTotals`. Supersedes ADR-011 scope. | — |
 | **ADR-028** | Sync **metadata** non-goals. Amends ADR-015. | — |
-| — | SQLCipher, PIN, multi-tender, Money-on-disk, domain fence | After those ship or AH-1.1 lands. Do not mark Accepted early. |
+| — | SQLCipher, PIN, multi-tender, Money-on-disk | After those ship. Do not mark Accepted early. |
 
 ---
 
 ## Do not
 
 - Claim “Clean Architecture complete.”
-- Implement AH-1.1.
+- Duplicate AH-1.1 implementation in the docs workstream; keep the executable check in `tool/`.
 - Touch `lib/` except citing evidence.
 - Flip AH-2.1 here without DOC-N.8 (same evidence, one PR preferred).
 
@@ -70,7 +70,7 @@ Append thin Context / Decision / Consequences in `docs/architecture/adr/index.md
 rg -n "no Flutter imports|zero external dependencies" docs/ARCHITECTURE.md CODEBASE.md docs/architecture
 rg -n "WatchReport ──→ HistoryRepository|CheckoutBloc ──→ CreateSale, VoidSale" docs/architecture
 rg -n "all sync-ready|sync-ready without future" docs/DATABASE.md docs/architecture/adr
-test -f tool/check_domain_fence.dart; echo $?   # expect 1
+dart run tool/check_domain_fence.dart
 ```
 
 ---

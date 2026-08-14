@@ -133,8 +133,8 @@ void main() {
       expect(loaded.receiptSize, 'A4');
       expect(loaded.receiptNote, 'Thanks!');
       expect(loaded.showShopInfoOnReceipt, isFalse);
-      expect(loaded.locale.languageCode, 'en');
-      expect(loaded.themeMode.name, 'dark');
+      expect(loaded.localeCode, 'en');
+      expect(loaded.themeModeName, 'dark');
       expect(loaded.promptpayId, '0812345678');
       expect(loaded.billerId, '1100701367081');
       expect(loaded.lowStockThreshold, 10);

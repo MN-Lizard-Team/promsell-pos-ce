@@ -1,6 +1,6 @@
 # E2E Test Infrastructure — Status (honest)
 
-**Last updated:** 2026-08-13  
+**Last updated:** 2026-08-14  
 **Verdict:** Scaffold is in-tree. **Main CI does not run** device E2E (format + analyze only). **Trust blocks** emulator `--flavor dev` on tags / money-path PRs. That is **not** “E2E ready” or 1.0 Go. Money integrity is gated by **host** trust suite + manual smoke. Map: [`CI.md`](./CI.md).
 
 ---
@@ -14,8 +14,9 @@
 | `flutter analyze integration_test/` | Expected clean (re-check after large refactors) |
 | Runtime on `ci.yml` | **Not run** — format + analyze `integration_test/` only |
 | Runtime on local desktop without Android/iOS device | **No supported devices** |
-| Fail-closed money path | Host `test/integration/` + `release-trust.yml`. Device job on trust is blocking but **dev** flavor / scaffold |
-| Manual device evidence | `docs/testing/RELEASE_0.9_SMOKE.md` |
+| Fail-closed money path | Host `test/integration/` + `release-trust.yml` (V092-D.1 VAT+void+close, V092-D.4 void after day-close). Device job on trust is blocking but **dev** flavor / scaffold |
+| Manual device evidence | `docs/testing/RELEASE_0.9_SMOKE.md` · `docs/testing/RELEASE_0.9.2_SMOKE.md` |
+| TestApp flake (V092-D.5) | `pumpAndSettle` dropped in `restartApp`; `TestKeys` constants added for 5 core cases. EN-string finders still in older tests — migrate when touching. |
 
 **Do not claim:** “30 tests compiling, ready for runtime validation” as if CI guarantees green E2E.
 

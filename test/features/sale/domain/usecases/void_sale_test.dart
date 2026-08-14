@@ -102,7 +102,7 @@ void main() {
   });
 
   test('blocks when store PIN enabled and session locked', () async {
-    await appLock.setPin('123456');
+    await appLock.setPin('147258');
     appLock.lockSession();
 
     await expectLater(
@@ -119,7 +119,7 @@ void main() {
   });
 
   test('voids when store PIN enabled and session unlocked', () async {
-    await appLock.setPin('123456');
+    await appLock.setPin('147258');
     // setPin unlocks session
     await useCase(tSale.id, reason: 'ok');
     verify(() => mockRepo.voidSale(tSale.id, reason: 'ok')).called(1);

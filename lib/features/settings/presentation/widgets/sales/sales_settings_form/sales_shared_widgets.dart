@@ -226,6 +226,7 @@ class SalesSharedWidgets {
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
+    Key? switchKey,
   }) {
     final st = context.settingsTheme;
     final theme = Theme.of(context);
@@ -265,6 +266,7 @@ class SalesSharedWidgets {
             ),
           ),
           trailing: Switch(
+            key: switchKey,
             value: value,
             onChanged: (v) {
               HapticFeedback.lightImpact();

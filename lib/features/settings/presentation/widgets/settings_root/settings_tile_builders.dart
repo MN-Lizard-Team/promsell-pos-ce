@@ -35,22 +35,22 @@ class SettingsTileBuilders {
 
   static String localeLabel(BuildContext context, Settings s) {
     final l10n = context.l10n;
-    switch (s.locale.languageCode) {
+    switch (s.localeCode) {
       case 'th':
         return l10n.langThai;
       case 'en':
         return l10n.langEnglish;
       default:
-        return s.locale.languageCode;
+        return s.localeCode;
     }
   }
 
   static String themeLabel(BuildContext context, Settings s) {
     final l10n = context.l10n;
-    switch (s.themeMode) {
-      case ThemeMode.light:
+    switch (s.themeModeName) {
+      case 'light':
         return l10n.settingsThemeLight;
-      case ThemeMode.dark:
+      case 'dark':
         return l10n.settingsThemeDark;
       default:
         return l10n.settingsThemeSystem;
@@ -58,18 +58,18 @@ class SettingsTileBuilders {
   }
 
   static IconData themeIcon(Settings s) {
-    return switch (s.themeMode) {
-      ThemeMode.light => TablerIcons.sun,
-      ThemeMode.dark => TablerIcons.moon,
-      ThemeMode.system => TablerIcons.brightnessAuto,
+    return switch (s.themeModeName) {
+      'light' => TablerIcons.sun,
+      'dark' => TablerIcons.moon,
+      _ => TablerIcons.brightnessAuto,
     };
   }
 
   static Color themeColor(Settings s) {
-    return switch (s.themeMode) {
-      ThemeMode.light => AppColors.warning,
-      ThemeMode.dark => AppColors.info,
-      ThemeMode.system => AppColors.primary,
+    return switch (s.themeModeName) {
+      'light' => AppColors.warning,
+      'dark' => AppColors.info,
+      _ => AppColors.primary,
     };
   }
 

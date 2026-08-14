@@ -6,42 +6,42 @@ import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class GeneralSummaryCard extends StatelessWidget {
   const GeneralSummaryCard({
-    required this.locale,
-    required this.themeMode,
+    required this.localeCode,
+    required this.themeModeName,
     super.key,
   });
 
-  final Locale locale;
-  final ThemeMode themeMode;
+  final String localeCode;
+  final String themeModeName;
 
   String _languageLabel(BuildContext context) {
-    return locale.languageCode == 'th'
+    return localeCode == 'th'
         ? context.l10n.langThai
         : context.l10n.langEnglish;
   }
 
   String _themeLabel(BuildContext context) {
     final l10n = context.l10n;
-    return switch (themeMode) {
-      ThemeMode.light => l10n.settingsThemeLight,
-      ThemeMode.dark => l10n.settingsThemeDark,
-      ThemeMode.system => l10n.settingsThemeSystem,
+    return switch (themeModeName) {
+      'light' => l10n.settingsThemeLight,
+      'dark' => l10n.settingsThemeDark,
+      _ => l10n.settingsThemeSystem,
     };
   }
 
   IconData _themeIcon() {
-    return switch (themeMode) {
-      ThemeMode.light => TablerIcons.sun,
-      ThemeMode.dark => TablerIcons.moon,
-      ThemeMode.system => TablerIcons.brightnessAuto,
+    return switch (themeModeName) {
+      'light' => TablerIcons.sun,
+      'dark' => TablerIcons.moon,
+      _ => TablerIcons.brightnessAuto,
     };
   }
 
   Color _themeColor(BuildContext context) {
-    return switch (themeMode) {
-      ThemeMode.light => AppColors.warning,
-      ThemeMode.dark => AppColors.info,
-      ThemeMode.system => AppColors.primary,
+    return switch (themeModeName) {
+      'light' => AppColors.warning,
+      'dark' => AppColors.info,
+      _ => AppColors.primary,
     };
   }
 

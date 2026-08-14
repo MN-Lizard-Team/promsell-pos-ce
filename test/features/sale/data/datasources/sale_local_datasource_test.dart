@@ -88,6 +88,17 @@ void main() {
         expect(sale.items.first.qty, 3);
         expect(sale.items.first.subtotal.value, 300.0);
 
+        final stored = await db
+            .customSelect(
+              'SELECT total_amount_satang, amount_received_satang, '
+              'change_amount_satang FROM sales WHERE id = ?',
+              variables: [Variable<String>(sale.id)],
+            )
+            .getSingle();
+        expect(stored.read<int>('total_amount_satang'), 30000);
+        expect(stored.read<int>('amount_received_satang'), 50000);
+        expect(stored.read<int>('change_amount_satang'), 20000);
+
         final updatedProduct = await productDatasource.getProductById(
           product.id,
         );
@@ -97,6 +108,29 @@ void main() {
         expect(sale.payments.first.amount.value, 300.0);
       },
     );
+
+    test('sale reader prefers satang and falls back to legacy baht', () async {
+      final product = await seedProduct(stock: 5, price: 100);
+      final sale = await saleDatasource.insertSaleWithItems(
+        items: [CartItem(product: product, qty: 1)],
+        paymentMethod: 'cash',
+        vatMode: 'NONE',
+        vatRate: 0,
+      );
+
+      await db.customStatement(
+        'UPDATE sales SET total_amount = 999.99 WHERE id = \'${sale.id}\'',
+      );
+      final satangRead = await saleDatasource.querySaleById(sale.id);
+      expect(satangRead!.totalAmount, const Money.fromSatang(10000));
+
+      await db.customStatement(
+        'UPDATE sales SET total_amount = 123.45, total_amount_satang = NULL '
+        "WHERE id = '${sale.id}'",
+      );
+      final legacyRead = await saleDatasource.querySaleById(sale.id);
+      expect(legacyRead!.totalAmount, Money.fromDouble(123.45));
+    });
 
     test('insertSaleWithItems multi-tender stores payment lines', () async {
       final product = await seedProduct(stock: 10, price: 100);
@@ -271,28 +305,42 @@ void main() {
       expect((await productDatasource.getProductById(product.id))!.stock, 9);
     });
 
-    test(
-      'insertSaleWithItems accepts tender sum within 1 satang of payable',
-      () async {
-        final product = await seedProduct(stock: 10, price: 100);
-        // 40.005 + 59.995 would need Money precision; use exact 40+60.
-        final sale = await saleDatasource.insertSaleWithItems(
+    test('insertSaleWithItems rejects one-satang tender mismatch', () async {
+      final product = await seedProduct(stock: 10, price: 100);
+      await expectLater(
+        () => saleDatasource.insertSaleWithItems(
           items: [CartItem(product: product, qty: 1)],
           paymentMethod: 'mixed',
           vatMode: 'NONE',
           vatRate: 0,
           payments: [
             SalePayment(method: 'cash', amount: Money.fromDouble(40)),
-            SalePayment(method: 'transfer', amount: Money.fromDouble(60)),
+            SalePayment(method: 'transfer', amount: Money.fromDouble(59.99)),
           ],
-        );
-        expect(sale.payments.length, 2);
-        expect(
-          sale.payments.fold<double>(0, (s, p) => s + p.amount.value),
-          closeTo(100, 0.001),
-        );
-      },
-    );
+        ),
+        throwsA(isA<BusinessRuleError>()),
+      );
+    });
+
+    test('insertSaleWithItems accepts exact tender sum in satang', () async {
+      final product = await seedProduct(stock: 10, price: 100);
+      // 40.005 + 59.995 would need Money precision; use exact 40+60.
+      final sale = await saleDatasource.insertSaleWithItems(
+        items: [CartItem(product: product, qty: 1)],
+        paymentMethod: 'mixed',
+        vatMode: 'NONE',
+        vatRate: 0,
+        payments: [
+          SalePayment(method: 'cash', amount: Money.fromDouble(40)),
+          SalePayment(method: 'transfer', amount: Money.fromDouble(60)),
+        ],
+      );
+      expect(sale.payments.length, 2);
+      expect(
+        sale.payments.fold<double>(0, (s, p) => s + p.amount.value),
+        closeTo(100, 0.001),
+      );
+    });
 
     test('legacy single method still materializes one payment line', () async {
       final product = await seedProduct(stock: 5, price: 50);
@@ -523,6 +571,13 @@ void main() {
         final customer = await customerDatasource.getById(customerId);
         expect(customer!.totalSpent.value, 200.0);
         expect(customer.visitCount, 1);
+        final stored = await db
+            .customSelect(
+              'SELECT total_spent_satang FROM customers WHERE id = ?',
+              variables: [Variable<String>(customerId)],
+            )
+            .getSingle();
+        expect(stored.read<int>('total_spent_satang'), 20000);
       },
     );
 
@@ -550,12 +605,26 @@ void main() {
         var customer = await customerDatasource.getById(customerId);
         expect(customer!.totalSpent.value, 400.0);
         expect(customer.visitCount, 2);
+        var stored = await db
+            .customSelect(
+              'SELECT total_spent_satang FROM customers WHERE id = ?',
+              variables: [Variable<String>(customerId)],
+            )
+            .getSingle();
+        expect(stored.read<int>('total_spent_satang'), 40000);
 
         await saleDatasource.voidSale(sale2.id);
 
         var afterVoid = await customerDatasource.getById(customerId);
         expect(afterVoid!.totalSpent.value, 100.0);
         expect(afterVoid.visitCount, 1);
+        stored = await db
+            .customSelect(
+              'SELECT total_spent_satang FROM customers WHERE id = ?',
+              variables: [Variable<String>(customerId)],
+            )
+            .getSingle();
+        expect(stored.read<int>('total_spent_satang'), 10000);
 
         // Void remaining sale brings totals back to zero.
         await saleDatasource.voidSale(sale1.id);

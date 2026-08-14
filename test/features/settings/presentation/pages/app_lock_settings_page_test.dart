@@ -18,6 +18,19 @@ void main() {
     await GetIt.I.reset();
     mockAppLockService = MockAppLockService();
     GetIt.I.registerSingleton<AppLockService>(mockAppLockService);
+    // V092-B: _refresh() calls isEnabled + hasPin + pinSetAt +
+    // getSessionGrace + getLockoutPolicy. Stub defaults so individual
+    // tests only override what they care about.
+    when(() => mockAppLockService.isEnabled()).thenAnswer((_) async => false);
+    when(() => mockAppLockService.hasPin()).thenAnswer((_) async => false);
+    when(() => mockAppLockService.pinSetAt()).thenAnswer((_) async => null);
+    when(
+      () => mockAppLockService.getSessionGrace(),
+    ).thenAnswer((_) async => const Duration(minutes: 2));
+    when(() => mockAppLockService.getLockoutPolicy()).thenAnswer(
+      (_) async =>
+          (maxFailedAttempts: 5, baseLockout: const Duration(minutes: 1)),
+    );
   });
 
   tearDown(() async {
@@ -43,8 +56,6 @@ void main() {
     });
 
     testWidgets('shows switch when loaded', (tester) async {
-      when(() => mockAppLockService.isEnabled()).thenAnswer((_) async => false);
-
       await tester.pumpApp(const AppLockSettingsPage());
       await tester.pumpAndSettle();
 
@@ -54,8 +65,6 @@ void main() {
     });
 
     testWidgets('switch is off when lock is disabled', (tester) async {
-      when(() => mockAppLockService.isEnabled()).thenAnswer((_) async => false);
-
       await tester.pumpApp(const AppLockSettingsPage());
       await tester.pumpAndSettle();
 

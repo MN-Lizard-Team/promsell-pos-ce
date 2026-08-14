@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:csv/csv.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
@@ -11,19 +12,25 @@ import 'package:share_plus/share_plus.dart';
 
 /// Service for exporting report data to PDF and CSV formats.
 class ReportExportService {
-  const ReportExportService();
+  const ReportExportService(this._appLock);
+
+  final AppLockService _appLock;
 
   // PDF Export
   /// Generates a PDF report from [data].
   ///
   /// Pass [productLookup] to include per-product cost and margin columns
   /// in the top-products table.
+  ///
+  /// Throws [BusinessRuleError] `AppLockRequired` when store PIN is on and
+  /// session locked (V092-B.3).
   Future<Uint8List> exportPdf(
     ReportData data, {
     Map<String, Product>? productLookup,
     ReportCalculatorService calculator = const ReportCalculatorService(),
     int? maxRows,
   }) async {
+    await _appLock.requireSensitiveSession();
     final doc = pw.Document();
     final now = DateTime.now();
 
@@ -57,7 +64,11 @@ class ReportExportService {
   ///
   /// When [maxRows] is provided, only the first [maxRows] sales rows are
   /// exported to avoid memory exhaustion on very large datasets.
-  String exportCsv(ReportData data, {int? maxRows}) {
+  ///
+  /// Throws [BusinessRuleError] `AppLockRequired` when store PIN is on and
+  /// session locked (V092-B.3).
+  Future<String> exportCsv(ReportData data, {int? maxRows}) async {
+    await _appLock.requireSensitiveSession();
     final rows = <List<String>>[];
 
     // Header

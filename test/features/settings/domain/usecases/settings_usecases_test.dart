@@ -115,12 +115,69 @@ void main() {
     });
 
     test('blocks PromptPay id change when session locked', () async {
-      await appLock.setPin('123456');
+      await appLock.setPin('147258');
       appLock.lockSession();
       when(() => mockRepo.load()).thenAnswer((_) async => const Settings());
 
       await expectLater(
         () => useCase(const Settings().copyWith(promptpayId: '0812345678')),
+        throwsA(
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            AppLockService.ruleAppLockRequired,
+          ),
+        ),
+      );
+      verifyNever(() => mockRepo.save(any()));
+    });
+
+    // V092-B.3 regression: oversell toggle is a sensitive money policy.
+    test('blocks allowOversell change when session locked', () async {
+      await appLock.setPin('147258');
+      appLock.lockSession();
+      when(() => mockRepo.load()).thenAnswer((_) async => const Settings());
+
+      await expectLater(
+        () => useCase(const Settings().copyWith(allowOversell: true)),
+        throwsA(
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            AppLockService.ruleAppLockRequired,
+          ),
+        ),
+      );
+      verifyNever(() => mockRepo.save(any()));
+    });
+
+    // V092-B.3 regression: discount enable is a sensitive money policy.
+    test('blocks enableCartDiscount change when session locked', () async {
+      await appLock.setPin('147258');
+      appLock.lockSession();
+      when(() => mockRepo.load()).thenAnswer((_) async => const Settings());
+
+      await expectLater(
+        () => useCase(const Settings().copyWith(enableCartDiscount: false)),
+        throwsA(
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            AppLockService.ruleAppLockRequired,
+          ),
+        ),
+      );
+      verifyNever(() => mockRepo.save(any()));
+    });
+
+    // V092-B.3 regression: day-lock toggle is a sensitive money policy.
+    test('blocks dailyCloseLock change when session locked', () async {
+      await appLock.setPin('147258');
+      appLock.lockSession();
+      when(() => mockRepo.load()).thenAnswer((_) async => const Settings());
+
+      await expectLater(
+        () => useCase(const Settings().copyWith(dailyCloseLock: true)),
         throwsA(
           isA<BusinessRuleError>().having(
             (e) => e.rule,
@@ -167,7 +224,7 @@ void main() {
     });
 
     test('blocks billerId change when session locked', () async {
-      await appLock.setPin('123456');
+      await appLock.setPin('147258');
       appLock.lockSession();
       const current = Settings();
 
@@ -185,7 +242,7 @@ void main() {
     });
 
     test('allows PromptPay change when session unlocked', () async {
-      await appLock.setPin('123456');
+      await appLock.setPin('147258');
       // setPin unlocks session
       const current = Settings();
       when(() => mockRepo.save(any())).thenAnswer((_) async {});

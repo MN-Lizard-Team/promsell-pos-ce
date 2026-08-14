@@ -7,13 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.9.2] - 2026-08-14
+
+**Not tagged yet.** Release notes are prepared for `v0.9.2`. Disk / `pubspec` remains `0.9.1+1` until the version bump. Latest GitHub tag remains **v0.9.0**.
+
+### Highlights
+
+- **Cashier security** — store-PIN gates for sensitive product, sale, backup, report, settings, and day-close actions; cold-start/resume locking; persisted session grace and lockout policy.
+- **Money and integrity** — schema v32 satang dual-write path, exact tender equality, stock CAS/version protection, SKU deduplication, and satang-first report aggregation.
+- **Tablet and reliability** — tablet landscape support with catalog/cart dual-pane, database opening off the UI isolate, whole-catalog barcode/SKU scanning, and less-flaky integration-test helpers.
+- **Architecture and release gates** — domain import fence, release-trust money-path tests, honest device-E2E status, and a v0.9.2 device smoke sheet.
+
+### Fixed
+
+- Receipt titles no longer flip to “ใบกำกับภาษี / Tax Invoice” when a shop Tax ID is present; receipts retain the sales-receipt disclaimer.
+- Stock sale, void, and adjustment paths now use atomic updates with version bumps, preventing stale product forms from restoring old stock.
+- Schema upgrade hygiene now deduplicates case-insensitive SKUs before the unique index and reapplies indexes/triggers idempotently.
+- Pre-restore backup cleanup, whole-catalog scanning, checkout recovery, and integration-test timer handling were hardened.
+
+### Added
+
+- Expanded Store PIN settings: change/erase PIN, session-grace selector, lockout policy, PIN status, trivial-PIN rejection, and risk-confirmed disable/skip flows.
+- v0.9.2 smoke documentation, stable E2E test keys, release-trust integration coverage, and Phase M migration/wiring tests.
+- Tablet `SaleDualPane` layout, `DockedCartPanel`, and landscape orientation policy for devices with a shortest side of at least 600dp.
+
+### Changed
+
+- Disabling the PIN now keeps the PIN; erasing the PIN is a separate destructive action.
+- Onboarding PIN setup can be skipped only after explicit risk confirmation.
+- Domain layers are now fenced from Flutter, data, and presentation imports; affected use cases use domain ports and presentation mappers.
+- Device E2E remains an explicit trust/release lane rather than a claim of green main-CI coverage.
+
+### Security
+
+- Sensitive screens use `FLAG_SECURE`; PIN, PromptPay, backup, report export, product, stock, and day-close operations are gated when the store lock is enabled.
+- Security reports must use `SECURITY.md`; conduct reports use the private process in `CODE_OF_CONDUCT.md`.
+- **Known breaking limitation:** Keystore corruption can still make the SQLCipher key unrecoverable. Phase 2b key export/recovery is the planned fix; keep encrypted backups off-device.
+
+### Breaking / migration
+
+- Auto-upgrade to schema **v32**: 32 nullable INTEGER `*_satang` columns across 10 money tables, including conditional amount-valued discounts/promotions. Backfill is NaN/Inf-safe and percentage values remain REAL.
+- Writers dual-write satang plus legacy REAL baht; readers prefer satang and fall back to REAL for pre-v32 rows. Legacy REAL columns remain temporarily for rollback compatibility.
+- This release does not add cross-device restore or cloud sync. The encrypted pre-M backup-restore fixture and eventual REAL-column removal remain deferred.
+
+### Known limitations
+
+- No GitHub tag `v0.9.2` yet; disk / `pubspec` remains `0.9.1+1` until the release version is bumped.
+- Device/emulator E2E is not run by main CI; release-trust and operator smoke checks are still required.
+- There is no server-side key escrow. A lost SQLCipher key cannot currently be recovered on the same device.
+
+`flutter analyze` → **0 issues** · `flutter test` → **2129 passing** (incl. Phase M migration, satang-wiring, and report-precision coverage) · coverage **~63.7%**
 
 ## [0.9.1] - 2026-08-11
 
 **Not tagged yet.** Disk / `pubspec` is `0.9.1+1`. Latest GitHub tag remains **v0.9.0**.
 
-Sale / Report / History / Onboarding redesign, product soft-delete, schema **v30**. Receipts stay **sales receipts** even when a shop Tax ID is printed.
+Sale / Report / History / Onboarding redesign, product soft-delete, schema **v31** (v30 sku_lower + v31 dedupe repair). Receipts stay **sales receipts** even when a shop Tax ID is printed.
 
 ### Highlights
 
@@ -57,7 +106,7 @@ Sale / Report / History / Onboarding redesign, product soft-delete, schema **v30
 
 ### Breaking / migration
 
-- Auto-upgrade to schema **v30** (v29 barcode_lower + dedupe; v30 sku_lower unique — **no SKU dedupe**, mixed-case duplicates can fail the upgrade).
+- Auto-upgrade to schema **v31** (v29 barcode_lower + dedupe; v30 sku_lower unique; v31 SKU dedupe repair and idempotent index/trigger setup).
 - Delete is soft-delete; recover with `restoreProduct`.
 - `AppLockService.setPin` throws if a PIN already exists — use `changePin`.
 
@@ -65,17 +114,13 @@ Sale / Report / History / Onboarding redesign, product soft-delete, schema **v30
 
 - No GitHub tag `v0.9.1` yet.
 - Receipt title can still become ใบกำกับภาษี when Tax ID is set (code; listing denies it).
-- `sku_lower` unique has no pre-dedupe (V092-C.2).
-- Tablet landscape / dual-pane still incomplete.
 - `file_picker 12.0.0-beta.7` and pinned `image_picker_android 0.8.13+19`.
-
-`flutter analyze` → **0 issues** · `flutter test` → **~2028 passing** · coverage **~63.7%**
 
 ## [0.9.0] - 2026-07-17
 
 Trust cut for offline single-device POS: money-path integrity, encryption, store PIN, same-device backup restore, release gates, and store-facing honesty. Schema **v28** at this cut (15 tables, incl. `sale_payments`).
 
-> **Historical:** PIN was still described as Optional, AAB as secrets-optional, coverage floor 50%. Those are **not** current — see 0.9.1. Do not copy this block into store copy.
+> **Historical:** PIN was still described as Optional, AAB as secrets-optional, coverage floor 50%. Those are **not** current — see 0.9.2. Do not copy this block into store copy.
 
 ### Highlights
 
@@ -153,6 +198,7 @@ Full notes for **0.8.x** and earlier live under [`docs/changelog/`](docs/changel
 
 ---
 
+[0.9.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.9.0...HEAD
 [0.9.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.9.0...HEAD
 [0.9.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.9...v0.9.0
 

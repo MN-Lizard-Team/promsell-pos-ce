@@ -10,7 +10,7 @@
 
 **Architecture-before-store gate (2026-07-30):** Play **production** path (especially **A4/A5**) is **additionally blocked** until [`ARCH-HARDEN-1.0` AH-GATE-1](../ARCH-HARDEN-1.0/GATE-TO-PLAY.md) unlocks. Sequencing SSOT for hardening: [`ARCH-HARDEN-1.0/OVERVIEW.md`](../ARCH-HARDEN-1.0/OVERVIEW.md). This package remains SSOT for store/QA/Phase M·2b/UX **after** that gate.
 
-**Integrity slice before the next tag (2026-08-13):** GitHub tag `v0.9.2` is sequenced by [`V092-INTEGRITY`](../V092-INTEGRITY/OVERVIEW.md) (tax-invoice honesty, PIN holes, stock CAS, VAT/void QA). That package **does not** replace A1–A5 / B2 / Phase M / 2b and **does not** unlock Play production.
+**Integrity slice before the next tag (2026-08-13):** GitHub tag `v0.9.2` is sequenced by [`V092-INTEGRITY`](../COMPLETE/V092-INTEGRITY/OVERVIEW.md) (tax-invoice honesty, PIN holes, stock CAS, VAT/void QA). That package **does not** replace A1–A5 / B2 / Phase M / 2b and **does not** unlock Play production.
 
 **Docs-tree honesty (2026-08-13):** [`DOC-SSOT`](../DOC-SSOT/OVERVIEW.md) owns plan git/index, README/USAGE, data handbook, and CI.md. It **does not** own Play listing, A1–A5, or `RELEASE_1.0_SMOKE`.
 

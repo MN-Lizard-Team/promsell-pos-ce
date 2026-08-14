@@ -70,28 +70,83 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   Future<bool> _ensureStorePinBeforeComplete() async {
     final lock = sl<AppLockService>();
-    if (await lock.isEnabled() && await lock.hasPin()) {
+    final enabled = await lock.isEnabled();
+    final hasPin = await lock.hasPin();
+
+    // Case 1: lock already on with a PIN — nothing to do.
+    if (enabled && hasPin) {
       return true;
     }
-    if (!mounted) return false;
-    final pin = await showCreateStorePinDialog(context);
-    if (pin == null) {
-      if (mounted) {
-        AppSnackBar.error(context, context.l10n.onboardingStorePinRequired);
+
+    // Case 2: PIN hash exists but lock is disabled — just re-enable.
+    // No need to ask for a new PIN; the stored PIN is still valid.
+    if (hasPin && !enabled) {
+      try {
+        await lock.enable();
+        return true;
+      } on Exception catch (e) {
+        AppLogger.error('Onboarding enable failed', error: e);
+        if (mounted) {
+          AppSnackBar.error(context, context.l10n.appLockEnableFailed);
+        }
+        return false;
       }
-      return false;
     }
+
+    // Case 3: no PIN stored — ask the user to create one, with option to skip.
     if (!mounted) return false;
-    try {
-      await lock.setPin(pin);
-      return true;
-    } on Exception catch (e) {
-      AppLogger.error('Onboarding setPin failed', error: e);
-      if (mounted) {
-        AppSnackBar.error(context, context.l10n.appLockEnableFailed);
+    final result = await showCreateStorePinDialog(context, allowSkip: true);
+    if (!mounted) return false;
+
+    if (result.isCreated && result.pin != null) {
+      try {
+        await lock.setPin(result.pin!);
+        return true;
+      } on Exception catch (e) {
+        AppLogger.error('Onboarding setPin failed', error: e);
+        if (mounted) {
+          AppSnackBar.error(context, context.l10n.appLockEnableFailed);
+        }
+        return false;
       }
-      return false;
     }
+
+    if (result.isSkipped) {
+      // Confirm the user understands the risk of not using a PIN.
+      final confirmed = await _confirmSkipPin();
+      if (confirmed && mounted) {
+        AppSnackBar.warning(context, context.l10n.onboardingPinSkippedHint);
+      }
+      return confirmed;
+    }
+
+    // cancelled
+    return false;
+  }
+
+  Future<bool> _confirmSkipPin() async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.onboardingSkipPinConfirmTitle),
+        content: Text(l10n.onboardingSkipPinConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.onboardingSetupPinInstead),
+          ),
+          FilledButton.tonal(
+            style: FilledButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.onboardingConfirmSkipPin),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true;
   }
 
   Future<void> _finish() async {
@@ -122,7 +177,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
         taxId: _taxIdController.text.replaceAll(RegExp(r'[^0-9]'), '').trim(),
-        locale: current.locale,
+        localeCode: current.localeCode,
         currency: _currencyCtrl.text.trim(),
         dateFormat: _dateFormat,
         vatMode: _vatMode,
@@ -160,7 +215,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
         taxId: _taxIdController.text.replaceAll(RegExp(r'[^0-9]'), '').trim(),
-        locale: current.locale,
+        localeCode: current.localeCode,
         currency: _currencyCtrl.text.trim(),
         dateFormat: _dateFormat,
         vatMode: 'NONE',

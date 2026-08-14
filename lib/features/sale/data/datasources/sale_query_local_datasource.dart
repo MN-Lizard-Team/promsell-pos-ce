@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_write_helpers.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
@@ -21,30 +21,44 @@ class SaleQueryLocalDatasource {
     id: s.id,
     receiptNumber: s.receiptNumber,
     status: s.status,
-    subtotalAmount: Money.fromDouble(s.subtotalAmount),
+    subtotalAmount: moneyFromSatangOrBaht(
+      s.subtotalAmountSatang,
+      s.subtotalAmount,
+    ),
     discountType: s.discountType,
-    discountValue: s.discountValue,
-    discountAmount: Money.fromDouble(s.discountAmount),
+    discountValue: s.discountValueSatang?.value ?? s.discountValue,
+    discountAmount: moneyFromSatangOrBaht(
+      s.discountAmountSatang,
+      s.discountAmount,
+    ),
     vatMode: s.vatMode,
     vatRate: s.vatRate,
-    vatAmount: Money.fromDouble(s.vatAmount),
+    vatAmount: moneyFromSatangOrBaht(s.vatAmountSatang, s.vatAmount),
     orderType: s.orderType,
     orderChannel: s.orderChannel,
     externalOrderRef: s.externalOrderRef,
     tableId: s.tableId,
     serviceChargeRate: s.serviceChargeRate,
-    serviceChargeAmount: Money.fromDouble(s.serviceChargeAmount),
+    serviceChargeAmount: moneyFromSatangOrBaht(
+      s.serviceChargeAmountSatang,
+      s.serviceChargeAmount,
+    ),
     customerId: s.customerId,
     promotionId: s.promotionId,
-    promotionDiscountAmount: Money.fromDouble(s.promotionDiscountAmount),
-    totalAmount: Money.fromDouble(s.totalAmount),
+    promotionDiscountAmount: moneyFromSatangOrBaht(
+      s.promotionDiscountAmountSatang,
+      s.promotionDiscountAmount,
+    ),
+    totalAmount: moneyFromSatangOrBaht(s.totalAmountSatang, s.totalAmount),
     paymentMethod: s.paymentMethod,
-    amountReceived: s.amountReceived != null
-        ? Money.fromDouble(s.amountReceived!)
-        : null,
-    changeAmount: s.changeAmount != null
-        ? Money.fromDouble(s.changeAmount!)
-        : null,
+    amountReceived: nullableMoneyFromSatangOrBaht(
+      s.amountReceivedSatang,
+      s.amountReceived,
+    ),
+    changeAmount: nullableMoneyFromSatangOrBaht(
+      s.changeAmountSatang,
+      s.changeAmount,
+    ),
     note: s.note,
     paymentReference: s.paymentReference,
     sendingBankCode: s.sendingBankCode,
@@ -57,7 +71,7 @@ class SaleQueryLocalDatasource {
           id: p.id,
           saleId: p.saleId,
           method: p.method,
-          amount: Money.fromDouble(p.amount),
+          amount: moneyFromSatangOrBaht(p.amountSatang, p.amount),
           reference: p.reference,
           sendingBankCode: p.sendingBankCode,
           sortOrder: p.sortOrder,
@@ -70,11 +84,14 @@ class SaleQueryLocalDatasource {
             saleId: i.saleId,
             productId: i.productId,
             productName: i.productName,
-            price: Money.fromDouble(i.price),
+            price: moneyFromSatangOrBaht(i.priceSatang, i.price),
             qty: i.qty,
-            subtotal: Money.fromDouble(i.subtotal),
-            discountAmount: Money.fromDouble(i.discountAmount),
-            vatAmount: Money.fromDouble(i.vatAmount),
+            subtotal: moneyFromSatangOrBaht(i.subtotalSatang, i.subtotal),
+            discountAmount: moneyFromSatangOrBaht(
+              i.discountAmountSatang,
+              i.discountAmount,
+            ),
+            vatAmount: moneyFromSatangOrBaht(i.vatAmountSatang, i.vatAmount),
             note: i.note,
             selectedOptions: SaleWriteHelpers.parseSelectedOptions(
               i.productOptionsJson,

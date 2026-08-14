@@ -10,6 +10,7 @@ class AppEmptyState extends StatelessWidget {
     this.onAction,
     this.secondaryActionLabel,
     this.onSecondaryAction,
+    this.actionKey,
   });
 
   final IconData icon;
@@ -19,6 +20,7 @@ class AppEmptyState extends StatelessWidget {
   final VoidCallback? onAction;
   final String? secondaryActionLabel;
   final VoidCallback? onSecondaryAction;
+  final Key? actionKey;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +83,7 @@ class AppEmptyState extends StatelessWidget {
                 if (actionLabel != null && onAction != null && !compact) ...[
                   const SizedBox(height: 12),
                   FilledButton.tonal(
+                    key: actionKey,
                     onPressed: onAction,
                     child: Text(actionLabel!),
                   ),

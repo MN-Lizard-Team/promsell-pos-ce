@@ -47,8 +47,10 @@ void main() {
         await TestApp.pumpApp(tester);
 
         // Set locale AFTER pumpApp so SettingsCubit is registered in DI.
+        // AH-1.4: Settings locale is now a String (e.g. 'en', 'th') stored
+        // as `localeCode` on the flat copyWith, not a Flutter Locale.
         final cubit = sl<SettingsCubit>();
-        cubit.updateField((s) => s.copyWith(locale: Locale(locale)));
+        cubit.updateField((s) => s.copyWith(localeCode: locale));
         await tester.pump(const Duration(seconds: 1));
 
         // Wait for home page FutureBuilder + ProductBloc to finish loading

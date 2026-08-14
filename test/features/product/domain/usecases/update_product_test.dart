@@ -1,16 +1,28 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
 
+import '../../../../helpers/fake_app_lock.dart';
 import '../../../../helpers/fixtures.dart';
 
 class MockProductRepository extends Mock implements ProductRepository {}
 
+/// Returns an [AppLockService] with PIN enabled and session locked.
+Future<AppLockService> _lockedAppLock() async {
+  final lock = fakeAppLock();
+  await lock.setPin('147258');
+  lock.lockSession();
+  return lock;
+}
+
 void main() {
   late MockProductRepository mockRepo;
+  late AppLockService appLock;
   late UpdateProduct usecase;
 
   setUpAll(() {
@@ -19,7 +31,8 @@ void main() {
 
   setUp(() {
     mockRepo = MockProductRepository();
-    usecase = UpdateProduct(mockRepo);
+    appLock = fakeAppLock();
+    usecase = UpdateProduct(mockRepo, appLock);
   });
 
   final validProduct = tProduct.copyWith(
@@ -129,5 +142,26 @@ void main() {
       );
       verify(() => mockRepo.updateProduct(product)).called(1);
     });
+
+    // V092-B.1 regression: domain gate refuses when PIN on + locked.
+    test(
+      'throws BusinessRuleError AppLockRequired when PIN enabled and locked',
+      () async {
+        final locked = await _lockedAppLock();
+        final gated = UpdateProduct(mockRepo, locked);
+
+        await expectLater(
+          () => gated(validProduct),
+          throwsA(
+            isA<BusinessRuleError>().having(
+              (e) => e.rule,
+              'rule',
+              AppLockService.ruleAppLockRequired,
+            ),
+          ),
+        );
+        verifyNever(() => mockRepo.updateProduct(any()));
+      },
+    );
   });
 }

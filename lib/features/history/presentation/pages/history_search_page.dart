@@ -123,10 +123,7 @@ class _HistorySearchPageState extends State<HistorySearchPage> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsCubit>().state.settings;
-    final fmt = DateFormat(
-      '${settings.dateFormat} HH:mm',
-      settings.locale.languageCode,
-    );
+    final fmt = DateFormat('${settings.dateFormat} HH:mm', settings.localeCode);
 
     final query = _controller.text;
     final scheme = Theme.of(context).colorScheme;

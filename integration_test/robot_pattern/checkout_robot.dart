@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import '../helpers/test_utils.dart';
 import 'robot_base.dart';
 
@@ -128,16 +129,16 @@ class CheckoutRobot extends RobotBase {
 
   /// Verify change amount
   void verifyChange(Money expectedChange) {
-    final changeText = expectedChange.toString();
+    final changeText = CurrencyFormatter.formatMoney(expectedChange);
     expectVisible(
-      find.textContaining('Change').and(find.textContaining(changeText)),
+      find.textContaining(changeText),
       reason: 'Change should be $changeText',
     );
   }
 
   /// Verify grand total
   void verifyGrandTotal(Money expectedTotal) {
-    final totalText = expectedTotal.toString();
+    final totalText = CurrencyFormatter.formatMoney(expectedTotal);
     expectVisible(
       find.textContaining(totalText),
       reason: 'Grand total should be $totalText',
@@ -146,9 +147,9 @@ class CheckoutRobot extends RobotBase {
 
   /// Verify discount applied
   void verifyDiscountAmount(Money discountAmount) {
-    final discountText = discountAmount.toString();
+    final discountText = CurrencyFormatter.formatMoney(discountAmount);
     expectVisible(
-      find.textContaining('Discount').and(find.textContaining(discountText)),
+      find.textContaining(discountText),
       reason: 'Discount should be $discountText',
     );
   }
@@ -192,18 +193,18 @@ class CheckoutRobot extends RobotBase {
 
   /// Verify service charge applied
   void verifyServiceCharge(Money chargeAmount) {
-    final chargeText = chargeAmount.toString();
+    final chargeText = CurrencyFormatter.formatMoney(chargeAmount);
     expectVisible(
-      find.textContaining('Service').and(find.textContaining(chargeText)),
+      find.textContaining(chargeText),
       reason: 'Service charge should be $chargeText',
     );
   }
 
   /// Verify VAT amount
   void verifyVAT(Money vatAmount) {
-    final vatText = vatAmount.toString();
+    final vatText = CurrencyFormatter.formatMoney(vatAmount);
     expectVisible(
-      find.textContaining('VAT').and(find.textContaining(vatText)),
+      find.textContaining(vatText),
       reason: 'VAT should be $vatText',
     );
   }

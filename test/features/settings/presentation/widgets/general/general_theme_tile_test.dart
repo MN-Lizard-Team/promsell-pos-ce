@@ -45,7 +45,7 @@ void main() {
       await tester.pump();
 
       expect(updated, isNotNull);
-      expect(updated!.themeMode, ThemeMode.light);
+      expect(updated!.themeModeName, 'light');
     });
   });
 }

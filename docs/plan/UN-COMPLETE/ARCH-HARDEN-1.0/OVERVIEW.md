@@ -5,7 +5,7 @@
 **Branch base:** `main` (post v0.9.1, schema **v30**)  
 **Capacity model:** Solo maintainer · part-time (~6–10 h/week)  
 **Horizon:** ~10–14 weeks flexible (no hard day calendar)  
-**Status:** **PAUSED until V092-GATE** (2026-08-13) — AH-0.3 ADR wording may land via DOC-SSOT; do not start AH-1 fences until the tag gate unlocks  
+**Status:** **ACTIVE** (2026-08-14) — V092-GATE unlocked; AH-0.3 ADR wording may land via DOC-SSOT; AH-1 fences may now start
 
 **IDs:** **AH-*** only (do not renumber POST-090 A–E)
 
@@ -30,7 +30,7 @@
 | Plan | Role vs this package |
 |------|----------------------|
 | [V090-TRUST](../../COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) | Predecessor — GitHub trust-cut **COMPLETE** |
-| [V092-INTEGRITY](../V092-INTEGRITY/OVERVIEW.md) | **Release slice `v0.9.2`** — honesty / PIN holes / stock CAS / QA nets; **does not** unlock AH-GATE-1 |
+| [V092-INTEGRITY](../../COMPLETE/V092-INTEGRITY/OVERVIEW.md) | **Release slice `v0.9.2`** — honesty / PIN holes / stock CAS / QA nets; **GATE UNLOCKED** (2026-08-14); does **not** unlock AH-GATE-1 |
 | [DOC-SSOT](../DOC-SSOT/OVERVIEW.md) | **Docs-tree SSOT** — plan index, handbook, ARCH wording implement slice for AH-0.3; **does not** mark AH-0.3 done |
 | [POST-090-MANAGE](../POST-090-MANAGE/POST-090-OVERVIEW.md) | **Store / QA / Phase M / 2b / UX SSOT** — still valid; **Play production (A4/A5) additionally gated by AH-GATE-1** |
 | This package | **Sequencing SSOT for architecture hardening** |
@@ -72,7 +72,7 @@
 ## Execution waves (no hard calendar)
 
 ```
-	AH-0  Honesty & package          (1–2 weeks PT)   PAUSED until V092-GATE
+	AH-0  Honesty & package          (1–2 weeks PT)   ACTIVE (V092-GATE unlocked 2026-08-14)
 	AH-1  Fences + domain ports      (2–4 weeks PT)   ★ critical path after resume
 AH-2  Fiscal concurrency + money (3–5 weeks PT)   ★ critical path
 AH-3  Read models + shell        (2–3 weeks PT)   parallel-slow / after AH-1

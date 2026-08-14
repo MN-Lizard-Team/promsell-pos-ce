@@ -5,7 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 class TestUtils {
   TestUtils._();
 
-  /// Wait for a widget to appear with timeout
+  /// Wait for a widget to appear with timeout.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) because the app has continuous timers
+  /// (clock, auto-refresh streams) that never settle.
   static Future<void> waitFor(
     WidgetTester tester,
     Finder finder, {
@@ -15,7 +18,7 @@ class TestUtils {
     final end = DateTime.now().add(timeout);
 
     while (DateTime.now().isBefore(end)) {
-      await tester.pumpAndSettle(pollInterval);
+      await tester.pump(pollInterval);
 
       if (finder.evaluate().isNotEmpty) {
         return;
@@ -27,7 +30,9 @@ class TestUtils {
     );
   }
 
-  /// Wait for widget to disappear
+  /// Wait for widget to disappear.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) — same rationale as [waitFor].
   static Future<void> waitForDisappear(
     WidgetTester tester,
     Finder finder, {
@@ -37,7 +42,7 @@ class TestUtils {
     final end = DateTime.now().add(timeout);
 
     while (DateTime.now().isBefore(end)) {
-      await tester.pumpAndSettle(pollInterval);
+      await tester.pump(pollInterval);
 
       if (finder.evaluate().isEmpty) {
         return;
@@ -49,23 +54,29 @@ class TestUtils {
     );
   }
 
-  /// Tap and wait for animations
+  /// Tap and wait for animations.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) — continuous timers never settle.
   static Future<void> tapAndSettle(WidgetTester tester, Finder finder) async {
     await tester.tap(finder);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
-  /// Enter text and wait
+  /// Enter text and wait.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) — continuous timers never settle.
   static Future<void> enterText(
     WidgetTester tester,
     Finder finder,
     String text,
   ) async {
     await tester.enterText(finder, text);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
-  /// Scroll until visible
+  /// Scroll until visible.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) — continuous timers never settle.
   static Future<void> scrollUntilVisible(
     WidgetTester tester,
     Finder finder,
@@ -80,7 +91,7 @@ class TestUtils {
       }
 
       await tester.drag(scrollable, Offset(0, -delta));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
     }
 
     throw TestFailure(
@@ -88,7 +99,9 @@ class TestUtils {
     );
   }
 
-  /// Navigate to tab by icon
+  /// Navigate to tab by icon.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) — continuous timers never settle.
   static Future<void> navigateToTab(WidgetTester tester, IconData icon) async {
     final navBar = find.byType(NavigationBar);
     final navRail = find.byType(NavigationRail);
@@ -105,7 +118,7 @@ class TestUtils {
       throw TestFailure('Navigation bar or rail not found');
     }
 
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
   /// Find button by text (handles various button types)
@@ -122,13 +135,14 @@ class TestUtils {
     debugPrint(tester.allWidgets.toString());
   }
 
-  /// Wait for BLoC state change
+  /// Wait for BLoC state change.
+  ///
+  /// Uses `pump` (not `pumpAndSettle`) — continuous timers never settle.
   static Future<void> waitForBlocState(
     WidgetTester tester, {
     Duration timeout = const Duration(seconds: 5),
   }) async {
     await tester.pump(timeout);
-    await tester.pumpAndSettle();
   }
 }
 

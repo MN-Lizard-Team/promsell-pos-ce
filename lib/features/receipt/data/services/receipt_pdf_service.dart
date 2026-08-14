@@ -76,6 +76,10 @@ class ReceiptPdfService {
       boldFont: _boldFont,
       productImages: productImages,
     );
+    // V092-E.2: pdf.save() is the heavy call. Moving it to Isolate.run is
+    // deferred — pw.Document holds pw.Font objects with internal state that
+    // may not transfer cleanly across isolate boundaries. The DB opener
+    // (createInBackground) is the higher-impact UI-stall fix for 0.9.2.
     await Printing.layoutPdf(onLayout: (_) async => doc.save());
   }
 
@@ -234,12 +238,11 @@ class ReceiptPdfService {
             ),
           ),
         ),
-        // H8: Label as "Tax Invoice" when Tax ID is present, else "Receipt".
+        // H8: Always label as "Receipt" — receipts are sales receipts
+        // regardless of Tax ID (V092-A.1).
         pw.Center(
           child: pw.Text(
-            document.taxId.isNotEmpty
-                ? (labels.taxInvoice ?? labels.receipt)
-                : labels.receipt,
+            labels.receipt,
             style: const pw.TextStyle(
               fontSize: 12,
               fontWeight: pw.FontWeight.bold,

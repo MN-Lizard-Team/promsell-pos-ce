@@ -17,13 +17,13 @@ void main() {
   group('Report Page Flow', () {
     testWidgets('open report page and verify tabs work', (tester) async {
       app.main();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
       // Open the Report shell tab via its localized label.
       await tester.tap(find.text(l10n.navReport).first);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       // Report title is stable (no longer flips with sub-tab).
       expect(find.text(l10n.reportTitle), findsWidgets);
@@ -32,20 +32,20 @@ void main() {
 
       // Sub-tab switches use localized labels too.
       await robot.switchToHistory(label: l10n.navHistory);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       await robot.switchToReport(label: l10n.navReport);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
     });
 
     testWidgets('select date preset updates the view', (tester) async {
       app.main();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
       await tester.tap(find.text(l10n.navReport).first);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       // Select "Last 7 days" preset.
       final robot = ReportRobot(tester);

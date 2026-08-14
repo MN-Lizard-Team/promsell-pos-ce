@@ -12,6 +12,10 @@ abstract class ProductRepository {
   Future<List<Product>> getAllProducts();
   Future<Product?> getProductById(String id);
   Future<Product?> getProductByBarcode(String barcode);
+
+  /// Case-insensitive SKU lookup (active, non-deleted). Empty → null.
+  /// V092-E.3: always goes to DB, not the in-memory page.
+  Future<Product?> getProductBySku(String sku);
   Future<bool> barcodeExists(String barcode, {String? excludeId});
 
   /// Case-insensitive SKU existence (active + inactive). Empty/null → false.

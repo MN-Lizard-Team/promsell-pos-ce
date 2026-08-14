@@ -32,10 +32,10 @@ class GeneralAppearanceTiles extends StatelessWidget {
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
-    final label = switch (s.themeMode) {
-      ThemeMode.light => l10n.settingsThemeLight,
-      ThemeMode.dark => l10n.settingsThemeDark,
-      ThemeMode.system => l10n.settingsThemeSystem,
+    final label = switch (s.themeModeName) {
+      'light' => l10n.settingsThemeLight,
+      'dark' => l10n.settingsThemeDark,
+      _ => l10n.settingsThemeSystem,
     };
 
     return ListTile(
@@ -89,7 +89,7 @@ class GeneralAppearanceTiles extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: ThemeMode.values.map((mode) {
-            final isSelected = mode == s.themeMode;
+            final isSelected = mode.name == s.themeModeName;
             final label = switch (mode) {
               ThemeMode.light => l10n.settingsThemeLight,
               ThemeMode.dark => l10n.settingsThemeDark,
@@ -108,7 +108,7 @@ class GeneralAppearanceTiles extends StatelessWidget {
                   : null,
               onTap: () {
                 HapticFeedback.lightImpact();
-                onUpdate(s.copyWith(themeMode: mode));
+                onUpdate(s.copyWith(themeModeName: mode.name));
                 Navigator.of(ctx).pop();
               },
             );

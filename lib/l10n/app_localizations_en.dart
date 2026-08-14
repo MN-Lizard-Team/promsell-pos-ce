@@ -4328,6 +4328,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get appLockPinTooTrivial =>
+      'PIN is too easy to guess — choose a less obvious combination';
+
+  @override
   String get appLockIncorrectPin => 'Incorrect PIN';
 
   @override
@@ -4354,6 +4358,96 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get appLockEnterCurrentPin => 'Enter current PIN';
+
+  @override
+  String get appLockChangePin => 'Change PIN';
+
+  @override
+  String get appLockChangePinHint =>
+      'Requires the current PIN, then sets a new one';
+
+  @override
+  String get appLockPinChanged => 'PIN changed';
+
+  @override
+  String get appLockPinStatus => 'PIN status';
+
+  @override
+  String appLockPinSetDate(String date) {
+    return 'Last set: $date';
+  }
+
+  @override
+  String get appLockPinSetUnknown => 'Date unknown';
+
+  @override
+  String get appLockSessionGraceTitle => 'Session grace';
+
+  @override
+  String get appLockSessionGraceHint =>
+      'After unlocking, the app will not re-prompt for PIN within this period — choose 0 to prompt every time (single-action)';
+
+  @override
+  String get appLockGraceSingleAction => 'Every action (single-action)';
+
+  @override
+  String get appLockSessionGraceChanged => 'Session grace updated';
+
+  @override
+  String get appLockLockoutPolicyTitle => 'Lockout policy';
+
+  @override
+  String get appLockLockoutPolicyHint =>
+      'After the configured number of failed attempts, the app temporarily locks and doubles the wait time on each subsequent failure';
+
+  @override
+  String get appLockMaxFailedAttempts => 'Max failed attempts';
+
+  @override
+  String appLockMaxFailedAttemptsValue(int n) {
+    return 'Locks after $n wrong attempts';
+  }
+
+  @override
+  String get appLockBaseLockout => 'Base lockout duration';
+
+  @override
+  String appLockBaseLockoutValue(String duration) {
+    return 'Starts at $duration (doubles up to 16x)';
+  }
+
+  @override
+  String get appLockLockoutPolicyChanged => 'Lockout policy updated';
+
+  @override
+  String get appLockErasePin => 'Erase PIN';
+
+  @override
+  String get appLockErasePinTitle => 'Erase stored PIN?';
+
+  @override
+  String get appLockErasePinConfirm =>
+      'This permanently deletes the stored PIN. You will need to set a new PIN to re-enable the lock. This cannot be undone.';
+
+  @override
+  String get appLockErasePinHint =>
+      'Permanently delete the stored PIN — re-enabling later requires a new PIN';
+
+  @override
+  String get appLockPinErased => 'PIN erased';
+
+  @override
+  String get appLockDisableConfirmTitle => 'Disable store PIN?';
+
+  @override
+  String get appLockDisableConfirmBody =>
+      'Without a store PIN, anyone with access to this device can void sales, export/restore backups, adjust stock, import CSV, and change PromptPay without confirmation. The PIN is kept so you can re-enable it later without setting a new one.';
+
+  @override
+  String get appLockConfirmDisable => 'Disable, I understand';
+
+  @override
   String get onboardingStorePinTitle => 'Set store PIN';
 
   @override
@@ -4364,6 +4458,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingStorePinRequired =>
       'Store PIN is required to finish setup';
+
+  @override
+  String get onboardingSkipPin => 'Skip';
+
+  @override
+  String get onboardingSkipPinConfirmTitle => 'Skip PIN setup?';
+
+  @override
+  String get onboardingSkipPinConfirmBody =>
+      'Without a store PIN, anyone with access to this device can void sales, export/restore backups, adjust stock, import CSV, and change PromptPay without confirmation. You can enable PIN later in Settings → Store PIN lock.';
+
+  @override
+  String get onboardingSetupPinInstead => 'Set up PIN instead';
+
+  @override
+  String get onboardingConfirmSkipPin => 'Skip, I understand';
+
+  @override
+  String get onboardingPinSkippedHint =>
+      'PIN not set — you can enable it later in Settings → Store PIN lock';
 
   @override
   String get exportPdf => 'Export PDF';

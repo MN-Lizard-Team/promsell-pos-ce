@@ -37,6 +37,9 @@ jobs:
       - name: Generate Drift code
         run: dart run build_runner build
 
+      - name: Check domain import fence
+        run: dart run tool/check_domain_fence.dart
+
       - name: Analyze
         id: analyze
         run: flutter analyze 2>&1 | tee analyze_output.txt; exit ${PIPESTATUS[0]}

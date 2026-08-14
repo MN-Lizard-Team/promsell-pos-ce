@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -75,6 +76,12 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           note: Value(snapshot.note.isEmpty ? null : snapshot.note),
           cartDiscountType: Value(snapshot.cartDiscountType),
           cartDiscountValue: Value(snapshot.cartDiscountValue),
+          cartDiscountValueSatang: Value(
+            snapshot.cartDiscountType?.toUpperCase() == 'AMOUNT' &&
+                    snapshot.cartDiscountValue != null
+                ? Money.fromDouble(snapshot.cartDiscountValue!)
+                : null,
+          ),
           orderType: Value(snapshot.orderType),
           orderChannel: Value(snapshot.orderChannel),
           externalOrderRef: Value(snapshot.externalOrderRef),
@@ -85,6 +92,12 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           promotionDiscountAmount: Value(snapshot.promotionDiscountAmount),
           updatedAt: Value(DateTime.now()),
           deviceId: Value(deviceId),
+          // Phase M (C2): dual-write satang for money fields.
+          // cartDiscountValue stays REAL (percent when type=PERCENT).
+          // serviceChargeRate stays REAL (rate, not money).
+          promotionDiscountAmountSatang: Value(
+            Money.fromDouble(snapshot.promotionDiscountAmount),
+          ),
         ),
       );
 
@@ -106,11 +119,20 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
                 qty: item.qty,
                 discountType: Value(item.discountType),
                 discountValue: Value(item.discountValue),
+                discountValueSatang: Value(
+                  item.discountType?.toUpperCase() == 'AMOUNT' &&
+                          item.discountValue != null
+                      ? Money.fromDouble(item.discountValue!)
+                      : null,
+                ),
                 note: Value(item.note),
                 productOptionsJson: Value(
                   _serializeSelectedOptions(item.selectedOptions),
                 ),
                 deviceId: Value(deviceId),
+                // Phase M (C2): dual-write satang.
+                // discountValue stays REAL (percent when type=PERCENT).
+                priceSatang: Value(item.product.price),
               ),
             );
       }
@@ -152,7 +174,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             product: productMap[r.productId]!,
             qty: r.qty,
             discountType: r.discountType,
-            discountValue: r.discountValue,
+            discountValue: r.discountValueSatang?.value ?? r.discountValue,
             note: r.note,
             selectedOptions: _parseSelectedOptions(r.productOptionsJson),
             lineId: r.id,
@@ -165,7 +187,8 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       name: cart.name,
       note: cart.note,
       cartDiscountType: cart.cartDiscountType,
-      cartDiscountValue: cart.cartDiscountValue,
+      cartDiscountValue:
+          cart.cartDiscountValueSatang?.value ?? cart.cartDiscountValue,
       orderType: cart.orderType,
       orderChannel: cart.orderChannel,
       externalOrderRef: cart.externalOrderRef,
@@ -173,7 +196,10 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
       serviceChargeRate: cart.serviceChargeRate,
       customerId: cart.customerId,
       promotionId: cart.promotionId,
-      promotionDiscountAmount: Money.fromDouble(cart.promotionDiscountAmount),
+      promotionDiscountAmount: moneyFromSatangOrBaht(
+        cart.promotionDiscountAmountSatang,
+        cart.promotionDiscountAmount,
+      ),
       items: items,
       updatedAt: cart.updatedAt,
       deletedAt: cart.deletedAt,
@@ -217,7 +243,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
           product: product,
           qty: row.qty,
           discountType: row.discountType,
-          discountValue: row.discountValue,
+          discountValue: row.discountValueSatang?.value ?? row.discountValue,
           note: row.note,
           selectedOptions: _parseSelectedOptions(row.productOptionsJson),
           lineId: row.id,
@@ -232,7 +258,8 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             name: cart.name,
             note: cart.note,
             cartDiscountType: cart.cartDiscountType,
-            cartDiscountValue: cart.cartDiscountValue,
+            cartDiscountValue:
+                cart.cartDiscountValueSatang?.value ?? cart.cartDiscountValue,
             orderType: cart.orderType,
             orderChannel: cart.orderChannel,
             externalOrderRef: cart.externalOrderRef,
@@ -240,7 +267,8 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
             serviceChargeRate: cart.serviceChargeRate,
             customerId: cart.customerId,
             promotionId: cart.promotionId,
-            promotionDiscountAmount: Money.fromDouble(
+            promotionDiscountAmount: moneyFromSatangOrBaht(
+              cart.promotionDiscountAmountSatang,
               cart.promotionDiscountAmount,
             ),
             items: itemsByCartId[cart.id] ?? [],
@@ -307,7 +335,7 @@ class DraftCartLocalDatasourceImpl implements DraftCartLocalDatasource {
   Product _productFromData(ProductData d) => Product(
     id: d.id,
     name: d.name,
-    price: Money.fromDouble(d.price),
+    price: moneyFromSatangOrBaht(d.priceSatang, d.price),
     stock: d.stock,
     categoryId: d.categoryId,
     imageUrl: d.imageUrl,

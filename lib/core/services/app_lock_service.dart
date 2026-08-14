@@ -41,17 +41,31 @@ class AppLockService {
   static const _schemeKey = 'promsell_app_lock_pin_scheme_v1';
   static const _failedAttemptsKey = 'promsell_app_lock_failed_attempts_v1';
   static const _lockedUntilKey = 'promsell_app_lock_locked_until_ms_v1';
+  static const _pinSetAtKey = 'promsell_app_lock_pin_set_at_ms_v1';
+  static const _sessionGraceSecondsKey = 'promsell_app_lock_session_grace_s_v1';
+  static const _maxFailedAttemptsKey = 'promsell_app_lock_max_failed_v1';
+  static const _baseLockoutSecondsKey = 'promsell_app_lock_base_lockout_s_v1';
 
-  /// Aligns with backup export PIN policy.
+  /// Hard minimum PIN length — not configurable.
   static const minPinLength = 6;
 
-  static const sessionGrace = Duration(minutes: 2);
+  /// Default session unlock grace (2 minutes).
+  static const defaultSessionGrace = Duration(minutes: 2);
 
-  /// Failed attempts before temporary lockout.
-  static const maxFailedAttempts = 5;
+  /// Default failed attempts before temporary lockout.
+  static const defaultMaxFailedAttempts = 5;
 
-  /// Initial lockout after [maxFailedAttempts]; doubles each subsequent fail.
-  static const baseLockout = Duration(seconds: 30);
+  /// Default initial lockout; doubles each subsequent fail.
+  static const defaultBaseLockout = Duration(seconds: 30);
+
+  /// Allowed session grace options (seconds) for the settings UI.
+  static const sessionGraceOptionsSeconds = [0, 30, 60, 120, 300];
+
+  /// Allowed max-failed-attempts options for the settings UI.
+  static const maxFailedAttemptsOptions = [3, 5, 7, 10];
+
+  /// Allowed base lockout options (seconds) for the settings UI.
+  static const baseLockoutOptionsSeconds = [10, 30, 60, 120];
 
   static const _pbkdf2Iterations = 100000;
   static const _keyLength = 32;
@@ -64,6 +78,11 @@ class AppLockService {
   int _failedAttempts = 0;
   DateTime? _lockedUntil;
   bool _lockoutHydrated = false;
+
+  Duration _sessionGrace = defaultSessionGrace;
+  int _maxFailedAttempts = defaultMaxFailedAttempts;
+  Duration _baseLockout = defaultBaseLockout;
+  bool _policyHydrated = false;
 
   Future<bool> isEnabled() async {
     final v = await _storage.read(key: _enabledKey);
@@ -110,16 +129,122 @@ class AppLockService {
   }
 
   void unlockSession() {
-    _unlockedUntil = DateTime.now().add(sessionGrace);
+    if (_sessionGrace == Duration.zero) {
+      // Single-action mode: never stay unlocked across calls.
+      _unlockedUntil = null;
+      return;
+    }
+    _unlockedUntil = DateTime.now().add(_sessionGrace);
   }
+
+  /// Current session grace duration (configurable via [setSessionGrace]).
+  Duration get sessionGrace => _sessionGrace;
+
+  /// Current max failed attempts before lockout (configurable via
+  /// [setLockoutPolicy]).
+  int get maxFailedAttempts => _maxFailedAttempts;
+
+  /// Current base lockout duration (configurable via [setLockoutPolicy]).
+  Duration get baseLockout => _baseLockout;
 
   /// Loads persisted lockout counters once (cold start).
   Future<void> ensureLockoutHydrated() => _hydrateLockout();
+
+  /// Loads persisted security policy (session grace + lockout) once.
+  /// Called automatically by [getSessionGrace] / [getLockoutPolicy] /
+  /// [verifyPin] if not yet hydrated.
+  Future<void> ensurePolicyHydrated() => _hydratePolicy();
+
+  /// Returns the current session grace, hydrating from storage if needed.
+  Future<Duration> getSessionGrace() async {
+    await _hydratePolicy();
+    return _sessionGrace;
+  }
+
+  /// Sets the session grace. Requires an unlocked sensitive session.
+  /// Pass [Duration.zero] for single-action mode (re-prompt every time).
+  Future<void> setSessionGrace(Duration d) async {
+    if (!await isEnabled()) return;
+    if (!isSessionUnlocked) {
+      throw const BusinessRuleError(ruleAppLockRequired);
+    }
+    _sessionGrace = d;
+    await _storage.write(key: _sessionGraceSecondsKey, value: '${d.inSeconds}');
+  }
+
+  /// Returns the current lockout policy, hydrating from storage if needed.
+  Future<({int maxFailedAttempts, Duration baseLockout})>
+  getLockoutPolicy() async {
+    await _hydratePolicy();
+    return (maxFailedAttempts: _maxFailedAttempts, baseLockout: _baseLockout);
+  }
+
+  /// Sets the lockout policy. Requires an unlocked sensitive session.
+  Future<void> setLockoutPolicy({
+    int? maxFailedAttempts,
+    Duration? baseLockout,
+  }) async {
+    if (!await isEnabled()) return;
+    if (!isSessionUnlocked) {
+      throw const BusinessRuleError(ruleAppLockRequired);
+    }
+    if (maxFailedAttempts != null) {
+      if (maxFailedAttempts < 3 || maxFailedAttempts > 10) {
+        throw StateError('LOCKOUT_POLICY_OUT_OF_RANGE');
+      }
+      _maxFailedAttempts = maxFailedAttempts;
+      await _storage.write(
+        key: _maxFailedAttemptsKey,
+        value: '$maxFailedAttempts',
+      );
+    }
+    if (baseLockout != null) {
+      if (baseLockout.inSeconds < 10 || baseLockout.inSeconds > 300) {
+        throw StateError('LOCKOUT_POLICY_OUT_OF_RANGE');
+      }
+      _baseLockout = baseLockout;
+      await _storage.write(
+        key: _baseLockoutSecondsKey,
+        value: '${baseLockout.inSeconds}',
+      );
+    }
+  }
+
+  /// Returns the timestamp the PIN was last set/changed, or null if no PIN.
+  Future<DateTime?> pinSetAt() async {
+    final raw = await _storage.read(key: _pinSetAtKey);
+    if (raw == null || raw.isEmpty) return null;
+    final ms = int.tryParse(raw);
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  /// Trivial PINs rejected by [setPin] / [changePin] (V092-B.6).
+  static const trivialPinBlocklist = {
+    '000000',
+    '111111',
+    '123456',
+    '654321',
+    '012345',
+  };
+
+  /// True when [pin] is in [trivialPinBlocklist] or is all identical digits.
+  static bool isTrivialPin(String pin) {
+    final trimmed = pin.trim();
+    if (trivialPinBlocklist.contains(trimmed)) return true;
+    if (trimmed.length >= minPinLength &&
+        trimmed.runes.every((r) => r == trimmed.runes.first)) {
+      return true;
+    }
+    return false;
+  }
 
   Future<void> setPin(String pin) async {
     final trimmed = pin.trim();
     if (trimmed.length < minPinLength) {
       throw StateError('PIN_TOO_SHORT');
+    }
+    if (isTrivialPin(trimmed)) {
+      throw StateError('PIN_TOO_TRIVIAL');
     }
     // Guard: refuse to overwrite an existing PIN without verification.
     // Callers that need to change an existing PIN must use [changePin].
@@ -143,6 +268,9 @@ class AppLockService {
     if (trimmed.length < minPinLength) {
       throw StateError('PIN_TOO_SHORT');
     }
+    if (isTrivialPin(trimmed)) {
+      throw StateError('PIN_TOO_TRIVIAL');
+    }
     await _writePin(trimmed);
   }
 
@@ -153,6 +281,10 @@ class AppLockService {
     await _storage.write(key: _pinHashKey, value: hash);
     await _storage.write(key: _schemeKey, value: _schemeV2);
     await _storage.write(key: _enabledKey, value: '1');
+    await _storage.write(
+      key: _pinSetAtKey,
+      value: '${DateTime.now().millisecondsSinceEpoch}',
+    );
     _failedAttempts = 0;
     _lockedUntil = null;
     _lockoutHydrated = true;
@@ -160,10 +292,46 @@ class AppLockService {
     unlockSession();
   }
 
+  /// Re-enables the lock without requiring a new PIN, when a PIN hash is
+  /// already stored (e.g. the user disabled the lock but kept the PIN).
+  ///
+  /// Throws `PIN_NOT_SET` if no PIN hash exists — callers should use
+  /// [setPin] in that case.
+  /// Locks the session so the user must verify on the next sensitive action.
+  Future<void> enable() async {
+    if (!await hasPin()) {
+      throw StateError('PIN_NOT_SET');
+    }
+    await _storage.write(key: _enabledKey, value: '1');
+    _failedAttempts = 0;
+    _lockedUntil = null;
+    _lockoutHydrated = true;
+    await _persistLockout();
+    lockSession();
+  }
+
+  /// Disables the lock but **keeps** the stored PIN hash so the user can
+  /// re-enable via [enable] without setting a new PIN.
+  ///
+  /// To permanently delete the PIN, use [erasePin].
   Future<void> disable() async {
+    await _storage.write(key: _enabledKey, value: '0');
+    _failedAttempts = 0;
+    _lockedUntil = null;
+    _lockoutHydrated = true;
+    await _persistLockout();
+    lockSession();
+  }
+
+  /// Permanently deletes the stored PIN hash, salt, scheme, and timestamp.
+  /// Also disables the lock. Callers must verify the current PIN (via
+  /// [ensureUnlocked] or [verifyPin]) before calling this — this method
+  /// does not re-verify.
+  Future<void> erasePin() async {
     await _storage.delete(key: _pinHashKey);
     await _storage.delete(key: _pinSaltKey);
     await _storage.delete(key: _schemeKey);
+    await _storage.delete(key: _pinSetAtKey);
     await _storage.write(key: _enabledKey, value: '0');
     _failedAttempts = 0;
     _lockedUntil = null;
@@ -178,6 +346,7 @@ class AppLockService {
   /// (callers may inspect [lockoutRemaining]).
   Future<bool> verifyPin(String pin) async {
     await _hydrateLockout();
+    await _hydratePolicy();
     if (isLockedOut) {
       throw StateError('PIN_LOCKED');
     }
@@ -272,13 +441,40 @@ class AppLockService {
 
   Future<void> _registerFailure() async {
     _failedAttempts++;
-    if (_failedAttempts >= maxFailedAttempts) {
-      final multiplier = 1 << (_failedAttempts - maxFailedAttempts).clamp(0, 4);
+    if (_failedAttempts >= _maxFailedAttempts) {
+      final multiplier =
+          1 << (_failedAttempts - _maxFailedAttempts).clamp(0, 4);
       _lockedUntil = DateTime.now().add(
-        Duration(seconds: baseLockout.inSeconds * multiplier),
+        Duration(seconds: _baseLockout.inSeconds * multiplier),
       );
     }
     await _persistLockout();
+  }
+
+  Future<void> _hydratePolicy() async {
+    if (_policyHydrated) return;
+    _policyHydrated = true;
+    final graceRaw = await _storage.read(key: _sessionGraceSecondsKey);
+    if (graceRaw != null && graceRaw.isNotEmpty) {
+      final s = int.tryParse(graceRaw);
+      if (s != null && s >= 0 && s <= 600) {
+        _sessionGrace = Duration(seconds: s);
+      }
+    }
+    final maxRaw = await _storage.read(key: _maxFailedAttemptsKey);
+    if (maxRaw != null && maxRaw.isNotEmpty) {
+      final n = int.tryParse(maxRaw);
+      if (n != null && n >= 3 && n <= 10) {
+        _maxFailedAttempts = n;
+      }
+    }
+    final lockRaw = await _storage.read(key: _baseLockoutSecondsKey);
+    if (lockRaw != null && lockRaw.isNotEmpty) {
+      final s = int.tryParse(lockRaw);
+      if (s != null && s >= 10 && s <= 300) {
+        _baseLockout = Duration(seconds: s);
+      }
+    }
   }
 
   String _hashV1(String pin, String salt) {

@@ -1,0 +1,2 @@
+# path | reason | expiry (YYYY-MM-DD)
+# (empty — all domain import violations resolved as of AH-1.5, 2026-08-14)

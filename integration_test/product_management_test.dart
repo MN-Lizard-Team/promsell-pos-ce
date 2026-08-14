@@ -61,7 +61,7 @@ void main() {
       await productRobot.saveProduct();
 
       // THEN: Product should appear in list
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
       await productRobot.searchProduct('Test Widget');
       productRobot.verifyProductInList('Test Widget');
 
@@ -108,7 +108,7 @@ void main() {
         reason: 'Restock',
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       // THEN: Verify stock updated to 125 (100 + 25)
       final coffeeAfter = await TestFixtures.findProductByName(
@@ -210,7 +210,7 @@ void main() {
         reason: 'Damaged goods',
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       // Verify stock reduced
       final burgerAfter = await TestFixtures.findProductByName(
@@ -248,7 +248,7 @@ void main() {
       await productRobot.fillProductForm(name: 'Coffee Premium', price: 55.0);
 
       await productRobot.saveProduct();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       // Verify product updated
       final coffee = await TestFixtures.findProductByName(
@@ -275,7 +275,7 @@ void main() {
       );
 
       await productRobot.saveProduct();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       // Verify product created
       final service = await TestFixtures.findProductByName(
@@ -323,7 +323,7 @@ void main() {
       await productRobot.toggleActiveStatus();
 
       await productRobot.saveProduct();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       // Verify status changed
       final pizzaAfter = await TestFixtures.findProductByName(

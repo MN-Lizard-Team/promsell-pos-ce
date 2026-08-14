@@ -9,10 +9,12 @@ import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_s
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
+import 'package:promsell_pos_ce/features/sale/data/repositories/sale_repository_impl.dart';
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 
+import '../helpers/fake_app_lock.dart';
 import '../helpers/fake_database.dart';
 import '../helpers/fake_settings_repository.dart';
 
@@ -36,7 +38,8 @@ void main() {
     productDs = ProductLocalDatasourceImpl(db, ProductOptionDatasourceImpl(db));
     closeDay = CloseDay(
       DailyCloseRepositoryImpl(DailyCloseLocalDatasourceImpl(db)),
-      saleDs,
+      SaleRepositoryImpl(saleDs),
+      fakeAppLock(),
     );
   });
 

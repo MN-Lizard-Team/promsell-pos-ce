@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_summary_card.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
@@ -9,10 +8,7 @@ void main() {
   group('GeneralSummaryCard', () {
     testWidgets('renders title and language badge', (tester) async {
       await tester.pumpApp(
-        const GeneralSummaryCard(
-          locale: Locale('en'),
-          themeMode: ThemeMode.light,
-        ),
+        const GeneralSummaryCard(localeCode: 'en', themeModeName: 'light'),
       );
 
       expect(find.byIcon(TablerIcons.settings), findsOneWidget);
@@ -21,10 +17,7 @@ void main() {
 
     testWidgets('does not show accessibility ON/OFF badges', (tester) async {
       await tester.pumpApp(
-        const GeneralSummaryCard(
-          locale: Locale('th'),
-          themeMode: ThemeMode.dark,
-        ),
+        const GeneralSummaryCard(localeCode: 'th', themeModeName: 'dark'),
       );
 
       expect(find.text('ON'), findsNothing);
@@ -33,26 +26,17 @@ void main() {
 
     testWidgets('renders correct theme icons', (tester) async {
       await tester.pumpApp(
-        const GeneralSummaryCard(
-          locale: Locale('en'),
-          themeMode: ThemeMode.light,
-        ),
+        const GeneralSummaryCard(localeCode: 'en', themeModeName: 'light'),
       );
       expect(find.byIcon(TablerIcons.sun), findsOneWidget);
 
       await tester.pumpApp(
-        const GeneralSummaryCard(
-          locale: Locale('en'),
-          themeMode: ThemeMode.dark,
-        ),
+        const GeneralSummaryCard(localeCode: 'en', themeModeName: 'dark'),
       );
       expect(find.byIcon(TablerIcons.moon), findsOneWidget);
 
       await tester.pumpApp(
-        const GeneralSummaryCard(
-          locale: Locale('en'),
-          themeMode: ThemeMode.system,
-        ),
+        const GeneralSummaryCard(localeCode: 'en', themeModeName: 'system'),
       );
       expect(find.byIcon(TablerIcons.brightnessAuto), findsOneWidget);
     });

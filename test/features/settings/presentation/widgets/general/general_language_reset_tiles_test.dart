@@ -66,7 +66,7 @@ void main() {
       await tester.pump();
 
       expect(updated, isNotNull);
-      expect(updated!.themeMode, ThemeMode.system);
+      expect(updated!.themeModeName, 'system');
       expect(updated!.accessibilityMode, isFalse);
     });
   });

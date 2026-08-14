@@ -2,7 +2,7 @@
 
 **Parent:** [OVERVIEW.md](./OVERVIEW.md) · **Backlog:** [BACKLOG.md](./BACKLOG.md)  
 **IDs:** V092-A.1 … V092-A.7  
-**Status:** todo (wave V092-0 / V092-1)
+**Status:** A.1 done (2026-08-13) · A.2–A.4 done via DOC-SSOT (2026-08-13) · A.5 todo (Should) · A.6/A.7 Could
 
 ---
 

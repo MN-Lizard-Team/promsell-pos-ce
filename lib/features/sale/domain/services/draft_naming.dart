@@ -1,5 +1,3 @@
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
-
 /// SSOT for open-bill / draft display names.
 ///
 /// Format family (time-based, no DB counter):
@@ -28,17 +26,14 @@ abstract final class DraftNaming {
   static String forNewEmptyBill({DateTime? now}) =>
       autoName(itemCount: 0, now: now);
 
-  /// Park adapter — same SSOT from [CartState] fields.
-  static String autoParkName(CartState cart, {DateTime? now}) =>
-      autoName(tableId: cart.tableId, itemCount: cart.itemCount, now: now);
-
   /// Effective name when parking.
   ///
   /// - [explicitName] non-null (long-press path): use trim, or auto if empty
   /// - else if [existingName] non-empty: **keep** (do not overwrite custom/auto)
-  /// - else: [autoParkName]
+  /// - else: auto from [tableId] / [itemCount]
   static String resolveParkName({
-    required CartState cart,
+    String? tableId,
+    int itemCount = 0,
     String? explicitName,
     String? existingName,
     DateTime? now,
@@ -46,10 +41,10 @@ abstract final class DraftNaming {
     if (explicitName != null) {
       final trimmed = explicitName.trim();
       if (trimmed.isNotEmpty) return trimmed;
-      return autoParkName(cart, now: now);
+      return autoName(tableId: tableId, itemCount: itemCount, now: now);
     }
     final existing = existingName?.trim();
     if (existing != null && existing.isNotEmpty) return existing;
-    return autoParkName(cart, now: now);
+    return autoName(tableId: tableId, itemCount: itemCount, now: now);
   }
 }

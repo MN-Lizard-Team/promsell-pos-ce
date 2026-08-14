@@ -76,7 +76,7 @@ void main() {
 
       // WHEN: Simulate app crash and restart
       await TestApp.restartApp(tester);
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump(const Duration(seconds: 3));
 
       // Navigate to sale page
       await saleRobot.navigateToSalePage();

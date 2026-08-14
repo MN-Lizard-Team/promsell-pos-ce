@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/backup_config.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/daily_close_config.dart';
@@ -64,14 +63,13 @@ class Settings extends Equatable {
 
   // ─── Flat convenience getters (mirror former Settings facade) ───────────
 
-  Locale get locale => Locale(uiConfig.locale);
-  ThemeMode get themeMode {
-    try {
-      return ThemeMode.values.byName(uiConfig.themeMode);
-    } catch (_) {
-      return ThemeMode.system;
-    }
-  }
+  /// Locale code (e.g. `th`, `en`). Presentation maps this to Flutter
+  /// `Locale` via [settingsLocale].
+  String get localeCode => uiConfig.locale;
+
+  /// Theme mode name (e.g. `system`, `light`, `dark`). Presentation maps
+  /// this to Flutter `ThemeMode` via [settingsThemeMode].
+  String get themeModeName => uiConfig.themeMode;
 
   String get shopName => shopInfo.name;
   String get address => shopInfo.address;
@@ -175,8 +173,8 @@ class Settings extends Equatable {
   // ─── Flat copyWith (mirror former Settings.copyWith) ────────────────────
 
   Settings copyWith({
-    Locale? locale,
-    ThemeMode? themeMode,
+    String? localeCode,
+    String? themeModeName,
     String? shopName,
     String? address,
     String? phone,
@@ -280,8 +278,8 @@ class Settings extends Equatable {
         devicePrefix: devicePrefix,
       ),
       uiConfig: uiConfig.copyWith(
-        locale: locale?.languageCode,
-        themeMode: themeMode?.name,
+        locale: localeCode,
+        themeMode: themeModeName,
         dateFormat: dateFormat,
         ultraCompactMode: ultraCompactMode,
         accessibilityMode: accessibilityMode,

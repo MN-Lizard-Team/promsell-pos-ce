@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.
 import 'package:promsell_pos_ce/features/receipt/domain/services/build_receipt_document.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/shop_info.dart';
 
 void main() {
   const builder = BuildReceiptDocument();
@@ -129,6 +130,71 @@ void main() {
 
       expect(doc.hasVat, isFalse);
       expect(doc.total.value, 100);
+    });
+
+    // V092-A.1 regression: disclaimer shows even when Tax ID is set.
+    test('disclaimer shows even when taxId is set (V092-A.1)', () {
+      const settings = Settings(
+        shopInfo: ShopInfo(name: 'Shop', taxId: '1234567890123'),
+      );
+      final sale = Sale(
+        id: 's-tax',
+        totalAmount: Money.fromDouble(100),
+        paymentMethod: 'CASH',
+        createdAt: DateTime(2026, 7, 15),
+        items: [
+          SaleItem(
+            id: 'i1',
+            saleId: 's-tax',
+            productId: 'p1',
+            productName: 'X',
+            price: Money.fromDouble(100),
+            qty: 1,
+            subtotal: Money.fromDouble(100),
+          ),
+        ],
+      );
+
+      final doc = builder.fromSale(
+        sale: sale,
+        settings: settings,
+        labels: labels,
+        notTaxInvoiceDisclaimer: 'Not a tax invoice',
+      );
+
+      expect(doc.taxId, '1234567890123');
+      expect(doc.notTaxInvoiceDisclaimer, 'Not a tax invoice');
+    });
+
+    // V092-A.1 regression: disclaimer shows when taxId is empty too.
+    test('disclaimer shows when taxId is empty (V092-A.1)', () {
+      final sale = Sale(
+        id: 's-no-tax',
+        totalAmount: Money.fromDouble(100),
+        paymentMethod: 'CASH',
+        createdAt: DateTime(2026, 7, 15),
+        items: [
+          SaleItem(
+            id: 'i1',
+            saleId: 's-no-tax',
+            productId: 'p1',
+            productName: 'X',
+            price: Money.fromDouble(100),
+            qty: 1,
+            subtotal: Money.fromDouble(100),
+          ),
+        ],
+      );
+
+      final doc = builder.fromSale(
+        sale: sale,
+        settings: const Settings(),
+        labels: labels,
+        notTaxInvoiceDisclaimer: 'Not a tax invoice',
+      );
+
+      expect(doc.taxId, isEmpty);
+      expect(doc.notTaxInvoiceDisclaimer, 'Not a tax invoice');
     });
   });
 }

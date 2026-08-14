@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dart';
 
 abstract class PromotionDatasource {
@@ -23,8 +23,11 @@ class PromotionDatasourceImpl implements PromotionDatasource {
     id: d.id,
     name: d.name,
     type: d.type == 'AMOUNT' ? PromotionType.amount : PromotionType.percent,
-    value: d.value,
-    minPurchaseAmount: Money.fromDouble(d.minPurchaseAmount),
+    value: d.valueSatang?.value ?? d.value,
+    minPurchaseAmount: moneyFromSatangOrBaht(
+      d.minPurchaseAmountSatang,
+      d.minPurchaseAmount,
+    ),
     startDate: d.startDate,
     endDate: d.endDate,
     isActive: d.isActive,

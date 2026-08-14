@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 
 @DataClassName('DailyCloseData')
 class DailyCloses extends Table {
@@ -15,6 +16,23 @@ class DailyCloses extends Table {
   TextColumn get paymentBreakdown => text().withDefault(const Constant('{}'))();
   RealColumn get vatAmount => real().withDefault(const Constant(0))();
   RealColumn get discountAmount => real().withDefault(const Constant(0))();
+  // Phase M (C1): INTEGER satang dual-write columns.
+  IntColumn get openingCashSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get expectedCashSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get countedCashSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get overShortAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get totalRevenueSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get totalVoidSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get vatAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get discountAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
   TextColumn get note => text().nullable()();
   DateTimeColumn get closedAt => dateTime().nullable()();
   TextColumn get deviceId => text().nullable()();

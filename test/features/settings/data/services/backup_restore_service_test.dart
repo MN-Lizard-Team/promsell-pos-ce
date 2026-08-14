@@ -247,4 +247,41 @@ void main() {
 
     expect(await File(livePath).readAsBytes(), equals(liveBefore));
   });
+
+  // V092-B.4: pre_restore cleanup removes leftover backup files.
+  group('cleanupPreRestoreBackups (V092-B.4)', () {
+    test('removes promsell_pos.pre_restore_*.db files from docs dir', () async {
+      final docs = p.join(temp.path, 'docs');
+      final f1 = File(p.join(docs, 'promsell_pos.pre_restore_2026-01-01.db'));
+      final f2 = File(p.join(docs, 'promsell_pos.pre_restore_2026-01-02.db'));
+      await f1.writeAsBytes([1, 2, 3]);
+      await f2.writeAsBytes([4, 5, 6]);
+      expect(await f1.exists(), isTrue);
+      expect(await f2.exists(), isTrue);
+
+      final removed = await service.cleanupPreRestoreBackups();
+
+      expect(removed, 2);
+      expect(await f1.exists(), isFalse);
+      expect(await f2.exists(), isFalse);
+    });
+
+    test('leaves non-matching files untouched', () async {
+      final docs = p.join(temp.path, 'docs');
+      final keep = File(p.join(docs, 'promsell_pos.sqlite.db'));
+      final keep2 = File(p.join(docs, 'promsell_pos.pre_restore.txt'));
+      await keep.writeAsBytes([1]);
+      await keep2.writeAsBytes([2]);
+
+      final removed = await service.cleanupPreRestoreBackups();
+
+      expect(removed, 0);
+      expect(await keep.exists(), isTrue);
+      expect(await keep2.exists(), isTrue);
+    });
+
+    test('returns 0 when docs dir has no pre_restore files', () async {
+      expect(await service.cleanupPreRestoreBackups(), 0);
+    });
+  });
 }

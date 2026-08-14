@@ -4,7 +4,7 @@
 
 ---
 
-**tests** (see CI / `flutter test`) — **~2028** host tests green on 2026-08-13 (`--exclude-tags stress`); line coverage **~64%** overall (CI floor **60%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
+**tests** (see CI / `flutter test`) — **~2040** host tests green on 2026-08-14 (`--exclude-tags stress`); line coverage **~64%** overall (CI floor **60%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
 
 | Layer | What's tested | Notes |
 |-------|--------------|-------|
@@ -13,8 +13,8 @@
 | **Repository / Datasource** | Sale insert/void stock integrity, products, drafts, settings | In-memory Drift |
 | **Services** | App lock (PBKDF2 + persisted lockout), backup encrypt/restore, receipt PDF, crash log | |
 | **Widget** | Sale/cart/settings/product/pages + shared primitives | Largest layer by count |
-| **Host integration** | Checkout flow, sale integrity, onboarding first sale | Under `test/integration/` |
-| **Device E2E** | Happy path / draft / product / promo / restaurant | Main CI: format/analyze only. Trust: blocking `--flavor dev` |
+| **Host integration** | Checkout flow, sale integrity, **V092-D.1 VAT+discount+void+close**, **V092-D.4 void after day-close**, multi-tender daily close, backup money continuity, onboarding first sale | Under `test/integration/` — fail-closed in trust |
+| **Device E2E** | Happy path / draft / product / promo / restaurant | Main CI: format/analyze only. Trust: blocking `--flavor dev`. V092-D.5: `TestKeys` + no `pumpAndSettle` in `restartApp`. |
 | **Stress** | Large seed + timing (`@Tags(['stress'])`) | Weekly / label workflow |
 | **L10n parity** | EN/TH keys | |
 
@@ -88,4 +88,4 @@ Coverage measured via `flutter test --coverage --exclude-tags stress` (lcov.info
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.1 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.2 · AGPL-3.0</sub>

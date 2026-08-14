@@ -1,15 +1,20 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_sku_exception.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/validators.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 
 @injectable
 class AddProduct {
-  const AddProduct(this._repository);
+  const AddProduct(this._repository, this._appLock);
   final ProductRepository _repository;
+  final AppLockService _appLock;
 
+  /// Throws [BusinessRuleError] `AppLockRequired` when store PIN is on and
+  /// session locked (V092-B.1). Onboarding does not create products via this
+  /// use case, so every call is gated.
   Future<String> call({
     required String name,
     String? sku,
@@ -30,6 +35,7 @@ class AddProduct {
     bool isRecommended = false,
     List<ProductOptionGroup> optionGroups = const [],
   }) async {
+    await _appLock.requireSensitiveSession();
     Validators.productName(name);
     Validators.price(price);
     if (cost != null) Validators.cost(cost);

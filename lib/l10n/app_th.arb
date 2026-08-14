@@ -2105,6 +2105,7 @@
       "min": { "type": "int" }
     }
   },
+  "appLockPinTooTrivial": "PIN ง่ายเกินไป — กรุณาตั้ง PIN ที่ยากต่อการเดา",
   "appLockIncorrectPin": "PIN ไม่ถูกต้อง",
   "appLockActionRequired": "ต้องใช้ PIN ร้าน",
   "appLockConfirmVoid": "ยืนยันยกเลิกบิลด้วย PIN ร้าน",
@@ -2118,6 +2119,47 @@
       "seconds": { "type": "int" }
     }
   },
+  "appLockEnterCurrentPin": "กรอก PIN เดิม",
+  "appLockChangePin": "เปลี่ยน PIN",
+  "appLockChangePinHint": "ต้องใส่ PIN เดิมก่อน แล้วตั้ง PIN ใหม่",
+  "appLockPinChanged": "เปลี่ยน PIN แล้ว",
+  "appLockPinStatus": "สถานะ PIN",
+  "appLockPinSetDate": "ตั้งล่าสุด: {date}",
+  "@appLockPinSetDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "appLockPinSetUnknown": "ไม่ทราบวันที่ตั้ง",
+  "appLockSessionGraceTitle": "เวลาผ่อนผัน session",
+  "appLockSessionGraceHint": "หลังปลดล็อก PIN ระบบจะไม่ขอ PIN ซ้ำภายในระยะเวลานี้ — เลือก 0 เพื่อถามทุกครั้ง (single-action)",
+  "appLockGraceSingleAction": "ถามทุกครั้ง (single-action)",
+  "appLockSessionGraceChanged": "เปลี่ยนเวลาผ่อนผันแล้ว",
+  "appLockLockoutPolicyTitle": "นโยบายล็อกชั่วคราว",
+  "appLockLockoutPolicyHint": "หลังพยายามผิดครบจำนวนที่กำหนด ระบบจะล็อกชั่วคราวและทวีคูณเวลาในแต่ละครั้งถัดไป",
+  "appLockMaxFailedAttempts": "จำนวนพยายามผิดสูงสุด",
+  "appLockMaxFailedAttemptsValue": "ล็อกหลังผิด {n} ครั้ง",
+  "@appLockMaxFailedAttemptsValue": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "appLockBaseLockout": "เวลาล็อกเริ่มต้น",
+  "appLockBaseLockoutValue": "เริ่มต้น {duration} (ทวีคูณสูงสุด 16 เท่า)",
+  "@appLockBaseLockoutValue": {
+    "placeholders": {
+      "duration": { "type": "String" }
+    }
+  },
+  "appLockLockoutPolicyChanged": "เปลี่ยนนโยบายล็อกแล้ว",
+  "appLockErasePin": "ลบ PIN ทิ้ง",
+  "appLockErasePinTitle": "ลบ PIN ที่เก็บไว้?",
+  "appLockErasePinConfirm": "การกระทำนี้จะลบ PIN ที่เก็บไว้ถาวร — หากต้องการเปิดใช้ล็อกอีกครั้งจะต้องตั้ง PIN ใหม่ ไม่สามารถยกเลิกได้",
+  "appLockErasePinHint": "ลบ PIN ที่เก็บไว้ถาวร — การเปิดใช้ใหม่ต้องตั้ง PIN ใหม่",
+  "appLockPinErased": "ลบ PIN แล้ว",
+  "appLockDisableConfirmTitle": "ปิดใช้ PIN ร้าน?",
+  "appLockDisableConfirmBody": "หากปิด PIN ร้าน ทุกคนที่เข้าถึงเครื่องนี้จะสามารถยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay ได้โดยไม่ต้องยืนยัน PIN ยังเก็บไว้ จึงเปิดใช้ใหม่ได้ภายหลังโดยไม่ต้องตั้งใหม่",
+  "appLockConfirmDisable": "ปิด ฉันเข้าใจ",
   "onboardingStorePinTitle": "ตั้งรหัส PIN ร้าน",
   "onboardingStorePinBody": "จำเป็นสำหรับยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (อย่างน้อย {min} หลัก) เก็บไว้เอง — ไม่มีระบบกู้ PIN",
   "@onboardingStorePinBody": {
@@ -2126,6 +2168,12 @@
     }
   },
   "onboardingStorePinRequired": "ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า",
+  "onboardingSkipPin": "ข้าม",
+  "onboardingSkipPinConfirmTitle": "ข้ามการตั้ง PIN?",
+  "onboardingSkipPinConfirmBody": "หากไม่ตั้ง PIN ร้าน ทุกคนที่เข้าถึงเครื่องนี้จะสามารถยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay ได้โดยไม่ต้องยืนยัน คุณสามารถเปิด PIN ได้ภายหลังใน การตั้งค่า → ล็อก PIN ร้าน",
+  "onboardingSetupPinInstead": "ตั้ง PIN แทน",
+  "onboardingConfirmSkipPin": "ข้าม ฉันเข้าใจ",
+  "onboardingPinSkippedHint": "ยังไม่ตั้ง PIN — เปิดได้ภายหลังใน การตั้งค่า → ล็อก PIN ร้าน",
   "exportPdf": "ส่งออก PDF",
   "exportCsv": "ส่งออก CSV",
   "exportReport": "ส่งออกรายงาน",

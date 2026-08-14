@@ -1,4 +1,4 @@
-# Testing — Promsell POS CE v0.9.1
+# Testing — Promsell POS CE v0.9.2
 
 Automated tests across unit, widget, and integration layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests). Coverage and counts drift with the suite — prefer CI.
 
@@ -68,6 +68,10 @@ test/
 ├── integration/
 │   ├── checkout_flow_test.dart  # End-to-end data layer checkout
 │   ├── sale_integrity_test.dart # Void sale, adjust stock, full audit trail
+│   ├── sale_vat_discount_void_close_test.dart # V092-D.1: full VAT + discount + void + day-close
+│   ├── void_after_day_close_test.dart # V092-D.4: VoidSale use case + dailyCloseLock + daily_closes row
+│   ├── multi_tender_daily_close_test.dart # Multi-tender → CloseDay expected cash
+│   ├── backup_money_continuity_test.dart  # Backup restore reads money back
 │   └── onboarding_first_sale_test.dart # Onboarding → sale → settings persist
 ├── tool/
 │   └── seed_integration_test.dart  # Stress test (10k products, 50k sales) — @Tags(['stress'])
@@ -79,21 +83,23 @@ test/
 ## Integration Tests (E2E)
 
 **Location:** `integration_test/`  
-**Status (honest, 2026-08-13):** Scaffold + analyze on main CI. Runtime is **not** on `ci.yml`. Trust **blocks** emulator `--flavor dev` on tags / money-path PRs. Not “E2E ready.”  
+**Status (honest, 2026-08-14):** Scaffold + analyze on main CI. Runtime is **not** on `ci.yml`. Trust **blocks** emulator `--flavor dev` on tags / money-path PRs. Not “E2E ready.”  
 **Map:** [`docs/testing/CI.md`](../testing/CI.md)
 
 | Layer | Path | CI | Notes |
 |-------|------|----|-------|
-| **Host integration (money net)** | `test/integration/` | **Fail-closed** via `release-trust.yml` | Real repos + in-memory Drift |
-| **Device E2E (UI journeys)** | `integration_test/` | Main CI = **format + analyze only**. Trust = **blocking** `all_tests.dart --flavor dev` | Scaffold / flake; flavor is **dev** |
-| **Manual smoke** | `RELEASE_0.9_SMOKE.md` · `RELEASE_1.0_SMOKE.md` | Human | 1.0 sheet is still **No-Go** |
+| **Host integration (money net)** | `test/integration/` | **Fail-closed** via `release-trust.yml` | Real repos + in-memory Drift. V092-D.1 + D.4 added. |
+| **Device E2E (UI journeys)** | `integration_test/` | Main CI = **format + analyze only**. Trust = **blocking** `all_tests.dart --flavor dev` | Scaffold / flake; flavor is **dev**. V092-D.5: `pumpAndSettle` dropped in `restartApp`, `TestKeys` added. |
+| **Manual smoke** | `RELEASE_0.9_SMOKE.md` · `RELEASE_1.0_SMOKE.md` · `RELEASE_0.9.2_SMOKE.md` | Human | 1.0 sheet is still **No-Go**. 0.9.2 sheet covers cold-start + PIN + void. |
 
-### Device E2E — what is true
+### Device E2E — what is true (2026-08-14)
 
 - Robot pattern + fixtures exist under `integration_test/`
 - `ci.yml` does **not** run device tests (`continue-on-error` is gone)
 - Tags `v*` and money-path PRs **block** on the emulator job — green smoke ≠ 1.0 Go
-- Known risks: TestApp DI, money asserts vs formatters, EN finders, missing `Key`s
+- `release-trust.yml` runs `integration_test/all_tests.dart --flavor dev` **blocking** on money paths and tags
+- `screenshots.yml` is visual; does not assert money
+- Known risks (V092-D.5 partial fix): `TestApp.restartApp` no longer uses `pumpAndSettle`; `TestKeys` constants added for the 5 core cases. EN-string finders still exist in older tests — migrate to `TestKeys` when touching those files.
 - Do **not** market “E2E ready” until a hard-gated smoke subset is green 3× (POST-090 B4 / V092-D)
 
 ### Architecture (scaffold)

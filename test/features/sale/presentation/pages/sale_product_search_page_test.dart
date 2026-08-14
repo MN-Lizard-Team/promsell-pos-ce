@@ -12,6 +12,7 @@ import 'package:promsell_pos_ce/core/widgets/search/search_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_history_cubit.dart';
 import 'package:promsell_pos_ce/core/widgets/search/search_result_tile.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/category_state.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
@@ -39,6 +40,7 @@ void main() {
   late MockCartBloc mockCartBloc;
   late MockSettingsCubit mockSettingsCubit;
   late MockSettingsLocalDatasource mockSettingsLocal;
+  late MockProductRepository mockProductRepo;
   late SearchHistoryCubit searchHistoryCubit;
   final sl = GetIt.instance;
 
@@ -196,6 +198,16 @@ void main() {
     mockCartBloc = MockCartBloc();
     mockSettingsCubit = MockSettingsCubit();
     mockSettingsLocal = MockSettingsLocalDatasource();
+    mockProductRepo = MockProductRepository();
+
+    // V092-E.3: _onSubmitted now calls productRepo.getProductByBarcode /
+    // getProductBySku (DB) before falling back to in-memory list.
+    when(
+      () => mockProductRepo.getProductByBarcode(any()),
+    ).thenAnswer((_) async => null);
+    when(
+      () => mockProductRepo.getProductBySku(any()),
+    ).thenAnswer((_) async => null);
 
     when(() => mockCategoryBloc.state).thenReturn(
       const CategoryState(status: CategoryStatus.success, categories: []),
@@ -217,6 +229,10 @@ void main() {
       sl.unregister<SettingsLocalDatasource>();
     }
     sl.registerSingleton<SettingsLocalDatasource>(mockSettingsLocal);
+    if (sl.isRegistered<ProductRepository>()) {
+      sl.unregister<ProductRepository>();
+    }
+    sl.registerSingleton<ProductRepository>(mockProductRepo);
   });
 
   tearDown(() async {
@@ -360,6 +376,10 @@ void main() {
       when(() => mockProductBloc.state).thenReturn(
         ProductState(status: ProductStatus.success, products: catalog),
       );
+      // V092-E.3: barcode lookup goes to DB, not in-memory list.
+      when(
+        () => mockProductRepo.getProductByBarcode('8850001'),
+      ).thenAnswer((_) async => espresso);
 
       await pumpSearchPage(tester);
 
@@ -381,12 +401,20 @@ void main() {
       ).called(1);
     });
 
-    testWidgets('submit ambiguous barcode shows snack and does not add', (
+    testWidgets('submit barcode not in DB falls back to name search (no add)', (
       tester,
     ) async {
       when(() => mockProductBloc.state).thenReturn(
         ProductState(status: ProductStatus.success, products: catalog),
       );
+      // V092-E.3: DB returns null → falls back to in-memory name search.
+      // '9990001' is not a name match, so nothing is added.
+      when(
+        () => mockProductRepo.getProductByBarcode('9990001'),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockProductRepo.getProductBySku('9990001'),
+      ).thenAnswer((_) async => null);
 
       await pumpSearchPage(tester);
 
@@ -396,7 +424,6 @@ void main() {
       await tester.pumpAndSettle();
 
       verifyNever(() => mockCartBloc.add(any(that: isA<CartProductAdded>())));
-      expect(find.textContaining('share this barcode'), findsOneWidget);
     });
 
     testWidgets(

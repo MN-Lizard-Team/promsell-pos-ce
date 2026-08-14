@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option.dart';
@@ -87,6 +88,8 @@ class ProductOptionRepositoryImpl implements ProductOptionRepository {
         sortOrder: Value(sortOrder),
         createdAt: Value(now),
         updatedAt: Value(now),
+        // Phase M (C2): dual-write satang.
+        priceDeltaSatang: Value(Money.fromDouble(priceDelta)),
       ),
     );
     return id;
@@ -102,6 +105,8 @@ class ProductOptionRepositoryImpl implements ProductOptionRepository {
         priceDelta: Value(option.priceDelta.value),
         sortOrder: Value(option.sortOrder),
         updatedAt: Value(now),
+        // Phase M (C2): dual-write satang.
+        priceDeltaSatang: Value(option.priceDelta),
       ),
     );
   }
@@ -147,6 +152,8 @@ class ProductOptionRepositoryImpl implements ProductOptionRepository {
                 sortOrder: Value(opt.sortOrder),
                 createdAt: Value(DateTime.now()),
                 updatedAt: Value(DateTime.now()),
+                // Phase M (C2): dual-write satang.
+                priceDeltaSatang: Value(opt.priceDelta),
               ),
             );
           }
@@ -169,6 +176,8 @@ class ProductOptionRepositoryImpl implements ProductOptionRepository {
               sortOrder: Value(opt.sortOrder),
               createdAt: Value(DateTime.now()),
               updatedAt: Value(DateTime.now()),
+              // Phase M (C2): dual-write satang.
+              priceDeltaSatang: Value(opt.priceDelta),
             ),
           );
         }

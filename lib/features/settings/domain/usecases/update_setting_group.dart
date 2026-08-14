@@ -19,7 +19,7 @@ class UpdateSettingGroup {
   ) async {
     try {
       final updated = mapper(current);
-      if (settingsSensitivePaymentChanged(current, updated)) {
+      if (settingsSensitiveChanged(current, updated)) {
         await _appLock.requireSensitiveSession();
       }
       await _repository.save(updated);

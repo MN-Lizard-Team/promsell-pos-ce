@@ -22,10 +22,10 @@ class GeneralThemeTile extends StatelessWidget {
     final l10n = context.l10n;
     final s = settings;
 
-    final label = switch (s.themeMode) {
-      ThemeMode.light => l10n.settingsThemeLight,
-      ThemeMode.dark => l10n.settingsThemeDark,
-      ThemeMode.system => l10n.settingsThemeSystem,
+    final label = switch (s.themeModeName) {
+      'light' => l10n.settingsThemeLight,
+      'dark' => l10n.settingsThemeDark,
+      _ => l10n.settingsThemeSystem,
     };
 
     return ListTile(
@@ -96,7 +96,7 @@ class GeneralThemeTile extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: ThemeMode.values.map((mode) {
-            final isSelected = mode == s.themeMode;
+            final isSelected = mode.name == s.themeModeName;
             final label = switch (mode) {
               ThemeMode.light => l10n.settingsThemeLight,
               ThemeMode.dark => l10n.settingsThemeDark,
@@ -110,7 +110,7 @@ class GeneralThemeTile extends StatelessWidget {
               st: st,
               onTap: () {
                 HapticFeedback.lightImpact();
-                onUpdate(s.copyWith(themeMode: mode));
+                onUpdate(s.copyWith(themeModeName: mode.name));
                 Navigator.of(ctx).pop();
               },
             );

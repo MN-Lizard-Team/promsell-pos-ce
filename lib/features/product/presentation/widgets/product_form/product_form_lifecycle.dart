@@ -1,5 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
@@ -8,6 +13,7 @@ import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_form_cubit.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
+import 'package:promsell_pos_ce/features/product/presentation/mappers/submit_product_result_mapper.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/confirm_delete_dialog.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_form_view.dart';
 import 'package:promsell_pos_ce/features/product/presentation/widgets/product_form/product_image_handler.dart';
@@ -108,7 +114,7 @@ class ProductFormLifecycle {
     );
   }
 
-  void submit(BuildContext context) {
+  Future<void> submit(BuildContext context) async {
     final bloc = context.read<ProductBloc>();
     if (_isSubmitted() || bloc.state.saveStatus == ProductSaveStatus.saving) {
       return;
@@ -121,6 +127,16 @@ class ProductFormLifecycle {
       });
       return;
     }
+    // V092-B.1: prompt store PIN before persisting price/stock/cost edits.
+    final unlocked = await ensureAppUnlocked(
+      context,
+      title: context.l10n.appLockConfirmStock,
+    );
+    if (!unlocked || !context.mounted || !_isMounted()) {
+      _setSubmitted(false);
+      _onStateChanged();
+      return;
+    }
     _setSubmitted(true);
     _setIsDirty(false);
     _onStateChanged();
@@ -130,7 +146,16 @@ class ProductFormLifecycle {
         ? bloc.state.products.where((p) => p.id == product.id).firstOrNull
         : null;
 
-    final event = SubmitProductUseCase()(
+    final imagePath = imageHandler.imagePath;
+    if (imagePath != null &&
+        imagePath.isNotEmpty &&
+        !File(imagePath).existsSync()) {
+      AppLogger.warning(
+        'Image file not found at submit, keeping path for recovery: $imagePath',
+      );
+    }
+
+    final result = SubmitProductUseCase()(
       SubmitProductInput(
         isEditing: _isEditing(),
         name: nameCtrl.text,
@@ -156,6 +181,8 @@ class ProductFormLifecycle {
         latestProduct: latest,
       ),
     );
+
+    final event = submitProductResultToEvent(result);
 
     if (event == null) {
       _setSubmitted(false);

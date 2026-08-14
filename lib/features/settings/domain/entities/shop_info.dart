@@ -13,7 +13,8 @@ class ShopInfo extends Equatable {
   final String phone;
 
   /// Thai Tax ID (เลขประจำตัวผู้เสียภาษี) — 13 digits.
-  /// When present, the receipt is treated as a tax invoice.
+  /// When present, prints on the receipt. Receipts are sales receipts
+  /// (not tax invoices) regardless of Tax ID (V092-A.1).
   final String taxId;
 
   bool get isComplete => name.isNotEmpty && phone.isNotEmpty;

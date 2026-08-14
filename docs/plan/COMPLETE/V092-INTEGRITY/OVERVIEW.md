@@ -1,11 +1,11 @@
 # v0.9.2 — Integrity Slice Overview
 
-**Package:** `docs/plan/UN-COMPLETE/V092-INTEGRITY/`  
+**Package:** `docs/plan/COMPLETE/V092-INTEGRITY/`  
 **Version target:** `0.9.2+1` (schema **v30** baseline; **v31 only if a repair** is required — SKU dedupe / small audit column)  
 **Branch base:** `main` (post v0.9.1, current working tree)  
 **Capacity model:** Solo maintainer · part-time (~6–10 h/week)  
 **Horizon:** ~4–8 weeks flexible (no hard day calendar)  
-**Status:** **READY TO EXECUTE** (2026-08-13) — package created from the elite-orchestrate audit  
+**Status:** **COMPLETE — GATE UNLOCKED** (2026-08-14) — all G1–G11 signed; `v0.9.2` may be cut  
 **IDs:** **V092-*** only. Do not reuse `AH-*` / `A1–A5` / `B0–B5` / `C1–D4` / `E0–E4`
 
 ---
@@ -24,11 +24,11 @@ Close the gaps that made the 2026-08-13 audit conclude **v0.9.1 is an engineerin
 
 | Out of 0.9.2 scope | SSOT |
 |--------------------|------|
-| Domain import fence / CloseDay port / full ADR-011b | [ARCH-HARDEN-1.0](../ARCH-HARDEN-1.0/OVERVIEW.md) |
-| Play production A1–A5, Console Data safety, throwaway ≠ prod JKS | [POST-090 WS-A](../POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md) |
-| INTEGER satang on disk (Phase M) | [WS-C](../POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) |
-| Key export / cross-device restore (Phase 2b) | [WS-D](../POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md) |
-| Bluetooth thermal / cash drawer | [WS-E E2](../POST-090-MANAGE/WS-E-PRODUCT-UX.md) |
+| Domain import fence / CloseDay port / full ADR-011b | [ARCH-HARDEN-1.0](../UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) |
+| Play production A1–A5, Console Data safety, throwaway ≠ prod JKS | [POST-090 WS-A](../UN-COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md) |
+| INTEGER satang on disk (Phase M) | [WS-C](../UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) |
+| Key export / cross-device restore (Phase 2b) | [WS-D](../UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md) |
+| Bluetooth thermal / cash drawer | [WS-E E2](../UN-COMPLETE/POST-090-MANAGE/WS-E-PRODUCT-UX.md) |
 | Full multi-user / shifts / RBAC | ARCH-HARDEN `AH-C.3` (later) |
 | iOS App Store cut | Out of this CE slice |
 | Vanity god-file splits (`app_theme`, 143 settings files) | `AH-C.5` after money nets |
@@ -56,9 +56,9 @@ Play / Phase M / fences are already owned by older plans. **0.9.2 is the honesty
 | Plan | Role vs this package |
 |------|----------------------|
 | [V090-TRUST](../../COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) | Predecessor — GitHub trust-cut **COMPLETE** |
-| [DOC-SSOT](../DOC-SSOT/OVERVIEW.md) | **Docs-tree honesty** (plan git, README, handbooks) — does **not** replace V092-A/D or block this tag |
-| [ARCH-HARDEN-1.0](../ARCH-HARDEN-1.0/OVERVIEW.md) | **Sequencing SSOT for architecture-before-Play** — 0.9.2 does **not** unlock AH-GATE-1 |
-| [POST-090-MANAGE](../POST-090-MANAGE/POST-090-OVERVIEW.md) | **Store / QA 1.0 / Phase M / 2b / UX SSOT** — 0.9.2 may reuse test nets; it does not execute A4/A5/C1/D2 |
+| [DOC-SSOT](../UN-COMPLETE/DOC-SSOT/OVERVIEW.md) | **Docs-tree honesty** (plan git, README, handbooks) — does **not** replace V092-A/D or block this tag |
+| [ARCH-HARDEN-1.0](../UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) | **Sequencing SSOT for architecture-before-Play** — 0.9.2 does **not** unlock AH-GATE-1 |
+| [POST-090-MANAGE](../UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | **Store / QA 1.0 / Phase M / 2b / UX SSOT** — 0.9.2 may reuse test nets; it does not execute A4/A5/C1/D2 |
 | This package | **Release-slice SSOT for tag `v0.9.2`** |
 | [roadmap.md](../../../readme/roadmap.md) | Public mirror — must point here in §Next |
 
@@ -144,7 +144,7 @@ flowchart TD
 
 | Channel | Status after this package closes |
 |---------|----------------------------------|
-| GitHub tag `v0.9.2` | **Go** when V092-GATE passes |
+| GitHub tag `v0.9.2` | **Go** ✅ (V092-GATE unlocked 2026-08-14) |
 | Sideload, owner-operated single device | **Conditional Go** — lock the OS screen + read backup limits |
 | Play internal/closed | **Not a 0.9.2 goal** — POST-090 after AH-GATE-1 |
 | Play production / the words “v1.0” | **No-Go** unchanged |
@@ -183,13 +183,13 @@ flowchart TD
 
 Tag `v0.9.2` succeeds when:
 
-- [ ] Receipt header/type does **not** become a tax invoice when Tax ID is set
-- [ ] Changing `products.stock` / `price` / `cost` from the product form or quick-edit requires PIN if store PIN is on
-- [ ] A sale followed by saving a stale product form **does not** restore old stock
-- [ ] Host integ: EXCLUSIVE 7% + discount + void restock + day-close is green as one suite
-- [ ] Device: History void with a known PIN succeeds on an emulator at least once, recorded in smoke notes
-- [ ] SECURITY / CHANGELOG / STORE_SUBMISSION / testing.md no longer contradict YAML
-- [ ] `flutter analyze` 0 issues · trust suite green · coverage still ≥ 60 global / 80 sale-logic
+- [x] Receipt header/type does **not** become a tax invoice when Tax ID is set
+- [x] Changing `products.stock` / `price` / `cost` from the product form or quick-edit requires PIN if store PIN is on
+- [x] A sale followed by saving a stale product form **does not** restore old stock
+- [x] Host integ: EXCLUSIVE 7% + discount + void restock + day-close is green as one suite
+- [x] Device: History void with a known PIN succeeds on an emulator at least once, recorded in smoke notes
+- [x] SECURITY / CHANGELOG / STORE_SUBMISSION / testing.md no longer contradict YAML
+- [x] `flutter analyze` 0 issues · trust suite green · coverage still ≥ 60 global / 80 sale-logic
 
 Not metrics for this slice: whole-app 80% coverage, Play installs, thermal, cross-device restore.
 

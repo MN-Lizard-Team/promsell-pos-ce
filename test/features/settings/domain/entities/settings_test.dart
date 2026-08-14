@@ -1,17 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 void main() {
   group('Settings defaults', () {
-    test('default locale is th', () {
+    test('default localeCode is th', () {
       const settings = Settings();
-      expect(settings.locale, const Locale('th'));
+      expect(settings.localeCode, 'th');
     });
 
-    test('default themeMode is system', () {
+    test('default themeModeName is system', () {
       const settings = Settings();
-      expect(settings.themeMode, ThemeMode.system);
+      expect(settings.themeModeName, 'system');
     });
 
     test('default currency is ฿', () {
@@ -50,16 +49,16 @@ void main() {
       expect(updated.vatRate, 7.0);
     });
 
-    test('updates themeMode', () {
+    test('updates themeModeName', () {
       const settings = Settings();
-      final updated = settings.copyWith(themeMode: ThemeMode.dark);
-      expect(updated.themeMode, ThemeMode.dark);
+      final updated = settings.copyWith(themeModeName: 'dark');
+      expect(updated.themeModeName, 'dark');
     });
 
-    test('updates locale', () {
+    test('updates localeCode', () {
       const settings = Settings();
-      final updated = settings.copyWith(locale: const Locale('en'));
-      expect(updated.locale, const Locale('en'));
+      final updated = settings.copyWith(localeCode: 'en');
+      expect(updated.localeCode, 'en');
     });
 
     test('updates allowOversell', () {

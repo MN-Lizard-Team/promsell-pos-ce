@@ -40,6 +40,7 @@ class SalesDailyCloseSection extends StatelessWidget {
                 value: settings.dailyCloseLock,
                 onChanged: (v) =>
                     onUpdate(settings.copyWith(dailyCloseLock: v)),
+                switchKey: const Key('test_day_close_lock_toggle'),
               ),
             ],
           ),

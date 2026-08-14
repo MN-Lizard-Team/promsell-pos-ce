@@ -462,7 +462,8 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
     // Explicit [event.name] (incl. '' from long-press empty) → resolve path.
     // Null name (1-tap) → keep existing active name if set; else auto.
     final parkName = DraftNaming.resolveParkName(
-      cart: event.cartState,
+      tableId: event.cartState.tableId,
+      itemCount: event.cartState.itemCount,
       explicitName: event.name,
       existingName: state.activeDraftName,
     );

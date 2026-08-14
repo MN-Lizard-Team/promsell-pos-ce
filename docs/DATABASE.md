@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE (v0.9.1)
+# Database Handbook — Promsell POS CE (v0.9.2)
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup export, and performance.
 
@@ -11,7 +11,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 | **Engine** | SQLite via [Drift](https://drift.simonbinder.eu/) (type-safe ORM) |
 | **Encryption** | SQLCipher AES-256 (full-database encryption, Phase 2a) |
 | **File** | `promsell_pos.db` (platform default app directory, encrypted at rest) |
-| **Schema version** | **30** (v26 unique `daily_closes.close_date`; **v27** unique `sales.receipt_number`; **v28** `sale_payments` multi-tender; **v29** `products.barcode_lower` + unique index; **v30** `products.sku_lower` + unique index) |
+| **Schema version** | **32** (v26 unique `daily_closes.close_date`; **v27** unique `sales.receipt_number`; **v28** `sale_payments` multi-tender; **v29** `products.barcode_lower` + unique index; **v30** `products.sku_lower` + unique index; **v31** V092-C.2 SKU dedupe + V092-C.3 idempotent indexes; **v32** Phase M — 32 nullable INTEGER `*_satang` dual-write columns on 10 money tables, backfilled from REAL baht, NaN/Inf-safe) |
 | **Tables** | **16** |
 | **ID strategy** | UUIDv4 TEXT on all tables (`IdGenerator.newId()`) |
 | **Journal mode** | WAL (`PRAGMA journal_mode=WAL`) |
@@ -19,7 +19,7 @@ Complete reference for the Promsell database: schema, relationships, indexes, mi
 | **Code location** | `lib/core/database/` |
 | **Generated file** | `app_database.g.dart` — **do not edit** (not committed to git; run `build_runner build` to generate) |
 | **Encryption key** | Mobile: platform secure storage (Keystore/Keychain). Debug desktop may use a fixed dev key — not for production. |
-| **Money on disk** | Amount columns are SQLite **REAL** (baht). Domain `Money` uses integer satang in memory. |
+| **Money on disk** | Amount columns retain legacy SQLite **REAL** baht for rollback compatibility, alongside active nullable INTEGER `*_satang` columns on 10 money tables (32 columns). Drift uses `NullableMoneySatangConverter`; writers dual-write `Money` satang + REAL baht, readers prefer satang and fall back to REAL for pre-v32 rows. v32 backfill uses `ROUND(baht * 100)` and leaves non-finite legacy values with `*_satang = NULL`. |
 
 ---
 
@@ -108,7 +108,7 @@ erDiagram
 
 ## Sync metadata columns (not a sync engine)
 
-These columns exist on **most** tables (schema v11+). They are **metadata only** — CE has **no** sync engine, outbox, or multi-device protocol (ADR-028). `deviceId` was backfilled on six tables in schema v13. `ProductAudits` has no `deletedAt`. Sale/void stock updates do **not** always `version++` (V092-C.1).
+These columns exist on **most** tables (schema v11+). They are **metadata only** — CE has **no** sync engine, outbox, or multi-device protocol (ADR-028). `deviceId` was backfilled on six tables in schema v13. `ProductAudits` has no `deletedAt`. As of V092-C.1 (schema v31), sale / void / `adjustStock` all bump `version` alongside the atomic stock update, so a stale product form cannot overwrite the count.
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -235,7 +235,7 @@ v23                                           v24
 - **In-app restore**: **Yes — same-device only** (Settings → Backup). Restores `.enc` or SQLCipher `.db`; rejects plain SQLite. Needs this device’s SQLCipher key in secure storage. Cross-device / after uninstall = **not** supported (Phase 2b)
 - **Cloud sync**: not in CE 0.9
 
-> **Note**: Losing the SQLCipher key (uninstall / keystore wipe) without an export means **permanent data loss**. Key recovery is not available in 0.9.1 (Phase 2b deferred).
+> **Note**: Losing the SQLCipher key (uninstall / keystore wipe) without an export means **permanent data loss**. Key recovery is not available in v0.9.2; Phase 2b recovery-kit work remains deferred.
 
 ---
 
@@ -259,11 +259,26 @@ v23                                           v24
 | **v28** | `sale_payments` multi-tender table + index on `sale_id` |
 | **v29** | `products.barcode_lower` column + unique partial index for case-insensitive barcode lookups |
 | **v30** | `products.sku_lower` column + unique partial index for case-insensitive SKU lookups |
+| **v31** | V092-C.2: SKU dedupe before unique index (same pattern as barcode v29); V092-C.3: idempotent index/trigger set at end of every `onUpgrade`; `sku_lower` unique index added to `_createIndexes` for fresh installs |
+| **v32** | **Phase M (C1–C3):** 32 nullable INTEGER `*_satang` dual-write columns added to 10 money tables (`products`, `product_options`, `sales`, `sale_items`, `sale_payments`, `daily_closes`, `customers`, `promotions`, `draft_carts`, `draft_cart_items`). Backfilled from REAL baht via `CAST(ROUND(baht * 100) AS INTEGER)`. NaN/Inf-safe: `baht = baht` excludes NaN (NULL in SQLite), `abs(baht) < 1e15` excludes ±Inf. Idempotent (`AND satang IS NULL`). Drift `NullableMoneySatangConverter` is wired; writers dual-write and readers are satang-first with REAL fallback. Legacy REAL columns remain until a later deprecation release. |
 
-**Money on disk:** amount columns remain SQLite **REAL** (baht). Domain code uses the `Money` value object (integer satang) and maps at the data layer. Integer column storage is deferred (Phase M).
+**Money on disk:** Domain code uses the `Money` value object (integer satang). v32 stores satang as the active exact representation while retaining REAL baht for rollback compatibility. Report/tender aggregation now accumulates integer satang and converts to display doubles only at the presentation boundary. Dropping legacy REAL columns and the encrypted pre-M backup-restore fixture remain deferred.
 
-**Backup:** Export + AES-GCM (PIN ≥ 6; default **on** when setting missing). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup.
+### Barcode / SKU uniqueness policy after soft-delete (V092-C.4)
+
+**Decision: Not reusable after delete.**
+
+The unique indexes on `barcode`, `barcode_lower`, `sku`, and `sku_lower` cover the **entire table**, including rows with `deleted_at IS NOT NULL`. This means a soft-deleted product's barcode/SKU cannot be reused by a new product until the old row is hard-deleted (or its barcode/SKU is cleared).
+
+Rationale:
+- Prevents accidental shadowing of historical sales/audit records that reference the old barcode/SKU.
+- Simplifies sync conflict resolution in Phase 4 — no need to merge two products with the same barcode.
+- The trade-off is that a shop deleting and re-adding a product with the same barcode must clear the old barcode first (or use a different one). The `deleteProduct` path could optionally null out barcode/SKU on soft-delete in a future enhancement if reuse is needed.
+
+> If reuse-after-delete is needed later: change the unique indexes to partial `WHERE deleted_at IS NULL AND barcode IS NOT NULL AND barcode != ''`. This requires a migration to drop + recreate the indexes.
+
+**Backup:** Export + AES-GCM (PIN ≥ 6; default **on** when setting missing). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup. Recovery-kit export/import remains a Phase 2b item.
 
 ---
 
-<sub>Promsell POS CE · Schema v30 · 16 tables · UUIDv4 · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · Schema v32 · 16 tables · UUIDv4 · SQLCipher AES-256</sub>

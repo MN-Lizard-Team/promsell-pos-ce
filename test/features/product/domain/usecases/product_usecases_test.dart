@@ -1,19 +1,32 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
 
+import '../../../../helpers/fake_app_lock.dart';
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
 
+/// Returns an [AppLockService] with PIN enabled and session locked.
+Future<AppLockService> _lockedAppLock() async {
+  final lock = fakeAppLock();
+  await lock.setPin('147258');
+  lock.lockSession();
+  return lock;
+}
+
 void main() {
   late MockProductRepository mockRepo;
+  late AppLockService appLock;
 
   setUp(() {
     mockRepo = MockProductRepository();
+    appLock = fakeAppLock();
   });
 
   setUpAll(() {
@@ -22,7 +35,7 @@ void main() {
 
   group('AddProduct', () {
     late AddProduct useCase;
-    setUp(() => useCase = AddProduct(mockRepo));
+    setUp(() => useCase = AddProduct(mockRepo, appLock));
 
     test('delegates to repository.addProduct and returns id', () async {
       when(
@@ -47,7 +60,7 @@ void main() {
     test('throws DuplicateBarcodeException when barcode exists', () async {
       when(() => mockRepo.barcodeExists('dup')).thenAnswer((_) async => true);
 
-      expect(
+      await expectLater(
         () => useCase(name: 'Test', price: 100.0, stock: 10, barcode: 'dup'),
         throwsA(isA<DuplicateBarcodeException>()),
       );
@@ -60,11 +73,66 @@ void main() {
         ),
       );
     });
+
+    // V092-B.1 regression: gate refuses when non-default money/stock + locked.
+    test('throws BusinessRuleError AppLockRequired when PIN on, locked, and '
+        'non-default price/stock/cost', () async {
+      final locked = await _lockedAppLock();
+      final gated = AddProduct(mockRepo, locked);
+
+      await expectLater(
+        () => gated(name: 'Test', price: 100.0, stock: 10),
+        throwsA(
+          isA<BusinessRuleError>().having(
+            (e) => e.rule,
+            'rule',
+            AppLockService.ruleAppLockRequired,
+          ),
+        ),
+      );
+      verifyNever(
+        () => mockRepo.addProduct(
+          name: any(named: 'name'),
+          price: any(named: 'price'),
+          stock: any(named: 'stock'),
+        ),
+      );
+    });
+
+    // V092-B.1: passes when PIN is off (default fakeAppLock state).
+    test('passes through when PIN is off', () async {
+      when(
+        () => mockRepo.addProduct(
+          name: any(named: 'name'),
+          price: any(named: 'price'),
+          stock: any(named: 'stock'),
+          sku: any(named: 'sku'),
+          barcode: any(named: 'barcode'),
+          cost: any(named: 'cost'),
+          categoryId: any(named: 'categoryId'),
+          imageUrl: any(named: 'imageUrl'),
+          imagePath: any(named: 'imagePath'),
+          imageThumbnailPath: any(named: 'imageThumbnailPath'),
+          trackStock: any(named: 'trackStock'),
+          isActive: any(named: 'isActive'),
+          description: any(named: 'description'),
+          brand: any(named: 'brand'),
+          unit: any(named: 'unit'),
+          supplier: any(named: 'supplier'),
+          isRecommended: any(named: 'isRecommended'),
+          optionGroups: any(named: 'optionGroups'),
+        ),
+      ).thenAnswer((_) async => 'id-1');
+
+      final result = await useCase(name: 'Test', price: 100.0, stock: 10);
+
+      expect(result, 'id-1');
+    });
   });
 
   group('UpdateProduct', () {
     late UpdateProduct useCase;
-    setUp(() => useCase = UpdateProduct(mockRepo));
+    setUp(() => useCase = UpdateProduct(mockRepo, appLock));
 
     test('delegates to repository.updateProduct', () async {
       when(() => mockRepo.updateProduct(any())).thenAnswer((_) async {});
@@ -82,7 +150,7 @@ void main() {
               mockRepo.barcodeExists('dup', excludeId: tProductWithBarcode.id),
         ).thenAnswer((_) async => true);
 
-        expect(
+        await expectLater(
           () => useCase(tProductWithBarcode.copyWith(barcode: 'dup')),
           throwsA(isA<DuplicateBarcodeException>()),
         );

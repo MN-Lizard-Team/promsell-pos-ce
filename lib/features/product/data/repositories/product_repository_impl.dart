@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
@@ -40,6 +41,12 @@ class ProductRepositoryImpl implements ProductRepository {
     final product = await _datasource.getProductByBarcode(
       barcode.toUpperCase(),
     );
+    return (product != null && product.isActive) ? product : null;
+  }
+
+  @override
+  Future<Product?> getProductBySku(String sku) async {
+    final product = await _datasource.getProductBySku(sku.toUpperCase());
     return (product != null && product.isActive) ? product : null;
   }
 
@@ -136,6 +143,9 @@ class ProductRepositoryImpl implements ProductRepository {
         isRecommended: Value(isRecommended),
         createdAt: Value(now),
         updatedAt: Value(now),
+        // Phase M (C2): dual-write satang.
+        priceSatang: Value(Money.fromDouble(price)),
+        costSatang: Value(cost != null ? Money.fromDouble(cost) : null),
       );
       if (optionGroups.isEmpty) {
         await _datasource.insertProduct(companion);
@@ -267,6 +277,9 @@ class ProductRepositoryImpl implements ProductRepository {
       isRecommended: Value(product.isRecommended),
       updatedAt: Value(now),
       version: Value(product.version),
+      // Phase M (C2): dual-write satang.
+      priceSatang: Value(product.price),
+      costSatang: Value(product.cost),
     );
 
     // --- Build audit entries (will be written atomically with the update) ---

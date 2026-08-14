@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/promotion/data/datasources/promotion_datasource.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/entities/promotion.dart';
@@ -35,12 +36,20 @@ class PromotionRepositoryImpl implements PromotionRepository {
           promotion.type == PromotionType.amount ? 'AMOUNT' : 'PERCENT',
         ),
         value: Value(promotion.value),
+        valueSatang: Value(
+          promotion.type == PromotionType.amount
+              ? Money.fromDouble(promotion.value)
+              : null,
+        ),
         minPurchaseAmount: Value(promotion.minPurchaseAmount.value),
         startDate: Value(promotion.startDate),
         endDate: Value(promotion.endDate),
         isActive: Value(promotion.isActive),
         createdAt: Value(now),
         updatedAt: Value(now),
+        // Phase M (C2): dual-write satang for minPurchaseAmount.
+        // `value` stays REAL — it is a percent when type=PERCENT.
+        minPurchaseAmountSatang: Value(promotion.minPurchaseAmount),
       ),
     );
     return id;
@@ -56,11 +65,18 @@ class PromotionRepositoryImpl implements PromotionRepository {
           promotion.type == PromotionType.amount ? 'AMOUNT' : 'PERCENT',
         ),
         value: Value(promotion.value),
+        valueSatang: Value(
+          promotion.type == PromotionType.amount
+              ? Money.fromDouble(promotion.value)
+              : null,
+        ),
         minPurchaseAmount: Value(promotion.minPurchaseAmount.value),
         startDate: Value(promotion.startDate),
         endDate: Value(promotion.endDate),
         isActive: Value(promotion.isActive),
         updatedAt: Value(DateTime.now()),
+        // Phase M (C2): dual-write satang for minPurchaseAmount.
+        minPurchaseAmountSatang: Value(promotion.minPurchaseAmount),
       ),
     );
   }

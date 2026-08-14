@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.9.1
+# CODEBASE.md — Promsell POS CE v0.9.2
 
 ## System overview
 
@@ -20,31 +20,32 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 └────────────────────────┬─────────────────────────────┘
                          │
 ┌────────────────────────▼──────────────────────────────────────────────────────────────┐
-│   lib/features/ — Feature modules                                                     │
-│   sale/       — Cart, checkout, draft, discount, restaurant order type/channel        │
-│               + table selector, service charge, product options in cart               │
-│   product/    — CRUD inventory, ProductBloc, image service, barcode scan + gen        │
-│               + BarcodeImageService (RenderRepaintBoundary off-screen render)         │
-│               + ProductFormCubit (typed draft state, Hybrid Collapsible form)         │
-│               + product_navigation.dart (shared show/edit/preview/delete)             │
-│               + StatsDashboard (hero gradient card: total products + value)           │
-│               + ProductOptionGroup/ProductOption (modifiers, CRUD, cart sheet)        │
-│   customer/   — Customer CRUD, CustomerBloc, list/form pages with search              │
-│   promotion/  — Promotion CRUD, PromotionBloc, percent/fixed discount, dates          │
-│   home/       — Home dashboard (hero card, stats row, menu grid, promo banner)        │
-│   report/     — Analytics dashboard (ReportCubit, profit/margin, export)              │
-│   settings/   — Locale, theme, shop info, business type, service charge               │
+│   lib/features/ — 13 feature modules                                                  │
+│   sale/       — Cart, checkout, drafts, discounts, restaurant order type/channel,     │
+│               table selector, service charge, product options, adaptive tablet sale   │
+│   product/    — CRUD inventory, images, barcode/SKU scan + generation, modifiers      │
+│   customer/   — Customer CRUD, search, spend/visit statistics                         │
+│   promotion/  — Percent/fixed promotions, date windows, active filtering              │
+│   home/       — Dashboard, statistics, menu grid, promotion banner                    │
+│   report/     — Revenue/profit/margin analytics, history tab, PDF/CSV export          │
+│   settings/   — Locale, theme, shop/business settings, Store PIN, backup              │
+│   history/    — Sale history search and void presentation                             │
+│   inventory/  — Stock adjustments and inventory audit log                             │
+│   daily_close/ — Expected/count cash, reconciliation, close-day lock                  │
+│   receipt/    — Sales receipt document, preview, PDF/share                            │
+│   restaurant_table/ — Table/floor status and dine-in support                          │
+│   onboarding/ — First-launch setup and Store PIN choice                               │
 └────────────────────────┬──────────────────────────────────────────────────────────────┘
                          │
 ┌────────────────────────▼──────────────────────────────────────────────────────┐
 │   lib/core/ — Cross-cutting infrastructure                                    │
-│   database/   — Drift schema, tables, DAOs                                    │
+│   database/   — Drift schema v32, SQLCipher opener, satang converters         │
 │   di/         — injectable + get_it DI                                        │
 │   extensions/ — context.l10n helper                                           │
 │   image/      — Unified image system (UnifiedImageWidget,                     │
 │                 ImageSkeleton, ImageErrorPlaceholder, ImageCacheService)      │
-│   services/  — CrashLogService (PII sanitization, export/clear)               │
-│   utils/      — IdGenerator, payment_method, Ean13Generator (@injectable)     │
+│   services/   — AppLock lifecycle, CrashLogService, secure-screen helpers     │
+│   utils/      — Money, IdGenerator, payment methods, EAN-13, date formatting  │
 │   widgets/    — shared UI primitives                                          │
 └───────────────────────┬───────────────────────────────────────────────────────┘
                         │
@@ -68,8 +69,8 @@ features/<name>/
 │   ├── datasources/          # Drift DAO wrappers
 │   └── repositories/         # Repository implementations
 ├── domain/
-│   ├── entities/             # Domain models (should be Flutter-free; settings still import Flutter)
-│   ├── repositories/         # Abstract interfaces
+│   ├── entities/             # Pure Dart domain models and value objects
+│   ├── repositories/         # Abstract interfaces / ports
 │   └── usecases/             # Business logic
 └── presentation/
     ├── bloc/ or cubit/       # State management
@@ -82,7 +83,7 @@ features/<name>/
         └── deprecated/       #   OPTIONAL — backward-compat aliases only
 ```
 
-**Dependency rule:** `presentation → domain ← data`. **Target, not a CI fact** (AH-1.1). Known leaks: settings Flutter types; CloseDay → sale data; some product use cases.
+**Dependency rule:** `presentation → domain ← data`. The import fence (`dart run tool/check_domain_fence.dart`) is enforced in CI for `lib/**/domain/**`; the current allowlist is empty. Keep domain code pure Dart and use domain ports plus presentation mappers when crossing boundaries.
 
 > **Widget folder convention (ADR-024):** Every widget file MUST be in a subfolder — no flat files in `widgets/` root. Domain subfolders are mandatory; `shared/` and `deprecated/` are created only when needed.
 
@@ -106,6 +107,14 @@ features/<name>/
                                                             │  (SQLite WAL) │
                                                             └───────────────┘
 ```
+
+### Database and money boundary
+
+- `AppDatabase` is schema **v32**. Production storage uses SQLCipher; tests use in-memory Drift.
+- Domain `Money` is integer satang. The 32 nullable `*_satang` columns use Drift `NullableMoneySatangConverter`.
+- Writers dual-write exact satang plus legacy REAL baht for rollback compatibility. Readers prefer satang and fall back to REAL for pre-v32 rows.
+- Percentage rates and percentage-valued discounts remain REAL; conditional `AMOUNT` values also receive satang storage.
+- Migration code lives in `lib/core/database/app_database.dart`; update the schema version and add a migration test for every schema change.
 
 ### State management overview
 
@@ -188,10 +197,10 @@ features/<name>/
 | [`docs/codebase/core-modules.md`](docs/codebase/core-modules.md) | Core modules table (60+ entries) + Feature modules table (13 features under `lib/features/`) |
 | [`docs/codebase/conventions.md`](docs/codebase/conventions.md) | State management, Settings persistence (14 group entities), Localization, DI, Code generation |
 | [`docs/codebase/file-dependency-map.md`](docs/codebase/file-dependency-map.md) | If-you-change-X-update-Y rules for all entities, BLoCs, datasources |
-| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure (multi-layer suite; run flutter test) + test layer techniques |
-| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema **v30** overview + ERD + sync columns → links to schema-reference, query-patterns, migration-and-ops |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-026) + barcode DI graph |
+| [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure, test layers, and host/device E2E workflow |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema **v32** overview + ERD + satang dual-write boundary + migration/ops references |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-028), and DI graph |
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.9.2 · Codebase Reference</sub>

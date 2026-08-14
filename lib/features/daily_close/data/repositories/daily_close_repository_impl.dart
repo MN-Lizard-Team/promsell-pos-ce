@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/features/daily_close/data/datasources/daily_close_local_datasource.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
@@ -40,17 +40,35 @@ class DailyCloseRepositoryImpl implements DailyCloseRepository {
     return DailyClose(
       id: data.id,
       closeDate: data.closeDate,
-      openingCash: Money.fromDouble(data.openingCash),
-      expectedCash: Money.fromDouble(data.expectedCash),
-      countedCash: Money.fromDouble(data.countedCash),
-      overShortAmount: Money.fromDouble(data.overShortAmount),
-      totalRevenue: Money.fromDouble(data.totalRevenue),
-      totalVoid: Money.fromDouble(data.totalVoid),
+      openingCash: moneyFromSatangOrBaht(
+        data.openingCashSatang,
+        data.openingCash,
+      ),
+      expectedCash: moneyFromSatangOrBaht(
+        data.expectedCashSatang,
+        data.expectedCash,
+      ),
+      countedCash: moneyFromSatangOrBaht(
+        data.countedCashSatang,
+        data.countedCash,
+      ),
+      overShortAmount: moneyFromSatangOrBaht(
+        data.overShortAmountSatang,
+        data.overShortAmount,
+      ),
+      totalRevenue: moneyFromSatangOrBaht(
+        data.totalRevenueSatang,
+        data.totalRevenue,
+      ),
+      totalVoid: moneyFromSatangOrBaht(data.totalVoidSatang, data.totalVoid),
       salesCount: data.salesCount,
       voidCount: data.voidCount,
       paymentBreakdown: _parsePaymentBreakdown(data.paymentBreakdown),
-      vatAmount: Money.fromDouble(data.vatAmount),
-      discountAmount: Money.fromDouble(data.discountAmount),
+      vatAmount: moneyFromSatangOrBaht(data.vatAmountSatang, data.vatAmount),
+      discountAmount: moneyFromSatangOrBaht(
+        data.discountAmountSatang,
+        data.discountAmount,
+      ),
       note: data.note,
       closedAt: data.closedAt,
       deviceId: data.deviceId,
@@ -81,6 +99,15 @@ class DailyCloseRepositoryImpl implements DailyCloseRepository {
       updatedAt: entity.updatedAt ?? DateTime.now(),
       deletedAt: entity.deletedAt,
       version: entity.version,
+      // Phase M (C2): dual-write satang.
+      openingCashSatang: entity.openingCash,
+      expectedCashSatang: entity.expectedCash,
+      countedCashSatang: entity.countedCash,
+      overShortAmountSatang: entity.overShortAmount,
+      totalRevenueSatang: entity.totalRevenue,
+      totalVoidSatang: entity.totalVoid,
+      vatAmountSatang: entity.vatAmount,
+      discountAmountSatang: entity.discountAmount,
     );
   }
 

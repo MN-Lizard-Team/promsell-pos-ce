@@ -64,6 +64,23 @@ void main() {
       expect(t.promotionCount, 1);
       expect(t.cartDiscountAmount, Money.zero);
     });
+
+    test('aggregates fractional money in satang without float drift', () {
+      final sales = List.generate(
+        10,
+        (_) => _sale(
+          status: 'COMPLETED',
+          totalAmount: 0.10,
+          method: 'cash',
+          createdAt: DateTime(2026, 6, 1, 10),
+        ),
+      );
+      final totals = calculator.periodTotals(sales);
+
+      expect(totals.netRevenue, const Money.fromSatang(100));
+      expect(totals.paymentBreakdown['cash'], 1.0);
+      expect(calculator.dailyRevenue(sales).single.revenue, 1.0);
+    });
   });
 
   group('ReportCalculatorService — daily revenue', () {

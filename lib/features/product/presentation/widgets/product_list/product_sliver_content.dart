@@ -81,6 +81,7 @@ class ProductSliverContent extends StatelessWidget {
               message: context.l10n.noProductsYetHint,
               actionLabel: context.l10n.addProduct,
               onAction: onAddProduct,
+              actionKey: const Key('test_add_product_fab'),
               secondaryActionLabel: onImport != null
                   ? context.l10n.importProducts
                   : null,

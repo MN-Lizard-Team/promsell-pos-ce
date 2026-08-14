@@ -35,17 +35,45 @@ Future<bool> ensureAppUnlocked(
   return ok == true;
 }
 
-/// First-run / create flow: returns trimmed PIN or null if cancelled.
+/// Result of [showCreateStorePinDialog].
+enum StorePinDialogResult {
+  /// User entered and confirmed a PIN. The PIN string is available via
+  /// [StorePinDialogResultData.pin].
+  created,
+
+  /// User chose to skip PIN setup. The caller should confirm the user
+  /// understands the risk before proceeding.
+  skipped,
+
+  /// User dismissed the dialog without choosing (e.g. back button).
+  cancelled,
+}
+
+/// Wraps [StorePinDialogResult] with the entered PIN when applicable.
+class StorePinDialogResultData {
+  const StorePinDialogResultData(this.result, {this.pin});
+
+  final StorePinDialogResult result;
+  final String? pin;
+
+  bool get isCreated => result == StorePinDialogResult.created;
+  bool get isSkipped => result == StorePinDialogResult.skipped;
+}
+
+/// First-run / create flow: returns the user's choice.
 ///
 /// Does **not** call [AppLockService.setPin] — caller persists.
-Future<String?> showCreateStorePinDialog(
+/// When [allowSkip] is true, a "Skip" button is shown; the caller is
+/// responsible for confirming the risk before honoring the skip.
+Future<StorePinDialogResultData> showCreateStorePinDialog(
   BuildContext context, {
   bool barrierDismissible = false,
+  bool allowSkip = false,
 }) async {
   final l10n = context.l10n;
   final c1 = TextEditingController();
   final c2 = TextEditingController();
-  final result = await showDialog<String>(
+  final result = await showDialog<StorePinDialogResultData>(
     context: context,
     barrierDismissible: barrierDismissible,
     builder: (ctx) {
@@ -83,10 +111,19 @@ Future<String?> showCreateStorePinDialog(
           ],
         ),
         actions: [
-          if (barrierDismissible)
+          if (barrierDismissible || allowSkip)
             TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.cancel),
+              onPressed: () => Navigator.pop(
+                ctx,
+                allowSkip
+                    ? const StorePinDialogResultData(
+                        StorePinDialogResult.skipped,
+                      )
+                    : const StorePinDialogResultData(
+                        StorePinDialogResult.cancelled,
+                      ),
+              ),
+              child: Text(allowSkip ? l10n.onboardingSkipPin : l10n.cancel),
             ),
           FilledButton(
             onPressed: () {
@@ -102,7 +139,13 @@ Future<String?> showCreateStorePinDialog(
                 AppSnackBar.error(ctx, l10n.appLockPinsMismatch);
                 return;
               }
-              Navigator.pop(ctx, c1.text.trim());
+              Navigator.pop(
+                ctx,
+                StorePinDialogResultData(
+                  StorePinDialogResult.created,
+                  pin: c1.text.trim(),
+                ),
+              );
             },
             child: Text(l10n.confirm),
           ),
@@ -112,7 +155,8 @@ Future<String?> showCreateStorePinDialog(
   );
   disposeTextEditingControllerAfterFrame(c1);
   disposeTextEditingControllerAfterFrame(c2);
-  return result;
+  return result ??
+      const StorePinDialogResultData(StorePinDialogResult.cancelled);
 }
 
 class _AppLockPinDialog extends StatefulWidget {
@@ -192,6 +236,7 @@ class _AppLockPinDialogState extends State<_AppLockPinDialog> {
     return AlertDialog(
       title: Text(widget.title),
       content: TextField(
+        key: const Key('test_pin_entry_field'),
         controller: _controller,
         obscureText: true,
         keyboardType: TextInputType.number,
@@ -209,6 +254,7 @@ class _AppLockPinDialogState extends State<_AppLockPinDialog> {
           child: Text(widget.cancelLabel),
         ),
         FilledButton(
+          key: const Key('test_pin_confirm_button'),
           onPressed: _busy ? null : _submit,
           child: Text(widget.unlockLabel),
         ),

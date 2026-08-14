@@ -1,4 +1,4 @@
-﻿# Architecture — Promsell POS CE (v0.9.1)
+﻿# Architecture — Promsell POS CE (v0.9.2)
 
 Deep technical reference for the system architecture: C4 model, data flow per feature, transaction boundaries, state management patterns, DI graph, error handling, and performance strategy.
 
@@ -41,13 +41,12 @@ Offline-first mobile POS system — Flutter, Drift SQLite, BLoC/Cubit, Material 
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │   lib/core/   — Cross-cutting infrastructure                                    │
-│   database/   — Drift schema, tables, DAOs                                      │
+│   database/   — Drift schema v32, SQLCipher opener, satang converters           │
 │   di/         — injectable + get_it DI                                          │
 │   extensions/ — context.l10n helper                                             │
 │   image/      — Unified image system                                            │
-│   services/   — CrashLogService (PII sanitization, export/clear)                │
-│   utils/      — IdGenerator, payment_method, Ean13Generator,                    │
-│                 DateFormatter (@injectable)                                     │
+│   services/   — AppLock lifecycle, CrashLogService, secure-screen helpers       │
+│   utils/      — Money, IdGenerator, payment_method, EAN-13, DateFormatter       │
 │   widgets/    — shared UI primitives                                            │
 └───────────────────────┬─────────────────────────────────────────────────────────┘
                         ▼
@@ -69,8 +68,8 @@ features/<name>/
 │   ├── datasources/          # Drift DAO wrappers
 │   └── repositories/         # Repository implementations
 ├── domain/
-│   ├── entities/             # Domain models (should be Flutter-free; settings still import Flutter)
-│   ├── repositories/         # Abstract interfaces
+│   ├── entities/             # Pure Dart domain models and value objects
+│   ├── repositories/         # Abstract interfaces / ports
 │   └── usecases/             # Business logic
 └── presentation/
     ├── bloc/ or cubit/       # State management
@@ -78,7 +77,7 @@ features/<name>/
     └── widgets/              # Extracted reusable widgets
 ```
 
-**Dependency rule:** `presentation → domain ← data`. **Target, not a CI fact.** Domain is not fence-enforced (AH-1.1). Known leaks: settings `Locale`/`ThemeMode`; CloseDay → sale data; some product image/submit use cases.
+**Dependency rule:** `presentation → domain ← data`. The import fence (`dart run tool/check_domain_fence.dart`) is enforced in CI for `lib/**/domain/**`; the current allowlist is empty. Use domain ports and presentation mappers when crossing boundaries.
 
 ### C4 Level 1 — System Context
 
@@ -112,4 +111,4 @@ features/<name>/
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Architecture Document · Deep Technical Reference</sub>
+<sub>Promsell POS CE · v0.9.2 · Architecture Document · Deep Technical Reference</sub>

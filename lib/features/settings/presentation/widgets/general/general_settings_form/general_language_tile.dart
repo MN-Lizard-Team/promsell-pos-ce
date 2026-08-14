@@ -22,9 +22,7 @@ class GeneralLanguageTile extends StatelessWidget {
     final l10n = context.l10n;
     final s = settings;
 
-    final label = s.locale.languageCode == 'th'
-        ? l10n.langThai
-        : l10n.langEnglish;
+    final label = s.localeCode == 'th' ? l10n.langThai : l10n.langEnglish;
 
     return ListTile(
       minTileHeight: st.tileMinHeight,
@@ -70,18 +68,16 @@ class GeneralLanguageTile extends StatelessWidget {
     SettingsThemeExtension st,
     AppLocalizations l10n,
   ) {
-    final options = const [Locale('th'), Locale('en')];
+    final options = const [('th'), ('en')];
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.settingsLanguage),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: options.map((locale) {
-            final isSelected = locale == s.locale;
-            final label = locale.languageCode == 'th'
-                ? l10n.langThai
-                : l10n.langEnglish;
+          children: options.map((code) {
+            final isSelected = code == s.localeCode;
+            final label = code == 'th' ? l10n.langThai : l10n.langEnglish;
             return DialogOptionTile(
               icon: Icons.language,
               label: label,
@@ -89,7 +85,7 @@ class GeneralLanguageTile extends StatelessWidget {
               st: st,
               onTap: () {
                 HapticFeedback.lightImpact();
-                onUpdate(s.copyWith(locale: locale));
+                onUpdate(s.copyWith(localeCode: code));
                 Navigator.of(ctx).pop();
                 Navigator.of(context).pop();
               },

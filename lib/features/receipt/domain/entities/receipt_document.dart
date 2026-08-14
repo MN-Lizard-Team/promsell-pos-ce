@@ -88,7 +88,8 @@ class ReceiptDocument extends Equatable {
   final String phone;
 
   /// Thai Tax ID (เลขประจำตัวผู้เสียภาษี 13 หลัก).
-  /// When non-empty, the receipt qualifies as a tax invoice.
+  /// When non-empty, prints on the receipt. Receipts are sales receipts
+  /// (not tax invoices) regardless of Tax ID (V092-A.1).
   final String taxId;
 
   final String receiptNumber;

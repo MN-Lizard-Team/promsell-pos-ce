@@ -4,7 +4,7 @@
 **Status legend:** `todo` · `in_progress` · `done` · `blocked` · `deferred`  
 **Rule:** Change status only with evidence (PR / path / `rg`). Never mark V092 / AH IDs done from this folder.
 
-**Related:** [V092 BACKLOG](../V092-INTEGRITY/BACKLOG.md) · [ARCH-HARDEN BACKLOG](../ARCH-HARDEN-1.0/BACKLOG.md) · [POST-090 BACKLOG](../POST-090-MANAGE/POST-090-BACKLOG.md)
+**Related:** [V092 BACKLOG](../COMPLETE/V092-INTEGRITY/BACKLOG.md) · [ARCH-HARDEN BACKLOG](../ARCH-HARDEN-1.0/BACKLOG.md) · [POST-090 BACKLOG](../POST-090-MANAGE/POST-090-BACKLOG.md)
 
 ---
 

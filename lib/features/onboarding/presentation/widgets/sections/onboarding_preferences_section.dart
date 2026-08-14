@@ -50,13 +50,10 @@ class OnboardingPreferencesSection extends StatelessWidget {
                 label: Text(context.l10n.onboardingEnglish),
               ),
             ],
-            selected: {settings.locale.languageCode},
+            selected: {settings.localeCode},
             onSelectionChanged: (selection) {
-              final locale = selection.first == 'th'
-                  ? const Locale('th')
-                  : const Locale('en');
               context.read<SettingsCubit>().updateField(
-                (_) => settings.copyWith(locale: locale),
+                (_) => settings.copyWith(localeCode: selection.first),
               );
             },
           ),
@@ -109,25 +106,25 @@ class OnboardingPreferencesSection extends StatelessWidget {
           ],
           Text(context.l10n.settingsTheme),
           const SizedBox(height: 8),
-          OnboardingSegmentedControl<ThemeMode>(
+          OnboardingSegmentedControl<String>(
             segments: [
               ButtonSegment(
-                value: ThemeMode.light,
+                value: 'light',
                 label: Text(context.l10n.settingsThemeLight),
               ),
               ButtonSegment(
-                value: ThemeMode.dark,
+                value: 'dark',
                 label: Text(context.l10n.settingsThemeDark),
               ),
               ButtonSegment(
-                value: ThemeMode.system,
+                value: 'system',
                 label: Text(context.l10n.settingsThemeSystem),
               ),
             ],
-            selected: {settings.themeMode},
+            selected: {settings.themeModeName},
             onSelectionChanged: (selection) {
               context.read<SettingsCubit>().updateField(
-                (_) => settings.copyWith(themeMode: selection.first),
+                (_) => settings.copyWith(themeModeName: selection.first),
               );
             },
           ),

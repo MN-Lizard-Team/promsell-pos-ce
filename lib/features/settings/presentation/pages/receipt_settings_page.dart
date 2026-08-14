@@ -72,7 +72,7 @@ class _ReceiptSettingsPageState extends State<ReceiptSettingsPage>
           itemDiscounts: l.receiptItemDiscounts,
           cartDiscount: l.receiptCartDiscount,
           serviceCharge: l.serviceCharge,
-          notTaxInvoice: s.taxId.trim().isEmpty ? l.receiptNotTaxInvoice : null,
+          notTaxInvoice: l.receiptNotTaxInvoice,
           taxId: l.receiptTaxId,
           taxInvoice: l.receiptTaxInvoice,
           thankYou: l.receiptThankYouDefault,

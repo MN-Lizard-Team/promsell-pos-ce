@@ -152,7 +152,7 @@ void main() {
 
       // THEN: Close receipt and verify cart is cleared
       await checkoutRobot.closeReceipt();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 800));
 
       saleRobot.verifyCartEmpty();
 
@@ -183,7 +183,7 @@ void main() {
       // Button should be disabled or not visible
       if (checkoutBtn.evaluate().isNotEmpty) {
         await tester.tap(checkoutBtn);
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 800));
 
         // Should show error or stay on sale page
         final onCheckout = find.text('Payment').evaluate().isNotEmpty;

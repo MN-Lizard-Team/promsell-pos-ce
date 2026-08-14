@@ -29,7 +29,10 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage>
 
         return SettingsLeafChrome(
           title: context.l10n.settingsGeneral,
-          header: GeneralSummaryCard(locale: s.locale, themeMode: s.themeMode),
+          header: GeneralSummaryCard(
+            localeCode: s.localeCode,
+            themeModeName: s.themeModeName,
+          ),
           children: [
             GeneralSettingsForm(
               settings: s,

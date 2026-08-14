@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/cards/daily_close_date_card.dart';
@@ -113,6 +114,7 @@ class _DailyClosePageState extends State<DailyClosePage> {
                 // Actions
                 if (!isReadOnly)
                   FilledButton.icon(
+                    key: const Key('test_close_day_button'),
                     onPressed: state.status == DailyCloseStatus.closing
                         ? null
                         : () => _confirmClose(context),
@@ -147,6 +149,12 @@ class _DailyClosePageState extends State<DailyClosePage> {
       icon: Icons.lock_outline,
     );
     if (!confirmed || !context.mounted) return;
+    // V092-B.3: prompt store PIN before closing the day.
+    final unlocked = await ensureAppUnlocked(
+      context,
+      title: context.l10n.appLockConfirmStock,
+    );
+    if (!unlocked || !context.mounted) return;
     await _cubit.closeDay(deviceId: '');
   }
 
@@ -162,6 +170,12 @@ class _DailyClosePageState extends State<DailyClosePage> {
       icon: Icons.lock_open_outlined,
     );
     if (!confirmed || !context.mounted) return;
+    // V092-B.3: prompt store PIN before reopening the day.
+    final unlocked = await ensureAppUnlocked(
+      context,
+      title: context.l10n.appLockConfirmStock,
+    );
+    if (!unlocked || !context.mounted) return;
     await _cubit.reopenDay();
   }
 }

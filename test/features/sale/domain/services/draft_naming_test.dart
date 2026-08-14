@@ -1,9 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/services/draft_naming.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 
 void main() {
   final fixed = DateTime(2026, 1, 1, 9, 5);
@@ -38,43 +34,12 @@ void main() {
     });
   });
 
-  group('DraftNaming.autoParkName', () {
-    test('uses tableId from cart', () {
-      const cart = CartState(tableId: 'T-5', items: []);
-      expect(DraftNaming.autoParkName(cart), 'T-5');
-    });
-
-    test('uses time and item count without table', () {
-      final product = Product(
-        id: 'p1',
-        name: 'Water',
-        price: Money.fromDouble(10),
-        stock: 10,
-        isActive: true,
-        createdAt: DateTime(2024),
-        updatedAt: DateTime(2024),
-      );
-      final cart = CartState(items: [CartItem(product: product, qty: 2)]);
-      expect(DraftNaming.autoParkName(cart, now: fixed), 'B-0905 · 2');
-    });
-  });
-
   group('DraftNaming.resolveParkName', () {
-    final product = Product(
-      id: 'p1',
-      name: 'Water',
-      price: Money.fromDouble(10),
-      stock: 10,
-      isActive: true,
-      createdAt: DateTime(2024),
-      updatedAt: DateTime(2024),
-    );
-    final cart = CartState(items: [CartItem(product: product, qty: 1)]);
-
     test('keeps existing name when no explicit', () {
       expect(
         DraftNaming.resolveParkName(
-          cart: cart,
+          tableId: null,
+          itemCount: 1,
           existingName: 'VIP',
           now: fixed,
         ),
@@ -83,13 +48,17 @@ void main() {
     });
 
     test('auto when no existing and no explicit', () {
-      expect(DraftNaming.resolveParkName(cart: cart, now: fixed), 'B-0905 · 1');
+      expect(
+        DraftNaming.resolveParkName(tableId: null, itemCount: 1, now: fixed),
+        'B-0905 · 1',
+      );
     });
 
     test('explicit non-empty wins', () {
       expect(
         DraftNaming.resolveParkName(
-          cart: cart,
+          tableId: null,
+          itemCount: 1,
           explicitName: 'Table 7',
           existingName: 'VIP',
           now: fixed,
@@ -101,12 +70,20 @@ void main() {
     test('explicit empty falls to auto', () {
       expect(
         DraftNaming.resolveParkName(
-          cart: cart,
+          tableId: null,
+          itemCount: 1,
           explicitName: '  ',
           existingName: 'VIP',
           now: fixed,
         ),
         'B-0905 · 1',
+      );
+    });
+
+    test('uses tableId when provided', () {
+      expect(
+        DraftNaming.resolveParkName(tableId: 'T-5', itemCount: 0, now: fixed),
+        'T-5',
       );
     });
   });

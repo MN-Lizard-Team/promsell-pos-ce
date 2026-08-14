@@ -1,11 +1,7 @@
-import 'dart:io';
-
 import 'package:promsell_pos_ce/core/domain/money.dart';
-import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/category.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
-import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 
 class SubmitProductInput {
   const SubmitProductInput({
@@ -57,8 +53,69 @@ class SubmitProductInput {
   final Product? latestProduct;
 }
 
+/// Pure domain command carrying the fields needed to insert a new product.
+class SubmitProductCommand {
+  const SubmitProductCommand({
+    required this.name,
+    required this.price,
+    required this.stock,
+    this.sku,
+    this.barcode,
+    this.cost,
+    this.categoryId,
+    this.imageUrl,
+    this.imagePath,
+    this.imageThumbnailPath,
+    required this.trackStock,
+    required this.isActive,
+    this.description,
+    this.brand,
+    this.unit,
+    this.supplier,
+    required this.isRecommended,
+    required this.optionGroups,
+  });
+
+  final String name;
+  final double price;
+  final int stock;
+  final String? sku;
+  final String? barcode;
+  final double? cost;
+  final String? categoryId;
+  final String? imageUrl;
+  final String? imagePath;
+  final String? imageThumbnailPath;
+  final bool trackStock;
+  final bool isActive;
+  final String? description;
+  final String? brand;
+  final String? unit;
+  final String? supplier;
+  final bool isRecommended;
+  final List<ProductOptionGroup> optionGroups;
+}
+
+/// Result of [SubmitProductUseCase]: either an add command or an update of
+/// an existing [Product]. The presentation layer maps this to a
+/// `ProductEvent`; the domain never imports presentation.
+sealed class SubmitProductResult {
+  const SubmitProductResult();
+}
+
+class SubmitProductAdd extends SubmitProductResult {
+  const SubmitProductAdd(this.command);
+  final SubmitProductCommand command;
+}
+
+class SubmitProductUpdate extends SubmitProductResult {
+  const SubmitProductUpdate(this.product, {this.optionGroups});
+  final Product product;
+  final List<ProductOptionGroup>? optionGroups;
+}
+
 class SubmitProductUseCase {
-  ProductEvent? call(SubmitProductInput input) {
+  SubmitProductResult? call(SubmitProductInput input) {
     final price = double.tryParse(input.priceText);
     if (price == null) return null;
 
@@ -80,17 +137,10 @@ class SubmitProductUseCase {
     // Clearing them here would silently destroy the reference on every edit
     // (e.g. after a cache clear), making the image unrecoverable even if the
     // file returns via sync/restore. UnifiedImageWidget already renders a
-    // placeholder for non-existent paths, so we keep the path and only log.
+    // placeholder for non-existent paths, so we keep the path; the
+    // presentation layer logs a warning if the file is absent.
     final imagePath = input.imagePath;
     final imageThumbnailPath = input.imageThumbnailPath;
-    if (imagePath != null &&
-        imagePath.isNotEmpty &&
-        !File(imagePath).existsSync()) {
-      AppLogger.warning(
-        'Image file not found at submit, keeping path for recovery: '
-        '${input.imagePath}',
-      );
-    }
 
     if (input.isEditing) {
       final base = input.latestProduct ?? input.existingProduct!;
@@ -102,11 +152,15 @@ class SubmitProductUseCase {
       final categoryId = (rawCategoryId == null || rawCategoryId.isEmpty)
           ? null
           : rawCategoryId;
-      return ProductUpdated(
+      // V092-C.1: the product form must NOT overwrite stock from a stale
+      // snapshot. Operational paths (sale / void / adjustStock) own the
+      // count. The form's stock field is ignored on edit; stock changes go
+      // through the Adjust sheet. Initial stock on insert is still allowed.
+      return SubmitProductUpdate(
         base.copyWith(
           name: input.name.trim(),
           price: Money.fromDouble(price),
-          stock: input.stock,
+          stock: base.stock,
           sku: sku,
           barcode: barcode,
           cost: cost != null ? Money.fromDouble(cost) : null,
@@ -127,27 +181,29 @@ class SubmitProductUseCase {
       );
     } else {
       final addCategoryId = input.selectedCategory?.id;
-      return ProductAdded(
-        name: input.name.trim(),
-        price: price,
-        stock: input.stock,
-        sku: sku,
-        barcode: barcode,
-        cost: cost,
-        categoryId: (addCategoryId == null || addCategoryId.isEmpty)
-            ? null
-            : addCategoryId,
-        imageUrl: input.imageUrl,
-        imagePath: imagePath,
-        imageThumbnailPath: imageThumbnailPath,
-        trackStock: input.trackStock,
-        isActive: input.isActive,
-        description: description,
-        brand: brand,
-        unit: unit,
-        supplier: supplier,
-        isRecommended: input.isRecommended,
-        optionGroups: input.optionGroups,
+      return SubmitProductAdd(
+        SubmitProductCommand(
+          name: input.name.trim(),
+          price: price,
+          stock: input.stock,
+          sku: sku,
+          barcode: barcode,
+          cost: cost,
+          categoryId: (addCategoryId == null || addCategoryId.isEmpty)
+              ? null
+              : addCategoryId,
+          imageUrl: input.imageUrl,
+          imagePath: imagePath,
+          imageThumbnailPath: imageThumbnailPath,
+          trackStock: input.trackStock,
+          isActive: input.isActive,
+          description: description,
+          brand: brand,
+          unit: unit,
+          supplier: supplier,
+          isRecommended: input.isRecommended,
+          optionGroups: input.optionGroups,
+        ),
       );
     }
   }

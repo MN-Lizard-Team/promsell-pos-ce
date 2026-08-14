@@ -40,8 +40,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       final now = DateTime.now();
       if (qtyChange < 0) {
         // Atomic: refuse if would go negative.
+        // V092-C.1: bump version so a stale product form cannot overwrite.
         final rows = await _db.customUpdate(
-          'UPDATE products SET stock = stock + ?, updated_at = ? '
+          'UPDATE products SET stock = stock + ?, version = version + 1, '
+          'updated_at = ? '
           'WHERE id = ? AND stock + ? >= 0',
           variables: [
             Variable.withInt(qtyChange),
@@ -58,8 +60,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
           );
         }
       } else {
+        // V092-C.1: bump version so a stale product form cannot overwrite.
         await _db.customUpdate(
-          'UPDATE products SET stock = stock + ?, updated_at = ? '
+          'UPDATE products SET stock = stock + ?, version = version + 1, '
+          'updated_at = ? '
           'WHERE id = ?',
           variables: [
             Variable.withInt(qtyChange),

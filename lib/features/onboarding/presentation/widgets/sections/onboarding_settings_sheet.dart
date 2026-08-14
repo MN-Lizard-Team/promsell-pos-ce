@@ -55,12 +55,12 @@ class OnboardingSettingsSheet {
                 OnboardingSheetOption(
                   icon: Icons.language,
                   label: l10n.onboardingThai,
-                  selected: settings.locale.languageCode == 'th',
+                  selected: settings.localeCode == 'th',
                   accentColor: accent,
                   isDark: isDark,
                   onTap: () {
                     cubit.updateField(
-                      (_) => settings.copyWith(locale: const Locale('th')),
+                      (_) => settings.copyWith(localeCode: 'th'),
                     );
                     Navigator.pop(sheetCtx);
                   },
@@ -68,12 +68,12 @@ class OnboardingSettingsSheet {
                 OnboardingSheetOption(
                   icon: Icons.language,
                   label: l10n.onboardingEnglish,
-                  selected: settings.locale.languageCode == 'en',
+                  selected: settings.localeCode == 'en',
                   accentColor: accent,
                   isDark: isDark,
                   onTap: () {
                     cubit.updateField(
-                      (_) => settings.copyWith(locale: const Locale('en')),
+                      (_) => settings.copyWith(localeCode: 'en'),
                     );
                     Navigator.pop(sheetCtx);
                   },
@@ -96,12 +96,12 @@ class OnboardingSettingsSheet {
                 OnboardingSheetOption(
                   icon: Icons.wb_sunny,
                   label: l10n.settingsThemeLight,
-                  selected: settings.themeMode == ThemeMode.light,
+                  selected: settings.themeModeName == 'light',
                   accentColor: accent,
                   isDark: isDark,
                   onTap: () {
                     cubit.updateField(
-                      (_) => settings.copyWith(themeMode: ThemeMode.light),
+                      (_) => settings.copyWith(themeModeName: 'light'),
                     );
                     Navigator.pop(sheetCtx);
                   },
@@ -109,12 +109,12 @@ class OnboardingSettingsSheet {
                 OnboardingSheetOption(
                   icon: Icons.nights_stay,
                   label: l10n.settingsThemeDark,
-                  selected: settings.themeMode == ThemeMode.dark,
+                  selected: settings.themeModeName == 'dark',
                   accentColor: accent,
                   isDark: isDark,
                   onTap: () {
                     cubit.updateField(
-                      (_) => settings.copyWith(themeMode: ThemeMode.dark),
+                      (_) => settings.copyWith(themeModeName: 'dark'),
                     );
                     Navigator.pop(sheetCtx);
                   },
@@ -122,12 +122,12 @@ class OnboardingSettingsSheet {
                 OnboardingSheetOption(
                   icon: Icons.brightness_auto,
                   label: l10n.settingsThemeSystem,
-                  selected: settings.themeMode == ThemeMode.system,
+                  selected: settings.themeModeName == 'system',
                   accentColor: accent,
                   isDark: isDark,
                   onTap: () {
                     cubit.updateField(
-                      (_) => settings.copyWith(themeMode: ThemeMode.system),
+                      (_) => settings.copyWith(themeModeName: 'system'),
                     );
                     Navigator.pop(sheetCtx);
                   },

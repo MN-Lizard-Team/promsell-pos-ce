@@ -84,12 +84,12 @@
 - Docs historically mentioned dual-pane; code is delivery-style full-page cart review  
 
 ### Scope
-- [ ] Expanded width (≥600/840): catalog | cart pane visible  
-- [ ] Compact: keep current CartBottomBar / review page  
-- [ ] Orientation policy: portrait primary; landscape usable on tablet  
-- [ ] PromptPay already has wide split — align tokens  
-- [ ] Smoke on tablet emulator or device  
-- [ ] Optional store tablet screenshots (A6)  
+- [x] Expanded width (≥840dp): catalog | cart pane visible — `SaleDualPane` + `DockedCartPanel` (2026-08-14)
+- [x] Compact: keep current CartBottomBar / review page — Stack fallback in `SaleDualPane`
+- [x] Orientation policy: portrait primary; landscape usable on tablet — `_applyOrientationForDevice` (≥600dp shortest → landscape allowed)
+- [x] PromptPay already has wide split — align tokens (existing wide layout)
+- [ ] Smoke on tablet emulator or device — **operator-only**
+- [ ] Optional store tablet screenshots (A6) — **operator-only**
 
 ### Non-goals
 - Desktop Windows POS shell  

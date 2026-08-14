@@ -31,13 +31,13 @@
 | B4 | E2E blockers fixed in plan order: TestApp DI, CurrencyFormatter asserts, Keys; hard-gate 3–5 smokes | B0 | Emulator job green 3× then drop soft-fail for subset | todo |
 | B5 | Security test pack: DbKeyStore, image sandbox, crash on-write PII, PIN UI gates | B1 | db_key_store + sandbox + crash + domain PIN + StorePinSetup tests in trust (2026-07-20) | **done** |
 | C0 | Inventory all REAL money columns + dual-write design | B1 | [WS-C](./WS-C-PHASE-M-MONEY.md) full table + Option A locked 2026-07-20 | **done** |
-| C1 | Migration v31+ INTEGER satang (or in-place) + non-finite audit | C0 | Migration PR + tests | todo |
-| C2 | Drift `TypeConverter<Money,int>` / stop baht `.value` at writers | C1 | Code review | todo |
-| C3 | Integration: legacy REAL fixtures → new schema; tender equality satang | C2 | Host tests green | todo |
-| C4 | DATABASE / CHANGELOG / SECURITY honesty for Phase M | C3 | Docs PR | todo |
+| C1 | Migration v31+ INTEGER satang (or in-place) + non-finite audit | C0 | v32 migration + 32 `*_satang` columns + NaN/Inf-safe backfill + file-backed v31→v32 fixture green (2026-08-14); encrypted pre-M backup restore remains pending | **done** (schema; backup fixture pending) |
+| C2 | Drift `TypeConverter<Money,int>` / stop baht `.value` at writers | C1 | Nullable satang converter wired; sale/product/option/draft/customer/promotion/daily-close dual-writes; satang-first readers; exact tender equality; integer report aggregation (2026-08-14) | **done** |
+| C3 | Integration: legacy REAL fixtures → new schema; tender equality satang | C2 | File-backed migration, dual-write/read fallback, one-satang rejection, void customer reversal, payable goldens, and fractional report aggregation green (2026-08-14) | **done** |
+| C4 | DATABASE / CHANGELOG / SECURITY honesty for Phase M | C3 | Updated all three docs for active satang path, REAL compatibility boundary, deferred encrypted pre-M fixture, and current test status (2026-08-14) | **done** |
 | D0 | Threat model for key export / cross-device restore | — | [WS-D](./WS-D-PHASE-2B-KEY-RESTORE.md) locked decisions 2026-07-20 | **done** |
-| D1 | UX design: export envelope / recovery path / PIN | D0 | UX notes + copy TH/EN | todo |
-| E1 | Tablet dual-pane sale + orientation policy | E0 optional | Feature PR + smoke | todo |
+| D1 | UX design: export envelope / recovery path / PIN | D0 | [WS-D](./WS-D-PHASE-2B-KEY-RESTORE.md) §D1 locked 2026-08-14 (TH/EN copy, flows, failure modes) | **done** |
+| E1 | Tablet dual-pane sale + orientation policy | E0 optional | `SaleDualPane` (catalog|docked cart ≥840dp) + `_applyOrientationForDevice` (landscape on tablet ≥600dp shortest) + `DockedCartPanel` + widget tests (2026-08-14); tablet smoke + screenshots still operator | **done** (code); smoke pending operator |
 | E0c | Implement PIN default-on + domain gates (code) | E0 | Domain gates + onboarding default-on PIN finish/skip (2026-07-20); optional legacy first-action force still open | **done** |
 
 ---

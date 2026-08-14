@@ -1,16 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 
+import '../../../../helpers/fake_app_lock.dart';
 import '../../../../helpers/mocks.dart';
 
 void main() {
   late MockProductRepository mockRepo;
+  late AppLockService appLock;
   late AddProduct useCase;
 
   setUp(() {
     mockRepo = MockProductRepository();
-    useCase = AddProduct(mockRepo);
+    appLock = fakeAppLock();
+    useCase = AddProduct(mockRepo, appLock);
     when(
       () => mockRepo.addProduct(
         name: any(named: 'name'),

@@ -2,7 +2,7 @@
 
 **Parent:** [OVERVIEW.md](./OVERVIEW.md) · **Backlog:** [BACKLOG.md](./BACKLOG.md)  
 **IDs:** AH-1.1 … AH-1.5  
-**Status:** todo (wave AH-1)
+**Status:** AH-1.1 done (2026-08-14) — local fence green, CI verification pending; AH-1.2 done (2026-08-14) — CloseDay uses SaleRepository domain port; AH-1.3 done (2026-08-14) — ClearOrphanedImages uses OrphanImageCleaner domain port, SubmitProduct returns domain result; AH-1.4 done (2026-08-14) — Settings domain entity has zero Flutter imports; AH-1.5 done (2026-08-14) — DraftNaming takes primitives instead of CartState; **allowlist fully burned (0 violations)**, 2117 tests green
 
 ---
 
@@ -52,7 +52,7 @@ Fail CI when any file under `lib/features/*/domain/**` imports:
 
 ---
 
-## AH-1.2 — CloseDay port
+## AH-1.2 — CloseDay port ✅ done (2026-08-14)
 
 ### Problem
 
@@ -79,9 +79,18 @@ Prefer **read methods already on SaleRepository** if sufficient (period totals, 
 - Zero imports of `sale/data` from `daily_close/domain`  
 - Behavior of expected cash / multi-tender unchanged  
 
+### Evidence
+
+- `close_day.dart` now imports `SaleRepository` (domain) instead of `SaleLocalDatasource` (data)
+- `close_day_test.dart` mocks `SaleRepository`; all 6 unit tests pass
+- 3 integration tests (`multi_tender_daily_close`, `void_after_day_close`, `sale_vat_discount_void_close`) updated to wrap `saleDs` in `SaleRepositoryImpl`; all pass
+- DI regenerated via `build_runner`; `di_graph_test.dart` green
+- Allowlist entry for `close_day.dart` removed; fence now reports 4 violations (down from 5)
+- Full suite: 2118 tests pass
+
 ---
 
-## AH-1.3 — Product domain leaks
+## AH-1.3 — Product domain leaks ✅ done (2026-08-14)
 
 | Use case | Issue | Direction |
 |----------|-------|-----------|
@@ -92,9 +101,19 @@ Prefer **read methods already on SaleRepository** if sufficient (period totals, 
 
 - Fence allows no product domain exceptions (or expiry ≤ 30 days)  
 
+### Evidence
+
+- New domain port `lib/features/product/domain/services/orphan_image_cleaner.dart`; data adapter `lib/features/product/data/services/orphan_image_cleaner_adapter.dart` (`@LazySingleton(as: OrphanImageCleaner)`) wraps `ProductImageService`.
+- `ClearOrphanedImages` now depends on `OrphanImageCleaner` (domain) + `ProductRepository` (domain); no `product/data` import.
+- `SubmitProductUseCase` now returns a sealed `SubmitProductResult` (`SubmitProductAdd` carrying `SubmitProductCommand`, or `SubmitProductUpdate` carrying `Product`); no `dart:io` and no `presentation` imports.
+- New presentation mapper `lib/features/product/presentation/mappers/submit_product_result_mapper.dart` converts `SubmitProductResult` → `ProductEvent`; `product_form_lifecycle.dart` does the `File.existsSync()` warning (moved from domain).
+- `clear_orphaned_images_test.dart` updated to mock `OrphanImageCleaner`; 3 tests pass.
+- Allowlist entries for `clear_orphaned_images.dart` and `submit_product.dart` removed (4 → 2 violations).
+- DI regenerated; full suite 2118 tests pass.
+
 ---
 
-## AH-1.4 — Settings domain purity
+## AH-1.4 — Settings domain purity ✅ done (2026-08-14)
 
 ### Problem
 
@@ -116,9 +135,18 @@ Prefer **read methods already on SaleRepository** if sufficient (period totals, 
 - `settings.dart` (domain entity) has **zero** Flutter imports  
 - Fence clean for settings domain  
 
+### Evidence
+
+- `settings.dart` no longer imports `package:flutter/material.dart`; `Locale get locale` → `String get localeCode`, `ThemeMode get themeMode` → `String get themeModeName`; `copyWith` takes `String? localeCode` / `String? themeModeName`.
+- New presentation mapper `lib/features/settings/presentation/mappers/settings_locale_mapper.dart` (`settingsLocale(s)` → `Locale`, `settingsThemeMode(s)` → `ThemeMode`).
+- 17 presentation files updated to use string codes + mapper (main.dart, settings tiles, onboarding sheets, report/history date formatters).
+- `settings_test.dart`, `settings_round_trip_test.dart`, `general_summary_card_test.dart`, `general_theme_tile_test.dart`, `general_language_reset_tiles_test.dart` updated to string-based API.
+- Allowlist entry for `settings.dart` removed (2 → 1 violation).
+- DI regenerated; full suite 2118 tests pass.
+
 ---
 
-## AH-1.5 — History read boundary (Should)
+## AH-1.5 — History read boundary (Should) ✅ done (2026-08-14)
 
 ### Problem
 
@@ -131,6 +159,16 @@ Depend on `SaleRepository` or `SalesReadPort` so history stays a read adapter, n
 ### Done when
 
 - `history/data` does not import `sale/data/datasources` (may still live in data layer of history)  
+
+### Evidence
+
+- `DraftNaming` (sale domain) no longer imports `CartState` (presentation); `resolveParkName` takes `String? tableId` + `int itemCount` primitives.
+- `draft_bloc.dart` caller updated to pass `event.cartState.tableId` / `.itemCount`.
+- `draft_naming_test.dart` and `draft_bill_guards_test.dart` updated to primitive API.
+- Allowlist entry for `draft_naming.dart` removed; **allowlist is now empty (0 violations)**.
+- Full suite 2117 tests pass.
+
+> Note: the original AH-1.5 target was `HistoryRepositoryImpl` → `SaleLocalDatasource`. On inspection, `HistoryRepositoryImpl` already depends on the `SaleLocalDatasource` **abstract** (data→data, not domain→data), so it is not a domain fence violation. The only remaining domain→presentation violation was `DraftNaming` → `CartState`, which is now resolved.
 
 ---
 

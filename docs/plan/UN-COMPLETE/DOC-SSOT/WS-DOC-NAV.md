@@ -38,7 +38,7 @@ Create (not `README.md` — keep one map file):
 
 1. Title + SSOT rule (this file is the map; packages own detail)
 2. COMPLETE vs UN-COMPLETE
-3. **Active:** V092-INTEGRITY (tag `v0.9.2`) · ARCH-HARDEN (**paused until V092-GATE**) · POST-090 (after AH-GATE-1) · DOC-SSOT (this package)
+3. **Active:** V092-INTEGRITY (tag `v0.9.2` — **GATE UNLOCKED**) · ARCH-HARDEN (**resumed after V092-GATE**) · POST-090 (after AH-GATE-1) · DOC-SSOT (this package)
 4. **Complete:** V090-TRUST, 080-PLAN, PSPOS-PHASE-1
 5. Gate prefixes: `V092-G*` vs `AH-G*` (never bare `G3`)
 6. Sequence: V092-GATE → resume AH-0.3+ → AH-GATE-1 → POST-090 A4/A5

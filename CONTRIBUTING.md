@@ -18,11 +18,14 @@ flutter pub get
 # Do not stage *.g.dart / *.config.dart. lib/l10n/app_localizations*.dart
 # are still tracked — include them if gen-l10n changed them.
 flutter gen-l10n
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 
 # 4. Verify setup (matches ci.yml — see docs/testing/CI.md)
 flutter analyze
+dart run tool/check_domain_fence.dart
+dart format --set-exit-if-changed lib/ test/ integration_test/
 flutter test --exclude-tags stress
+flutter test test/performance/ --no-pub --reporter compact
 
 # 5. Create a branch
 git checkout -b feat/your-feature
@@ -73,8 +76,11 @@ chore(deps): bump flutter_bloc to 9.2.0
 
 Before submitting, verify:
 
-- [ ] `flutter analyze lib test` passes with no errors
-- [ ] `flutter test` passes
+- [ ] `flutter analyze` passes with no errors
+- [ ] `dart run tool/check_domain_fence.dart` passes with no expired or unallowlisted violations
+- [ ] `dart format --set-exit-if-changed lib/ test/ integration_test/` passes
+- [ ] `flutter test --exclude-tags stress` passes
+- [ ] `flutter test test/performance/ --no-pub --reporter compact` passes
 - [ ] Code generation is up to date (`flutter gen-l10n`, `build_runner build`)
 - [ ] No generated files (`*.g.dart`, `*.config.dart`) staged in git
 - [ ] Commit messages follow Conventional Commits format
@@ -231,7 +237,7 @@ The project has **automated tests** (run `flutter test --exclude-tags stress`; c
 Match [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Map: [`docs/testing/CI.md`](docs/testing/CI.md).
 
 ```bash
-flutter gen-l10n && dart run build_runner build --delete-conflicting-outputs
+flutter gen-l10n && dart run build_runner build
 flutter analyze
 flutter test --coverage --exclude-tags stress
 flutter test test/performance/ --no-pub --reporter compact
@@ -324,7 +330,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current v0.9.1) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.8.x).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current release notes v0.9.2; disk/pubspec remains 0.9.1+1 until the version bump) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.8.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)

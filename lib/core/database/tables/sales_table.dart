@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 
 @DataClassName('SaleData')
 class Sales extends Table {
@@ -8,6 +9,8 @@ class Sales extends Table {
   RealColumn get subtotalAmount => real().withDefault(const Constant(0))();
   TextColumn get discountType => text().nullable()();
   RealColumn get discountValue => real().nullable()();
+  IntColumn get discountValueSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
   RealColumn get discountAmount => real().withDefault(const Constant(0))();
   RealColumn get totalAmount => real()();
   TextColumn get vatMode => text().withDefault(const Constant('NONE'))();
@@ -26,6 +29,25 @@ class Sales extends Table {
   TextColumn get paymentMethod => text()();
   RealColumn get amountReceived => real().nullable()();
   RealColumn get changeAmount => real().nullable()();
+  // Phase M (C1): INTEGER satang dual-write columns for amount fields.
+  // Rates (vatRate, serviceChargeRate) stay REAL. `discountValueSatang` is
+  // populated only when discountType is AMOUNT; percent values stay REAL.
+  IntColumn get subtotalAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get discountAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get totalAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get vatAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get serviceChargeAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get promotionDiscountAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get amountReceivedSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get changeAmountSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
   TextColumn get note => text().nullable()();
   TextColumn get paymentReference => text().nullable()();
   TextColumn get sendingBankCode => text().nullable()();

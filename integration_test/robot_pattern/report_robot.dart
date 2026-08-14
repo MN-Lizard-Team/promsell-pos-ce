@@ -13,25 +13,25 @@ class ReportRobot {
   /// Taps a date preset chip by its localized label.
   Future<void> selectPreset(String label) async {
     await tester.tap(find.text(label).first);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
   /// Taps the "Custom" chip to open the date range picker.
   Future<void> openCustomRange({required String label}) async {
     await tester.tap(find.text(label).first);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
   /// Switches to the History sub-tab using its localized label.
   Future<void> switchToHistory({required String label}) async {
     await tester.tap(find.text(label).first);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
   /// Switches to the Report sub-tab using its localized label.
   Future<void> switchToReport({required String label}) async {
     await tester.tap(find.text(label).first);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 
   /// Verifies report cards are visible.
@@ -45,6 +45,6 @@ class ReportRobot {
       find.byType(SingleChildScrollView).first,
       const Offset(0, 300),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 800));
   }
 }

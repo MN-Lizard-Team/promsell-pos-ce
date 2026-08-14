@@ -33,12 +33,12 @@ When all required criteria pass, change status to:
 
 | ID | Criterion | Evidence | Status |
 |----|-----------|----------|--------|
-| **AH-G1** | Domain import fence green on CI (`domain/**` rule) | CI log / `tool/check_domain_fence` | ⬜ |
-| **AH-G2** | `CloseDay` does **not** import sale **data** layer | code review + fence | ⬜ |
+| **AH-G1** | Domain import fence green on CI (`domain/**` rule) | `tool/check_domain_fence.dart` + CI step + 6 unit tests; **allowlist empty (0 violations)**; all AH-1.* done | 🟡 partial — local check green (0 violations); CI run pending |
+| **AH-G2** | `CloseDay` does **not** import sale **data** layer | `close_day.dart` imports `SaleRepository` (domain); fence clean; 2118 tests green | ✅ |
 | **AH-G3** | Day lock re-check **inside** create **and** void write TX | `SaleDayGuard` in writers + `sale_day_guard_test.dart` | ✅ |
 | **AH-G4** | Doc honesty: coverage **60/80**; no false “sync engine ready”; ADR-027 payable; ADR-028 sync non-goals | ADR-027/028 + SECURITY 60/80 (2026-08-13) | ✅ |
 | **AH-G5** | `release-trust.yml` green on current main/tag candidate | CI | ⬜ |
-| **AH-G6** | No critical money-path architecture regression (integrity + payable goldens) | trust suite | ⬜ |
+| **AH-G6** | No critical money-path architecture regression (integrity + payable goldens) | trust suite: 42 tests across `sale_payable_golden_test.dart` (12 goldens), `sale_payable_calculator_test.dart` (10), `sale_vat_discount_void_close_test.dart` (4), `void_after_day_close_test.dart` (4), `sale_integrity_test.dart` (10), `backup_money_continuity_test.dart` (2), `multi_tender_daily_close_test.dart` (1) — all green 2026-08-14 | ✅ local |
 
 ## Recommended (AH-G7)
 

@@ -44,7 +44,7 @@ What those packages do **not** own:
 
 | Plan | This package OWNS | This package LINKS only |
 |------|-------------------|-------------------------|
-| [V092-INTEGRITY](../V092-INTEGRITY/OVERVIEW.md) | nothing in V092-A.1–A.4 / D.3 / V092-G1–G3 / G5–G8 | tax-invoice **code**, PIN/CI/E2E claim sweep, V092-GATE **G4** |
+| [V092-INTEGRITY](../COMPLETE/V092-INTEGRITY/OVERVIEW.md) | nothing in V092-A.1–A.4 / D.3 / V092-G1–G3 / G5–G8 | tax-invoice **code**, PIN/CI/E2E claim sweep, V092-GATE **G4** |
 | [ARCH-HARDEN-1.0](../ARCH-HARDEN-1.0/OVERVIEW.md) | nav wrap, pause AH-0 until V092-GATE, mark AH-2.1 from evidence | **AH-0.3 remains the ADR ID** — do not mark done without the ADR PR |
 | [POST-090-MANAGE](../POST-090-MANAGE/POST-090-OVERVIEW.md) | nothing store/operator | A2 Data safety, B0, E0 |
 | This package | plan git + index, README shots, data handbook, architecture wording, surface/CI/SECURITY copy that is **not** V092-G4 | — |

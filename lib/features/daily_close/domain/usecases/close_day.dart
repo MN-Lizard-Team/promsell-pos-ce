@@ -1,18 +1,22 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
-import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 
 @injectable
 class CloseDay {
-  CloseDay(this._repository, this._saleDatasource);
+  CloseDay(this._repository, this._saleRepository, this._appLock);
 
   final DailyCloseRepository _repository;
-  final SaleLocalDatasource _saleDatasource;
+  final SaleRepository _saleRepository;
+  final AppLockService _appLock;
 
+  /// Throws [BusinessRuleError] `AppLockRequired` when store PIN is on and
+  /// session locked (V092-B.3).
   Future<DailyClose> call({
     required String date,
     required double openingCash,
@@ -20,6 +24,7 @@ class CloseDay {
     String? note,
     required String deviceId,
   }) async {
+    await _appLock.requireSensitiveSession();
     final existing = await _repository.getByDate(date);
     if (existing != null && existing.isClosed) {
       throw StateError('Day $date is already closed');
@@ -28,7 +33,7 @@ class CloseDay {
     final dayStart = DateTime.parse('${date}T00:00:00');
     final dayEnd = DateTime.parse('${date}T23:59:59.999');
 
-    final sales = await _saleDatasource.querySales(from: dayStart, to: dayEnd);
+    final sales = await _saleRepository.getSales(from: dayStart, to: dayEnd);
     final totals = SalesPeriodTotals.from(sales);
 
     final cashSales = totals.cashSales.value;

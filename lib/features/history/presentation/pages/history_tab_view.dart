@@ -123,14 +123,8 @@ class _HistoryTabContentState extends State<_HistoryTabContent>
   Widget build(BuildContext context) {
     super.build(context);
     final settings = context.watch<SettingsCubit>().state.settings;
-    final dateFmt = DateFormat(
-      settings.dateFormat,
-      settings.locale.languageCode,
-    );
-    final fmt = DateFormat(
-      '${settings.dateFormat} HH:mm',
-      settings.locale.languageCode,
-    );
+    final dateFmt = DateFormat(settings.dateFormat, settings.localeCode);
+    final fmt = DateFormat('${settings.dateFormat} HH:mm', settings.localeCode);
 
     Widget body = Column(
       children: [

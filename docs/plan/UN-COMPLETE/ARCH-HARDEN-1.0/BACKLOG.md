@@ -5,7 +5,7 @@
 **Rule:** Change status only with evidence (PR / CI / doc path). Never mark done from plan text alone.
 
 **Related store backlog (do not duplicate):** [POST-090-BACKLOG.md](../POST-090-MANAGE/POST-090-BACKLOG.md)  
-**Related next-tag slice (do not duplicate):** [V092-INTEGRITY BACKLOG](../V092-INTEGRITY/BACKLOG.md) — tax invoice / PIN holes / stock CAS / QA nets; does **not** move AH-* to done.  
+**Related next-tag slice (do not duplicate):** [V092-INTEGRITY BACKLOG](../../COMPLETE/V092-INTEGRITY/BACKLOG.md) — tax invoice / PIN holes / stock CAS / QA nets; does **not** move AH-* to done.
 **Related docs-tree slice (do not duplicate):** [DOC-SSOT BACKLOG](../DOC-SSOT/BACKLOG.md) — plan index / handbook / ARCH wording; AH-0.3 evidence still lands on this file.
 
 ---
@@ -18,10 +18,10 @@
 | AH-0.2 | Doc honesty: coverage floor **60%** global + **80%** sale-logic in `SECURITY.md` and testing readme (match `ci.yml`) | AH-0 | — | `SECURITY.md` line 90 updated | **done** |
 | AH-0.3 | ADR/doc repair: WatchReport→**ReportRepository**; Void via History not Checkout; ADR-027 payable; ADR-028 sync **non-goals** | AH-0 | — | `docs/architecture/*` + ADR-027/028 (DOC-SSOT 2026-08-13) | **done** (2026-08-13) |
 | AH-0.4 | Publish AH-GATE-1: Play production path **blocked** until gate | AH-0 | AH-0.1 | [GATE-TO-PLAY.md](./GATE-TO-PLAY.md) status BLOCKED | **done** (2026-07-30) |
-| AH-1.1 | CI domain import fence (`domain/**` ↛ presentation/data/flutter) + dated allowlist | AH-1 | AH-0.1 | `tool/` + `ci.yml` | todo |
-| AH-1.2 | CloseDay: remove `SaleLocalDatasource` dependency → SaleRepository / SalesReadPort | AH-1 | AH-1.1 partial OK | code + daily_close / multi_tender tests | todo |
-| AH-1.3 | Fix domain leaks: `ClearOrphanedImages`, `SubmitProduct` (no domain→data/presentation) | AH-1 | AH-1.1 | code + unit tests | todo |
-| AH-1.4 | Settings domain: drop Flutter `Locale`/`ThemeMode`; map at presentation | AH-1 | AH-1.1 | settings tests | todo |
+| AH-1.1 | CI domain import fence (`domain/**` ↛ presentation/data/flutter) + dated allowlist | AH-1 | AH-0.1 | `tool/check_domain_fence.dart` + `tool/domain_fence_allowlist.txt` + `ci.yml` + `test/tool/check_domain_fence_test.dart`; local check green, CI pending | **in_progress** |
+| AH-1.2 | CloseDay: remove `SaleLocalDatasource` dependency → SaleRepository / SalesReadPort | AH-1 | AH-1.1 partial OK | `close_day.dart` uses `SaleRepository`; unit + 3 integration tests green; allowlist entry burned; 2118 tests pass | **done** (2026-08-14) |
+| AH-1.3 | Fix domain leaks: `ClearOrphanedImages`, `SubmitProduct` (no domain→data/presentation) | AH-1 | AH-1.1 | `OrphanImageCleaner` domain port + adapter; `SubmitProductResult` sealed type + presentation mapper; allowlist entries burned (4→2); 2118 tests green | **done** (2026-08-14) |
+| AH-1.4 | Settings domain: drop Flutter `Locale`/`ThemeMode`; map at presentation | AH-1 | AH-1.1 | `settings.dart` stores `localeCode`/`themeModeName` strings; new `settings_locale_mapper.dart`; 17 presentation files + 5 tests updated; allowlist entry burned (2→1); 2118 tests green | **done** (2026-08-14) |
 | AH-2.1 | Day lock **re-check inside** create/void write transactions (close TOCTOU) | AH-2 | AH-1.2 optional | `SaleDayGuard` in `sale_insert_writer` / `sale_void_writer` TX + `sale_day_guard_test.dart` | **done** (2026-08-13, code already shipped) |
 | AH-2.2 | CloseDay + `lastClosedDate` atomic or ordered fail-closed | AH-2 | AH-1.2 | test | todo |
 | AH-2.3 | Cart/Checkout promo as `Money`; clarify charge SSOT (`payableTotals`) | AH-2 | — | sale tests / goldens | todo |
@@ -33,7 +33,7 @@
 
 | ID | Description | Wave | Depends | Evidence | Status |
 |----|-------------|------|---------|----------|--------|
-| AH-1.5 | History uses domain read API (no direct sale **data** import) | AH-1 | AH-1.2 | history tests | todo |
+| AH-1.5 | History uses domain read API (no direct sale **data** import) | AH-1 | AH-1.2 | `DraftNaming` takes primitives (no `CartState` import); allowlist fully burned (0 violations); 2117 tests green | **done** (2026-08-14) |
 | AH-2.4 | Unify inventory log writes (one service + deviceId) | AH-2 | — | inventory + sale integrity | todo |
 | AH-2.5 | Domain `CartDiscountPolicy` + tender/stock **policy** (SQL CAS stays data) | AH-2 | AH-2.3 | unit tests | todo |
 | AH-2.6 | Decision: wire `MoneyConverter` **or** defer INTEGER to Phase M C1 after gate | AH-2 | AH-2.3 | note in WS-C / this backlog | todo |
@@ -88,6 +88,11 @@
 |------|--------|
 | 2026-07-30 | Package created (7 files); roadmap + POST-090 gate links; **AH-0.1 / AH-0.4 done**; AH-0.2 / AH-0.3 next |
 | 2026-08-13 | AH-0.2 already done; **AH-0.3 done** (ADR-027/028 + WatchReport/Void wording); **AH-2.1 / AH-G3 done** from `SaleDayGuard`; package **PAUSED until V092-GATE** |
+| 2026-08-14 | **AH-1.1 in progress:** added `tool/check_domain_fence.dart`, dated `tool/domain_fence_allowlist.txt`, hard-fail CI step, CONTRIBUTING check, and 6 unit tests. Local fence and tests pass; AH-G1 remains partial until CI runs on main. |
+| 2026-08-14 | **AH-1.2 done:** `CloseDay` now depends on `SaleRepository` (domain) instead of `SaleLocalDatasource` (data); `close_day_test.dart` mocks `SaleRepository`; 3 integration tests wrap `saleDs` in `SaleRepositoryImpl`; DI regenerated; allowlist entry removed (5→4 violations); full suite 2118 tests green. |
+| 2026-08-14 | **AH-1.3 done:** `ClearOrphanedImages` uses new `OrphanImageCleaner` domain port (data adapter wraps `ProductImageService`); `SubmitProductUseCase` returns sealed `SubmitProductResult` (no `dart:io` / presentation imports); new `submit_product_result_mapper.dart` in presentation maps result→`ProductEvent`; `File.existsSync()` warning moved to presentation caller; allowlist entries removed (4→2 violations); full suite 2118 tests green. |
+| 2026-08-14 | **AH-1.4 done:** `Settings` domain entity no longer imports `package:flutter/material.dart`; `Locale`/`ThemeMode` getters → `localeCode`/`themeModeName` string getters; `copyWith` takes string params; new `settings_locale_mapper.dart` converts to Flutter `Locale`/`ThemeMode` in presentation; 17 presentation files + 5 test files updated; allowlist entry removed (2→1 violation); full suite 2118 tests green. |
+| 2026-08-14 | **AH-1.5 done:** `DraftNaming` (sale domain) no longer imports `CartState` (presentation); `resolveParkName` takes `String? tableId` + `int itemCount` primitives; `draft_bloc.dart` + 2 tests updated; **allowlist fully burned (0 violations)**; full suite 2117 tests green. **All AH-1.* tasks complete.** |
 
 ---
 

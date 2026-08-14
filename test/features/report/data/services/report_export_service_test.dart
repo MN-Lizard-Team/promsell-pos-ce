@@ -1,14 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/data/services/report_export_service.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 
+import '../../../../helpers/fake_app_lock.dart';
+
 void main() {
   const calculator = ReportCalculatorService();
-  const exportService = ReportExportService();
+  final exportService = ReportExportService(fakeAppLock());
 
   ReportData buildData(List<Sale> sales) {
     return ReportData(
@@ -53,8 +57,8 @@ void main() {
   }
 
   group('ReportExportService — CSV', () {
-    test('exportCsv includes header row', () {
-      final csv = exportService.exportCsv(buildData([]));
+    test('exportCsv includes header row', () async {
+      final csv = await exportService.exportCsv(buildData([]));
       expect(csv, contains('Receipt Number'));
       expect(csv, contains('Date'));
       expect(csv, contains('Status'));
@@ -63,9 +67,9 @@ void main() {
       expect(csv, contains('Items'));
     });
 
-    test('exportCsv includes sale rows with correct data', () {
+    test('exportCsv includes sale rows with correct data', () async {
       final sales = [buildSale(receiptNumber: 'R001', total: 200)];
-      final csv = exportService.exportCsv(buildData(sales));
+      final csv = await exportService.exportCsv(buildData(sales));
       expect(csv, contains('R001'));
       expect(csv, contains('COMPLETED'));
       expect(csv, contains('cash'));
@@ -73,14 +77,14 @@ void main() {
       expect(csv, contains('Coffee x2'));
     });
 
-    test('exportCsv marks voided sales as VOIDED', () {
+    test('exportCsv marks voided sales as VOIDED', () async {
       final sales = [buildSale(status: 'VOIDED', receiptNumber: 'R002')];
-      final csv = exportService.exportCsv(buildData(sales));
+      final csv = await exportService.exportCsv(buildData(sales));
       expect(csv, contains('VOIDED'));
       expect(csv, contains('R002'));
     });
 
-    test('exportCsv escapes formula-injection characters', () {
+    test('exportCsv escapes formula-injection characters', () async {
       final malicious = Sale(
         id: 'sale-x',
         receiptNumber: '=cmd',
@@ -103,45 +107,51 @@ void main() {
         changeAmount: Money.zero,
         createdAt: DateTime(2026, 6, 2, 10),
       );
-      final csv = exportService.exportCsv(buildData([malicious]));
+      final csv = await exportService.exportCsv(buildData([malicious]));
       // The receipt number starting with '=' should be escaped with a
       // leading single quote.
       expect(csv, contains("'=cmd"));
     });
 
-    test('exportCsv appends profitability summary when profit data exists', () {
-      final sales = [buildSale(receiptNumber: 'R003', total: 100)];
-      final lookup = <String, Product>{'p1': _product(id: 'p1', cost: 30)};
-      final profit = calculator.profitAnalytics(sales, lookup);
-      final data = ReportData(
-        sales: sales,
-        from: DateTime(2026, 6, 1),
-        to: DateTime(2026, 6, 3),
-        totals: calculator.periodTotals(sales),
-        dailyRevenue: const [],
-        profit: profit,
-      );
-      final csv = exportService.exportCsv(data);
-      expect(csv, contains('Profitability Summary'));
-      expect(csv, contains('Total Cost'));
-      expect(csv, contains('Gross Profit'));
-      expect(csv, contains('Margin %'));
-    });
+    test(
+      'exportCsv appends profitability summary when profit data exists',
+      () async {
+        final sales = [buildSale(receiptNumber: 'R003', total: 100)];
+        final lookup = <String, Product>{'p1': _product(id: 'p1', cost: 30)};
+        final profit = calculator.profitAnalytics(sales, lookup);
+        final data = ReportData(
+          sales: sales,
+          from: DateTime(2026, 6, 1),
+          to: DateTime(2026, 6, 3),
+          totals: calculator.periodTotals(sales),
+          dailyRevenue: const [],
+          profit: profit,
+        );
+        final csv = await exportService.exportCsv(data);
+        expect(csv, contains('Profitability Summary'));
+        expect(csv, contains('Total Cost'));
+        expect(csv, contains('Gross Profit'));
+        expect(csv, contains('Margin %'));
+      },
+    );
 
-    test('exportCsv omits profitability summary when no cost coverage', () {
-      final sales = [buildSale(receiptNumber: 'R004')];
-      final profit = calculator.profitAnalytics(sales, {});
-      final data = ReportData(
-        sales: sales,
-        from: DateTime(2026, 6, 1),
-        to: DateTime(2026, 6, 3),
-        totals: calculator.periodTotals(sales),
-        dailyRevenue: const [],
-        profit: profit,
-      );
-      final csv = exportService.exportCsv(data);
-      expect(csv, isNot(contains('Profitability Summary')));
-    });
+    test(
+      'exportCsv omits profitability summary when no cost coverage',
+      () async {
+        final sales = [buildSale(receiptNumber: 'R004')];
+        final profit = calculator.profitAnalytics(sales, {});
+        final data = ReportData(
+          sales: sales,
+          from: DateTime(2026, 6, 1),
+          to: DateTime(2026, 6, 3),
+          totals: calculator.periodTotals(sales),
+          dailyRevenue: const [],
+          profit: profit,
+        );
+        final csv = await exportService.exportCsv(data);
+        expect(csv, isNot(contains('Profitability Summary')));
+      },
+    );
   });
 
   group('ReportExportService — PDF', () {
@@ -175,6 +185,49 @@ void main() {
       );
       expect(bytes, isNotEmpty);
     });
+
+    // V092-B.3 regression: domain gate refuses when PIN on + locked.
+    test(
+      'exportPdf throws BusinessRuleError AppLockRequired when PIN locked',
+      () async {
+        final locked = fakeAppLock();
+        await locked.setPin('147258');
+        locked.lockSession();
+        final gated = ReportExportService(locked);
+
+        await expectLater(
+          () => gated.exportPdf(buildData([])),
+          throwsA(
+            isA<BusinessRuleError>().having(
+              (e) => e.rule,
+              'rule',
+              AppLockService.ruleAppLockRequired,
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'exportCsv throws BusinessRuleError AppLockRequired when PIN locked',
+      () async {
+        final locked = fakeAppLock();
+        await locked.setPin('147258');
+        locked.lockSession();
+        final gated = ReportExportService(locked);
+
+        await expectLater(
+          () => gated.exportCsv(buildData([])),
+          throwsA(
+            isA<BusinessRuleError>().having(
+              (e) => e.rule,
+              'rule',
+              AppLockService.ruleAppLockRequired,
+            ),
+          ),
+        );
+      },
+    );
   });
 }
 

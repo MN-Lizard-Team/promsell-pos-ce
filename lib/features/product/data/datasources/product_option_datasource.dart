@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 
@@ -28,7 +28,7 @@ class ProductOptionDatasourceImpl implements ProductOptionDatasource {
     id: d.id,
     groupId: d.groupId,
     name: d.name,
-    priceDelta: Money.fromDouble(d.priceDelta),
+    priceDelta: moneyFromSatangOrBaht(d.priceDeltaSatang, d.priceDelta),
     sortOrder: d.sortOrder,
   );
 

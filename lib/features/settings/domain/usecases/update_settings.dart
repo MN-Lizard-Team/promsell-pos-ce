@@ -16,7 +16,7 @@ class UpdateSettings {
   Future<SettingsFailure?> call(Settings settings) async {
     try {
       final current = await _repository.load();
-      if (settingsSensitivePaymentChanged(current, settings)) {
+      if (settingsSensitiveChanged(current, settings)) {
         await _appLock.requireSensitiveSession();
       }
       await _repository.save(settings);

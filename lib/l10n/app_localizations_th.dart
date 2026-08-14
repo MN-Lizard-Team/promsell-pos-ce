@@ -4296,6 +4296,10 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get appLockPinTooTrivial =>
+      'PIN ง่ายเกินไป — กรุณาตั้ง PIN ที่ยากต่อการเดา';
+
+  @override
   String get appLockIncorrectPin => 'PIN ไม่ถูกต้อง';
 
   @override
@@ -4322,6 +4326,95 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
+  String get appLockEnterCurrentPin => 'กรอก PIN เดิม';
+
+  @override
+  String get appLockChangePin => 'เปลี่ยน PIN';
+
+  @override
+  String get appLockChangePinHint => 'ต้องใส่ PIN เดิมก่อน แล้วตั้ง PIN ใหม่';
+
+  @override
+  String get appLockPinChanged => 'เปลี่ยน PIN แล้ว';
+
+  @override
+  String get appLockPinStatus => 'สถานะ PIN';
+
+  @override
+  String appLockPinSetDate(String date) {
+    return 'ตั้งล่าสุด: $date';
+  }
+
+  @override
+  String get appLockPinSetUnknown => 'ไม่ทราบวันที่ตั้ง';
+
+  @override
+  String get appLockSessionGraceTitle => 'เวลาผ่อนผัน session';
+
+  @override
+  String get appLockSessionGraceHint =>
+      'หลังปลดล็อก PIN ระบบจะไม่ขอ PIN ซ้ำภายในระยะเวลานี้ — เลือก 0 เพื่อถามทุกครั้ง (single-action)';
+
+  @override
+  String get appLockGraceSingleAction => 'ถามทุกครั้ง (single-action)';
+
+  @override
+  String get appLockSessionGraceChanged => 'เปลี่ยนเวลาผ่อนผันแล้ว';
+
+  @override
+  String get appLockLockoutPolicyTitle => 'นโยบายล็อกชั่วคราว';
+
+  @override
+  String get appLockLockoutPolicyHint =>
+      'หลังพยายามผิดครบจำนวนที่กำหนด ระบบจะล็อกชั่วคราวและทวีคูณเวลาในแต่ละครั้งถัดไป';
+
+  @override
+  String get appLockMaxFailedAttempts => 'จำนวนพยายามผิดสูงสุด';
+
+  @override
+  String appLockMaxFailedAttemptsValue(int n) {
+    return 'ล็อกหลังผิด $n ครั้ง';
+  }
+
+  @override
+  String get appLockBaseLockout => 'เวลาล็อกเริ่มต้น';
+
+  @override
+  String appLockBaseLockoutValue(String duration) {
+    return 'เริ่มต้น $duration (ทวีคูณสูงสุด 16 เท่า)';
+  }
+
+  @override
+  String get appLockLockoutPolicyChanged => 'เปลี่ยนนโยบายล็อกแล้ว';
+
+  @override
+  String get appLockErasePin => 'ลบ PIN ทิ้ง';
+
+  @override
+  String get appLockErasePinTitle => 'ลบ PIN ที่เก็บไว้?';
+
+  @override
+  String get appLockErasePinConfirm =>
+      'การกระทำนี้จะลบ PIN ที่เก็บไว้ถาวร — หากต้องการเปิดใช้ล็อกอีกครั้งจะต้องตั้ง PIN ใหม่ ไม่สามารถยกเลิกได้';
+
+  @override
+  String get appLockErasePinHint =>
+      'ลบ PIN ที่เก็บไว้ถาวร — การเปิดใช้ใหม่ต้องตั้ง PIN ใหม่';
+
+  @override
+  String get appLockPinErased => 'ลบ PIN แล้ว';
+
+  @override
+  String get appLockDisableConfirmTitle => 'ปิดใช้ PIN ร้าน?';
+
+  @override
+  String get appLockDisableConfirmBody =>
+      'หากปิด PIN ร้าน ทุกคนที่เข้าถึงเครื่องนี้จะสามารถยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay ได้โดยไม่ต้องยืนยัน PIN ยังเก็บไว้ จึงเปิดใช้ใหม่ได้ภายหลังโดยไม่ต้องตั้งใหม่';
+
+  @override
+  String get appLockConfirmDisable => 'ปิด ฉันเข้าใจ';
+
+  @override
   String get onboardingStorePinTitle => 'ตั้งรหัส PIN ร้าน';
 
   @override
@@ -4331,6 +4424,26 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get onboardingStorePinRequired => 'ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า';
+
+  @override
+  String get onboardingSkipPin => 'ข้าม';
+
+  @override
+  String get onboardingSkipPinConfirmTitle => 'ข้ามการตั้ง PIN?';
+
+  @override
+  String get onboardingSkipPinConfirmBody =>
+      'หากไม่ตั้ง PIN ร้าน ทุกคนที่เข้าถึงเครื่องนี้จะสามารถยกเลิกบิล ส่งออก/กู้คืนสำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay ได้โดยไม่ต้องยืนยัน คุณสามารถเปิด PIN ได้ภายหลังใน การตั้งค่า → ล็อก PIN ร้าน';
+
+  @override
+  String get onboardingSetupPinInstead => 'ตั้ง PIN แทน';
+
+  @override
+  String get onboardingConfirmSkipPin => 'ข้าม ฉันเข้าใจ';
+
+  @override
+  String get onboardingPinSkippedHint =>
+      'ยังไม่ตั้ง PIN — เปิดได้ภายหลังใน การตั้งค่า → ล็อก PIN ร้าน';
 
   @override
   String get exportPdf => 'ส่งออก PDF';

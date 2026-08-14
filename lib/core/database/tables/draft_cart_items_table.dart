@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/database/tables/draft_carts_table.dart';
 
 @DataClassName('DraftCartItemData')
@@ -12,6 +13,13 @@ class DraftCartItems extends Table {
   IntColumn get qty => integer()();
   TextColumn get discountType => text().nullable()();
   RealColumn get discountValue => real().nullable()();
+  IntColumn get discountValueSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  // Phase M (C1): INTEGER satang dual-write columns.
+  // discountValue stays REAL for compatibility; the satang column is
+  // populated only when discountType is AMOUNT.
+  IntColumn get priceSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
   TextColumn get note => text().nullable()();
   TextColumn get productOptionsJson => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

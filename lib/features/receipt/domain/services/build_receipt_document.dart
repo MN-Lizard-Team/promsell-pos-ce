@@ -97,10 +97,9 @@ class BuildReceiptDocument {
       voidReason: sale.voidReason,
       voidedAt: sale.voidedAt,
       isReprint: isReprint,
-      // Show "not a tax invoice" disclaimer only when no valid Tax ID is set.
-      notTaxInvoiceDisclaimer: settings.taxId.trim().isEmpty
-          ? notTaxInvoiceDisclaimer
-          : null,
+      // Always show "not a tax invoice" disclaimer — receipts are sales
+      // receipts regardless of Tax ID (V092-A.1).
+      notTaxInvoiceDisclaimer: notTaxInvoiceDisclaimer,
     );
   }
 }

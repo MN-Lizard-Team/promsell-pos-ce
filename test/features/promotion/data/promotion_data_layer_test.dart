@@ -52,6 +52,11 @@ void main() {
     final one = await repo.getPromotionById(id);
     expect(one, isNotNull);
     expect(one!.minPurchaseAmount, Money.fromDouble(100));
+    final stored = await (db.select(
+      db.promotions,
+    )..where((p) => p.id.equals(id))).getSingle();
+    expect(stored.valueSatang, isNull);
+    expect(stored.minPurchaseAmountSatang, const Money.fromSatang(10000));
   });
 
   test('getActive excludes inactive, future, and expired', () async {
@@ -103,6 +108,10 @@ void main() {
     );
 
     final active = await repo.getActivePromotions();
+    final activeRow = await (db.select(
+      db.promotions,
+    )..where((p) => p.name.equals('Active'))).getSingle();
+    expect(activeRow.valueSatang, const Money.fromSatang(2000));
     expect(active.map((p) => p.name), contains('Active'));
     expect(active.any((p) => p.name == 'Off'), isFalse);
     expect(active.any((p) => p.name == 'Future'), isFalse);

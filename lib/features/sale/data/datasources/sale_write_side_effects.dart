@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 
@@ -52,7 +53,10 @@ class SaleWriteSideEffects {
       }
       return;
     }
-    final currentSpent = Money.fromDouble(customer.totalSpent);
+    final currentSpent = moneyFromSatangOrBaht(
+      customer.totalSpentSatang,
+      customer.totalSpent,
+    );
     final newTotalSpent = (currentSpent + delta).clampToZero();
     final newVisitCount = (customer.visitCount + visitDelta).clamp(0, 1 << 31);
     await (_db.update(
@@ -62,6 +66,8 @@ class SaleWriteSideEffects {
         totalSpent: Value(newTotalSpent.value),
         visitCount: Value(newVisitCount),
         updatedAt: Value(DateTime.now()),
+        // Phase M (C2): dual-write satang.
+        totalSpentSatang: Value(newTotalSpent),
       ),
     );
   }

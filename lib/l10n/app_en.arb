@@ -2113,6 +2113,7 @@
       "min": { "type": "int" }
     }
   },
+  "appLockPinTooTrivial": "PIN is too easy to guess — choose a less obvious combination",
   "appLockIncorrectPin": "Incorrect PIN",
   "appLockActionRequired": "Action requires store PIN",
   "appLockConfirmVoid": "Confirm void with store PIN",
@@ -2126,6 +2127,47 @@
       "seconds": { "type": "int" }
     }
   },
+  "appLockEnterCurrentPin": "Enter current PIN",
+  "appLockChangePin": "Change PIN",
+  "appLockChangePinHint": "Requires the current PIN, then sets a new one",
+  "appLockPinChanged": "PIN changed",
+  "appLockPinStatus": "PIN status",
+  "appLockPinSetDate": "Last set: {date}",
+  "@appLockPinSetDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "appLockPinSetUnknown": "Date unknown",
+  "appLockSessionGraceTitle": "Session grace",
+  "appLockSessionGraceHint": "After unlocking, the app will not re-prompt for PIN within this period — choose 0 to prompt every time (single-action)",
+  "appLockGraceSingleAction": "Every action (single-action)",
+  "appLockSessionGraceChanged": "Session grace updated",
+  "appLockLockoutPolicyTitle": "Lockout policy",
+  "appLockLockoutPolicyHint": "After the configured number of failed attempts, the app temporarily locks and doubles the wait time on each subsequent failure",
+  "appLockMaxFailedAttempts": "Max failed attempts",
+  "appLockMaxFailedAttemptsValue": "Locks after {n} wrong attempts",
+  "@appLockMaxFailedAttemptsValue": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "appLockBaseLockout": "Base lockout duration",
+  "appLockBaseLockoutValue": "Starts at {duration} (doubles up to 16x)",
+  "@appLockBaseLockoutValue": {
+    "placeholders": {
+      "duration": { "type": "String" }
+    }
+  },
+  "appLockLockoutPolicyChanged": "Lockout policy updated",
+  "appLockErasePin": "Erase PIN",
+  "appLockErasePinTitle": "Erase stored PIN?",
+  "appLockErasePinConfirm": "This permanently deletes the stored PIN. You will need to set a new PIN to re-enable the lock. This cannot be undone.",
+  "appLockErasePinHint": "Permanently delete the stored PIN — re-enabling later requires a new PIN",
+  "appLockPinErased": "PIN erased",
+  "appLockDisableConfirmTitle": "Disable store PIN?",
+  "appLockDisableConfirmBody": "Without a store PIN, anyone with access to this device can void sales, export/restore backups, adjust stock, import CSV, and change PromptPay without confirmation. The PIN is kept so you can re-enable it later without setting a new one.",
+  "appLockConfirmDisable": "Disable, I understand",
   "onboardingStorePinTitle": "Set store PIN",
   "onboardingStorePinBody": "Required for void, backup, stock adjust, CSV import, and PromptPay changes. Keep it offline-safe (min {min} digits).",
   "@onboardingStorePinBody": {
@@ -2134,6 +2176,12 @@
     }
   },
   "onboardingStorePinRequired": "Store PIN is required to finish setup",
+  "onboardingSkipPin": "Skip",
+  "onboardingSkipPinConfirmTitle": "Skip PIN setup?",
+  "onboardingSkipPinConfirmBody": "Without a store PIN, anyone with access to this device can void sales, export/restore backups, adjust stock, import CSV, and change PromptPay without confirmation. You can enable PIN later in Settings → Store PIN lock.",
+  "onboardingSetupPinInstead": "Set up PIN instead",
+  "onboardingConfirmSkipPin": "Skip, I understand",
+  "onboardingPinSkippedHint": "PIN not set — you can enable it later in Settings → Store PIN lock",
   "exportPdf": "Export PDF",
   "exportCsv": "Export CSV",
   "exportReport": "Export report",

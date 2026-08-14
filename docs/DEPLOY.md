@@ -121,6 +121,9 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
+Release notes are prepared for **v0.9.2**, while the working tree remains at
+`0.9.1+1` until the actual version bump and build-number decision are made.
+
 ```yaml
 version: 0.9.1+1
 #        ^^^^^  semantic version (shown to users)
@@ -143,9 +146,12 @@ Update `CHANGELOG.md` with a new entry for every public release.
 
 ## Checklist before release
 
-- [ ] `flutter analyze lib test` — zero errors
-- [ ] `flutter test` — the unit/widget suite (`flutter test --exclude-tags stress`) pass
-- [ ] Integration tests pass (checkout flow + sale integrity)
+- [ ] `flutter analyze` — zero errors
+- [ ] `dart run tool/check_domain_fence.dart` — no expired or unallowlisted violations
+- [ ] `dart format --set-exit-if-changed lib/ test/ integration_test/` — formatting clean
+- [ ] `flutter test --exclude-tags stress` — unit/widget/integration host suite passes
+- [ ] `flutter test test/performance/ --no-pub --reporter compact` — benchmarks pass
+- [ ] Integration/device trust tests pass where required by release-trust
 - [ ] `flutter gen-l10n` — localization up to date
 - [ ] `dart run build_runner build` — generated code up to date (files not committed to git)
 - [ ] Version bumped in `pubspec.yaml`

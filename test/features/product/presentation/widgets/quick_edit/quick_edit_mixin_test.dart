@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
+import 'package:promsell_pos_ce/features/inventory/domain/usecases/adjust_stock.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
@@ -16,6 +19,10 @@ import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import '../../../../../helpers/mocks.dart';
 
 class _FakeProductEvent extends Fake implements ProductEvent {}
+
+class _MockAppLockService extends Mock implements AppLockService {}
+
+class _MockAdjustStock extends Mock implements AdjustStock {}
 
 class _TestWidget extends StatefulWidget {
   const _TestWidget({required this.product});
@@ -65,6 +72,29 @@ void main() {
       ProductState(status: ProductStatus.success, products: [tProduct]),
     );
     when(() => mockProductBloc.add(any())).thenReturn(null);
+    // V092-B.1: quick-edit calls ensureAppUnlocked → sl<AppLockService>.
+    final mockAppLock = _MockAppLockService();
+    when(() => mockAppLock.isEnabled()).thenAnswer((_) async => false);
+    if (!GetIt.I.isRegistered<AppLockService>()) {
+      GetIt.I.registerSingleton<AppLockService>(mockAppLock);
+    }
+    // V092-C.1: quickEditStock uses sl<AdjustStock>() instead of
+    // dispatching ProductUpdated directly.
+    final mockAdjustStock = _MockAdjustStock();
+    when(
+      () => mockAdjustStock.call(
+        productId: any(named: 'productId'),
+        qtyChange: any(named: 'qtyChange'),
+        reason: any(named: 'reason'),
+      ),
+    ).thenAnswer((_) async {});
+    if (!GetIt.I.isRegistered<AdjustStock>()) {
+      GetIt.I.registerSingleton<AdjustStock>(mockAdjustStock);
+    }
+  });
+
+  tearDown(() {
+    GetIt.I.reset();
   });
 
   Future<void> pumpHost(WidgetTester tester, {Product? product}) async {
@@ -101,22 +131,29 @@ void main() {
     final state = tester.state<_TestWidgetState>(find.byType(_TestWidget));
     final context = tester.element(find.byType(_TestWidget));
     action(state, context);
+    // V092-B.1: quick-edit now calls ensureAppUnlocked before showing the
+    // sheet, adding an async gap. Pump enough for the sheet to appear.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsOneWidget);
   }
 
   Future<void> tapSave(WidgetTester tester) async {
-    await tester.tap(find.byType(FilledButton));
+    await tester.ensureVisible(find.byType(FilledButton));
+    await tester.tap(find.byType(FilledButton), warnIfMissed: false);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsNothing);
   }
 
   Future<void> tapCancel(WidgetTester tester) async {
-    await tester.tap(find.byType(OutlinedButton));
+    await tester.ensureVisible(find.byType(OutlinedButton));
+    await tester.tap(find.byType(OutlinedButton), warnIfMissed: false);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsNothing);
   }
 
@@ -203,9 +240,7 @@ void main() {
     });
 
     group('stock', () {
-      testWidgets('dispatches ProductUpdated when stock changes', (
-        tester,
-      ) async {
+      testWidgets('dispatches AdjustStock when stock changes', (tester) async {
         await pumpHost(tester);
         await openSheet(
           tester,
@@ -216,7 +251,16 @@ void main() {
         await tester.pump();
         await tapSave(tester);
 
-        expectDispatched(expected: true);
+        // V092-C.1: stock now goes through AdjustStock, not ProductUpdated.
+        expectDispatched(expected: false);
+        final mockAdjustStock = GetIt.I<AdjustStock>() as _MockAdjustStock;
+        verify(
+          () => mockAdjustStock.call(
+            productId: any(named: 'productId'),
+            qtyChange: any(named: 'qtyChange'),
+            reason: any(named: 'reason'),
+          ),
+        ).called(1);
         expectFeedbackToast(tester, expected: true);
       });
 
@@ -233,7 +277,7 @@ void main() {
         expectFeedbackToast(tester, expected: false);
       });
 
-      testWidgets('stock Adjust mode — add delta dispatches ProductUpdated', (
+      testWidgets('stock Adjust mode — add delta calls AdjustStock', (
         tester,
       ) async {
         await pumpHost(tester);
@@ -249,7 +293,15 @@ void main() {
         await tester.pump();
         await tapSave(tester);
 
-        expectDispatched(expected: true);
+        expectDispatched(expected: false);
+        final mockAdjustStock2 = GetIt.I<AdjustStock>() as _MockAdjustStock;
+        verify(
+          () => mockAdjustStock2.call(
+            productId: any(named: 'productId'),
+            qtyChange: any(named: 'qtyChange'),
+            reason: any(named: 'reason'),
+          ),
+        ).called(1);
         expectFeedbackToast(tester, expected: true);
       });
 

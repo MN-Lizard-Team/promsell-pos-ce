@@ -65,11 +65,22 @@ void main() {
     test('upsertDraft and loadDraft round-trip', () async {
       final product = await seedProduct('prod-001');
       final cartId = await ds.createDraft(name: 'Cart1');
-      final line = CartItem(product: product, qty: 3, lineId: 'stable-line-1');
+      final line = CartItem(
+        product: product,
+        qty: 3,
+        lineId: 'stable-line-1',
+        discountType: 'AMOUNT',
+        discountValue: 0.50,
+      );
 
       await ds.upsertDraft(
         cartId,
-        CartSnapshot(items: [line], note: 'test note'),
+        CartSnapshot(
+          items: [line],
+          note: 'test note',
+          cartDiscountType: 'AMOUNT',
+          cartDiscountValue: 1.23,
+        ),
       );
 
       final loaded = await ds.loadDraft(cartId);
@@ -79,7 +90,18 @@ void main() {
       expect(loaded.items.first.product.id, 'prod-001');
       expect(loaded.items.first.qty, 3);
       expect(loaded.items.first.lineId, 'stable-line-1');
+      expect(loaded.items.first.discountValue, 0.50);
+      expect(loaded.cartDiscountValue, 1.23);
       expect(loaded.note, 'test note');
+
+      final cartRow = await (db.select(
+        db.draftCarts,
+      )..where((t) => t.id.equals(cartId))).getSingle();
+      expect(cartRow.cartDiscountValueSatang, const Money.fromSatang(123));
+      final itemRow = await (db.select(
+        db.draftCartItems,
+      )..where((t) => t.id.equals('stable-line-1'))).getSingle();
+      expect(itemRow.discountValueSatang, const Money.fromSatang(50));
     });
 
     test('listDrafts returns empty when no drafts', () async {

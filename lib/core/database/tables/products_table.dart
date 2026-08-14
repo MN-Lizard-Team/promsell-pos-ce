@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/database/tables/categories_table.dart';
 
 @DataClassName('ProductData')
@@ -11,6 +12,13 @@ class Products extends Table {
   TextColumn get barcodeLower => text().nullable()();
   RealColumn get price => real()();
   RealColumn get cost => real().nullable()();
+  // Phase M (C1): INTEGER satang dual-write columns. Nullable until
+  // backfilled by migration v32; writers populate in C2, readers prefer
+  // satang with REAL fallback in C2. See WS-C-PHASE-M-MONEY.md.
+  IntColumn get priceSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get costSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
   IntColumn get stock => integer().withDefault(const Constant(0))();
   TextColumn get categoryId => text().nullable().references(
     Categories,

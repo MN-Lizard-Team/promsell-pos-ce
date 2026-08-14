@@ -4,7 +4,6 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/domain/services/draft_naming.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/draft_bill_switch_guard.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/draft_list_query.dart';
@@ -52,23 +51,13 @@ void main() {
 
   group('DraftNaming', () {
     test('uses tableId when set', () {
-      const cart = CartState(tableId: 'T-5', items: []);
-      expect(DraftNaming.autoParkName(cart), 'T-5');
+      expect(DraftNaming.autoName(tableId: 'T-5', itemCount: 0), 'T-5');
     });
 
     test('uses time and item count without table', () {
-      final product = Product(
-        id: 'p1',
-        name: 'Water',
-        price: Money.fromDouble(10),
-        stock: 10,
-        isActive: true,
-        createdAt: DateTime(2024),
-        updatedAt: DateTime(2024),
-      );
-      final cart = CartState(items: [CartItem(product: product, qty: 2)]);
-      final name = DraftNaming.autoParkName(
-        cart,
+      final name = DraftNaming.autoName(
+        tableId: null,
+        itemCount: 2,
         now: DateTime(2026, 1, 1, 9, 5),
       );
       expect(name, 'B-0905 · 2');

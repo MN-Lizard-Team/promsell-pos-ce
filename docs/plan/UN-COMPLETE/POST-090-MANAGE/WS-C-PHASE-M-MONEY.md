@@ -90,33 +90,50 @@
 
 ## C1 — Migration
 
-- [ ] New schema version (e.g. **v31+**) in `app_database.dart`  
-- [ ] Non-finite / NaN audit query before convert  
-- [ ] Partial indexes / checks unchanged unless needed  
-- [ ] Backup restore of **pre-M** encrypted DB still upgrades cleanly  
-- [ ] Document downtime: local only; seconds–minutes on large DBs  
+**Status:** Schema + backfill done **2026-08-14**. Writer/reader rewiring is C2.
+
+- [x] New schema version **v32** in `app_database.dart`
+- [x] Non-finite / NaN audit: backfill WHERE clause excludes NaN (`baht = baht` → NULL for NaN) and Inf (`abs(baht) < 1e15`)
+- [x] Partial indexes / checks unchanged unless needed
+- [ ] Backup restore of **pre-M** encrypted DB still upgrades cleanly — needs integration test (C3)
+- [x] Document downtime: local only; seconds–minutes on large DBs (migration is ALTER TABLE + UPDATE per column)
 
 ---
 
 ## C2 — Type layer
 
-- [ ] Wire Drift `TypeConverter<Money, int>` (satang)  
-- [ ] Sale insert/void/stock-adjacent money mappers stop using bare `.value` baht where converted  
-- [ ] Tender equality: integer satang (no 0.009 float tolerance long-term)  
-- [ ] CSV import/export: display baht; store satang  
+**Status:** Wired **2026-08-14**. Legacy REAL columns remain as compatibility dual-writes.
+
+- [x] Wire Drift `TypeConverter<Money, int>` (satang) — nullable `*_satang` columns use `NullableMoneySatangConverter`; readers prefer satang with REAL fallback
+- [x] Sale/product/option/draft/customer/promotion/daily-close writers dual-write `Money` satang plus legacy REAL baht
+- [x] Void/customer-spend reversal reads satang-first and writes both representations
+- [x] Tender equality: exact integer satang (removed the old `0.009` tolerance from sale creation)
+- [x] CSV import/export keeps baht display while product data writes/reads satang through the data layer
 
 ---
 
 ## C3 — Tests
 
-| Test | Assert |
-|------|--------|
-| Legacy fixture REAL DB → migrate | totals match satang expectations |
-| Create sale multi-tender | `SUM(payments) == payable` exact |
-| Void reverse | stock + customer spent exact |
-| Daily close | cash expected from payment lines |
-| Payable golden | matrix unchanged vs 0.9 domain |
-| Report aggregates | year/month no float drift |
+**Status:** Green **2026-08-14** (migration, satang-wiring, precision coverage, and full suite 2129).
+
+| Test | Assert | Status |
+|------|--------|--------|
+| Satang columns exist on all money tables | Schema query | ✅ done |
+| Backfill: products price/cost | `ROUND(baht*100)` matches | ✅ done |
+| Backfill: sales all 8 amount columns | Exact satang | ✅ done |
+| Backfill: daily_closes all 8 columns | Exact satang | ✅ done |
+| Backfill: customers total_spent | Exact satang | ✅ done |
+| Nullable cost stays NULL | `cost_satang IS NULL` when `cost IS NULL` | ✅ done |
+| Half-up rounding 99.995 | `10000` not `9999` | ✅ done |
+| Idempotent backfill | `WHERE satang IS NULL` prevents overwrite | ✅ done |
+| File-backed v31 fixture → v32 | Columns recreated, REAL values backfilled, Drift converter returns `Money` | ✅ done |
+| Create sale dual-write | Header/item/payment satang columns populated | ✅ done |
+| Satang-first sale reader | Changed REAL ignored; NULL satang falls back to REAL | ✅ done |
+| Tender equality | One-satang mismatch rejected; exact multi-tender accepted | ✅ done |
+| Void reverse | Customer spent satang reverses exactly | ✅ done |
+| Daily close | Cash expected from payment lines | ✅ done |
+| Payable golden | Matrix unchanged vs 0.9 domain | ✅ done |
+| Report aggregates | Fractional money aggregates without float drift | ✅ done |
 
 Must run under release-trust or dedicated Phase M job.
 
@@ -124,10 +141,13 @@ Must run under release-trust or dedicated Phase M job.
 
 ## C4 — Docs honesty
 
-- [ ] `docs/DATABASE.md` — money storage section  
-- [ ] `CHANGELOG` — migration notes + known limits update  
-- [ ] `SECURITY.md` if integrity claims change  
-- [ ] Remove “Phase M deferred” only when shipped  
+**Status:** Updated **2026-08-14** after C2/C3 wiring.
+
+- [x] `docs/DATABASE.md` — v32 schema row, active converter/dual-write status, migration timeline, and REAL compatibility note
+- [x] `CHANGELOG.md` — 0.9.1 highlights, breaking/migration v32 entry, compatibility limitation, and current test count
+- [x] `SECURITY.md` — 0.9.2 entry explains that satang storage/readers are active while REAL columns remain for rollback compatibility
+- [x] Honest about what is **not** done: dropping legacy REAL columns and encrypted pre-M backup-restore fixture are still deferred
+- [x] No claim that Phase M removes all floating-point values from SQLite yet
 
 ---
 

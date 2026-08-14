@@ -281,7 +281,7 @@ void main() {
 
       if (removeBtn.evaluate().isNotEmpty) {
         await tester.tap(removeBtn.first);
-        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 800));
 
         // Verify discount removed
         checkoutRobot.verifyGrandTotal(Money.fromDouble(45.0));

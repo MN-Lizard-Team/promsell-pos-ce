@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_barcode.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/generate_sku.dart';
@@ -81,6 +82,8 @@ class _MockGenerateBarcode extends Mock implements GenerateBarcode {}
 
 class _MockGenerateSku extends Mock implements GenerateSku {}
 
+class _MockAppLockService extends Mock implements AppLockService {}
+
 void main() {
   late MockProductBloc mockProductBloc;
   late MockCategoryBloc mockCategoryBloc;
@@ -112,6 +115,13 @@ void main() {
     }
     if (!GetIt.I.isRegistered<GenerateSku>()) {
       GetIt.I.registerSingleton<GenerateSku>(_MockGenerateSku());
+    }
+    // V092-B.1: form submit calls ensureAppUnlocked → sl<AppLockService>.
+    // Register a mock with lock disabled so submit proceeds without PIN.
+    final mockAppLock = _MockAppLockService();
+    when(() => mockAppLock.isEnabled()).thenAnswer((_) async => false);
+    if (!GetIt.I.isRegistered<AppLockService>()) {
+      GetIt.I.registerSingleton<AppLockService>(mockAppLock);
     }
     when(
       () => mockProductBloc.state,

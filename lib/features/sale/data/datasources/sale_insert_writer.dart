@@ -103,11 +103,11 @@ class SaleInsertWriter {
       ];
     }
     final tenderSum = tenderLines.fold(Money.zero, (s, p) => s + p.amount);
-    final mismatch = tenderSum.subtractUnclamped(finalTotal);
-    if (mismatch.value.abs() > 0.009) {
+    if (tenderSum.satang != finalTotal.satang) {
       throw BusinessRuleError(
         'PaymentMismatch',
-        details: 'Tender sum ${tenderSum.value} != payable ${finalTotal.value}',
+        details:
+            'Tender sum ${tenderSum.satang} satang != payable ${finalTotal.satang} satang',
       );
     }
     final headerMethod = tenderLines.length == 1
@@ -157,6 +157,12 @@ class SaleInsertWriter {
                   subtotalAmount: Value(subtotal.value),
                   discountType: Value(cartDiscountType),
                   discountValue: Value(cartDiscountValue),
+                  discountValueSatang: Value(
+                    cartDiscountType?.toUpperCase() == 'AMOUNT' &&
+                            cartDiscountValue != null
+                        ? Money.fromDouble(cartDiscountValue)
+                        : null,
+                  ),
                   discountAmount: Value(effectiveCartDiscount.value),
                   vatMode: Value(vatMode),
                   vatRate: Value(vatRate),
@@ -187,6 +193,17 @@ class SaleInsertWriter {
                             : null),
                   ),
                   deviceId: Value(deviceId),
+                  // Phase M (C2): dual-write INTEGER satang alongside REAL
+                  // baht. Rates (vatRate, serviceChargeRate) and percent
+                  // discountValue stay REAL — they are not money.
+                  subtotalAmountSatang: Value(subtotal),
+                  discountAmountSatang: Value(effectiveCartDiscount),
+                  totalAmountSatang: Value(finalTotal),
+                  vatAmountSatang: Value(vatAmount),
+                  serviceChargeAmountSatang: Value(serviceChargeAmount),
+                  promotionDiscountAmountSatang: Value(promotionDiscountAmount),
+                  amountReceivedSatang: Value(effectiveReceived),
+                  changeAmountSatang: Value(effectiveChange),
                 ),
               );
           lastReceiptError = null;
@@ -221,6 +238,8 @@ class SaleInsertWriter {
                 sendingBankCode: Value(pay.sendingBankCode),
                 sortOrder: Value(pay.sortOrder),
                 deviceId: Value(deviceId),
+                // Phase M (C2): dual-write satang.
+                amountSatang: Value(pay.amount),
               ),
             );
       }
@@ -302,6 +321,11 @@ class SaleInsertWriter {
                   ),
                 ),
                 deviceId: Value(deviceId),
+                // Phase M (C2): dual-write satang.
+                priceSatang: Value(item.product.price),
+                discountAmountSatang: Value(item.discountAmount),
+                vatAmountSatang: Value(itemVatAmount),
+                subtotalSatang: Value(item.subtotal),
               ),
             );
       }
@@ -314,8 +338,10 @@ class SaleInsertWriter {
         final now = DateTime.now();
         if (!allowOversell) {
           // Atomic: stock = stock - qty only when still sufficient.
+          // V092-C.1: bump version so a stale product form cannot overwrite.
           final rows = await _db.customUpdate(
-            'UPDATE products SET stock = stock - ?, updated_at = ? '
+            'UPDATE products SET stock = stock - ?, version = version + 1, '
+            'updated_at = ? '
             'WHERE id = ? AND track_stock = 1 AND stock >= ?',
             variables: [
               Variable.withInt(qty),
@@ -343,8 +369,10 @@ class SaleInsertWriter {
           );
         } else {
           // Atomic allow-negative: stock = stock - qty
+          // V092-C.1: bump version so a stale product form cannot overwrite.
           await _db.customUpdate(
-            'UPDATE products SET stock = stock - ?, updated_at = ? '
+            'UPDATE products SET stock = stock - ?, version = version + 1, '
+            'updated_at = ? '
             'WHERE id = ? AND track_stock = 1',
             variables: [
               Variable.withInt(qty),

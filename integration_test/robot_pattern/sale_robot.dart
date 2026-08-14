@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
+import '../helpers/test_app.dart';
 import '../helpers/test_utils.dart';
 import 'robot_base.dart';
 
@@ -98,7 +100,7 @@ class SaleRobot extends RobotBase {
 
   /// Verify cart total amount
   void verifyCartTotal(Money expectedTotal) {
-    final totalText = expectedTotal.toString();
+    final totalText = CurrencyFormatter.formatMoney(expectedTotal);
     expectVisible(
       find.textContaining(totalText),
       reason: 'Cart total should be $totalText',
@@ -107,10 +109,9 @@ class SaleRobot extends RobotBase {
 
   /// Proceed to checkout
   Future<void> proceedToCheckout() async {
-    // Prefer the stable ValueKey used by cart_review_footer; fall back to
-    // localized text for older layouts.
     final checkoutBtn = find
         .byKey(const ValueKey('sale_cart_checkout_cta'))
+        .or(find.byKey(TestKeys.checkoutTotalLabel))
         .or(find.text('Checkout'))
         .or(find.text('Pay'))
         .or(find.text('ชำระเงิน'))
@@ -121,9 +122,16 @@ class SaleRobot extends RobotBase {
 
   /// Verify cart is empty
   void verifyCartEmpty() {
-    expectVisible(
-      find.text('Cart is empty').or(find.text('No items')),
-      reason: 'Cart should be empty',
+    // Cart empty state may show different text per locale; check for the
+    // common empty-cart widgets rather than exact EN text.
+    final emptyHint = find
+        .text('Cart is empty')
+        .or(find.text('No items'))
+        .or(find.byIcon(TablerIcons.shoppingCartOff));
+    expect(
+      emptyHint.evaluate().isNotEmpty,
+      true,
+      reason: 'Cart should be empty (no items visible)',
     );
   }
 

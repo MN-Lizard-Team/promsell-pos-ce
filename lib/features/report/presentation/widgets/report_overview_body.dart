@@ -33,7 +33,7 @@ class ReportOverviewBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsCubit>().state.settings;
-    final appLocale = settings.locale.languageCode;
+    final appLocale = settings.localeCode;
     final fmt = DateFormat(settings.dateFormat, appLocale);
     final todayRange = DateRangePresets.today();
     final calculator = sl<ReportCalculatorService>();
