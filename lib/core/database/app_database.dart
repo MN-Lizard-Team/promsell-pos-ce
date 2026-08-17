@@ -586,6 +586,21 @@ WHERE receipt_number IS NOT NULL
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_sales_status ON sales (status)',
     );
+    // P0 scaling: composite cursor index for paginated history/report queries
+    // (cursor = (created_at DESC, id DESC)). Covers the ORDER BY + WHERE
+    // clause of `querySalesPage` so the planner does not sort the full table.
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_sales_created_at_id_cursor '
+      'ON sales (created_at DESC, id DESC) '
+      'WHERE deleted_at IS NULL',
+    );
+    // P0 scaling: composite cursor index for paginated product catalog
+    // (cursor = (created_at DESC, id DESC)). Covers `getProductsPage`.
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_products_created_at_id_cursor '
+      'ON products (created_at DESC, id DESC) '
+      'WHERE deleted_at IS NULL',
+    );
     await customStatement(
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_receipt_number_unique '
       'ON sales(receipt_number) '

@@ -91,6 +91,7 @@ dev_dependencies:
     sdk: flutter
   flutter_driver:
     sdk: flutter
+  path_provider_platform_interface: ^2.1.2
 
   # Drift codegen
   drift_dev: ^2.26.1

@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_insert_writer.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_query_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_void_writer.dart';
@@ -9,6 +10,7 @@ import 'package:promsell_pos_ce/features/sale/data/datasources/sale_write_side_e
 import 'package:promsell_pos_ce/features/sale/data/services/receipt_number_service.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_page.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
 
@@ -42,6 +44,22 @@ abstract class SaleLocalDatasource {
   Future<Sale?> querySaleById(String id);
   Stream<List<Sale>> watchRecentSales({int limit});
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to});
+
+  /// Cursor-paginated history page (createdAt DESC, id DESC). Hydrates items
+  /// and payments only for the sales on the current page.
+  Future<SalePage> querySalesPage({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+  });
+
+  /// Total non-deleted sale count, optionally within a date range.
+  Future<int> querySalesCount({DateTime? from, DateTime? to});
+
+  /// SQL-aggregated report summary (no item hydration).
+  Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to});
+
   Future<void> voidSale(String saleId, {String? reason});
 }
 
@@ -147,6 +165,27 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
   @override
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to}) =>
       _query.watchSales(from: from, to: to);
+
+  @override
+  Future<SalePage> querySalesPage({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+  }) => _query.querySalesPage(
+    from: from,
+    to: to,
+    cursor: cursor,
+    pageSize: pageSize,
+  );
+
+  @override
+  Future<int> querySalesCount({DateTime? from, DateTime? to}) =>
+      _query.querySalesCount(from: from, to: to);
+
+  @override
+  Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to}) =>
+      _query.queryReportSummary(from: from, to: to);
 
   @override
   Future<void> voidSale(String saleId, {String? reason}) =>

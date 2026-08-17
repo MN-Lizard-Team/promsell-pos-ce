@@ -13,9 +13,32 @@ import 'package:promsell_pos_ce/features/product/data/datasources/product_option
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_page.dart';
 
 abstract class ProductLocalDatasource {
   Stream<List<Product>> watchAllProducts({int? limit});
+
+  /// Cursor-paginated product page (createdAt DESC, id DESC).
+  ///
+  /// Pass [cursor] from a previous [ProductPage.nextCursor] to fetch the next
+  /// page; null for the first page. [pageSize] defaults to the capacity
+  /// contract baseline (50). [activeOnly] filters inactive products.
+  Future<ProductPage> getProductsPage({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+
+  /// DB-backed product search (name / sku_lower / barcode_lower), returns a
+  /// ranked page of matches. Ranking is applied in memory on the DB result
+  /// page using the same ladder as [matchProducts].
+  Future<ProductPage> searchProductsPage({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+
   Future<List<Product>> getActiveProducts();
   Future<List<Product>> getAllProducts();
   Future<int> getProductCount();
@@ -147,6 +170,147 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
         return _fromData(row).copyWith(optionGroups: groups);
       }).toList();
     });
+  }
+
+  @override
+  Future<ProductPage> getProductsPage({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  }) async {
+    final query = _db.select(_db.products)
+      ..where((p) => p.deletedAt.isNull())
+      ..orderBy([
+        (p) => OrderingTerm.desc(p.createdAt),
+        (p) => OrderingTerm.desc(p.id),
+      ])
+      ..limit(pageSize + 1);
+    if (activeOnly) {
+      query.where((p) => p.isActive.equals(true));
+    }
+    if (cursor != null) {
+      query.where(
+        (p) =>
+            p.createdAt.isSmallerThanValue(cursor.createdAt) |
+            (p.createdAt.equals(cursor.createdAt) &
+                p.id.isSmallerThanValue(cursor.id)),
+      );
+    }
+    final rows = await query.get();
+    final hasMore = rows.length > pageSize;
+    final pageRows = hasMore ? rows.sublist(0, pageSize) : rows;
+    final products = await _hydrateWithOptions(pageRows);
+    final nextCursor = hasMore && pageRows.isNotEmpty
+        ? ProductCursor(
+            createdAt: pageRows.last.createdAt,
+            id: pageRows.last.id,
+          )
+        : null;
+    final totalCount = await getProductCount();
+    return ProductPage(
+      products: products,
+      nextCursor: nextCursor,
+      totalCount: totalCount,
+    );
+  }
+
+  @override
+  Future<ProductPage> searchProductsPage({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  }) async {
+    final raw = query.trim();
+    if (raw.isEmpty) {
+      return ProductPage(
+        products: const [],
+        nextCursor: null,
+        totalCount: await getProductCount(),
+      );
+    }
+    final q = '%${raw.toLowerCase()}%';
+    final queryBuilder = _db.select(_db.products)
+      ..where(
+        (p) =>
+            p.deletedAt.isNull() &
+            (p.name.lower().like(q) |
+                p.skuLower.like(q) |
+                p.barcodeLower.like(q)),
+      )
+      ..orderBy([
+        (p) => OrderingTerm.desc(p.createdAt),
+        (p) => OrderingTerm.desc(p.id),
+      ])
+      ..limit(pageSize + 1);
+    if (activeOnly) {
+      queryBuilder.where((p) => p.isActive.equals(true));
+    }
+    if (cursor != null) {
+      queryBuilder.where(
+        (p) =>
+            p.createdAt.isSmallerThanValue(cursor.createdAt) |
+            (p.createdAt.equals(cursor.createdAt) &
+                p.id.isSmallerThanValue(cursor.id)),
+      );
+    }
+    final rows = await queryBuilder.get();
+    final hasMore = rows.length > pageSize;
+    final pageRows = hasMore ? rows.sublist(0, pageSize) : rows;
+    final products = await _hydrateWithOptions(pageRows);
+    // Re-rank the page in memory using the same ladder as matchProducts so
+    // exact/prefix hits float to the top of the page.
+    final ranked = _rankPage(products, raw);
+    final nextCursor = hasMore && pageRows.isNotEmpty
+        ? ProductCursor(
+            createdAt: pageRows.last.createdAt,
+            id: pageRows.last.id,
+          )
+        : null;
+    final totalCount = await getProductCount();
+    return ProductPage(
+      products: ranked,
+      nextCursor: nextCursor,
+      totalCount: totalCount,
+    );
+  }
+
+  Future<List<Product>> _hydrateWithOptions(List<ProductData> rows) async {
+    if (rows.isEmpty) return <Product>[];
+    final productIds = rows.map((r) => r.id).toList();
+    final allGroups = await _optionDatasource.getOptionGroupsForProducts(
+      productIds,
+    );
+    return rows.map((row) {
+      final groups = allGroups[row.id] ?? <ProductOptionGroup>[];
+      return _fromData(row).copyWith(optionGroups: groups);
+    }).toList();
+  }
+
+  /// In-memory rank on a DB result page (same ladder as matchProducts).
+  List<Product> _rankPage(List<Product> products, String query) {
+    final q = query.toLowerCase();
+    final ranked = List<Product>.of(products);
+    ranked.sort((a, b) {
+      final ra = _rankOf(a, q);
+      final rb = _rankOf(b, q);
+      final cmp = ra.compareTo(rb);
+      if (cmp != 0) return cmp;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    return ranked;
+  }
+
+  int _rankOf(Product p, String q) {
+    final name = p.name.toLowerCase();
+    final sku = p.sku?.trim().toLowerCase();
+    final barcode = p.barcode?.trim().toLowerCase();
+    if (barcode != null && barcode == q) return 0;
+    if (sku != null && sku == q) return 1;
+    if (name.startsWith(q)) return 2;
+    if (barcode != null && barcode.startsWith(q)) return 3;
+    if (sku != null && sku.startsWith(q)) return 4;
+    return 5;
   }
 
   @override

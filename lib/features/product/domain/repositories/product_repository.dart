@@ -1,8 +1,25 @@
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_page.dart';
 
 abstract class ProductRepository {
   Stream<List<Product>> watchAllProducts({int? limit});
+
+  /// Cursor-paginated product page (createdAt DESC, id DESC).
+  Future<ProductPage> getProductsPage({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+
+  /// DB-backed product search returning a ranked page.
+  Future<ProductPage> searchProductsPage({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+
   Future<List<Product>> getActiveProducts();
 
   /// Total count of non-deleted products (for UI indicators + pagination).

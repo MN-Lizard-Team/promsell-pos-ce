@@ -7,10 +7,11 @@ import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
-import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
 import 'package:promsell_pos_ce/features/product/data/services/barcode_image_service.dart';
 import 'package:promsell_pos_ce/features/product/data/services/product_image_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_option_group.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
 
 @LazySingleton(as: ProductRepository)
@@ -23,6 +24,30 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Stream<List<Product>> watchAllProducts({int? limit}) =>
       _datasource.watchAllProducts(limit: limit);
+
+  @override
+  Future<ProductPage> getProductsPage({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  }) => _datasource.getProductsPage(
+    cursor: cursor,
+    pageSize: pageSize,
+    activeOnly: activeOnly,
+  );
+
+  @override
+  Future<ProductPage> searchProductsPage({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  }) => _datasource.searchProductsPage(
+    query: query,
+    cursor: cursor,
+    pageSize: pageSize,
+    activeOnly: activeOnly,
+  );
 
   @override
   Future<List<Product>> getActiveProducts() => _datasource.getActiveProducts();

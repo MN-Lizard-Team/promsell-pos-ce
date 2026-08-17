@@ -8,7 +8,21 @@ import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_page.dart';
+import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 import 'package:share_plus/share_plus.dart';
+
+/// Hard cap on exported rows (capacity contract baseline).
+const int kExportMaxRows = 10000;
+
+/// Result of a streaming CSV export.
+class CsvExportResult {
+  const CsvExportResult({required this.rowsWritten, required this.truncated});
+
+  final int rowsWritten;
+  final bool truncated;
+}
 
 /// Service for exporting report data to PDF and CSV formats.
 class ReportExportService {
@@ -129,6 +143,104 @@ class ReportExportService {
 
     return csv.encode(rows);
   }
+
+  /// Streaming CSV export that pages through sales via [saleRepository]
+  /// and writes rows to [sink] in chunks. Memory is bounded by the page
+  /// size, not by the total row count.
+  ///
+  /// [maxRows] enforces a hard cap (defaults to [kExportMaxRows]). The
+  /// returned [CsvExportResult.truncated] is true when the cap was hit.
+  ///
+  /// [startSignal] resolves just before the first row is written so callers
+  /// can dismiss a "preparing" indicator without waiting for the full export.
+  ///
+  /// Throws [BusinessRuleError] `AppLockRequired` when store PIN is on and
+  /// session locked (V092-B.3).
+  Future<CsvExportResult> exportCsvStream({
+    required SaleRepository saleRepository,
+    required void Function(String chunk) sink,
+    DateTime? from,
+    DateTime? to,
+    int maxRows = kExportMaxRows,
+    int pageSize = 500,
+    Future<void> Function()? startSignal,
+  }) async {
+    await _appLock.requireSensitiveSession();
+    final header = csv.encode([
+      [
+        'Receipt Number',
+        'Date',
+        'Status',
+        'Payment Method',
+        'Order Type',
+        'Order Channel',
+        'Service Charge',
+        'Promotion Discount',
+        'Total Amount',
+        'Items',
+      ],
+    ]);
+    sink(header);
+    if (startSignal != null) {
+      await startSignal();
+    }
+
+    var rowsWritten = 0;
+    var truncated = false;
+    SaleCursor? cursor;
+    final buffer = <List<String>>[];
+
+    while (rowsWritten < maxRows) {
+      final page = await saleRepository.getSalesPage(
+        from: from,
+        to: to,
+        cursor: cursor,
+        pageSize: pageSize,
+      );
+      if (page.sales.isEmpty) break;
+      for (final sale in page.sales) {
+        if (rowsWritten >= maxRows) {
+          truncated = true;
+          break;
+        }
+        buffer.add(_saleRow(sale));
+        rowsWritten++;
+      }
+      if (buffer.isNotEmpty) {
+        sink(csv.encode(buffer));
+        buffer.clear();
+      }
+      cursor = page.nextCursor;
+      if (truncated) break;
+      if (!page.hasMore) break;
+    }
+    // If we exited the loop exactly at maxRows but there are more rows,
+    // mark as truncated.
+    if (!truncated && rowsWritten >= maxRows) {
+      final probe = await saleRepository.getSalesPage(
+        from: from,
+        to: to,
+        cursor: cursor,
+        pageSize: 1,
+      );
+      if (probe.sales.isNotEmpty) truncated = true;
+    }
+
+    return CsvExportResult(rowsWritten: rowsWritten, truncated: truncated);
+  }
+
+  List<String> _saleRow(Sale sale) => [
+    _csvCell(sale.receiptNumber ?? ''),
+    sale.createdAt.toIso8601String(),
+    sale.isVoided ? 'VOIDED' : 'COMPLETED',
+    _csvCell(sale.paymentMethod),
+    _csvCell(sale.orderType),
+    _csvCell(sale.orderChannel),
+    sale.serviceChargeAmount.value.toStringAsFixed(2),
+    sale.promotionDiscountAmount.value.toStringAsFixed(2),
+    sale.totalAmount.value.toStringAsFixed(2),
+    _csvCell(sale.items.map((i) => '${i.productName} x${i.qty}').join('; ')),
+  ];
 
   String _csvCell(String value) {
     if (value.isEmpty) return value;

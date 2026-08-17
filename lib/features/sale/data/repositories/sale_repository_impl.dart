@@ -1,8 +1,10 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_page.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 
@@ -74,6 +76,27 @@ class SaleRepositoryImpl implements SaleRepository {
   @override
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to}) =>
       _datasource.watchSales(from: from, to: to);
+
+  @override
+  Future<SalePage> getSalesPage({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+  }) => _datasource.querySalesPage(
+    from: from,
+    to: to,
+    cursor: cursor,
+    pageSize: pageSize,
+  );
+
+  @override
+  Future<int> getSalesCount({DateTime? from, DateTime? to}) =>
+      _datasource.querySalesCount(from: from, to: to);
+
+  @override
+  Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to}) =>
+      _datasource.queryReportSummary(from: from, to: to);
 
   @override
   Future<void> voidSale(String saleId, {String? reason}) =>
