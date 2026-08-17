@@ -1,4 +1,4 @@
-# Testing — Promsell POS CE v0.9.2
+# Testing — Promsell POS CE v0.9.3
 
 Automated tests across unit, widget, and integration layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests). Coverage and counts drift with the suite — prefer CI.
 
@@ -115,7 +115,7 @@ test/
 |-------|------|----|-------|
 | **Host integration (money net)** | `test/integration/` | **Fail-closed** via `release-trust.yml` | Real repos + in-memory Drift. V092-D.1 + D.4 added. |
 | **Device E2E (UI journeys)** | `integration_test/` | Main CI = **format + analyze only**. Trust = **blocking** `all_tests.dart --flavor dev` | Scaffold / flake; flavor is **dev**. V092-D.5: `pumpAndSettle` dropped in `restartApp`, `TestKeys` added. |
-| **Manual smoke** | `RELEASE_0.9.2_SMOKE.md` · `RELEASE_1.0_SMOKE.md` | Human | 1.0 sheet is still **No-Go**. 0.9.2 sheet covers cold-start + PIN + void. |
+| **Manual smoke** | `RELEASE_0.9.3_SMOKE.md` · `RELEASE_1.0_SMOKE.md` | Human | 1.0 sheet is still **No-Go**. 0.9.3 sheet covers cold-start + PIN + void + refactor verification. |
 
 ### Device E2E — what is true (2026-08-17)
 
@@ -203,4 +203,4 @@ dart run tool/check_path_coverage.dart --fail --min-global=60 --min-sale-logic=8
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · Testing</sub>
+<sub>Promsell POS CE · v0.9.3 · Testing</sub>

@@ -1,12 +1,8 @@
-import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
-
-import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
-import 'package:promsell_pos_ce/core/utils/crypto_utils.dart';
+import 'package:promsell_pos_ce/core/services/lockout_policy.dart';
+import 'package:promsell_pos_ce/core/services/pin_hasher.dart';
 
 /// Store PIN lock for sensitive POS actions
 /// (void, backup, PromptPay, stock adjust, CSV import).
@@ -53,10 +49,11 @@ class AppLockService {
   static const defaultSessionGrace = Duration(minutes: 2);
 
   /// Default failed attempts before temporary lockout.
-  static const defaultMaxFailedAttempts = 5;
+  static const defaultMaxFailedAttempts =
+      LockoutPolicy.defaultMaxFailedAttempts;
 
   /// Default initial lockout; doubles each subsequent fail.
-  static const defaultBaseLockout = Duration(seconds: 30);
+  static const defaultBaseLockout = LockoutPolicy.defaultBaseLockout;
 
   /// Allowed session grace options (seconds) for the settings UI.
   static const sessionGraceOptionsSeconds = [0, 30, 60, 120, 300];
@@ -67,22 +64,15 @@ class AppLockService {
   /// Allowed base lockout options (seconds) for the settings UI.
   static const baseLockoutOptionsSeconds = [10, 30, 60, 120];
 
-  static const _pbkdf2Iterations = 100000;
-  static const _keyLength = 32;
-  static const _schemeV1 = 'v1';
-  static const _schemeV2 = 'v2';
-
   final FlutterSecureStorage _storage;
-
-  DateTime? _unlockedUntil;
-  int _failedAttempts = 0;
-  DateTime? _lockedUntil;
+  final PinHasher _hasher = const PinHasher();
+  final LockoutPolicy _lockout = LockoutPolicy();
   bool _lockoutHydrated = false;
 
   Duration _sessionGrace = defaultSessionGrace;
-  int _maxFailedAttempts = defaultMaxFailedAttempts;
-  Duration _baseLockout = defaultBaseLockout;
   bool _policyHydrated = false;
+
+  DateTime? _unlockedUntil;
 
   Future<bool> isEnabled() async {
     final v = await _storage.read(key: _enabledKey);
@@ -109,20 +99,9 @@ class AppLockService {
   ///
   /// Call [ensureLockoutHydrated] first after cold start if reading before
   /// [verifyPin].
-  Duration? get lockoutRemaining {
-    final until = _lockedUntil;
-    if (until == null) return null;
-    final left = until.difference(DateTime.now());
-    if (left.isNegative) {
-      // Memory only; storage is cleared on next hydrate/verify/setPin.
-      _lockedUntil = null;
-      _failedAttempts = 0;
-      return null;
-    }
-    return left;
-  }
+  Duration? get lockoutRemaining => _lockout.lockoutRemaining;
 
-  bool get isLockedOut => lockoutRemaining != null;
+  bool get isLockedOut => _lockout.isLockedOut;
 
   void lockSession() {
     _unlockedUntil = null;
@@ -142,10 +121,10 @@ class AppLockService {
 
   /// Current max failed attempts before lockout (configurable via
   /// [setLockoutPolicy]).
-  int get maxFailedAttempts => _maxFailedAttempts;
+  int get maxFailedAttempts => _lockout.maxFailedAttempts;
 
   /// Current base lockout duration (configurable via [setLockoutPolicy]).
-  Duration get baseLockout => _baseLockout;
+  Duration get baseLockout => _lockout.baseLockout;
 
   /// Loads persisted lockout counters once (cold start).
   Future<void> ensureLockoutHydrated() => _hydrateLockout();
@@ -176,7 +155,10 @@ class AppLockService {
   Future<({int maxFailedAttempts, Duration baseLockout})>
   getLockoutPolicy() async {
     await _hydratePolicy();
-    return (maxFailedAttempts: _maxFailedAttempts, baseLockout: _baseLockout);
+    return (
+      maxFailedAttempts: _lockout.maxFailedAttempts,
+      baseLockout: _lockout.baseLockout,
+    );
   }
 
   /// Sets the lockout policy. Requires an unlocked sensitive session.
@@ -188,21 +170,17 @@ class AppLockService {
     if (!isSessionUnlocked) {
       throw const BusinessRuleError(ruleAppLockRequired);
     }
+    _lockout.updatePolicy(
+      maxFailedAttempts: maxFailedAttempts,
+      baseLockout: baseLockout,
+    );
     if (maxFailedAttempts != null) {
-      if (maxFailedAttempts < 3 || maxFailedAttempts > 10) {
-        throw StateError('LOCKOUT_POLICY_OUT_OF_RANGE');
-      }
-      _maxFailedAttempts = maxFailedAttempts;
       await _storage.write(
         key: _maxFailedAttemptsKey,
         value: '$maxFailedAttempts',
       );
     }
     if (baseLockout != null) {
-      if (baseLockout.inSeconds < 10 || baseLockout.inSeconds > 300) {
-        throw StateError('LOCKOUT_POLICY_OUT_OF_RANGE');
-      }
-      _baseLockout = baseLockout;
       await _storage.write(
         key: _baseLockoutSecondsKey,
         value: '${baseLockout.inSeconds}',
@@ -275,18 +253,17 @@ class AppLockService {
   }
 
   Future<void> _writePin(String trimmed) async {
-    final salt = _randomSalt();
-    final hash = _hashV2(trimmed, salt);
+    final salt = _hasher.randomSalt();
+    final hash = _hasher.hashV2(trimmed, salt);
     await _storage.write(key: _pinSaltKey, value: salt);
     await _storage.write(key: _pinHashKey, value: hash);
-    await _storage.write(key: _schemeKey, value: _schemeV2);
+    await _storage.write(key: _schemeKey, value: PinHasher.schemeV2);
     await _storage.write(key: _enabledKey, value: '1');
     await _storage.write(
       key: _pinSetAtKey,
       value: '${DateTime.now().millisecondsSinceEpoch}',
     );
-    _failedAttempts = 0;
-    _lockedUntil = null;
+    _lockout.reset();
     _lockoutHydrated = true;
     await _persistLockout();
     unlockSession();
@@ -303,8 +280,7 @@ class AppLockService {
       throw StateError('PIN_NOT_SET');
     }
     await _storage.write(key: _enabledKey, value: '1');
-    _failedAttempts = 0;
-    _lockedUntil = null;
+    _lockout.reset();
     _lockoutHydrated = true;
     await _persistLockout();
     lockSession();
@@ -316,8 +292,7 @@ class AppLockService {
   /// To permanently delete the PIN, use [erasePin].
   Future<void> disable() async {
     await _storage.write(key: _enabledKey, value: '0');
-    _failedAttempts = 0;
-    _lockedUntil = null;
+    _lockout.reset();
     _lockoutHydrated = true;
     await _persistLockout();
     lockSession();
@@ -333,8 +308,7 @@ class AppLockService {
     await _storage.delete(key: _schemeKey);
     await _storage.delete(key: _pinSetAtKey);
     await _storage.write(key: _enabledKey, value: '0');
-    _failedAttempts = 0;
-    _lockedUntil = null;
+    _lockout.reset();
     _lockoutHydrated = true;
     await _persistLockout();
     lockSession();
@@ -347,30 +321,32 @@ class AppLockService {
   Future<bool> verifyPin(String pin) async {
     await _hydrateLockout();
     await _hydratePolicy();
-    if (isLockedOut) {
+    if (_lockout.isLockedOut) {
       throw StateError('PIN_LOCKED');
     }
     final salt = await _storage.read(key: _pinSaltKey);
     final expected = await _storage.read(key: _pinHashKey);
     if (salt == null || expected == null) return false;
 
-    final scheme = await _storage.read(key: _schemeKey) ?? _schemeV1;
-    final trimmed = pin.trim();
-    final ok = scheme == _schemeV2
-        ? _hashV2(trimmed, salt) == expected
-        : _hashV1(trimmed, salt) == expected;
+    final scheme = await _storage.read(key: _schemeKey) ?? PinHasher.schemeV1;
+    final ok = _hasher.verify(
+      pin: pin,
+      expectedHash: expected,
+      salt: salt,
+      scheme: scheme,
+    );
 
     if (!ok) {
-      await _registerFailure();
+      _lockout.registerFailure();
+      await _persistLockout();
       return false;
     }
 
-    _failedAttempts = 0;
-    _lockedUntil = null;
+    _lockout.reset();
     await _persistLockout();
     // Upgrade legacy hashes on successful unlock.
-    if (scheme != _schemeV2) {
-      await _writePin(trimmed);
+    if (scheme != PinHasher.schemeV2) {
+      await _writePin(pin.trim());
     } else {
       unlockSession();
     }
@@ -405,50 +381,39 @@ class AppLockService {
     _lockoutHydrated = true;
     final attemptsRaw = await _storage.read(key: _failedAttemptsKey);
     final untilRaw = await _storage.read(key: _lockedUntilKey);
-    _failedAttempts = int.tryParse(attemptsRaw ?? '') ?? 0;
-    if (untilRaw != null && untilRaw.isNotEmpty) {
-      final ms = int.tryParse(untilRaw);
-      if (ms != null) {
-        final until = DateTime.fromMillisecondsSinceEpoch(ms);
-        if (until.isAfter(DateTime.now())) {
-          _lockedUntil = until;
-        } else {
-          _lockedUntil = null;
-          _failedAttempts = 0;
-          await _persistLockout();
-        }
-      }
+    final failedAttempts = int.tryParse(attemptsRaw ?? '') ?? 0;
+    final lockedUntilMs = int.tryParse(untilRaw ?? '');
+    _lockout.fromSnapshot(
+      LockoutSnapshot(
+        failedAttempts: failedAttempts,
+        lockedUntilMs: lockedUntilMs,
+      ),
+    );
+    // If the lockout was expired, persist the cleared state.
+    if (failedAttempts != 0 && !_lockout.isLockedOut) {
+      await _persistLockout();
     }
   }
 
   Future<void> _persistLockout() async {
-    if (_failedAttempts <= 0 && _lockedUntil == null) {
+    final snapshot = _lockout.toSnapshot();
+    if (snapshot.failedAttempts <= 0 && snapshot.lockedUntilMs == null) {
       await _storage.delete(key: _failedAttemptsKey);
       await _storage.delete(key: _lockedUntilKey);
       return;
     }
-    await _storage.write(key: _failedAttemptsKey, value: '$_failedAttempts');
-    final until = _lockedUntil;
-    if (until == null) {
+    await _storage.write(
+      key: _failedAttemptsKey,
+      value: '${snapshot.failedAttempts}',
+    );
+    if (snapshot.lockedUntilMs == null) {
       await _storage.delete(key: _lockedUntilKey);
     } else {
       await _storage.write(
         key: _lockedUntilKey,
-        value: '${until.millisecondsSinceEpoch}',
+        value: '${snapshot.lockedUntilMs}',
       );
     }
-  }
-
-  Future<void> _registerFailure() async {
-    _failedAttempts++;
-    if (_failedAttempts >= _maxFailedAttempts) {
-      final multiplier =
-          1 << (_failedAttempts - _maxFailedAttempts).clamp(0, 4);
-      _lockedUntil = DateTime.now().add(
-        Duration(seconds: _baseLockout.inSeconds * multiplier),
-      );
-    }
-    await _persistLockout();
   }
 
   Future<void> _hydratePolicy() async {
@@ -465,37 +430,15 @@ class AppLockService {
     if (maxRaw != null && maxRaw.isNotEmpty) {
       final n = int.tryParse(maxRaw);
       if (n != null && n >= 3 && n <= 10) {
-        _maxFailedAttempts = n;
+        _lockout.updatePolicy(maxFailedAttempts: n);
       }
     }
     final lockRaw = await _storage.read(key: _baseLockoutSecondsKey);
     if (lockRaw != null && lockRaw.isNotEmpty) {
       final s = int.tryParse(lockRaw);
       if (s != null && s >= 10 && s <= 300) {
-        _baseLockout = Duration(seconds: s);
+        _lockout.updatePolicy(baseLockout: Duration(seconds: s));
       }
     }
-  }
-
-  String _hashV1(String pin, String salt) {
-    final bytes = utf8.encode('$salt::$pin');
-    return sha256.convert(bytes).toString();
-  }
-
-  String _hashV2(String pin, String salt) {
-    final saltBytes = Uint8List.fromList(utf8.encode(salt));
-    final key = pbkdf2(
-      password: pin,
-      salt: saltBytes,
-      iterations: _pbkdf2Iterations,
-      keyLength: _keyLength,
-    );
-    return key.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-  }
-
-  String _randomSalt() {
-    final rng = Random.secure();
-    final bytes = List<int>.generate(16, (_) => rng.nextInt(256));
-    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
 }

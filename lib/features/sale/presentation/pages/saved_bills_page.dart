@@ -17,13 +17,13 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart'
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
-import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_checkout_helper.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/draft_bill_switch_guard.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/draft_list_query.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/draft_park_actions.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/drafts_bottom_sheet/draft_create_dialog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/drafts_bottom_sheet/draft_search_bar.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/drafts_bottom_sheet/draft_tile.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/saved_bills_checkout_helper.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_primary_app_bar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
@@ -212,157 +212,27 @@ class _SavedBillsPageState extends State<SavedBillsPage> {
     AppSnackBar.warning(context, context.l10n.cartPaymentInProgress);
   }
 
-  Future<bool> _switchTo(String draftId, {bool popAfter = true}) async {
-    if (_paymentBlocked) {
-      _blockedSnack();
-      return false;
-    }
-    final draftBloc = context.read<DraftBloc>();
-    final cartBloc = context.read<CartBloc>();
-    final locked = cartBloc.state.paymentLocked;
-    if (draftBloc.state.activeDraftId != draftId) {
-      final startNonce = draftBloc.state.opNonce;
-      draftBloc.add(
-        DraftSwitched(draftId, paymentLocked: locked, liveCart: cartBloc.state),
-      );
-      try {
-        final next = await draftBloc.stream
-            .firstWhere(
-              (s) =>
-                  s.opNonce > startNonce &&
-                  s.lastOp == 'switch' &&
-                  (s.opStatus == DraftOpStatus.success ||
-                      s.opStatus == DraftOpStatus.failure),
-            )
-            .timeout(const Duration(seconds: 8));
-        if (next.opStatus != DraftOpStatus.success ||
-            next.activeDraftId != draftId) {
-          if (mounted) {
-            if (next.errorMessage == DraftBillSwitchGuard.errorCode) {
-              _blockedSnack();
-            } else {
-              AppSnackBar.error(context, context.l10n.errorOccurred);
-            }
-          }
-          return false;
-        }
-      } catch (e, stack) {
-        AppLogger.warning(
-          'SavedBillsPage._switchBill timeout/error',
-          error: e,
-          stack: stack,
-        );
-        if (mounted) {
-          AppSnackBar.error(context, context.l10n.errorOccurred);
-        }
-        return false;
-      }
-    }
-    if (!mounted) return false;
-    if (popAfter) Navigator.maybePop(context);
-    return true;
+  Future<bool> _switchTo(String draftId, {bool popAfter = true}) {
+    return SavedBillsCheckoutHelper.switchTo(
+      context,
+      draftId: draftId,
+      draftBloc: context.read<DraftBloc>(),
+      cartBloc: context.read<CartBloc>(),
+      isMounted: () => mounted,
+      popAfter: popAfter,
+    );
   }
 
-  Future<void> _payBill(DraftCart draft) async {
-    if (draft.itemCount <= 0) return;
-    if (_paymentBlocked) {
-      _blockedSnack();
-      return;
-    }
-    final draftBloc = context.read<DraftBloc>();
-    final cartBloc = context.read<CartBloc>();
-    final checkoutBloc = context.read<CheckoutBloc>();
-    final settingsCubit = context.read<SettingsCubit>();
-    final nav = Navigator.of(context);
-    final locked = cartBloc.state.paymentLocked;
-
-    if (draftBloc.state.activeDraftId != draft.id) {
-      final startNonce = draftBloc.state.opNonce;
-      draftBloc.add(
-        DraftSwitched(
-          draft.id,
-          paymentLocked: locked,
-          liveCart: cartBloc.state,
-        ),
-      );
-      try {
-        final next = await draftBloc.stream
-            .firstWhere(
-              (s) =>
-                  s.opNonce > startNonce &&
-                  s.lastOp == 'switch' &&
-                  (s.opStatus == DraftOpStatus.success ||
-                      s.opStatus == DraftOpStatus.failure),
-            )
-            .timeout(const Duration(seconds: 8));
-        if (next.opStatus != DraftOpStatus.success ||
-            next.activeDraftId != draft.id ||
-            next.loadedDraft?.id != draft.id) {
-          if (mounted) {
-            if (next.errorMessage == DraftBillSwitchGuard.errorCode) {
-              _blockedSnack();
-            } else {
-              AppSnackBar.error(context, context.l10n.errorOccurred);
-            }
-          }
-          return;
-        }
-      } catch (e, stack) {
-        AppLogger.warning(
-          'SavedBillsPage._payBill switch timeout/error',
-          error: e,
-          stack: stack,
-        );
-        if (mounted) {
-          AppSnackBar.error(context, context.l10n.errorOccurred);
-        }
-        return;
-      }
-    }
-
-    // Always wait until cart reflects this draft (never assume non-empty = ready).
-    final targetItemCount = draft.itemCount;
-    bool cartLooksReady(c) =>
-        !c.paymentLocked &&
-        c.itemCount == targetItemCount &&
-        (targetItemCount == 0 || !c.isEmpty);
-
-    if (!cartLooksReady(cartBloc.state)) {
-      try {
-        await cartBloc.stream
-            .firstWhere(cartLooksReady)
-            .timeout(const Duration(seconds: 8));
-      } catch (e, stack) {
-        AppLogger.warning(
-          'SavedBillsPage._payBill cart-ready timeout',
-          error: e,
-          stack: stack,
-        );
-        if (mounted) {
-          AppSnackBar.error(context, context.l10n.errorOccurred);
-        }
-        return;
-      }
-    }
-
-    if (!mounted) return;
-    if (cartBloc.state.isEmpty && targetItemCount > 0) {
-      AppSnackBar.error(context, context.l10n.errorOccurred);
-      return;
-    }
-
-    FocusManager.instance.primaryFocus?.unfocus();
-    nav.pop();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!nav.mounted) return;
-      navigateToCheckout(
-        nav.context,
-        cartBloc: cartBloc,
-        checkoutBloc: checkoutBloc,
-        draftBloc: draftBloc,
-        settingsCubit: settingsCubit,
-      );
-    });
+  Future<void> _payBill(DraftCart draft) {
+    return SavedBillsCheckoutHelper.payBill(
+      context,
+      draft: draft,
+      draftBloc: context.read<DraftBloc>(),
+      cartBloc: context.read<CartBloc>(),
+      checkoutBloc: context.read<CheckoutBloc>(),
+      settingsCubit: context.read<SettingsCubit>(),
+      isMounted: () => mounted,
+    );
   }
 
   double _payable(DraftCart draft) {

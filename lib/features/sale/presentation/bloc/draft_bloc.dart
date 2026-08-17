@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 import 'package:promsell_pos_ce/features/sale/domain/services/draft_naming.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_snapshot_mapper.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_save_coordinator.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/draft_bill_switch_guard.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -20,6 +21,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
     required SettingsRepository settingsRepo,
   }) : _draftRepo = draftRepo,
        _settingsRepo = settingsRepo,
+       _saveCoordinator = DraftSaveCoordinator(draftRepo),
        super(const DraftState()) {
     on<DraftInitialized>(_onInitialized);
     on<DraftSwitched>(_onSwitched);
@@ -36,10 +38,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
 
   final DraftCartRepository _draftRepo;
   final SettingsRepository _settingsRepo;
-  Timer? _saveTimer;
-  bool _isSaving = false;
-  CartSnapshot? _pendingSnapshot;
-  String? _pendingDraftId;
+  final DraftSaveCoordinator _saveCoordinator;
   String? _lastRestoredDraftId;
   DateTime? _lastRestoreTime;
 
@@ -129,16 +128,17 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
       );
       return;
     }
-    _cancelSaveTimer();
+    _saveCoordinator.cancelTimer();
     // Prefer live cart force-save so debounce window edits are not lost.
     if (event.liveCart != null && state.activeDraftId != null) {
       try {
-        await _doSave(
+        await _saveCoordinator.doSave(
           state.activeDraftId!,
-          _toSnapshot(event.liveCart!),
+          cartStateToSnapshot(event.liveCart!),
           throwOnError: true,
+          activeName: state.activeDraftName,
         );
-        _pendingSnapshot = null;
+        _saveCoordinator.clearPending(state.activeDraftId!);
       } catch (e, stack) {
         AppLogger.error(
           'DraftBloc._onSwitched: force-save before switch failed',
@@ -156,7 +156,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         return;
       }
     } else {
-      await _flushPendingSave();
+      await _saveCoordinator.flushPending();
     }
     try {
       final draft = await _draftRepo.loadDraft(event.draftId);
@@ -219,8 +219,8 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         );
         return;
       }
-      _cancelSaveTimer();
-      await _flushPendingSave();
+      _saveCoordinator.cancelTimer();
+      await _saveCoordinator.flushPending();
       final trimmed = event.name?.trim();
       final name = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
@@ -267,7 +267,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
       );
       return;
     }
-    _cancelSaveTimer();
+    _saveCoordinator.cancelTimer();
     try {
       await _draftRepo.deleteDraft(event.draftId);
       if (event.draftId != state.activeDraftId) {
@@ -408,26 +408,14 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         event.cartState.isEmpty) {
       return;
     }
-    _pendingSnapshot = _toSnapshot(event.cartState);
-    _pendingDraftId = draftId;
-    _cancelSaveTimer();
-    _saveTimer = Timer(const Duration(milliseconds: 1500), () async {
-      if (isClosed) return;
-      final id = _pendingDraftId;
-      final snap = _pendingSnapshot;
-      if (id == null || snap == null) return;
-      try {
-        await _doSave(id, snap, throwOnError: false);
-        // Badge / multi-bill chrome lag if counts only refresh on park/create.
+    _saveCoordinator.scheduleAutoSave(
+      draftId: draftId,
+      snapshot: cartStateToSnapshot(event.cartState),
+      isClosed: () => isClosed,
+      onTimerFire: () async {
         if (!isClosed) add(const DraftCountsRefreshRequested());
-      } catch (e, stack) {
-        AppLogger.warning(
-          'DraftBloc autosave timer failed',
-          error: e,
-          stack: stack,
-        );
-      }
-    });
+      },
+    );
   }
 
   Future<void> _onForceSaveRequested(
@@ -563,10 +551,9 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
       );
       return false;
     }
-    _cancelSaveTimer();
-    final snapshot = _toSnapshot(cart);
-    _pendingSnapshot = snapshot;
-    _pendingDraftId = draftId;
+    _saveCoordinator.cancelTimer();
+    final snapshot = cartStateToSnapshot(cart);
+    _saveCoordinator.setPending(draftId, snapshot);
     if (emitOpLifecycle) {
       emit(
         state.copyWith(
@@ -577,8 +564,14 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
       );
     }
     try {
-      await _doSave(draftId, snapshot, throwOnError: true, name: nameOverride);
-      _pendingSnapshot = null;
+      await _saveCoordinator.doSave(
+        draftId,
+        snapshot,
+        throwOnError: true,
+        name: nameOverride,
+        activeName: state.activeDraftName,
+      );
+      _saveCoordinator.clearPending(draftId);
       if (emitOpLifecycle && op == 'forceSave') {
         emit(
           state.copyWith(
@@ -662,7 +655,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
   }
 
   Future<void> _onRotated(DraftRotated event, Emitter<DraftState> emit) async {
-    _cancelSaveTimer();
+    _saveCoordinator.cancelTimer();
     try {
       // Create the new draft BEFORE deleting the old one so a createDraft
       // failure cannot leave activeDraftId pointing at a deleted row.
@@ -690,86 +683,15 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
     }
   }
 
-  void _cancelSaveTimer() {
-    _saveTimer?.cancel();
-    _saveTimer = null;
-  }
-
-  Future<void> _flushPendingSave() async {
-    _cancelSaveTimer();
-    final pending = _pendingSnapshot;
-    final draftId = _pendingDraftId ?? state.activeDraftId;
-    if (pending != null && draftId != null) {
-      try {
-        await _doSave(draftId, pending, throwOnError: false);
-      } catch (e, stack) {
-        AppLogger.warning(
-          'DraftBloc._flushPendingSave failed',
-          error: e,
-          stack: stack,
-        );
-      }
-    }
-  }
-
-  Future<void> _doSave(
-    String draftId,
-    CartSnapshot snapshot, {
-    required bool throwOnError,
-    String? name,
-  }) async {
-    var spins = 0;
-    while (_isSaving && spins < 50) {
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      spins++;
-    }
-    if (_isSaving) {
-      if (throwOnError) {
-        throw StateError('draftSaveBusy');
-      }
-      return;
-    }
-    _isSaving = true;
-    try {
-      await _draftRepo.saveDraft(
-        draftId,
-        snapshot,
-        name: name ?? state.activeDraftName,
-      );
-      if (_pendingDraftId == draftId) {
-        _pendingSnapshot = null;
-      }
-    } catch (e, stack) {
-      AppLogger.error('DraftBloc._doSave failed', error: e, stack: stack);
-      if (throwOnError) rethrow;
-    } finally {
-      _isSaving = false;
-    }
-  }
-
   @override
   Future<void> close() async {
     // Best-effort flush so last keystrokes within debounce are not lost.
     try {
-      await _flushPendingSave();
+      await _saveCoordinator.flushPending();
     } catch (e, stack) {
       AppLogger.warning('DraftBloc.close flush failed', error: e, stack: stack);
     }
+    await _saveCoordinator.dispose();
     return super.close();
   }
-
-  CartSnapshot _toSnapshot(CartState s) => CartSnapshot(
-    items: s.items,
-    note: s.note,
-    cartDiscountType: s.cartDiscountType,
-    cartDiscountValue: s.cartDiscountValue,
-    orderType: s.orderType,
-    orderChannel: s.orderChannel,
-    externalOrderRef: s.externalOrderRef,
-    tableId: s.tableId,
-    serviceChargeRate: s.serviceChargeRate,
-    customerId: s.customerId,
-    promotionId: s.promotionId,
-    promotionDiscountAmount: s.promotionDiscountAmount,
-  );
 }

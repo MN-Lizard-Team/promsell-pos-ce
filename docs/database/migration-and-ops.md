@@ -1,4 +1,4 @@
-# Migration & Operations — Promsell POS CE (v0.9.2)
+# Migration & Operations — Promsell POS CE (v0.9.3)
 
 Migration guide, backup **export**, performance notes, and database testing.
 
@@ -12,7 +12,7 @@ Migration guide, backup **export**, performance notes, and database testing.
 
 ### Current strategy
 
-**SSOT for `onUpgrade` is** [`lib/core/database/app_database.dart`](../../lib/core/database/app_database.dart). Do not copy snippets from this page into a new migration.
+**SSOT for `onUpgrade` is** [`lib/core/database/app_database_migrations.dart`](../../lib/core/database/app_database_migrations.dart) (extension `AppDatabaseMigrationLogic`). Do not copy snippets from this page into a new migration.
 
 - Migrations are additive. There is **no** down migration.
 - Unique indexes belong in `onUpgrade` **after a dedupe pass**. `_createIndexes()` runs on `onCreate` and `from < 2` only and does **not** create `idx_products_sku_lower_unique`.
@@ -422,4 +422,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · Migration & Operations · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.3 · Migration & Operations · SQLCipher AES-256</sub>

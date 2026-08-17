@@ -1,6 +1,6 @@
 # Database API Reference
 
-> Current release: **v0.9.2** · schema: **v32** · package version: `0.9.2`
+> Current release: **v0.9.3** · schema: **v32** · package version: `0.9.3`
 
 Complete guide to Drift database access patterns, repository implementations, and query techniques.
 
@@ -57,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultSettings();
     },
     onUpgrade: (Migrator m, int from, int to) async {
-      // Incremental steps — see app_database.dart for full history
+      // Incremental steps — see app_database_migrations.dart (extension AppDatabaseMigrationLogic) for full history
       if (from < 24) { /* partial unique barcode + indexes */ }
       if (from < 25) { /* products brand/unit/supplier/is_recommended */ }
       if (from < 26) { /* daily_closes unique close_date + dedupe */ }
@@ -1173,4 +1173,4 @@ Benefits:
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · Database API Reference</sub>
+<sub>Promsell POS CE · v0.9.3 · Database API Reference</sub>

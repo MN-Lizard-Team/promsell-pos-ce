@@ -7,7 +7,7 @@ A cash register that lives on the phone: sell, park bills, count stock, close th
 [![CI](https://img.shields.io/github/actions/workflow/status/teeprakorn1/promsell-pos-ce/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/teeprakorn1/promsell-pos-ce/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-%E2%89%A560%25%20CI-informational?style=flat-square)](docs/testing/CI.md)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-0E7C8A.svg?style=flat-square)](LICENSE)
-[![Release](https://img.shields.io/badge/tag-v0.9.2-0E7C8A?style=flat-square)](https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.9.2)
+[![Release](https://img.shields.io/badge/tag-v0.9.3-0E7C8A?style=flat-square)](https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.9.3)
 [![GitHub release](https://img.shields.io/github/v/release/teeprakorn1/promsell-pos-ce?style=flat-square&include_prereleases&label=release)](https://github.com/teeprakorn1/promsell-pos-ce/releases)
 [![Last commit](https://img.shields.io/github/last-commit/teeprakorn1/promsell-pos-ce?style=flat-square)](https://github.com/teeprakorn1/promsell-pos-ce/commits/main)
 
@@ -28,7 +28,7 @@ A cash register that lives on the phone: sell, park bills, count stock, close th
 
 ## Status
 
-**`0.9.2`** · latest GitHub tag **v0.9.2** · schema **v32** · **not on Play production**.
+**`0.9.3`** · latest GitHub tag **v0.9.3** · schema **v32** · **not on Play production**.
 
 A green CI badge means host tests and analyze passed. It does not mean the app is store-ready, that device E2E is green, or that you should put a shop's month of sales on it without reading the limits below.
 
@@ -199,7 +199,7 @@ Start here, then go deeper. Do not treat archived plans as a current queue.
 | [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | What stays on the device |
 | [docs/STORE_SUBMISSION.md](docs/STORE_SUBMISSION.md) | Play checklist — production still gated |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Signed APK / AAB, keystore |
-| [CHANGELOG.md](CHANGELOG.md) | 0.9.2 release notes + history (latest tag v0.9.2) |
+| [CHANGELOG.md](CHANGELOG.md) | 0.9.3 release notes + history (latest tag v0.9.3) |
 
 ### Engineering
 
@@ -210,7 +210,7 @@ Start here, then go deeper. Do not treat archived plans as a current queue.
 | [docs/architecture/c4-diagrams.md](docs/architecture/c4-diagrams.md) | Context / container / component |
 | [docs/DATABASE.md](docs/DATABASE.md) | Schema v32, SQLCipher, sync **metadata** (not a sync engine) |
 | [docs/database/schema-reference.md](docs/database/schema-reference.md) | Tables and indexes |
-| [docs/database/migration-and-ops.md](docs/database/migration-and-ops.md) | Upgrades — SSOT is still `app_database.dart` |
+| [docs/database/migration-and-ops.md](docs/database/migration-and-ops.md) | Upgrades — SSOT is `app_database_migrations.dart` (extension `AppDatabaseMigrationLogic`) |
 | [SECURITY.md](SECURITY.md) | PIN scope, backup limits, private vuln reports |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Branch, commits, PR test commands |
 
@@ -258,4 +258,4 @@ Issues and PRs should go to this repository. For private security mail, see [SEC
 
 [GNU Affero General Public License v3.0](LICENSE). If you modify the software and let others use it over a network, you must offer the corresponding source.
 
-<sub>Promsell POS CE · MN Lizard Team · [teeprakorn1](https://github.com/teeprakorn1) · v0.9.2 · latest tag v0.9.2 · AGPL-3.0</sub>
+<sub>Promsell POS CE · MN Lizard Team · [teeprakorn1](https://github.com/teeprakorn1) · v0.9.3 · latest tag v0.9.3 · AGPL-3.0</sub>

@@ -551,4 +551,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime; some seeded
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · schema v32 · 16 tables · 32 satang columns · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.3 · schema v32 · 16 tables · 32 satang columns · SQLCipher AES-256</sub>

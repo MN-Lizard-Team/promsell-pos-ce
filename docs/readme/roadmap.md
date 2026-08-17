@@ -91,4 +91,4 @@ v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → v0.9.2 integrity/hardening
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.2 · Roadmap · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.3 · Roadmap · AGPL-3.0</sub>

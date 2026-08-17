@@ -15,7 +15,7 @@
 | Runtime on `ci.yml` | **Not run** — format + analyze `integration_test/` only |
 | Runtime on local desktop without Android/iOS device | **No supported devices** |
 | Fail-closed money path | Host `test/integration/` + `release-trust.yml` (V092-D.1 VAT+void+close, V092-D.4 void after day-close). Device job on trust is blocking but **dev** flavor / scaffold |
-| Manual device evidence | `docs/testing/RELEASE_0.9.2_SMOKE.md` (current) · `docs/testing/RELEASE_0.9_SMOKE.md` (historical 0.9) |
+| Manual device evidence | `docs/testing/RELEASE_0.9.3_SMOKE.md` (current) · `docs/testing/RELEASE_0.9.2_SMOKE.md` (historical 0.9.2) · `docs/testing/RELEASE_0.9_SMOKE.md` (historical 0.9) |
 | TestApp flake (V092-D.5) | `pumpAndSettle` dropped in `restartApp`; `TestKeys` constants added for 5 core cases. EN-string finders still in older tests — migrate when touching. |
 
 **Do not claim:** “30 tests compiling, ready for runtime validation” as if CI guarantees green E2E.
@@ -70,7 +70,8 @@ Tracked for fix order: `docs/plan/COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md`
 |-----|------|
 | `docs/codebase/testing.md` | Pyramid + honest E2E status |
 | `docs/testing/E2E_TEST_GUIDE.md` | How to run + prerequisites |
-| `docs/testing/RELEASE_0.9.2_SMOKE.md` | Device smoke sheet (0.9.2 scope) |
+| `docs/testing/RELEASE_0.9.3_SMOKE.md` | Device smoke sheet (0.9.3 scope — refactor verification) |
+| `docs/testing/RELEASE_0.9.2_SMOKE.md` | Device smoke sheet (historical 0.9.2) |
 | `docs/testing/RELEASE_0.9_SMOKE.md` | Device smoke evidence (historical 0.9) |
 | `docs/testing/RELEASE_1.0_SMOKE.md` | 1.0 smoke plan (when present) |
 | `.github/workflows/release-trust.yml` | Fail-closed money host suite |

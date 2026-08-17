@@ -1,7 +1,7 @@
 @startuml C4_Component
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Promsell POS CE — Component Diagram (Sale + void via History) v0.9.2
+title Promsell POS CE — Component Diagram (Sale + void via History) v0.9.3
 
 Container_Boundary(sale_feature, "Sale Feature") {
     Component(sale_page, "SalePage / SaleDualPane", "Flutter Widget", "Adaptive catalog + cart; tablet docked cart, narrow bar/FAB")

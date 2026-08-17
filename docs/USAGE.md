@@ -2,7 +2,7 @@
 
 > Complete guide for installing, building, and using Promsell POS Community Edition.
 >
-> Release notes: **v0.9.2** · package version: **0.9.2** · database schema: **v32**
+> Release notes: **v0.9.3** · package version: **0.9.3** · database schema: **v32**
 
 ---
 
@@ -160,10 +160,10 @@ Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 |----------|---------|
 | [`docs/usage/features.md`](usage/features.md) | Features walkthrough (tabs + settings) — includes **Store PIN**, same-device backup restore |
 | [`docs/usage/development.md`](usage/development.md) | Localization, Drift/SQLCipher, architecture, testing, troubleshooting |
-| [`docs/testing/RELEASE_0.9.2_SMOKE.md`](testing/RELEASE_0.9.2_SMOKE.md) | v0.9.2 release smoke checklist |
+| [`docs/testing/RELEASE_0.9.3_SMOKE.md`](testing/RELEASE_0.9.3_SMOKE.md) | v0.9.3 release smoke checklist |
 | [`SECURITY.md`](../SECURITY.md) | Encryption, PIN gates, backup honesty |
 | [`docs/PRIVACY_POLICY.md`](PRIVACY_POLICY.md) | Privacy (local data vs developer servers) |
-| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.2 notes + archive links |
+| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.3 notes + archive links |
 
 ---
 

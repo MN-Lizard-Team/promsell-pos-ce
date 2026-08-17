@@ -1,5 +1,5 @@
 @startuml Sequence_Sale
-title Sale Flow — Atomic Transaction (v0.9.2)
+title Sale Flow — Atomic Transaction (v0.9.3)
 
 actor Merchant
 participant "SalePage" as UI

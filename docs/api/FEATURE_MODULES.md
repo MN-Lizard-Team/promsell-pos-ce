@@ -1059,4 +1059,4 @@ class ProductRepositoryImpl implements ProductRepository {
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · Feature Modules API</sub>
+<sub>Promsell POS CE · v0.9.3 · Feature Modules API</sub>

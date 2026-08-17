@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.9.2
+# CODEBASE.md — Promsell POS CE v0.9.3
 
 ## System overview
 
@@ -114,7 +114,7 @@ features/<name>/
 - Domain `Money` is integer satang. The 32 nullable `*_satang` columns use Drift `NullableMoneySatangConverter`.
 - Writers dual-write exact satang plus legacy REAL baht for rollback compatibility. Readers prefer satang and fall back to REAL for pre-v32 rows.
 - Percentage rates and percentage-valued discounts remain REAL; conditional `AMOUNT` values also receive satang storage.
-- Migration code lives in `lib/core/database/app_database.dart`; update the schema version and add a migration test for every schema change.
+- Migration code lives in `lib/core/database/app_database_migrations.dart` (a `part of app_database.dart` file exposing an `extension on AppDatabase`); update the schema version and add a migration test for every schema change.
 
 ### State management overview
 
@@ -203,4 +203,4 @@ features/<name>/
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.9.3 · Codebase Reference</sub>

@@ -1,6 +1,6 @@
 # Core Modules API Reference
 
-> Current release: **v0.9.2** · database schema: **v32** · package version: `0.9.2`
+> Current release: **v0.9.3** · database schema: **v32** · package version: `0.9.3`
 
 Public APIs for core domain modules, error system, and value objects.
 
@@ -814,4 +814,4 @@ Future<int> cleanupPreRestoreBackups();
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · Core Modules API</sub>
+<sub>Promsell POS CE · v0.9.3 · Core Modules API</sub>

@@ -1,4 +1,4 @@
-# File Dependency Map — Promsell POS CE (v0.9.2)
+# File Dependency Map — Promsell POS CE (v0.9.3)
 
 If you change a file, these are the files that must also be updated.
 
@@ -38,7 +38,7 @@ If you change a file, these are the files that must also be updated.
 | `CartBloc` / `DraftBloc` / `CheckoutBloc` | Prefer these over legacy `SaleBloc` references; update related tests under `test/features/sale/` |
 | `SaleState` new field (e.g. `stockWarning`) | Update `sale_state.dart` props count + `sale_bloc_test.dart` expectations + any `copyWith` usage |
 | `DraftCart` entity (new fields) | Update `draft_cart.dart` + `DraftCartLocalDatasource` + `DraftBloc` handlers + draft tests |
-| `DraftCarts` table schema | Run `dart run build_runner build`; bump schema version + add migration in `app_database.dart` + legacy fixture test |
+| `DraftCarts` table schema | Run `dart run build_runner build`; bump schema version + add migration in `app_database_migrations.dart` (extension AppDatabaseMigrationLogic) + legacy fixture test |
 | `Product` entity (new fields, e.g. `barcodeImagePath`) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductLocalDatasource` mapping + `ProductRepositoryImpl` constructor if services added |
 | `Category` entity (new fields: color, iconName) | Update `category_test.dart` props count + fixtures + `CategoryRepositoryImpl` mapping + run `dart run build_runner build`; bump schema version |
 | `CategoryRepositoryImpl` constructor | Update tests to inject mock datasource; regenerate with `build_runner` |
@@ -83,4 +83,4 @@ If you change a file, these are the files that must also be updated.
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · File Dependency Map</sub>
+<sub>Promsell POS CE · v0.9.3 · File Dependency Map</sub>

@@ -58,4 +58,4 @@
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.2 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.3 · AGPL-3.0</sub>
