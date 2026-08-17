@@ -1,7 +1,7 @@
 # Store Submission Checklist
 
-Last updated: **2026-08-11** | Version: **0.9.1+1** (store cut still **0.9 → 1.0** human)  
-Trust package: `docs/plan/COMPLETE/V090-TRUST/` · Smoke 0.9: `docs/testing/RELEASE_0.9_SMOKE.md` · Smoke 1.0 plan: `docs/testing/RELEASE_1.0_SMOKE.md`  
+Last updated: **2026-08-17** | Release: **v0.9.2** | `pubspec`: **0.9.2**<br>
+Trust package: `docs/plan/COMPLETE/V090-TRUST/` · Smoke v0.9.2: `docs/testing/RELEASE_0.9.2_SMOKE.md` · Smoke 1.0 plan: `docs/testing/RELEASE_1.0_SMOKE.md`<br>
 Post-0.9 management: `docs/plan/UN-COMPLETE/POST-090-MANAGE/` · Play WS: `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md`
 
 ---
@@ -35,20 +35,20 @@ Post-0.9 management: `docs/plan/UN-COMPLETE/POST-090-MANAGE/` · Play WS: `docs/
 ### Explicit non-blockers for internal testing
 
 - Device `integration_test/` not run on main CI (format/analyze only). Trust **blocks** emulator `--flavor dev` on tags / money-path PRs — see [`docs/testing/CI.md`](testing/CI.md)
-- Phase M / Phase 2b not shipped  
+- Phase M v32 is shipped; Phase 2b recovery-kit export/import is still deferred
 - iOS App Store full cut (separate track)  
 
 ---
 
 ## Pre-Flight (Code)
 
-- [x] Version `0.9.1+1` in `pubspec.yaml`
+- [x] `pubspec.yaml` version bumped to `0.9.2` for release v0.9.2
 - [x] Android / iOS display name **Promsell**
 - [x] Permissions: CAMERA (product photos + barcode), storage for exports; INTERNET optional (remote product images only)
 - [x] iOS privacy usage strings present (`Info.plist`)
 - [x] Release signing fail-closed without `android/app/keystore.properties`
 - [x] Keystore artifacts gitignored (`*.jks`, `keystore.properties`)
-- [x] Money-path trust suite + device smoke cash/draft/daily close (2026-07-17)
+- [x] Money-path trust suite, Phase M migration/satang coverage, and host suite green (2129 tests, 2026-08-17); device smoke remains operator-owned
 - [x] Release Trust CI (fail-closed): `.github/workflows/release-trust.yml`
 - [x] Signed **prod** AAB dry-run (throwaway keystore only — **not** for Play upload)
 
@@ -233,7 +233,7 @@ Bundle `com.promsell.promsell_pos_ce` · same privacy URL · export compliance f
 
 | Item | Value |
 |------|--------|
-| Version | 0.9.1+1 |
+| Release notes | v0.9.2 (`pubspec` 0.9.2) |
 | Privacy URL | https://github.com/teeprakorn1/promsell-pos-ce/blob/main/docs/PRIVACY_POLICY.md |
 | Source | https://github.com/teeprakorn1/promsell-pos-ce |
 | Android ID | `com.promsell.promsell_pos_ce` |

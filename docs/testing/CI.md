@@ -26,8 +26,8 @@ This page is the **human** map. Other docs should link here instead of restating
 | `release-aab.yml` | Play upload. Artifacts stay on GitHub |
 | [`RELEASE_1.0_SMOKE.md`](./RELEASE_1.0_SMOKE.md) | **Still No-Go** (2026-07-20). Do not treat a green trust job as 1.0 Pass |
 
-Device E2E honesty tables live with [V092-D.3](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-D-QA.md). Coverage policy: 60 / 80 — not `very_good_coverage`.
+Device E2E honesty tables live with [V092-D.3](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-D-QA.md). Coverage policy: 60 / 80 — not `very_good_coverage`. Phase M (schema v32 satang columns) is implemented in v0.9.2; legacy REAL baht retained for rollback.
 
 ---
 
-<sub>Promsell POS CE · CI map · 2026-08-13</sub>
+<sub>Promsell POS CE · CI map · 2026-08-17</sub>

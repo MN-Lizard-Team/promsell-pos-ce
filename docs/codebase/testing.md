@@ -16,7 +16,7 @@ test/
 │   ├── pump_app.dart           # pumpApp extension for widget tests
 │   └── fake_database.dart      # In-memory Drift DB factory
 ├── core/
-│   ├── database/               # Barcode dedup migration test
+│   ├── database/               # Schema migrations, satang backfill, legacy fixtures
 │   ├── di/                     # DI graph test
 │   ├── image/                  # UnifiedImageWidget, ImageSkeleton, ImageErrorPlaceholder
 │   ├── services/               # CrashLogService, ReceiptPdfService
@@ -47,8 +47,8 @@ test/
 │   │   └── presentation/widgets/  # CategoryPicker, CategoryFilterBar, ProductCardShell, ProductFormCubit, ProductHeroImage
 │   ├── history/                # Use case, BLoC, repo tests
 │   ├── inventory/              # InventoryLog entity, use case, cubit, repo, service tests
-│   ├── report/                 # ReportCubit tests + ReportCalculator domain tests
-│   │   └── domain/extensions/   # ReportCalculator_test.dart
+│   ├── report/                 # ReportCubit + ReportCalculatorService tests
+│   │   └── domain/services/     # ReportCalculatorService_test.dart
 │   ├── settings/               # Cubit, repo, widget tests
 │   │   └── presentation/widgets/
 │   │       ├── about/          # AboutWidgets
@@ -83,16 +83,16 @@ test/
 ## Integration Tests (E2E)
 
 **Location:** `integration_test/`  
-**Status (honest, 2026-08-14):** Scaffold + analyze on main CI. Runtime is **not** on `ci.yml`. Trust **blocks** emulator `--flavor dev` on tags / money-path PRs. Not “E2E ready.”  
+**Status (honest, 2026-08-17):** Scaffold + analyze on main CI. Runtime is **not** on `ci.yml`. Trust **blocks** emulator `--flavor dev` on tags / money-path PRs. Not “E2E ready.”<br>
 **Map:** [`docs/testing/CI.md`](../testing/CI.md)
 
 | Layer | Path | CI | Notes |
 |-------|------|----|-------|
 | **Host integration (money net)** | `test/integration/` | **Fail-closed** via `release-trust.yml` | Real repos + in-memory Drift. V092-D.1 + D.4 added. |
 | **Device E2E (UI journeys)** | `integration_test/` | Main CI = **format + analyze only**. Trust = **blocking** `all_tests.dart --flavor dev` | Scaffold / flake; flavor is **dev**. V092-D.5: `pumpAndSettle` dropped in `restartApp`, `TestKeys` added. |
-| **Manual smoke** | `RELEASE_0.9_SMOKE.md` · `RELEASE_1.0_SMOKE.md` · `RELEASE_0.9.2_SMOKE.md` | Human | 1.0 sheet is still **No-Go**. 0.9.2 sheet covers cold-start + PIN + void. |
+| **Manual smoke** | `RELEASE_0.9.2_SMOKE.md` · `RELEASE_1.0_SMOKE.md` | Human | 1.0 sheet is still **No-Go**. 0.9.2 sheet covers cold-start + PIN + void. |
 
-### Device E2E — what is true (2026-08-14)
+### Device E2E — what is true (2026-08-17)
 
 - Robot pattern + fixtures exist under `integration_test/`
 - `ci.yml` does **not** run device tests (`continue-on-error` is gone)
@@ -178,4 +178,4 @@ dart run tool/check_path_coverage.dart --fail --min-global=60 --min-sale-logic=8
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Testing</sub>
+<sub>Promsell POS CE · v0.9.2 · Testing</sub>

@@ -1,5 +1,5 @@
 @startuml Sequence_Void
-title Void Sale Flow — Atomic Transaction
+title Void Sale Flow — Atomic Transaction (v0.9.2)
 
 actor Merchant
 participant "History UI" as UI
@@ -33,9 +33,12 @@ group Drift Transaction
 
     DS -> DB: SELECT sale_items WHERE saleId
     loop For each sale item
-        DS -> DB: UPDATE products\nSET stock = stock + qty
+        DS -> DB: UPDATE products\nSET stock = stock + qty, version = version + 1, updated_at = now\nWHERE id = productId AND track_stock = 1
         DS -> ILS: logVoidReversal(productId, +qty, balanceAfter, saleId)
         ILS -> DB: INSERT inventory_logs\n(type=VOID_REVERSAL)
+    end
+    opt customer attached
+        DS -> DB: UPDATE customers\n(total_spent + total_spent_satang reversal, visit_count - 1)
     end
 end
 

@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE (v0.9.1)
+# Technical Deep-Dive — Promsell POS CE (v0.9.2)
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 
@@ -125,7 +125,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  ReceiptPdfService (stateless)                              │
 │  PromptPayQrCode (stateless)                                │
 │  SlipVerifier (stateless)                                   │
-│  BackupExportService + BackupRestoreService (stateless)      │
+│  BackupExportService + BackupRestoreService (stateless)     │
 │                                                             │
 └──────────┬──────────────────────────────────────────────────┘
            │
@@ -133,7 +133,7 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 ┌──────────▼─────────────── Database ─────────────────────────┐
 │                  AppDatabase (singleton)                    │
 │                SQLite • Drift ORM • 16 tables               │
-│             • schema v30 • WAL • FK ON • SQLCipher          │
+│             • schema v32 • WAL • FK ON • SQLCipher          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -205,7 +205,8 @@ All **domain** currency math uses the `Money` value object (`lib/core/domain/mon
 - **Precision**: Integer **satang** (1 ฿ = 100 satang) — avoids binary float error on add/sub/mul
 - **No currency field on the VO** — shop currency symbol comes from settings / formatters
 - **Safe arithmetic**: `+`, `-`, `*` with half-up rounding; clamp-safe subtraction
-- **Persistence (v0.9.0)**: SQLite still stores **REAL baht** on amount columns; convert at boundaries via `.value` / `Money.fromDouble` (`MoneyConverter` exists; full INTEGER column migration = Phase M)
+- **Persistence (v0.9.2)**: schema v32 stores active INTEGER satang columns through `NullableMoneySatangConverter`; writers dual-write legacy REAL baht for rollback compatibility, and readers prefer satang with REAL fallback
+- **Aggregation**: tender and report totals accumulate integer satang before converting to display doubles
 - **Formatting**: `MoneyText` / `CurrencyFormatter` respect locale and settings symbol
 - **Payable SSOT**: cart display, checkout charge, and sale insert share `SalePayableCalculator`
 
@@ -281,4 +282,4 @@ try {
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Technical Deep-Dive</sub>
+<sub>Promsell POS CE · v0.9.2 · Technical Deep-Dive</sub>

@@ -1,5 +1,5 @@
 @startuml Sequence_Sale
-title Sale Flow — Atomic Transaction (v0.5.0)
+title Sale Flow — Atomic Transaction (v0.9.2)
 
 actor Merchant
 participant "SalePage" as UI
@@ -28,12 +28,12 @@ group Drift Transaction
     RNS -> DB: write updated sequence
     RNS --> DS: "260528-A1-0001"
 
-    DS -> DB: INSERT sale (id, receiptNumber, status=COMPLETED,\n  discountType/Value/Amount, vatMode/Rate/Amount, totalAmount)
+    DS -> DB: INSERT sale (id, receiptNumber, status=COMPLETED,\n  REAL compatibility amounts + INTEGER satang columns,\n  discountType/Value/Amount, vatMode/Rate/Amount, totalAmount)\n    DS -> DS: require exact tenderSum.satang == payable.satang
 
     loop For each cart item
         DS -> DB: INSERT sale_item (with discountAmount)
         note right: trackStock=false → skip stock check & deduction
-        DS -> DB: UPDATE products SET stock = stock - qty
+        DS -> DB: UPDATE products SET stock = stock - qty,\nversion = version + 1, updated_at = now\nWHERE id = productId AND stock >= qty
         DS -> ILS: logSale(productId, -qty, balanceAfter, saleId)
         ILS -> DB: INSERT inventory_logs (type=SALE)
     end

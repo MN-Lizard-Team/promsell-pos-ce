@@ -1,10 +1,10 @@
-# Migration & Operations — Promsell POS CE (v0.9.1)
+# Migration & Operations — Promsell POS CE (v0.9.2)
 
 Migration guide, backup **export**, performance notes, and database testing.
 
 > **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
 
-**Current schema: v30** (16 tables including `sale_payments` and `product_audits`). **Same-device in-app restore** is shipped (Settings → Backup). Cross-device / key recovery is **not** (Phase 2b).
+**Current schema: v32** (16 tables including `sale_payments` and `product_audits`; 32 INTEGER `*_satang` money columns added in Phase M). **Same-device in-app restore** is shipped (Settings → Backup). Cross-device / key recovery is **not** (Phase 2b).
 
 ---
 
@@ -18,8 +18,10 @@ Migration guide, backup **export**, performance notes, and database testing.
 - Unique indexes belong in `onUpgrade` **after a dedupe pass**. `_createIndexes()` runs on `onCreate` and `from < 2` only and does **not** create `idx_products_sku_lower_unique`.
 - **v30** adds `sku_lower`, backfills `LOWER(sku)`, then `CREATE UNIQUE` — **no SKU dedupe**. Mixed-case duplicate SKUs can fail the upgrade (repair: [V092-C.2](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-C-STOCK.md)).
 - In source, `from < 27` (receipt unique) runs **after** `from < 30`.
+- **v31** repairs DBs that already ran v30 without dedupe (drop unique index, dedupe, recreate).
+- **v32** (Phase M) adds nullable INTEGER `*_satang` columns to all money tables and backfills from REAL baht via `ROUND(baht * 100)`. Writers dual-write; readers prefer satang with REAL fallback. See [WS-C-PHASE-M-MONEY](../plan/UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md).
 
-### Latest steps (v0.9.1)
+### Latest steps (v0.9.2)
 
 | Version | Changes (match `onUpgrade`) |
 |---------|------------------------------|
@@ -29,6 +31,8 @@ Migration guide, backup **export**, performance notes, and database testing.
 | **v28** | Create `sale_payments` + `idx_sale_payments_sale_id` |
 | **v29** | `barcode_lower` + `_deduplicateBarcodesLower()` + unique index |
 | **v30** | `sku_lower` + backfill + unique — **no SKU dedupe** |
+| **v31** | V092-C.2 repair: drop `idx_products_sku_lower_unique`, dedupe mixed-case SKUs, recreate unique index |
+| **v32** | Phase M: 32 INTEGER `*_satang` columns across 10 tables, backfilled from REAL baht (`ROUND(baht * 100)`). NaN/Inf rows skipped (satang stays NULL → REAL fallback). Conditional backfill for `discount_value` / `value` / `cart_discount_value` (AMOUNT type only) |
 
 ### Incremental migrations (v2 → v24, historical)
 
@@ -143,6 +147,15 @@ onUpgrade: (m, from, to) async {
     // Add sku_lower shadow column to products
     // Create unique partial index idx_products_sku_lower_unique
   }
+  if (from < 31) {
+    // V092-C.2 repair: drop idx_products_sku_lower_unique, dedupe mixed-case SKUs, recreate
+  }
+  if (from < 32) {
+    // Phase M: add nullable INTEGER *_satang columns to all money tables
+    // Backfill from REAL baht via ROUND(baht * 100) AS INTEGER
+    // NaN/Inf rows skipped (satang stays NULL → REAL fallback at read time)
+    // 32 columns across 10 tables; conditional backfill for AMOUNT-type discount/value fields
+  }
 },
 ```
 
@@ -234,7 +247,7 @@ Full-database encryption at rest using SQLCipher:
 
 ### Cautions
 
-- **Version mismatch:** Restoring a pre-v2 backup on v24+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss.
+- **Version mismatch:** Restoring a pre-v2 backup on v32+ app triggers `onUpgrade` with safe non-destructive migration (`_addColumnIfNotExists` guard). No data loss. Phase M satang columns are backfilled from REAL baht automatically.
 - **PIN-encrypted backups:** Restoring an encrypted backup without the PIN is impossible.
 - **SQLCipher encryption:** Database files are encrypted at rest. Losing the platform-stored key requires data recovery from unencrypted backup.
 - **CSV export** (v0.6.0): Export sales and products data as CSV via `csv` + `share_plus`.
@@ -345,4 +358,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Migration & Operations · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.2 · Migration & Operations · SQLCipher AES-256</sub>

@@ -1,5 +1,5 @@
 @startuml Sequence_AdjustStock
-title Manual Stock Adjustment Flow
+title Manual Stock Adjustment Flow (v0.9.2)
 
 actor Merchant
 participant "AdjustStockDialog" as UI
@@ -31,7 +31,7 @@ group Drift Transaction
         InvRepo --> UC: throw (insufficient stock)
     end
 
-    InvRepo -> DB: UPDATE products SET stock = newStock
+    InvRepo -> DB: UPDATE products SET stock = stock + qtyChange,\nversion = version + 1, updated_at = now\nWHERE id = productId AND (stock + qtyChange >= 0 for stock-out)
     InvRepo -> DB: INSERT inventory_logs\n(type=ADJUSTMENT_IN or ADJUSTMENT_OUT)
 end
 

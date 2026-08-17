@@ -330,7 +330,7 @@ test('description of what is tested', () {
 
 ## Project architecture
 
-Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current release notes v0.9.2; disk/pubspec remains 0.9.1+1 until the version bump) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.8.x).
+Read `CODEBASE.md` for module/file reference. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for deep technical details (C4 diagrams, data flows, transaction boundaries, DI graph, ADRs). For version history, see [`CHANGELOG.md`](CHANGELOG.md) (current release v0.9.2; `pubspec` is `0.9.2`) and [`docs/changelog/`](docs/changelog/) (archived v0.1.x–v0.8.x).
 
 **Key files:**
 - `lib/core/di/injection_container.dart` — `injectable` + `get_it` registrations (generated config in `injection_container.config.dart`)

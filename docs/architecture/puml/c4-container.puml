@@ -1,15 +1,15 @@
 @startuml C4_Container
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-title Promsell POS CE — Container Diagram
+title Promsell POS CE — Container Diagram (v0.9.2)
 
 Person(merchant, "Merchant", "Shop owner / cashier")
 
 System_Boundary(app, "Promsell POS CE (Flutter App)") {
-    Container(ui, "Presentation Layer", "Flutter Widgets + BLoC/Cubit", "5-tab shell: Home, Products, Sale, Report, Settings")
-    Container(domain, "Domain Layer", "Dart (target: Flutter-free)", "Entities, Use Cases, Repository interfaces")
-    Container(data, "Data Layer", "Drift + SQLCipher", "Repository impls, Datasources, Services")
-    ContainerDb(sqlite, "SQLite Database", "Drift ORM", "16 tables · schema v30, WAL, FK ON, UUIDv4 PKs, SQLCipher AES-256")
+    Container(ui, "Presentation Layer", "Flutter Widgets + BLoC/Cubit", "5-tab shell with adaptive sale: narrow cart bar/FAB, tablet dual-pane")
+    Container(domain, "Domain Layer", "Pure Dart (CI-fenced)", "Entities, Money, Use Cases, Repository interfaces")
+    Container(data, "Data Layer", "Drift + SQLCipher", "Repository impls, Datasources, satang converters, Services")
+    ContainerDb(sqlite, "SQLite Database", "Drift ORM", "16 tables · schema v32, 32 satang columns, WAL, FK ON, UUIDv4 PKs, SQLCipher AES-256")
     Container(pdf, "ReceiptPdfService", "pdf + printing packages", "80mm thermal PDF generation")
 }
 

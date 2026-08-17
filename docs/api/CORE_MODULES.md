@@ -1,5 +1,7 @@
 # Core Modules API Reference
 
+> Current release: **v0.9.2** · database schema: **v32** · package version: `0.9.2`
+
 Public APIs for core domain modules, error system, and value objects.
 
 ---
@@ -78,18 +80,27 @@ print(price.toString());            // "Money(299.50)"
 final satang = price.satang;        // 29950
 ```
 
-### Drift / persistence (v0.9.0 truth)
+### Drift / persistence (v0.9.2)
 
-Domain `Money` uses **integer satang** in memory. SQLite amount columns are still **`REAL` baht** on disk; datasources map with `Money.fromDouble(row.x)` / `money.value`.
+Domain `Money` uses **integer satang** in memory. Schema v32 stores 32 nullable
+`*_satang` columns across 10 money tables. Writers dual-write exact satang plus
+legacy REAL baht for rollback compatibility; readers prefer satang and fall back
+to REAL for pre-v32 rows. Percentage rates and percentage-valued discounts stay
+REAL; conditional `AMOUNT` values also receive satang storage.
 
 ```dart
-// lib/core/database/money_converter.dart — REAL baht converter exists
-// but table columns currently use plain real() without .map() (Phase M deferred).
-// Do not assume IntColumn + satang storage until Phase M ships.
+// lib/core/database/money_converter.dart
 class Products extends Table {
   RealColumn get price => real()();
   RealColumn get cost => real().nullable()();
+  IntColumn get priceSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get costSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
 }
+
+// Data-layer read boundary:
+final price = moneyFromSatangOrBaht(row.priceSatang, row.price);
 ```
 
 ### Testing
@@ -415,4 +426,4 @@ class GenerateBarcode {
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Core Modules API</sub>
+<sub>Promsell POS CE · v0.9.2 · Core Modules API</sub>

@@ -1,4 +1,4 @@
-# C4 Diagrams & Data Flows — Promsell POS CE (v0.9.1)
+# C4 Diagrams & Data Flows — Promsell POS CE (v0.9.2)
 
 System context, container diagram, component diagram, and data flow sequences for all stock-mutating operations.
 
@@ -27,16 +27,17 @@ System context, container diagram, component diagram, and data flow sequences fo
 └────────────┬──────────────────────┬────────────┘
              │                      │
              ▼                      ▼
-┌─────────────────┐   ┌─────────────────────────┐
-│ OS Share Sheet  │   │ Thermal Printer (future)│
-│ PDF export      │   │ Bluetooth / USB         │
-└─────────────────┘   └─────────────────────────┘
+┌─────────────────┐   ┌──────────────────────────┐
+│ OS Share Sheet  │   │ Thermal Printer (future) │
+│ PDF export      │   │ Bluetooth / USB          │
+└─────────────────┘   └──────────────────────────┘
 ```
 
 **Key characteristics:**
 - **Offline-first selling** — no developer server; optional `INTERNET` only for product image URLs
 - **Single-user per device** — store PIN, not multi-user auth
 - **Local-only persistence** — SQLCipher SQLite on device
+- **Adaptive sale shell** — narrow layouts use `CartBottomBar`/`CompactCartFab`; tablet-width layouts use `SaleDualPane` with `DockedCartPanel`
 
 ---
 
@@ -58,7 +59,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 ┌────────────────────────────────────────────────────┐
 │  Domain Layer                                      │
 │  Entities + UseCases + Repo interfaces             │
-│  (should be Flutter-free; leaks remain — AH-1)     │
+│  Pure Dart domain; import fence enforced in CI     │
 └────────────────────────┬───────────────────────────┘
                 injected │ implementations
                          ▼
@@ -70,7 +71,9 @@ System context, container diagram, component diagram, and data flow sequences fo
 │  slip_verifier (bank slip Mini-QR decoding)                  │
 │  SlipScannerDialog (QR camera scanner)                       │
 │  Ean13Generator (@injectable, EAN-13 + Luhn check digit)     │
-│  BackupExportService + BackupRestoreService (export/share; same-device restore)       │
+│  BackupExportService +                                       │
+│  BackupRestoreService (export/share; same-device restore)    │
+│  MoneySatangConverter (v32 dual-write/read boundary)         │
 │  ProductImageService (compression + format validation)       │
 │  BarcodeImageService (barcode PNG via RenderRepaintBoundary) │
 │  ImageCacheService (LRU cache eviction)                      │
@@ -79,7 +82,7 @@ System context, container diagram, component diagram, and data flow sequences fo
                          ▼
 ┌─────────────────────────────────────────────────────┐
 │  SQLite (Drift ORM)                                 │
-│  16 tables • schema v30 • WAL • FK ON • UUIDv4 PKs  │
+│  16 tables • schema v32 • WAL • FK ON • UUIDv4 PKs  │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -88,7 +91,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 | Layer | Can depend on | Cannot depend on |
 |-------|---------------|------------------|
 | **Presentation** | Domain | Data (directly) |
-| **Domain** | Nothing (target) | Flutter, Drift, packages — **not CI-enforced**; settings still import Flutter |
+| **Domain** | Nothing | Flutter, Drift, data, presentation; enforced by `tool/check_domain_fence.dart` |
 | **Data** | Domain (implements interfaces) | Presentation |
 
 ---
@@ -143,7 +146,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 ┌───────────────────── Storage ───────────────────────────┐
 │                                                         │
 │  SQLite (Drift)                                         │
-│  16 tables • schema v30 • WAL • FK ON • UUIDv4 PKs      │
+│  16 tables • schema v32 • WAL • FK ON • UUIDv4 PKs      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -164,6 +167,7 @@ Merchant → SalePage → CheckoutBloc → CreateSale → SaleLocalDatasource
                 │       ──→ returns "260527-A1-0042"
                 │
                 ├──→ INSERT sale (id, receiptNumber, status=COMPLETED,
+                │         REAL compatibility amounts + INTEGER satang columns,
                 │         subtotalAmount, vatMode, vatRate, vatAmount)
                 │
                 ├── FOR EACH cart item:
@@ -175,8 +179,8 @@ Merchant → SalePage → CheckoutBloc → CreateSale → SaleLocalDatasource
                 │  TRANSACTION COMMIT
                 └───────────────────────────────────┬───────┘
                                                     │
-SaleLocalDatasource → CreateSale → CheckoutBloc → SalePage → Merchant
-                      (Sale entity)   (emit SaleSuccess)  (toast)
+SaleLocalDatasource → CreateSale →   CheckoutBloc →   SalePage → Merchant
+                     (Sale entity) (emit SaleSuccess)  (toast)
 ```
 
 ### Guarantees
@@ -300,4 +304,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · schema v30 · 16 tables · C4 Diagrams & Data Flows</sub>
+<sub>Promsell POS CE · v0.9.2 · schema v32 · 16 tables · C4 Diagrams & Data Flows</sub>

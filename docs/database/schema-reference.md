@@ -1,8 +1,10 @@
-# Schema Reference — Promsell POS CE (schema v30)
+# Schema Reference — Promsell POS CE (schema v32)
 
 Detailed column reference for all **16** database tables, indexes, seed data, and enum values.
 
 > **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
+
+> **Phase M (schema v32):** 32 nullable INTEGER `*_satang` columns were added across 10 money tables. Writers dual-write (REAL baht + INTEGER satang); readers prefer satang with REAL fallback. Satang = `ROUND(baht * 100)`. Below, satang columns are listed with a `(v32)` tag. See [WS-C-PHASE-M-MONEY](../plan/UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) for the full design.
 
 ---
 
@@ -21,7 +23,9 @@ Source: `lib/core/database/tables/products_table.dart`
 | `barcode` | TEXT | Yes | — | Partial unique index (v24) when non-null/non-empty; uppercase on save/lookup; runtime uniqueness for active products |
 | `barcodeLower` | TEXT | Yes | — | LOWER(barcode) shadow column for case-insensitive unique index (schema **v29**) |
 | `price` | REAL | No | — | Baht on disk; domain maps via `Money` |
+| `priceSatang` | INTEGER | Yes | — | Satang = `ROUND(price * 100)`; readers prefer this over REAL `price` (v32) |
 | `cost` | REAL | Yes | — | |
+| `costSatang` | INTEGER | Yes | — | Satang = `ROUND(cost * 100)` (v32) |
 | `stock` | INTEGER | No | `0` | |
 | `categoryId` | TEXT | Yes | — | **FK** → `categories.id` (`onDelete: KeyAction.setNull`) |
 | `imageUrl` | TEXT | Yes | — | Network URL for future online sync |
@@ -51,25 +55,34 @@ Source: `lib/core/database/tables/sales_table.dart`
 | `receiptNumber` | TEXT | Yes | — | |
 | `status` | TEXT | No | `'COMPLETED'` | `COMPLETED` \| `VOIDED` |
 | `subtotalAmount` | REAL | No | `0` | |
+| `subtotalAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `discountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `discountValue` | REAL | Yes | — | |
+| `discountValueSatang` | INTEGER | Yes | — | Satang; backfilled only when `discountType = AMOUNT` (v32) |
 | `discountAmount` | REAL | No | `0` | |
+| `discountAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `totalAmount` | REAL | No | — | |
+| `totalAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `vatMode` | TEXT | No | `'NONE'` | `NONE` \| `INCLUSIVE` \| `EXCLUSIVE` |
 | `vatRate` | REAL | No | `0` | |
 | `vatAmount` | REAL | No | `0` | |
+| `vatAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `orderType` | TEXT | No | `'delivery'` | `dinein` \| `takeaway` \| `delivery` (added v20; default matches Drift table) |
 | `orderChannel` | TEXT | No | `'walkin'` | `walkin` \| `online` \| `phone` (added v20) |
 | `externalOrderRef` | TEXT | Yes | — | External order ID / delivery reference (added v20) |
 | `tableId` | TEXT | Yes | — | Logical ref → restaurant_tables (added v20) |
 | `serviceChargeRate` | REAL | No | `0` | Service charge % (added v20) |
 | `serviceChargeAmount` | REAL | No | `0` | Computed service charge amount (added v20) |
+| `serviceChargeAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `customerId` | TEXT | Yes | — | Logical ref → customers (added v21) |
 | `promotionId` | TEXT | Yes | — | Logical ref → promotions (added v21) |
 | `promotionDiscountAmount` | REAL | No | `0` | Promotion discount applied (added v21) |
+| `promotionDiscountAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `paymentMethod` | TEXT | No | — | `cash` \| `transfer` \| `card` \| `promptpay` \| `mixed` |
 | `amountReceived` | REAL | Yes | — | |
+| `amountReceivedSatang` | INTEGER | Yes | — | Satang (v32) |
 | `changeAmount` | REAL | Yes | — | |
+| `changeAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `paymentReference` | TEXT | Yes | — | PromptPay transaction ID |
 | `sendingBankCode` | TEXT | Yes | — | Bank code from slip verification |
 | `note` | TEXT | Yes | — | |
@@ -92,10 +105,14 @@ Source: `lib/core/database/tables/sale_items_table.dart`
 | `productId` | TEXT | No | — | Logical ref → products (no FK) |
 | `productName` | TEXT | No | — | Snapshot at time of sale |
 | `price` | REAL | No | — | Snapshot at time of sale |
+| `priceSatang` | INTEGER | Yes | — | Satang (v32) |
 | `qty` | INTEGER | No | — | |
 | `discountAmount` | REAL | No | `0` | |
+| `discountAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `vatAmount` | REAL | No | `0` | |
+| `vatAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `subtotal` | REAL | No | — | `price × qty − discount` |
+| `subtotalSatang` | INTEGER | Yes | — | Satang (v32) |
 | `note` | TEXT | Yes | — | Per-item note (added v19) |
 | `productOptionsJson` | TEXT | Yes | — | JSON snapshot of selected product options at time of sale (added v20) |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
@@ -116,6 +133,7 @@ Source: `lib/core/database/tables/sale_payments_table.dart` — added schema **v
 | `saleId` | TEXT | No | — | **FK → sales.id** (CASCADE) |
 | `method` | TEXT | No | — | cash / transfer / card / promptpay / … |
 | `amount` | REAL | No | — | Tender amount (baht) |
+| `amountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `reference` | TEXT | Yes | — | Optional payment reference |
 | `sendingBankCode` | TEXT | Yes | — | Optional bank code |
 | `sortOrder` | INTEGER | No | `0` | Display/order of tenders |
@@ -188,6 +206,7 @@ Source: `lib/core/database/tables/draft_carts_table.dart`
 | `note` | TEXT | Yes | — | |
 | `cartDiscountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `cartDiscountValue` | REAL | Yes | — | |
+| `cartDiscountValueSatang` | INTEGER | Yes | — | Satang; backfilled only when `cartDiscountType = AMOUNT` (v32) |
 | `orderType` | TEXT | No | `'delivery'` | `dinein` \| `takeaway` \| `delivery` (added v20; default matches Drift table) |
 | `orderChannel` | TEXT | No | `'walkin'` | `walkin` \| `online` \| `phone` (added v20) |
 | `externalOrderRef` | TEXT | Yes | — | External order ID / delivery reference (added v20) |
@@ -196,6 +215,7 @@ Source: `lib/core/database/tables/draft_carts_table.dart`
 | `customerId` | TEXT | Yes | — | Logical ref → customers (added v21) |
 | `promotionId` | TEXT | Yes | — | Logical ref → promotions (added v21) |
 | `promotionDiscountAmount` | REAL | No | `0` | Carries through to sale creation (added v21) |
+| `promotionDiscountAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
 | `isArchived` | BOOLEAN | No | `false` | Auto-archive after 7 days |
@@ -214,9 +234,11 @@ Source: `lib/core/database/tables/draft_cart_items_table.dart`
 | `productId` | TEXT | No | — | Logical ref → products |
 | `productName` | TEXT | No | — | Snapshot |
 | `price` | REAL | No | — | Snapshot |
+| `priceSatang` | INTEGER | Yes | — | Satang (v32) |
 | `qty` | INTEGER | No | — | |
 | `discountType` | TEXT | Yes | — | `PERCENT` \| `AMOUNT` |
 | `discountValue` | REAL | Yes | — | |
+| `discountValueSatang` | INTEGER | Yes | — | Satang; backfilled only when `discountType = AMOUNT` (v32) |
 | `note` | TEXT | Yes | — | Per-item note (added v19) |
 | `productOptionsJson` | TEXT | Yes | — | JSON snapshot of selected product options (added v20) |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
@@ -233,16 +255,24 @@ Source: `lib/core/database/tables/daily_closes_table.dart`
 | `id` | TEXT | No | — | **PK**, UUIDv4 |
 | `closeDate` | TEXT | No | — | Format: `YYYY-MM-DD` |
 | `openingCash` | REAL | No | `0` | |
+| `openingCashSatang` | INTEGER | Yes | — | Satang (v32) |
 | `expectedCash` | REAL | No | `0` | Calculated from sales |
+| `expectedCashSatang` | INTEGER | Yes | — | Satang (v32) |
 | `countedCash` | REAL | No | `0` | Cashier input |
+| `countedCashSatang` | INTEGER | Yes | — | Satang (v32) |
 | `overShortAmount` | REAL | No | `0` | `countedCash − expectedCash` |
+| `overShortAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `totalRevenue` | REAL | No | `0` | |
+| `totalRevenueSatang` | INTEGER | Yes | — | Satang (v32) |
 | `totalVoid` | REAL | No | `0` | |
+| `totalVoidSatang` | INTEGER | Yes | — | Satang (v32) |
 | `salesCount` | INTEGER | No | `0` | |
 | `voidCount` | INTEGER | No | `0` | |
 | `paymentBreakdown` | TEXT | No | `'{}'` | JSON map of payment method → amount |
 | `vatAmount` | REAL | No | `0` | Total VAT for the day |
+| `vatAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `discountAmount` | REAL | No | `0` | Total discounts for the day |
+| `discountAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `note` | TEXT | Yes | — | |
 | `closedAt` | DATETIME | Yes | — | Nullable since schema v10 |
 | `deviceId` | TEXT | Yes | — | Sync |
@@ -296,6 +326,7 @@ Source: `lib/core/database/tables/product_options_table.dart` — added schema v
 | `groupId` | TEXT | No | — | **FK → product_option_groups.id** (CASCADE) |
 | `name` | TEXT | No | — | length 1–100 (e.g. "Large", "Extra Cheese") |
 | `priceDelta` | REAL | No | `0` | Price adjustment added to item price |
+| `priceDeltaSatang` | INTEGER | Yes | — | Satang (v32) |
 | `sortOrder` | INTEGER | No | `0` | |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
@@ -315,6 +346,7 @@ Source: `lib/core/database/tables/customers_table.dart` — added schema v21
 | `email` | TEXT | Yes | — | |
 | `note` | TEXT | Yes | — | |
 | `totalSpent` | REAL | No | `0` | Lifetime spend — updated automatically on each sale/void |
+| `totalSpentSatang` | INTEGER | Yes | — | Satang (v32) |
 | `visitCount` | INTEGER | No | `0` | Number of completed sales — updated automatically |
 | `createdAt` | DATETIME | No | `currentDateAndTime` | |
 | `updatedAt` | DATETIME | No | `currentDateAndTime` | Sync |
@@ -334,7 +366,9 @@ Source: `lib/core/database/tables/promotions_table.dart` — added schema v21
 | `name` | TEXT | No | — | length 1–200 |
 | `type` | TEXT | No | `'PERCENT'` | `PERCENT` \| `AMOUNT` |
 | `value` | REAL | No | `0` | Discount value (percent or fixed amount) |
+| `valueSatang` | INTEGER | Yes | — | Satang; backfilled only when `type = AMOUNT` (v32) |
 | `minPurchaseAmount` | REAL | No | `0` | Minimum cart total to activate |
+| `minPurchaseAmountSatang` | INTEGER | Yes | — | Satang (v32) |
 | `startDate` | DATETIME | No | `currentDateAndTime` | |
 | `endDate` | DATETIME | Yes | — | `null` = no expiry |
 | `isActive` | BOOLEAN | No | `true` | |
@@ -396,16 +430,16 @@ Created in `_createIndexes()`, which runs on **`onCreate` and `from < 2` only** 
 | `idx_promotions_active` | promotions | `is_active` | Filter active promotions (v21) |
 | `idx_sales_customer_id` | sales | `customer_id` | Customer purchase history (v21) |
 
-### Barcode uniqueness (current · v0.9.1)
+### Barcode uniqueness (current · v0.9.2)
 
 - **DB:** partial unique index `idx_products_barcode_unique` on `products(barcode)` where barcode is non-null and non-empty (schema **v24**). Indexes do **not** add `AND deleted_at IS NULL`.
 - **DB (case-insensitive):** partial unique index `idx_products_barcode_lower_unique` on `products(barcode_lower)` where `barcode_lower` is non-null and non-empty (schema **v29**).
 - **Runtime:** app-layer checks may skip soft-deleted rows. The unique **index** still covers deleted rows. Policy: [V092-C.4](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-C-STOCK.md).
 - Empty/null barcodes are allowed on multiple products.
 
-### SKU uniqueness (current · v0.9.1)
+### SKU uniqueness (current · v0.9.2)
 
-- **DB (upgrade path v30):** unique index `idx_products_sku_lower_unique` on `sku_lower` WHERE non-null/non-empty. **No SKU dedupe** before `CREATE UNIQUE` (V092-C.2). `_createIndexes()` on a **fresh** install does **not** create this unique (non-unique `idx_products_sku` only).
+- **DB (upgrade path v30 → v31):** unique index `idx_products_sku_lower_unique` on `sku_lower` WHERE non-null/non-empty. v30 had **no SKU dedupe** (V092-C.2); v31 repairs DBs that ran v30 without dedupe (drop, dedupe, recreate). `_createIndexes()` on a **fresh** install does **not** create this unique (non-unique `idx_products_sku` only).
 - **Runtime:** app-layer SKU checks. Index does **not** exclude `deleted_at`.
 - Empty/null SKUs are allowed on multiple products.
 
@@ -515,4 +549,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime; some seeded
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · schema v30 · 16 tables · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.2 · schema v32 · 16 tables · 32 satang columns · SQLCipher AES-256</sub>

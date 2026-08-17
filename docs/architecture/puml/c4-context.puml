@@ -5,7 +5,7 @@ title Promsell POS CE — System Context
 
 Person(merchant, "Merchant", "Small shop owner / cashier\nuses phone or tablet")
 
-System(promsell, "Promsell POS CE", "Offline-first mobile POS\nFlutter + SQLite (Drift)")
+System(promsell, "Promsell POS CE", "Offline-first mobile POS\nFlutter + Drift + SQLCipher\nschema v32 / integer satang boundary")
 
 System_Ext(printer, "Thermal Printer", "Bluetooth / USB (future)")
 System_Ext(os_share, "OS Share Sheet", "PDF export via system share")

@@ -1,10 +1,10 @@
 @startuml C4_Component
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Promsell POS CE — Component Diagram (Sale + void via History) v0.9.1
+title Promsell POS CE — Component Diagram (Sale + void via History) v0.9.2
 
 Container_Boundary(sale_feature, "Sale Feature") {
-    Component(sale_page, "SalePage", "Flutter Widget", "Product catalog + cart + discount dialog + drafts sheet")
+    Component(sale_page, "SalePage / SaleDualPane", "Flutter Widget", "Adaptive catalog + cart; tablet docked cart, narrow bar/FAB")
     Component(payment_sheet, "PaymentPage", "Flutter Widget", "Payment method, breakdown, cash input, confirm")
     Component(cart_bloc, "CartBloc", "flutter_bloc", "Cart state + discount")
     Component(draft_bloc, "DraftBloc", "flutter_bloc", "Draft auto-save (1.5s debounce)")
@@ -14,7 +14,7 @@ Container_Boundary(sale_feature, "Sale Feature") {
     Component(void_sale_uc, "VoidSale", "Use Case", "PIN + day lock; SaleRepository")
     Component(sale_repo, "SaleRepository", "Interface", "Abstract contract")
     Component(sale_repo_impl, "SaleRepositoryImpl", "Implementation", "Delegates to datasource")
-    Component(sale_ds, "SaleLocalDatasource", "Drift DAO", "Atomic insert + void transactions + discount writes")
+    Component(sale_ds, "SaleLocalDatasource", "Drift DAO", "Atomic insert/void + exact satang tender + REAL compatibility writes")
     Component(receipt_svc, "ReceiptNumberService", "Service", "YYMMDD-XX-NNNN generation")
     Component(inv_log_svc, "InventoryLogService", "Service", "Audit trail logging")
     Component(draft_repo, "DraftCartRepository", "Interface", "Abstract draft persistence contract")
@@ -22,7 +22,7 @@ Container_Boundary(sale_feature, "Sale Feature") {
     Component(draft_ds, "DraftCartLocalDatasource", "Drift DAO", "Upsert / load draft_carts + draft_cart_items")
 }
 
-ContainerDb(db, "SQLite", "Drift", "sales + sale_items + inventory_logs + app_settings + draft_carts + draft_cart_items + daily_closes")
+ContainerDb(db, "SQLite", "Drift + SQLCipher", "schema v32 · 32 satang columns · sales/items/payments/logs/drafts/daily close")
 
 Rel(sale_page, cart_bloc, "add events (cart, discount)")
 Rel(sale_page, draft_bloc, "draft events")

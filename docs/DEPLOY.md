@@ -121,11 +121,10 @@ To support `dev` and `prod` flavors on iOS, create Xcode schemes:
 
 Version format: `major.minor.patch+buildNumber` in `pubspec.yaml`.
 
-Release notes are prepared for **v0.9.2**, while the working tree remains at
-`0.9.1+1` until the actual version bump and build-number decision are made.
+Release **v0.9.2** is tagged. `pubspec.yaml` is at `0.9.2`.
 
 ```yaml
-version: 0.9.1+1
+version: 0.9.2
 #        ^^^^^  semantic version (shown to users)
 #              ^ build number (auto-increment for stores)
 ```

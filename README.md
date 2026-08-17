@@ -7,14 +7,14 @@ A cash register that lives on the phone: sell, park bills, count stock, close th
 [![CI](https://img.shields.io/github/actions/workflow/status/teeprakorn1/promsell-pos-ce/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/teeprakorn1/promsell-pos-ce/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-%E2%89%A560%25%20CI-informational?style=flat-square)](docs/testing/CI.md)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-0E7C8A.svg?style=flat-square)](LICENSE)
-[![Release](https://img.shields.io/badge/tag-v0.9.0-0E7C8A?style=flat-square)](https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.9.0)
+[![Release](https://img.shields.io/badge/tag-v0.9.2-0E7C8A?style=flat-square)](https://github.com/teeprakorn1/promsell-pos-ce/releases/tag/v0.9.2)
 [![GitHub release](https://img.shields.io/github/v/release/teeprakorn1/promsell-pos-ce?style=flat-square&include_prereleases&label=release)](https://github.com/teeprakorn1/promsell-pos-ce/releases)
 [![Last commit](https://img.shields.io/github/last-commit/teeprakorn1/promsell-pos-ce?style=flat-square)](https://github.com/teeprakorn1/promsell-pos-ce/commits/main)
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.11+-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.11+-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
 [![SQLCipher](https://img.shields.io/badge/DB-SQLCipher%20AES--256-1B4332?style=flat-square)](docs/DATABASE.md)
-[![Schema](https://img.shields.io/badge/schema-v30-555555?style=flat-square)](docs/DATABASE.md)
+[![Schema](https://img.shields.io/badge/schema-v32-555555?style=flat-square)](docs/DATABASE.md)
 [![Offline](https://img.shields.io/badge/mode-offline--first-0E7C8A?style=flat-square)](#status)
 [![i18n](https://img.shields.io/badge/i18n-TH%20%2F%20EN-555555?style=flat-square)](lib/l10n)
 [![Android](https://img.shields.io/badge/Android-supported-3DDC84?style=flat-square&logo=android&logoColor=white)](docs/DEPLOY.md)
@@ -28,7 +28,7 @@ A cash register that lives on the phone: sell, park bills, count stock, close th
 
 ## Status
 
-**Unreleased `0.9.1+1`** · latest GitHub tag **v0.9.0** · schema **v30** · **not on Play production**.
+**`0.9.2`** · latest GitHub tag **v0.9.2** · schema **v32** · **not on Play production**.
 
 A green CI badge means host tests and analyze passed. It does not mean the app is store-ready, that device E2E is green, or that you should put a shop’s month of sales on it without reading the limits below.
 
@@ -68,7 +68,7 @@ End-to-end on **one device**. Nothing in this picture is a Promsell server.
                     |
                     v
          +----------------------+
-         | SQLCipher  schema v30|
+         | SQLCipher  schema v32|
          | key = Keystore /     |
          |         Keychain     |
          +----------+-----------+
@@ -172,8 +172,8 @@ Vulnerabilities: [SECURITY.md](SECURITY.md) (private report, not a public issue)
 | Layer | Choice |
 |-------|--------|
 | UI | Flutter, Material 3, BLoC / Cubit |
-| Data | Drift (SQLite) + SQLCipher, schema v30 |
-| Money | Satang `Money` in memory; baht `REAL` on disk (integer columns are a later cut) |
+| Data | Drift (SQLite) + SQLCipher, schema v32 |
+| Money | Satang `Money` in memory; INTEGER `*_satang` + REAL baht dual-write on disk (Phase M, schema v32) |
 | DI | injectable + get_it |
 | License | AGPL-3.0 |
 
@@ -195,7 +195,7 @@ Start here, then go deeper. Do not treat archived plans as a current queue.
 | [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | What stays on the device |
 | [docs/STORE_SUBMISSION.md](docs/STORE_SUBMISSION.md) | Play checklist — production still gated |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Signed APK / AAB, keystore |
-| [CHANGELOG.md](CHANGELOG.md) | Unreleased 0.9.1 + history (latest tag v0.9.0) |
+| [CHANGELOG.md](CHANGELOG.md) | 0.9.2 release notes + history (latest tag v0.9.2) |
 
 ### Engineering
 
@@ -204,7 +204,7 @@ Start here, then go deeper. Do not treat archived plans as a current queue.
 | [CODEBASE.md](CODEBASE.md) | Repo map, layers, conventions |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | C4, ADRs 001–028 |
 | [docs/architecture/c4-diagrams.md](docs/architecture/c4-diagrams.md) | Context / container / component |
-| [docs/DATABASE.md](docs/DATABASE.md) | Schema v30, SQLCipher, sync **metadata** (not a sync engine) |
+| [docs/DATABASE.md](docs/DATABASE.md) | Schema v32, SQLCipher, sync **metadata** (not a sync engine) |
 | [docs/database/schema-reference.md](docs/database/schema-reference.md) | Tables and indexes |
 | [docs/database/migration-and-ops.md](docs/database/migration-and-ops.md) | Upgrades — SSOT is still `app_database.dart` |
 | [SECURITY.md](SECURITY.md) | PIN scope, backup limits, private vuln reports |
@@ -218,7 +218,7 @@ Start here, then go deeper. Do not treat archived plans as a current queue.
 | [docs/codebase/testing.md](docs/codebase/testing.md) | Host vs device tests |
 | [docs/testing/RELEASE_1.0_SMOKE.md](docs/testing/RELEASE_1.0_SMOKE.md) | 1.0 smoke — still **No-Go** |
 | [docs/plan/index.md](docs/plan/index.md) | Plan map |
-| [V092-INTEGRITY](docs/plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) | Next tag `v0.9.2` |
+| [V092-INTEGRITY](docs/plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) | `v0.9.2` integrity cut (tagged) |
 | [ARCH-HARDEN-1.0](docs/plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) | Architecture before Play (paused until V092-GATE) |
 | [POST-090-MANAGE](docs/plan/UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | Store / Phase M / key restore after AH-GATE-1 |
 | [DOC-SSOT](docs/plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) | Docs honesty |
@@ -252,4 +252,4 @@ Issues and PRs should go to this repository. For private security mail, see [SEC
 
 [GNU Affero General Public License v3.0](LICENSE). If you modify the software and let others use it over a network, you must offer the corresponding source.
 
-<sub>Promsell POS CE · MN Lizard Team · [teeprakorn1](https://github.com/teeprakorn1) · unreleased 0.9.1+1 · latest tag v0.9.0 · AGPL-3.0</sub>
+<sub>Promsell POS CE · MN Lizard Team · [teeprakorn1](https://github.com/teeprakorn1) · v0.9.2 · latest tag v0.9.2 · AGPL-3.0</sub>

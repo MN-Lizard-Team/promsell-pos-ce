@@ -1,4 +1,4 @@
-# Core Modules & Feature Modules — Promsell POS CE (v0.9.1)
+# Core Modules & Feature Modules — Promsell POS CE (v0.9.2)
 
 > **Main reference:** [`CODEBASE.md`](../../CODEBASE.md) — system overview, architecture, links
 
@@ -10,7 +10,7 @@
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#0D5D6B` primary Teal, `#FF6B00` accent Orange, `#0D1B2A` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
 | `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
-| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, **schema v30** (**16 tables**), UUID PKs, WAL + FK pragma, batch seed, SQLCipher open path. Sync columns on core tables. Notable: v24 barcode unique; v25 product brand/unit/supplier/`is_recommended`; **v26 unique `daily_closes(close_date)`**; **v27 unique `sales.receipt_number`**; **v28 `sale_payments` multi-tender**; **v29 case-insensitive `barcode_lower` unique index**; **v30 case-insensitive `sku_lower` unique index**. Money amounts stored as REAL baht (domain `Money` satang in memory). |
+| `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, **schema v32** (**16 tables**), UUID PKs, WAL + FK pragma, batch seed, SQLCipher open path. Sync metadata on core tables. Notable: v24 barcode unique; v25 product brand/unit/supplier/`is_recommended`; **v26 unique `daily_closes(close_date)`**; **v27 unique `sales.receipt_number`**; **v28 `sale_payments` multi-tender**; **v29 case-insensitive `barcode_lower` unique index**; **v30 case-insensitive `sku_lower` unique index**; **v31 SKU dedupe/index repair**; **v32 Phase M: 32 satang columns with active converter/dual-write boundary**. Legacy REAL baht remains for rollback compatibility. |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
@@ -36,7 +36,7 @@
 | `ProductImageService` | `lib/features/product/data/services/` | Gallery/camera pick → pure Dart JPEG compression (configurable maxWidth/quality) → local `/images/{productId}.jpg` + `_thumb.jpg`; delegates delete to `ImageCacheService`; format validation (`.jpg`, `.png`, `.webp`, etc.); auto LRU cache eviction on save; `@LazySingleton` |
 | `BarcodeImageService` | `lib/features/product/data/services/` | Generates barcode images from barcode text using `BarcodeWidget` off-screen rendering via `RenderRepaintBoundary` (600×200 @ 3x pixel ratio); saves to `/barcodes/{productId}.{png|jpg}`; supports both PNG and JPEG output formats; invoked by `ProductRepositoryImpl` on product add/update; used by `BarcodeImageWidget` to encode PNG to JPEG for share |
 | `InventoryLogService` | `lib/features/inventory/data/services/` | Audit trail for stock changes (SALE, VOID_REVERSAL, ADJUSTMENT_IN/OUT) |
-| `ReportCalculator` | `lib/features/report/domain/extensions/` | Domain extension on `List<Sale>`: `completedSales`, `voidedSales`, `netRevenue`, `voidedTotal`, `byPaymentMethod`, `topProducts` |
+| `ReportCalculatorService` | `lib/features/report/domain/services/` | Injectable domain service for period totals, daily/hourly revenue, top products, profit analytics, and PromptPay legs; aggregates money in integer satang before display conversion |
 | `SettingsMapper` | `lib/features/settings/data/mappers/` | `Settings` ↔ `Map<String,String>` serialization; handles legacy themeMode integer migration (0→light, 1→dark, 2→system) |
 | `SettingsPersistenceService` | `lib/features/settings/domain/services/` | Debounce Timer + persistence logic; `_isDisposed` guard prevents timer races after disposal |
 | `BackupEncryptionService` | `lib/features/settings/data/services/` | AES-256-GCM encryption/decryption for SQLite backups with PIN-derived PBKDF2 key |

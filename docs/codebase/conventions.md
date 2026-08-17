@@ -1,4 +1,4 @@
-# Conventions — Promsell POS CE (v0.9.1)
+# Conventions — Promsell POS CE (v0.9.2)
 
 State management, settings persistence, localization, dependency injection, and code generation conventions.
 
@@ -72,6 +72,16 @@ SettingsCubit
 
 ---
 
+## Database and money persistence
+
+- `AppDatabase` is schema **v32** with 32 nullable `*_satang` columns across 10 money tables.
+- Domain `Money` uses integer satang. Writers dual-write exact satang plus legacy REAL baht for rollback compatibility.
+- Data readers prefer satang and fall back to REAL baht for pre-v32 rows via `NullableMoneySatangConverter` and `moneyFromSatangOrBaht`.
+- Percentage rates and percentage-valued discounts stay REAL; conditional `AMOUNT` values also receive satang storage.
+- A table change requires `dart run build_runner build`, an idempotent migration, and a file-backed legacy-fixture test.
+
+---
+
 ## Localization system
 
 - **Template:** `lib/l10n/app_th.arb` (Thai — source of truth)
@@ -127,4 +137,4 @@ Two generators must be run after changes:
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Conventions</sub>
+<sub>Promsell POS CE · v0.9.2 · Conventions</sub>

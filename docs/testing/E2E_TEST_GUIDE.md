@@ -11,7 +11,7 @@ This guide covers the **device** End-to-End (E2E) suite under `integration_test/
 | **Android or iOS device/emulator** | `flutter test integration_test/` needs a supported mobile target. Desktop-only hosts fail with *No supported devices*. |
 | **Main CI** | Does **not** run device tests (format + analyze only). See [`CI.md`](./CI.md). |
 | **Money integrity gate** | Use host suite: `test/integration/` + `.github/workflows/release-trust.yml` (fail-closed). |
-| **Manual cashier evidence** | `docs/testing/RELEASE_0.9_SMOKE.md` (0.9) · `RELEASE_1.0_SMOKE.md` (1.0 plan). |
+| **Manual cashier evidence** | `docs/testing/RELEASE_0.9.2_SMOKE.md` (0.9.2 scope) · `RELEASE_0.9_SMOKE.md` (historical 0.9) · `RELEASE_1.0_SMOKE.md` (1.0 plan, still No-Go). |
 | **Status SSOT** | [`E2E_IMPLEMENTATION_STATUS.md`](./E2E_IMPLEMENTATION_STATUS.md) — scaffold, not “always green”. |
 
 **Known risks before debugging flakes:** test DI bootstrap, UI money format vs `Money.toString()`, EN-only finders, missing `Key`s. See POST-090 **B4**.

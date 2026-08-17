@@ -1,5 +1,7 @@
 # Database API Reference
 
+> Current release: **v0.9.2** · schema: **v32** · package version: `0.9.2`
+
 Complete guide to Drift database access patterns, repository implementations, and query techniques.
 
 ---
@@ -42,10 +44,10 @@ Complete guide to Drift database access patterns, repository implementations, an
   Promotions,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase() : super(_openDatabase());
 
   @override
-  int get schemaVersion => 30;  // Current schema version (v0.9.1)
+  int get schemaVersion => 32;  // Current schema version (v0.9.2)
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -530,17 +532,18 @@ class ProductRepositoryImpl implements ProductRepository {
     return Product(
       id: data.id,
       name: data.name,
-      price: Money.fromDouble(data.price),
+      price: moneyFromSatangOrBaht(data.priceSatang, data.price),
       // ... other fields
     );
   }
   
-  // Map domain entity to Drift companion
+  // Map domain entity to Drift companion: keep REAL compatibility dual-write.
   ProductsCompanion _mapToCompanion(Product entity) {
-    return ProductsCompanion.insert(
-      id: entity.id,
-      name: entity.name,
-      price: entity.price.value,
+    return ProductsCompanion(
+      id: Value(entity.id),
+      name: Value(entity.name),
+      price: Value(entity.price.value),
+      priceSatang: Value(entity.price),
       // ... other fields
     );
   }
@@ -555,24 +558,23 @@ class ProductRepositoryImpl implements ProductRepository {
 
 **Location:** `lib/core/database/money_converter.dart`
 
-**v0.9.0 reality:** Converter maps `Money` ↔ **`double` baht** (not integer satang). Table definitions still use plain `real()` columns; datasources convert manually. **Integer satang columns are Phase M (deferred).**
-
-```dart
-// Conceptual — see money_converter.dart for the REAL baht implementation
-class MoneyConverter extends TypeConverter<Money, double> {
-  const MoneyConverter();
-  // fromSql: baht double → Money.fromDouble
-  // toSql: Money.value (baht)
-}
-```
-
-**Current table style:**
+**v0.9.2 reality:** Legacy REAL baht columns remain for compatibility, while
+nullable INTEGER satang columns are active through Drift converters. Writers
+must dual-write both representations; readers prefer satang and fall back to
+REAL for pre-v32 rows.
 
 ```dart
 class Products extends Table {
   RealColumn get price => real()();
   RealColumn get cost => real().nullable()();
+  IntColumn get priceSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
+  IntColumn get costSatang =>
+      integer().nullable().map(const NullableMoneySatangConverter())();
 }
+
+final price = moneyFromSatangOrBaht(row.priceSatang, row.price);
+```
 ```
 
 ### DateTimeConverter (if custom format needed)
@@ -646,7 +648,7 @@ Stream<CartState> _mapLoadedToState() async* {
 
 ```dart
 @override
-int get schemaVersion => 30;  // Increment on each schema change
+int get schemaVersion => 32;  // Increment on each schema change
 ```
 
 ### Migration Pattern
@@ -688,6 +690,14 @@ MigrationStrategy get migration => MigrationStrategy(
   },
 );
 ```
+
+### v32 Phase M migration
+
+The v32 migration adds 32 nullable `*_satang` columns across 10 money tables and
+backfills finite REAL baht values with `CAST(ROUND(baht * 100) AS INTEGER)`.
+Conditional amount-or-percent fields are backfilled only when their type is
+`AMOUNT`; percentage values remain REAL. The update is idempotent and excludes
+NaN/Infinity. Add a file-backed legacy-fixture test for each future schema change.
 
 ### Safe Column Addition
 
@@ -789,4 +799,4 @@ Benefits:
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Database API Reference</sub>
+<sub>Promsell POS CE · v0.9.2 · Database API Reference</sub>

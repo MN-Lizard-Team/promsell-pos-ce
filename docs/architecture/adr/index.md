@@ -1,4 +1,4 @@
-# Architecture Decision Records (ADRs) — Promsell POS CE (v0.9.1)
+# Architecture Decision Records (ADRs) — Promsell POS CE (v0.9.2)
 
 All architecture decision records, ordered by ADR number.
 
@@ -542,7 +542,8 @@ lib/core/widgets/
 **Consequences:**
 - ✅ One order of operations for goldens and writers
 - ✅ Supersedes ADR-011 *scope* (011 remains historically correct for discount-before-VAT)
-- ⚠️ Disk money is still REAL baht until Phase M (POST-090 C)
+- ✅ v0.9.2 activates satang storage/readers with legacy REAL baht retained for rollback compatibility
+- ⚠️ Legacy REAL columns remain until a later deprecation release (POST-090 C)
 
 ---
 
@@ -559,4 +560,4 @@ lib/core/widgets/
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Architecture Decision Records 001–028</sub>
+<sub>Promsell POS CE · v0.9.2 · Architecture Decision Records 001–028</sub>

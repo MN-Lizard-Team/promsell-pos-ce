@@ -121,7 +121,7 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart       # Database class, schema v30, migration, indexes, seed
+├── app_database.dart       # Database class, schema v32, migration, indexes, seed
 ├── app_database.g.dart     # GENERATED — do not edit (not committed to git)
 └── tables/
     ├── products_table.dart

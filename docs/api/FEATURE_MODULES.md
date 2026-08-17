@@ -1,6 +1,6 @@
 # Feature Modules API Reference
 
-> **Scope note (v0.9.1):** This file documents a **subset** of APIs. Full feature list (13): `customer`, `daily_close`, `history`, `home`, `inventory`, `onboarding`, `product`, `promotion`, `receipt`, `report`, `restaurant_table`, `sale`, `settings` under `lib/features/`.
+> **Scope note (v0.9.2):** This file documents a **subset** of APIs. Full feature list (13): `customer`, `daily_close`, `history`, `home`, `inventory`, `onboarding`, `product`, `promotion`, `receipt`, `report`, `restaurant_table`, `sale`, `settings` under `lib/features/`.
 
 
 Public APIs for feature-level domain models, repositories, and use cases.
@@ -243,7 +243,7 @@ class Sale extends Equatable {
   final String status;                // 'COMPLETED', 'VOIDED', etc.
   final Money subtotalAmount;         // Sum of all items
   final String? discountType;         // 'PERCENT' or flat amount type
-  final double? discountValue;        // % or flat amount (stays double)
+  final double? discountValue;        // % or flat amount; amount storage also has satang
   final Money discountAmount;         // Calculated discount amount
   final String vatMode;               // 'NONE', 'EXCLUSIVE', 'INCLUSIVE'
   final double vatRate;               // VAT rate % (stays double)
@@ -348,7 +348,7 @@ class CartState extends Equatable {
 }
 ```
 
-> **Note (v0.9.1):** `grandTotal` was removed — use `payableTotals(settings)` as the SSOT for payable calculations.
+> **Note (v0.9.2):** `grandTotal` was removed — use `payableTotals(settings)` as the SSOT for payable calculations. Tender equality is exact integer satang at sale creation.
 
 #### Cart Events
 
@@ -365,14 +365,17 @@ CartItemQtyChanged(String productId, int newQty, {String? lineId})
 // Update item note
 CartItemNoteChanged(String lineId, String? note)
 
-// Apply discount
-CartDiscountChanged(Money amount)
+// Apply a cart discount
+CartDiscountChanged(
+  discountType: 'AMOUNT',
+  discountValue: 10.0,
+)
 
 // Set customer
 CartCustomerSet(String? customerId)
 
-// Apply promotion
-CartPromotionApplied(String? promotionId, Money? discountAmount)
+// Attach or clear a promotion; discount is resolved by the cart domain
+CartPromotionSet('promo-id')
 
 // Set restaurant fields
 CartOrderTypeChanged(String? orderType)
@@ -662,7 +665,7 @@ abstract class PromotionRepository {
 
 **Path:** `lib/features/settings/domain/entities/settings.dart`
 
-Settings is split into 14 typed group entities (as of v0.9.1):
+Settings is split into 14 typed group entities (v0.9.2):
 
 ```dart
 class Settings extends Equatable {
@@ -782,4 +785,4 @@ class ProductRepositoryImpl implements ProductRepository {
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · Feature Modules API</sub>
+<sub>Promsell POS CE · v0.9.2 · Feature Modules API</sub>

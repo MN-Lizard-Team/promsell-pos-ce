@@ -4,7 +4,7 @@
 
 ---
 
-**tests** (see CI / `flutter test`) — **~2040** host tests green on 2026-08-14 (`--exclude-tags stress`); line coverage **~64%** overall (CI floor **60%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
+**Tests** (see CI / `flutter test`) — **2129** host tests green on 2026-08-17 (`--exclude-tags stress`); line coverage **63.7%** overall (CI floor **60%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
 
 | Layer | What's tested | Notes |
 |-------|--------------|-------|
@@ -13,7 +13,7 @@
 | **Repository / Datasource** | Sale insert/void stock integrity, products, drafts, settings | In-memory Drift |
 | **Services** | App lock (PBKDF2 + persisted lockout), backup encrypt/restore, receipt PDF, crash log | |
 | **Widget** | Sale/cart/settings/product/pages + shared primitives | Largest layer by count |
-| **Host integration** | Checkout flow, sale integrity, **V092-D.1 VAT+discount+void+close**, **V092-D.4 void after day-close**, multi-tender daily close, backup money continuity, onboarding first sale | Under `test/integration/` — fail-closed in trust |
+| **Host integration** | Checkout flow, sale integrity, **V092-D.1 VAT+discount+void+close**, **V092-D.4 void after day-close**, multi-tender daily close, backup money continuity, onboarding first sale, Phase M migration/satang wiring | Under `test/integration/` — fail-closed in trust |
 | **Device E2E** | Happy path / draft / product / promo / restaurant | Main CI: format/analyze only. Trust: blocking `--flavor dev`. V092-D.5: `TestKeys` + no `pumpAndSettle` in `restartApp`. |
 | **Stress** | Large seed + timing (`@Tags(['stress'])`) | Weekly / label workflow |
 | **L10n parity** | EN/TH keys | |
@@ -41,17 +41,14 @@
 ### Running tests
 
 ```bash
-# All tests (includes stress tests)
-flutter test
-
-# Exclude stress tests (faster — recommended for regular development)
+# Regular host suite (recommended for development and CI parity)
 flutter test --exclude-tags stress
 
-# Stress tests only (10k products, 50k sales — may take several minutes)
+# Include stress tests explicitly when benchmarking
 flutter test --tags stress --timeout 600s
 
-# With coverage
-flutter test --coverage
+# With coverage (regular host suite)
+flutter test --coverage --exclude-tags stress
 
 # Single file
 flutter test test/integration/checkout_flow_test.dart
@@ -84,7 +81,7 @@ Coverage measured via `flutter test --coverage --exclude-tags stress` (lcov.info
 | **receipt** | 29 / 148 | 19.6% |
 | **Total** | **21,726 / 34,129** | **63.7%** |
 
-> **Note:** Per-feature rows are from a 2026-07-23 snapshot; the **Total** row reflects the 2026-08-13 measurement (`tool/check_path_coverage.dart`). `l10n` coverage is low because generated `app_localizations.dart` has many unused getter branches. `receipt` coverage is low due to PDF rendering paths requiring platform plugins. `core` includes generated DI config and database code with low testability.
+> **Note:** Per-feature rows are from a 2026-07-23 snapshot; the **Total** row reflects the 2026-08-17 measurement (`tool/check_path_coverage.dart`). `l10n` coverage is low because generated `app_localizations.dart` has many unused getter branches. `receipt` coverage is low due to PDF rendering paths requiring platform plugins. `core` includes generated DI config and database code with low testability.
 
 ---
 

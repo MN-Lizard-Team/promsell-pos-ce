@@ -1,6 +1,8 @@
 # Usage guide — Promsell POS CE
 
 > Complete guide for installing, building, and using Promsell POS Community Edition.
+>
+> Release notes: **v0.9.2** · package version: **0.9.2** · database schema: **v32**
 
 ---
 
@@ -70,7 +72,7 @@ flutter pub get
 Generated files are not committed to git. Run after every `flutter pub get`:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter gen-l10n
 ```
 
@@ -158,10 +160,10 @@ Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 |----------|---------|
 | [`docs/usage/features.md`](usage/features.md) | Features walkthrough (tabs + settings) — includes **Store PIN**, same-device backup restore |
 | [`docs/usage/development.md`](usage/development.md) | Localization, Drift/SQLCipher, architecture, testing, troubleshooting |
-| [`docs/testing/RELEASE_0.9_SMOKE.md`](testing/RELEASE_0.9_SMOKE.md) | v0.9.0 release smoke checklist |
+| [`docs/testing/RELEASE_0.9.2_SMOKE.md`](testing/RELEASE_0.9.2_SMOKE.md) | v0.9.2 release smoke checklist |
 | [`SECURITY.md`](../SECURITY.md) | Encryption, PIN gates, backup honesty |
 | [`docs/PRIVACY_POLICY.md`](PRIVACY_POLICY.md) | Privacy (local data vs developer servers) |
-| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.1 notes + archive links |
+| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.2 notes + archive links |
 
 ---
 
@@ -173,8 +175,8 @@ Promsell stores all POS data in an encrypted SQLite file on the device (SQLCiphe
 1. **Settings → Backup** — keep **Encrypt backups** on (default). Choose a PIN of at least **6** characters and store it offline.
 2. **Backup Now** regularly (or enable the reminder). Share the file to cloud/USB you control — not only on the same phone.
 3. **Same-device restore** — use **Restore** on the same device to re-apply a previous `.enc` or SQLCipher `.db` export. Restart the app after restore.
-4. **Not supported in 0.9.1** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
-5. **Key loss = data loss** without an off-device export. There is no key recovery phrase in CE 0.9.1.
+4. **Not supported in v0.9.2** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
+5. **Key loss = data loss** without an off-device export. There is no recovery-kit export/import in CE v0.9.2 yet.
 
 See also [SECURITY.md](../SECURITY.md) and [Privacy Policy](PRIVACY_POLICY.md).
 

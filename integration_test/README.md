@@ -2,7 +2,7 @@
 
 Robot-pattern UI journeys for PromSell POS CE.
 
-## Honesty first (2026-08-14)
+## Honesty first (2026-08-17)
 
 | Claim | Reality |
 |-------|---------|

@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.9.2] - 2026-08-14
+## [0.9.2] - 2026-08-17
 
-**Not tagged yet.** Release notes are prepared for `v0.9.2`. Disk / `pubspec` remains `0.9.1+1` until the version bump. Latest GitHub tag remains **v0.9.0**.
+Tagged `v0.9.2`. `pubspec` is `0.9.2`. Latest GitHub tag is **v0.9.2**.
 
 ### Highlights
 
@@ -52,7 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known limitations
 
-- No GitHub tag `v0.9.2` yet; disk / `pubspec` remains `0.9.1+1` until the release version is bumped.
 - Device/emulator E2E is not run by main CI; release-trust and operator smoke checks are still required.
 - There is no server-side key escrow. A lost SQLCipher key cannot currently be recovered on the same device.
 
@@ -60,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.1] - 2026-08-11
 
-**Not tagged yet.** Disk / `pubspec` is `0.9.1+1`. Latest GitHub tag remains **v0.9.0**.
+Tagged `v0.9.1`. `pubspec` was `0.9.1+1` at this cut. Latest GitHub tag at this point was **v0.9.1**.
 
 Sale / Report / History / Onboarding redesign, product soft-delete, schema **v31** (v30 sku_lower + v31 dedupe repair). Receipts stay **sales receipts** even when a shop Tax ID is printed.
 
@@ -112,7 +111,6 @@ Sale / Report / History / Onboarding redesign, product soft-delete, schema **v31
 
 ### Known limitations
 
-- No GitHub tag `v0.9.1` yet.
 - Receipt title can still become ใบกำกับภาษี when Tax ID is set (code; listing denies it).
 - `file_picker 12.0.0-beta.7` and pinned `image_picker_android 0.8.13+19`.
 
@@ -198,7 +196,7 @@ Full notes for **0.8.x** and earlier live under [`docs/changelog/`](docs/changel
 
 ---
 
-[0.9.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.9.0...HEAD
-[0.9.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.9.0...HEAD
+[0.9.2]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.9.1...v0.9.2
+[0.9.1]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/teeprakorn1/promsell-pos-ce/compare/v0.8.9...v0.9.0
 

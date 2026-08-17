@@ -4,7 +4,7 @@
 
 ---
 
-## Phase 1 (in progress)
+## Historical phases (completed)
 
 - [x] **Schema + Sale Integrity Overhaul** (v0.4.0): UUID migration, 9 tables, indexes, sync-ready columns, atomic receipt numbers, inventory logs, void/refund, stock adjustments
 - [x] **R3 — Cashier UX** (v0.5.0): Draft carts (multi-draft, auto-save), per-item + per-cart discounts, VAT post-discount, `trackStock` per-product, `allowOversell` + low-stock threshold
@@ -35,39 +35,39 @@
 - [x] **R21 — Restaurant Operations + CRM + Home Dashboard + Navbar Redesign** (v0.8.9): Restaurant mode; customer & promotion CRUD; home dashboard; floating Sale nav; product options; report/history merge; schema v20–v21
 - [x] **R22 — v0.9.0 trust cut**: SQLCipher; Money satang VO + payable SSOT; hard cart freeze + atomic stock; multi-tender `sale_payments` (schema **v28**); same-device backup restore; store PIN (PBKDF2, persisted lockout, stock/CSV gates); release-trust CI; privacy/store honesty; checkout failure unlocks cart
 
-### Next (post-0.9)
+### v0.9.2 status (2026-08-17)
 
-> **v0.9.2 integrity slice (SSOT for the next GitHub tag):** [`docs/plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md`](../plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) · backlog [`BACKLOG.md`](../plan/UN-COMPLETE/V092-INTEGRITY/BACKLOG.md) · gate [`GATE-TO-TAG.md`](../plan/UN-COMPLETE/V092-INTEGRITY/GATE-TO-TAG.md)  
-> **Architecture-first sequencing (SSOT before Play):** [`docs/plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md`](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) · backlog [`BACKLOG.md`](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/BACKLOG.md) · gate [`GATE-TO-PLAY.md`](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md)  
-> **Store / QA / Phase M·2b / UX (SSOT after AH-GATE-1):** [`docs/plan/UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md`](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) · [`POST-090-BACKLOG.md`](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md)  
-> **Docs tree honesty (does not gate the tag or Play):** [`docs/plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md`](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) · [`BACKLOG.md`](../plan/UN-COMPLETE/DOC-SSOT/BACKLOG.md)  
-> Prior epic: [`docs/plan/COMPLETE/V090-TRUST/`](../plan/COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) (GitHub trust-cut COMPLETE; Play still human)
+v0.9.2 is tagged (`v0.9.2`, `pubspec` 0.9.2). The remaining work is operator work: run release-trust/device smoke, configure production signing, and complete the Play Console submission.
 
-| Track | Items | Plan |
-|-------|--------|------|
-| **V092-INTEGRITY** | Withdraw tax-invoice claim, PIN on every money entry, no stale stock overwrite, host VAT+void, device void+PIN, docs↔CI | [V092-INTEGRITY](../plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) — **gates tag `v0.9.2` only** |
-| **DOC-SSOT** | Plan git+index, README shots/version, USAGE flavors, data handbook, ARCH/ADR wording, CI.md | [DOC-SSOT](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) — **does not gate tag or Play** |
-| **ARCH-HARDEN** | Domain fence, CloseDay ports, day-lock-in-TX, money boundary, read models, AH-GATE-1 | [ARCH-HARDEN-1.0](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) |
-| **WS-A Play 1.0** | Production keystore, Data safety, signed AAB, Console submit, post-smoke | [WS-A](../plan/UN-COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md) — **A4/A5 production path gated by AH-GATE-1** |
-| **WS-B QA** | E2E doc honesty, expand release-trust, `RELEASE_1.0_SMOKE`, coverage policy | [WS-B](../plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md) |
-| **WS-C Phase M** | INTEGER satang columns / `MoneyConverter` end-to-end | [WS-C](../plan/UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) — after AH fiscal decision |
-| **WS-D Phase 2b** | Cross-device restore / key export (threat model first) | [WS-D](../plan/UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md) |
-| **WS-E Product UX** | PIN default-on spec, tablet dual-pane, thermal, a11y | [WS-E](../plan/UN-COMPLETE/POST-090-MANAGE/WS-E-PRODUCT-UX.md) |
+Current SSOT documents:
 
-- [ ] **V092-INTEGRITY + V092-GATE** — tag `v0.9.2` ([GATE-TO-TAG](../plan/UN-COMPLETE/V092-INTEGRITY/GATE-TO-TAG.md) currently **BLOCKED**)
-- [ ] **DOC-SSOT Must (DOC-1)** — commit plan tree + index + README/USAGE honesty ([DOC-SSOT](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md))
-- [ ] **ARCH-HARDEN AH-0…AH-2 + AH-GATE-1** — architecture before Play production ([GATE-TO-PLAY](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md) currently **BLOCKED**)
-- [ ] **POST-090 Must for store (after gate):** A1–A5 + B2 — see [POST-090-BACKLOG](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md)
-- [ ] Phase M — INTEGER satang / `MoneyConverter` — **after** AH-2.6 decision + B1 (B1 done)
-- [ ] Phase 2b — cross-device restore / key recovery — **after** D0 (done) + D1+
-- [ ] Tablet dual-pane sale + orientation policy
-- [ ] Play Console production cut (keystore, Data safety, AAB) — **not before AH-GATE-1**
+- [POST-090 backlog](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md) — recovery-kit, QA, store, and product UX follow-up
+- [ARCH-HARDEN overview](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) — architecture gate before Play production
+- [DOC-SSOT overview](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) — documentation navigation and honesty work
+- [V090 trust package](../plan/COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) — completed trust-cut evidence
+
+| Track | Status | Next action |
+|-------|--------|-------------|
+| **v0.9.2 integrity** | Tagged `v0.9.2` | Operator: release-trust/device smoke + Play Console submission |
+| **ARCH-HARDEN** | Core domain fence and purity work implemented | Complete AH-GATE-1 operator/CI evidence before Play |
+| **Phase M** | v32 migration, satang converter, dual-write/read fallback implemented | Keep legacy REAL columns until deprecation release |
+| **Phase 2b recovery** | Threat model and UX spec complete; code deferred | Implement recovery-kit export/import |
+| **Tablet UX** | Dual-pane and orientation policy implemented | Capture optional tablet store screenshots |
+| **Play production** | Operator-gated | Production keystore, Data safety, signed AAB, Console submit, post-smoke |
+
+- [x] v0.9.2 — tagged `v0.9.2`; host suite green; release-trust/device smoke and Play submission remain operator gates
+- [x] DOC-SSOT — current docs align with v0.9.2 behavior and limitations
+- [x] ARCH-HARDEN core work — domain fence, ports, money boundary, and purity updates are in-tree
+- [x] Phase M — schema v32, 32 satang columns, converter, dual-write/read fallback, migration tests
+- [x] Tablet dual-pane sale and orientation policy
+- [ ] Phase 2b recovery-kit export/import — D1 UX spec complete, implementation deferred
+- [ ] Play Console production cut — keystore, Data safety, signed AAB, Console submit, and post-smoke
 
 ### Release timeline
 
 ```
-v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → V092-INTEGRITY → ARCH-HARDEN-1.0 → POST-090 Play → 1.0
-  schema …   SQLCipher+PIN     tax/PIN/stock    fence+fiscal gate     A1–A5+B2 smoke
+v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → v0.9.2 integrity/hardening → POST-090 Play → 1.0
+  schema …   SQLCipher+PIN     v32 satang + fence       A1–A5+B2 smoke
 ```
 
 ---
@@ -84,4 +84,4 @@ v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → V092-INTEGRITY → ARCH-HA
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.1 · Post-0.9 plan · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.2 · Roadmap · AGPL-3.0</sub>

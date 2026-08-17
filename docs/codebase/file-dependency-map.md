@@ -1,4 +1,4 @@
-# File Dependency Map — Promsell POS CE (v0.9.1)
+# File Dependency Map — Promsell POS CE (v0.9.2)
 
 If you change a file, these are the files that must also be updated.
 
@@ -10,9 +10,10 @@ If you change a file, these are the files that must also be updated.
 
 | If you change… | Also update… |
 |----------------|-------------|
-| Drift table definition (`lib/core/database/tables/`) | Run `build_runner build` |
+| Drift table definition (`lib/core/database/tables/`) | Run `dart run build_runner build`; bump schema version, add an idempotent migration, and add a legacy-fixture test |
+| `*_satang` money column or `Money` persistence boundary | Update writer dual-writes, satang-first readers/REAL fallback, migration/backfill tests, and `docs/DATABASE.md` |
 | `app_th.arb` | `app_en.arb` (add matching key) + `flutter gen-l10n` |
-| `injection_container.dart` / DI annotations | Run `build_runner build` |
+| `injection_container.dart` / DI annotations | Run `dart run build_runner build` |
 | Payment method values in DB | `payment_method_helper.dart` normalization map |
 | Shared UI behavior | `lib/core/widgets/` tests under `test/core/widgets/` |
 | Feature UI strings | Both ARB files + generated localization files |
@@ -21,7 +22,7 @@ If you change a file, these are the files that must also be updated.
 | `Settings` aggregate root (14 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all settings pages & widgets |
 | `SettingsMapper` | `SettingsRepositoryImpl` tests (mock `getAll()` return values); legacy migration handling |
 | Extracted widget (e.g. `CartItemCard`) | Parent page import update + widget test under `test/features/<name>/presentation/widgets/` |
-| Domain extension (e.g. `ReportCalculator`) | Pure Dart test under `test/features/<name>/domain/extensions/` |
+| Domain service (e.g. `ReportCalculatorService`) | Pure Dart test under `test/features/<name>/domain/services/` |
 | BLoC / Cubit class | Update mock in `test/helpers/mocks.dart` |
 | Domain entity | Update `test/helpers/fixtures.dart` + corresponding `_test.dart` files |
 
@@ -37,14 +38,14 @@ If you change a file, these are the files that must also be updated.
 | `CartBloc` / `DraftBloc` / `CheckoutBloc` | Prefer these over legacy `SaleBloc` references; update related tests under `test/features/sale/` |
 | `SaleState` new field (e.g. `stockWarning`) | Update `sale_state.dart` props count + `sale_bloc_test.dart` expectations + any `copyWith` usage |
 | `DraftCart` entity (new fields) | Update `draft_cart.dart` + `DraftCartLocalDatasource` + `DraftBloc` handlers + draft tests |
-| `DraftCarts` table schema | Run `build_runner build`; bump schema version + add migration in `app_database.dart` |
+| `DraftCarts` table schema | Run `dart run build_runner build`; bump schema version + add migration in `app_database.dart` + legacy fixture test |
 | `Product` entity (new fields, e.g. `barcodeImagePath`) | Update `product_test.dart` props count + all fixtures in `fixtures.dart` + `ProductLocalDatasource` mapping + `ProductRepositoryImpl` constructor if services added |
-| `Category` entity (new fields: color, iconName) | Update `category_test.dart` props count + fixtures + `CategoryRepositoryImpl` mapping + run `build_runner build`; bump schema version |
+| `Category` entity (new fields: color, iconName) | Update `category_test.dart` props count + fixtures + `CategoryRepositoryImpl` mapping + run `dart run build_runner build`; bump schema version |
 | `CategoryRepositoryImpl` constructor | Update tests to inject mock datasource; regenerate with `build_runner` |
 | `CategoryBloc` constructor / events | Update mock in `test/helpers/mocks.dart`; add `CategoriesReordered` event handler tests; inject `ReorderCategories` use case |
 | `ProductRepositoryImpl` constructor | Update `product_repository_impl_test.dart` to inject `MockProductImageService` (and `MockBarcodeImageService` if image generation is wired) |
 | `ProductLocalDatasource` / `ProductRepository` new method (e.g. `bulkUpdateBarcodes`) | Update interface + impl + mock in `mocks.dart` + `batch_generate_barcodes_test.dart` |
-| `Ean13Generator` constructor / annotations | Run `build_runner build`; update `GenerateBarcode`, `BatchGenerateBarcodes`, `SettingsCubit` constructors + their tests (`generate_barcode_test.dart`, `batch_generate_barcodes_test.dart`, `settings_cubit_test.dart`) |
+| `Ean13Generator` constructor / annotations | Run `dart run build_runner build`; update `GenerateBarcode`, `BatchGenerateBarcodes`, `SettingsCubit` constructors + their tests (`generate_barcode_test.dart`, `batch_generate_barcodes_test.dart`, `settings_cubit_test.dart`) |
 | `GenerateBarcode` / `BatchGenerateBarcodes` constructor | Update mock in `test/helpers/mocks.dart` + corresponding test files to inject `Ean13Generator` instance |
 | `BarcodeImageService.generate()` rendering method | Update `barcode_image_service_test.dart` if present; verify `BarcodeImageWidget` display still renders correctly |
 | `InventoryLog` entity | Update `inventory_log_test.dart` props count + `InventoryLogRepositoryImpl` mapping |
@@ -74,4 +75,4 @@ If you change a file, these are the files that must also be updated.
 
 ---
 
-<sub>Promsell POS CE · v0.9.1 · File Dependency Map</sub>
+<sub>Promsell POS CE · v0.9.2 · File Dependency Map</sub>
