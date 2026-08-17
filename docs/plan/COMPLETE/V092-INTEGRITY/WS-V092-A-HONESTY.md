@@ -94,7 +94,7 @@ YAML is fail-closed AAB + blocking trust emulator.
 |------|---------|
 | `SECURITY.md` | AAB on `v*` tags requires secrets; coverage 60/80 |
 | `docs/STORE_SUBMISSION.md` E4 / Should `require_signed_aab` | That input is gone |
-| `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md` A3 | Update wording — **do not mark A1/A4 done** |
+| `docs/plan/COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md` A3 | Update wording — **do not mark A1/A4 done** |
 | `docs/codebase/testing.md` | main CI = format/analyze `integration_test/` only; trust = blocking **dev** smoke |
 | `integration_test/README.md` | Same |
 | `docs/testing/E2E_IMPLEMENTATION_STATUS.md` / `E2E_TEST_GUIDE.md` | Remove stale YAML samples |

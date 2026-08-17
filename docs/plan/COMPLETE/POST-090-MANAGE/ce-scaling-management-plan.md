@@ -6,7 +6,7 @@ Define the measurable capability envelope that Promsell POS CE must support, and
 
 **Scope:** v0.9.2 post trust cut → v1.0 and CE maintenance
 **Non-goal:** multi-device sync, multi-shop, cloud backup, and server-side tenancy
-**Existing SSOT:** `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, `docs/readme/roadmap.md`, `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md`
+**Existing SSOT:** `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, `docs/readme/roadmap.md`, `docs/plan/COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md`
 
 ## Capacity Contract
 

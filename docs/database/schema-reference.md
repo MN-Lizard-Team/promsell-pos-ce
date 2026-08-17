@@ -4,7 +4,7 @@ Detailed column reference for all **16** database tables, indexes, seed data, an
 
 > **Main reference:** [`docs/DATABASE.md`](../DATABASE.md) — overview, ERD, sync columns, SQLCipher encryption
 
-> **Phase M (schema v32):** 32 nullable INTEGER `*_satang` columns were added across 10 money tables. Writers dual-write (REAL baht + INTEGER satang); readers prefer satang with REAL fallback. Satang = `ROUND(baht * 100)`. Below, satang columns are listed with a `(v32)` tag. See [WS-C-PHASE-M-MONEY](../plan/UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) for the full design.
+> **Phase M (schema v32):** 32 nullable INTEGER `*_satang` columns were added across 10 money tables. Writers dual-write (REAL baht + INTEGER satang); readers prefer satang with REAL fallback. Satang = `ROUND(baht * 100)`. Below, satang columns are listed with a `(v32)` tag. See [WS-C-PHASE-M-MONEY](../plan/COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) for the full design.
 
 ---
 

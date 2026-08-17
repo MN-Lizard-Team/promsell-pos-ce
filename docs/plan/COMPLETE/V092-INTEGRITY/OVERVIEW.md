@@ -25,10 +25,10 @@ Close the gaps that made the 2026-08-13 audit conclude **v0.9.1 is an engineerin
 | Out of 0.9.2 scope | SSOT |
 |--------------------|------|
 | Domain import fence / CloseDay port / full ADR-011b | [ARCH-HARDEN-1.0](../UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) |
-| Play production A1–A5, Console Data safety, throwaway ≠ prod JKS | [POST-090 WS-A](../UN-COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md) |
-| INTEGER satang on disk (Phase M) | [WS-C](../UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) |
-| Key export / cross-device restore (Phase 2b) | [WS-D](../UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md) |
-| Bluetooth thermal / cash drawer | [WS-E E2](../UN-COMPLETE/POST-090-MANAGE/WS-E-PRODUCT-UX.md) |
+| Play production A1–A5, Console Data safety, throwaway ≠ prod JKS | [POST-090 WS-A](../COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md) |
+| INTEGER satang on disk (Phase M) | [WS-C](../COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md) |
+| Key export / cross-device restore (Phase 2b) | [WS-D](../COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md) |
+| Bluetooth thermal / cash drawer | [WS-E E2](../COMPLETE/POST-090-MANAGE/WS-E-PRODUCT-UX.md) |
 | Full multi-user / shifts / RBAC | ARCH-HARDEN `AH-C.3` (later) |
 | iOS App Store cut | Out of this CE slice |
 | Vanity god-file splits (`app_theme`, 143 settings files) | `AH-C.5` after money nets |
@@ -58,7 +58,7 @@ Play / Phase M / fences are already owned by older plans. **0.9.2 is the honesty
 | [V090-TRUST](../../COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) | Predecessor — GitHub trust-cut **COMPLETE** |
 | [DOC-SSOT](../UN-COMPLETE/DOC-SSOT/OVERVIEW.md) | **Docs-tree honesty** (plan git, README, handbooks) — does **not** replace V092-A/D or block this tag |
 | [ARCH-HARDEN-1.0](../UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) | **Sequencing SSOT for architecture-before-Play** — 0.9.2 does **not** unlock AH-GATE-1 |
-| [POST-090-MANAGE](../UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | **Store / QA 1.0 / Phase M / 2b / UX SSOT** — 0.9.2 may reuse test nets; it does not execute A4/A5/C1/D2 |
+| [POST-090-MANAGE](../COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | **Store / QA 1.0 / Phase M / 2b / UX SSOT** — 0.9.2 may reuse test nets; it does not execute A4/A5/C1/D2 |
 | This package | **Release-slice SSOT for tag `v0.9.2`** |
 | [roadmap.md](../../../readme/roadmap.md) | Public mirror — must point here in §Next |
 

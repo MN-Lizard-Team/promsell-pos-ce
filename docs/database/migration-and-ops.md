@@ -19,7 +19,7 @@ Migration guide, backup **export**, performance notes, and database testing.
 - **v30** adds `sku_lower`, backfills `LOWER(sku)`, then `CREATE UNIQUE` — **no SKU dedupe**. Mixed-case duplicate SKUs can fail the upgrade (repair: [V092-C.2](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-C-STOCK.md)).
 - In source, `from < 27` (receipt unique) runs **after** `from < 30`.
 - **v31** repairs DBs that already ran v30 without dedupe (drop unique index, dedupe, recreate).
-- **v32** (Phase M) adds nullable INTEGER `*_satang` columns to all money tables and backfills from REAL baht via `ROUND(baht * 100)`. Writers dual-write; readers prefer satang with REAL fallback. See [WS-C-PHASE-M-MONEY](../plan/UN-COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md).
+- **v32** (Phase M) adds nullable INTEGER `*_satang` columns to all money tables and backfills from REAL baht via `ROUND(baht * 100)`. Writers dual-write; readers prefer satang with REAL fallback. See [WS-C-PHASE-M-MONEY](../plan/COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md).
 
 ### Latest steps (v0.9.2)
 

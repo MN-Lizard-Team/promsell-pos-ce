@@ -18,7 +18,6 @@ This file is the **map**. Packages own detail. Do not treat COMPLETE folders as 
 | Package | Role | Start here |
 |---------|------|------------|
 | [ARCH-HARDEN-1.0](./UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) | Architecture before Play. **Resumed** — V092-GATE unlocked | [BACKLOG](./UN-COMPLETE/ARCH-HARDEN-1.0/BACKLOG.md) · [GATE-TO-PLAY](./UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md) |
-| [POST-090-MANAGE](./UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | Store / QA / Phase M / 2b after **AH-GATE-1** | [BACKLOG](./UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md) |
 | [DOC-SSOT](./UN-COMPLETE/DOC-SSOT/OVERVIEW.md) | Docs-tree honesty. Does **not** gate the tag or Play | [BACKLOG](./UN-COMPLETE/DOC-SSOT/BACKLOG.md) |
 
 **Current NOW:** V092-GATE **UNLOCKED** (2026-08-14) — `v0.9.2` may be cut. Next: resume AH-0.3+ (architecture fence).
@@ -29,6 +28,7 @@ This file is the **map**. Packages own detail. Do not treat COMPLETE folders as 
 
 | Package | Role |
 |---------|------|
+| [POST-090-MANAGE](./COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | Post-v0.9 store/QA/Phase M·2b/UX — P0 scaling + P1 lifecycle + Phase M + D0/D1 done; operator Play items (A1/A2/A4/A5) and D2 device smoke remain tracked |
 | [V092-INTEGRITY](./COMPLETE/V092-INTEGRITY/OVERVIEW.md) | v0.9.2 integrity slice — **GATE UNLOCKED** (2026-08-14) |
 | [V090-TRUST](./COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) | v0.9.0 GitHub trust-cut |
 | [080-PLAN](./COMPLETE/080-PLAN/080-OVERVIEW.md) | v0.8.1 quality / AppSettings |

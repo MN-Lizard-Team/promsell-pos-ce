@@ -8,7 +8,7 @@
 
 ## Goal
 
-พา CE จาก **GitHub trust-cut (0.9.0)** ไปสู่ **Play distribution ที่ operator-owned** โดยไม่ claim production จนกว่า keystore + Data safety + signed AAB + post-smoke ครบ
+Take CE from **GitHub trust-cut (0.9.0)** to **operator-owned Play distribution** without claiming production until keystore + Data safety + signed AAB + post-smoke are complete
 
 ---
 
@@ -107,4 +107,4 @@
 
 ---
 
-<sub>WS-A · PLAN ONLY</sub>
+<sub>WS-A · COMPLETE (historical record)</sub>

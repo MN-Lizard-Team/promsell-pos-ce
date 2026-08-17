@@ -8,13 +8,13 @@
 
 ## Goal
 
-ปิด impedance **domain satang (int) vs SQLite REAL baht** โดย migration ที่ audit ได้ + tests fail-closed — **behavior-preserving** ต่อผู้ใช้ (ยอดเดิมเท่าเดิมหลัง upgrade)
+Close the impedance mismatch between **domain satang (int) vs SQLite REAL baht** via an auditable migration + fail-closed tests — **behavior-preserving** for the user (same amounts after upgrade)
 
 ---
 
 ## Preconditions (hard)
 
-1. **B1** trust expand เขียว (payable golden + insert/void integrity)  
+1. **B1** trust expand green (payable golden + insert/void integrity)  
 2. Inventory of every money column complete (C0)  
 3. Backup recommendation: export before upgrade (document in release notes)  
 
@@ -24,7 +24,7 @@
 
 ## C0 — Inventory & design
 
-**Status:** Inventory locked **2026-07-20** from `lib/core/database/tables/*` (schema v30). All money amounts on disk are **SQLite REAL baht** unless noted.
+**Status:** Inventory locked **2026-07-20** from `lib/core/database/tables/*` (schema v32). All money amounts on disk are **SQLite REAL baht** unless noted.
 
 ### Full REAL money / rate columns
 
@@ -178,4 +178,4 @@ Must run under release-trust or dedicated Phase M job.
 
 ---
 
-<sub>WS-C · PLAN ONLY · Do not start before B1</sub>
+<sub>WS-C · COMPLETE (historical record)</sub>

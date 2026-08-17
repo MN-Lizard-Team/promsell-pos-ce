@@ -5,7 +5,7 @@
 **Do not** treat empty rows as Pass.  
 **Predecessor evidence (0.9):** [`RELEASE_0.9_SMOKE.md`](./RELEASE_0.9_SMOKE.md)
 
-**Management:** [`docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md`](../plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md)
+**Management:** [`docs/plan/COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md`](../plan/COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md)
 
 ---
 

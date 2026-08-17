@@ -50,7 +50,7 @@ If analyze fails again, fix before spending time on emulator flakes.
 | CI device | No emulator on `ci.yml`. Trust emulator can flake and **block** tags |
 | Locale | App is TH/EN; robots often EN-oriented |
 
-Tracked for fix order: `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md` **B4**.
+Tracked for fix order: `docs/plan/COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md` **B4**.
 
 ---
 
@@ -74,7 +74,7 @@ Tracked for fix order: `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.
 | `docs/testing/RELEASE_0.9_SMOKE.md` | Device smoke evidence (historical 0.9) |
 | `docs/testing/RELEASE_1.0_SMOKE.md` | 1.0 smoke plan (when present) |
 | `.github/workflows/release-trust.yml` | Fail-closed money host suite |
-| `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md` | QA workstream |
+| `docs/plan/COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md` | QA workstream |
 
 ---
 

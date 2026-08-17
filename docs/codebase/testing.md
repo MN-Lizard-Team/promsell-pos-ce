@@ -199,7 +199,7 @@ dart run tool/check_path_coverage.dart --fail --min-global=60 --min-sale-logic=8
 | sale+domain full tree | 62.4% |
 
 > Prefer money-path tests + **sale-logic** hard gate over covering PDF/camera/UI chrome for vanity %.  
-> Policy: `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md` §B3.
+> Policy: `docs/plan/COMPLETE/POST-090-MANAGE/WS-B-QA-HARDENING.md` §B3.
 
 ---
 

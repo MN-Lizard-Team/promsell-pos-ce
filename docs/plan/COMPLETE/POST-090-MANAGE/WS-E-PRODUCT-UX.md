@@ -8,7 +8,7 @@
 
 ## Goal
 
-ปิดช่องว่าง **cashier-first UX** หลัง 0.9 โดยไม่ทำลาย money-path: PIN trust, tablet counter layout, (later) thermal, a11y, discoverability
+Close the **cashier-first UX** gaps after 0.9 without breaking money-path: PIN trust, tablet counter layout, (later) thermal, a11y, discoverability
 
 ---
 
@@ -35,7 +35,7 @@
 1. After shop basics (or on first gated action): “ตั้งรหัสร้าน / Set store PIN” — explain gates + offline risk.  
 2. Enter PIN twice → hash store → session unlock.  
 3. Cannot complete void/backup/stock/CSV/PromptPay edit without unlock.  
-4. Copy: รหัสหาย = ตั้งใหม่ได้ แต่ไม่กู้ประวัติ PIN; ข้อมูลร้านยังอยู่ถ้า SQLCipher key อยู่  
+4. Copy: Lost PIN = can set a new one but cannot recover PIN history; shop data remains if SQLCipher key exists  
 
 ### Call sites to move UI-only → domain/session (implement E0c)
 
@@ -167,4 +167,4 @@
 
 ---
 
-<sub>WS-E · PLAN ONLY</sub>
+<sub>WS-E · COMPLETE (historical record)</sub>

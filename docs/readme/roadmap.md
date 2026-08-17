@@ -41,12 +41,12 @@ v0.9.2 is tagged (`v0.9.2`, `pubspec` 0.9.2). The remaining work is operator wor
 
 Current SSOT documents:
 
-- [POST-090 backlog](../plan/UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md) — recovery-kit, QA, store, and product UX follow-up
+- [POST-090 backlog](../plan/COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md) — recovery-kit, QA, store, and product UX follow-up
 - [ARCH-HARDEN overview](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) — architecture gate before Play production
 - [DOC-SSOT overview](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) — documentation navigation and honesty work
 - [V090 trust package](../plan/COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) — completed trust-cut evidence
-- [CE scaling management plan](../plan/UN-COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md) — P0 scaling foundation and P1 database lifecycle roadmap
-- [P0 scaling foundation](../plan/UN-COMPLETE/POST-090-MANAGE/p0-scaling-foundation.md) — cursor pagination, DB-backed search, bounded CSV export, performance tests
+- [CE scaling management plan](../plan/COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md) — P0 scaling foundation and P1 database lifecycle roadmap
+- [P0 scaling foundation](../plan/COMPLETE/POST-090-MANAGE/p0-scaling-foundation.md) — cursor pagination, DB-backed search, bounded CSV export, performance tests
 
 | Track | Status | Next action |
 |-------|--------|-------------|

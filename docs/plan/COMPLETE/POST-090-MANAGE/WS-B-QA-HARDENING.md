@@ -8,7 +8,7 @@
 
 ## Goal
 
-ทำให้คุณภาพ **ซื่อสัตย์และ fail-closed ตรงจุดเสี่ยงเงิน** — ไม่ overclaim E2E; ขยาย trust; smoke 1.0; วาง policy coverage/E2E/security tests
+Make quality **honest and fail-closed at money-risk points** — do not overclaim E2E; expand trust; smoke 1.0; establish policy coverage/E2E/security tests
 
 ---
 
@@ -102,7 +102,7 @@ Create `docs/testing/RELEASE_1.0_SMOKE.md` (new file when implementing):
 
 **Exit:** All Must Pass recorded with date/device.
 
-**Partial 2026-07-20:** Emulator API 37 walk + trust 281 green + analyze clean. Day-lock **Pass** with Settings → บล็อกการขายหลังปิดยอด ON (banner + checkout blocked). See `docs/testing/RELEASE_1.0_SMOKE.md`. Not production Go (M2, prod keystore, void full path with known PIN, draft re-walk).
+**Partial 2026-07-20:** Emulator API 37 walk + trust 281 green + analyze clean. Day-lock **Pass** with Settings → block sales after day close ON (banner + checkout blocked). See `docs/testing/RELEASE_1.0_SMOKE.md`. Not production Go (M2, prod keystore, void full path with known PIN, draft re-walk).
 
 ---
 
@@ -216,4 +216,4 @@ Suggested SLOs: see elite performance notes (p95 mid Android).
 
 ---
 
-<sub>WS-B · PLAN ONLY</sub>
+<sub>WS-B · COMPLETE (historical record)</sub>

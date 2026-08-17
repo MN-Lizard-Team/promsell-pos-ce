@@ -1,7 +1,7 @@
 # V092-GATE — Unlock GitHub tag `v0.9.2`
 
 **Parent:** [OVERVIEW.md](./OVERVIEW.md) · **Backlog:** [BACKLOG.md](./BACKLOG.md)  
-**Does not unlock:** Play production (still [AH-GATE-1](../UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md) + [POST-090 A1–A5](../UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md))  
+**Does not unlock:** Play production (still [AH-GATE-1](../UN-COMPLETE/ARCH-HARDEN-1.0/GATE-TO-PLAY.md) + [POST-090 A1–A5](../COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md))  
 **Status:** **UNLOCKED** — `v0.9.2` may be cut (2026-08-14)
 
 ---

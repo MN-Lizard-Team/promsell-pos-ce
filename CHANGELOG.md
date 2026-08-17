@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Backup export metadata** (`lib/features/settings/data/services/backup_export_service.dart`) — `BackupMetadata` with schema version, app version, timestamp, db size, SHA-256 checksum, encrypted flag. `exportToFiles()` / `exportWithMetadata()` with size preflight (512 MB max), progress callback, `BackupMetadata.tryDecode()` for restore-side validation. 8 tests.
 - **Recovery kit service** (`lib/core/database/recovery_kit_service.dart`) — Phase 2b D0/D1 **code complete, device validation pending**: AES-256-GCM wrap of SQLCipher key with PBKDF2-HMAC-SHA256 (100K iterations) from user passphrase (min 8 chars), `.promkey` file format, export/import round-trip, wrong-secret/corrupt/tamper failure modes. 9 unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is **not yet tested**. Do not claim "supported" until D2 device smoke passes.
 - **Large encrypted fixture restore tests** (`test/performance/p1_restore_large_test.dart`) — 4 tests: 5K-sale encrypted backup restore preserves all data, interrupted swap rollback, wrong PIN fails cleanly, corrupted schema rejected. `BackupRestoreService` enhanced with `skipSqlCipherHeaderCheck` for test fixtures.
-- `docs/plan/UN-COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md` — capacity contract, SLO table, and P0–P3 roadmap with evidence.
+- `docs/plan/COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md` — capacity contract, SLO table, and P0–P3 roadmap with evidence.
 - `path_provider_platform_interface` dev dependency for test path mocking.
 - `crypto` dependency for SHA-256 backup checksums.
 
@@ -58,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All new APIs are additive — no existing bloc/cubit/repository contract is broken. Money precision stays satang-SSOT.
 - Checkout, backup, and migration baselines require the real SQLCipher library and are deferred to the P1 on-device `integration_test` suite.
-- P1 recovery kit implements D0/D1 threat model from `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md`.
+- P1 recovery kit implements D0/D1 threat model from `docs/plan/COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md`.
 
 `flutter analyze` → **0 issues** · P0 tests → **22 new tests passing** · P1 tests → **47 new tests passing** (3 migration benchmark + 10 migration safety + 7 WAL checkpoint + 6 DB health + 8 backup metadata + 9 recovery kit + 4 restore large) · CI/DI fixes → **2 commits** (Android smoke `-t` flag, `BackupRestoreService` `@ignoreParam`)
 

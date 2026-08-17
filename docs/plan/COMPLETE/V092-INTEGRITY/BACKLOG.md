@@ -5,7 +5,7 @@
 **Rule:** Change status only with evidence (PR / CI / smoke / doc path). Never mark done from plan text alone.
 
 **Related (do not duplicate):**  
-[ARCH-HARDEN BACKLOG](../UN-COMPLETE/ARCH-HARDEN-1.0/BACKLOG.md) · [POST-090 BACKLOG](../UN-COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md)
+[ARCH-HARDEN BACKLOG](../UN-COMPLETE/ARCH-HARDEN-1.0/BACKLOG.md) · [POST-090 BACKLOG](../COMPLETE/POST-090-MANAGE/POST-090-BACKLOG.md)
 
 ---
 

@@ -109,7 +109,7 @@ class RecoveryKitMetadata {
 /// - PBKDF2-HMAC-SHA256 ≥ 100K iterations; min secret length 8.
 /// - Old kits remain valid until the DB key is changed (not in 2b v1).
 ///
-/// See `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md`
+/// See `docs/plan/COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md`
 /// for the full D0/D1 spec.
 @LazySingleton()
 class RecoveryKitService {

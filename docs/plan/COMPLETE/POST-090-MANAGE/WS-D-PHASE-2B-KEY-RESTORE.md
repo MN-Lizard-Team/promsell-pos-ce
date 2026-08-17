@@ -10,7 +10,7 @@
 
 ## Goal
 
-ลด **data-loss / device-lock-in** ของ SQLCipher โดยมีทาง **ส่งออกกุญแจหรือกู้คืนข้ามเครื่อง** ที่ threat-model ชัด — ไม่ปล่อย feature ที่ brute-force offline ได้ง่ายกว่า backup PIN ปัจจุบันโดยไม่มี control
+Reduce **data-loss / device-lock-in** of SQLCipher by providing a way to **export keys or restore across devices** with a clear threat-model — do not release a feature that is easier to brute-force offline than the current backup PIN without controls.
 
 ---
 
@@ -296,4 +296,4 @@ If 2b full ship slips:
 
 ---
 
-<sub>WS-D · D0/D1 implemented (unreleased) · D2 device smoke pending · Security-sensitive</sub>
+<sub>WS-D · COMPLETE (historical record) · D0/D1 code complete, D2 device smoke pending · Security-sensitive</sub>

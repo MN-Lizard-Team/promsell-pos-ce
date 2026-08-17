@@ -2,7 +2,7 @@
 
 **Parent:** [POST-090-OVERVIEW.md](./POST-090-OVERVIEW.md)  
 **Status legend:** `todo` · `in_progress` · `done` · `blocked` · `deferred`  
-**Rule:** เปลี่ยน status เมื่อมี evidence (PR / smoke / Console) — ห้าม mark done จากแผนอย่างเดียว
+**Rule:** Change status only when evidence exists (PR / smoke / Console) — do not mark done from plan alone
 
 ---
 
@@ -12,11 +12,11 @@
 |----|-------------|---------|----------|--------|
 | A0 | Freeze Play checklist: human vs in-repo; Must/Should for store cut | — | `docs/STORE_SUBMISSION.md` §A0 (2026-07-20) | **done** |
 | A1 | Production keystore + dual custody runbook; never throwaway for Play | A0 | Runbook in STORE_SUBMISSION (2026-07-20); **operator** still must generate JKS + secrets | **in_progress** |
-| A2 | Play Data safety + content rating + pricing TH free draft ตรง PRIVACY | A0 | Data safety draft in STORE_SUBMISSION §A2 (2026-07-20); Console submit still operator | **in_progress** |
+| A2 | Play Data safety + content rating + pricing TH free draft aligned with PRIVACY | A0 | Data safety draft in STORE_SUBMISSION §A2 (2026-07-20); Console submit still operator | **in_progress** |
 | A3 | CI: require signed prod AAB on `v*` (`require_signed_aab` or equivalent) | A1 | `release-aab.yml` tags fail-closed without secrets (2026-07-20); dry-run still needs operator secrets | **done** (CI gate) |
 | A4 | Upload signed AAB to Play (internal/closed at minimum) | A1–A3 | Console version code | todo |
 | A5 | Post-submit smoke on **prod** build per `RELEASE_1.0_SMOKE` Must | A4, B2 | Filled `RELEASE_1.0_SMOKE` or addendum | todo |
-| B0 | Reconcile E2E docs vs soft CI vs runtime (no “30 ready” overclaim) | — | `testing.md` + `E2E_IMPLEMENTATION_STATUS.md` + guide + `integration_test/README` (2026-07-20) | **done** |
+| B0 | Reconcile E2E docs vs soft CI vs runtime (no "30 ready" overclaim) | — | `testing.md` + `E2E_IMPLEMENTATION_STATUS.md` + guide + `integration_test/README` (2026-07-20) | **done** |
 | B1 | Expand trust: payable golden, tender boundary, void closed-day, multi-tender daily_close, restore→money; expand path filter or `@Tags(['trust'])` | B0 optional | golden + promo gate + multi_tender_daily_close + backup_money_continuity + release-trust paths (2026-07-20 host green) | **done** |
 | B2 | Create + run `docs/testing/RELEASE_1.0_SMOKE.md` matrix (≥2 devices or 1 physical+1 emu, prod AAB, TH) | B1 partial OK | Emulator API37: Must 1,2,4,7,9,10 Pass; 3 blocked unknown PIN; 5 not walked; 6/8 host; M2 open; throwaway AAB | **in_progress** |
 | E0 | Spec: store PIN default-on + domain-level session/gate (not UI-only) | — | [WS-E](./WS-E-PRODUCT-UX.md) locked 2026-07-20 | **done** |
@@ -46,7 +46,7 @@
 
 | ID | Description | Depends | Evidence | Status |
 |----|-------------|---------|----------|--------|
-| D2 | Cross-device restore implementation + tests | D1 | RecoveryKitService D0/D1 implemented (AES-256-GCM + PBKDF2 100K, `.promkey`, exportKit/importKit, 9 tests in `recovery_kit_service_test.dart`); **unreleased** — D2 device smoke (export A → restore B) still pending | **in_progress** |
+| D2 | Cross-device restore implementation + tests | D1 | RecoveryKitService D0/D1 code complete (AES-256-GCM + PBKDF2 100K, `.promkey`, exportKit/importKit, 9 tests in `recovery_kit_service_test.dart`); **unreleased** — D2 device smoke (export A → restore B) still pending | **in_progress** |
 | D3 | PRIVACY / SECURITY / store listing update for 2b | D2 | Docs + listing | todo |
 | D4 | First-run backup education (interim if 2b delayed) | — | Onboarding/settings UX | todo |
 | E2 | Bluetooth thermal printer (CE help-wanted scaffold) | — | Design + optional plugin spike | todo |
@@ -81,7 +81,7 @@
 | `WalCheckpointService` — PASSIVE/TRUNCATE modes, 10MB/50MB thresholds | Implemented; `p1_wal_health_test.dart` (13 tests) | **done** (unreleased) |
 | `DatabaseHealthService` — health report (sizes, schema version, integrity), 512MB guardrail | Implemented; covered in `p1_wal_health_test.dart` | **done** (unreleased) |
 | `BackupExportService` — `BackupMetadata` with SHA-256 checksum, size preflight, progress callback | Implemented; `backup_export_metadata_test.dart` (8 tests) | **done** (unreleased) |
-| `RecoveryKitService` — AES-256-GCM + PBKDF2 (100K iterations), `.promkey` format, `exportKit`/`importKit` | Implemented; `recovery_kit_service_test.dart` (9 tests) | **done** (unreleased) |
+| `RecoveryKitService` — AES-256-GCM + PBKDF2 (100K iterations), `.promkey` format, `exportKit`/`importKit` | Implemented; `recovery_kit_service_test.dart` (9 tests) — **code complete, device validation pending** | **done** (unreleased) |
 | `BackupRestoreService` — `skipSqlCipherHeaderCheck`, `@ignoreParam` on `candidateValidator` | Implemented; `p1_restore_large_test.dart` (4 tests) | **done** (unreleased) |
 | P1 migration benchmark | `p1_migration_benchmark_test.dart` (3 tests) | **done** (unreleased) |
 | Total P1 tests | 47 new tests (3 + 10 + 13 + 8 + 9 + 4) | **done** (unreleased) |
@@ -125,11 +125,11 @@ D0 → D1 → D2 → D3
 
 ## Definition of Done (item-level)
 
-1. Status `done` เฉพาะเมื่อมี evidence column ไม่ว่าง  
+1. Status `done` only when evidence column is not empty  
 2. Money-path changes: trust suite green  
 3. Docs changes: no contradiction with `SECURITY.md` / `CHANGELOG` known limits  
 4. Store changes: operator sign-off noted in A5 / STORE_SUBMISSION  
 
 ---
 
-<sub>Promsell POS CE · Post-0.9 backlog · PLAN ONLY</sub>
+<sub>Promsell POS CE · Post-0.9 backlog · COMPLETE (historical record)</sub>
