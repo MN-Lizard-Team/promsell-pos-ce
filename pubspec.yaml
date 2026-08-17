@@ -55,7 +55,7 @@ dependencies:
   fl_chart: ^0.70.2
 
   # Merchant Tools
-  share_plus: ^13.0.0
+  share_plus: ^13.3.0
   package_info_plus: ^10.2.1
   # file_picker 12.x is pre-release but required for win32 ^6 compat with package_info_plus
   file_picker: 12.0.0-beta.7
