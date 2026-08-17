@@ -57,8 +57,6 @@ class EncryptedDatabaseOpener {
   /// Opens the database with SQLCipher AES-256-CBC encryption.
   /// Performs one-shot plain→encrypted migration if needed.
   static Future<QueryExecutor> open() async {
-    _loadSqlcipherLibrary();
-
     final dir = await getApplicationDocumentsDirectory();
     final file = File(p.join(dir.path, _dbName));
     final hexKey = await DbKeyStore.getOrCreateKey();
@@ -71,9 +69,25 @@ class EncryptedDatabaseOpener {
     // V092-E.2: open the DB on a background isolate so first-run SQLCipher
     // migrate does not stall the UI thread. The `setup` callback runs on
     // the background isolate — `PRAGMA key` is the first statement.
+    //
+    // The `isolateSetup` callback runs on the background isolate *before*
+    // the database is opened. This is required because `open.overrideFor()`
+    // sets a process-local static in the `sqlite3` package — it does not
+    // propagate from the main isolate to the background isolate spawned by
+    // `NativeDatabase.createInBackground`. Without this, the background
+    // isolate tries to load `libsqlite3.so` (which doesn't exist on Android)
+    // instead of `libsqlcipher.so` (provided by `sqlcipher_flutter_libs`).
     return NativeDatabase.createInBackground(
       file,
       setup: (rawDb) => rawDb.execute("PRAGMA key=\"x'$hexKey'\""),
+      isolateSetup: () {
+        if (Platform.isAndroid) {
+          sqlite3_open.open.overrideFor(
+            sqlite3_open.OperatingSystem.android,
+            openCipherOnAndroid,
+          );
+        }
+      },
     );
   }
 
@@ -192,6 +206,7 @@ class EncryptedDatabaseOpener {
   /// Creates a `.bak` backup before migration. On success, the backup is removed.
   /// On failure, the backup is restored automatically.
   static Future<void> _migrateToEncrypted(File plain, String hexKey) async {
+    _loadSqlcipherLibrary();
     final backupPath = '${plain.path}.bak';
     final encPath = '${plain.path}.enc';
     final backup = File(backupPath);
@@ -256,6 +271,7 @@ class EncryptedDatabaseOpener {
     File encrypted,
     String hexKey,
   ) async {
+    _loadSqlcipherLibrary();
     if (!await encrypted.exists() || await encrypted.length() < 16) {
       throw StateError('ENCRYPTED_MIGRATION_OUTPUT_INVALID');
     }
