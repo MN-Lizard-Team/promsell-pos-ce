@@ -41,7 +41,7 @@ dependencies:
   printing: ^5.15.0
 
   # Utilities
-  intl: ^0.20.2
+  intl: ^0.20.3
   meta: ^1.16.0
   uuid: ^4.6.0
   image_picker: ^1.2.3
