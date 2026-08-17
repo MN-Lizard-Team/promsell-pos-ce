@@ -16,7 +16,7 @@ test/
 │   ├── pump_app.dart           # pumpApp extension for widget tests
 │   └── fake_database.dart      # In-memory Drift DB factory
 ├── core/
-│   ├── database/               # Schema migrations, satang backfill, legacy fixtures
+│   ├── database/               # Schema migrations, satang backfill, legacy fixtures, migration safety, WAL checkpoint, health report, recovery kit
 │   ├── di/                     # DI graph test
 │   ├── image/                  # UnifiedImageWidget, ImageSkeleton, ImageErrorPlaceholder
 │   ├── services/               # CrashLogService, ReceiptPdfService
@@ -47,9 +47,9 @@ test/
 │   │   └── presentation/widgets/  # CategoryPicker, CategoryFilterBar, ProductCardShell, ProductFormCubit, ProductHeroImage
 │   ├── history/                # Use case, BLoC, repo tests
 │   ├── inventory/              # InventoryLog entity, use case, cubit, repo, service tests
-│   ├── report/                 # ReportCubit + ReportCalculatorService tests
+│   ├── report/                 # ReportCubit + ReportCalculatorService + ReportSummary + streaming CSV export tests
 │   │   └── domain/services/     # ReportCalculatorService_test.dart
-│   ├── settings/               # Cubit, repo, widget tests
+│   ├── settings/               # Cubit, repo, widget tests, backup export/restore services
 │   │   └── presentation/widgets/
 │   │       ├── about/          # AboutWidgets
 │   │       ├── backup/         # BackupStatusCard, BackupInfoCard
@@ -78,6 +78,31 @@ test/
 └── l10n/
     └── l10n_parity_test.dart   # EN/TH key parity and non-empty validation
 ```
+
+### Test command notes
+
+> **`-t` is `--tags`, not `--target`.** In `flutter test`, the short flag `-t`
+> maps to `--tags` (tag selection), **not** `--target` (entrypoint). To specify
+> a target file, use `--target lib/main_dev.dart` (or the long form). The
+> `release-trust.yml` and `screenshots.yml` workflows previously passed
+> `-t lib/main_dev.dart` to `flutter test`, which was silently interpreted as a
+> tag filter rather than a target — this has been corrected by removing the
+> incorrect flag.
+
+### Performance & capacity tests (v0.9.2)
+
+- **Cursor pagination** — `ProductLocalDatasource.getProductsPage()` /
+  `searchProductsPage()` and `SaleQueryLocalDatasource.querySalesPage()` are
+  covered by tests that verify `nextCursor` boundary conditions, `hasMore`
+  semantics, and `totalCount` independence from pagination.
+- **SQL report summary** — `SaleQueryLocalDatasource.queryReportSummary()` is
+  tested for satang-SSOT aggregation, payment breakdown (multi-tender +
+  legacy header fallback), and void-reason grouping.
+- **Bounded streaming CSV export** — `ReportExportService.exportCsvStream()`
+  is tested for the `kExportMaxRows = 10000` hard cap, `CsvExportResult.truncated`
+  flag, `startSignal` future resolution, and chunked sink writes.
+- **Stress test** — `test/tool/seed_integration_test.dart` (10k products, 50k
+  sales) exercises large-list cursor pagination paths under `@Tags(['stress'])`.
 
 
 ## Integration Tests (E2E)

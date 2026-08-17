@@ -1,0 +1,100 @@
+@startuml Sequence_BackupRestore
+title Backup Restore with Pre-Restore Backup + Validation ([Unreleased])
+
+actor Merchant
+participant "SettingsPage" as UI
+participant "BackupRestoreService" as SVC
+participant "AppLockService" as Lock
+participant "BackupEncryptionService" as Enc
+participant "DbKeyStore" as KeyStore
+database "SQLite (SQLCipher)" as DB
+participant "File System" as FS
+
+Merchant -> UI: Select backup file (.enc or .db)
+UI -> SVC: restoreFromPath(sourcePath, pin: "123456")
+
+SVC -> Lock: requireSensitiveSession()
+alt store PIN on + session locked
+    Lock --> SVC: throw BusinessRuleError("AppLockRequired")
+end
+
+== Source Validation ==
+SVC -> FS: File(sourcePath).exists()
+alt !exists
+    SVC --> UI: throw StateError("SOURCE_MISSING")
+end
+SVC -> FS: File(sourcePath).length()
+alt length > 512 MB
+    SVC --> UI: throw StateError("BACKUP_TOO_LARGE")
+end
+
+alt sourcePath ends with .enc
+    alt pin is empty
+        SVC --> UI: throw StateError("PIN_REQUIRED")
+    else pin.length < 6
+        SVC --> UI: throw StateError("PIN_TOO_SHORT")
+    end
+    SVC -> Enc: decryptFile(sourcePath, pin, tempPath)
+    Enc --> SVC: decrypted .db
+    SVC -> SVC: workingPath = decrypted temp
+else sourcePath ends with .db
+    SVC -> SVC: workingPath = sourcePath
+    SVC -> FS: read first 16 bytes
+    alt header starts with "SQLite format 3"
+        SVC --> UI: throw StateError("PLAIN_SQLITE_UNSUPPORTED")
+    end
+end
+
+== Candidate Validation ==
+SVC -> KeyStore: getOrCreateKey()
+KeyStore --> SVC: SQLCipher hex key
+SVC -> SVC: open candidate with PRAGMA key
+SVC -> SVC: SELECT name FROM sqlite_master\nWHERE name IN ('products','sales','sale_items','sale_payments')
+alt tables.length != 4
+    SVC --> UI: throw StateError("INVALID_BACKUP_SCHEMA")
+end
+SVC -> SVC: PRAGMA integrity_check
+alt result != 'ok'
+    SVC --> UI: throw StateError("INVALID_BACKUP_INTEGRITY")
+end
+SVC -> SVC: PRAGMA foreign_key_check
+alt foreignKeys.isNotEmpty
+    SVC --> UI: throw StateError("INVALID_BACKUP_INTEGRITY")
+end
+SVC -> SVC: close candidate connection
+
+== Stage + Swap ==
+SVC -> FS: copy workingPath → staged file
+SVC -> FS: copy live db → pre_restore backup
+
+group Atomic Swap (try/catch/finally)
+    SVC -> DB: _db.close()
+    alt close fails
+        SVC --> UI: rethrow (do not swap)
+    end
+    SVC -> FS: rename live db → old
+    SVC -> FS: rename staged → live db
+    SVC -> FS: delete WAL + SHM files
+    SVC -> FS: delete old file
+    catch swap fails
+        SVC -> FS: rename old → live db (rollback)
+        SVC --> UI: rethrow
+    finally
+        SVC -> FS: safeDelete(staged)\nsafeDelete(old)
+    end
+end
+
+SVC --> UI: preRestorePath
+UI --> Merchant: "Restore complete — restart app"
+
+note over UI, Merchant
+  **Caller must restart the app process**
+  so Drift/GetIt reopen the DB cleanly.
+  The pre_restore backup is kept for
+  rollback if the new DB fails to open.
+  cleanupPreRestoreBackups() deletes
+  leftover pre_restore files after a
+  successful DB open on next launch.
+end note
+
+@enduml

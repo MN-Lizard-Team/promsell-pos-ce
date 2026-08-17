@@ -362,7 +362,7 @@ Comment out other tests to run only the failing one.
 SSOT: [`CI.md`](./CI.md)
 
 - `ci.yml`: format + analyze `integration_test/` — **no** device run
-- `release-trust.yml`: blocking `flutter test integration_test/all_tests.dart --flavor dev -t lib/main_dev.dart`
+- `release-trust.yml`: blocking `flutter test integration_test/all_tests.dart --flavor dev` (the `--flavor dev` flag selects the dev entry point; `flutter test` does not accept `-t`/`--target` — see [`CI.md`](./CI.md) for the `-t` flag fix note)
 
 ---
 

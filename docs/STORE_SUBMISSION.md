@@ -35,7 +35,7 @@ Post-0.9 management: `docs/plan/UN-COMPLETE/POST-090-MANAGE/` · Play WS: `docs/
 ### Explicit non-blockers for internal testing
 
 - Device `integration_test/` not run on main CI (format/analyze only). Trust **blocks** emulator `--flavor dev` on tags / money-path PRs — see [`docs/testing/CI.md`](testing/CI.md)
-- Phase M v32 is shipped; Phase 2b recovery-kit export/import is still deferred
+- Phase M v32 is shipped; recovery-kit export/import is **code complete, device validation pending** ([Unreleased]) — full cross-device device smoke (Phase 2b D2) is still pending
 - iOS App Store full cut (separate track)  
 
 ---

@@ -1,0 +1,56 @@
+@startuml Sequence_CursorPagination
+title Cursor Pagination Flow — Product List & Sale History ([Unreleased])
+
+actor Merchant
+participant "ProductPage / HistoryPage" as UI
+participant "GetProductsPage\n/ GetSalesPage" as UC
+participant "ProductRepository\n/ SaleRepository" as Repo
+participant "ProductLocalDatasource\n/ SaleQueryLocalDatasource" as DS
+database "SQLite\n(idx_*_created_at_id_cursor)" as DB
+
+== First Page ==
+Merchant -> UI: Scroll to list
+UI -> UC: call(cursor: null, pageSize: 50)
+UC -> Repo: getProductsPage(cursor: null, pageSize: 50)
+Repo -> DS: getProductsPage(cursor: null, pageSize: 50)
+
+DS -> DB: SELECT * FROM products\nWHERE deleted_at IS NULL\n  [AND active = 1]\nORDER BY created_at DESC, id DESC\nLIMIT 51  -- +1 to detect hasMore
+DB --> DS: 51 rows (if ≥ 51, hasMore = true)
+alt rows.length > pageSize
+    DS -> DS: hasMore = true\nnextCursor = Cursor(rows[49].createdAt, rows[49].id)\npageRows = rows[0..49]
+else rows.length ≤ pageSize
+    DS -> DS: hasMore = false\nnextCursor = null\npageRows = all rows
+end
+
+DS -> DB: SELECT COUNT(*) FROM products\nWHERE deleted_at IS NULL
+DB --> DS: totalCount
+
+DS --> Repo: ProductPage(products, nextCursor, totalCount)
+Repo --> UC: ProductPage
+UC --> UI: ProductPage
+UI --> Merchant: Render 50 items + "Showing 1-50 of {totalCount}"
+
+== Next Page (cursor provided) ==
+Merchant -> UI: Scroll to bottom (load more)
+UI -> UC: call(cursor: prevNextCursor, pageSize: 50)
+UC -> Repo: getProductsPage(cursor: prevNextCursor, pageSize: 50)
+Repo -> DS: getProductsPage(cursor: prevNextCursor, pageSize: 50)
+
+DS -> DB: SELECT * FROM products\nWHERE deleted_at IS NULL\n  AND (created_at, id) < (cursor.createdAt, cursor.id)\nORDER BY created_at DESC, id DESC\nLIMIT 51
+DB --> DS: next 51 rows
+DS -> DS: same hasMore / nextCursor logic
+DS --> Repo: ProductPage
+Repo --> UC: ProductPage
+UC --> UI: ProductPage
+UI --> Merchant: Append 50 items + update "Showing 51-100 of {totalCount}"
+
+note over DS, DB
+  **Sale history** uses the same pattern via
+  SaleQueryLocalDatasource.querySalesPage(),
+  with optional from/to date range applied
+  before the cursor predicate. Items and
+  payments are hydrated only for the current
+  page (batched, not N+1).
+end note
+
+@enduml

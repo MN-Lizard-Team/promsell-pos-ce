@@ -16,7 +16,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 State management patterns (BLoC vs Cubit, singleton vs factory, stream lifecycle), dependency injection graph, transaction boundaries, error handling strategy, and performance & scaling characteristics.
 
 ### [Architecture Decision Records (ADRs)](architecture/adr/index.md)
-ADRs 001–028 covering ORM, state, DI, transactions, audit trail, settings, widgets, generated code, barcodes, payable pipeline (027), and CE sync-metadata non-goals (028).
+ADRs 001–034 covering ORM, state, DI, transactions, audit trail, settings, widgets, generated code, barcodes, payable pipeline (027), CE sync-metadata non-goals (028), cursor pagination (029), SQL report summary (030), streaming CSV export (031), DB lifecycle services (032), recovery kit key wrapping (033), and backup metadata with SHA-256 checksum (034).
 
 ---
 
@@ -41,7 +41,8 @@ Offline-first mobile POS system — Flutter, Drift SQLite, BLoC/Cubit, Material 
                          ▼
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │   lib/core/   — Cross-cutting infrastructure                                    │
-│   database/   — Drift schema v32, SQLCipher opener, satang converters           │
+│   database/   — Drift schema v32, SQLCipher opener, satang converters,           │
+│                 migration safety, WAL checkpoint, health report, recovery kit     │
 │   di/         — injectable + get_it DI                                          │
 │   extensions/ — context.l10n helper                                             │
 │   image/      — Unified image system                                            │
@@ -108,6 +109,38 @@ features/<name>/
 - **Local-only persistence** — SQLCipher SQLite on device
 
 > Full C4 Level 2-3 diagrams and data flows: [`docs/architecture/c4-diagrams.md`](architecture/c4-diagrams.md)
+
+---
+
+## Database & Reliability Services (v0.9.2)
+
+Schema v32 adds two cursor-pagination indexes for bounded large-list queries
+(no schema version bump — indexes are within v32):
+
+- `idx_products_created_at_id_cursor` — `products (created_at DESC, id)`
+- `idx_sales_created_at_id_cursor` — `sales (created_at DESC, id)`
+
+These back the cursor-paginated product (`getProductsPage` /
+`searchProductsPage`) and sale history (`getSalesPage`) queries so memory is
+bounded by page size, not by total row count.
+
+### Core database services (`lib/core/database/`)
+
+| Service | File | Responsibility |
+|---------|------|----------------|
+| `MigrationSafetyService` | `migration_safety_service.dart` | Free-space preflight (2× DB size / 50 MB floor), migration status tracking via `migration_status.json`, interrupted-migration detection on next launch |
+| `WalCheckpointService` | `wal_checkpoint_service.dart` | WAL monitoring and checkpointing; `PASSIVE` mode for periodic background (10 MB threshold), `TRUNCATE` mode for backup/export/day-close (50 MB hard limit) |
+| `DatabaseHealthService` | `database_health_service.dart` | `DatabaseHealthReport` with main/WAL/SHM sizes, schema version, integrity check, free storage, WAL recommendations; 512 MB operational guardrail (400 MB approaching) |
+| `RecoveryKitService` | `recovery_kit_service.dart` | AES-256-GCM + PBKDF2 (100K iterations) wrapping of the SQLCipher key; `.promkey` file format; `exportKit()` / `importKit()` for key recovery |
+
+### Settings data services (`lib/features/settings/data/services/`)
+
+| Service | File | Responsibility |
+|---------|------|----------------|
+| `BackupExportService` | `backup_export_service.dart` | `BackupMetadata` with SHA-256 checksum; `exportToFiles()` / `exportWithMetadata()`; progress callback (`BackupProgress`); 512 MB size preflight |
+| `BackupRestoreService` | `backup_restore_service.dart` | Same-device SQLCipher restore with staged swap + rollback; `skipSqlCipherHeaderCheck` test param; `@ignoreParam` on `candidateValidator` and `skipSqlCipherHeaderCheck` for injectable |
+
+> Full API signatures: [`docs/api/CORE_MODULES.md`](api/CORE_MODULES.md)
 
 ---
 

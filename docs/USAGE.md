@@ -176,7 +176,7 @@ Promsell stores all POS data in an encrypted SQLite file on the device (SQLCiphe
 2. **Backup Now** regularly (or enable the reminder). Share the file to cloud/USB you control — not only on the same phone.
 3. **Same-device restore** — use **Restore** on the same device to re-apply a previous `.enc` or SQLCipher `.db` export. Restart the app after restore.
 4. **Not supported in v0.9.2** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
-5. **Key loss = data loss** without an off-device export. There is no recovery-kit export/import in CE v0.9.2 yet.
+5. **Key loss = data loss** without an off-device export. Recovery-kit export/import (`RecoveryKitService`) is **code complete but device validation pending** — unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is not yet tested. Not released.
 
 See also [SECURITY.md](../SECURITY.md) and [Privacy Policy](PRIVACY_POLICY.md).
 

@@ -1,0 +1,97 @@
+@startuml Sequence_RecoveryKit
+title Recovery Kit Export / Import — SQLCipher Key Wrapping ([Unreleased])
+
+actor Merchant
+participant "SettingsPage" as UI
+participant "RecoveryKitService" as SVC
+participant "DbKeyStore" as KeyStore
+participant "Isolate\n(PBKDF2)" as Worker
+participant "Secure Storage\n(Keystore/Keychain)" as Storage
+participant "File System" as FS
+
+== Export ==
+
+Merchant -> UI: Tap "Export Recovery Kit" + enter passphrase
+UI -> SVC: exportKit(secret: "my-passphrase-8+", outputPath: null)
+
+alt secret.trim().length < 8
+    SVC --> UI: throw StateError("SECRET_TOO_SHORT")
+end
+
+SVC -> KeyStore: getOrCreateKey()
+KeyStore -> Storage: read "promsell_db_key_v1"
+alt key exists
+    Storage --> KeyStore: hexKey
+else no key
+    KeyStore -> Storage: write new random key
+    Storage --> KeyStore: hexKey
+end
+KeyStore --> SVC: hexKey (SQLCipher key)
+
+SVC -> SVC: salt = SecureRandom(16 bytes)\nnonce = SecureRandom(12 bytes)
+
+SVC -> Worker: Isolate.run(\n  PBKDF2-HMAC-SHA256(\n    password, salt,\n    iterations: 100000,\n    keyLength: 32))
+Worker --> SVC: wrapKey (32 bytes)
+
+SVC -> SVC: AES-256-GCM encrypt(\n  plaintext = utf8.encode(hexKey),\n  key = wrapKey, iv = nonce)
+
+SVC -> SVC: build file:\n[uint32 headerLen][JSON header]\n[salt(16)][nonce(12)][ciphertext+tag]
+
+SVC -> FS: writeAsBytes(promsell_recovery_kit_*.promkey)
+FS --> SVC: filePath
+
+SVC --> UI: RecoveryKitExportResult(filePath, metadata)
+UI --> Merchant: Share .promkey file\n(store securely — contains DB key)
+
+note over Merchant
+  **Threat model:** Anyone with the
+  .promkey file + passphrase can read
+  all sales/customer data. PBKDF2 100K
+  iterations + 16-byte salt resist
+  offline brute-force.
+end note
+
+== Import (on new / reset device) ==
+
+Merchant -> UI: Tap "Import Recovery Kit" + enter passphrase + select .promkey
+UI -> SVC: importKit(filePath: "...", secret: "my-passphrase-8+",\n  replaceExisting: false)
+
+alt secret.trim().length < 8
+    SVC --> UI: throw StateError("SECRET_TOO_SHORT")
+end
+
+SVC -> FS: File(filePath).readAsBytes()
+alt file too short (< 4+16+12+16)
+    SVC --> UI: throw StateError("KIT_CORRUPT")
+end
+
+SVC -> SVC: parse headerLength (uint32 BE)
+SVC -> SVC: parse JSON header → RecoveryKitMetadata
+alt metadata.version > kRecoveryKitVersion
+    SVC --> UI: throw StateError("KIT_VERSION_UNSUPPORTED")
+end
+
+SVC -> SVC: extract salt(16) + nonce(12) + ciphertext
+
+SVC -> Worker: Isolate.run(\n  PBKDF2-HMAC-SHA256(\n    password, salt,\n    iterations: 100000,\n    keyLength: 32))
+Worker --> SVC: wrapKey
+
+SVC -> SVC: AES-256-GCM decrypt(\n  ciphertext, key = wrapKey, iv = nonce)
+alt GCM auth tag fail (wrong passphrase)
+    SVC --> UI: throw StateError("WRONG_SECRET")
+end
+
+SVC -> SVC: hexKey = utf8.decode(decrypted)
+
+SVC -> Storage: read "promsell_db_key_v1"
+alt key exists && !replaceExisting
+    SVC --> UI: throw StateError("KEY_ALREADY_EXISTS")
+end
+
+SVC -> Storage: write "promsell_db_key_v1" = hexKey
+Storage --> SVC: done
+
+SVC --> UI: hexKey (installed)
+UI --> Merchant: "Key imported — you can now\nrestore an encrypted backup"
+
+@enduml

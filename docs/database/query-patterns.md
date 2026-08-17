@@ -159,6 +159,162 @@ Future<void> upsertDraft(String cartId, SaleState state) async {
 }
 ```
 
+## Cursor-based product pagination
+
+SSOT: `ProductLocalDatasource.getProductsPage()` in
+`lib/features/product/data/datasources/product_local_datasource.dart`.
+
+Uses a composite `(created_at DESC, id)` cursor backed by `idx_products_created_at_id_cursor` (added within schema **v32**, not a new schema version). Avoids `OFFSET` performance degradation on large product tables.
+
+```dart
+// ProductLocalDatasource
+Future<ProductPage> getProductsPage({
+  ProductCursor? cursor,    // from previous page's nextCursor; null for first page
+  int pageSize = 50,
+  bool activeOnly = false,
+});
+
+// ProductRepository
+Future<ProductPage> getProductsPage({
+  ProductCursor? cursor,
+  int pageSize = 50,
+  bool activeOnly = false,
+});
+
+// Use case
+@injectable
+class GetProductsPage {
+  Future<ProductPage> call({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+}
+```
+
+`ProductPage` is an entity containing `products` (list of `Product`), `nextCursor` (`ProductCursor?`, null when no more rows), and `totalCount` (total non-deleted count, independent of pagination).
+
+## Cursor-based product search
+
+SSOT: `ProductLocalDatasource.searchProductsPage()` in
+`lib/features/product/data/datasources/product_local_datasource.dart`.
+
+Same cursor mechanism as `getProductsPage`, with an additional `query` filter (name / `sku_lower` / `barcode_lower` `LIKE` match). Ranking is applied in memory on the DB result page.
+
+```dart
+// ProductLocalDatasource
+Future<ProductPage> searchProductsPage({
+  required String query,
+  ProductCursor? cursor,
+  int pageSize = 50,
+  bool activeOnly = false,
+});
+
+// Use case
+@injectable
+class SearchProductsPage {
+  Future<ProductPage> call({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+}
+```
+
+## Paged sale history
+
+SSOT: `SaleQueryLocalDatasource.querySalesPage()` / `querySalesCount()` in
+`lib/features/sale/data/datasources/sale_query_local_datasource.dart`.
+
+Uses `idx_sales_created_at_id_cursor` (added within schema **v32**, not a new schema version) for cursor-based pagination. Items and payments are hydrated **only for the current page** (batched, not N+1).
+
+```dart
+// SaleQueryLocalDatasource
+Future<SalePage> querySalesPage({
+  DateTime? from,
+  DateTime? to,
+  SaleCursor? cursor,
+  int pageSize = 50,
+});
+
+Future<int> querySalesCount({DateTime? from, DateTime? to});
+
+// SaleRepository
+Future<SalePage> getSalesPage({
+  DateTime? from,
+  DateTime? to,
+  SaleCursor? cursor,
+  int pageSize = 50,
+});
+
+// Use cases
+@injectable
+class GetSalesPage {
+  Future<SalePage> call({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+  });
+}
+
+@injectable
+class GetSalesCount {
+  Future<int> call({DateTime? from, DateTime? to});
+}
+```
+
+`SalePage` is an entity containing `sales` (list of `Sale`), `nextCursor` (`SaleCursor?`, null when no more rows), and `totalCount`.
+
+## Report summary aggregate
+
+SSOT: `SaleQueryLocalDatasource.queryReportSummary()` in
+`lib/features/sale/data/datasources/sale_query_local_datasource.dart`.
+
+SQL-level aggregation returning a `ReportSummary` entity. Uses the Satang-SSOT strategy: INTEGER `*_satang` columns are preferred, with REAL baht fallback for pre-v32 rows. Payment method lookup is chunked to 500 rows at a time to avoid SQLite variable limits.
+
+```dart
+// SaleQueryLocalDatasource
+Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to});
+
+// SaleRepository
+Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to});
+
+// Use case
+@injectable
+class GetReportSummary {
+  Future<ReportSummary> call({DateTime? from, DateTime? to});
+}
+```
+
+## Bounded streaming CSV export
+
+SSOT: `ReportExportService.exportCsvStream()` in
+`lib/features/report/data/services/report_export_service.dart`.
+
+Pages through sales via `SaleRepository.getSalesPage()`, writing CSV chunks incrementally to a `sink` callback. Memory is bounded by `pageSize`, not by the total row count. Enforces a hard cap of `kExportMaxRows = 10000` rows; `CsvExportResult.truncated` is true when the cap was hit. The `startSignal` callback is invoked just before the first data row is written, allowing the caller to dismiss a "preparing" indicator without waiting for the full export.
+
+```dart
+const int kExportMaxRows = 10000;
+
+class CsvExportResult {
+  final int rowsWritten;
+  final bool truncated;
+}
+
+// ReportExportService
+Future<CsvExportResult> exportCsvStream({
+  required SaleRepository saleRepository,
+  required void Function(String chunk) sink,
+  DateTime? from,
+  DateTime? to,
+  int maxRows = kExportMaxRows,
+  int pageSize = 500,
+  Future<void> Function()? startSignal,
+});
+```
+
 ---
 
 <sub>Promsell POS CE · v0.9.2 · Query Patterns</sub>

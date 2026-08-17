@@ -40,6 +40,12 @@ All architecture decision records, ordered by ADR number.
 | [ADR-026](#adr-026-barcode-image-rendering-via-repaintboundary-v086) | Barcode image rendering via RenderRepaintBoundary | v0.8.6 |
 | [ADR-027](#adr-027-payable-pipeline-item--cart--promo--sc--vat) | Payable pipeline (item → cart → promo → SC → VAT) | v0.9.x |
 | [ADR-028](#adr-028-sync-metadata-is-not-a-sync-engine) | Sync metadata is not a sync engine (amends ADR-015) | v0.9.x |
+| [ADR-029](#adr-029-cursor-based-pagination-over-offset) | Cursor-based pagination over OFFSET | [Unreleased] |
+| [ADR-030](#adr-030-sql-report-summary-aggregate) | SQL report summary aggregate (no hydration) | [Unreleased] |
+| [ADR-031](#adr-031-bounded-streaming-csv-export) | Bounded streaming CSV export | [Unreleased] |
+| [ADR-032](#adr-032-database-lifecycle-services) | Database lifecycle services (migration safety, WAL, health) | [Unreleased] |
+| [ADR-033](#adr-033-recovery-kit-key-wrapping) | Recovery kit key wrapping (AES-256-GCM + PBKDF2) | [Unreleased] |
+| [ADR-034](#adr-034-backup-metadata-with-sha-256-checksum) | Backup metadata with SHA-256 checksum | [Unreleased] |
 
 ---
 
@@ -560,4 +566,106 @@ lib/core/widgets/
 
 ---
 
-<sub>Promsell POS CE · v0.9.2 · Architecture Decision Records 001–028</sub>
+## ADR-029: Cursor-based pagination over OFFSET ([Unreleased])
+
+**Context:** Product catalog and sale history queries used `watchAllProducts()` and `getSales()` which load all rows into memory. At the capacity-contract baseline (2k products / 50k sales / 250k items), this causes excessive memory use and UI jank on mid-range Android devices. `OFFSET`-based pagination degrades quadratically as the offset grows because SQLite must scan and discard all preceding rows.
+
+**Decision:** Use cursor-based pagination with a composite cursor `(createdAt DESC, id DESC)` for both product and sale history queries. Two dedicated indexes (`idx_products_created_at_id_cursor`, `idx_sales_created_at_id_cursor`) back the cursor predicate. The cursor is a typed entity (`ProductCursor` / `SaleCursor`), not an opaque string, so the UI and use cases can inspect it if needed.
+
+- `ProductLocalDatasource.getProductsPage()` / `searchProductsPage()` — DB-side `LIKE` filter with in-memory rank on the result page
+- `SaleQueryLocalDatasource.querySalesPage()` — items and payments hydrated only for the current page (batched, not N+1)
+- `ProductPage` / `SalePage` entities expose `items`, `nextCursor`, `totalCount`, and `hasMore`
+
+**Consequences:**
+- ✅ Stable pagination — soft-deletes or new inserts during navigation do not cause skipped or duplicated rows
+- ✅ O(limit) scan cost regardless of page depth — no OFFSET scan-and-discard
+- ✅ Memory bounded by `pageSize` (default 50), not by total row count
+- ✅ `totalCount` enables "Showing X of Y" UI without a separate count query on each render
+- ⚠️ Cursor is order-specific — changing sort order requires a new cursor chain
+- ⚠️ Search ranking is in-memory on the DB result page (acceptable for page-size 50; full-text search is a future option)
+
+---
+
+## ADR-030: SQL report summary aggregate (no hydration) ([Unreleased])
+
+**Context:** `SalesPeriodTotals.from(List<Sale>)` hydrates all sales in a date range into memory to compute net revenue, voids, VAT, discounts, service charge, payment breakdown, and order type/channel splits. For a 2-year report over 50k sales, this means 50k `Sale` objects with items and payments — hundreds of MB of memory and multi-second computation on mid-range devices.
+
+**Decision:** Add `SaleQueryLocalDatasource.queryReportSummary()` — a SQL aggregation that computes all sale-table-derived metrics in a single query pass using `SUM()`, `COUNT()`, and `GROUP BY`. Money fields use the Satang-SSOT strategy: INTEGER `*_satang` columns are preferred with REAL baht fallback for pre-v32 rows. Payment method breakdown is chunked to 500 rows at a time to stay under SQLite's 999-variable limit. The result is a `ReportSummary` entity consumed by the `GetReportSummary` use case.
+
+**Consequences:**
+- ✅ 2-year report over 50k sales completes in ~1.2s (was multi-second with hydration)
+- ✅ Memory is O(1) — no `List<Sale>` allocation
+- ✅ Parity-verified against `SalesPeriodTotals.from` for all sale-table-derived fields
+- ⚠️ Item-derived metrics (top products, profit/margin) still require hydration via the existing path — `ReportSummary` is a complement, not a replacement
+- ⚠️ Payment breakdown chunking adds N/500 round-trips for N sales (acceptable: 50k → 100 queries, ~50ms total)
+
+---
+
+## ADR-031: Bounded streaming CSV export ([Unreleased])
+
+**Context:** `ReportExportService.exportCsv()` builds the entire CSV string in memory from a `ReportData` object. For 50k sales, this produces a multi-MB string and causes OOM on low-RAM devices. There was also no hard cap on export size.
+
+**Decision:** Add `ReportExportService.exportCsvStream()` — a streaming export that pages through sales via `SaleRepository.getSalesPage()` and writes CSV chunks to a `void Function(String chunk) sink` callback. Memory is bounded by `pageSize` (default 500), not by the total row count. A hard cap of `kExportMaxRows = 10000` prevents unbounded exports; `CsvExportResult.truncated` is true when the cap was hit. A `startSignal` callback is invoked just before the first data row so callers can dismiss a "preparing" indicator without waiting for the full export.
+
+**Consequences:**
+- ✅ Memory is O(pageSize) regardless of export size — 10k rows export in ~860ms with <1MB memory
+- ✅ Hard cap prevents accidental export of the entire database
+- ✅ `startSignal` enables responsive UI feedback without blocking the export
+- ⚠️ Streaming means the sink must handle partial CSV fragments (not a single complete string)
+- ⚠️ The 10k cap is a capacity-contract baseline — merchants with larger exports need a future "export all" option with explicit confirmation
+
+---
+
+## ADR-032: Database lifecycle services ([Unreleased])
+
+**Context:** Schema migrations (e.g., v31→v32 satang dual-write) can fail mid-way if the device runs out of free space or the app is killed. There was no preflight check, no status tracking, and no way to detect an interrupted migration on the next launch. WAL files could grow unbounded without a checkpoint policy, and there was no single API to assess database health (sizes, integrity, schema version).
+
+**Decision:** Add three `@LazySingleton()` services in `lib/core/database/`:
+
+- **`MigrationSafetyService`** — `checkFreeSpace()` preflight (≥ 2× DB size or 50 MB floor, whichever is larger); file-based migration status tracking (`migration_status.json` with `idle`/`running`/`succeeded`/`failed`); `readMigrationStatus()` detects interrupted migrations on next launch; `getSchemaVersion()` queries `PRAGMA user_version` without a full connection.
+- **`WalCheckpointService`** — `PASSIVE` mode for safe background checkpoints during money transactions (never blocks readers/writers); `TRUNCATE` mode for backup/day-close exclusive locks; 10 MB passive threshold (`walCheckpointThreshold`), 50 MB hard limit (`walHardLimit`); `checkpointIfNeeded()` returns `null` if no checkpoint is needed; `forceTruncate()` acquires an exclusive lock.
+- **`DatabaseHealthService`** — `generateReport()` returns `DatabaseHealthReport` with main DB + WAL + SHM sizes, schema version, optional integrity check, free storage, WAL checkpoint recommendations; 400 MB `approachingGuardrail` and 512 MB `exceedsGuardrail` getters for operator alerts.
+
+**Consequences:**
+- ✅ Migrations are safe-by-construction: preflight prevents OOM failures, status tracking enables recovery
+- ✅ WAL is bounded by policy, not by chance — passive checkpoints run during idle, truncate runs before backup
+- ✅ Single API for database health — day-close, settings page, and operator diagnostics all use `generateReport()`
+- ⚠️ Free-space measurement is platform-dependent — `_getFreeSpace()` returns -1 (unknown) on some platforms; the preflight allows migration to proceed with a warning when free space is unknown
+- ⚠️ `PRAGMA integrity_check` can be slow on large databases — `generateReport()` defaults to `checkIntegrity: false`
+
+---
+
+## ADR-033: Recovery kit key wrapping (AES-256-GCM + PBKDF2) ([Unreleased])
+
+**Context:** ADR-016 covers backup file encryption (AES-256-GCM with PIN-derived PBKDF2 key). But the SQLCipher database key itself is stored in platform secure storage (Keystore/Keychain). If the device is lost, the app is uninstalled, or the secure storage is wiped, the database becomes permanently unreadable — even with a valid `.enc` backup. Phase 2b D0/D1 requires a way to export and import the SQLCipher key across devices.
+
+**Decision:** Add `RecoveryKitService` (`lib/core/database/recovery_kit_service.dart`) — exports the SQLCipher key as a `.promkey` file wrapped with AES-256-GCM using a PBKDF2-HMAC-SHA256 key derived from a user-supplied passphrase (100,000 iterations, 16-byte salt, 12-byte nonce). The file format is `[uint32 headerLength][JSON header][salt(16)][nonce(12)][ciphertext+GCM tag]`. Minimum passphrase length is 8 characters (stricter than the 6-digit store PIN per D0-Q3). `importKit()` unwraps the key and installs it into secure storage; `replaceExisting` controls whether an existing key is overwritten.
+
+**Consequences:**
+- ✅ Cross-device restore is possible: export kit on device A → import kit + restore `.enc` backup on device B
+- ✅ PBKDF2 100K iterations + 16-byte salt resist offline brute-force on the `.promkey` file
+- ✅ GCM authentication tag detects tampering and wrong passphrase (no silent corruption)
+- ✅ PBKDF2 runs in a background isolate — 100K iterations do not block the UI thread
+- ⚠️ Anyone with the kit file + passphrase can read all sales/customer data — the passphrase is the sole barrier
+- ⚠️ Old kits remain valid until the DB key is changed (not supported in 2b v1)
+- ⚠️ D2 (full device-to-device smoke test) is still pending — D0/D1 implementation is unit-tested only
+
+---
+
+## ADR-034: Backup metadata with SHA-256 checksum ([Unreleased])
+
+**Context:** `BackupExportService.exportAndShare()` produced a `.db` or `.enc` file with no metadata. The restore path had no way to verify that the backup file was not corrupted during transfer, was created by a compatible schema version, or was encrypted. Operators had no size preflight — a 1GB backup could be attempted on a device with 200MB free.
+
+**Decision:** Enhance `BackupExportService` with `BackupMetadata` — a JSON sidecar file (`.meta.json`) containing `schemaVersion`, `appVersion`, `createdAt` (ISO-8601), `dbSizeBytes`, `checksumSha256`, and `encrypted` flag. `exportWithMetadata()` and `exportToFiles()` perform a size preflight (512 MB max via `maxBackupBytes`), WAL checkpoint before copy, SHA-256 checksum computation, and optional AES-GCM encryption. A `BackupProgress` enum (`idle` → `checkpointing` → `copying` → `checksumming` → `encrypting` → `sharing` → `done`) drives progress callback feedback. `BackupMetadata.tryDecode()` and `validateAgainstMetadata()` enable restore-side validation.
+
+**Consequences:**
+- ✅ Restore can detect corruption before attempting a file swap (checksum mismatch)
+- ✅ Schema version mismatch is detected before opening the backup (cross-version restore guard)
+- ✅ Size preflight prevents OOM during export on low-storage devices
+- ✅ Progress callback enables responsive UI ("Checkpointing…", "Computing checksum…", etc.)
+- ⚠️ The `.meta.json` sidecar must be shared alongside the `.db`/`.enc` file — losing it means no checksum validation (restore still works, just without pre-validation)
+- ⚠️ SHA-256 computation adds ~200ms for a 50MB database (acceptable; runs after the copy, not on the live DB)
+
+---
+
+<sub>Promsell POS CE · v0.9.2 · Architecture Decision Records 001–034</sub>

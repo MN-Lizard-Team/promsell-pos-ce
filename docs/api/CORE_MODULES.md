@@ -426,4 +426,392 @@ class GenerateBarcode {
 
 ---
 
+---
+
+## Database & Reliability Services ([Unreleased])
+
+Six services added in the unreleased scaling/lifecycle work for migration safety, WAL management, health
+reporting, backup export, key recovery, and restore. All use injectable
+registration.
+
+---
+
+### MigrationSafetyService
+
+**Location:** `lib/core/database/migration_safety_service.dart`
+
+#### Purpose
+
+Pre-migration free-space preflight and migration status tracking. Detects
+interrupted migrations on the next launch so the app can trigger recovery or
+operator alert.
+
+#### Registration
+
+```dart
+@LazySingleton()
+class MigrationSafetyService {
+  MigrationSafetyService(this._db);
+  final AppDatabase _db;
+}
+```
+
+#### Key types
+
+```dart
+enum MigrationStatus { idle, running, succeeded, failed }
+
+class MigrationPreflightResult {
+  final int freeBytes;
+  final int requiredBytes;
+  final bool canProceed;
+  final String? reason;  // 'INSUFFICIENT_FREE_SPACE' | 'FREE_SPACE_UNKNOWN' | null
+}
+```
+
+#### API
+
+```dart
+// Free-space preflight — requires ≥ 2× DB size (or 50 MB floor, whichever is larger).
+Future<MigrationPreflightResult> checkFreeSpace();
+Future<int> getSchemaVersion();
+
+// Migration status tracking — writes migration_status.json to app docs dir.
+Future<void> markMigrationStart({required int fromVersion, required int toVersion});
+Future<void> markMigrationSuccess({required int fromVersion, required int toVersion});
+Future<void> markMigrationFailure({required int fromVersion, required int toVersion, required String error});
+Future<MigrationStatus> readMigrationStatus();
+```
+
+#### Constants
+
+- `_freeSpaceMultiplier = 2` — free space must be ≥ 2× current DB file size
+- `_minFreeSpaceBytes = 50 MB` — absolute floor even for tiny databases
+
+---
+
+### WalCheckpointService
+
+**Location:** `lib/core/database/wal_checkpoint_service.dart`
+
+#### Purpose
+
+WAL checkpoint monitoring and execution. `PASSIVE` mode is safe during active
+money transactions; `TRUNCATE` mode requires an exclusive lock (backup, export,
+day-close).
+
+#### Registration
+
+```dart
+@LazySingleton()
+class WalCheckpointService {
+  WalCheckpointService(this._db);
+  final AppDatabase _db;
+}
+```
+
+#### Key types
+
+```dart
+enum CheckpointMode { passive, full, restart, truncate }
+
+class CheckpointResult {
+  final CheckpointMode mode;
+  final int busy;               // 1 if a reader was active
+  final int logFrames;
+  final int checkpointedFrames;
+  final int walSizeBefore;
+  final int walSizeAfter;
+  final int elapsedMs;
+  bool get wasBusy => busy == 1;
+  bool get walTruncated => walSizeAfter == 0;
+}
+```
+
+#### API
+
+```dart
+Future<int> getWalSize();        // WAL file size in bytes (0 if absent)
+Future<int> getShmSize();        // SHM file size in bytes
+Future<bool> shouldCheckpoint(); // WAL ≥ 10 MB threshold
+Future<bool> needsTruncate();    // WAL ≥ 50 MB hard limit
+
+Future<CheckpointResult> checkpoint({CheckpointMode mode = CheckpointMode.passive});
+Future<CheckpointResult?> checkpointIfNeeded();  // passive if ≥ threshold
+Future<CheckpointResult> forceTruncate();         // exclusive lock + TRUNCATE
+```
+
+#### Constants
+
+- `walCheckpointThreshold = 10 MB` — triggers passive checkpoint
+- `walHardLimit = 50 MB` — triggers forced truncate
+
+---
+
+### DatabaseHealthService
+
+**Location:** `lib/core/database/database_health_service.dart`
+
+#### Purpose
+
+Collects database health metrics into a single report for day-close, settings
+page, or operator diagnostics.
+
+#### Registration
+
+```dart
+@LazySingleton()
+class DatabaseHealthService {
+  DatabaseHealthService(this._db, this._walService);
+  final AppDatabase _db;
+  final WalCheckpointService _walService;
+}
+```
+
+#### Key type — DatabaseHealthReport
+
+```dart
+class DatabaseHealthReport {
+  final int mainDbSize;
+  final int walSize;
+  final int shmSize;
+  final int totalSize;          // main + WAL + SHM
+  final int schemaVersion;      // PRAGMA user_version
+  final bool integrityOk;       // PRAGMA integrity_check == 'ok'
+  final int freeStorageBytes;   // -1 if unknown
+  final bool walNeedsCheckpoint;
+  final bool walNeedsTruncate;
+  final DateTime generatedAt;
+
+  double get totalSizeMb;
+  double get walPercent;
+  bool get approachingGuardrail => totalSize > 400 MB;
+  bool get exceedsGuardrail => totalSize > 512 MB;
+}
+```
+
+#### API
+
+```dart
+// checkIntegrity defaults to false — PRAGMA integrity_check can be slow on
+// large databases. Enable for operator diagnostics.
+Future<DatabaseHealthReport> generateReport({bool checkIntegrity = false});
+```
+
+---
+
+### BackupExportService
+
+**Location:** `lib/features/settings/data/services/backup_export_service.dart`
+
+#### Purpose
+
+Exports a consistent copy of the local SQLite DB for merchant backup, with
+SHA-256 checksum metadata, optional AES-GCM encryption, size preflight, and
+progress reporting.
+
+#### Registration
+
+```dart
+@LazySingleton()
+class BackupExportService {
+  BackupExportService(this._db, this._encryption, this._appLock);
+  final AppDatabase _db;
+  final BackupEncryptionService _encryption;
+  final AppLockService _appLock;
+}
+```
+
+#### Key types
+
+```dart
+class BackupMetadata {
+  final int schemaVersion;
+  final String appVersion;
+  final String createdAt;
+  final int dbSizeBytes;
+  final String checksumSha256;
+  final bool encrypted;
+
+  Map<String, dynamic> toJson();
+  factory BackupMetadata.fromJson(Map<String, dynamic> json);
+  String encode();
+  static BackupMetadata? tryDecode(String? content);
+}
+
+class BackupExportResult {
+  final String filePath;
+  final BackupMetadata metadata;
+  final String? metadataPath;
+}
+
+enum BackupProgress { idle, checkpointing, copying, checksumming, encrypting, sharing, done }
+```
+
+#### API
+
+```dart
+// Full export with checksum, metadata, size preflight, and progress.
+// Throws StateError('BACKUP_TOO_LARGE') if DB > 512 MB.
+Future<BackupExportResult> exportWithMetadata({
+  required bool encrypt,
+  String? pin,
+  required String shareSubject,
+  String appVersion = 'unknown',
+  void Function(BackupProgress stage)? onProgress,
+});
+
+// Export to files without sharing — testable without Flutter bindings.
+Future<BackupExportResult> exportToFiles({
+  required bool encrypt,
+  String? pin,
+  String appVersion = 'unknown',
+  void Function(BackupProgress stage)? onProgress,
+});
+
+// Convenience — returns just the shared file path.
+Future<String> exportAndShare({
+  required bool encrypt,
+  String? pin,
+  required String shareSubject,
+});
+```
+
+#### Constants
+
+- `minPinLength = 6` — enforced when encryption is enabled
+- `maxBackupBytes = 512 MB` — size preflight guardrail
+- `metadataExtension = '.meta.json'`
+
+---
+
+### RecoveryKitService
+
+**Location:** `lib/core/database/recovery_kit_service.dart`
+
+#### Purpose
+
+Exports and imports the SQLCipher key as a password-wrapped recovery kit
+(`.promkey` format). The key is wrapped with AES-256-GCM using a PBKDF2-derived
+key from the user's passphrase.
+
+#### Registration
+
+```dart
+@LazySingleton()
+class RecoveryKitService {
+  RecoveryKitService();
+}
+```
+
+#### Key types
+
+```dart
+class RecoveryKitExportResult {
+  final String filePath;
+  final RecoveryKitMetadata metadata;
+}
+
+class RecoveryKitMetadata {
+  final int version;
+  final String createdAt;
+  final int kdfIterations;
+}
+```
+
+#### API
+
+```dart
+// Exports the SQLCipher key as a password-wrapped recovery kit.
+// Throws: SECRET_TOO_SHORT, NO_DB_KEY.
+Future<RecoveryKitExportResult> exportKit({required String secret, String? outputPath});
+
+// Imports a recovery kit and installs the key into secure storage.
+// Throws: SECRET_TOO_SHORT, KIT_FILE_NOT_FOUND, KIT_CORRUPT,
+//         KIT_VERSION_UNSUPPORTED, WRONG_SECRET, KEY_ALREADY_EXISTS.
+Future<String> importKit({
+  required String filePath,
+  required String secret,
+  bool replaceExisting = false,
+});
+
+Future<bool> hasKey();
+Future<void> removeKey();
+```
+
+#### File format
+
+```
+[uint32 headerLength][JSON header][salt(16)][nonce(12)][ciphertext+GCM tag]
+```
+
+#### Constants
+
+- `kRecoveryKitVersion = 1`
+- `kRecoveryKitExtension = '.promkey'`
+- `kRecoveryKitMinSecretLength = 8`
+- PBKDF2 iterations: 100,000 (HMAC-SHA256)
+- Salt: 16 bytes, Nonce: 12 bytes (96-bit GCM), Key: 32 bytes (256-bit)
+
+---
+
+### BackupRestoreService
+
+**Location:** `lib/features/settings/data/services/backup_restore_service.dart`
+
+#### Purpose
+
+Same-device restore of a SQLCipher DB backup (optional AES-GCM PIN envelope).
+Performs a staged file swap with rollback so the live DB is untouched until
+validation and copy both succeed.
+
+#### Registration
+
+```dart
+typedef CandidateValidator = Future<void> Function(String path);
+
+@LazySingleton()
+class BackupRestoreService {
+  BackupRestoreService(
+    this._db,
+    this._encryption,
+    this._appLock, {
+    @ignoreParam CandidateValidator? candidateValidator,
+    @ignoreParam this.skipSqlCipherHeaderCheck = false,
+  });
+}
+```
+
+> `@ignoreParam` on `candidateValidator` and `skipSqlCipherHeaderCheck` keeps
+> them out of the injectable-generated factory so the DI graph only wires
+> production dependencies.
+
+#### API
+
+```dart
+// Restores sourcePath (.enc or .db). Returns the pre-restore backup path.
+// Caller must restart the app process so Drift/GetIt reopen the DB cleanly.
+// Throws: SOURCE_MISSING, BACKUP_TOO_LARGE, PIN_REQUIRED, PIN_TOO_SHORT,
+//         PLAIN_SQLITE_UNSUPPORTED, INVALID_BACKUP, INVALID_BACKUP_SCHEMA,
+//         INVALID_BACKUP_INTEGRITY.
+Future<String> restoreFromPath({required String sourcePath, String? pin});
+
+// Deletes leftover promsell_pos.pre_restore_*.db files after a successful
+// DB open. Call after the app starts and the live DB opens successfully.
+Future<int> cleanupPreRestoreBackups();
+```
+
+#### Constants
+
+- `minPinLength = 6` (aligned with `BackupExportService.minPinLength`)
+- `maxBackupBytes = 512 MB`
+
+#### Test-only parameters
+
+- `candidateValidator` — inject a custom validation function in tests
+- `skipSqlCipherHeaderCheck` — skips the SQLCipher header check for tests
+  using plain SQLite fixtures; production code must never set this
+
+---
+
 <sub>Promsell POS CE · v0.9.2 · Core Modules API</sub>

@@ -1,0 +1,56 @@
+@startuml C4_Component_Lifecycle
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Promsell POS CE — Component Diagram (DB Lifecycle Services) [Unreleased]
+
+Container_Boundary(core_db, "Core Database / Settings") {
+    Component(app_db, "AppDatabase", "Drift + SQLCipher", "schema v32 · 16 tables · WAL mode · cursor indexes")
+
+    Component(migr_safety, "MigrationSafetyService", "@LazySingleton", "Free-space preflight (2x DB / 50MB floor)\nFile-based migration status tracking\n(idle/running/succeeded/failed)")
+    Component(wal_svc, "WalCheckpointService", "@LazySingleton", "PASSIVE mode (10MB threshold)\nTRUNCATE mode (50MB hard limit)\ngetWalSize / shouldCheckpoint / needsTruncate")
+    Component(health_svc, "DatabaseHealthService", "@LazySingleton", "generateReport()\nmain+WAL+SHM sizes, schema version,\nintegrity check, guardrail alerts")
+
+    Component(backup_export, "BackupExportService", "@LazySingleton", "Size preflight (512MB max)\nWAL checkpoint + copy + SHA-256\nOptional AES-GCM encrypt + share")
+    Component(backup_restore, "BackupRestoreService", "@LazySingleton", "Candidate validation (schema/integrity/FK)\nAtomic stage + swap with rollback\nPre-restore backup + cleanup")
+    Component(backup_enc, "BackupEncryptionService", "Service", "AES-256-GCM encrypt/decrypt\nPBKDF2 key derivation from PIN")
+    Component(recovery_kit, "RecoveryKitService", "@LazySingleton", "Export SQLCipher key as .promkey\nAES-256-GCM + PBKDF2 (100K iterations)\nImport + install to secure storage")
+
+    Component(app_lock, "AppLockService", "Service", "requireSensitiveSession()\nPIN + day lock enforcement")
+    Component(db_key_store, "DbKeyStore", "Static", "getOrCreateKey()\nSQLCipher key in secure storage")
+}
+
+ContainerDb(db, "SQLite", "Drift + SQLCipher", "schema v32 · 32 satang columns")
+Container_Ext(secure_storage, "Platform Secure Storage", "Keystore / Keychain", "SQLCipher key + recovery kit key")
+Container_Ext(share, "OS Share Sheet", "share_plus", "Backup file + metadata export")
+Container_Ext(fs, "File System", "path_provider", "App docs + temp directories")
+
+Rel(migr_safety, app_db, "getSchemaVersion() — PRAGMA user_version")
+Rel(migr_safety, fs, "migration_status.json read/write")
+Rel(wal_svc, app_db, "PRAGMA wal_checkpoint(PASSIVE|TRUNCATE)")
+Rel(wal_svc, fs, "getWalSize() / getShmSize() — File.length()")
+Rel(health_svc, app_db, "PRAGMA user_version + integrity_check")
+Rel(health_svc, wal_svc, "shouldCheckpoint() / needsTruncate()")
+Rel(health_svc, fs, "main/WAL/SHM file sizes")
+
+Rel(backup_export, app_lock, "requireSensitiveSession()")
+Rel(backup_export, wal_svc, "forceTruncate() before copy")
+Rel(backup_export, backup_enc, "encryptFile() / decryptFile()")
+Rel(backup_export, app_db, "PRAGMA user_version (schemaVersion)")
+Rel(backup_export, fs, "copy DB + write .meta.json")
+Rel(backup_export, share, "SharePlus.share([.db/.enc, .meta.json])")
+
+Rel(backup_restore, app_lock, "requireSensitiveSession()")
+Rel(backup_restore, backup_enc, "decryptFile() for .enc sources")
+Rel(backup_restore, db_key_store, "getOrCreateKey() for candidate validation")
+Rel(backup_restore, app_db, "close() before swap")
+Rel(backup_restore, fs, "stage + swap + pre_restore backup")
+
+Rel(recovery_kit, db_key_store, "getOrCreateKey() (export)")
+Rel(recovery_kit, secure_storage, "read/write promsell_db_key_v1")
+Rel(recovery_kit, fs, "write/read .promkey file")
+Rel(db_key_store, secure_storage, "read/write promsell_db_key_v1")
+
+Rel(app_db, db, "Drift queries + transactions")
+
+SHOW_LEGEND()
+@enduml

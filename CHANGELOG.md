@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **P0 scaling foundation** — cursor-paginated catalog/history queries, DB-backed product search, SQL report summary aggregate, and bounded streaming CSV export. Validated against a file-backed fixture seeded with 2k products / 50k sales / 250k items / 150k inventory logs.
 - **P1 database lifecycle & recovery** — migration benchmark with duration budget, migration safety service (free-space preflight + status tracking), WAL checkpoint policy, database health report, backup checksum/metadata/progress, Phase 2b recovery kit (cross-device key restore), and large encrypted fixture restore tests.
+- **CI/DI fixes** — Android smoke workflow `-t` flag misuse (failing since v0.9.0) and `BackupRestoreService` injectable `@ignoreParam` crash on startup.
 
 ### Added
 
@@ -28,10 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Migration safety service** (`lib/core/database/migration_safety_service.dart`) — free-space preflight (2× DB size or 50 MB floor), file-based migration status tracking (idle/running/succeeded/failed), interrupted-migration detection on next launch, schema version query. 10 tests in `p1_migration_safety_test.dart`.
 - **WAL checkpoint service** (`lib/core/database/wal_checkpoint_service.dart`) — PASSIVE mode for safe background checkpoints during money transactions, TRUNCATE mode for backup/day-close exclusive locks, 10 MB passive threshold, 50 MB hard limit, `checkpointIfNeeded()` and `forceTruncate()` APIs. 7 tests.
 - **Database health service** (`lib/core/database/database_health_service.dart`) — `generateReport()` collects main DB + WAL + SHM sizes, schema version, integrity check (optional), free storage, WAL checkpoint recommendations, 512 MB guardrail detection. 6 tests.
-- **Backup export metadata** (`lib/features/settings/data/services/backup_export_service.dart`) — `BackupMetadata` with schema version, app version, timestamp, db size, SHA-256 checksum, encrypted flag. `exportToFiles()` / `exportWithMetadata()` with size preflight (512 MB max), progress callback, `validateAgainstMetadata()` for restore validation. 8 tests.
-- **Recovery kit service** (`lib/core/database/recovery_kit_service.dart`) — Phase 2b D0/D1 implementation: AES-256-GCM wrap of SQLCipher key with PBKDF2-HMAC-SHA256 (100K iterations) from user passphrase (min 8 chars), `.promkey` file format, export/import round-trip, wrong-secret/corrupt/tamper failure modes. 9 tests.
+- **Backup export metadata** (`lib/features/settings/data/services/backup_export_service.dart`) — `BackupMetadata` with schema version, app version, timestamp, db size, SHA-256 checksum, encrypted flag. `exportToFiles()` / `exportWithMetadata()` with size preflight (512 MB max), progress callback, `BackupMetadata.tryDecode()` for restore-side validation. 8 tests.
+- **Recovery kit service** (`lib/core/database/recovery_kit_service.dart`) — Phase 2b D0/D1 **code complete, device validation pending**: AES-256-GCM wrap of SQLCipher key with PBKDF2-HMAC-SHA256 (100K iterations) from user passphrase (min 8 chars), `.promkey` file format, export/import round-trip, wrong-secret/corrupt/tamper failure modes. 9 unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is **not yet tested**. Do not claim "supported" until D2 device smoke passes.
 - **Large encrypted fixture restore tests** (`test/performance/p1_restore_large_test.dart`) — 4 tests: 5K-sale encrypted backup restore preserves all data, interrupted swap rollback, wrong PIN fails cleanly, corrupted schema rejected. `BackupRestoreService` enhanced with `skipSqlCipherHeaderCheck` for test fixtures.
-- `ce-scaling-management-plan.md` — capacity contract, SLO table, and P0–P3 roadmap with evidence.
+- `docs/plan/UN-COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md` — capacity contract, SLO table, and P0–P3 roadmap with evidence.
 - `path_provider_platform_interface` dev dependency for test path mocking.
 - `crypto` dependency for SHA-256 backup checksums.
 
@@ -40,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SaleQueryLocalDatasource.queryReportSummary` payment breakdown lookup now chunks `saleId.isIn(...)` into batches of 500 to stay under SQLite's 999-variable limit when the report range covers tens of thousands of sales.
 - `BackupExportService` now supports `exportWithMetadata()` and `exportToFiles()` with checksum, metadata file, size preflight, and progress feedback. The existing `exportAndShare()` delegates to `exportWithMetadata()`.
 - `BackupRestoreService` now accepts `skipSqlCipherHeaderCheck` (test-only) to allow restore flow tests with plain SQLite fixtures.
+
+### Fixed
+
+- **CI: Android smoke workflow `-t` flag misuse** — `flutter test -t` is `--tags` (test tag filter), not `--target`. Passing `lib/main_dev.dart` as a tag matched no tests, causing the Android release smoke suite to exit with code 1 immediately (failing on every release since v0.9.0). Removed the incorrect `-t` flag from `release-trust.yml` and `screenshots.yml`. The `flutter build` commands in `ci.yml` and `release-aab.yml` use `-t` as `--target` correctly and were not affected.
+- **DI: `BackupRestoreService` injectable crash on startup** — injectable tried to resolve `CandidateValidator` (a typedef) and `skipSqlCipherHeaderCheck` (a bool) from GetIt, causing `"Object/factory with type (String) => Future<void> is not registered"` at app launch. Added `@ignoreParam` to both optional parameters so injectable skips them during code generation. The `candidateValidator` bug was pre-existing (since v0.9.2); `skipSqlCipherHeaderCheck` was introduced in the P1 commit.
 
 ### Performance
 
@@ -54,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Checkout, backup, and migration baselines require the real SQLCipher library and are deferred to the P1 on-device `integration_test` suite.
 - P1 recovery kit implements D0/D1 threat model from `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md`.
 
-`flutter analyze` → **0 issues** · P0 tests → **22 new tests passing** · P1 tests → **47 new tests passing** (3 migration benchmark + 10 migration safety + 7 WAL checkpoint + 6 DB health + 8 backup metadata + 9 recovery kit + 4 restore large)
+`flutter analyze` → **0 issues** · P0 tests → **22 new tests passing** · P1 tests → **47 new tests passing** (3 migration benchmark + 10 migration safety + 7 WAL checkpoint + 6 DB health + 8 backup metadata + 9 recovery kit + 4 restore large) · CI/DI fixes → **2 commits** (Android smoke `-t` flag, `BackupRestoreService` `@ignoreParam`)
 
 ## [0.9.2] - 2026-08-17
 

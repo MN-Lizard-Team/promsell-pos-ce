@@ -245,7 +245,7 @@ v23                                           v24
 |----------|---------|
 | [`docs/database/schema-reference.md`](database/schema-reference.md) | All **16** tables with column details, indexes, seed data, enum values |
 | [`docs/database/query-patterns.md`](database/query-patterns.md) | Drift query patterns: watch products, insert sale, void sale, date range, draft upsert |
-| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→**v30**), backup export/restore, encrypted backups, performance notes, DB testing |
+| [`docs/database/migration-and-ops.md`](database/migration-and-ops.md) | Migration guide (v2→**v32**), backup export/restore, encrypted backups, performance notes, DB testing |
 
 ---
 
@@ -260,7 +260,7 @@ v23                                           v24
 | **v29** | `products.barcode_lower` column + unique partial index for case-insensitive barcode lookups |
 | **v30** | `products.sku_lower` column + unique partial index for case-insensitive SKU lookups |
 | **v31** | V092-C.2: SKU dedupe before unique index (same pattern as barcode v29); V092-C.3: idempotent index/trigger set at end of every `onUpgrade`; `sku_lower` unique index added to `_createIndexes` for fresh installs |
-| **v32** | **Phase M (C1–C3):** 32 nullable INTEGER `*_satang` dual-write columns added to 10 money tables (`products`, `product_options`, `sales`, `sale_items`, `sale_payments`, `daily_closes`, `customers`, `promotions`, `draft_carts`, `draft_cart_items`). Backfilled from REAL baht via `CAST(ROUND(baht * 100) AS INTEGER)`. NaN/Inf-safe: `baht = baht` excludes NaN (NULL in SQLite), `abs(baht) < 1e15` excludes ±Inf. Idempotent (`AND satang IS NULL`). Drift `NullableMoneySatangConverter` is wired; writers dual-write and readers are satang-first with REAL fallback. Legacy REAL columns remain until a later deprecation release. |
+| **v32** | **Phase M (C1–C3):** 32 nullable INTEGER `*_satang` dual-write columns added to 10 money tables (`products`, `product_options`, `sales`, `sale_items`, `sale_payments`, `daily_closes`, `customers`, `promotions`, `draft_carts`, `draft_cart_items`). Backfilled from REAL baht via `CAST(ROUND(baht * 100) AS INTEGER)`. NaN/Inf-safe: `baht = baht` excludes NaN (NULL in SQLite), `abs(baht) < 1e15` excludes ±Inf. Idempotent (`AND satang IS NULL`). Drift `NullableMoneySatangConverter` is wired; writers dual-write and readers are satang-first with REAL fallback. Legacy REAL columns remain until a later deprecation release. **Also within v32 (not a new schema version):** two cursor-pagination indexes added — `idx_products_created_at_id_cursor` (`products: created_at DESC, id`) and `idx_sales_created_at_id_cursor` (`sales: created_at DESC, id`) for cursor-based pagination. |
 
 **Money on disk:** Domain code uses the `Money` value object (integer satang). v32 stores satang as the active exact representation while retaining REAL baht for rollback compatibility. Report/tender aggregation now accumulates integer satang and converts to display doubles only at the presentation boundary. Dropping legacy REAL columns and the encrypted pre-M backup-restore fixture remain deferred.
 
@@ -277,7 +277,71 @@ Rationale:
 
 > If reuse-after-delete is needed later: change the unique indexes to partial `WHERE deleted_at IS NULL AND barcode IS NOT NULL AND barcode != ''`. This requires a migration to drop + recreate the indexes.
 
-**Backup:** Export + AES-GCM (PIN ≥ 6; default **on** when setting missing). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup. Recovery-kit export/import remains a Phase 2b item.
+**Backup:** Export + AES-GCM (PIN ≥ 6; default **on** when setting missing). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup. Recovery-kit export/import is **code complete, device validation pending** ([Unreleased]) — unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is not yet tested. Full cross-device device smoke (Phase 2b D2) remains pending.
+
+---
+
+## Database Health & Lifecycle Services
+
+The following P1 services provide migration safety, WAL checkpoint management, health reporting, backup metadata, and key recovery. All live under `lib/core/database/` (except `BackupExportService`).
+
+### MigrationSafetyService
+
+**File:** `lib/core/database/migration_safety_service.dart`
+
+- **Free-space preflight:** checks available storage before running migrations (requires 2× DB size or a 50 MB floor, whichever is larger).
+- **Migration status tracking:** file-based status tracking with states `idle`, `running`, `succeeded`, `failed`.
+- **Interrupted-migration detection:** detects if a previous migration was interrupted (status left as `running`) and surfaces it for recovery.
+- **Schema version query:** exposes the current on-disk schema version without opening a full database connection.
+
+### WalCheckpointService
+
+**File:** `lib/core/database/wal_checkpoint_service.dart`
+
+- **PASSIVE mode:** safe background checkpoints via `PRAGMA wal_checkpoint(PASSIVE)`. Triggered when WAL size exceeds the 10 MB passive threshold.
+- **TRUNCATE mode:** full checkpoint + WAL file truncation via `PRAGMA wal_checkpoint(TRUNCATE)`. Used for backup and day-close operations.
+- **Hard limit:** 50 MB hard limit — forces a checkpoint if WAL exceeds this regardless of mode.
+- **APIs:** `checkpointIfNeeded()` (passive, threshold-based) and `forceTruncate()` (unconditional TRUNCATE).
+
+### DatabaseHealthService
+
+**File:** `lib/core/database/database_health_service.dart`
+
+- **`generateReport()`** returns a `DatabaseHealthReport` containing:
+  - `mainDbSize`, `walSize`, `shmSize`, `totalSize` (bytes)
+  - `schemaVersion` (int)
+  - `integrityOk` (bool — result of `PRAGMA integrity_check`)
+  - `freeStorageBytes` (available storage on device)
+  - `walNeedsCheckpoint` (bool — WAL exceeds passive threshold)
+  - `walNeedsTruncate` (bool — WAL exceeds hard limit)
+  - `generatedAt` (DateTime)
+- **512 MB guardrail:** `exceedsGuardrail` flag on the report indicates when `totalSize` surpasses the 512 MB guardrail.
+
+### BackupExportService (enhancements)
+
+**File:** `lib/features/settings/data/services/backup_export_service.dart`
+
+- **`BackupMetadata` class:** captures `schemaVersion`, `appVersion`, `createdAt` (ISO-8601 string), `dbSizeBytes`, `checksumSha256`, and `encrypted` flag for each export. Written as a `.meta.json` sidecar alongside the `.db`/`.enc` file.
+- **`exportToFiles()` / `exportWithMetadata()` / `exportAndShare()`:** performs a size preflight (512 MB max via `maxBackupBytes`), WAL checkpoint via `WalCheckpointService.forceTruncate()`, SHA-256 checksum, optional AES-256-GCM encryption, and share via `share_plus`. Reports progress via `BackupProgress` callback with states: `.idle`, `.checkpointing`, `.copying`, `.checksumming`, `.encrypting`, `.sharing`, `.done`.
+- **`BackupMetadata.tryDecode()`:** parses a `.meta.json` sidecar for restore-side validation (checksum, schema version, encrypted flag).
+
+### RecoveryKitService
+
+**File:** `lib/core/database/recovery_kit_service.dart`
+
+- **`exportKit({required String secret, String? outputPath})`:** wraps the SQLCipher key with AES-256-GCM using a PBKDF2-HMAC-SHA256 key derived from the user secret (100,000 iterations, 16-byte salt, 12-byte nonce). PBKDF2 runs in a background isolate. Writes a `.promkey` file. Minimum secret length is 8 characters. Returns `RecoveryKitExportResult` with `filePath` and `RecoveryKitMetadata` (version, createdAt, kdfIterations). Throws `SECRET_TOO_SHORT` or `NO_DB_KEY`.
+- **`importKit({required String filePath, required String secret, bool replaceExisting = false})`:** unwraps the SQLCipher key from a `.promkey` file using the same PBKDF2 derivation. Installs the key into platform secure storage. Throws `SECRET_TOO_SHORT`, `KIT_FILE_NOT_FOUND`, `KIT_CORRUPT`, `KIT_VERSION_UNSUPPORTED`, `WRONG_SECRET` (GCM auth tag fail), or `KEY_ALREADY_EXISTS` (if a key exists and `replaceExisting` is false).
+- **`hasKey()` / `removeKey()`:** check whether a DB key is installed, or remove it (use with caution — the database becomes unreadable until a new key is imported).
+- **File format:** `[uint32 headerLength][JSON header][salt(16)][nonce(12)][ciphertext+GCM tag]`
+
+### BackupRestoreService (enhancement)
+
+**File:** `lib/features/settings/data/services/backup_restore_service.dart`
+
+- **`restoreFromPath({required String sourcePath, String? pin})`:** validates the candidate (schema tables, `PRAGMA integrity_check`, `PRAGMA foreign_key_check`), stages the file, closes the live DB, atomically swaps (live → old, staged → live, delete WAL+SHM), and returns the pre-restore backup path. If the swap fails, rolls back by renaming `old` back to `live`. Throws `SOURCE_MISSING`, `BACKUP_TOO_LARGE`, `PIN_REQUIRED`, `PIN_TOO_SHORT`, `PLAIN_SQLITE_UNSUPPORTED`, `INVALID_BACKUP`, `INVALID_BACKUP_SCHEMA`, or `INVALID_BACKUP_INTEGRITY`.
+- **`cleanupPreRestoreBackups()`:** deletes leftover `promsell_pos.pre_restore_*.db` files after a successful DB open on next launch.
+- **`skipSqlCipherHeaderCheck` param:** test-only parameter to bypass the SQLCipher header check during restore.
+- **`@ignoreParam`** annotation on `candidateValidator` and `skipSqlCipherHeaderCheck` for injectable compatibility.
 
 ---
 

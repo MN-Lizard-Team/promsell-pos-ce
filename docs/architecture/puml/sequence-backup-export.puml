@@ -1,0 +1,74 @@
+@startuml Sequence_BackupExport
+title Backup Export with Metadata + Checksum ([Unreleased])
+
+actor Merchant
+participant "SettingsPage" as UI
+participant "BackupExportService" as SVC
+participant "AppLockService" as Lock
+participant "WalCheckpointService" as WAL
+participant "BackupEncryptionService" as Enc
+database "SQLite (SQLCipher)" as DB
+participant "OS Share Sheet" as Share
+
+Merchant -> UI: Tap "Backup" + toggle encrypt + enter PIN
+UI -> SVC: exportWithMetadata(\n  encrypt: true, pin: "123456",\n  shareSubject: "Promsell Backup",\n  onProgress: updateProgress)
+
+SVC -> Lock: requireSensitiveSession()
+alt store PIN on + session locked
+    Lock --> SVC: throw BusinessRuleError("AppLockRequired")
+    SVC --> UI: error
+end
+
+== PIN Validation (if encrypt) ==
+alt pin is empty
+    SVC --> UI: throw StateError("PIN_REQUIRED")
+else pin.length < 6
+    SVC --> UI: throw StateError("PIN_TOO_SHORT")
+end
+
+== Size Preflight ==
+SVC -> SVC: dbSize = File(dbPath).length()
+alt dbSize > 512 MB
+    SVC --> UI: throw StateError("BACKUP_TOO_LARGE")
+end
+
+== WAL Checkpoint ==
+SVC -> UI: onProgress(checkpointing)
+SVC -> WAL: forceTruncate()
+WAL -> DB: PRAGMA wal_checkpoint(TRUNCATE)\n(exclusive lock)
+DB --> WAL: CheckpointResult
+WAL --> SVC: WAL truncated
+
+== Copy ==
+SVC -> UI: onProgress(copying)
+SVC -> SVC: copy dbFile → temp snapshot
+
+== Checksum ==
+SVC -> UI: onProgress(checksumming)
+SVC -> SVC: checksum = SHA-256(snapshotFile)
+
+== Schema Version ==
+SVC -> DB: PRAGMA user_version
+DB --> SVC: schemaVersion (e.g., 32)
+
+== Metadata ==
+SVC -> SVC: BackupMetadata(\n  schemaVersion, appVersion,\n  createdAt: ISO-8601,\n  dbSizeBytes, checksumSha256,\n  encrypted: true)
+SVC -> SVC: write .meta.json sidecar
+
+== Encrypt (optional) ==
+alt encrypt == true
+    SVC -> UI: onProgress(encrypting)
+    SVC -> Enc: encryptFile(sourcePath, pin, outputPath)
+    Enc --> SVC: encrypted .enc file
+end
+
+== Share ==
+SVC -> UI: onProgress(sharing)
+SVC -> Share: SharePlus.share([.db/.enc, .meta.json])
+Share --> Merchant: Share sheet (user saves to cloud/USB)
+
+SVC -> UI: onProgress(done)
+SVC --> UI: BackupExportResult(filePath, metadata, metadataPath)
+UI --> Merchant: Show "Backup complete" + lastBackupAt
+
+@enduml

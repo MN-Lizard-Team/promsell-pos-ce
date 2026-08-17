@@ -46,14 +46,52 @@
 
 | ID | Description | Depends | Evidence | Status |
 |----|-------------|---------|----------|--------|
-| D2 | Cross-device restore implementation + tests | D1 | Integration + device smoke | todo |
+| D2 | Cross-device restore implementation + tests | D1 | RecoveryKitService D0/D1 implemented (AES-256-GCM + PBKDF2 100K, `.promkey`, exportKit/importKit, 9 tests in `recovery_kit_service_test.dart`); **unreleased** — D2 device smoke (export A → restore B) still pending | **in_progress** |
 | D3 | PRIVACY / SECURITY / store listing update for 2b | D2 | Docs + listing | todo |
 | D4 | First-run backup education (interim if 2b delayed) | — | Onboarding/settings UX | todo |
 | E2 | Bluetooth thermal printer (CE help-wanted scaffold) | — | Design + optional plugin spike | todo |
 | E3 | A11y mode real wiring + Semantics on sale/checkout | E1 optional | Manual a11y pass | todo |
 | E4 | Discoverability microcopy (express cash, multi-tender) | — | l10n + UX | todo |
-| B6 | Stress: app-path SLOs (catalog 5k, reports, backup large DB) | — | stress-test.yml or nightly | todo |
+| B6 | Stress: app-path SLOs (catalog 5k, reports, backup large DB) | — | P0 performance regression tests (10 tests in `p0_regression_test.dart`) + P0 baseline timing (`p0_baseline_timing_test.dart`) + P1 migration benchmark (3 tests in `p1_migration_benchmark_test.dart`) implemented — **unreleased**; full stress SLOs on device still pending | **in_progress** |
 | A6 | Tablet store screenshots / feature graphic polish | A4 | Play assets | todo |
+
+---
+
+## Unreleased work (P0 scaling + P1 database lifecycle)
+
+> These changes are in the `[Unreleased]` section of `CHANGELOG.md`, not yet tagged. Latest tag is still `v0.9.2`.
+
+### P0 — Scaling foundation
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| Cursor-paginated queries (`getProductsPage`, `searchProductsPage`, `querySalesPage`) | Implemented; replaces full-table SELECT | **done** (unreleased) |
+| DB-backed product search | Implemented; SQL `LIKE` with cursor pagination | **done** (unreleased) |
+| SQL report summary aggregate (`queryReportSummary`) | Implemented; single-query aggregate replaces in-memory scan | **done** (unreleased) |
+| Bounded streaming CSV export (`exportCsvStream`) | Implemented; chunked stream replaces unbounded load | **done** (unreleased) |
+| New indexes: `idx_products_created_at_id_cursor`, `idx_sales_created_at_id_cursor` | Added within schema v32 | **done** (unreleased) |
+| Performance tests | `p0_regression_test.dart` (10 tests), `p0_baseline_timing_test.dart`, `scaling_fixture.dart` | **done** (unreleased) |
+| Planning docs | [ce-scaling-management-plan.md](./ce-scaling-management-plan.md), [p0-scaling-foundation.md](./p0-scaling-foundation.md) | **done** |
+
+### P1 — Database lifecycle
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| `MigrationSafetyService` — free-space preflight, status tracking, interrupted-migration detection | Implemented; `p1_migration_safety_test.dart` (10 tests) | **done** (unreleased) |
+| `WalCheckpointService` — PASSIVE/TRUNCATE modes, 10MB/50MB thresholds | Implemented; `p1_wal_health_test.dart` (13 tests) | **done** (unreleased) |
+| `DatabaseHealthService` — health report (sizes, schema version, integrity), 512MB guardrail | Implemented; covered in `p1_wal_health_test.dart` | **done** (unreleased) |
+| `BackupExportService` — `BackupMetadata` with SHA-256 checksum, size preflight, progress callback | Implemented; `backup_export_metadata_test.dart` (8 tests) | **done** (unreleased) |
+| `RecoveryKitService` — AES-256-GCM + PBKDF2 (100K iterations), `.promkey` format, `exportKit`/`importKit` | Implemented; `recovery_kit_service_test.dart` (9 tests) | **done** (unreleased) |
+| `BackupRestoreService` — `skipSqlCipherHeaderCheck`, `@ignoreParam` on `candidateValidator` | Implemented; `p1_restore_large_test.dart` (4 tests) | **done** (unreleased) |
+| P1 migration benchmark | `p1_migration_benchmark_test.dart` (3 tests) | **done** (unreleased) |
+| Total P1 tests | 47 new tests (3 + 10 + 13 + 8 + 9 + 4) | **done** (unreleased) |
+
+### CI/DI fixes
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| `release-trust.yml` / `screenshots.yml` — removed incorrect `-t lib/main_dev.dart` from `flutter test` | `-t` in `flutter test` is `--tags` (test tag filter), not `--target`; was causing Android smoke suite to fail since v0.9.0 | **done** (unreleased) |
+| `BackupRestoreService` — `@ignoreParam` on `candidateValidator` and `skipSqlCipherHeaderCheck` | Injectable code generation fix | **done** (unreleased) |
 
 ---
 

@@ -1,0 +1,49 @@
+@startuml Sequence_ReportSummary
+title SQL Report Summary Aggregate — No Hydration ([Unreleased])
+
+actor Merchant
+participant "ReportPage" as UI
+participant "GetReportSummary" as UC
+participant "SaleRepository" as Repo
+participant "SaleQueryLocalDatasource" as DS
+database "SQLite\n(sales + sale_payments)" as DB
+
+Merchant -> UI: Select date range + "Summary"
+UI -> UC: call(from: startDate, to: endDate)
+UC -> Repo: getReportSummary(from: startDate, to: endDate)
+Repo -> DS: queryReportSummary(from: startDate, to: endDate)
+
+group Single SQL Aggregation Pass
+    DS -> DB: SELECT\n  COUNT(*),\n  SUM(net_amount_satang),\n  SUM(voided_total_satang),\n  SUM(vat_amount_satang),\n  SUM(discount_amount_satang),\n  SUM(service_charge_satang),\n  SUM(promotion_discount_satang),\n  SUM(CASE WHEN status='VOIDED' THEN 1 ELSE 0 END)\nFROM sales\nWHERE deleted_at IS NULL\n  AND created_at BETWEEN from AND to
+    DB --> DS: aggregated totals (INTEGER satang)
+
+    DS -> DB: SELECT payment_method,\n  SUM(amount_satang), COUNT(*)\nFROM sale_payments\nWHERE sale_id IN (chunked 500-row batches)\nGROUP BY payment_method
+    DB --> DS: payment breakdown + counts
+
+    DS -> DB: SELECT order_type, SUM(net_amount_satang)\nFROM sales ... GROUP BY order_type
+    DB --> DS: order type breakdown
+
+    DS -> DB: SELECT order_channel, SUM(net_amount_satang)\nFROM sales ... GROUP BY order_channel
+    DB --> DS: order channel breakdown
+
+    DS -> DB: SELECT void_reason, COUNT(*)\nFROM sales WHERE status='VOIDED' ... GROUP BY void_reason
+    DB --> DS: void reason breakdown
+end
+
+DS -> DS: Build ReportSummary\n(satang → Money via Money.fromSatang)\nREAL baht fallback for pre-v32 rows
+DS --> Repo: ReportSummary
+Repo --> UC: ReportSummary
+UC --> UI: ReportSummary
+UI --> Merchant: Render summary card\n(net revenue, voids, VAT, discounts,\npayment breakdown, order type/channel)
+
+note over DS, DB
+  **No List<Sale> hydration** — all metrics
+  computed in SQL. Item-derived metrics
+  (top products, profit/margin) still
+  require the existing hydration path.
+  Payment method lookup is chunked to 500
+  rows to stay under SQLite's 999-variable
+  limit.
+end note
+
+@enduml

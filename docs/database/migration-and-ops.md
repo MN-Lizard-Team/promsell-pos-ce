@@ -32,7 +32,7 @@ Migration guide, backup **export**, performance notes, and database testing.
 | **v29** | `barcode_lower` + `_deduplicateBarcodesLower()` + unique index |
 | **v30** | `sku_lower` + backfill + unique — **no SKU dedupe** |
 | **v31** | V092-C.2 repair: drop `idx_products_sku_lower_unique`, dedupe mixed-case SKUs, recreate unique index |
-| **v32** | Phase M: 32 INTEGER `*_satang` columns across 10 tables, backfilled from REAL baht (`ROUND(baht * 100)`). NaN/Inf rows skipped (satang stays NULL → REAL fallback). Conditional backfill for `discount_value` / `value` / `cart_discount_value` (AMOUNT type only) |
+| **v32** | Phase M: 32 INTEGER `*_satang` columns across 10 tables, backfilled from REAL baht (`ROUND(baht * 100)`). NaN/Inf rows skipped (satang stays NULL → REAL fallback). Conditional backfill for `discount_value` / `value` / `cart_discount_value` (AMOUNT type only). **Also within v32 (not a new schema version):** cursor-pagination indexes `idx_products_created_at_id_cursor` (`products: created_at DESC, id`) and `idx_sales_created_at_id_cursor` (`sales: created_at DESC, id`) added for cursor-based pagination |
 
 ### Incremental migrations (v2 → v24, historical)
 
@@ -216,6 +216,14 @@ PRAGMA wal_checkpoint(TRUNCATE);
 
 > **Important:** Also copy `promsell_pos.db-wal` and `promsell_pos.db-shm` if WAL checkpoint was not performed.
 
+### BackupExportService (v0.9.2+)
+
+`BackupExportService` (`lib/features/settings/data/services/backup_export_service.dart`) provides metadata-enriched exports:
+
+- **`BackupMetadata`**: captures `schemaVersion`, `appVersion`, `createdAt` (ISO-8601 string), `dbSizeBytes`, `checksumSha256`, and `encrypted` flag for each export. Written as a `.meta.json` sidecar alongside the `.db`/`.enc` file.
+- **`exportToFiles()` / `exportWithMetadata()` / `exportAndShare()`**: performs a size preflight (512 MB max via `maxBackupBytes`), WAL checkpoint via `WalCheckpointService.forceTruncate()`, SHA-256 checksum, optional AES-256-GCM encryption, and share via `share_plus`. Reports progress via `BackupProgress` callback with states: `.idle`, `.checkpointing`, `.copying`, `.checksumming`, `.encrypting`, `.sharing`, `.done`.
+- **`BackupMetadata.tryDecode()`**: parses a `.meta.json` sidecar for restore-side validation (checksum, schema version, encrypted flag).
+
 ### Encrypted backups (v0.7.2+)
 
 Backups can be encrypted with AES-256-GCM using a PIN-derived PBKDF2-HMAC-SHA256 key (100,000 iterations since v0.7.5):
@@ -237,6 +245,16 @@ Full-database encryption at rest using SQLCipher:
 
 > **Important:** SQLCipher encryption is transparent after initial setup. Losing the encryption key means **permanent data loss**. Key recovery mechanisms are planned for Phase 2b.
 
+### Recovery kit (v0.9.2+)
+
+`RecoveryKitService` (`lib/core/database/recovery_kit_service.dart`) provides key recovery via a `.promkey` file:
+
+- **`exportKit({required String secret, String? outputPath})`**: wraps the SQLCipher key with AES-256-GCM using a PBKDF2-HMAC-SHA256 key derived from the user secret (100,000 iterations, 16-byte salt, 12-byte nonce). PBKDF2 runs in a background isolate. Writes a `.promkey` file. Minimum secret length is 8 characters. Returns `RecoveryKitExportResult` with `filePath` and `RecoveryKitMetadata` (version, createdAt, kdfIterations). Throws `SECRET_TOO_SHORT` or `NO_DB_KEY`.
+- **`importKit({required String filePath, required String secret, bool replaceExisting = false})`**: unwraps the SQLCipher key from a `.promkey` file using the same PBKDF2 derivation. Installs the key into platform secure storage. Throws `SECRET_TOO_SHORT`, `KIT_FILE_NOT_FOUND`, `KIT_CORRUPT`, `KIT_VERSION_UNSUPPORTED`, `WRONG_SECRET` (GCM auth tag fail), or `KEY_ALREADY_EXISTS` (if a key exists and `replaceExisting` is false).
+- **`hasKey()` / `removeKey()`**: check whether a DB key is installed, or remove it (use with caution — the database becomes unreadable until a new key is imported).
+
+> The `.promkey` file contains the wrapped SQLCipher key, not the database itself. It must be paired with a database backup to restore data. File format: `[uint32 headerLength][JSON header][salt(16)][nonce(12)][ciphertext+GCM tag]`.
+
 ### Restore
 
 1. Close the database connection
@@ -244,6 +262,16 @@ Full-database encryption at rest using SQLCipher:
 3. If encrypted: decrypt first using `BackupEncryptionService`
 4. Delete any stale `-wal` and `-shm` files
 5. Restart the app
+
+### BackupRestoreService (v0.9.2+)
+
+`BackupRestoreService` (`lib/features/settings/data/services/backup_restore_service.dart`) provides same-device restore with staged file swap and rollback:
+
+- **`restoreFromPath({required String sourcePath, String? pin})`**: validates the candidate (schema tables, `PRAGMA integrity_check`, `PRAGMA foreign_key_check`), stages the file, closes the live DB, atomically swaps (live → old, staged → live, delete WAL+SHM), and returns the pre-restore backup path. If the swap fails, rolls back by renaming `old` back to `live`. Throws `SOURCE_MISSING`, `BACKUP_TOO_LARGE`, `PIN_REQUIRED`, `PIN_TOO_SHORT`, `PLAIN_SQLITE_UNSUPPORTED`, `INVALID_BACKUP`, `INVALID_BACKUP_SCHEMA`, or `INVALID_BACKUP_INTEGRITY`.
+- **`cleanupPreRestoreBackups()`**: deletes leftover `promsell_pos.pre_restore_*.db` files after a successful DB open on next launch.
+- **`@ignoreParam`** on `candidateValidator` and `skipSqlCipherHeaderCheck` keeps them out of the injectable-generated factory.
+
+> **Caller must restart the app process** after `restoreFromPath()` so Drift/GetIt reopen the DB cleanly. The pre-restore backup is kept for rollback if the new DB fails to open.
 
 ### Cautions
 
@@ -276,6 +304,42 @@ All hot-path queries are covered by indexes:
 - Sale history by date: `idx_sales_created_at`
 - Sale items fetch: `idx_sale_items_sale_id`
 - Product by category: `idx_products_category_id`
+- Cursor-based product pagination: `idx_products_created_at_id_cursor` (`created_at DESC, id`)
+- Cursor-based sale history pagination: `idx_sales_created_at_id_cursor` (`created_at DESC, id`)
+
+### Cursor-based pagination
+
+Product lists and sale history use cursor-based pagination via composite `(created_at DESC, id)` cursors instead of `OFFSET`. This avoids the O(n) scan cost of `OFFSET` on large tables. The dedicated indexes `idx_products_created_at_id_cursor` and `idx_sales_created_at_id_cursor` (added within schema **v32**, not a new schema version) support these queries.
+
+- **Products:** `ProductLocalDatasource.getProductsPage()` / `searchProductsPage()` → `ProductPage` entity (items + nextCursor). Use cases: `GetProductsPage`, `SearchProductsPage`.
+- **Sales:** `SaleQueryLocalDatasource.querySalesPage()` / `querySalesCount()` → `SalePage` entity. Items/payments hydrated only for the current page. Use case: `GetSalesPage`.
+
+### WAL checkpoint service
+
+`WalCheckpointService` (`lib/core/database/wal_checkpoint_service.dart`) manages WAL file growth:
+
+- **PASSIVE mode** (`checkpointIfNeeded()`): safe background checkpoint when WAL exceeds the 10 MB passive threshold. Returns `null` if no checkpoint is needed. Never blocks readers or writers — safe during active money transactions.
+- **TRUNCATE mode** (`forceTruncate()`): full checkpoint + WAL file truncation, used for backup and day-close operations. Acquires an exclusive lock via `AppDatabase.exclusively()`.
+- **50 MB hard limit** (`walHardLimit`): `needsTruncate()` returns true when WAL exceeds this size, signaling the caller to force a truncate at the next safe opportunity.
+- **`CheckpointResult`**: reports `busy` (1 if a reader was active), `logFrames`, `checkpointedFrames`, `walSizeBefore`, `walSizeAfter`, and `elapsedMs`.
+
+### Migration safety service
+
+`MigrationSafetyService` (`lib/core/database/migration_safety_service.dart`) provides pre-migration safety checks and status tracking:
+
+- **`checkFreeSpace()`**: preflight check requiring ≥ 2× DB file size (or 50 MB floor, whichever is larger). Returns `MigrationPreflightResult` with `freeBytes`, `requiredBytes`, `canProceed`, and `reason` (`INSUFFICIENT_FREE_SPACE` or `FREE_SPACE_UNKNOWN`).
+- **`markMigrationStart()` / `markMigrationSuccess()` / `markMigrationFailure()`**: write a `migration_status.json` file to the app documents directory with status (`running` / `succeeded` / `failed`), from/to versions, and timestamps.
+- **`readMigrationStatus()`**: reads the status file on next launch to detect interrupted migrations (status left as `running`). Returns `MigrationStatus.idle` if no file exists.
+- **`getSchemaVersion()`**: queries `PRAGMA user_version` without opening a full connection.
+- **`clearMigrationStatus()`**: deletes the status file after successful recovery or when no longer needed.
+
+### Database health service
+
+`DatabaseHealthService` (`lib/core/database/database_health_service.dart`) reports database health metrics:
+
+- **`generateReport({bool checkIntegrity = false})`**: returns `DatabaseHealthReport` with main DB + WAL + SHM file sizes, `totalSize`, `schemaVersion` (PRAGMA user_version), optional `integrityOk` (PRAGMA integrity_check), `freeStorageBytes` (-1 if unknown), `walNeedsCheckpoint`, and `walNeedsTruncate`.
+- **Guardrails**: `approachingGuardrail` (total > 400 MB) and `exceedsGuardrail` (total > 512 MB) for operator alerts.
+- **`checkIntegrity` defaults to false** — `PRAGMA integrity_check` can be slow on large databases. Enable for operator diagnostics only.
 
 ### Transaction batching
 

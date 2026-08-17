@@ -429,6 +429,8 @@ Created in `_createIndexes()`, which runs on **`onCreate` and `from < 2` only** 
 | `idx_customers_phone` | customers | `phone` | Customer lookup by phone (v21) |
 | `idx_promotions_active` | promotions | `is_active` | Filter active promotions (v21) |
 | `idx_sales_customer_id` | sales | `customer_id` | Customer purchase history (v21) |
+| `idx_products_created_at_id_cursor` | products | `created_at DESC, id` | Cursor-based pagination for product lists (added within schema **v32**, not a new schema version) |
+| `idx_sales_created_at_id_cursor` | sales | `created_at DESC, id` | Cursor-based pagination for sale history (added within schema **v32**, not a new schema version) |
 
 ### Barcode uniqueness (current · v0.9.2)
 

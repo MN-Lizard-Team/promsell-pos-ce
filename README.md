@@ -30,7 +30,9 @@ A cash register that lives on the phone: sell, park bills, count stock, close th
 
 **`0.9.2`** · latest GitHub tag **v0.9.2** · schema **v32** · **not on Play production**.
 
-A green CI badge means host tests and analyze passed. It does not mean the app is store-ready, that device E2E is green, or that you should put a shop’s month of sales on it without reading the limits below.
+A green CI badge means host tests and analyze passed. It does not mean the app is store-ready, that device E2E is green, or that you should put a shop's month of sales on it without reading the limits below.
+
+> **Unreleased work (in `[Unreleased]` of CHANGELOG.md, not yet tagged):** P0 scaling foundation (cursor-paginated queries, DB-backed product search, SQL report aggregate, bounded streaming CSV export, new cursor indexes, 10 performance regression tests) and P1 database lifecycle (migration safety preflight, WAL checkpoint service, database health service, backup export with SHA-256 checksums, AES-256-GCM recovery kit with PBKDF2 [code complete, device validation pending], 47 new tests). All P0/P1 benchmark numbers are **desktop fixture only** — on-device Android validation is a P2 prerequisite before claiming any SLO as met. See [ce-scaling-management-plan.md](docs/plan/UN-COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md) and [p0-scaling-foundation.md](docs/plan/UN-COMPLETE/POST-090-MANAGE/p0-scaling-foundation.md).
 
 | | |
 |---|---|
@@ -96,10 +98,10 @@ Layers and ADRs: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Schema: [docs/DAT
 - **Stock** — on-hand qty, adjust sheet with PIN, inventory log. Sales deduct inside the same database transaction as the receipt.
 - **Day close** — expected vs counted cash, multi-tender breakdown, optional lock so you cannot sell after close.
 - **Reports** — net revenue, voids, tenders, profit/margin when cost is set; export PDF / CSV on device.
-- **Backup** — encrypted `.enc` export (AES-GCM, PIN). Restore is **same device only** (SQLCipher key stays in this phone’s secure storage).
+- **Backup** — encrypted `.enc` export (AES-GCM, PIN). Restore is **same device only** (SQLCipher key stays in this phone’s secure storage). Recovery kit (`.promkey`, AES-256-GCM + PBKDF2) is implemented but **unreleased** — cross-device restore device smoke is still pending.
 - **Restaurant extras** — tables, dine-in / takeaway, service charge (optional mode).
 
-Not included: thermal Bluetooth printer, partial refunds, staff roles, cross-device restore, a sync engine. Those are documented as later / out of CE, not missing by accident.
+Not included: thermal Bluetooth printer, partial refunds, staff roles, cross-device restore device smoke, a sync engine. Those are documented as later / out of CE, not missing by accident.
 
 Longer lists: [docs/readme/features.md](docs/readme/features.md) (index) · [docs/usage/features.md](docs/usage/features.md) (cashier walkthrough).
 
@@ -174,6 +176,8 @@ Vulnerabilities: [SECURITY.md](SECURITY.md) (private report, not a public issue)
 | UI | Flutter, Material 3, BLoC / Cubit |
 | Data | Drift (SQLite) + SQLCipher, schema v32 |
 | Money | Satang `Money` in memory; INTEGER `*_satang` + REAL baht dual-write on disk (Phase M, schema v32) |
+| Scaling | Cursor-paginated queries, DB-backed search, SQL report aggregate, bounded CSV export (P0, unreleased) |
+| DB lifecycle | Migration safety preflight, WAL checkpoint, health service, backup checksums, recovery kit (P1, unreleased) |
 | DI | injectable + get_it |
 | License | AGPL-3.0 |
 
@@ -221,6 +225,8 @@ Start here, then go deeper. Do not treat archived plans as a current queue.
 | [V092-INTEGRITY](docs/plan/UN-COMPLETE/V092-INTEGRITY/OVERVIEW.md) | `v0.9.2` integrity cut (tagged) |
 | [ARCH-HARDEN-1.0](docs/plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) | Architecture before Play (paused until V092-GATE) |
 | [POST-090-MANAGE](docs/plan/UN-COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | Store / Phase M / key restore after AH-GATE-1 |
+| [CE scaling management plan](docs/plan/UN-COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md) | P0 scaling + P1 database lifecycle roadmap (unreleased) |
+| [P0 scaling foundation](docs/plan/UN-COMPLETE/POST-090-MANAGE/p0-scaling-foundation.md) | Cursor pagination, DB search, bounded CSV, performance tests (unreleased) |
 | [DOC-SSOT](docs/plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) | Docs honesty |
 
 ---

@@ -1,0 +1,71 @@
+@startuml Sequence_StreamingCsvExport
+title Bounded Streaming CSV Export ([Unreleased])
+
+actor Merchant
+participant "ReportPage" as UI
+participant "ReportExportService" as SVC
+participant "SaleRepository" as Repo
+participant "SaleQueryLocalDatasource" as DS
+database "SQLite" as DB
+participant "Sink callback\n(File / Share)" as Sink
+
+Merchant -> UI: Tap "Export CSV" (date range)
+UI -> SVC: exportCsvStream(\n  saleRepository: repo,\n  sink: writeChunk,\n  from: startDate, to: endDate,\n  maxRows: 10000, pageSize: 500,\n  startSignal: dismissPreparing)
+
+SVC -> Sink: sink(csv.encode([header row]))
+SVC -> UI: startSignal() — dismiss "Preparing..."
+UI --> Merchant: Hide preparing indicator
+
+group Streaming Loop (cursor pagination)
+    loop while rowsWritten < maxRows
+        SVC -> Repo: getSalesPage(\n  from, to, cursor, pageSize: 500)
+        Repo -> DS: querySalesPage(...)
+        DS -> DB: SELECT sales + hydrate items/payments\n(500 rows only)
+        DB --> DS: SalePage
+        DS --> Repo: SalePage
+        Repo --> SVC: SalePage
+
+        alt page.sales.isEmpty
+            SVC -> SVC: break (no more rows)
+        end
+
+        loop For each sale in page.sales
+            alt rowsWritten >= maxRows
+                SVC -> SVC: truncated = true\nbreak
+            end
+            SVC -> SVC: buffer.add(saleRow(sale))\nrowsWritten++
+        end
+
+        alt buffer.isNotEmpty
+            SVC -> Sink: sink(csv.encode(buffer))
+            buffer.clear()
+        end
+
+        SVC -> SVC: cursor = page.nextCursor
+        alt !page.hasMore
+            SVC -> SVC: break
+        end
+    end
+end
+
+alt !truncated && rowsWritten >= maxRows
+    SVC -> Repo: getSalesPage(from, to, cursor, pageSize: 1)
+    Repo --> SVC: probe page
+    alt probe.sales.isNotEmpty
+        SVC -> SVC: truncated = true
+    end
+end
+
+SVC --> UI: CsvExportResult(rowsWritten, truncated)
+UI --> Merchant: Show "Exported {rowsWritten} rows"\n+ truncation warning if truncated
+
+note over SVC, DB
+  **Memory is O(pageSize)** — only 500
+  sales are hydrated at any time, regardless
+  of total export size. The hard cap
+  (kExportMaxRows = 10000) prevents
+  unbounded exports. CsvExportResult.truncated
+  is true when the cap was hit.
+end note
+
+@enduml

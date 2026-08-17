@@ -72,7 +72,23 @@ abstract class ProductRepository {
   Future<Product?> getProductByBarcode(String barcode);
   Future<bool> barcodeExists(String barcode, {String? excludeId});
   Future<bool> skuExists(String sku, {String? excludeId});
-  
+
+  // Cursor-paginated product page (createdAt DESC, id DESC).
+  // Backed by idx_products_created_at_id_cursor (schema v32).
+  Future<ProductPage> getProductsPage({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+
+  // DB-backed product search returning a ranked page.
+  Future<ProductPage> searchProductsPage({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+
   // Mutations
   Future<String> addProduct({
     required String name,
@@ -98,6 +114,70 @@ abstract class ProductRepository {
   Future<void> bulkUpdateBarcodes(List<({String id, String barcode})> updates);
   Future<void> deleteProduct(String id);
   Future<void> restoreProduct(String id);   // Undo soft delete
+}
+```
+
+#### ProductPage Entity ([Unreleased])
+
+**Path:** `lib/features/product/domain/entities/product_page.dart`
+
+Cursor-paginated product page. Cursor = `(createdAt, id)` ordered DESC. Pass
+`nextCursor` to fetch the following page; null on the first page and when
+there are no more rows.
+
+```dart
+@immutable
+class ProductPage extends Equatable {
+  const ProductPage({
+    required this.products,
+    required this.nextCursor,
+    required this.totalCount,
+  });
+
+  final List<Product> products;
+  final ProductCursor? nextCursor;  // null = no more rows
+  final int totalCount;             // total non-deleted count (independent of pagination)
+
+  bool get hasMore => nextCursor != null;
+}
+
+@immutable
+class ProductCursor extends Equatable {
+  const ProductCursor({required this.createdAt, required this.id});
+
+  final DateTime createdAt;
+  final String id;
+}
+```
+
+#### Cursor Pagination Use Cases ([Unreleased])
+
+**Path:** `lib/features/product/domain/usecases/get_products_page.dart`
+
+```dart
+@injectable
+class GetProductsPage {
+  const GetProductsPage(this._repository);
+  final ProductRepository _repository;
+
+  Future<ProductPage> call({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+}
+
+@injectable
+class SearchProductsPage {
+  const SearchProductsPage(this._repository);
+  final ProductRepository _repository;
+
+  Future<ProductPage> call({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
 }
 ```
 
@@ -423,8 +503,84 @@ abstract class SaleRepository {
   Stream<List<Sale>> watchRecentSales({int limit = 20});
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to});
 
+  // Cursor-paginated history page (createdAt DESC, id DESC).
+  // Backed by idx_sales_created_at_id_cursor (schema v32).
+  // Items and payments are hydrated only for the current page.
+  Future<SalePage> getSalesPage({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+  });
+
+  // Total non-deleted sale count, optionally within a date range.
+  Future<int> getSalesCount({DateTime? from, DateTime? to});
+
+  // SQL-aggregated report summary (no item hydration).
+  Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to});
+
   // Void
   Future<void> voidSale(String saleId, {String? reason});  // Soft delete
+}
+```
+
+#### SalePage Entity ([Unreleased])
+
+**Path:** `lib/features/sale/domain/entities/sale_page.dart`
+
+Cursor-paginated sale history page. Cursor = `(createdAt, id)` ordered DESC.
+Items and payments are hydrated only for the sales on the current page, so
+memory is bounded by `pageSize`, not by the report window.
+
+```dart
+@immutable
+class SalePage extends Equatable {
+  const SalePage({
+    required this.sales,
+    required this.nextCursor,
+    required this.totalCount,
+  });
+
+  final List<Sale> sales;
+  final SaleCursor? nextCursor;  // null = no more rows
+  final int totalCount;
+
+  bool get hasMore => nextCursor != null;
+}
+
+@immutable
+class SaleCursor extends Equatable {
+  const SaleCursor({required this.createdAt, required this.id});
+
+  final DateTime createdAt;
+  final String id;
+}
+```
+
+#### Paged Sale History Use Cases ([Unreleased])
+
+**Path:** `lib/features/sale/domain/usecases/get_sales_page.dart`
+
+```dart
+@injectable
+class GetSalesPage {
+  const GetSalesPage(this._repository);
+  final SaleRepository _repository;
+
+  Future<SalePage> call({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+  });
+}
+
+@injectable
+class GetSalesCount {
+  const GetSalesCount(this._repository);
+  final SaleRepository _repository;
+
+  Future<int> call({DateTime? from, DateTime? to});
 }
 ```
 
@@ -654,6 +810,124 @@ abstract class PromotionRepository {
   Future<void> deletePromotion(String id);
 }
 ```
+
+---
+
+## Report Module ([Unreleased])
+
+**Location:** `lib/features/report/`
+
+### ReportSummary Entity
+
+**Path:** `lib/features/report/domain/entities/report_summary.dart`
+
+SQL-aggregated report summary for a date range, computed without hydrating
+`List<Sale>`. Money fields are satang-SSOT (INTEGER aggregation). Mirrors the
+subset of `SalesPeriodTotals` derivable from the `sales` table alone —
+item-derived metrics (top products, profit) still require hydration.
+
+```dart
+@immutable
+class ReportSummary extends Equatable {
+  const ReportSummary({
+    required this.netRevenue,
+    required this.voidedTotal,
+    required this.salesCount,
+    required this.voidCount,
+    required this.vatAmount,
+    required this.discountAmount,
+    required this.serviceChargeAmount,
+    required this.promotionDiscountAmount,
+    required this.paymentBreakdown,
+    required this.paymentCounts,
+    required this.orderTypeBreakdown,
+    required this.orderChannelBreakdown,
+    required this.voidReasonBreakdown,
+    required this.promotionCount,
+  });
+
+  final Money netRevenue;
+  final Money voidedTotal;
+  final int salesCount;
+  final int voidCount;
+  final Money vatAmount;
+  final Money discountAmount;
+  final Money serviceChargeAmount;
+  final Money promotionDiscountAmount;
+  final Map<String, double> paymentBreakdown;
+  final Map<String, int> paymentCounts;
+  final Map<String, double> orderTypeBreakdown;
+  final Map<String, double> orderChannelBreakdown;
+  final Map<String, int> voidReasonBreakdown;
+  final int promotionCount;
+
+  Money get grossRevenue => netRevenue + voidedTotal;
+  static const empty = ReportSummary(/* all zero/empty */);
+}
+```
+
+### GetReportSummary Use Case
+
+**Path:** `lib/features/report/domain/usecases/get_report_summary.dart`
+
+```dart
+@injectable
+class GetReportSummary {
+  const GetReportSummary(this._saleRepository);
+  final SaleRepository _saleRepository;
+
+  Future<ReportSummary> call({DateTime? from, DateTime? to});
+}
+```
+
+Delegates to `SaleRepository.getReportSummary()`, which calls
+`SaleQueryLocalDatasource.queryReportSummary()` — a SQL aggregation over the
+`sales` table using `*_satang` INTEGER columns (with REAL fallback).
+
+### ReportExportService
+
+**Path:** `lib/features/report/data/services/report_export_service.dart`
+
+#### Bounded Streaming CSV Export ([Unreleased])
+
+`exportCsvStream()` pages through sales via `SaleRepository.getSalesPage()` and
+writes rows to a `sink` in chunks. Memory is bounded by the page size, not by
+the total row count. A hard cap (`kExportMaxRows = 10000`) prevents unbounded
+exports; `CsvExportResult.truncated` is true when the cap was hit.
+
+```dart
+const int kExportMaxRows = 10000;
+
+class CsvExportResult {
+  const CsvExportResult({required this.rowsWritten, required this.truncated});
+  final int rowsWritten;
+  final bool truncated;
+}
+
+class ReportExportService {
+  const ReportExportService(this._appLock);
+  final AppLockService _appLock;
+
+  /// Streaming CSV export. [startSignal] resolves just before the first row
+  /// is written so callers can dismiss a "preparing" indicator without
+  /// waiting for the full export.
+  ///
+  /// Throws BusinessRuleError('AppLockRequired') when store PIN is on and
+  /// session locked.
+  Future<CsvExportResult> exportCsvStream({
+    required SaleRepository saleRepository,
+    required void Function(String chunk) sink,
+    DateTime? from,
+    DateTime? to,
+    int maxRows = kExportMaxRows,
+    int pageSize = 500,
+    Future<void> Function()? startSignal,
+  });
+}
+```
+
+> The service also retains the existing `exportPdf()` and `exportCsv()` methods
+> for in-memory report generation.
 
 ---
 

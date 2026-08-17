@@ -81,11 +81,16 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  VoidSale ──→ SaleRepository                                                 │
 │  AdjustStock ──→ InventoryRepository + AppLockService                        │
 │  GetProducts / Add / Update / Delete ──→ ProductRepository                   │
+│  GetProductsPage ──→ ProductRepository (cursor pagination)                   │
+│  SearchProductsPage ──→ ProductRepository (DB search + in-memory rank)       │
 │  GenerateBarcode ──→ ProductRepository + SettingsRepository + Ean13Generator │
 │  BatchGenerateBarcodes ──→ ProductRepository + SettingsRepository +          │
 │                           Ean13Generator                                     │
 │  WatchCategories / Add / Update / Delete / Reorder ──→ CategoryRepository    │
 │  GetSales / GetSaleById ──→ SaleRepository                                   │
+│  GetSalesPage ──→ SaleRepository (cursor-paginated history)                  │
+│  GetSalesCount ──→ SaleRepository (total count, optional date range)         │
+│  GetReportSummary ──→ SaleRepository (SQL aggregate, no hydration)           │
 │  WatchSaleHistory ──→ HistoryRepository                                      │
 │  WatchSales / WatchRecentSales ──→ SaleRepository                            │
 │  WatchReport ──→ ReportRepository                                            │
@@ -114,7 +119,10 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  SaleLocalDatasource ──→ AppDatabase                        │
 │       ├──→ ReceiptNumberService ──→ AppDatabase             │
 │       └──→ InventoryLogService ──→ AppDatabase              │
+│  SaleQueryLocalDatasource ──→ AppDatabase                   │
+│       (querySalesPage, querySalesCount, queryReportSummary) │
 │  ProductLocalDatasource ──→ AppDatabase                     │
+│       (getProductsPage, searchProductsPage — cursor)        │
 │  InventoryLogLocalDatasource ──→ AppDatabase                │
 │  Ean13Generator (@injectable)                               │
 │  ProductImageService ──→ SettingsRepository (image config)  │
@@ -125,7 +133,25 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  ReceiptPdfService (stateless)                              │
 │  PromptPayQrCode (stateless)                                │
 │  SlipVerifier (stateless)                                   │
-│  BackupExportService + BackupRestoreService (stateless)     │
+│  ReportExportService ──→ AppLockService                     │
+│       (exportPdf, exportCsv, exportCsvStream — streaming)   │
+│                                                             │
+│  ── DB Lifecycle Services (@LazySingleton) ──               │
+│  MigrationSafetyService ──→ AppDatabase + File System       │
+│       (free-space preflight, migration status tracking)     │
+│  WalCheckpointService ──→ AppDatabase + File System         │
+│       (PASSIVE/TRUNCATE checkpoint, WAL size monitoring)    │
+│  DatabaseHealthService ──→ AppDatabase + WalCheckpointSvc   │
+│       (generateReport — sizes, integrity, guardrails)       │
+│  BackupExportService ──→ AppDatabase + WalCheckpointSvc +   │
+│       BackupEncryptionService + AppLockService              │
+│       (size preflight, checkpoint, copy, SHA-256, encrypt)  │
+│  BackupRestoreService ──→ AppDatabase + BackupEncryptionSvc │
+│       + AppLockService + DbKeyStore                         │
+│       (candidate validation, atomic stage + swap + rollback)│
+│  RecoveryKitService ──→ DbKeyStore + Secure Storage         │
+│       (AES-256-GCM key wrap, PBKDF2 100K in isolate)        │
+│  BackupEncryptionService ──→ encrypt package (AES-256-GCM)  │
 │                                                             │
 └──────────┬──────────────────────────────────────────────────┘
            │
@@ -157,6 +183,7 @@ Every stock-mutating operation runs inside a **single Drift transaction** to gua
 | **Create Sale** | 1 sale + N items + N stock updates + N logs + 1 receipt seq | `sales`, `sale_items`, `products`, `inventory_logs`, `app_settings` |
 | **Void Sale** | 1 sale update + N stock restores + N reversal logs | `sales`, `products`, `inventory_logs` |
 | **Adjust Stock** | 1 product update + 1 log | `products`, `inventory_logs` |
+| **Backup Restore** | Atomic file swap (not a DB transaction) | File system: live DB → old, staged → live, WAL+SHM deleted |
 
 ### Design rules
 
@@ -164,6 +191,8 @@ Every stock-mutating operation runs inside a **single Drift transaction** to gua
 2. **Stock pre-validation happens before any writes** — prevents partial deductions
 3. **Every stock change has a matching log** — enforced by service API design (no raw UPDATE allowed)
 4. **Idempotency guard for void** — check `status != VOIDED` before proceeding
+5. **Backup restore uses atomic file swap** — candidate is validated (schema, integrity, FK) before the live DB is touched; a pre-restore backup is kept for rollback if the swap fails
+6. **WAL checkpoint before backup** — `forceTruncate()` acquires an exclusive lock so the backup copy is consistent
 
 ---
 
@@ -242,10 +271,36 @@ try {
 | Duplicate barcode | Use Case (AddProduct/UpdateProduct) | `DuplicateBarcodeException` → BLoC catches, emits `BusinessRuleError('DuplicateBarcode')` → UI shows error |
 | DB corruption | SQLite | Drift WAL recovery; worst case: app reinstall |
 | Encryption key loss | SQLCipher | **Permanent data loss** — requires backup restore or fresh start |
+| Backup too large | `BackupExportService` / `BackupRestoreService` | `StateError('BACKUP_TOO_LARGE')` — DB > 512 MB; UI shows size warning |
+| PIN required / too short | `BackupExportService` / `BackupRestoreService` | `StateError('PIN_REQUIRED')` / `StateError('PIN_TOO_SHORT')` — encrypt enabled but no/short PIN |
+| Plain SQLite backup | `BackupRestoreService` | `StateError('PLAIN_SQLITE_UNSUPPORTED')` — same-device restore requires SQLCipher header |
+| Invalid backup schema | `BackupRestoreService` | `StateError('INVALID_BACKUP_SCHEMA')` — candidate missing required tables |
+| Invalid backup integrity | `BackupRestoreService` | `StateError('INVALID_BACKUP_INTEGRITY')` — `PRAGMA integrity_check` or `foreign_key_check` failed |
+| Recovery kit corrupt | `RecoveryKitService` | `StateError('KIT_CORRUPT')` — file too short or malformed header |
+| Wrong recovery passphrase | `RecoveryKitService` | `StateError('WRONG_SECRET')` — GCM auth tag verification failed |
+| Key already installed | `RecoveryKitService` | `StateError('KEY_ALREADY_EXISTS')` — call with `replaceExisting: true` to overwrite |
+| Insufficient free space | `MigrationSafetyService` | `MigrationPreflightResult(canProceed: false, reason: 'INSUFFICIENT_FREE_SPACE')` — caller aborts migration |
 
 ---
 
 ## Performance & Scaling
+
+### Read performance
+
+| Query | Index used | Expected latency |
+|-------|-----------|-----------------|
+| Active products list | `idx_products_is_active` | ~1–3 ms |
+| Product page (cursor, 50 rows) | `idx_products_created_at_id_cursor` | ~1–2 ms (stable at any depth) |
+| Product search page (LIKE + rank) | `idx_products_created_at_id_cursor` + `sku_lower` / `barcode_lower` | ~2–5 ms |
+| Sale history (30 days) | `idx_sales_created_at` | ~2–5 ms |
+| Sale page (cursor, 50 rows + hydrate) | `idx_sales_created_at_id_cursor` + batched item/payment hydration | ~3–8 ms |
+| Sale count (date range) | `idx_sales_created_at` | ~1–3 ms |
+| Report summary (SQL aggregate, 50k sales) | `idx_sales_created_at` + `*_satang` columns | ~1.2 s (no hydration) |
+| Sale items for 1 sale | `idx_sale_items_sale_id` | <1 ms |
+| Inventory logs for product | `idx_inventory_logs_product_id` | ~1–2 ms |
+| Filter by status | `idx_sales_status` | ~1–2 ms |
+| WAL size check | File system (`File.length()`) | <1 ms |
+| Database health report | File system + `PRAGMA user_version` | ~2–5 ms (integrity off) / ~50–200 ms (integrity on) |
 
 ### Write performance
 
@@ -255,30 +310,42 @@ try {
 | Void sale (5 items) | ~3–8 ms | N updates + N inserts |
 | Stock adjustment | ~1–2 ms | 1 update + 1 insert |
 | Receipt number generation | ~0.5 ms | 1 read + 1 write (app_settings) |
+| WAL passive checkpoint | ~5–20 ms | `PRAGMA wal_checkpoint(PASSIVE)` |
+| WAL truncate checkpoint | ~10–50 ms | `PRAGMA wal_checkpoint(TRUNCATE)` (exclusive lock) |
+| Backup export (50 MB DB) | ~500–800 ms | WAL truncate + copy + SHA-256 + optional encrypt |
+| Backup restore (50 MB DB) | ~300–600 ms | decrypt + validate + stage + atomic swap |
 
-### Read performance
+### Export performance
 
-| Query | Index used | Expected latency |
-|-------|-----------|-----------------|
-| Active products list | `idx_products_is_active` | ~1–3 ms |
-| Sale history (30 days) | `idx_sales_created_at` | ~2–5 ms |
-| Sale items for 1 sale | `idx_sale_items_sale_id` | <1 ms |
-| Inventory logs for product | `idx_inventory_logs_product_id` | ~1–2 ms |
-| Filter by status | `idx_sales_status` | ~1–2 ms |
+| Operation | Expected latency | Memory |
+|-----------|-----------------|--------|
+| `exportCsv` (in-memory, 1k sales) | ~50–100 ms | O(n) — full `ReportData` in memory |
+| `exportCsvStream` (10k sales, pageSize=500) | ~860 ms | O(pageSize) — only 500 sales hydrated at a time |
+| `exportPdf` (100 sales) | ~200–400 ms | O(n) — PDF document in memory |
 
 ### Scaling characteristics
 
+- **Cursor pagination** — O(pageSize) scan cost regardless of page depth; no OFFSET scan-and-discard degradation
+- **SQL report summary** — O(1) memory, single aggregation pass; no `List<Sale>` hydration for sale-table-derived metrics
+- **Streaming CSV export** — O(pageSize) memory regardless of export size; hard cap at 10k rows prevents unbounded exports
 - **WAL mode** — concurrent reads during writes (no reader blocking)
+- **WAL checkpoint policy** — passive at 10 MB (safe during transactions), truncate at 50 MB (exclusive lock, backup/day-close only)
 - **Lazy-loaded tabs** — only active tab is built; visited tabs kept alive via `_cachedPages` map
 - **Stream-based queries** — Drift watch() uses SQLite update hooks, zero polling
 - **Lazy DI registration** — services only instantiated on first access
 - **UUID generation** — pure Dart, ~1μs per call, no I/O
+- **PBKDF2 in isolate** — recovery kit key derivation (100K iterations) runs off the UI thread
 
 ### Memory considerations
 
 - `ProductBloc` singleton — shared product list, single subscription
 - `ReportCubit` lazySingleton — date range persists across tab navigation; `load()` guarded to `initState()` only
 - Drift query streams — auto-disposed when BLoC is closed
+- **Cursor pagination** — `ProductPage` / `SalePage` hold at most `pageSize` (default 50) entities; `totalCount` is a single int
+- **SQL report summary** — `ReportSummary` is a fixed-size value object; no `List<Sale>` allocation regardless of date range
+- **Streaming CSV export** — only `pageSize` (default 500) sales hydrated at any time; CSV chunks written to sink immediately
+- **Backup export** — snapshot copy is a file operation, not an in-memory buffer; SHA-256 streams the file
+- **Recovery kit** — PBKDF2 runs in a background isolate; the `.promkey` file is written directly to disk
 
 ---
 

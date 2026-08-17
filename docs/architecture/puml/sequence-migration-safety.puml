@@ -1,0 +1,117 @@
+@startuml Sequence_MigrationSafety
+title Migration Safety + WAL Checkpoint Lifecycle ([Unreleased])
+
+actor "App Startup" as Startup
+participant "MigrationSafetyService" as Migr
+participant "WalCheckpointService" as WAL
+participant "DatabaseHealthService" as Health
+database "SQLite (SQLCipher)" as DB
+participant "File System\n(migration_status.json)" as FS
+
+== App Launch: Detect Interrupted Migration ==
+
+Startup -> Migr: readMigrationStatus()
+Migr -> FS: read migration_status.json
+alt status file exists
+    FS --> Migr: {"status":"running","from":31,"to":32,...}
+    Migr --> Startup: MigrationStatus.running
+    Startup -> Startup: Alert operator / trigger recovery
+else no status file
+    FS --> Migr: not found
+    Migr --> Startup: MigrationStatus.idle
+end
+
+== Pre-Migration Free-Space Preflight ==
+
+Startup -> Migr: checkFreeSpace()
+Migr -> FS: File(dbPath).length()
+FS --> Migr: dbSize (e.g., 50 MB)
+Migr -> Migr: requiredBytes = max(dbSize * 2, 50 MB)\n= max(100 MB, 50 MB) = 100 MB
+
+Migr -> FS: getFreeSpace(docs.path)
+alt free space measurable
+    FS --> Migr: freeBytes (e.g., 500 MB)
+    alt freeBytes >= requiredBytes
+        Migr --> Startup: MigrationPreflightResult(canProceed: true)
+    else freeBytes < requiredBytes
+        Migr --> Startup: MigrationPreflightResult(\n  canProceed: false,\n  reason: "INSUFFICIENT_FREE_SPACE")
+        Startup -> Startup: Abort migration + warn operator
+    end
+else free space unknown (-1)
+    FS --> Migr: -1
+    Migr --> Startup: MigrationPreflightResult(\n  canProceed: true,\n  reason: "FREE_SPACE_UNKNOWN")
+end
+
+== Migration Execution ==
+
+Startup -> Migr: markMigrationStart(from: 31, to: 32)
+Migr -> FS: write {"status":"running","from":31,"to":32,"startedAt":"..."}
+
+group Drift Migration (v31 → v32)
+    Startup -> DB: ALTER TABLE sales ADD COLUMN net_amount_satang INTEGER
+    Startup -> DB: ALTER TABLE sales ADD COLUMN vat_amount_satang INTEGER
+    note right: ... 32 satang columns across 6 tables
+    Startup -> DB: UPDATE sales SET net_amount_satang =\n  CAST(net_amount * 100 AS INTEGER)
+    note right: backfill from REAL baht → INTEGER satang
+end
+
+alt migration succeeded
+    Startup -> Migr: markMigrationSuccess(from: 31, to: 32)
+    Migr -> FS: write {"status":"succeeded",...}
+else migration failed
+    Startup -> Migr: markMigrationFailure(from: 31, to: 32, error: "...")
+    Migr -> FS: write {"status":"failed","error":"..."}
+    note right: Next launch will detect "failed"\nand alert operator
+end
+
+Startup -> Migr: clearMigrationStatus()
+Migr -> FS: delete migration_status.json
+
+== WAL Checkpoint (Periodic / On-Demand) ==
+
+note over WAL, DB
+  **Passive checkpoint** — safe during
+  active money transactions. Never blocks
+  readers or writers.
+end note
+
+Startup -> WAL: checkpointIfNeeded()
+WAL -> FS: File(dbPath-wal).length()
+FS --> WAL: walSize (e.g., 12 MB)
+alt walSize >= 10 MB (threshold)
+    WAL -> DB: PRAGMA wal_checkpoint(PASSIVE)
+    DB --> WAL: (busy, log, checkpointed)
+    WAL --> Startup: CheckpointResult\n(busy=0, frames checkpointed)
+else walSize < 10 MB
+    WAL --> Startup: null (no checkpoint needed)
+end
+
+note over WAL, DB
+  **Truncate checkpoint** — exclusive lock.
+  Only during backup/export or day-close.
+end note
+
+Startup -> WAL: forceTruncate()
+WAL -> DB: exclusively(() => PRAGMA wal_checkpoint(TRUNCATE))
+DB --> WAL: (busy=0, log=0, checkpointed=all)
+WAL -> FS: WAL file truncated to 0 bytes
+WAL --> Startup: CheckpointResult(walTruncated: true)
+
+== Database Health Report (Day-Close / Diagnostics) ==
+
+Startup -> Health: generateReport(checkIntegrity: false)
+Health -> FS: File(dbPath).length() → mainDbSize
+Health -> FS: File(dbPath-wal).length() → walSize
+Health -> FS: File(dbPath-shm).length() → shmSize
+Health -> DB: PRAGMA user_version → schemaVersion
+Health -> WAL: shouldCheckpoint() → walNeedsCheckpoint
+Health -> WAL: needsTruncate() → walNeedsTruncate
+Health --> Startup: DatabaseHealthReport(\n  mainDbSize, walSize, shmSize,\n  totalSize, schemaVersion,\n  integrityOk: true (not checked),\n  walNeedsCheckpoint, walNeedsTruncate)
+
+alt totalSize > 512 MB (exceedsGuardrail)
+    Startup -> Startup: Alert operator: "Database exceeds 512 MB\n— consider archive or cleanup"
+else totalSize > 400 MB (approachingGuardrail)
+    Startup -> Startup: Warn operator: "Database approaching 512 MB limit"
+end
+
+@enduml

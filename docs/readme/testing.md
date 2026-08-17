@@ -4,7 +4,7 @@
 
 ---
 
-**Tests** (see CI / `flutter test`) — **2129** host tests green on 2026-08-17 (`--exclude-tags stress`); line coverage **63.7%** overall (CI floor **60%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`.
+**Tests** (see CI / `flutter test`) — **2210** host tests green on 2026-08-17 (`--exclude-tags stress`); line coverage **63.7%** overall (CI floor **60%**). Money-path suites fail-closed via `.github/workflows/release-trust.yml`. Test count progression: 2129 (pre-P0) → 2163 (post-P0) → 2210 (post-P1).
 
 | Layer | What's tested | Notes |
 |-------|--------------|-------|
@@ -16,6 +16,7 @@
 | **Host integration** | Checkout flow, sale integrity, **V092-D.1 VAT+discount+void+close**, **V092-D.4 void after day-close**, multi-tender daily close, backup money continuity, onboarding first sale, Phase M migration/satang wiring | Under `test/integration/` — fail-closed in trust |
 | **Device E2E** | Happy path / draft / product / promo / restaurant | Main CI: format/analyze only. Trust: blocking `--flavor dev`. V092-D.5: `TestKeys` + no `pumpAndSettle` in `restartApp`. |
 | **Stress** | Large seed + timing (`@Tags(['stress'])`) | Weekly / label workflow |
+| **Performance** | P0 regression (10 tests: cursor pagination, DB search, report aggregate, bounded CSV), P0 baseline timing, P1 migration benchmark (3), P1 migration safety (10), P1 WAL/health (13), backup export metadata (8), recovery kit (9), P1 restore large (4) | `p0_regression_test.dart`, `p0_baseline_timing_test.dart`, `scaling_fixture.dart`, `p1_migration_benchmark_test.dart`, `p1_migration_safety_test.dart`, `p1_wal_health_test.dart`, `backup_export_metadata_test.dart`, `recovery_kit_service_test.dart`, `p1_restore_large_test.dart` |
 | **L10n parity** | EN/TH keys | |
 
 ### Test pyramid
@@ -82,6 +83,8 @@ Coverage measured via `flutter test --coverage --exclude-tags stress` (lcov.info
 | **Total** | **21,726 / 34,129** | **63.7%** |
 
 > **Note:** Per-feature rows are from a 2026-07-23 snapshot; the **Total** row reflects the 2026-08-17 measurement (`tool/check_path_coverage.dart`). `l10n` coverage is low because generated `app_localizations.dart` has many unused getter branches. `receipt` coverage is low due to PDF rendering paths requiring platform plugins. `core` includes generated DI config and database code with low testability.
+
+> **`flutter test -t` flag note:** In `flutter test`, `-t` / `--tags` is a **test tag filter** (e.g. `--tags stress`), **not** `--target`. `release-trust.yml` and `screenshots.yml` previously passed `-t lib/main_dev.dart` incorrectly, causing the Android smoke suite to fail on every release since v0.9.0. This has been fixed — see [`docs/testing/CI.md`](../testing/CI.md).
 
 ---
 

@@ -5,14 +5,16 @@ title Promsell POS CE — System Context
 
 Person(merchant, "Merchant", "Small shop owner / cashier\nuses phone or tablet")
 
-System(promsell, "Promsell POS CE", "Offline-first mobile POS\nFlutter + Drift + SQLCipher\nschema v32 / integer satang boundary")
+System(promsell, "Promsell POS CE", "Offline-first mobile POS\nFlutter + Drift + SQLCipher\nschema v32 / integer satang boundary\ncursor pagination + SQL report summary\nstreaming CSV export + backup/restore\nrecovery kit + WAL lifecycle")
 
 System_Ext(printer, "Thermal Printer", "Bluetooth / USB (future)")
-System_Ext(os_share, "OS Share Sheet", "PDF export via system share")
+System_Ext(os_share, "OS Share Sheet", "PDF / CSV / backup / recovery kit export")
+System_Ext(secure_storage, "Platform Secure Storage", "Keystore / Keychain — SQLCipher key")
 
-Rel(merchant, promsell, "Manages sales, products,\ninventory, reports")
-Rel(promsell, os_share, "Share/Print receipt PDF")
+Rel(merchant, promsell, "Manages sales, products,\ninventory, reports, backup/restore")
+Rel(promsell, os_share, "Share/Print receipt PDF, CSV, backup, recovery kit")
 Rel_R(promsell, printer, "Print receipt (future)")
+Rel(promsell, secure_storage, "Store/retrieve SQLCipher key")
 
 SHOW_LEGEND()
 @enduml

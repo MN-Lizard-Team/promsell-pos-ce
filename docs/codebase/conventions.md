@@ -111,6 +111,7 @@ Annotations on implementation classes drive registration:
 | Factory (per route) | `@injectable` | `ProductFormCubit` (and other form-scoped cubits) |
 | Factory | `@injectable` | use cases, `Ean13Generator` |
 | Module | `@module` | `DatabaseModule` provides `AppDatabase` |
+| Skip param | `@ignoreParam` | `BackupRestoreService` optional params (`candidateValidator`, `skipSqlCipherHeaderCheck`) — prevents injectable from trying to resolve them from the GetIt container |
 
 Access anywhere via `sl<T>()`.
 

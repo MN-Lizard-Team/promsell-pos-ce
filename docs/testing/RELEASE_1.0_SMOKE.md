@@ -48,7 +48,7 @@ Minimum for production Go: **M1 + Prod (real keystore)**. Should: M2 physical if
 
 ## N/A / out of scope for 1.0 smoke
 
-- Cross-device restore / key export (Phase 2b)
+- Cross-device restore device smoke (Phase 2b D2) — `RecoveryKitService` export/import is **code complete, device validation pending** ([Unreleased]); full device-to-device restore smoke is still pending
 - ~~INTEGER money on disk (Phase M)~~ **Shipped in v0.9.2** (schema v32 satang columns, dual-write, satang-first reads)
 - Full soft `integration_test/` suite green on CI — **confirmed still broken** on flavor/APK path 2026-07-20 (`sale_happy_path` Gradle APK not found for default flavor)
 

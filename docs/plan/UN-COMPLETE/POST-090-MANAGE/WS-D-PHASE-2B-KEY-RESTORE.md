@@ -4,6 +4,8 @@
 **Backlog IDs:** D0–D4  
 **Sources:** `SECURITY.md`, `docs/DATABASE.md`, backup services, V090 non-goals
 
+> **Implementation status (2026-08-17, unreleased):** D0 (threat model) and D1 (UX spec) are locked. **D0/D1 code is complete, device validation pending** — `RecoveryKitService` is implemented with AES-256-GCM key wrapping + PBKDF2-HMAC-SHA256 (100K iterations), `.promkey` file format, `exportKit` / `importKit` methods, and 9 unit tests passing (`recovery_kit_service_test.dart`) covering wrap/unwrap logic only. **D2 (full device smoke: export on device A → restore on device B) is still pending** — do not claim "supported" until D2 passes. These changes are in the `[Unreleased]` section of `CHANGELOG.md`, not yet tagged.
+
 ---
 
 ## Goal
@@ -215,6 +217,16 @@ Interim if D2 delayed: **D4** first-run / periodic backup education only.
 
 ## D2 — Implementation (after D0–D1)
 
+> **Status (2026-08-17, unreleased):** D0/D1 code is **complete, device validation pending**. `RecoveryKitService` is implemented with:
+> - AES-256-GCM key wrapping of the SQLCipher key
+> - PBKDF2-HMAC-SHA256 with 100K iterations (aligned with backup PIN KDF per D0-Q3)
+> - `.promkey` file format (versioned header + encrypted key blob)
+> - `exportKit` / `importKit` methods
+> - 9 tests passing in `recovery_kit_service_test.dart` (wrong secret, tamper, round-trip, version mismatch, key exists, crash log PII scrub, etc.)
+> - `BackupRestoreService` updated with `skipSqlCipherHeaderCheck` and `@ignoreParam` on `candidateValidator` for injectable code generation
+>
+> **D2 device smoke is still pending** — full cross-device test (export on device A → restore on device B, sale visible) has not been run on physical devices.
+
 ### Suggested components (illustrative — not prescriptive API)
 
 | Piece | Responsibility |
@@ -275,12 +287,13 @@ If 2b full ship slips:
 
 ## Exit criteria
 
-- D0 written and accepted  
-- D1 UX locked TH/EN  
-- D2 + tests green for ship  
-- D3 docs match code  
-- Smoke: device A export → device B restore sale visible  
+- [x] D0 written and accepted  
+- [x] D1 UX locked TH/EN  
+- [x] D0/D1 implementation — RecoveryKitService (AES-256-GCM + PBKDF2 100K, `.promkey`, exportKit/importKit, 9 tests green) — **unreleased**
+- [ ] D2 + tests green for ship — device smoke (export A → restore B, sale visible) still pending  
+- [ ] D3 docs match code  
+- [ ] Smoke: device A export → device B restore sale visible  
 
 ---
 
-<sub>WS-D · PLAN ONLY · Security-sensitive</sub>
+<sub>WS-D · D0/D1 implemented (unreleased) · D2 device smoke pending · Security-sensitive</sub>

@@ -72,6 +72,14 @@ If you change a file, these are the files that must also be updated.
 | `OnboardingDoneSection` | Simplified: no inline `FilledButton` (moved to `OnboardingBottomBar`); shows completion text only |
 | `OnboardingBottomBar` | **New file**: sticky bottom navigation bar with Back/Skip (left) + Next/Finish (right); step-aware labels; uses `theme.colorScheme.surface` background with top border |
 | `BrandChoiceChip` | `selectedColor` uses `colorScheme.tertiary` (orange accent) not `colorScheme.primary` (teal) — matches `chipTheme.selectedColor` |
+| `MigrationSafetyService` | Update `migration_safety_service_test.dart` (preflight, status tracking, interrupted-migration detection); if status file format changes, update `readMigrationStatus` parsing + test fixtures |
+| `WalCheckpointService` | Update `wal_checkpoint_service_test.dart` (PASSIVE/TRUNCATE modes, threshold checks); if thresholds change, update `DatabaseHealthService` tests that assert `walNeedsCheckpoint`/`walNeedsTruncate` |
+| `DatabaseHealthService` | Update `database_health_service_test.dart` (`DatabaseHealthReport` fields, integrity check, guardrail getters); depends on `WalCheckpointService` — update mock injection if constructor changes |
+| `RecoveryKitService` | Update `recovery_kit_service_test.dart` (export/import round-trip, wrong-secret, corrupt file, key-already-exists); if PBKDF2 iterations or file format change, update `kRecoveryKitVersion` + import parsing + test fixtures |
+| `BackupExportService` | Update `backup_export_service_test.dart` (`BackupMetadata` checksum, size preflight, progress callback, encryption); if `maxBackupBytes` changes, update `BackupRestoreService` (shares the constant) + tests |
+| `BackupRestoreService` | Update `backup_restore_service_test.dart` (staged swap, rollback, SQLCipher header check, `skipSqlCipherHeaderCheck`); if `@ignoreParam` annotations change, run `dart run build_runner build`; update `cleanupPreRestoreBackups` tests if file naming changes |
+| Cursor pagination index (`idx_products_created_at_id_cursor` / `idx_sales_created_at_id_cursor`) | Indexes are within schema v32 — no version bump. Update `ProductLocalDatasource.getProductsPage`/`searchProductsPage` + `SaleQueryLocalDatasource.querySalesPage` cursor logic tests; verify `ProductPage`/`SalePage` `nextCursor` boundary conditions |
+| `ReportExportService.exportCsvStream()` | Update streaming CSV export tests (row cap `kExportMaxRows`, `startSignal` future, truncation flag); if `SaleRepository.getSalesPage` signature changes, update the paging loop + tests |
 
 ---
 

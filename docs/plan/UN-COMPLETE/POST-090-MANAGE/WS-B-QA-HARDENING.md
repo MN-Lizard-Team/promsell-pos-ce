@@ -196,6 +196,15 @@ Move beyond full-table SELECT:
 
 Suggested SLOs: see elite performance notes (p95 mid Android).
 
+**Implemented (2026-08-17, unreleased):**
+
+- **P0 performance regression tests** — `p0_regression_test.dart` (10 tests) covering cursor pagination (`getProductsPage`, `searchProductsPage`, `querySalesPage`), DB-backed product search, SQL report summary aggregate (`queryReportSummary`), and bounded streaming CSV export (`exportCsvStream`). Baseline timing captured in `p0_baseline_timing_test.dart`. Test fixture: `scaling_fixture.dart`.
+- **P1 migration benchmarks** — `p1_migration_benchmark_test.dart` (3 tests) measuring migration throughput on large datasets.
+- **P1 migration safety** — `p1_migration_safety_test.dart` (10 tests) covering free-space preflight, status tracking, and interrupted-migration detection.
+- **P1 WAL/health** — `p1_wal_health_test.dart` (13 tests) covering WAL checkpoint (PASSIVE/TRUNCATE, 10MB/50MB thresholds) and database health report (sizes, schema version, integrity, 512MB guardrail).
+
+**Still pending:** Full stress SLOs on physical devices (p95 mid Android measurement); nightly stress workflow integration.
+
 ---
 
 ## Exit criteria (WS-B for 1.0 Must)

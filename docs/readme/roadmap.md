@@ -45,13 +45,17 @@ Current SSOT documents:
 - [ARCH-HARDEN overview](../plan/UN-COMPLETE/ARCH-HARDEN-1.0/OVERVIEW.md) — architecture gate before Play production
 - [DOC-SSOT overview](../plan/UN-COMPLETE/DOC-SSOT/OVERVIEW.md) — documentation navigation and honesty work
 - [V090 trust package](../plan/COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) — completed trust-cut evidence
+- [CE scaling management plan](../plan/UN-COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md) — P0 scaling foundation and P1 database lifecycle roadmap
+- [P0 scaling foundation](../plan/UN-COMPLETE/POST-090-MANAGE/p0-scaling-foundation.md) — cursor pagination, DB-backed search, bounded CSV export, performance tests
 
 | Track | Status | Next action |
 |-------|--------|-------------|
 | **v0.9.2 integrity** | Tagged `v0.9.2` | Operator: release-trust/device smoke + Play Console submission |
 | **ARCH-HARDEN** | Core domain fence and purity work implemented | Complete AH-GATE-1 operator/CI evidence before Play |
 | **Phase M** | v32 migration, satang converter, dual-write/read fallback implemented | Keep legacy REAL columns until deprecation release |
-| **Phase 2b recovery** | Threat model and UX spec complete; code deferred | Implement recovery-kit export/import |
+| **P0 scaling** | Unreleased — cursor pagination, DB-backed search, SQL report aggregate, bounded CSV export, new indexes, 10 regression tests | Tag in next release; monitor p95 on large datasets |
+| **P1 database lifecycle** | Unreleased — migration safety, WAL checkpoint, health service, backup metadata, recovery kit, 47 new tests | Tag in next release; D2 full device smoke still pending |
+| **Phase 2b recovery** | D0/D1 implemented (RecoveryKitService: AES-256-GCM + PBKDF2, `.promkey` format, exportKit/importKit, 9 tests); D2 device smoke pending | Complete D2 device smoke for cross-device restore |
 | **Tablet UX** | Dual-pane and orientation policy implemented | Capture optional tablet store screenshots |
 | **Play production** | Operator-gated | Production keystore, Data safety, signed AAB, Console submit, post-smoke |
 
@@ -60,14 +64,17 @@ Current SSOT documents:
 - [x] ARCH-HARDEN core work — domain fence, ports, money boundary, and purity updates are in-tree
 - [x] Phase M — schema v32, 32 satang columns, converter, dual-write/read fallback, migration tests
 - [x] Tablet dual-pane sale and orientation policy
-- [ ] Phase 2b recovery-kit export/import — D1 UX spec complete, implementation deferred
+- [x] P0 scaling — cursor-paginated queries (`getProductsPage`, `searchProductsPage`, `querySalesPage`), DB-backed product search, SQL report summary aggregate (`queryReportSummary`), bounded streaming CSV export (`exportCsvStream`), new indexes (`idx_products_created_at_id_cursor`, `idx_sales_created_at_id_cursor`), 10 performance regression tests — **unreleased**
+- [x] P1 database lifecycle — MigrationSafetyService, WalCheckpointService, DatabaseHealthService, BackupExportService (SHA-256 checksum + size preflight), RecoveryKitService (AES-256-GCM + PBKDF2 100K, `.promkey`), BackupRestoreService fixes — 47 new tests — **unreleased**
+- [x] Phase 2b recovery-kit D0/D1 — RecoveryKitService implemented (exportKit/importKit, AES-256-GCM + PBKDF2, `.promkey` format, 9 tests passing) — **unreleased**
+- [ ] Phase 2b recovery-kit D2 — full device smoke (export on device A → restore on device B, sale visible)
 - [ ] Play Console production cut — keystore, Data safety, signed AAB, Console submit, and post-smoke
 
 ### Release timeline
 
 ```
-v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → v0.9.2 integrity/hardening → POST-090 Play → 1.0
-  schema …   SQLCipher+PIN     v32 satang + fence       A1–A5+B2 smoke
+v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → v0.9.2 integrity/hardening → [unreleased: P0 scaling + P1 lifecycle] → POST-090 Play → 1.0
+  schema …   SQLCipher+PIN     v32 satang + fence       cursor pagination / migration safety / recovery kit    A1–A5+B2 smoke
 ```
 
 ---

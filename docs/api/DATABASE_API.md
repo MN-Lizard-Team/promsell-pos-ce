@@ -276,6 +276,147 @@ Future<List<SaleData>> getSalesByDateRange(
 }
 ```
 
+### Cursor-Based Pagination
+
+Cursor-based pagination avoids `OFFSET` performance degradation on large tables by using a composite cursor on `(createdAt DESC, id)`. Two dedicated indexes support this: `idx_products_created_at_id_cursor` and `idx_sales_created_at_id_cursor` (added within schema **v32**, not a new schema version).
+
+#### Product list pagination
+
+```dart
+// ProductLocalDatasource
+Future<ProductPage> getProductsPage({
+  ProductCursor? cursor,    // from previous page's nextCursor; null for first page
+  int pageSize = 50,
+  bool activeOnly = false,
+});
+
+// ProductRepository
+Future<ProductPage> getProductsPage({
+  ProductCursor? cursor,
+  int pageSize = 50,
+  bool activeOnly = false,
+});
+
+// Use case
+@injectable
+class GetProductsPage {
+  Future<ProductPage> call({
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+}
+```
+
+`ProductPage` is an entity containing `products` (list of `Product`), `nextCursor` (`ProductCursor?`, null when no more rows), and `totalCount` (total non-deleted count, independent of pagination).
+
+#### Product search pagination
+
+```dart
+// ProductLocalDatasource
+Future<ProductPage> searchProductsPage({
+  required String query,
+  ProductCursor? cursor,
+  int pageSize = 50,
+  bool activeOnly = false,
+});
+
+// Use case
+@injectable
+class SearchProductsPage {
+  Future<ProductPage> call({
+    required String query,
+    ProductCursor? cursor,
+    int pageSize = 50,
+    bool activeOnly = false,
+  });
+}
+```
+
+DB-side `LIKE` filter on name / `sku_lower` / `barcode_lower` with in-memory ranking on the result page.
+
+#### Paged sale history
+
+```dart
+// SaleQueryLocalDatasource
+Future<SalePage> querySalesPage({
+  DateTime? from,
+  DateTime? to,
+  SaleCursor? cursor,
+  int pageSize = 50,
+});
+
+Future<int> querySalesCount({DateTime? from, DateTime? to});
+
+// SaleRepository
+Future<SalePage> getSalesPage({
+  DateTime? from,
+  DateTime? to,
+  SaleCursor? cursor,
+  int pageSize = 50,
+});
+
+// Use cases
+@injectable
+class GetSalesPage {
+  Future<SalePage> call({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+  });
+}
+
+@injectable
+class GetSalesCount {
+  Future<int> call({DateTime? from, DateTime? to});
+}
+```
+
+`SalePage` is an entity containing `sales` (list of `Sale`), `nextCursor` (`SaleCursor?`, null when no more rows), and `totalCount`. Items and payments are hydrated **only for the current page** (batched, not N+1).
+
+### Report Summary Aggregate
+
+```dart
+// SaleQueryLocalDatasource
+Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to});
+
+// SaleRepository
+Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to});
+
+// Use case
+@injectable
+class GetReportSummary {
+  Future<ReportSummary> call({DateTime? from, DateTime? to});
+}
+```
+
+`ReportSummary` is an entity with aggregated totals computed in SQL. The aggregation uses the Satang-SSOT strategy: INTEGER `*_satang` columns are preferred, with REAL baht fallback for pre-v32 rows. Payment method lookup is chunked to 500 rows at a time to avoid SQLite variable limits.
+
+### Bounded Streaming CSV Export
+
+```dart
+const int kExportMaxRows = 10000;
+
+class CsvExportResult {
+  final int rowsWritten;
+  final bool truncated;   // true when kExportMaxRows cap was hit
+}
+
+// ReportExportService
+Future<CsvExportResult> exportCsvStream({
+  required SaleRepository saleRepository,
+  required void Function(String chunk) sink,
+  DateTime? from,
+  DateTime? to,
+  int maxRows = kExportMaxRows,
+  int pageSize = 500,
+  Future<void> Function()? startSignal,
+});
+```
+
+Pages through sales via `SaleRepository.getSalesPage()`, writing CSV chunks incrementally to the provided `sink` callback. Memory is bounded by `pageSize`, not by the total row count. The `startSignal` callback is invoked just before the first data row is written, allowing the caller to dismiss a "preparing" indicator without waiting for the full export.
+
 ---
 
 ## Transaction Patterns
@@ -739,6 +880,239 @@ if (from < 13) {
   // Repeat for other tables...
 }
 ```
+
+### Migration Safety & Database Health
+
+The following P1 services provide migration safety, WAL checkpoint management, health reporting, backup metadata, and key recovery. All are `@LazySingleton()` registered via injectable.
+
+#### MigrationSafetyService
+
+**Location:** `lib/core/database/migration_safety_service.dart`
+
+```dart
+@LazySingleton()
+class MigrationSafetyService {
+  MigrationSafetyService(this._db);
+  final AppDatabase _db;
+
+  // Free-space preflight — requires ≥ 2× DB size (or 50 MB floor, whichever is larger).
+  // Returns MigrationPreflightResult { freeBytes, requiredBytes, canProceed, reason }.
+  // reason: 'INSUFFICIENT_FREE_SPACE' | 'FREE_SPACE_UNKNOWN' | null
+  Future<MigrationPreflightResult> checkFreeSpace();
+
+  // Current schema version (PRAGMA user_version)
+  Future<int> getSchemaVersion();
+
+  // File-based migration status tracking (writes migration_status.json to app docs dir)
+  Future<void> markMigrationStart({required int fromVersion, required int toVersion});
+  Future<void> markMigrationSuccess({required int fromVersion, required int toVersion});
+  Future<void> markMigrationFailure({required int fromVersion, required int toVersion, required String error});
+  Future<MigrationStatus> readMigrationStatus();  // returns idle if no status file
+  Future<void> clearMigrationStatus();
+}
+
+enum MigrationStatus { idle, running, succeeded, failed }
+```
+
+#### WalCheckpointService
+
+**Location:** `lib/core/database/wal_checkpoint_service.dart`
+
+```dart
+@LazySingleton()
+class WalCheckpointService {
+  WalCheckpointService(this._db);
+  final AppDatabase _db;
+
+  Future<int> getWalSize();        // WAL file size in bytes (0 if absent)
+  Future<int> getShmSize();        // SHM file size in bytes
+  Future<bool> shouldCheckpoint(); // WAL ≥ 10 MB threshold
+  Future<bool> needsTruncate();    // WAL ≥ 50 MB hard limit
+
+  // PASSIVE mode — safe during active money transactions. Returns null if no checkpoint needed.
+  Future<CheckpointResult?> checkpointIfNeeded();
+
+  // TRUNCATE mode — requires exclusive lock (backup / day-close).
+  Future<CheckpointResult> forceTruncate();
+
+  // General checkpoint with selectable mode.
+  Future<CheckpointResult> checkpoint({CheckpointMode mode = CheckpointMode.passive});
+}
+
+enum CheckpointMode { passive, full, restart, truncate }
+
+class CheckpointResult {
+  final CheckpointMode mode;
+  final int busy;               // 1 if a reader was active
+  final int logFrames;
+  final int checkpointedFrames;
+  final int walSizeBefore;
+  final int walSizeAfter;
+  final int elapsedMs;
+  bool get wasBusy => busy == 1;
+  bool get walTruncated => walSizeAfter == 0;
+}
+```
+
+Constants: `walCheckpointThreshold = 10 MB`, `walHardLimit = 50 MB`.
+
+#### DatabaseHealthService
+
+**Location:** `lib/core/database/database_health_service.dart`
+
+```dart
+@LazySingleton()
+class DatabaseHealthService {
+  DatabaseHealthService(this._db, this._walService);
+  final AppDatabase _db;
+  final WalCheckpointService _walService;
+
+  // checkIntegrity defaults to false — PRAGMA integrity_check can be slow on large DBs.
+  Future<DatabaseHealthReport> generateReport({bool checkIntegrity = false});
+}
+
+class DatabaseHealthReport {
+  final int mainDbSize;
+  final int walSize;
+  final int shmSize;
+  final int totalSize;          // main + WAL + SHM
+  final int schemaVersion;      // PRAGMA user_version
+  final bool integrityOk;       // PRAGMA integrity_check == 'ok'
+  final int freeStorageBytes;   // -1 if unknown
+  final bool walNeedsCheckpoint;
+  final bool walNeedsTruncate;
+  final DateTime generatedAt;
+
+  double get totalSizeMb;
+  double get walPercent;
+  bool get approachingGuardrail => totalSize > 400 MB;
+  bool get exceedsGuardrail => totalSize > 512 MB;
+}
+```
+
+#### BackupExportService (enhancements)
+
+**Location:** `lib/features/settings/data/services/backup_export_service.dart`
+
+```dart
+@LazySingleton()
+class BackupExportService {
+  BackupExportService(this._db, this._encryption, this._appLock);
+  static const minPinLength = 6;
+  static const maxBackupBytes = 512 MB;
+  static const metadataExtension = '.meta.json';
+
+  // Full export with checksum, metadata, size preflight, progress, and share.
+  // Throws StateError('BACKUP_TOO_LARGE') if DB > 512 MB.
+  Future<BackupExportResult> exportWithMetadata({
+    required bool encrypt,
+    String? pin,
+    required String shareSubject,
+    String appVersion = 'unknown',
+    void Function(BackupProgress stage)? onProgress,
+  });
+
+  // Export to files without sharing — testable without Flutter bindings.
+  Future<BackupExportResult> exportToFiles({
+    required bool encrypt,
+    String? pin,
+    String appVersion = 'unknown',
+    void Function(BackupProgress stage)? onProgress,
+  });
+
+  // Convenience — returns just the shared file path.
+  Future<String> exportAndShare({required bool encrypt, String? pin, required String shareSubject});
+}
+
+class BackupMetadata {
+  final int schemaVersion;
+  final String appVersion;
+  final String createdAt;       // ISO-8601 string
+  final int dbSizeBytes;
+  final String checksumSha256;
+  final bool encrypted;
+
+  Map<String, dynamic> toJson();
+  factory BackupMetadata.fromJson(Map<String, dynamic> json);
+  String encode();
+  static BackupMetadata? tryDecode(String? content);
+}
+
+class BackupExportResult {
+  final String filePath;
+  final BackupMetadata metadata;
+  final String? metadataPath;
+}
+
+enum BackupProgress { idle, checkpointing, copying, checksumming, encrypting, sharing, done }
+```
+
+#### RecoveryKitService
+
+**Location:** `lib/core/database/recovery_kit_service.dart`
+
+```dart
+@LazySingleton()
+class RecoveryKitService {
+  RecoveryKitService();
+
+  // Exports SQLCipher key as a password-wrapped .promkey file.
+  // Throws: SECRET_TOO_SHORT, NO_DB_KEY.
+  Future<RecoveryKitExportResult> exportKit({required String secret, String? outputPath});
+
+  // Imports a .promkey file and installs the key into secure storage.
+  // Throws: SECRET_TOO_SHORT, KIT_FILE_NOT_FOUND, KIT_CORRUPT,
+  //         KIT_VERSION_UNSUPPORTED, WRONG_SECRET, KEY_ALREADY_EXISTS.
+  Future<String> importKit({required String filePath, required String secret, bool replaceExisting = false});
+
+  Future<bool> hasKey();
+  Future<void> removeKey();
+}
+
+class RecoveryKitExportResult {
+  final String filePath;
+  final RecoveryKitMetadata metadata;
+}
+
+class RecoveryKitMetadata {
+  final int version;
+  final String createdAt;
+  final int kdfIterations;
+}
+```
+
+File format: `[uint32 headerLength][JSON header][salt(16)][nonce(12)][ciphertext+GCM tag]`. Constants: `kRecoveryKitVersion = 1`, `kRecoveryKitExtension = '.promkey'`, `kRecoveryKitMinSecretLength = 8`, PBKDF2 iterations: 100,000 (HMAC-SHA256).
+
+#### BackupRestoreService (enhancement)
+
+**Location:** `lib/features/settings/data/services/backup_restore_service.dart`
+
+```dart
+typedef CandidateValidator = Future<void> Function(String path);
+
+@LazySingleton()
+class BackupRestoreService {
+  BackupRestoreService(
+    this._db,
+    this._encryption,
+    this._appLock, {
+    @ignoreParam CandidateValidator? candidateValidator,
+    @ignoreParam this.skipSqlCipherHeaderCheck = false,
+  });
+
+  // Restores sourcePath (.enc or .db). Returns the pre-restore backup path.
+  // Caller must restart the app process so Drift/GetIt reopen the DB cleanly.
+  // Throws: SOURCE_MISSING, BACKUP_TOO_LARGE, PIN_REQUIRED, PIN_TOO_SHORT,
+  //         PLAIN_SQLITE_UNSUPPORTED, INVALID_BACKUP, INVALID_BACKUP_SCHEMA,
+  //         INVALID_BACKUP_INTEGRITY.
+  Future<String> restoreFromPath({required String sourcePath, String? pin});
+
+  // Deletes leftover promsell_pos.pre_restore_*.db files after a successful DB open.
+  Future<int> cleanupPreRestoreBackups();
+}
+```
+
+Constants: `minPinLength = 6` (aligned with `BackupExportService.minPinLength`), `maxBackupBytes = 512 MB`. The `@ignoreParam` annotation on `candidateValidator` and `skipSqlCipherHeaderCheck` keeps them out of the injectable-generated factory.
 
 ---
 
