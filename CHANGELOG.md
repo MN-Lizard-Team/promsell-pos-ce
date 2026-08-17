@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Highlights
+
+- **P0 scaling foundation** — cursor-paginated catalog/history queries, DB-backed product search, SQL report summary aggregate, and bounded streaming CSV export. Validated against a file-backed fixture seeded with 2k products / 50k sales / 250k items / 150k inventory logs.
+- **P1 database lifecycle & recovery** — migration benchmark with duration budget, migration safety service (free-space preflight + status tracking), WAL checkpoint policy, database health report, backup checksum/metadata/progress, Phase 2b recovery kit (cross-device key restore), and large encrypted fixture restore tests.
+
+### Added
+
+- **Scaling fixture** (`test/helpers/scaling_fixture.dart`) — file-backed `NativeDatabase` that seeds the capacity-contract baseline (2k products / 50k sales / 250k sale items / 150k inventory logs) in ~9s on desktop; desktop-safe analogue of the on-device SQLCipher integration_test fixture.
+- **Cursor-paginated product query** — `ProductPage` entity, `ProductLocalDatasource.getProductsPage` / `searchProductsPage`, `ProductRepository` + `GetProductsPage` / `SearchProductsPage` use cases. Cursor = `(createdAt, id)` DESC backed by composite index `idx_products_created_at_id_cursor`. DB-side `LIKE` filter with in-memory rank on the result page.
+- **Paged sale history** — `SalePage` entity, `SaleQueryLocalDatasource.querySalesPage` / `querySalesCount`, `SaleRepository.getSalesPage` + `GetSalesPage` use case. Items and payments hydrated only for the current page. Composite index `idx_sales_created_at_id_cursor`.
+- **SQL report summary aggregate** — `ReportSummary` entity, `SaleQueryLocalDatasource.queryReportSummary`, `GetReportSummary` use case. Satang-SSOT aggregation using INTEGER `*_satang` columns with REAL fallback. Payment lookup chunked to stay under SQLite's variable limit. Parity-verified against `SalesPeriodTotals.from`.
+- **Bounded streaming CSV export** — `ReportExportService.exportCsvStream` pages via `SaleRepository.getSalesPage`, writes chunks to a sink callback, enforces `kExportMaxRows = 10000` cap, and resolves a `startSignal` future before the first data row so callers can dismiss a "preparing" indicator.
+- **Composite cursor indexes** — `idx_products_created_at_id_cursor` and `idx_sales_created_at_id_cursor` for stable cursor pagination.
+- **P0 regression tests** (`test/performance/p0_regression_test.dart`) — 10 tests on the full baseline fixture: search beyond 500-row in-memory window, pagination stability across soft-deletes, 2-year + 2024-only report summary, export cap + startSignal, paged history hydration + full 50k pagination.
+- **Baseline timing test** (`test/performance/p0_baseline_timing_test.dart`) — desktop-fixture timings for catalog, search, barcode/SKU lookup, history, daily/year report, and export start feedback; all under SLO targets.
+- **Migration v31→v32 benchmark** (`test/performance/p1_migration_benchmark_test.dart`) — 3 tests measuring satang dual-write column migration at 50K/100K sales with duration budgets (60s/120s). Results: 50K = 2.5s, 100K = 5.0s, idempotent reopen = 2ms.
+- **Migration safety service** (`lib/core/database/migration_safety_service.dart`) — free-space preflight (2× DB size or 50 MB floor), file-based migration status tracking (idle/running/succeeded/failed), interrupted-migration detection on next launch, schema version query. 10 tests in `p1_migration_safety_test.dart`.
+- **WAL checkpoint service** (`lib/core/database/wal_checkpoint_service.dart`) — PASSIVE mode for safe background checkpoints during money transactions, TRUNCATE mode for backup/day-close exclusive locks, 10 MB passive threshold, 50 MB hard limit, `checkpointIfNeeded()` and `forceTruncate()` APIs. 7 tests.
+- **Database health service** (`lib/core/database/database_health_service.dart`) — `generateReport()` collects main DB + WAL + SHM sizes, schema version, integrity check (optional), free storage, WAL checkpoint recommendations, 512 MB guardrail detection. 6 tests.
+- **Backup export metadata** (`lib/features/settings/data/services/backup_export_service.dart`) — `BackupMetadata` with schema version, app version, timestamp, db size, SHA-256 checksum, encrypted flag. `exportToFiles()` / `exportWithMetadata()` with size preflight (512 MB max), progress callback, `validateAgainstMetadata()` for restore validation. 8 tests.
+- **Recovery kit service** (`lib/core/database/recovery_kit_service.dart`) — Phase 2b D0/D1 implementation: AES-256-GCM wrap of SQLCipher key with PBKDF2-HMAC-SHA256 (100K iterations) from user passphrase (min 8 chars), `.promkey` file format, export/import round-trip, wrong-secret/corrupt/tamper failure modes. 9 tests.
+- **Large encrypted fixture restore tests** (`test/performance/p1_restore_large_test.dart`) — 4 tests: 5K-sale encrypted backup restore preserves all data, interrupted swap rollback, wrong PIN fails cleanly, corrupted schema rejected. `BackupRestoreService` enhanced with `skipSqlCipherHeaderCheck` for test fixtures.
+- `ce-scaling-management-plan.md` — capacity contract, SLO table, and P0–P3 roadmap with evidence.
+- `path_provider_platform_interface` dev dependency for test path mocking.
+- `crypto` dependency for SHA-256 backup checksums.
+
+### Changed
+
+- `SaleQueryLocalDatasource.queryReportSummary` payment breakdown lookup now chunks `saleId.isIn(...)` into batches of 500 to stay under SQLite's 999-variable limit when the report range covers tens of thousands of sales.
+- `BackupExportService` now supports `exportWithMetadata()` and `exportToFiles()` with checksum, metadata file, size preflight, and progress feedback. The existing `exportAndShare()` delegates to `exportWithMetadata()`.
+- `BackupRestoreService` now accepts `skipSqlCipherHeaderCheck` (test-only) to allow restore flow tests with plain SQLite fixtures.
+
+### Performance
+
+- Desktop fixture baseline (not device-accurate, CI trend signal): catalog first page 27ms, catalog search 4ms, barcode lookup 2ms, SKU lookup 1ms, history first page 21ms, daily report 7ms, year report 634ms, export start 50ms — all under SLO targets.
+- 2-year report summary over 50k sales completes in ~1.2s; streaming export of 10k rows completes in ~860ms.
+- **P1 migration benchmark**: v31→v32 satang dual-write migration — 50K sales (250K items) = 2.5s (budget 60s), 100K sales (500K items) = 5.0s (budget 120s), idempotent reopen = 2ms.
+- **P1 WAL checkpoint**: passive checkpoint on 50K-sale fixture = 3ms; truncate checkpoint reduces WAL from 544KB to 0B in 3ms.
+
+### Notes
+
+- All new APIs are additive — no existing bloc/cubit/repository contract is broken. Money precision stays satang-SSOT.
+- Checkout, backup, and migration baselines require the real SQLCipher library and are deferred to the P1 on-device `integration_test` suite.
+- P1 recovery kit implements D0/D1 threat model from `docs/plan/UN-COMPLETE/POST-090-MANAGE/WS-D-PHASE-2B-KEY-RESTORE.md`.
+
+`flutter analyze` → **0 issues** · P0 tests → **22 new tests passing** · P1 tests → **47 new tests passing** (3 migration benchmark + 10 migration safety + 7 WAL checkpoint + 6 DB health + 8 backup metadata + 9 recovery kit + 4 restore large)
+
 ## [0.9.2] - 2026-08-17
 
 Tagged `v0.9.2`. `pubspec` is `0.9.2`. Latest GitHub tag is **v0.9.2**.

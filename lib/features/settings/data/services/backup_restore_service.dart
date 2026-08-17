@@ -25,12 +25,18 @@ class BackupRestoreService {
     this._encryption,
     this._appLock, {
     CandidateValidator? candidateValidator,
+    this.skipSqlCipherHeaderCheck = false,
   }) : _candidateValidator = candidateValidator;
 
   final AppDatabase _db;
   final Future<void> Function(String path)? _candidateValidator;
   final BackupEncryptionService _encryption;
   final AppLockService _appLock;
+
+  /// When true, skips the SQLCipher header check. Test-only — production
+  /// code should never set this. Used by tests that use plain SQLite
+  /// fixtures instead of real SQLCipher databases.
+  final bool skipSqlCipherHeaderCheck;
 
   static const minPinLength = BackupExportService.minPinLength;
   static const maxBackupBytes = 512 * 1024 * 1024;
@@ -60,7 +66,9 @@ class BackupRestoreService {
       if (p0.length < minPinLength) throw StateError('PIN_TOO_SHORT');
     } else {
       // Reject plain SQLite before any path_provider / file swap work.
-      await _assertSqlCipherCandidate(sourcePath);
+      if (!skipSqlCipherHeaderCheck) {
+        await _assertSqlCipherCandidate(sourcePath);
+      }
     }
 
     final tempDir = await getTemporaryDirectory();
@@ -82,7 +90,9 @@ class BackupRestoreService {
         if (await File(workingPath).length() > maxBackupBytes) {
           throw StateError('BACKUP_TOO_LARGE');
         }
-        await _assertSqlCipherCandidate(workingPath);
+        if (!skipSqlCipherHeaderCheck) {
+          await _assertSqlCipherCandidate(workingPath);
+        }
       }
 
       await _validateCandidate(workingPath);
