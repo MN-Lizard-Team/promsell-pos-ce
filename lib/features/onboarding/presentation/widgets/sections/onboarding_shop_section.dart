@@ -196,6 +196,8 @@ class _ReceiptHeaderPreview extends StatelessWidget {
                 if (phone.trim().isNotEmpty)
                   Text(
                     phone.trim(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: secondary,
                     ),
@@ -203,16 +205,14 @@ class _ReceiptHeaderPreview extends StatelessWidget {
                 if (taxId.trim().isNotEmpty)
                   Text(
                     '${context.l10n.receiptTaxId}: ${taxId.trim()}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: secondary,
                     ),
                   ),
                 const SizedBox(height: 8),
                 Divider(color: theme.colorScheme.outlineVariant),
-                Text(
-                  '--------------------------------',
-                  style: theme.textTheme.labelSmall?.copyWith(color: secondary),
-                ),
               ],
             ),
           ),

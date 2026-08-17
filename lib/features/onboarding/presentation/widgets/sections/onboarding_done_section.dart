@@ -87,11 +87,15 @@ class OnboardingDoneSection extends StatelessWidget {
                     children: [
                       Icon(Icons.task_alt, color: scheme.primary),
                       const SizedBox(width: 8),
-                      Text(
-                        context.l10n.onboardingSetupComplete,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          context.l10n.onboardingSetupComplete,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: scheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
