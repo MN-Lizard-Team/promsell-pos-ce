@@ -24,8 +24,8 @@ class BackupRestoreService {
     this._db,
     this._encryption,
     this._appLock, {
-    CandidateValidator? candidateValidator,
-    this.skipSqlCipherHeaderCheck = false,
+    @ignoreParam CandidateValidator? candidateValidator,
+    @ignoreParam this.skipSqlCipherHeaderCheck = false,
   }) : _candidateValidator = candidateValidator;
 
   final AppDatabase _db;
