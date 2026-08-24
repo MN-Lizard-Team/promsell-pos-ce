@@ -46,8 +46,10 @@ jobs:
         run: |
           set -euo pipefail
           tag_version="${GITHUB_REF_NAME#v}"
-          app_version="$(sed -n "s/^version: *\([^+ ]*\).*/\1/p" pubspec.yaml)"
-          test -n "$app_version"
+          # Capture the full version string including any '+N' build number.
+          full_version="$(sed -n "s/^version: *\([^ ]*\).*/\1/p" pubspec.yaml)"
+          test -n "$full_version"
+          app_version="${full_version%%+*}"
           if [ "$tag_version" != "$app_version" ]; then
             echo "::error title=Version mismatch::Tag v$tag_version does not match pubspec version $app_version"
             exit 1
@@ -58,6 +60,26 @@ jobs:
               exit 1
               ;;
           esac
+          # A missing build number makes the Flutter Gradle plugin fall back
+          # to versionCode=1 for every AAB, which Play rejects after the
+          # first upload. Fail closed so an unbuildable-by-build-number tag
+          # can never ship.
+          if [[ "$full_version" != *+* ]]; then
+            echo "::error title=Missing build number::pubspec version '$full_version' has no '+N' build number; Android would ship versionCode=1. Set 'version: $app_version+<N>' with N >= 1 before tagging."
+            exit 1
+          fi
+          build_number="${full_version#*+}"
+          case "$build_number" in
+            ''|*[!0-9]*)
+              echo "::error title=Invalid build number::Build number '$build_number' must be a positive integer ('version: X.Y.Z+N')."
+              exit 1
+              ;;
+          esac
+          if [ "$build_number" -lt 1 ]; then
+            echo "::error title=Invalid build number::Build number must be >= 1 (got '$build_number')."
+            exit 1
+          fi
+          echo "Validated pubspec $full_version against tag v$tag_version (versionCode source: +$build_number)."
 
       - name: Detect signing secrets
         id: signing

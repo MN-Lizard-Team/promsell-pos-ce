@@ -182,8 +182,12 @@ Checklist:
 - [ ] Primary JKS stored outside repo  
 - [ ] Sealed backup exists and is tested (list aliases with `keytool -list`)  
 - [ ] Passwords not in chat/email plaintext  
-- [ ] Throwaway keystore never uploaded to Play  
-- [ ] Tag releases fail without CI secrets (`release-aab.yml` A3)  
+- [ ] Throwaway keystore never uploaded to Play
+- [ ] Tag releases fail without CI secrets (`release-aab.yml` A3)
+
+#### Play App Signing (enroll at first upload)
+
+Enroll in **Play App Signing** when uploading the first AAB: Google holds the app signing key, and the `promsell-release-key.jks` above becomes the **upload key** used only to sign AABs for upload. Keep the upload key under the same dual-custody rules; if it is ever lost, a Play Console reset requires verified identity and downtime. The throwaway warning still applies: **never** sign anything with `promsell-throwaway-release.jks` for Play.
 
 #### Local `keystore.properties` (gitignored)
 

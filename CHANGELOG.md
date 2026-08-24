@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.9.4] - Unreleased
 
 ### Highlights
 
@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Cross-feature domain coupling reduced** — `Sale`, `SaleItem`, `SalePayment`, `SelectedProductOption`, and `SalesPeriodTotals` moved from `lib/features/sale/domain/entities/` to `lib/shared/domain/entities/`. Original files are now re-export shims (backward compatible). 23 files outside the sale feature updated to import directly from `shared/domain/`. Fixes reverse dependency in `core/utils/payment_method_helper.dart` (core → feature → shared).
+- **Adopted `X.Y.Z+N` versioning** — `pubspec.yaml` now carries an explicit build number (`0.9.4+2`) so the Android `versionCode` increments per release instead of silently falling back to `1` on every AAB (Play rejects duplicate `versionCode`s after the first upload).
+- **Corrected false v0.9.3 tag claim** — this changelog previously stated that tag `v0.9.3` existed; no such tag was ever created and the signed-AAB release gate never ran for that version. The `[0.9.3]` section below now states this truthfully.
 
 ### Refactored
 
@@ -47,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.3] - 2026-08-17
 
-Tagged `v0.9.3`. `pubspec` is `0.9.3`. Latest GitHub tag is **v0.9.3**.
+Not tagged. `pubspec` was `0.9.3` with no build number (`+N`). Tag `v0.9.3` was never created — the latest real GitHub tag remained **v0.9.2** — and the signed-AAB release gate (`release-aab.yml`) therefore never ran for this version.
 
 ### Highlights
 
