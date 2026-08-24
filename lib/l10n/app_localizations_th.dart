@@ -1574,6 +1574,40 @@ class AppLocalizationsTh extends AppLocalizations {
   String get dbHealthOk => 'ปกติ';
 
   @override
+  String get dbHealthLow => 'ต่ำ';
+
+  @override
+  String get dbHealthFreeStorage => 'พื้นที่ว่าง';
+
+  @override
+  String get dbHealthUnknown => 'ไม่ทราบ';
+
+  @override
+  String get dbHealthMigrationStatus => 'สถานะการอัปเกรดฐานข้อมูลล่าสุด';
+
+  @override
+  String get dbHealthMigrationNone => 'ไม่มีประวัติ';
+
+  @override
+  String get dbHealthMigrationRunning =>
+      'กำลังทำงาน — อาจถูกขัดจังหวะจากการปิดแอปผิดปกติ';
+
+  @override
+  String get dbHealthMigrationSucceeded => 'สำเร็จ';
+
+  @override
+  String get dbHealthMigrationFailed =>
+      'ล้มเหลว — โปรดสำรองข้อมูลก่อนเปิดแอปอีกครั้ง';
+
+  @override
+  String get dbHealthLowStorageTitle => 'พื้นที่จัดเก็บเหลือน้อย';
+
+  @override
+  String dbHealthLowStorageMessage(String space) {
+    return 'เหลือพื้นที่เพียง $space โปรดเคลียร์พื้นที่จัดเก็บก่อนทำการบำรุงรักษาฐานข้อมูลหรืออัปเดตแอป';
+  }
+
+  @override
   String get dbHealthLargeTitle => 'ฐานข้อมูลมีขนาดใหญ่';
 
   @override
@@ -4496,4 +4530,83 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get reportSectionLabel => 'ส่วนรายงาน';
+
+  @override
+  String get recoveryKitSectionTitle => 'ชุดกู้คืนข้อมูล';
+
+  @override
+  String get recoveryKitSectionDesc =>
+      'กู้คีย์เข้ารหัสเมื่อเปลี่ยนเครื่องหรือคีย์หาย เก็บไฟล์ .promkey และรหัสลับไว้แยกกันในที่ปลอดภัย';
+
+  @override
+  String get recoveryKitExportAction => 'ส่งออกชุดกู้คืน';
+
+  @override
+  String get recoveryKitImportAction => 'นำเข้าชุดกู้คืน';
+
+  @override
+  String get recoveryKitShareSubject => 'ชุดกู้คืน Promsell POS';
+
+  @override
+  String get recoveryKitExportSecretTitle => 'ตั้งรหัสลับสำหรับชุดกู้คืน';
+
+  @override
+  String get recoveryKitImportSecretTitle => 'กรอกรหัสลับของชุดกู้คืน';
+
+  @override
+  String get recoveryKitSecretLabel => 'รหัสลับ';
+
+  @override
+  String get recoveryKitSecretHelper =>
+      'อย่างน้อย 8 ตัวอักษร ใช้รหัสนี้เพื่อนำเข้าชุดกู้คืนในภายหลัง';
+
+  @override
+  String get recoveryKitSecretRequired => 'กรุณากรอกรหัสลับ';
+
+  @override
+  String get recoveryKitSecretTooShort => 'รหัสลับต้องมีอย่างน้อย 8 ตัวอักษร';
+
+  @override
+  String get recoveryKitExportConfirmTitle =>
+      'ทุกคนที่มีทั้งไฟล์นี้และรหัสลับจะถอดรหัสข้อมูลของคุณได้';
+
+  @override
+  String get recoveryKitExportConfirmMessage =>
+      'เก็บไฟล์ .promkey และรหัสลับไว้แยกกันในที่ปลอดภัย หากผู้ไม่หวังดีได้ทั้งสองอย่าง จะอ่านข้อมูลการขายและฐานข้อมูลทั้งหมดได้';
+
+  @override
+  String get recoveryKitExportSuccess =>
+      'ส่งออกชุดกู้คืนแล้ว เก็บไฟล์และรหัสลับไว้ให้ปลอดภัย';
+
+  @override
+  String get recoveryKitImportReplaceTitle =>
+      'เครื่องนี้มีคีย์เข้ารหัสอยู่แล้ว';
+
+  @override
+  String get recoveryKitImportReplaceMessage =>
+      'การนำเข้าจะแทนที่คีย์เดิม ข้อมูลที่บันทึกด้วยคีย์เดิมจะต้องใช้คีย์เดิมจึงจะเปิดได้อีกครั้ง ดำเนินการต่อหรือไม่?';
+
+  @override
+  String get recoveryKitImportSuccess =>
+      'นำเข้าชุดกู้คืนสำเร็จ ข้อมูลสำรองเก่ายังต้องใช้คีย์เดิมที่สร้างไฟล์นั้นไว้';
+
+  @override
+  String get recoveryKitErrorWrongSecret => 'รหัสลับไม่ถูกต้อง';
+
+  @override
+  String get recoveryKitErrorCorrupt => 'ไฟล์ชุดกู้คืนไม่ถูกต้อง';
+
+  @override
+  String get recoveryKitErrorVersionUnsupported =>
+      'แอปไม่รองรับชุดกู้คืนเวอร์ชันนี้ กรุณาอัปเดตแอปแล้วลองอีกครั้ง';
+
+  @override
+  String get recoveryKitErrorFileNotFound => 'ไม่พบไฟล์ชุดกู้คืน';
+
+  @override
+  String get recoveryKitErrorNoKey => 'ไม่พบคีย์เข้ารหัสสำหรับส่งออก';
+
+  @override
+  String get recoveryKitErrorKeyUnavailable =>
+      'เข้าถึงคีย์เข้ารหัสของเครื่องนี้ไม่ได้ หากมีชุดกู้คืน ให้กดนำเข้าชุดกู้คืนด้านบน แล้วปิดและเปิดแอปใหม่';
 }

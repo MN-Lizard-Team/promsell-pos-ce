@@ -1584,6 +1584,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dbHealthOk => 'OK';
 
   @override
+  String get dbHealthLow => 'LOW';
+
+  @override
+  String get dbHealthFreeStorage => 'Free storage';
+
+  @override
+  String get dbHealthUnknown => 'Unknown';
+
+  @override
+  String get dbHealthMigrationStatus => 'Last migration status';
+
+  @override
+  String get dbHealthMigrationNone => 'None recorded';
+
+  @override
+  String get dbHealthMigrationRunning =>
+      'Running — interrupted by a previous crash?';
+
+  @override
+  String get dbHealthMigrationSucceeded => 'Succeeded';
+
+  @override
+  String get dbHealthMigrationFailed =>
+      'Failed — back up your data before restarting the app';
+
+  @override
+  String get dbHealthLowStorageTitle => 'Low storage';
+
+  @override
+  String dbHealthLowStorageMessage(String space) {
+    return 'Only $space free. Free up space before running database maintenance or updates.';
+  }
+
+  @override
   String get dbHealthLargeTitle => 'Large database';
 
   @override
@@ -4530,4 +4564,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportSectionLabel => 'Report section';
+
+  @override
+  String get recoveryKitSectionTitle => 'Recovery Kit';
+
+  @override
+  String get recoveryKitSectionDesc =>
+      'Restore your encryption key after a lost device or lost key. Keep the .promkey file and this secret stored separately, somewhere safe.';
+
+  @override
+  String get recoveryKitExportAction => 'Export recovery kit';
+
+  @override
+  String get recoveryKitImportAction => 'Import recovery kit';
+
+  @override
+  String get recoveryKitShareSubject => 'Promsell POS recovery kit';
+
+  @override
+  String get recoveryKitExportSecretTitle => 'Create a recovery secret';
+
+  @override
+  String get recoveryKitImportSecretTitle => 'Enter the recovery secret';
+
+  @override
+  String get recoveryKitSecretLabel => 'Recovery secret';
+
+  @override
+  String get recoveryKitSecretHelper =>
+      'At least 8 characters. You will need this secret to import the kit later.';
+
+  @override
+  String get recoveryKitSecretRequired => 'Please enter the recovery secret';
+
+  @override
+  String get recoveryKitSecretTooShort =>
+      'The secret must be at least 8 characters';
+
+  @override
+  String get recoveryKitExportConfirmTitle =>
+      'Anyone with this file and the secret can decrypt your data';
+
+  @override
+  String get recoveryKitExportConfirmMessage =>
+      'Store the .promkey file and the secret separately, somewhere safe. If someone obtains both, they can read all sales and database contents.';
+
+  @override
+  String get recoveryKitExportSuccess =>
+      'Recovery kit exported. Keep the file and secret safe.';
+
+  @override
+  String get recoveryKitImportReplaceTitle =>
+      'A key already exists on this device';
+
+  @override
+  String get recoveryKitImportReplaceMessage =>
+      'Importing will replace it. Data written with the previous key will need that old key to open again. Continue?';
+
+  @override
+  String get recoveryKitImportSuccess =>
+      'Recovery kit imported. Older backups still need the key they were created with.';
+
+  @override
+  String get recoveryKitErrorWrongSecret => 'Wrong recovery secret';
+
+  @override
+  String get recoveryKitErrorCorrupt => 'Invalid recovery kit file';
+
+  @override
+  String get recoveryKitErrorVersionUnsupported =>
+      'This recovery kit version is not supported. Update the app and try again.';
+
+  @override
+  String get recoveryKitErrorFileNotFound => 'Recovery kit file not found';
+
+  @override
+  String get recoveryKitErrorNoKey => 'No encryption key found to export';
+
+  @override
+  String get recoveryKitErrorKeyUnavailable =>
+      'The encryption key on this device could not be accessed. If you have a recovery kit, tap Import recovery kit above, then restart the app.';
 }

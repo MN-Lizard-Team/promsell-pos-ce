@@ -731,6 +731,23 @@
   "dbHealthFileSize": "Database file size",
   "dbHealthLarge": "LARGE",
   "dbHealthOk": "OK",
+  "dbHealthLow": "LOW",
+  "dbHealthFreeStorage": "Free storage",
+  "dbHealthUnknown": "Unknown",
+  "dbHealthMigrationStatus": "Last migration status",
+  "dbHealthMigrationNone": "None recorded",
+  "dbHealthMigrationRunning": "Running — interrupted by a previous crash?",
+  "dbHealthMigrationSucceeded": "Succeeded",
+  "dbHealthMigrationFailed": "Failed — back up your data before restarting the app",
+  "dbHealthLowStorageTitle": "Low storage",
+  "dbHealthLowStorageMessage": "Only {space} free. Free up space before running database maintenance or updates.",
+  "@dbHealthLowStorageMessage": {
+    "placeholders": {
+      "space": {
+        "type": "String"
+      }
+    }
+  },
   "dbHealthLargeTitle": "Large database",
   "dbHealthLargeMessage": "Your database is over 50 MB. Consider backing up and archiving old data.",
   "dbHealthRowCounts": "Row counts",
@@ -2207,5 +2224,28 @@
   "chartNoData": "No data for chart",
   "dateRangeSeparator": " – ",
   "percentagePointsUnit": "pp",
-  "reportSectionLabel": "Report section"
+  "reportSectionLabel": "Report section",
+  "recoveryKitSectionTitle": "Recovery Kit",
+  "recoveryKitSectionDesc": "Restore your encryption key after a lost device or lost key. Keep the .promkey file and this secret stored separately, somewhere safe.",
+  "recoveryKitExportAction": "Export recovery kit",
+  "recoveryKitImportAction": "Import recovery kit",
+  "recoveryKitShareSubject": "Promsell POS recovery kit",
+  "recoveryKitExportSecretTitle": "Create a recovery secret",
+  "recoveryKitImportSecretTitle": "Enter the recovery secret",
+  "recoveryKitSecretLabel": "Recovery secret",
+  "recoveryKitSecretHelper": "At least 8 characters. You will need this secret to import the kit later.",
+  "recoveryKitSecretRequired": "Please enter the recovery secret",
+  "recoveryKitSecretTooShort": "The secret must be at least 8 characters",
+  "recoveryKitExportConfirmTitle": "Anyone with this file and the secret can decrypt your data",
+  "recoveryKitExportConfirmMessage": "Store the .promkey file and the secret separately, somewhere safe. If someone obtains both, they can read all sales and database contents.",
+  "recoveryKitExportSuccess": "Recovery kit exported. Keep the file and secret safe.",
+  "recoveryKitImportReplaceTitle": "A key already exists on this device",
+  "recoveryKitImportReplaceMessage": "Importing will replace it. Data written with the previous key will need that old key to open again. Continue?",
+  "recoveryKitImportSuccess": "Recovery kit imported. Older backups still need the key they were created with.",
+  "recoveryKitErrorWrongSecret": "Wrong recovery secret",
+  "recoveryKitErrorCorrupt": "Invalid recovery kit file",
+  "recoveryKitErrorVersionUnsupported": "This recovery kit version is not supported. Update the app and try again.",
+  "recoveryKitErrorFileNotFound": "Recovery kit file not found",
+  "recoveryKitErrorNoKey": "No encryption key found to export",
+  "recoveryKitErrorKeyUnavailable": "The encryption key on this device could not be accessed. If you have a recovery kit, tap Import recovery kit above, then restart the app."
 }

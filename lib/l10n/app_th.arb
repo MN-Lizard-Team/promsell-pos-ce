@@ -723,6 +723,23 @@
   "dbHealthFileSize": "ขนาดไฟล์ฐานข้อมูล",
   "dbHealthLarge": "ใหญ่",
   "dbHealthOk": "ปกติ",
+  "dbHealthLow": "ต่ำ",
+  "dbHealthFreeStorage": "พื้นที่ว่าง",
+  "dbHealthUnknown": "ไม่ทราบ",
+  "dbHealthMigrationStatus": "สถานะการอัปเกรดฐานข้อมูลล่าสุด",
+  "dbHealthMigrationNone": "ไม่มีประวัติ",
+  "dbHealthMigrationRunning": "กำลังทำงาน — อาจถูกขัดจังหวะจากการปิดแอปผิดปกติ",
+  "dbHealthMigrationSucceeded": "สำเร็จ",
+  "dbHealthMigrationFailed": "ล้มเหลว — โปรดสำรองข้อมูลก่อนเปิดแอปอีกครั้ง",
+  "dbHealthLowStorageTitle": "พื้นที่จัดเก็บเหลือน้อย",
+  "dbHealthLowStorageMessage": "เหลือพื้นที่เพียง {space} โปรดเคลียร์พื้นที่จัดเก็บก่อนทำการบำรุงรักษาฐานข้อมูลหรืออัปเดตแอป",
+  "@dbHealthLowStorageMessage": {
+    "placeholders": {
+      "space": {
+        "type": "String"
+      }
+    }
+  },
   "dbHealthLargeTitle": "ฐานข้อมูลมีขนาดใหญ่",
   "dbHealthLargeMessage": "ฐานข้อมูลของคุณมีขนาดเกิน 50 MB พิจารณาสำรองข้อมูลและเก็บข้อมูลเก่า",
   "dbHealthRowCounts": "จำนวนแถว",
@@ -2199,5 +2216,28 @@
   "chartNoData": "ไม่มีข้อมูลสำหรับกราฟ",
   "dateRangeSeparator": " – ",
   "percentagePointsUnit": "จุด",
-  "reportSectionLabel": "ส่วนรายงาน"
+  "reportSectionLabel": "ส่วนรายงาน",
+  "recoveryKitSectionTitle": "ชุดกู้คืนข้อมูล",
+  "recoveryKitSectionDesc": "กู้คีย์เข้ารหัสเมื่อเปลี่ยนเครื่องหรือคีย์หาย เก็บไฟล์ .promkey และรหัสลับไว้แยกกันในที่ปลอดภัย",
+  "recoveryKitExportAction": "ส่งออกชุดกู้คืน",
+  "recoveryKitImportAction": "นำเข้าชุดกู้คืน",
+  "recoveryKitShareSubject": "ชุดกู้คืน Promsell POS",
+  "recoveryKitExportSecretTitle": "ตั้งรหัสลับสำหรับชุดกู้คืน",
+  "recoveryKitImportSecretTitle": "กรอกรหัสลับของชุดกู้คืน",
+  "recoveryKitSecretLabel": "รหัสลับ",
+  "recoveryKitSecretHelper": "อย่างน้อย 8 ตัวอักษร ใช้รหัสนี้เพื่อนำเข้าชุดกู้คืนในภายหลัง",
+  "recoveryKitSecretRequired": "กรุณากรอกรหัสลับ",
+  "recoveryKitSecretTooShort": "รหัสลับต้องมีอย่างน้อย 8 ตัวอักษร",
+  "recoveryKitExportConfirmTitle": "ทุกคนที่มีทั้งไฟล์นี้และรหัสลับจะถอดรหัสข้อมูลของคุณได้",
+  "recoveryKitExportConfirmMessage": "เก็บไฟล์ .promkey และรหัสลับไว้แยกกันในที่ปลอดภัย หากผู้ไม่หวังดีได้ทั้งสองอย่าง จะอ่านข้อมูลการขายและฐานข้อมูลทั้งหมดได้",
+  "recoveryKitExportSuccess": "ส่งออกชุดกู้คืนแล้ว เก็บไฟล์และรหัสลับไว้ให้ปลอดภัย",
+  "recoveryKitImportReplaceTitle": "เครื่องนี้มีคีย์เข้ารหัสอยู่แล้ว",
+  "recoveryKitImportReplaceMessage": "การนำเข้าจะแทนที่คีย์เดิม ข้อมูลที่บันทึกด้วยคีย์เดิมจะต้องใช้คีย์เดิมจึงจะเปิดได้อีกครั้ง ดำเนินการต่อหรือไม่?",
+  "recoveryKitImportSuccess": "นำเข้าชุดกู้คืนสำเร็จ ข้อมูลสำรองเก่ายังต้องใช้คีย์เดิมที่สร้างไฟล์นั้นไว้",
+  "recoveryKitErrorWrongSecret": "รหัสลับไม่ถูกต้อง",
+  "recoveryKitErrorCorrupt": "ไฟล์ชุดกู้คืนไม่ถูกต้อง",
+  "recoveryKitErrorVersionUnsupported": "แอปไม่รองรับชุดกู้คืนเวอร์ชันนี้ กรุณาอัปเดตแอปแล้วลองอีกครั้ง",
+  "recoveryKitErrorFileNotFound": "ไม่พบไฟล์ชุดกู้คืน",
+  "recoveryKitErrorNoKey": "ไม่พบคีย์เข้ารหัสสำหรับส่งออก",
+  "recoveryKitErrorKeyUnavailable": "เข้าถึงคีย์เข้ารหัสของเครื่องนี้ไม่ได้ หากมีชุดกู้คืน ให้กดนำเข้าชุดกู้คืนด้านบน แล้วปิดและเปิดแอปใหม่"
 }

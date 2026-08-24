@@ -3038,6 +3038,66 @@ abstract class AppLocalizations {
   /// **'ปกติ'**
   String get dbHealthOk;
 
+  /// No description provided for @dbHealthLow.
+  ///
+  /// In th, this message translates to:
+  /// **'ต่ำ'**
+  String get dbHealthLow;
+
+  /// No description provided for @dbHealthFreeStorage.
+  ///
+  /// In th, this message translates to:
+  /// **'พื้นที่ว่าง'**
+  String get dbHealthFreeStorage;
+
+  /// No description provided for @dbHealthUnknown.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่ทราบ'**
+  String get dbHealthUnknown;
+
+  /// No description provided for @dbHealthMigrationStatus.
+  ///
+  /// In th, this message translates to:
+  /// **'สถานะการอัปเกรดฐานข้อมูลล่าสุด'**
+  String get dbHealthMigrationStatus;
+
+  /// No description provided for @dbHealthMigrationNone.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีประวัติ'**
+  String get dbHealthMigrationNone;
+
+  /// No description provided for @dbHealthMigrationRunning.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังทำงาน — อาจถูกขัดจังหวะจากการปิดแอปผิดปกติ'**
+  String get dbHealthMigrationRunning;
+
+  /// No description provided for @dbHealthMigrationSucceeded.
+  ///
+  /// In th, this message translates to:
+  /// **'สำเร็จ'**
+  String get dbHealthMigrationSucceeded;
+
+  /// No description provided for @dbHealthMigrationFailed.
+  ///
+  /// In th, this message translates to:
+  /// **'ล้มเหลว — โปรดสำรองข้อมูลก่อนเปิดแอปอีกครั้ง'**
+  String get dbHealthMigrationFailed;
+
+  /// No description provided for @dbHealthLowStorageTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'พื้นที่จัดเก็บเหลือน้อย'**
+  String get dbHealthLowStorageTitle;
+
+  /// No description provided for @dbHealthLowStorageMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'เหลือพื้นที่เพียง {space} โปรดเคลียร์พื้นที่จัดเก็บก่อนทำการบำรุงรักษาฐานข้อมูลหรืออัปเดตแอป'**
+  String dbHealthLowStorageMessage(String space);
+
   /// No description provided for @dbHealthLargeTitle.
   ///
   /// In th, this message translates to:
@@ -8407,6 +8467,144 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ส่วนรายงาน'**
   String get reportSectionLabel;
+
+  /// No description provided for @recoveryKitSectionTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ชุดกู้คืนข้อมูล'**
+  String get recoveryKitSectionTitle;
+
+  /// No description provided for @recoveryKitSectionDesc.
+  ///
+  /// In th, this message translates to:
+  /// **'กู้คีย์เข้ารหัสเมื่อเปลี่ยนเครื่องหรือคีย์หาย เก็บไฟล์ .promkey และรหัสลับไว้แยกกันในที่ปลอดภัย'**
+  String get recoveryKitSectionDesc;
+
+  /// No description provided for @recoveryKitExportAction.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกชุดกู้คืน'**
+  String get recoveryKitExportAction;
+
+  /// No description provided for @recoveryKitImportAction.
+  ///
+  /// In th, this message translates to:
+  /// **'นำเข้าชุดกู้คืน'**
+  String get recoveryKitImportAction;
+
+  /// No description provided for @recoveryKitShareSubject.
+  ///
+  /// In th, this message translates to:
+  /// **'ชุดกู้คืน Promsell POS'**
+  String get recoveryKitShareSubject;
+
+  /// No description provided for @recoveryKitExportSecretTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ตั้งรหัสลับสำหรับชุดกู้คืน'**
+  String get recoveryKitExportSecretTitle;
+
+  /// No description provided for @recoveryKitImportSecretTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'กรอกรหัสลับของชุดกู้คืน'**
+  String get recoveryKitImportSecretTitle;
+
+  /// No description provided for @recoveryKitSecretLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสลับ'**
+  String get recoveryKitSecretLabel;
+
+  /// No description provided for @recoveryKitSecretHelper.
+  ///
+  /// In th, this message translates to:
+  /// **'อย่างน้อย 8 ตัวอักษร ใช้รหัสนี้เพื่อนำเข้าชุดกู้คืนในภายหลัง'**
+  String get recoveryKitSecretHelper;
+
+  /// No description provided for @recoveryKitSecretRequired.
+  ///
+  /// In th, this message translates to:
+  /// **'กรุณากรอกรหัสลับ'**
+  String get recoveryKitSecretRequired;
+
+  /// No description provided for @recoveryKitSecretTooShort.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสลับต้องมีอย่างน้อย 8 ตัวอักษร'**
+  String get recoveryKitSecretTooShort;
+
+  /// No description provided for @recoveryKitExportConfirmTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ทุกคนที่มีทั้งไฟล์นี้และรหัสลับจะถอดรหัสข้อมูลของคุณได้'**
+  String get recoveryKitExportConfirmTitle;
+
+  /// No description provided for @recoveryKitExportConfirmMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'เก็บไฟล์ .promkey และรหัสลับไว้แยกกันในที่ปลอดภัย หากผู้ไม่หวังดีได้ทั้งสองอย่าง จะอ่านข้อมูลการขายและฐานข้อมูลทั้งหมดได้'**
+  String get recoveryKitExportConfirmMessage;
+
+  /// No description provided for @recoveryKitExportSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งออกชุดกู้คืนแล้ว เก็บไฟล์และรหัสลับไว้ให้ปลอดภัย'**
+  String get recoveryKitExportSuccess;
+
+  /// No description provided for @recoveryKitImportReplaceTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เครื่องนี้มีคีย์เข้ารหัสอยู่แล้ว'**
+  String get recoveryKitImportReplaceTitle;
+
+  /// No description provided for @recoveryKitImportReplaceMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'การนำเข้าจะแทนที่คีย์เดิม ข้อมูลที่บันทึกด้วยคีย์เดิมจะต้องใช้คีย์เดิมจึงจะเปิดได้อีกครั้ง ดำเนินการต่อหรือไม่?'**
+  String get recoveryKitImportReplaceMessage;
+
+  /// No description provided for @recoveryKitImportSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'นำเข้าชุดกู้คืนสำเร็จ ข้อมูลสำรองเก่ายังต้องใช้คีย์เดิมที่สร้างไฟล์นั้นไว้'**
+  String get recoveryKitImportSuccess;
+
+  /// No description provided for @recoveryKitErrorWrongSecret.
+  ///
+  /// In th, this message translates to:
+  /// **'รหัสลับไม่ถูกต้อง'**
+  String get recoveryKitErrorWrongSecret;
+
+  /// No description provided for @recoveryKitErrorCorrupt.
+  ///
+  /// In th, this message translates to:
+  /// **'ไฟล์ชุดกู้คืนไม่ถูกต้อง'**
+  String get recoveryKitErrorCorrupt;
+
+  /// No description provided for @recoveryKitErrorVersionUnsupported.
+  ///
+  /// In th, this message translates to:
+  /// **'แอปไม่รองรับชุดกู้คืนเวอร์ชันนี้ กรุณาอัปเดตแอปแล้วลองอีกครั้ง'**
+  String get recoveryKitErrorVersionUnsupported;
+
+  /// No description provided for @recoveryKitErrorFileNotFound.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบไฟล์ชุดกู้คืน'**
+  String get recoveryKitErrorFileNotFound;
+
+  /// No description provided for @recoveryKitErrorNoKey.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่พบคีย์เข้ารหัสสำหรับส่งออก'**
+  String get recoveryKitErrorNoKey;
+
+  /// No description provided for @recoveryKitErrorKeyUnavailable.
+  ///
+  /// In th, this message translates to:
+  /// **'เข้าถึงคีย์เข้ารหัสของเครื่องนี้ไม่ได้ หากมีชุดกู้คืน ให้กดนำเข้าชุดกู้คืนด้านบน แล้วปิดและเปิดแอปใหม่'**
+  String get recoveryKitErrorKeyUnavailable;
 }
 
 class _AppLocalizationsDelegate

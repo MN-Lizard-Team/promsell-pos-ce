@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/database/db_key_store.dart';
+import 'package:promsell_pos_ce/core/database/recovery_kit_service.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_restore_service.dart';
@@ -17,8 +19,11 @@ import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_sett
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/backup/backup_info_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/backup/backup_status_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/recovery_kit/recovery_kit_secret_dialog.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/recovery_kit/recovery_kit_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class BackupSettingsPage extends StatelessWidget {
@@ -140,6 +145,133 @@ class BackupSettingsPage extends StatelessWidget {
     }
   }
 
+  /// Exports the SQLCipher key as a password-wrapped `.promkey` kit file and
+  /// shares it the same way backup exports are shared.
+  Future<void> _runExportRecoveryKit(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    try {
+      final unlocked = await ensureAppUnlocked(
+        context,
+        title: l10n.recoveryKitExportConfirmTitle,
+      );
+      if (!unlocked || !context.mounted) return;
+
+      final secret = await showRecoveryKitSecretDialog(
+        context,
+        l10n: l10n,
+        title: l10n.recoveryKitExportSecretTitle,
+      );
+      if (secret == null || !context.mounted) return;
+
+      final confirmed = await showAppConfirm(
+        context,
+        title: l10n.recoveryKitExportConfirmTitle,
+        message: l10n.recoveryKitExportConfirmMessage,
+        confirmLabel: l10n.confirm,
+        destructive: true,
+      );
+      if (!confirmed || !context.mounted) return;
+
+      final result = await sl<RecoveryKitService>().exportKit(secret: secret);
+      if (!context.mounted) return;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(result.filePath)],
+          subject: l10n.recoveryKitShareSubject,
+        ),
+      );
+      if (!context.mounted) return;
+      AppSnackBar.success(context, l10n.recoveryKitExportSuccess);
+    } catch (e) {
+      if (!context.mounted) return;
+      AppSnackBar.error(context, _kitErrorMessage(l10n, e));
+    }
+  }
+
+  /// Imports a `.promkey` kit. When a key already exists on this device,
+  /// asks for explicit confirmation before replacing it.
+  Future<void> _runImportRecoveryKit(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    try {
+      final unlocked = await ensureAppUnlocked(
+        context,
+        title: l10n.settingsBackup,
+      );
+      if (!unlocked || !context.mounted) return;
+
+      final picked = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['promkey'],
+      );
+      if (!context.mounted) return;
+      if (picked == null || picked.files.isEmpty) return;
+      final path = picked.files.single.path;
+      if (path == null) {
+        AppSnackBar.error(context, l10n.backupFailed);
+        return;
+      }
+
+      final secret = await showRecoveryKitSecretDialog(
+        context,
+        l10n: l10n,
+        title: l10n.recoveryKitImportSecretTitle,
+      );
+      if (secret == null || !context.mounted) return;
+
+      try {
+        await sl<RecoveryKitService>().importKit(
+          filePath: path,
+          secret: secret,
+        );
+      } on StateError catch (e) {
+        if (e.message != 'KEY_ALREADY_EXISTS') rethrow;
+        if (!context.mounted) return;
+        final replace = await showAppConfirm(
+          context,
+          title: l10n.recoveryKitImportReplaceTitle,
+          message: l10n.recoveryKitImportReplaceMessage,
+          confirmLabel: l10n.confirm,
+          destructive: true,
+        );
+        if (!replace || !context.mounted) return;
+        await sl<RecoveryKitService>().importKit(
+          filePath: path,
+          secret: secret,
+          replaceExisting: true,
+        );
+      }
+      if (!context.mounted) return;
+      // Warning tone on purpose: data written with the previous key still
+      // requires that old key to restore.
+      AppSnackBar.warning(context, l10n.recoveryKitImportSuccess);
+    } catch (e) {
+      if (!context.mounted) return;
+      AppSnackBar.error(context, _kitErrorMessage(l10n, e));
+    }
+  }
+
+  String _kitErrorMessage(AppLocalizations l10n, Object e) {
+    if (e is StateError) {
+      return switch (e.message) {
+        'SECRET_TOO_SHORT' => l10n.recoveryKitSecretTooShort,
+        'KIT_FILE_NOT_FOUND' => l10n.recoveryKitErrorFileNotFound,
+        'KIT_CORRUPT' => l10n.recoveryKitErrorCorrupt,
+        'KIT_VERSION_UNSUPPORTED' => l10n.recoveryKitErrorVersionUnsupported,
+        'WRONG_SECRET' => l10n.recoveryKitErrorWrongSecret,
+        'NO_DB_KEY' => l10n.recoveryKitErrorNoKey,
+        _ => l10n.backupFailed,
+      };
+    }
+    // Secure-storage failure or lost key over an existing DB — direct the
+    // merchant to import their recovery kit instead of a generic failure.
+    if (e is DbKeyUnavailable) return l10n.recoveryKitErrorKeyUnavailable;
+    return l10n.backupFailed;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
@@ -255,6 +387,10 @@ class BackupSettingsPage extends StatelessWidget {
               ),
             ),
             BackupInfoCard(st: st, l10n: l10n),
+            RecoveryKitSectionCard(
+              onExport: () => _runExportRecoveryKit(context, l10n),
+              onImport: () => _runImportRecoveryKit(context, l10n),
+            ),
           ],
         );
       },
