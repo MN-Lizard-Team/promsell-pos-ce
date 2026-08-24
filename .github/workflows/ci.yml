@@ -70,18 +70,19 @@ jobs:
           dart format --set-exit-if-changed integration_test/
           flutter analyze integration_test/
 
-      # Coverage gate: global ≥60% + sale-logic ≥80% in one call.
+      # Coverage gate: global ≥60% + sale-logic ≥92% in one call.
       # Migrated from archived VeryGoodOpenSource/very_good_coverage@v3 to
       # tool/check_path_coverage.dart (sole gate — handles both thresholds).
-      # Ladder: 50 → 60 → 70 → 80 (raise only after measured headroom).
+      # sale-logic ratcheted to 92 (actual 92.38 at the 2026-08 clamp); raise
+      # only after measured headroom, never lower without an explicit ADR.
       # Exclude globs must stay in sync with kCoverageExclude* in the script.
-      - name: Coverage gate (global ≥60%, sale-logic ≥80%)
+      - name: Coverage gate (global ≥60%, sale-logic ≥92%)
         run: >
           dart run tool/check_path_coverage.dart
           --lcov coverage/lcov.info
           --fail
           --min-global=60
-          --min-sale-logic=80
+          --min-sale-logic=92
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

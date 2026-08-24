@@ -179,12 +179,12 @@ Details: [E2E_TEST_GUIDE.md](../testing/E2E_TEST_GUIDE.md) · [E2E_IMPLEMENTATIO
 | Gate | Value | Enforcement |
 |------|------:|-------------|
 | Global (excludes generated/l10n) | **60%** → ladder 70 → 80 | Hard via `tool/check_path_coverage.dart` on `ci.yml` |
-| **sale-logic** = sale `domain/` + `data/` + `lib/core/domain/` | **≥80%** | Hard `--fail` via `tool/check_path_coverage.dart` |
+| **sale-logic** = sale `domain/` + `data/` + `lib/core/domain/` | **≥92%** | Hard `--fail` via `tool/check_path_coverage.dart`; ratcheted 2026-08-24 to the measured 92.4% level — never lower without an explicit ADR |
 | Full sale tree + `core/domain` (incl. presentation) | report only | Soft until ≥80 + buffer |
 
 ```bash
 flutter test --coverage --exclude-tags stress
-dart run tool/check_path_coverage.dart --fail --min-global=60 --min-sale-logic=80
+dart run tool/check_path_coverage.dart --fail --min-global=60 --min-sale-logic=92
 ```
 
 **Measured snapshot (2026-08-13, after excludes):**
