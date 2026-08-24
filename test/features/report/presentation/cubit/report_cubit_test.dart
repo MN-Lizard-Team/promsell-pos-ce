@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_cubit.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
@@ -13,20 +16,50 @@ import '../../../../helpers/mocks.dart';
 void main() {
   late MockWatchReport mockWatchReport;
   late MockReportRepository mockReportRepository;
+  late MockGetReportSummary mockGetReportSummary;
   const calculator = ReportCalculatorService();
+
+  const tPreviousPeriodSummary = ReportSummary(
+    netRevenue: Money.fromSatang(50000),
+    voidedTotal: Money.zero,
+    salesCount: 5,
+    voidCount: 0,
+    vatAmount: Money.zero,
+    discountAmount: Money.zero,
+    serviceChargeAmount: Money.zero,
+    promotionDiscountAmount: Money.zero,
+    paymentBreakdown: {},
+    paymentCounts: {},
+    orderTypeBreakdown: {},
+    orderChannelBreakdown: {},
+    voidReasonBreakdown: {},
+    promotionCount: 0,
+  );
+
+  const ReportAggregate tAggregate = ReportAggregate(
+    summary: tPreviousPeriodSummary,
+  );
 
   setUp(() {
     mockWatchReport = MockWatchReport();
     mockReportRepository = MockReportRepository();
+    mockGetReportSummary = MockGetReportSummary();
     when(
       () => mockReportRepository.getProductCostLookup(any()),
     ).thenAnswer((_) async => {});
+    when(
+      () => mockGetReportSummary(
+        from: any(named: 'from'),
+        to: any(named: 'to'),
+      ),
+    ).thenAnswer((_) async => tPreviousPeriodSummary);
   });
 
   ReportCubit buildCubit() => ReportCubit(
     watchReport: mockWatchReport,
     reportRepository: mockReportRepository,
     calculator: calculator,
+    getReportSummary: mockGetReportSummary,
   );
 
   group('ReportCubit', () {
@@ -273,6 +306,77 @@ void main() {
       expect(cubit.state.status, ReportStatus.success);
       expect(cubit.state.sales.length, 60000);
       await cubit.close();
+    });
+
+    test('long range (>31 days) uses SQL aggregate path', () async {
+      when(
+        () => mockReportRepository.watchReportAggregate(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value(tAggregate));
+
+      final cubit = buildCubit();
+      // 90-day span — beyond maxHydratedSpanDays (31).
+      await cubit.changeDateRange(DateTime(2024, 1, 1), DateTime(2024, 3, 30));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(cubit.state.status, ReportStatus.success);
+      expect(cubit.state.aggregate, isNotNull);
+      expect(cubit.state.aggregate!.summary.salesCount, 5);
+      // Hydrated list stays empty on the aggregate path.
+      expect(cubit.state.sales, isEmpty);
+      // Previous-period comparison comes from the one-shot summary use case.
+      expect(cubit.state.previousSummary?.netRevenue.satang, 50000);
+      verifyNever(
+        () => mockWatchReport(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      );
+      verify(
+        () => mockGetReportSummary(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).called(1);
+      await cubit.close();
+    });
+
+    test('long range emits failure when aggregate stream errors', () async {
+      when(
+        () => mockReportRepository.watchReportAggregate(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.error(Exception('aggregate failed')));
+
+      final cubit = buildCubit();
+      await cubit.changeDateRange(DateTime(2024, 1, 1), DateTime(2024, 3, 30));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(cubit.state.status, ReportStatus.failure);
+      await cubit.close();
+    });
+
+    test('short range never touches the aggregate stream', () async {
+      when(
+        () => mockWatchReport(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => const Stream.empty());
+
+      final cubit = buildCubit();
+      await cubit.changeDateRange(DateTime(2024, 1, 1), DateTime(2024, 1, 7));
+      await cubit.close();
+
+      verifyNever(
+        () => mockReportRepository.watchReportAggregate(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      );
     });
   });
 }

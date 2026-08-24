@@ -3,23 +3,47 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/repositories/report_repository.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
+import 'package:promsell_pos_ce/features/report/domain/usecases/get_report_summary.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/report/domain/utils/date_range_presets.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
 import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
+/// Report period controller.
+///
+/// Data-path design (bounded-memory refactor):
+///
+/// * Ranges spanning **≤ [maxHydratedSpanDays] days** keep the original
+///   fully-hydrated [WatchReport] path (`List<Sale>` + Dart calculator).
+///   At most ~a month of sales is held in memory, which the cache eviction
+///   below caps further.
+/// * Longer ranges subscribe to the SQL-aggregated
+///   `ReportRepository.watchReportAggregate` stream instead. Every metric
+///   (summary totals, daily/hourly revenue, top products, customer counts,
+///   profit, PromptPay) is computed by SQLite over the satang columns and
+///   only a bounded display list (5 newest PromptPay bills) is hydrated —
+///   memory no longer scales with the number of sales in the window.
+///   The previous-period net revenue for these ranges comes from the
+///   [GetReportSummary] use case (one-shot per range change; a comparison
+///   baseline does not need live reactivity).
+///
+/// The stale-while-revalidate [_CacheEntry] snapshot mechanism (TTL, LRU
+/// count cap, and soft memory ceiling) is shared by both paths.
 @lazySingleton
 class ReportCubit extends Cubit<ReportState> {
   ReportCubit({
     required WatchReport watchReport,
     required ReportRepository reportRepository,
     required ReportCalculatorService calculator,
+    required GetReportSummary getReportSummary,
   }) : _watchReport = watchReport,
        _reportRepository = reportRepository,
        _calculator = calculator,
+       _getReportSummary = getReportSummary,
        super(
          ReportState(
            from: DateRangePresets.today().$1,
@@ -30,8 +54,14 @@ class ReportCubit extends Cubit<ReportState> {
   final WatchReport _watchReport;
   final ReportRepository _reportRepository;
   final ReportCalculatorService _calculator;
+  final GetReportSummary _getReportSummary;
   StreamSubscription? _sub;
+  StreamSubscription? _aggregateSub;
   StreamSubscription? _previousSub;
+
+  /// Longest range still served through full hydration. Beyond this the
+  /// SQL-aggregate path keeps memory bounded regardless of sales volume.
+  static const int maxHydratedSpanDays = 31;
 
   /// Cached productId → Product map for profit/margin calculations.
   /// Refreshed on each new range subscription so deleted/updated products
@@ -63,8 +93,8 @@ class ReportCubit extends Cubit<ReportState> {
   /// Maximum number of cached report ranges (LRU by storedAt).
   static const _maxCachedRanges = 10;
 
-  /// Soft memory ceiling for cached sales data (bytes). When the total
-  /// estimated size of cached [ReportData] exceeds this, entries are evicted
+  /// Soft memory ceiling for cached report data (bytes). When the total
+  /// estimated size of cached entries exceeds this, entries are evicted
   /// oldest-first regardless of [_maxCachedRanges]. Prevents unbounded
   /// memory growth when the user browses many long date ranges.
   static const _maxCacheMemoryBytes = 50 * 1024 * 1024; // 50 MB
@@ -98,9 +128,10 @@ class ReportCubit extends Cubit<ReportState> {
     await changeDateRange(from, to, forceRefresh: true);
   }
 
-  /// Changes the active period and always attaches a live [WatchReport] for it.
+  /// Changes the active period and attaches a live subscription for it:
+  /// hydrated [WatchReport] within the span threshold, SQL aggregates beyond.
   ///
-  /// [forceRefresh] skips showing cached sales during loading (still re-watches).
+  /// [forceRefresh] skips showing cached data during loading (still re-watches).
   Future<void> changeDateRange(
     DateTime from,
     DateTime to, {
@@ -133,10 +164,19 @@ class ReportCubit extends Cubit<ReportState> {
     final gen = ++_rangeGen;
 
     await _sub?.cancel();
+    await _aggregateSub?.cancel();
     await _previousSub?.cancel();
     if (isClosed || gen != _rangeGen) return;
     _sub = null;
+    _aggregateSub = null;
     _previousSub = null;
+
+    final useSqlPath = (to.difference(from).inDays + 1) > maxHydratedSpanDays;
+
+    if (useSqlPath) {
+      await _subscribeAggregate(key: key, from: from, to: to, gen: gen);
+      return;
+    }
 
     // Refresh product cost lookup for profit analytics (fire-and-forget;
     // _applySales will use whatever is available and re-emit when it lands).
@@ -153,6 +193,8 @@ class ReportCubit extends Cubit<ReportState> {
         status: cached == null ? ReportStatus.loading : ReportStatus.success,
         sales: cached?.sales ?? const [],
         previousSales: const [],
+        aggregate: null,
+        previousSummary: null,
         dailyRevenue: cached?.dailyRevenue ?? const [],
         profit: cached?.profit,
         previousProfit: null,
@@ -197,6 +239,110 @@ class ReportCubit extends Cubit<ReportState> {
         emit(state.copyWith(previousSales: const [], previousProfit: null));
       },
     );
+  }
+
+  /// Long-range path: one watched SQL aggregate for the period plus a
+  /// one-shot SQL summary for the previous period (hero-card comparison).
+  Future<void> _subscribeAggregate({
+    required String key,
+    required DateTime from,
+    required DateTime to,
+    required int gen,
+  }) async {
+    final cached = _cache[key];
+    final cachedAggregate = cached?.aggregateIfFresh;
+    final cachedData = cached?.dataIfFresh;
+    emit(
+      state.copyWith(
+        from: from,
+        to: to,
+        status: cachedData == null && cachedAggregate == null
+            ? ReportStatus.loading
+            : ReportStatus.success,
+        aggregate: cachedAggregate,
+        previousSummary: null,
+        previousSales: const [],
+        sales: const [],
+        dailyRevenue: cachedData?.dailyRevenue ?? const [],
+        profit: cachedData?.profit,
+        previousProfit: null,
+      ),
+    );
+
+    final span = to.difference(from).inDays + 1;
+    final previousTo = from.subtract(const Duration(days: 1));
+    final previousFrom = previousTo.subtract(Duration(days: span - 1));
+
+    // Deliberate wiring of GetReportSummary: a comparison baseline only
+    // changes when the selected range changes, so a one-shot query is
+    // enough — no table-update subscription needed for it.
+    unawaited(
+      _getReportSummary(from: previousFrom, to: previousTo)
+          .then((summary) {
+            if (isClosed || gen != _rangeGen) return;
+            emit(state.copyWith(previousSummary: summary));
+          })
+          .catchError((Object e) {
+            AppLogger.error('ReportCubit.previousSummary failed', error: e);
+          }),
+    );
+
+    final subscription = _reportRepository
+        .watchReportAggregate(from: from, to: to)
+        .listen(
+          (aggregate) {
+            if (isClosed || gen != _rangeGen) return;
+            _applyAggregate(key, from, to, aggregate, gen);
+          },
+          onError: (e) {
+            AppLogger.error('ReportCubit.aggregate failed', error: e);
+            if (isClosed || gen != _rangeGen) return;
+            emit(state.copyWith(status: ReportStatus.failure));
+          },
+        );
+    if (isClosed || gen != _rangeGen) {
+      await subscription.cancel();
+      return;
+    }
+    _aggregateSub = subscription;
+  }
+
+  void _applyAggregate(
+    String key,
+    DateTime from,
+    DateTime to,
+    ReportAggregate aggregate,
+    int gen,
+  ) {
+    final profit = aggregate.profit ?? _buildProfit(state.sales);
+    final data = ReportData(
+      sales: const [],
+      from: from,
+      to: to,
+      totals: aggregate.totals,
+      dailyRevenue: aggregate.dailyRevenue,
+      profit: aggregate.profit,
+    );
+    emit(
+      state.copyWith(
+        status: ReportStatus.success,
+        aggregate: aggregate,
+        // Hydrated list stays intentionally empty on this path — every
+        // metric comes from [aggregate]; only its bounded display list
+        // (5 newest PromptPay bills) carries raw Sale objects.
+        sales: const [],
+        dailyRevenue: aggregate.dailyRevenue,
+        profit: profit,
+        productLookup: _productLookup ?? const {},
+        lastUpdated: DateTime.now(),
+      ),
+    );
+    _cache[key] = _CacheEntry(
+      data: data,
+      storedAt: DateTime.now(),
+      aggregate: aggregate,
+    );
+    _evictCache();
   }
 
   void _applySales(
@@ -312,6 +458,7 @@ class ReportCubit extends Cubit<ReportState> {
   @override
   Future<void> close() {
     _sub?.cancel();
+    _aggregateSub?.cancel();
     _previousSub?.cancel();
     _cache.clear();
     unawaited(_tabRequests.close());
@@ -321,10 +468,18 @@ class ReportCubit extends Cubit<ReportState> {
 
 /// Cache entry with a timestamp for TTL-based eviction.
 class _CacheEntry {
-  const _CacheEntry({required this.data, required this.storedAt});
+  const _CacheEntry({
+    required this.data,
+    required this.storedAt,
+    this.aggregate,
+  });
 
   final ReportData data;
   final DateTime storedAt;
+
+  /// SQL-aggregate bundle when this entry was produced by the long-range
+  /// path; null for hydrated entries.
+  final ReportAggregate? aggregate;
 
   /// Returns [data] if still within the TTL window, otherwise null.
   ReportData? get dataIfFresh {
@@ -332,7 +487,15 @@ class _CacheEntry {
     return age < ReportCubit._cacheTtl ? data : null;
   }
 
+  /// Returns [aggregate] if still within the TTL window, otherwise null.
+  ReportAggregate? get aggregateIfFresh {
+    final age = DateTime.now().difference(storedAt);
+    return age < ReportCubit._cacheTtl ? aggregate : null;
+  }
+
   /// Rough memory estimate: ~1 KB per Sale (including items + payments).
-  /// Used by [_evictCache] to enforce a memory ceiling.
-  int get estimatedBytes => data.sales.length * 1024;
+  /// Aggregate-path snapshots carry no hydrated list, so they cost ~1 KB —
+  /// small enough that only the count cap matters for them.
+  int get estimatedBytes =>
+      data.sales.isEmpty ? 1024 : data.sales.length * 1024;
 }

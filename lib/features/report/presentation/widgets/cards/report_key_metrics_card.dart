@@ -15,6 +15,9 @@ class ReportKeyMetricsCard extends StatelessWidget {
     required this.sales,
     required this.currency,
     required this.calculator,
+    this.hourlyRevenueOverride,
+    this.uniqueCustomerCountOverride,
+    this.repeatCustomerCountOverride,
   });
 
   final SalesPeriodTotals totals;
@@ -22,16 +25,26 @@ class ReportKeyMetricsCard extends StatelessWidget {
   final String currency;
   final ReportCalculatorService calculator;
 
+  /// Precomputed hour → revenue map for the SQL-aggregate path; when set,
+  /// [sales] is not scanned for peak hours.
+  final Map<int, double>? hourlyRevenueOverride;
+
+  /// Precomputed customer counts for the SQL-aggregate path.
+  final int? uniqueCustomerCountOverride;
+  final int? repeatCustomerCountOverride;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final hourly = calculator.hourlyRevenue(sales);
+    final hourly = hourlyRevenueOverride ?? calculator.hourlyRevenue(sales);
     final peak = hourly.entries.isEmpty
         ? null
         : (hourly.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
               .first;
-    final uniqueCustomers = calculator.uniqueCustomerCount(sales);
-    final repeatCustomers = calculator.repeatCustomerCount(sales);
+    final uniqueCustomers =
+        uniqueCustomerCountOverride ?? calculator.uniqueCustomerCount(sales);
+    final repeatCustomers =
+        repeatCustomerCountOverride ?? calculator.repeatCustomerCount(sales);
 
     final hasContent =
         totals.grossRevenue.value > 0 ||

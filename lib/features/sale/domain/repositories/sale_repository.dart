@@ -1,4 +1,5 @@
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
@@ -49,6 +50,10 @@ abstract class SaleRepository {
 
   /// SQL-aggregated report summary (no item hydration).
   Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to});
+
+  /// Reactive SQL-aggregated report bundle (no item hydration). Emits once
+  /// immediately, then re-aggregates whenever contributing tables change.
+  Stream<ReportAggregate> watchReportAggregate({DateTime? from, DateTime? to});
 
   Future<void> voidSale(String saleId, {String? reason});
 }

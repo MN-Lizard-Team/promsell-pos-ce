@@ -15,7 +15,17 @@ class ReportPromptPayCard extends StatelessWidget {
     required this.currency,
     required this.fmt,
     required this.calculator,
+    this.aggregateLegTotal,
+    this.aggregateBillCount,
+    this.aggregateRecentBills,
   });
+
+  /// Precomputed SQL-aggregated values for long ranges where the full sale
+  /// list is not hydrated. When [aggregateRecentBills] is non-null the card
+  /// renders from these fields instead of scanning [sales].
+  final double? aggregateLegTotal;
+  final int? aggregateBillCount;
+  final List<Sale>? aggregateRecentBills;
 
   final List<Sale> sales;
   final String currency;
@@ -38,16 +48,27 @@ class ReportPromptPayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    final promptPaySales = calculator.promptPaySales(sales);
+    final useAggregate = aggregateRecentBills != null;
+    final promptPaySales = useAggregate
+        ? aggregateRecentBills!
+        : calculator.promptPaySales(sales);
 
-    if (promptPaySales.isEmpty) {
+    // Hydrated mode hides entirely without bills; aggregate mode keeps
+    // showing SQL totals even when the bounded display list is empty.
+    final hideCard = useAggregate
+        ? aggregateBillCount == 0 && promptPaySales.isEmpty
+        : promptPaySales.isEmpty;
+    if (hideCard) {
       return const SizedBox.shrink();
     }
 
-    final total = calculator.promptPayLegTotal(sales).value;
-    final average = promptPaySales.isEmpty
-        ? 0.0
-        : total / promptPaySales.length;
+    final total = useAggregate
+        ? aggregateLegTotal!
+        : calculator.promptPayLegTotal(sales).value;
+    final billCount = useAggregate
+        ? aggregateBillCount!
+        : promptPaySales.length;
+    final average = billCount == 0 ? 0.0 : total / billCount;
 
     return ReportSectionCard(
       title: l10n.promptpay,
@@ -67,9 +88,9 @@ class ReportPromptPayCard extends StatelessWidget {
               ),
               Expanded(
                 child: _MetricTile(
-                  label: l10n.salesCount(promptPaySales.length),
+                  label: l10n.salesCount(billCount),
                   value: null,
-                  count: promptPaySales.length,
+                  count: billCount,
                   currency: currency,
                   theme: theme,
                 ),

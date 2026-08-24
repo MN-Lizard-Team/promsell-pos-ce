@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_insert_writer.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_query_local_datasource.dart';
@@ -59,6 +60,10 @@ abstract class SaleLocalDatasource {
 
   /// SQL-aggregated report summary (no item hydration).
   Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to});
+
+  /// Reactive SQL-aggregated report bundle (no item hydration). Emits once
+  /// immediately, then re-aggregates whenever contributing tables change.
+  Stream<ReportAggregate> watchReportAggregate({DateTime? from, DateTime? to});
 
   Future<void> voidSale(String saleId, {String? reason});
 }
@@ -186,6 +191,12 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
   @override
   Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to}) =>
       _query.queryReportSummary(from: from, to: to);
+
+  @override
+  Stream<ReportAggregate> watchReportAggregate({
+    DateTime? from,
+    DateTime? to,
+  }) => _query.watchReportAggregate(from: from, to: to);
 
   @override
   Future<void> voidSale(String saleId, {String? reason}) =>

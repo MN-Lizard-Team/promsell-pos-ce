@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 const Object _unset = Object();
@@ -12,6 +14,8 @@ class ReportState extends Equatable {
     this.status = ReportStatus.initial,
     this.sales = const [],
     this.previousSales = const [],
+    this.aggregate,
+    this.previousSummary,
     this.dailyRevenue = const [],
     this.profit,
     this.previousProfit,
@@ -22,8 +26,22 @@ class ReportState extends Equatable {
   });
 
   final ReportStatus status;
+
+  /// Hydrated sales for ranges within [ReportCubit.maxHydratedSpanDays].
+  /// Empty when the active range is served by the SQL-aggregate path
+  /// ([aggregate] is non-null) or before the first load completes.
   final List<Sale> sales;
   final List<Sale> previousSales;
+
+  /// SQL-aggregated bundle used for ranges longer than
+  /// [ReportCubit.maxHydratedSpanDays]. Null on the hydrated path.
+  final ReportAggregate? aggregate;
+
+  /// Previous-period summary (SQL) powering the net-revenue comparison on
+  /// long ranges. Null on the hydrated path (previous period uses
+  /// [previousSales]).
+  final ReportSummary? previousSummary;
+
   final List<DailyRevenue> dailyRevenue;
   final ProfitAnalytics? profit;
   final ProfitAnalytics? previousProfit;
@@ -39,12 +57,23 @@ class ReportState extends Equatable {
   bool get isLoading => status == ReportStatus.loading;
   bool get hasError => status == ReportStatus.failure;
 
-  bool get isEmpty => status == ReportStatus.success && sales.isEmpty;
+  /// True when the active range has no sales at all, regardless of which
+  /// data path (hydrated vs aggregated) produced the state.
+  bool get isEmpty {
+    if (status != ReportStatus.success) return false;
+    if (aggregate != null) {
+      return aggregate!.summary.salesCount == 0 &&
+          aggregate!.summary.voidCount == 0;
+    }
+    return sales.isEmpty;
+  }
 
   ReportState copyWith({
     ReportStatus? status,
     List<Sale>? sales,
     List<Sale>? previousSales,
+    Object? aggregate = _unset,
+    Object? previousSummary = _unset,
     List<DailyRevenue>? dailyRevenue,
     Object? profit = _unset,
     Object? previousProfit = _unset,
@@ -57,6 +86,12 @@ class ReportState extends Equatable {
       status: status ?? this.status,
       sales: sales ?? this.sales,
       previousSales: previousSales ?? this.previousSales,
+      aggregate: identical(aggregate, _unset)
+          ? this.aggregate
+          : aggregate as ReportAggregate?,
+      previousSummary: identical(previousSummary, _unset)
+          ? this.previousSummary
+          : previousSummary as ReportSummary?,
       dailyRevenue: dailyRevenue ?? this.dailyRevenue,
       profit: identical(profit, _unset)
           ? this.profit
@@ -78,6 +113,8 @@ class ReportState extends Equatable {
     status,
     sales,
     previousSales,
+    aggregate,
+    previousSummary,
     dailyRevenue,
     profit,
     previousProfit,

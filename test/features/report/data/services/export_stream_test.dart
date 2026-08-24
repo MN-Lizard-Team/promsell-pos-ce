@@ -10,6 +10,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_page.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 
 import '../../../../helpers/fake_database.dart';
@@ -157,6 +158,12 @@ class _FakeSaleLocalDatasource implements SaleLocalDatasource {
   @override
   Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to}) =>
       _query.queryReportSummary(from: from, to: to);
+
+  @override
+  Stream<ReportAggregate> watchReportAggregate({
+    DateTime? from,
+    DateTime? to,
+  }) => _query.watchReportAggregate(from: from, to: to);
 
   @override
   Future<Sale> insertSaleWithItems({

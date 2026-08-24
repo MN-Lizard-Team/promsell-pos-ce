@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
@@ -97,6 +98,12 @@ class SaleRepositoryImpl implements SaleRepository {
   @override
   Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to}) =>
       _datasource.queryReportSummary(from: from, to: to);
+
+  @override
+  Stream<ReportAggregate> watchReportAggregate({
+    DateTime? from,
+    DateTime? to,
+  }) => _datasource.watchReportAggregate(from: from, to: to);
 
   @override
   Future<void> voidSale(String saleId, {String? reason}) =>

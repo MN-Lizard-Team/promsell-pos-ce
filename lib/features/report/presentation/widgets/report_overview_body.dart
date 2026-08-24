@@ -42,9 +42,12 @@ class ReportOverviewBody extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<ReportCubit>();
         final sales = state.sales;
+        final aggregate = state.aggregate;
         final from = state.from ?? todayRange.$1;
         final to = state.to ?? todayRange.$2;
-        final totals = calculator.periodTotals(sales);
+        // SQL-aggregate path (long ranges): totals come precomputed and the
+        // hydrated list is intentionally empty.
+        final totals = aggregate?.totals ?? calculator.periodTotals(sales);
         final now = DateTime.now();
         final closeIsToday = _isSameCalendarDay(to, now);
         final closeLabel = closeIsToday
@@ -59,15 +62,14 @@ class ReportOverviewBody extends StatelessWidget {
           onPick: () => _pickRange(context, cubit, from, to),
           compact: true,
         );
-
-        if (state.isLoading && sales.isEmpty) {
+        if (state.isLoading && sales.isEmpty && aggregate == null) {
           return _ReportLoadingState(
             dateHeader: dateHeader,
             onClear: cubit.openToday,
           );
         }
 
-        if (state.hasError && sales.isEmpty) {
+        if (state.hasError && sales.isEmpty && aggregate == null) {
           return _ReportErrorState(
             dateHeader: dateHeader,
             onRetry: cubit.load,
@@ -75,7 +77,7 @@ class ReportOverviewBody extends StatelessWidget {
           );
         }
 
-        if (sales.isEmpty) {
+        if (state.isEmpty) {
           return _ReportEmptyState(
             dateHeader: dateHeader,
             onClear: cubit.openToday,
@@ -91,7 +93,12 @@ class ReportOverviewBody extends StatelessWidget {
               dateHeader: dateHeader,
               totals: totals,
               sales: sales,
-              previousSales: state.previousSales,
+              previousPeriodNetRevenue: aggregate != null
+                  ? (state.previousSummary?.netRevenue.value ?? 0)
+                  : calculator
+                        .periodTotals(state.previousSales)
+                        .netRevenue
+                        .value,
               dailyRevenue: state.dailyRevenue,
               days: days,
               currency: settings.currency,
@@ -103,6 +110,7 @@ class ReportOverviewBody extends StatelessWidget {
               productLookup: state.productLookup,
               calculator: calculator,
               lastUpdated: state.lastUpdated,
+              aggregate: aggregate,
             ),
           ),
         );

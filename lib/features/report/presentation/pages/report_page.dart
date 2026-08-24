@@ -474,16 +474,22 @@ class _ReportPageState extends State<ReportPage>
       // synchronous PDF/CSV generation blocks the UI isolate.
       await Future.microtask(() {});
 
+      // Long ranges are served by the SQL-aggregate path where state.sales
+      // is intentionally empty; exports then carry the aggregated totals and
+      // per-sale rows are limited to what is hydrated in the aggregate.
+      final agg = state.aggregate;
+      final exportData = ReportData(
+        sales: state.sales,
+        from: from,
+        to: to,
+        totals: agg?.totals ?? calculator.periodTotals(state.sales),
+        dailyRevenue: state.dailyRevenue,
+        profit: state.profit,
+      );
+
       if (value == 'pdf') {
         final pdfBytes = await _exportService.exportPdf(
-          ReportData(
-            sales: state.sales,
-            from: from,
-            to: to,
-            totals: calculator.periodTotals(state.sales),
-            dailyRevenue: state.dailyRevenue,
-            profit: state.profit,
-          ),
+          exportData,
           productLookup: state.productLookup,
           calculator: calculator,
           maxRows: 5000,
@@ -494,14 +500,7 @@ class _ReportPageState extends State<ReportPage>
         );
       } else if (value == 'csv') {
         final csvContent = await _exportService.exportCsv(
-          ReportData(
-            sales: state.sales,
-            from: from,
-            to: to,
-            totals: calculator.periodTotals(state.sales),
-            dailyRevenue: state.dailyRevenue,
-            profit: state.profit,
-          ),
+          exportData,
           maxRows: 5000,
         );
         await _exportService.shareReport(

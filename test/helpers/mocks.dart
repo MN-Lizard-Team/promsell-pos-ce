@@ -19,6 +19,7 @@ import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_hist
 import 'package:promsell_pos_ce/features/report/domain/repositories/report_repository.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/get_report.dart';
+import 'package:promsell_pos_ce/features/report/domain/usecases/get_report_summary.dart';
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:promsell_pos_ce/features/settings/domain/repositories/settings_repository.dart';
@@ -115,6 +116,8 @@ class MockWatchSaleHistory extends Mock implements WatchSaleHistory {}
 class MockGetReport extends Mock implements GetReport {}
 
 class MockWatchReport extends Mock implements WatchReport {}
+
+class MockGetReportSummary extends Mock implements GetReportSummary {}
 
 // ── BLoCs / Cubits (for widget tests) ──
 class MockCartBloc extends MockBloc<CartEvent, CartState> implements CartBloc {}

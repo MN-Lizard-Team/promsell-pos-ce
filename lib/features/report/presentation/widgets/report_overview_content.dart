@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
 import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
@@ -31,7 +32,7 @@ class ReportOverviewContent extends StatelessWidget {
     required this.dateHeader,
     required this.totals,
     required this.sales,
-    required this.previousSales,
+    required this.previousPeriodNetRevenue,
     required this.dailyRevenue,
     required this.days,
     required this.currency,
@@ -43,12 +44,17 @@ class ReportOverviewContent extends StatelessWidget {
     this.previousProfit,
     this.productLookup = const {},
     this.lastUpdated,
+    this.aggregate,
   });
 
   final Widget dateHeader;
   final SalesPeriodTotals totals;
   final List<Sale> sales;
-  final List<Sale> previousSales;
+
+  /// Previous-period net revenue (baht) powering the hero-card delta.
+  /// Callers resolve it from hydrated previous sales or the SQL summary
+  /// depending on which data path produced [totals].
+  final double previousPeriodNetRevenue;
   final List<DailyRevenue> dailyRevenue;
   final int days;
   final String currency;
@@ -58,6 +64,10 @@ class ReportOverviewContent extends StatelessWidget {
   final ProfitAnalytics? profit;
   final ProfitAnalytics? previousProfit;
   final Map<String, Product> productLookup;
+
+  /// SQL-aggregated bundle for long ranges. When set, item/customer-derived
+  /// cards read from it instead of scanning [sales] (which is empty then).
+  final ReportAggregate? aggregate;
   final ReportCalculatorService calculator;
   final DateTime? lastUpdated;
 
@@ -90,10 +100,7 @@ class ReportOverviewContent extends StatelessWidget {
             value: totals.netRevenue.value,
             currency: currency,
             subtitle: context.l10n.salesCount(totals.salesCount),
-            previousValue: calculator
-                .periodTotals(previousSales)
-                .netRevenue
-                .value,
+            previousValue: previousPeriodNetRevenue,
             icon: TablerIcons.coins,
             color: theme.colorScheme.primary,
             emphasize: true,
@@ -138,6 +145,9 @@ class ReportOverviewContent extends StatelessWidget {
             sales: sales,
             currency: currency,
             calculator: calculator,
+            hourlyRevenueOverride: aggregate?.hourlyRevenue,
+            uniqueCustomerCountOverride: aggregate?.uniqueCustomers,
+            repeatCustomerCountOverride: aggregate?.repeatCustomers,
           ),
         ),
         if (profit != null && !profit!.hasNoCoverage) ...[
@@ -166,10 +176,12 @@ class ReportOverviewContent extends StatelessWidget {
             final topProducts = ReportStagger(
               index: stagger++,
               child: ReportTopProductsCard(
-                topProducts: calculator.topProductStats(
-                  sales,
-                  productLookup: productLookup,
-                ),
+                topProducts: aggregate != null
+                    ? aggregate!.topProducts
+                    : calculator.topProductStats(
+                        sales,
+                        productLookup: productLookup,
+                      ),
                 currency: currency,
               ),
             );
@@ -180,6 +192,9 @@ class ReportOverviewContent extends StatelessWidget {
                 currency: currency,
                 fmt: fmt,
                 calculator: calculator,
+                aggregateLegTotal: aggregate?.promptPayLegTotal.value,
+                aggregateBillCount: aggregate?.promptPayBillCount,
+                aggregateRecentBills: aggregate?.recentPromptPaySales,
               ),
             );
             final closeDay = ReportStagger(

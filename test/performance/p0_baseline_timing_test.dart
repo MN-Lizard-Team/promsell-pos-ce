@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
 import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 import 'package:promsell_pos_ce/features/report/data/services/report_export_service.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_query_local_datasource.dart';
@@ -196,6 +197,12 @@ class _FakeSaleDs implements SaleLocalDatasource {
   @override
   Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to}) =>
       _query.queryReportSummary(from: from, to: to);
+
+  @override
+  Stream<ReportAggregate> watchReportAggregate({
+    DateTime? from,
+    DateTime? to,
+  }) => _query.watchReportAggregate(from: from, to: to);
 
   @override
   Future<Sale> insertSaleWithItems({

@@ -1,4 +1,5 @@
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 /// Abstraction for report data access.
@@ -10,6 +11,10 @@ import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 abstract class ReportRepository {
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to});
   Future<List<Sale>> getSales({DateTime? from, DateTime? to});
+
+  /// Reactive SQL-aggregated report bundle for long ranges — never hydrates
+  /// `List<Sale>`, so memory stays bounded regardless of window size.
+  Stream<ReportAggregate> watchReportAggregate({DateTime? from, DateTime? to});
 
   /// Returns a productId → [Product] map for the supplied ids.
   ///
