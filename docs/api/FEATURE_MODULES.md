@@ -312,7 +312,7 @@ class AdjustStock {
 
 ### Sale Entity
 
-**Path:** `lib/features/sale/domain/entities/sale.dart`
+**Path:** `lib/shared/domain/entities/sale.dart` (re-exported by `lib/features/sale/domain/entities/sale.dart` for backward compatibility)
 
 #### Core Properties
 

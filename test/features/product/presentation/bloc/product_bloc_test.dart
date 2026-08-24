@@ -232,6 +232,51 @@ void main() {
     );
 
     blocTest<ProductBloc, ProductState>(
+      'ProductsSubscribed emits failure when getProductCount throws',
+      setUp: () {
+        when(() => mockGetProductCount()).thenThrow(Exception('count failed'));
+      },
+      build: buildBloc,
+      act: (b) => b.add(const ProductsSubscribed()),
+      expect: () => [
+        const ProductState(status: ProductStatus.loading),
+        const ProductState(
+          status: ProductStatus.failure,
+          error: DatabaseError(
+            'Exception: count failed',
+            operation: 'load_products',
+          ),
+        ),
+      ],
+      verify: (_) {
+        verify(() => mockGetProductCount()).called(1);
+        verifyNever(() => mockGetProducts(limit: any(named: 'limit')));
+      },
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'ProductsSubscribed emits failure when getProductCount throws (preserves products)',
+      setUp: () {
+        when(() => mockGetProductCount()).thenThrow(Exception('count failed'));
+      },
+      seed: () =>
+          ProductState(status: ProductStatus.success, products: [tProduct]),
+      build: buildBloc,
+      act: (b) => b.add(const ProductsSubscribed()),
+      expect: () => [
+        ProductState(status: ProductStatus.loading, products: [tProduct]),
+        ProductState(
+          status: ProductStatus.failure,
+          products: [tProduct],
+          error: const DatabaseError(
+            'Exception: count failed',
+            operation: 'load_products',
+          ),
+        ),
+      ],
+    );
+
+    blocTest<ProductBloc, ProductState>(
       'Bug 8: stream update preserves saveStatus when saving (race condition regression)',
       setUp: () {
         when(() => mockGetProductCount()).thenAnswer((_) async => 2);

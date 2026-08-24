@@ -7,7 +7,7 @@ import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/usecases/void_sale.dart';
 
 class _HistorySalesUpdated extends HistoryEvent {

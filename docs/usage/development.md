@@ -121,9 +121,11 @@ Promsell uses [Drift](https://drift.simonbinder.eu/) (formerly Moor) for type-sa
 
 ```
 lib/core/database/
-├── app_database.dart           # Database class, schema v32, SQLCipher open
-├── app_database.g.dart         # GENERATED — do not edit (not committed to git)
-├── app_database_migrations.dart # Migration logic (extension AppDatabaseMigrationLogic)
+├── app_database.dart                       # Database class, schema v32, SQLCipher open
+├── app_database.g.dart                     # GENERATED — do not edit (not committed to git)
+├── app_database_migrations.dart            # Migration strategy + indexes + seeds (part of)
+├── app_database_migration_helpers.dart     # Dedup, backfill, addColumnIfNotExists (part of)
+├── app_database_migration_v32_satang.dart  # Phase M satang migration (part of)
 └── tables/
     ├── products_table.dart
     ├── sales_table.dart
@@ -159,7 +161,7 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ### Schema migrations
 
-When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `app_database_migrations.dart` (extension `AppDatabaseMigrationLogic`). Current schema version: **32**. See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
+When you change a table, bump `schemaVersion` in `app_database.dart` and add a migration step in `app_database_migrations.dart` (or create a new `app_database_migration_vXX_*.dart` `part of` file for large version-specific migrations). Current schema version: **32**. See the [Drift migration docs](https://drift.simonbinder.eu/Migrations/) for details.
 
 > **Note:** v0.5.3+ uses incremental migration (`addColumn`). Earlier v0.5.x used destructive drop+recreate (pre-release).
 

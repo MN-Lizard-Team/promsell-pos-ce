@@ -3,8 +3,8 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/report_section_card.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Key analytical metrics: gross revenue, ATV, peak hour, customers, promo orders.

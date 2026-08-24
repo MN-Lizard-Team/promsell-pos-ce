@@ -29,7 +29,7 @@ Multiple `BlocListener`s subscribed to the same BLoC receive emissions in **subs
 | `@LazySingleton` | `CategoryBloc` | Shared across Product + Category Management — same category list everywhere |
 | `@LazySingleton` | `CartBloc`, `DraftBloc`, `CheckoutBloc` | Shared single instances across SalePage, cart sheet/review, CheckoutPage/PaymentPage — prevents split-brain state |
 | `@LazySingleton` | `SettingsCubit` | Global app state (locale, theme) — must persist across navigation |
-| `@LazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()` |
+| `@LazySingleton` | `ReportCubit` | Persistent singleton — date range preserved across tab navigation; `load()` called once in `ReportPage.initState()`. In-memory cache bounded by both count (10 entries) and memory (50 MB); oldest entries evicted by `storedAt` when either limit is exceeded |
 
 ### State immutability
 

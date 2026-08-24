@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 const Object _unset = Object();
 

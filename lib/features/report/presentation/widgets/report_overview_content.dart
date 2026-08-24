@@ -4,7 +4,7 @@ import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_key_metrics_card.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_order_breakdown_card.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_payment_method_card.dart';
@@ -17,7 +17,7 @@ import 'package:promsell_pos_ce/features/report/presentation/widgets/charts/dail
 import 'package:promsell_pos_ce/features/report/presentation/widgets/charts/revenue_trend_chart.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/close_day_cta.dart';
 import 'package:promsell_pos_ce/features/report/presentation/widgets/report_stagger.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Scrollable content for the Report overview tab.

@@ -4,7 +4,7 @@ import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_document.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/services/receipt_line_name.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 /// Builds a [ReceiptDocument] from a persisted [Sale] (financial SSOT).

@@ -4,8 +4,8 @@ import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/top_product_stat.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
 
 /// Single source of truth for all report metric calculations.
 ///

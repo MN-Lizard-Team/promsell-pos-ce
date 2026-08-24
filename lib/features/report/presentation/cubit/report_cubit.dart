@@ -9,7 +9,7 @@ import 'package:promsell_pos_ce/features/report/domain/services/report_calculato
 import 'package:promsell_pos_ce/features/report/domain/usecases/watch_report.dart';
 import 'package:promsell_pos_ce/features/report/domain/utils/date_range_presets.dart';
 import 'package:promsell_pos_ce/features/report/presentation/cubit/report_state.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 @lazySingleton
 class ReportCubit extends Cubit<ReportState> {
@@ -59,6 +59,15 @@ class ReportCubit extends Cubit<ReportState> {
 
   /// Cache validity window. Entries older than this are treated as misses.
   static const _cacheTtl = Duration(minutes: 5);
+
+  /// Maximum number of cached report ranges (LRU by storedAt).
+  static const _maxCachedRanges = 10;
+
+  /// Soft memory ceiling for cached sales data (bytes). When the total
+  /// estimated size of cached [ReportData] exceeds this, entries are evicted
+  /// oldest-first regardless of [_maxCachedRanges]. Prevents unbounded
+  /// memory growth when the user browses many long date ranges.
+  static const _maxCacheMemoryBytes = 50 * 1024 * 1024; // 50 MB
 
   /// Request History sub-tab (works even when ReportPage is already mounted).
   void requestHistoryTab() {
@@ -231,12 +240,30 @@ class ReportCubit extends Cubit<ReportState> {
       ),
     );
     _cache[key] = _CacheEntry(data: data, storedAt: DateTime.now());
-    const maxCachedRanges = 10;
-    // Evict the oldest entry by storedAt (approximate LRU).
-    while (_cache.length > maxCachedRanges) {
+    _evictCache();
+  }
+
+  /// Evicts cache entries exceeding both count and memory limits.
+  /// Oldest entries (by storedAt) are removed first.
+  void _evictCache() {
+    // Count-based eviction.
+    while (_cache.length > _maxCachedRanges) {
       final oldest = _cache.entries.reduce(
         (a, b) => a.value.storedAt.isBefore(b.value.storedAt) ? a : b,
       );
+      _cache.remove(oldest.key);
+    }
+    // Memory-based eviction: estimate bytes per entry from sales list size.
+    // Each Sale with ~5 items is roughly ~1 KB (Equatable props + Money).
+    var totalBytes = 0;
+    for (final entry in _cache.values) {
+      totalBytes += entry.estimatedBytes;
+    }
+    while (totalBytes > _maxCacheMemoryBytes && _cache.isNotEmpty) {
+      final oldest = _cache.entries.reduce(
+        (a, b) => a.value.storedAt.isBefore(b.value.storedAt) ? a : b,
+      );
+      totalBytes -= oldest.value.estimatedBytes;
       _cache.remove(oldest.key);
     }
   }
@@ -304,4 +331,8 @@ class _CacheEntry {
     final age = DateTime.now().difference(storedAt);
     return age < ReportCubit._cacheTtl ? data : null;
   }
+
+  /// Rough memory estimate: ~1 KB per Sale (including items + payments).
+  /// Used by [_evictCache] to enforce a memory ceiling.
+  int get estimatedBytes => data.sales.length * 1024;
 }

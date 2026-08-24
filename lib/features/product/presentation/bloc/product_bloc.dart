@@ -96,16 +96,25 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(state.copyWith(status: ProductStatus.loading));
     await _sub?.cancel();
 
-    // Fetch total count to decide whether to paginate.
-    final totalCount = await _getProductCount();
-    final limit = totalCount > _paginationThreshold
-        ? _paginationThreshold
-        : null;
+    try {
+      final totalCount = await _getProductCount();
+      final limit = totalCount > _paginationThreshold
+          ? _paginationThreshold
+          : null;
 
-    _sub = _getProducts(limit: limit).listen(
-      (products) => add(_ProductsUpdated(products)),
-      onError: (Object e) => add(_ProductsError(e.toString())),
-    );
+      _sub = _getProducts(limit: limit).listen(
+        (products) => add(_ProductsUpdated(products)),
+        onError: (Object e) => add(_ProductsError(e.toString())),
+        onDone: () => _sub = null,
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: ProductStatus.failure,
+          error: DatabaseError(e.toString(), operation: 'load_products'),
+        ),
+      );
+    }
   }
 
   void _onProductsUpdated(_ProductsUpdated event, Emitter<ProductState> emit) {

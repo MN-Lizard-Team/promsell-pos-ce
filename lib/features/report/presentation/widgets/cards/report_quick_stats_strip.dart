@@ -4,7 +4,7 @@ import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/presentation/theme/report_theme_extension.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Compact secondary-metric strip shown beneath the hero Net Revenue card.

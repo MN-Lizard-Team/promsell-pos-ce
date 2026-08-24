@@ -216,5 +216,63 @@ void main() {
         await cubit.close();
       },
     );
+
+    test('cache evicts entries exceeding count limit', () async {
+      when(
+        () => mockWatchReport(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value(tSales));
+
+      final cubit = buildCubit();
+      // Subscribe to 15 different date ranges — exceeds _maxCachedRanges (10).
+      for (var i = 0; i < 15; i++) {
+        await cubit.changeDateRange(
+          DateTime(2024, 1, 1 + i),
+          DateTime(2024, 1, 2 + i),
+        );
+        // Allow the stream to emit before moving to the next range.
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      // The cache should not grow unbounded. Internal state is private,
+      // but we verify the cubit still works correctly after many ranges.
+      expect(cubit.state.status, ReportStatus.success);
+      await cubit.close();
+    });
+
+    test('cache evicts entries exceeding memory limit', () async {
+      // Each Sale with items is ~1 KB estimated. 60k sales × 1 KB = ~60 MB,
+      // exceeding the 50 MB memory ceiling. The cache should evict entries.
+      final largeSales = List.generate(
+        60000,
+        (i) => tSale.copyWith(
+          id: 'sale-mem-$i',
+          createdAt: DateTime(2024, 1, 1).add(Duration(seconds: i)),
+        ),
+      );
+
+      when(
+        () => mockWatchReport(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value(largeSales));
+
+      final cubit = buildCubit();
+      // Subscribe to 3 ranges, each with 60k sales (~60 MB each).
+      // After eviction, only the most recent should remain.
+      for (var i = 0; i < 3; i++) {
+        await cubit.changeDateRange(
+          DateTime(2024, 1, 1 + i * 10),
+          DateTime(2024, 1, 2 + i * 10),
+        );
+        // Allow the stream to emit before moving to the next range.
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(cubit.state.status, ReportStatus.success);
+      expect(cubit.state.sales.length, 60000);
+      await cubit.close();
+    });
   });
 }

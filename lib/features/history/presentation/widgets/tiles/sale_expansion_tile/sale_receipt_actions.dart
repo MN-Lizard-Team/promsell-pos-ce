@@ -12,7 +12,7 @@ import 'package:promsell_pos_ce/features/product/domain/repositories/product_rep
 import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
 import 'package:promsell_pos_ce/features/receipt/data/services/receipt_pdf_service.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 
 class SaleReceiptActions {

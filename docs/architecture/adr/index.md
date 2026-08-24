@@ -46,6 +46,8 @@ All architecture decision records, ordered by ADR number.
 | [ADR-032](#adr-032-database-lifecycle-services) | Database lifecycle services (migration safety, WAL, health) | [Unreleased] |
 | [ADR-033](#adr-033-recovery-kit-key-wrapping) | Recovery kit key wrapping (AES-256-GCM + PBKDF2) | [Unreleased] |
 | [ADR-034](#adr-034-backup-metadata-with-sha-256-checksum) | Backup metadata with SHA-256 checksum | [Unreleased] |
+| [ADR-035](#adr-035-shared-domain-entities-for-cross-feature-coupling) | Shared domain entities for cross-feature coupling | [Unreleased] |
+| [ADR-036](#adr-036-migration-file-split-by-version) | Migration file split by version | [Unreleased] |
 
 ---
 
@@ -668,4 +670,40 @@ lib/core/widgets/
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Architecture Decision Records 001–034</sub>
+## ADR-035: Shared domain entities for cross-feature coupling ([Unreleased])
+
+**Context:** `Sale`, `SaleItem`, `SalePayment`, `SelectedProductOption`, and `SalesPeriodTotals` lived under `lib/features/sale/domain/entities/`. Six other features (report, history, receipt, daily_close, home, settings) imported these entities directly from the sale feature, creating a fan-in dependency where the sale feature became the de-facto owner of cross-feature domain models. `core/utils/payment_method_helper.dart` also imported `SalePayment` from the sale feature — a reverse dependency (core → feature) that violated the dependency rule.
+
+**Decision:** Move these five entities to `lib/shared/domain/entities/`. The original files in `lib/features/sale/domain/entities/` become re-export shims (`export 'package:promsell_pos_ce/shared/domain/entities/sale.dart';`) for backward compatibility. All 23 files outside the sale feature are updated to import from `shared/domain/` directly. The sale feature itself keeps its re-export shims so existing imports within the feature continue to work without churn.
+
+**Consequences:**
+- ✅ No feature imports another feature's `domain/entities/` for sale entities — the dependency rule is respected
+- ✅ `core/utils/payment_method_helper.dart` no longer has a reverse dependency on a feature
+- ✅ Backward compatible — re-export shims mean no contract changes; existing imports within the sale feature still work
+- ✅ New features that need sale entities import from `shared/domain/` without coupling to the sale feature
+- ⚠️ The sale feature's `domain/entities/` folder now contains shims — developers must remember that the canonical definitions live in `shared/domain/`
+- ⚠️ The import fence (`tool/check_domain_fence.dart`) does not currently flag cross-feature `domain/entities/` imports; a future enhancement could enforce this
+
+---
+
+## ADR-036: Migration file split by version ([Unreleased])
+
+**Context:** `app_database_migrations.dart` grew to ~960 lines, mixing the migration strategy (`onCreate`/`onUpgrade`/`beforeOpen`), helper methods (dedup, backfill, `addColumnIfNotExists`), and the Phase M v32 satang migration. The file was difficult to navigate and changes to one concern risked touching unrelated code.
+
+**Decision:** Split into three `part of 'app_database.dart'` extension files:
+- `app_database_migrations.dart` (~640 lines) — migration strategy, `createIndexes()`, seed methods.
+- `app_database_migration_helpers.dart` (~215 lines) — `deduplicateBarcodes`, `deduplicateBarcodesLower`, `deduplicateSkuLower`, `backfillCategoryIds`, `backfillDeviceId`, `addColumnIfNotExists`, `createBarcodeUniqueIndex`.
+- `app_database_migration_v32_satang.dart` (~132 lines) — Phase M satang dual-write column migration and `backfillSatangColumn`.
+
+All three are `part of` files registered via `part` directives in `app_database.dart`. No API changes — the extension methods are accessible from the same `AppDatabase` instance.
+
+**Consequences:**
+- ✅ Each file has a single responsibility — strategy, helpers, or a specific version's migration
+- ✅ Future version-specific migrations (e.g., v33) can be added as a new `part of` file without touching the strategy or helpers
+- ✅ No API changes — all methods remain on the `AppDatabase` extension
+- ⚠️ Developers must remember that `app_database_migrations.dart` is no longer the only migration file — `app_database.dart` lists all `part` directives at the top
+- ⚠️ The `part of` pattern means IDE navigation may jump between files; this is a known trade-off of the `part` directive
+
+---
+
+<sub>Promsell POS CE · v0.9.3 · Architecture Decision Records 001–036</sub>

@@ -8,7 +8,7 @@ import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_page.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 import 'package:share_plus/share_plus.dart';

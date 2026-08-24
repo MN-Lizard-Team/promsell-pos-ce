@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Highlights
+
+- **Technical debt & scalability pass** — five targeted improvements addressing database indexing, cache memory bounds, use-case test coverage, migration file organization, and cross-feature domain coupling. All changes are additive or refactoring — no existing bloc/cubit/repository contract is broken.
+
+### Added
+
+- **P1 composite index `idx_inventory_logs_product_id_created_at`** — covers `watchLogsByProduct` queries (`WHERE product_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 200`) so the query planner avoids full scan + sort on high-volume SKUs. Migration test verifies index existence and `EXPLAIN QUERY PLAN` usage on a fresh DB.
+- **ReportCubit cache memory-based eviction** — new `_maxCacheMemoryBytes` (50 MB) ceiling alongside the existing count limit (10 entries). `_evictCache()` removes oldest entries by `storedAt` when either limit is exceeded. `_CacheEntry.estimatedBytes` approximates memory per entry (~1 KB per Sale). Prevents unbounded memory growth when browsing many long date ranges.
+- **Use-case test coverage** — 43 new tests across four critical use cases:
+  - `submit_product` (11 tests) — add/edit paths, stock preservation (V092-C.1), category clearing, field trimming, image path preservation, option group passthrough.
+  - `sale_payable_calculator` (16 tests) — VAT NONE/EXCLUSIVE/INCLUSIVE, service charge resolution (restaurant vs retail, cart override, negative rate), `forCartFields` integration, edge cases (zero subtotal, lowercase normalization, clamping).
+  - `adjust_stock` (5 tests) — app lock gate before repository call, delegation, error propagation, negative qty passthrough, ordering verification.
+  - `update_settings` (11 tests) — sensitive field detection (PromptPay ID, biller ID, discount policy, oversell, daily close lock, backup encryption), lock enforcement, `SettingsSaveFailure` on repository errors, no-op when values unchanged.
+- **ReportCubit cache eviction tests** — 2 tests verifying count-based (15 ranges > 10 limit) and memory-based (60k sales × 3 ranges ≈ 180 MB > 50 MB ceiling) eviction.
+- `MockInventoryRepository` and `MockAppLockService` test helpers in `test/helpers/mocks.dart`.
+
+### Changed
+
+- **Cross-feature domain coupling reduced** — `Sale`, `SaleItem`, `SalePayment`, `SelectedProductOption`, and `SalesPeriodTotals` moved from `lib/features/sale/domain/entities/` to `lib/shared/domain/entities/`. Original files are now re-export shims (backward compatible). 23 files outside the sale feature updated to import directly from `shared/domain/`. Fixes reverse dependency in `core/utils/payment_method_helper.dart` (core → feature → shared).
+
+### Refactored
+
+- **`app_database_migrations.dart` split** (960→640 lines in main file) — extracted into three `part of` extension files:
+  - `app_database_migrations.dart` (~640 lines) — migration strategy (`onCreate`/`onUpgrade`/`beforeOpen`), `createIndexes()`, seed methods.
+  - `app_database_migration_helpers.dart` (~215 lines) — dedup (`deduplicateBarcodes`, `deduplicateBarcodesLower`, `deduplicateSkuLower`), backfill (`backfillCategoryIds`, `backfillDeviceId`), `addColumnIfNotExists`, `createBarcodeUniqueIndex`.
+  - `app_database_migration_v32_satang.dart` (~132 lines) — Phase M satang dual-write column migration and `backfillSatangColumn`.
+  - All three registered via `part` directives in `app_database.dart`. No API changes.
+
+### Known limitations
+
+- All changes are additive or refactoring — no existing contract is broken.
+- `Sale.copyWith` was added to the shared `Sale` entity (needed by report cache eviction tests); the original sale feature entity did not have it. This is a new method, not a breaking change.
+- The 4 `prefer_const_constructors` info lints in test files are cosmetic and do not affect correctness.
+
+`flutter analyze` → **0 errors** (4 info lints in tests only) · `flutter test` → **91 tests passing** (8 test files: migration, report cubit, submit_product, sale_payable_calculator, adjust_stock, update_settings, product_bloc, p1_wal_health)
+
 ## [0.9.3] - 2026-08-17
 
 Tagged `v0.9.3`. `pubspec` is `0.9.3`. Latest GitHub tag is **v0.9.3**.

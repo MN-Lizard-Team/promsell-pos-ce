@@ -231,6 +231,33 @@ void main() {
       expect(report.approachingGuardrail, isFalse);
       expect(report.exceedsGuardrail, isFalse);
     });
+
+    test('countRows returns COUNT(*) per table without loading rows', () async {
+      await seedScalingFixture(
+        db,
+        productCount: 12,
+        saleCount: 7,
+        saleItemCount: 21,
+        inventoryLogCount: 9,
+      );
+      final counts = await healthService.countRows();
+      expect(counts['Products'], 12);
+      expect(counts['Sales'], 7);
+      expect(counts['Sale Items'], 21);
+      expect(counts['Inventory Logs'], 9);
+      expect(counts['Categories'], greaterThanOrEqualTo(0));
+      expect(counts['Draft Carts'], greaterThanOrEqualTo(0));
+      expect(counts['Daily Closes'], greaterThanOrEqualTo(0));
+      expect(counts['App Settings'], greaterThanOrEqualTo(0));
+    });
+
+    test('countRows returns zeros for empty database', () async {
+      final counts = await healthService.countRows();
+      expect(counts['Products'], 0);
+      expect(counts['Sales'], 0);
+      expect(counts['Sale Items'], 0);
+      expect(counts['Inventory Logs'], 0);
+    });
   });
 }
 

@@ -49,6 +49,15 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   widgets/    — shared UI primitives                                          │
 └───────────────────────┬───────────────────────────────────────────────────────┘
                         │
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│   lib/shared/ — Shared domain entities (cross-feature)                          │
+│   domain/entities/  — Sale, SaleItem, SalePayment, SelectedProductOption,      │
+│                       SalesPeriodTotals (used by sale, report, history,        │
+│                       receipt, daily_close, home; re-exported by sale feature   │
+│                       for backward compatibility)                               │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                        │
+                        ▼
 ┌───────────────────────▼──────────────────────────────────┐
 │   lib/l10n/ — Localization                               │
 │   app_th.arb  — Thai (template)                          │
@@ -114,7 +123,7 @@ features/<name>/
 - Domain `Money` is integer satang. The 32 nullable `*_satang` columns use Drift `NullableMoneySatangConverter`.
 - Writers dual-write exact satang plus legacy REAL baht for rollback compatibility. Readers prefer satang and fall back to REAL for pre-v32 rows.
 - Percentage rates and percentage-valued discounts remain REAL; conditional `AMOUNT` values also receive satang storage.
-- Migration code lives in `lib/core/database/app_database_migrations.dart` (a `part of app_database.dart` file exposing an `extension on AppDatabase`); update the schema version and add a migration test for every schema change.
+- Migration code lives in `lib/core/database/app_database_migrations.dart` and two `part of` extension files: `app_database_migration_helpers.dart` (dedup, backfill, `addColumnIfNotExists`) and `app_database_migration_v32_satang.dart` (Phase M satang migration). All three expose `extension on AppDatabase`. Update the schema version and add a migration test for every schema change.
 
 ### State management overview
 

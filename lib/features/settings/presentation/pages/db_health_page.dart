@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:promsell_pos_ce/core/database/database_health_service.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 
@@ -29,48 +26,13 @@ class _DbHealthPageState extends State<DbHealthPage> {
 
   Future<void> _loadHealth() async {
     try {
-      final db = sl<AppDatabase>();
-      final dbFolder = await getApplicationDocumentsDirectory();
-      final dbFile = File('${dbFolder.path}/promsell_pos.db');
-      final fileSize = await dbFile.exists() ? await dbFile.length() : 0;
-
-      final rowCounts = <String, int>{};
-      rowCounts['Products'] = await db
-          .select(db.products)
-          .get()
-          .then((r) => r.length);
-      rowCounts['Sales'] = await db
-          .select(db.sales)
-          .get()
-          .then((r) => r.length);
-      rowCounts['Sale Items'] = await db
-          .select(db.saleItems)
-          .get()
-          .then((r) => r.length);
-      rowCounts['Categories'] = await db
-          .select(db.categories)
-          .get()
-          .then((r) => r.length);
-      rowCounts['Inventory Logs'] = await db
-          .select(db.inventoryLogs)
-          .get()
-          .then((r) => r.length);
-      rowCounts['Draft Carts'] = await db
-          .select(db.draftCarts)
-          .get()
-          .then((r) => r.length);
-      rowCounts['Daily Closes'] = await db
-          .select(db.dailyCloses)
-          .get()
-          .then((r) => r.length);
-      rowCounts['App Settings'] = await db
-          .select(db.appSettings)
-          .get()
-          .then((r) => r.length);
+      final healthService = sl<DatabaseHealthService>();
+      final report = await healthService.generateReport();
+      final rowCounts = await healthService.countRows();
 
       if (mounted) {
         setState(() {
-          _fileSizeBytes = fileSize;
+          _fileSizeBytes = report.mainDbSize;
           _rowCounts = rowCounts;
           _isLoading = false;
         });
@@ -87,8 +49,7 @@ class _DbHealthPageState extends State<DbHealthPage> {
 
   Future<void> _vacuum() async {
     try {
-      final db = sl<AppDatabase>();
-      await db.customStatement('VACUUM');
+      await sl<DatabaseHealthService>().vacuum();
       if (mounted) {
         AppSnackBar.success(context, context.l10n.dbHealthVacuumSuccess);
         await _loadHealth();

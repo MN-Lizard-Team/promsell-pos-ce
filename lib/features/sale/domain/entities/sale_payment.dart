@@ -1,34 +1,4 @@
-import 'package:equatable/equatable.dart';
-import 'package:promsell_pos_ce/core/domain/money.dart';
-
-/// One tender line on a completed (or in-progress checkout) sale.
-class SalePayment extends Equatable {
-  const SalePayment({
-    required this.method,
-    required this.amount,
-    this.id,
-    this.saleId,
-    this.reference,
-    this.sendingBankCode,
-    this.sortOrder = 0,
-  });
-
-  final String? id;
-  final String? saleId;
-  final String method;
-  final Money amount;
-  final String? reference;
-  final String? sendingBankCode;
-  final int sortOrder;
-
-  @override
-  List<Object?> get props => [
-    id,
-    saleId,
-    method,
-    amount,
-    reference,
-    sendingBankCode,
-    sortOrder,
-  ];
-}
+// Re-export for backward compatibility.
+// The canonical entity now lives in lib/shared/domain/entities/sale_payment.dart
+// to avoid cross-feature domain coupling.
+export 'package:promsell_pos_ce/shared/domain/entities/sale_payment.dart';

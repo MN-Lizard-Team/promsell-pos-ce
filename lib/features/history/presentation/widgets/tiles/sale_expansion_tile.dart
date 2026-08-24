@@ -11,7 +11,7 @@ import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/widgets/tiles/sale_expansion_tile/sale_receipt_actions.dart';
 import 'package:promsell_pos_ce/features/report/presentation/theme/report_theme_extension.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/services/sales_day_lock.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';

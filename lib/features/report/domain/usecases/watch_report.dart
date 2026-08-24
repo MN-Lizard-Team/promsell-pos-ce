@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/report/domain/repositories/report_repository.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 @injectable
 class WatchReport {

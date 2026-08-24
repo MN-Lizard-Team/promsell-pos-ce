@@ -103,4 +103,65 @@ void main() {
       expect(indexes, isNotEmpty);
     });
   });
+
+  group('P1 scaling: inventory_logs composite index', () {
+    test(
+      'idx_inventory_logs_product_id_created_at exists on fresh DB',
+      () async {
+        final db = AppDatabase.forTesting(NativeDatabase.memory());
+        addTearDown(db.close);
+
+        await db.customSelect('SELECT 1').get();
+
+        final indexes = await db.customSelect('''SELECT name FROM sqlite_master
+           WHERE type = 'index'
+           AND name = 'idx_inventory_logs_product_id_created_at' ''').get();
+
+        expect(indexes, isNotEmpty);
+      },
+    );
+
+    test('composite index covers per-product ORDER BY created_at DESC', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+
+      await db.customSelect('SELECT 1').get();
+
+      // Insert logs for two products with different timestamps.
+      final now = DateTime.now().millisecondsSinceEpoch;
+      for (var i = 0; i < 5; i++) {
+        await db.customStatement(
+          'INSERT INTO inventory_logs '
+          '(id, product_id, type, qty_change, balance_after, reason, created_at, version) '
+          "VALUES ('log-$i', 'prod-A', 'ADJUSTMENT_IN', 1, ${i + 1}, 'test', $now, 0)",
+        );
+      }
+      for (var i = 0; i < 3; i++) {
+        await db.customStatement(
+          'INSERT INTO inventory_logs '
+          '(id, product_id, type, qty_change, balance_after, reason, created_at, version) '
+          "VALUES ('logb-$i', 'prod-B', 'SALE', -1, ${10 - i}, null, $now, 0)",
+        );
+      }
+
+      // Query plan should use the composite index, not a full scan.
+      final plan = await db
+          .customSelect(
+            'EXPLAIN QUERY PLAN '
+            'SELECT * FROM inventory_logs '
+            "WHERE product_id = 'prod-A' AND deleted_at IS NULL "
+            'ORDER BY created_at DESC LIMIT 200',
+          )
+          .get();
+
+      final planText = plan.map((r) => r.data['detail'] as String).join('\n');
+      expect(
+        planText,
+        contains('idx_inventory_logs_product_id_created_at'),
+        reason:
+            'Query plan should use the composite index, not a full scan.\n'
+            'Plan: $planText',
+      );
+    });
+  });
 }

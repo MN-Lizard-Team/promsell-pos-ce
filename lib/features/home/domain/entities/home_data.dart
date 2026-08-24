@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 class HomeData extends Equatable {
   const HomeData({

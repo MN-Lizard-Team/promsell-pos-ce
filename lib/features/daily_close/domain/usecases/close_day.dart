@@ -4,7 +4,7 @@ import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 
 @injectable

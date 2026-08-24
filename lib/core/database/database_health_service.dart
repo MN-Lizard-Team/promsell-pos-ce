@@ -93,6 +93,32 @@ class DatabaseHealthService {
   final AppDatabase _db;
   final WalCheckpointService _walService;
 
+  /// Returns row counts without loading table contents into memory.
+  Future<Map<String, int>> countRows() async {
+    const tables = <String, String>{
+      'Products': 'products',
+      'Sales': 'sales',
+      'Sale Items': 'sale_items',
+      'Categories': 'categories',
+      'Inventory Logs': 'inventory_logs',
+      'Draft Carts': 'draft_carts',
+      'Daily Closes': 'daily_closes',
+      'App Settings': 'app_settings',
+    };
+
+    final counts = <String, int>{};
+    for (final entry in tables.entries) {
+      final result = await _db
+          .customSelect('SELECT COUNT(*) AS row_count FROM ${entry.value}')
+          .getSingle();
+      counts[entry.key] = result.read<int>('row_count');
+    }
+    return counts;
+  }
+
+  /// Runs `VACUUM` to reclaim free pages and compact the database file.
+  Future<void> vacuum() => _db.customStatement('VACUUM');
+
   /// Generates a database health report.
   ///
   /// [checkIntegrity] defaults to false because `PRAGMA integrity_check`

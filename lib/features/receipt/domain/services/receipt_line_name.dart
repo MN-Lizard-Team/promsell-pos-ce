@@ -1,4 +1,4 @@
-import 'package:promsell_pos_ce/features/sale/domain/entities/selected_product_option.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/selected_product_option.dart';
 
 /// Formats a receipt line product name including selected options.
 ///

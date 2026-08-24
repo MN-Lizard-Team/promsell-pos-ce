@@ -4,8 +4,8 @@ import 'package:promsell_pos_ce/features/home/domain/entities/home_data.dart';
 import 'package:promsell_pos_ce/features/home/domain/repositories/home_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/sale_repository.dart';
 
 @LazySingleton(as: HomeRepository)

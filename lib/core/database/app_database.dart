@@ -23,6 +23,8 @@ import 'package:promsell_pos_ce/core/database/tables/promotions_table.dart';
 
 part 'app_database.g.dart';
 part 'app_database_migrations.dart';
+part 'app_database_migration_helpers.dart';
+part 'app_database_migration_v32_satang.dart';
 
 @DriftDatabase(
   tables: [

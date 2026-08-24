@@ -1,4 +1,4 @@
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 abstract class HistoryRepository {
   Future<List<Sale>> getSales({DateTime? from, DateTime? to});

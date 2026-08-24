@@ -12,7 +12,7 @@ Migration guide, backup **export**, performance notes, and database testing.
 
 ### Current strategy
 
-**SSOT for `onUpgrade` is** [`lib/core/database/app_database_migrations.dart`](../../lib/core/database/app_database_migrations.dart) (extension `AppDatabaseMigrationLogic`). Do not copy snippets from this page into a new migration.
+**SSOT for `onUpgrade` is** [`lib/core/database/app_database_migrations.dart`](../../lib/core/database/app_database_migrations.dart) (extension `AppDatabaseMigrationLogic`), with helpers in [`app_database_migration_helpers.dart`](../../lib/core/database/app_database_migration_helpers.dart) and the v32 satang migration in [`app_database_migration_v32_satang.dart`](../../lib/core/database/app_database_migration_v32_satang.dart). All three are `part of 'app_database.dart'`. Do not copy snippets from this page into a new migration.
 
 - Migrations are additive. There is **no** down migration.
 - Unique indexes belong in `onUpgrade` **after a dedupe pass**. `_createIndexes()` runs on `onCreate` and `from < 2` only and does **not** create `idx_products_sku_lower_unique`.

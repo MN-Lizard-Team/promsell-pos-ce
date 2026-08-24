@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
-import 'package:promsell_pos_ce/features/sale/domain/entities/sales_period_totals.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
+import 'package:promsell_pos_ce/shared/domain/entities/sales_period_totals.dart';
 
 /// Aggregated report data for a given period.
 ///

@@ -7,9 +7,9 @@ Person(merchant, "Merchant", "Shop owner / cashier")
 
 System_Boundary(app, "Promsell POS CE (Flutter App)") {
     Container(ui, "Presentation Layer", "Flutter Widgets + BLoC/Cubit", "5-tab shell with adaptive sale: narrow cart bar/FAB, tablet dual-pane")
-    Container(domain, "Domain Layer", "Pure Dart (CI-fenced)", "Entities, Money, Use Cases, Repository interfaces, ProductPage/SalePage/ReportSummary")
+    Container(domain, "Domain Layer", "Pure Dart (CI-fenced)", "Entities, Money, Use Cases, Repository interfaces, ProductPage/SalePage/ReportSummary, shared/domain (Sale, SaleItem, SalePayment, SelectedProductOption, SalesPeriodTotals)")
     Container(data, "Data Layer", "Drift + SQLCipher", "Repository impls, Datasources, satang converters, Services, cursor pagination, streaming CSV export")
-    ContainerDb(sqlite, "SQLite Database", "Drift ORM", "16 tables · schema v32, 32 satang columns, WAL, FK ON, UUIDv4 PKs, SQLCipher AES-256, cursor indexes")
+    ContainerDb(sqlite, "SQLite Database", "Drift ORM", "16 tables · schema v32, 32 satang columns, WAL, FK ON, UUIDv4 PKs, SQLCipher AES-256, cursor indexes + inventory_logs composite index")
     Container(pdf, "ReceiptPdfService", "pdf + printing packages", "80mm thermal PDF generation")
     Container(lifecycle, "DB Lifecycle Services", "@LazySingleton services", "MigrationSafetyService, WalCheckpointService, DatabaseHealthService, BackupExportService, BackupRestoreService, RecoveryKitService")
 }

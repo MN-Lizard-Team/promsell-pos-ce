@@ -28,6 +28,7 @@ This file is the **map**. Packages own detail. Do not treat COMPLETE folders as 
 
 | Package | Role |
 |---------|------|
+| [TD-SCAL-093](./COMPLETE/TD-SCAL-093/OVERVIEW.md) | Technical debt & scalability pass — bounded COUNT(*) health queries, ProductBloc failure state, shared domain entities, migration file split, cache eviction, use-case tests |
 | [POST-090-MANAGE](./COMPLETE/POST-090-MANAGE/POST-090-OVERVIEW.md) | Post-v0.9 store/QA/Phase M·2b/UX — P0 scaling + P1 lifecycle + Phase M + D0/D1 done; operator Play items (A1/A2/A4/A5) and D2 device smoke remain tracked |
 | [V092-INTEGRITY](./COMPLETE/V092-INTEGRITY/OVERVIEW.md) | v0.9.2 integrity slice — **GATE UNLOCKED** (2026-08-14) |
 | [V090-TRUST](./COMPLETE/V090-TRUST/V090-TRUST-OVERVIEW.md) | v0.9.0 GitHub trust-cut |

@@ -57,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
       await _seedDefaultSettings();
     },
     onUpgrade: (Migrator m, int from, int to) async {
-      // Incremental steps — see app_database_migrations.dart (extension AppDatabaseMigrationLogic) for full history
+      // Incremental steps — see app_database_migrations.dart (+ helpers + v32_satang part files) for full history
       if (from < 24) { /* partial unique barcode + indexes */ }
       if (from < 25) { /* products brand/unit/supplier/is_recommended */ }
       if (from < 26) { /* daily_closes unique close_date + dedupe */ }
