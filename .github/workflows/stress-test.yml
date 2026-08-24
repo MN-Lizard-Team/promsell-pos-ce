@@ -43,7 +43,7 @@ jobs:
         run: flutter test --tags stress --timeout 600s
 
   report-scheduled-failure:
-    if: github.event_name == 'schedule' && needs.stress-test.result == 'failure'
+    if: always() && github.event_name == 'schedule' && needs.stress-test.result == 'failure'
     needs: stress-test
     permissions:
       issues: write

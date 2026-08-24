@@ -290,6 +290,52 @@ void main() {
     }
   });
 
+  test('repairs product_audits on an existing v32 database', () async {
+    final dbFile = File(p.join(tempDir.path, 'pre_audit_repair.db'));
+    if (dbFile.existsSync()) dbFile.deleteSync();
+
+    final created = AppDatabase.forTesting(NativeDatabase(dbFile));
+    await created.customSelect('SELECT 1').get();
+    await created.customStatement('DROP TABLE product_audits');
+    await created.close();
+
+    final db = AppDatabase.forTesting(NativeDatabase(dbFile));
+    try {
+      await db.customSelect('SELECT 1').get();
+      final table = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name = 'product_audits'",
+          )
+          .get();
+      expect(table, hasLength(1));
+
+      final productDs = ProductLocalDatasourceImpl(
+        db,
+        ProductOptionDatasourceImpl(db),
+      );
+      await productDs.insertProduct(
+        ProductsCompanion.insert(
+          id: 'repair-product',
+          name: 'Repair product',
+          price: 1.0,
+        ),
+      );
+      await productDs.updateProductWithAudit(
+        const ProductsCompanion(id: Value('repair-product'), price: Value(2.0)),
+        null,
+        [(fieldName: 'price', oldValue: '1.00', newValue: '2.00')],
+      );
+      final audit = await db.select(db.productAudits).getSingle();
+      expect(audit.productId, 'repair-product');
+      expect(
+        DateTime.now().difference(audit.changedAt).inMinutes.abs(),
+        lessThan(2),
+      );
+    } finally {
+      await db.close();
+    }
+  });
+
   test(
     'documents why SELECT * fails here: 16 legacy vs 27 modern columns',
     () async {

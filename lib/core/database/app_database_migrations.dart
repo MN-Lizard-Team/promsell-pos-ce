@@ -56,6 +56,7 @@ extension AppDatabaseMigrationLogic on AppDatabase {
       // Wait up to 5s for a locked database instead of failing immediately
       // (concurrent access from backup/restore or a second isolate).
       await customStatement('PRAGMA busy_timeout=5000');
+      await ensureProductAuditsTable();
     },
   );
 
@@ -508,7 +509,50 @@ WHERE receipt_number IS NOT NULL
       );
     }
     // Legacy databases before product audit logging may not have this table.
-    // Keep creation idempotent so upgrades remain safe for fresh installs.
+    await ensureProductAuditsTable();
+
+    // V092-C.3: run the idempotent index/trigger set at the end of every
+    // upgrade so DBs upgraded from v2+ have all indexes/triggers. All
+    // statements use IF NOT EXISTS so this is safe to repeat.
+    await createIndexes();
+  }
+
+  Future<void> ensureProductAuditsTable() async {
+    final columns = await customSelect(
+      'PRAGMA table_info("product_audits")',
+    ).get();
+    if (columns.isEmpty) {
+      await _createProductAuditsTable();
+      return;
+    }
+
+    final changedAt = columns.firstWhere(
+      (row) => row.read<String>('name') == 'changed_at',
+    );
+    final defaultValue = changedAt.read<String?>('dflt_value') ?? '';
+    if (!defaultValue.contains('* 1000')) return;
+
+    await transaction(() async {
+      await customStatement(
+        'ALTER TABLE product_audits RENAME TO product_audits_legacy',
+      );
+      await _createProductAuditsTable();
+      await customStatement('''
+INSERT INTO product_audits (
+  id, product_id, action, field_name, old_value, new_value, version,
+  changed_at, device_id
+)
+SELECT id, product_id, action, field_name, old_value, new_value, version,
+  CASE WHEN changed_at > 100000000000 THEN CAST(changed_at / 1000 AS INTEGER)
+       ELSE changed_at END,
+  device_id
+FROM product_audits_legacy
+''');
+      await customStatement('DROP TABLE product_audits_legacy');
+    });
+  }
+
+  Future<void> _createProductAuditsTable() async {
     await customStatement('''
 CREATE TABLE IF NOT EXISTS product_audits (
   id TEXT NOT NULL PRIMARY KEY,
@@ -518,15 +562,10 @@ CREATE TABLE IF NOT EXISTS product_audits (
   old_value TEXT,
   new_value TEXT,
   version INTEGER NOT NULL DEFAULT 1,
-  changed_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+  changed_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
   device_id TEXT
 )
 ''');
-
-    // V092-C.3: run the idempotent index/trigger set at the end of every
-    // upgrade so DBs upgraded from v2+ have all indexes/triggers. All
-    // statements use IF NOT EXISTS so this is safe to repeat.
-    await createIndexes();
   }
 
   Future<void> createIndexes() async {
