@@ -76,9 +76,9 @@ void main() {
       'payment_breakdown, vat_amount, discount_amount, note, closed_at, '
       'device_id';
 
-  /// Tables absent at v9 that the chain recreates (v20/v21/v28 blocks) or
-  /// intentionally leaves absent (product_audits — never recreated by any
-  /// migration step, matching production upgrades).
+  /// Tables absent at v9 that the chain recreates (v20/v21/v28 blocks).
+  /// `product_audits` is absent in v9 and is recreated by the final
+  /// idempotent upgrade step, matching production upgrades.
   const nonV9Tables = [
     'product_audits',
     'restaurant_tables',
@@ -162,6 +162,12 @@ void main() {
           )
           .get();
       expect(tables.map((r) => r.read<String>('name')), ['daily_closes']);
+      final auditTable = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name = 'product_audits'",
+          )
+          .get();
+      expect(auditTable, hasLength(1));
 
       // Upgraded table carries the full modern 27-column shape.
       final columnCount = await db

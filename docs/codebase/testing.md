@@ -124,7 +124,7 @@ test/
 - Tags `v*` and money-path PRs **block** on the emulator job — green smoke ≠ 1.0 Go
 - `release-trust.yml` runs `integration_test/all_tests.dart --flavor dev` **blocking** on money paths and tags
 - `screenshots.yml` is visual; does not assert money
-- Known risks (V092-D.5 partial fix): `TestApp.restartApp` no longer uses `pumpAndSettle`; `TestKeys` constants added for the 5 core cases. EN-string finders still exist in older tests — migrate to `TestKeys` when touching those files.
+- Known risks (V092-D.5 partial fix): `TestApp.restartApp` no longer uses `pumpAndSettle`; stable keys are centralized in `lib/core/testing/test_keys.dart` for six blocking journeys. EN-string finders still exist in older tests — migrate when touching those files.
 - Do **not** market “E2E ready” until a hard-gated smoke subset is green 3× (POST-090 B4 / V092-D)
 
 ### Architecture (scaffold)

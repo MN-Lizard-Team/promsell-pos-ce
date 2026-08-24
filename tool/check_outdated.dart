@@ -33,6 +33,9 @@ const _intentionallyHeldBack = <String, String>{
   // permission_handler 13.x changes permission model; defer until
   // runtime-permission flow is audited.
   'permission_handler': 'v0.9.x: 13.x permission model break; audit needed',
+  // shimmer 4.x changes the loading widget API; defer until the catalog
+  // loading surfaces have a coordinated UI migration and device smoke.
+  'shimmer': 'v0.9.x: 4.x loading API migration + device smoke needed',
 };
 
 void main() {
@@ -83,9 +86,7 @@ void main() {
   }
 
   if (heldBack.isNotEmpty) {
-    stdout.writeln(
-      'ℹ️  Intentionally held back (excluded from gate):',
-    );
+    stdout.writeln('ℹ️  Intentionally held back (excluded from gate):');
     for (final h in heldBack) {
       stdout.writeln(h);
     }

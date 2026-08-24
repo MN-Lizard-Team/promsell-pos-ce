@@ -507,6 +507,22 @@ WHERE receipt_number IS NOT NULL
         "WHERE receipt_number IS NOT NULL AND receipt_number != ''",
       );
     }
+    // Legacy databases before product audit logging may not have this table.
+    // Keep creation idempotent so upgrades remain safe for fresh installs.
+    await customStatement('''
+CREATE TABLE IF NOT EXISTS product_audits (
+  id TEXT NOT NULL PRIMARY KEY,
+  product_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  field_name TEXT,
+  old_value TEXT,
+  new_value TEXT,
+  version INTEGER NOT NULL DEFAULT 1,
+  changed_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+  device_id TEXT
+)
+''');
+
     // V092-C.3: run the idempotent index/trigger set at the end of every
     // upgrade so DBs upgraded from v2+ have all indexes/triggers. All
     // statements use IF NOT EXISTS so this is safe to repeat.

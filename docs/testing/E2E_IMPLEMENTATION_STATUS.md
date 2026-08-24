@@ -16,7 +16,7 @@
 | Runtime on local desktop without Android/iOS device | **No supported devices** |
 | Fail-closed money path | Host `test/integration/` + `release-trust.yml` (V092-D.1 VAT+void+close, V092-D.4 void after day-close). Device job on trust is blocking but **dev** flavor / scaffold |
 | Manual device evidence | `docs/testing/RELEASE_0.9.3_SMOKE.md` (current) · `docs/testing/RELEASE_0.9.2_SMOKE.md` (historical 0.9.2) · `docs/testing/RELEASE_0.9_SMOKE.md` (historical 0.9) |
-| TestApp flake (V092-D.5) | `pumpAndSettle` dropped in `restartApp`; `TestKeys` constants added for 5 core cases. EN-string finders still in older tests — migrate when touching. |
+| TestApp flake (V092-D.5) | `pumpAndSettle` dropped in `restartApp`; stable keys are centralized in `lib/core/testing/test_keys.dart` for six blocking journeys. EN-string finders still exist in older tests — migrate when touching. |
 
 **Do not claim:** “30 tests compiling, ready for runtime validation” as if CI guarantees green E2E.
 
