@@ -34,8 +34,11 @@ android {
         applicationId = "com.promsell.promsell_pos_ce"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // Pinned explicitly to the values resolved by Flutter 3.44.4
+        // (packages/flutter_tools/gradle/src/main/kotlin/FlutterExtension.kt)
+        // so future Flutter upgrades cannot shift them silently.
+        minSdk = 24    // flutter.minSdkVersion @ 3.44.4
+        targetSdk = 36 // flutter.targetSdkVersion @ 3.44.4
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
