@@ -186,7 +186,13 @@ class BackupRestoreService {
     final candidate = AppDatabase.forTesting(
       NativeDatabase(
         File(path),
-        setup: (rawDb) => rawDb.execute("PRAGMA key=\"x'$key'\""),
+        // PRAGMA key must stay first; busy_timeout mirrors the main
+        // connection so validation waits on a locked file instead of
+        // failing immediately.
+        setup: (rawDb) {
+          rawDb.execute("PRAGMA key=\"x'$key'\"");
+          rawDb.execute('PRAGMA busy_timeout=5000');
+        },
       ),
     );
     try {

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:meta/meta.dart';
 import 'package:promsell_pos_ce/core/database/database_opener.dart';
+import 'package:promsell_pos_ce/core/database/migration_safety_service.dart';
 import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
