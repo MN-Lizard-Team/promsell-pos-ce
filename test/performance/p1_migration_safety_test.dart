@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:promsell_pos_ce/core/database/app_database.dart';
@@ -10,7 +11,26 @@ import 'package:promsell_pos_ce/core/database/migration_safety_service.dart';
 
 import '../helpers/scaling_fixture.dart';
 
+/// Mocks the native `getFreeDiskSpace` handler to return [bytes].
+void _mockFreeDiskSpace(int bytes) {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+        const MethodChannel('promsell/secure_screen'),
+        (call) async => call.method == 'getFreeDiskSpace' ? bytes : null,
+      );
+}
+
+void _clearFreeDiskSpaceMock() {
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+        const MethodChannel('promsell/secure_screen'),
+        null,
+      );
+}
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late Directory tempDir;
 
   setUpAll(() {
@@ -19,6 +39,7 @@ void main() {
   });
 
   tearDownAll(() {
+    _clearFreeDiskSpaceMock();
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
@@ -34,6 +55,7 @@ void main() {
     });
 
     tearDown(() async {
+      _clearFreeDiskSpaceMock();
       await service.clearMigrationStatus();
       await db.close();
     });
@@ -82,12 +104,37 @@ void main() {
       expect(status, MigrationStatus.idle);
     });
 
-    test('checkFreeSpace returns a result (platform-dependent)', () async {
+    test(
+      'checkFreeSpace allows migration when free space is sufficient',
+      () async {
+        _mockFreeDiskSpace(1024 * 1024 * 1024); // 1 GB free.
+        final result = await service.checkFreeSpace();
+        expect(result.freeBytes, 1024 * 1024 * 1024);
+        expect(result.canProceed, isTrue);
+        expect(result.reason, isNull);
+        print('  Free-space preflight (sufficient): $result');
+      },
+    );
+
+    test(
+      'checkFreeSpace blocks migration when free space is insufficient',
+      () async {
+        _mockFreeDiskSpace(1024); // ~1 KB free — below the 50 MB floor.
+        final result = await service.checkFreeSpace();
+        expect(result.freeBytes, 1024);
+        expect(result.canProceed, isFalse);
+        expect(result.reason, 'INSUFFICIENT_FREE_SPACE');
+        print('  Free-space preflight (insufficient): $result');
+      },
+    );
+
+    test('checkFreeSpace proceeds when free space is unknown', () async {
+      // No mock → MissingPluginException → -1 (desktop test environment).
       final result = await service.checkFreeSpace();
-      // On desktop test, free space may be unknown (-1) but canProceed
-      // should still be true (we allow migration when free space is unknown).
+      expect(result.freeBytes, -1);
       expect(result.canProceed, isTrue);
-      print('  Free-space preflight: $result');
+      expect(result.reason, 'FREE_SPACE_UNKNOWN');
+      print('  Free-space preflight (unknown): $result');
     });
 
     test('migration status survives database close/reopen', () async {

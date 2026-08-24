@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/services/free_disk_space.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 
 /// Status of a migration attempt.
@@ -60,9 +61,13 @@ class MigrationPreflightResult {
 /// migration and trigger recovery or operator alert.
 @LazySingleton()
 class MigrationSafetyService {
-  MigrationSafetyService(this._db);
+  MigrationSafetyService(
+    this._db, [
+    this._freeDiskSpace = const FreeDiskSpaceService(),
+  ]);
 
   final AppDatabase _db;
+  final FreeDiskSpaceService _freeDiskSpace;
 
   /// Status file name in the app documents directory.
   static const _statusFileName = 'migration_status.json';
@@ -118,18 +123,9 @@ class MigrationSafetyService {
   /// Returns available free space in bytes for [path], or -1 if unknown.
   Future<int> _getFreeSpace(String path) async {
     try {
-      // Use StatFs on Android, NSFileManager on iOS, GetDiskFreeSpaceEx on
-      // Windows. The path package's platform abstraction doesn't expose this,
-      // so we use a heuristic: check the temp directory's available space.
-      // On most platforms, the temp and documents dirs share the same volume.
-      final tempDir = await getTemporaryDirectory();
-      final stat = await tempDir.stat();
-      // stat() doesn't directly give free space on all platforms, but we
-      // can use ProcessResult to call platform-specific commands.
-      //
-      // Fallback: assume sufficient space if we can't measure it.
-      // The real free-space check is done by the platform integration_test.
-      return stat.size > 0 ? 1024 * 1024 * 1024 : -1; // 1 GB placeholder
+      // Android resolves this via StatFs in MainActivity; desktop and stale
+      // iOS builds degrade to -1 ("unknown") inside the service.
+      return await _freeDiskSpace.getFreeDiskSpace(path);
     } catch (e, stack) {
       AppLogger.warning(
         'MigrationSafetyService: _getFreeSpace failed',

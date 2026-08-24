@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/database/wal_checkpoint_service.dart';
+import 'package:promsell_pos_ce/core/services/free_disk_space.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 
 /// Snapshot of database health metrics.
@@ -88,10 +89,15 @@ class DatabaseHealthReport {
 /// Call this during day-close, settings page, or operator diagnostics.
 @LazySingleton()
 class DatabaseHealthService {
-  DatabaseHealthService(this._db, this._walService);
+  DatabaseHealthService(
+    this._db,
+    this._walService, [
+    this._freeDiskSpace = const FreeDiskSpaceService(),
+  ]);
 
   final AppDatabase _db;
   final WalCheckpointService _walService;
+  final FreeDiskSpaceService _freeDiskSpace;
 
   /// Returns row counts without loading table contents into memory.
   Future<Map<String, int>> countRows() async {
@@ -188,10 +194,7 @@ class DatabaseHealthService {
   /// Returns available free space in bytes for [path], or -1 if unknown.
   Future<int> _getFreeStorage(String path) async {
     try {
-      // Platform-specific free-space check is done by the integration_test.
-      // Here we return a placeholder that indicates the measurement is
-      // not available in this context.
-      return -1;
+      return await _freeDiskSpace.getFreeDiskSpace(path);
     } catch (e, stack) {
       AppLogger.warning(
         'DatabaseHealthService: _getFreeStorage failed',
