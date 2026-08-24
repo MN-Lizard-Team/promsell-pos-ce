@@ -7,6 +7,8 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/features/product/data/datasources/product_local_datasource.dart';
+import 'package:promsell_pos_ce/features/product/data/datasources/product_option_datasource.dart';
 
 import '../../helpers/scaling_fixture.dart';
 
@@ -168,6 +170,30 @@ void main() {
           )
           .get();
       expect(auditTable, hasLength(1));
+      final productDs = ProductLocalDatasourceImpl(
+        db,
+        ProductOptionDatasourceImpl(db),
+      );
+      await productDs.insertProduct(
+        ProductsCompanion.insert(
+          id: 'legacy-product',
+          name: 'Legacy product',
+          price: 1.0,
+        ),
+      );
+      await productDs.updateProductWithAudit(
+        const ProductsCompanion(id: Value('legacy-product'), price: Value(2.0)),
+        null,
+        [(fieldName: 'price', oldValue: '1.00', newValue: '2.00')],
+      );
+      final auditRow = await db
+          .customSelect(
+            "SELECT product_id, action, field_name, old_value, new_value FROM product_audits WHERE product_id = 'legacy-product'",
+          )
+          .getSingle();
+      expect(auditRow.read<String>('product_id'), 'legacy-product');
+      expect(auditRow.read<String>('action'), 'UPDATE');
+      expect(auditRow.read<String>('new_value'), '2.00');
 
       // Upgraded table carries the full modern 27-column shape.
       final columnCount = await db

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import '../helpers/test_utils.dart';
 import 'robot_base.dart';
@@ -25,6 +26,18 @@ class CheckoutRobot extends RobotBase {
         : method == 'PromptPay'
         ? 'พร้อมเพย์'
         : method;
+    final methodId = switch (method) {
+      'Cash' => TestKeys.payMethodCash,
+      'PromptPay' => TestKeys.payMethodPromptPay,
+      'Transfer' => TestKeys.payMethodTransfer,
+      'Card' => TestKeys.payMethodCard,
+      _ => method.toLowerCase(),
+    };
+    final keyedMethod = find.byKey(TestKeys.payMethod(methodId));
+    if (keyedMethod.evaluate().isNotEmpty) {
+      await tap(keyedMethod);
+      return;
+    }
     final methodBtn = find
         .text(method)
         .or(find.text(thMethod))
@@ -38,7 +51,8 @@ class CheckoutRobot extends RobotBase {
   /// Enter cash received amount
   Future<void> enterCashReceived(double amount) async {
     final receivedField = find
-        .widgetWithText(TextField, 'Received')
+        .byKey(const Key(TestKeys.cashReceivedField))
+        .or(find.widgetWithText(TextField, 'Received'))
         .or(find.byType(TextField));
     await enterText(receivedField, amount.toString());
   }
@@ -107,7 +121,8 @@ class CheckoutRobot extends RobotBase {
   /// Complete payment
   Future<void> completePayment() async {
     final completeBtn = find
-        .text('Complete')
+        .byKey(const Key(TestKeys.checkoutConfirmButton))
+        .or(find.text('Complete'))
         .or(find.text('Pay'))
         .or(find.text('ชำระเงิน'))
         .or(find.text('เสร็จสิ้น'))

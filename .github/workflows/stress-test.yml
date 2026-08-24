@@ -2,7 +2,6 @@ name: Stress Tests
 
 permissions:
   contents: read
-  issues: write
 
 on:
   schedule:
@@ -16,15 +15,17 @@ on:
 jobs:
   stress-test:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(github.event.label.name, 'performance')
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
           flutter-version: 3.44.4
@@ -41,9 +42,15 @@ jobs:
       - name: Run stress tests
         run: flutter test --tags stress --timeout 600s
 
+  report-scheduled-failure:
+    if: github.event_name == 'schedule' && needs.stress-test.result == 'failure'
+    needs: stress-test
+    permissions:
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
       - name: Create issue on failure
-        if: failure() && github.event_name == 'schedule'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             github.rest.issues.create({

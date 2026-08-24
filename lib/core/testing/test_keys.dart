@@ -123,6 +123,7 @@ abstract final class TestKeys {
 
   /// Post-close summary card root (daily_close_summary_card.dart).
   static const dailyCloseSummaryCard = 'test_daily_close_summary_card';
+  static const saleDayClosedBanner = 'test_sale_day_closed_banner';
 
   // ---------------------------------------------------------------------
   // Case 5: Park bill -> reopen, same total

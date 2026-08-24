@@ -76,17 +76,19 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       await checkout.closeReceipt();
 
-      // Navigate to report/history and void the PromptPay bill. The
-      // sale-expansion tile is found by its dynamic database key.
+      final promptPaySale = await (TestApp.database.select(
+        TestApp.database.sales,
+      )..where((s) => s.paymentMethod.equals('promptpay'))).getSingle();
+
+      // Navigate to report/history and void the PromptPay bill by its stable
+      // database key, never by list position.
       await tester.tap(find.byIcon(TablerIcons.chartBar).first);
       await tester.pump(const Duration(milliseconds: 800));
       final historyTab = find.byKey(const Key(TestKeys.historySubTabButton));
       expect(historyTab, findsOneWidget);
       await tester.tap(historyTab);
       await tester.pump(const Duration(milliseconds: 800));
-      final saleTiles = find.byType(ExpansionTile);
-      expect(saleTiles, findsWidgets);
-      await tester.tap(saleTiles.first);
+      await tester.tap(find.byKey(ValueKey<String>(promptPaySale.id)));
       await tester.pump(const Duration(milliseconds: 500));
       final voidButton = find.byKey(const Key(TestKeys.voidButton));
       expect(voidButton, findsOneWidget);
@@ -139,6 +141,35 @@ void main() {
       expect(closeRows, hasLength(1));
       expect(closeRows.single.closedAt != null, isTrue);
       expect(closeRows.single.expectedCash, 95.0);
+
+      // The lock must block a new payment, not merely render a closed-day
+      // summary. Return to Sale, attempt checkout, and verify no new sale.
+      await tester.tap(find.byIcon(Icons.home).first);
+      await tester.pump(const Duration(milliseconds: 800));
+      expect(
+        find.byKey(const Key(TestKeys.saleDayClosedBanner)),
+        findsOneWidget,
+      );
+      await sale.navigateToSalePage();
+      await sale.addProductToCart('Coffee');
+      final salesBeforeBlockedAttempt = await TestApp.database
+          .select(TestApp.database.sales)
+          .get();
+      await sale.proceedToCheckout();
+      await tester.pump(const Duration(milliseconds: 800));
+      expect(find.byKey(const ValueKey('sale_payment_page')), findsNothing);
+      final salesAfterBlockedAttempt = await TestApp.database
+          .select(TestApp.database.sales)
+          .get();
+      expect(salesAfterBlockedAttempt.length, salesBeforeBlockedAttempt.length);
+
+      // Restarting must preserve the closed-day guard in loaded settings.
+      await TestApp.restartApp(tester);
+      await sale.navigateToSalePage();
+      expect(
+        find.byKey(const Key(TestKeys.saleDayClosedBanner)),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -8,7 +8,7 @@
 - CI runs `dart pub outdated --json`, `tool/check_outdated.dart`, and `dart pub outdated --no-dev-dependencies` on every normal test job.
 - A direct dependency that is one or more major versions behind fails the audit unless it is listed in the checked-in holdback register below with a migration reason.
 - Dependency upgrades require `flutter analyze`, the host trust suite, and the performance suite. Encryption/database upgrades additionally require migration fixtures.
-- GitHub Actions are reviewed with least-privilege workflow permissions (`contents: read`); release signing secrets are only consumed by the release workflow and missing secrets fail closed.
+- GitHub Actions are pinned to full commit SHAs and reviewed with least-privilege workflow permissions; release signing secrets are only consumed by the release workflow and missing secrets fail closed.
 - This register does not claim vulnerability-free status. Review `pub outdated`, advisories, and licenses before each release cut.
 
 ## Intentional major-version holdbacks
@@ -31,6 +31,6 @@ The canonical checked gate is `tool/check_outdated.dart`; keep this table synchr
 
 ## Current limitations
 
-- GitHub Action references are versioned tags rather than commit SHAs; pinning SHAs remains a supply-chain hardening item.
-- The repository does not run a separate OSV/Snyk scan; `pub outdated` is a freshness check, not a CVE scanner.
+- GitHub Action references are pinned to full commit SHAs; the remaining supply-chain limitation is that this repository does not run a separate OSV/Snyk scan.
+- The scheduled stress reporter is the only workflow job with `issues: write`; PR-triggered stress execution is restricted to `contents: read`.
 - Device E2E requires an Android/iOS runner and is not reproducible on this Windows host without a device.
