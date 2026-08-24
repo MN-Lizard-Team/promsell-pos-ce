@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_dialog_shell.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
@@ -539,7 +540,7 @@ class _SaleActionsBar extends StatelessWidget {
                   ),
                 )
               : FilledButton.tonalIcon(
-                  key: const Key('test_void_button'),
+                  key: const Key(TestKeys.voidButton),
                   icon: const Icon(TablerIcons.ban, size: 18),
                   label: Text(context.l10n.voidSale),
                   style: FilledButton.styleFrom(
@@ -613,6 +614,7 @@ class VoidSaleDialog {
             icon: TablerIcons.ban,
             tone: DialogTone.destructive,
             body: TextField(
+              key: const Key(TestKeys.voidReasonField),
               controller: reasonController,
               decoration: InputDecoration(
                 labelText: l10n.voidReason,
@@ -646,6 +648,7 @@ class VoidSaleDialog {
                 child: Text(l10n.cancel),
               ),
               FilledButton(
+                key: const Key(TestKeys.voidConfirmButton),
                 onPressed: () {
                   final reason = reasonController.text.trim();
                   if (reason.isEmpty) {

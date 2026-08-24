@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
@@ -114,7 +115,7 @@ class _DailyClosePageState extends State<DailyClosePage> {
                 // Actions
                 if (!isReadOnly)
                   FilledButton.icon(
-                    key: const Key('test_close_day_button'),
+                    key: const Key(TestKeys.closeDayButton),
                     onPressed: state.status == DailyCloseStatus.closing
                         ? null
                         : () => _confirmClose(context),
@@ -123,6 +124,7 @@ class _DailyClosePageState extends State<DailyClosePage> {
                   )
                 else
                   OutlinedButton.icon(
+                    key: const Key(TestKeys.reopenDayButton),
                     onPressed: state.status == DailyCloseStatus.reopening
                         ? null
                         : () => _confirmReopen(context),

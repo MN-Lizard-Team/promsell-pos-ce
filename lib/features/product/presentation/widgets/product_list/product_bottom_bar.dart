@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 
 class ProductBottomBar extends StatelessWidget {
   const ProductBottomBar({
@@ -68,6 +69,7 @@ class ProductBottomBar extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
+                  key: const Key(TestKeys.addProductEntry),
                   onPressed: onAdd,
                   icon: const Icon(Icons.add, size: 20),
                   label: Text(l10n.addProduct),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form/sales_shared_widgets.dart';
@@ -40,7 +41,7 @@ class SalesDailyCloseSection extends StatelessWidget {
                 value: settings.dailyCloseLock,
                 onChanged: (v) =>
                     onUpdate(settings.copyWith(dailyCloseLock: v)),
-                switchKey: const Key('test_day_close_lock_toggle'),
+                switchKey: const Key(TestKeys.dayCloseLockToggle),
               ),
             ],
           ),

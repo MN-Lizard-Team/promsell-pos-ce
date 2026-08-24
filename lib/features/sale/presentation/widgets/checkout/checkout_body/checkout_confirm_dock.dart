@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
@@ -49,6 +50,7 @@ class CheckoutConfirmDock extends StatelessWidget {
                 final enabled = !busy && canConfirm;
 
                 return FilledButton.icon(
+                  key: const Key(TestKeys.checkoutConfirmButton),
                   style: FilledButton.styleFrom(
                     minimumSize: Size(0, pos.ctaMinHeight),
                     backgroundColor: pos.ctaFill,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_state.dart';
 
@@ -33,6 +34,7 @@ class TableSelector extends StatelessWidget {
         }
 
         return DropdownButtonFormField<String?>(
+          key: const Key(TestKeys.tableSelectorField),
           initialValue: selectedTableId,
           decoration: InputDecoration(
             labelText: l10n.selectTable,

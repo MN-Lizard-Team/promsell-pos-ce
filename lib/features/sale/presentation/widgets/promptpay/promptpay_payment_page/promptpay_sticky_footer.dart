@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 
@@ -45,6 +46,7 @@ class PromptPayStickyFooter extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: FilledButton(
+                  key: const Key(TestKeys.promptPayConfirmButton),
                   onPressed: onConfirm,
                   style: FilledButton.styleFrom(
                     minimumSize: Size(0, pos.ctaMinHeight),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment/payment_widgets.dart';
 
 class CashInputSection extends StatelessWidget {
@@ -58,6 +59,7 @@ class CashInputSection extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         TextFormField(
+          key: const Key(TestKeys.cashReceivedField),
           controller: receivedController,
           decoration: InputDecoration(
             labelText: context.l10n.receivedAmount(currency),

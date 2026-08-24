@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
@@ -18,6 +19,7 @@ class DailyCloseSummaryCard extends StatelessWidget {
     final currency = _currency(context);
 
     return Card(
+      key: const Key(TestKeys.dailyCloseSummaryCard),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

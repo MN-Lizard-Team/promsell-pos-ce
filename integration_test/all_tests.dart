@@ -1,5 +1,6 @@
 import 'package:integration_test/integration_test.dart';
 
+import 'day_close_journey_test.dart' as day_close;
 import 'sale_happy_path_test.dart' as sale_happy_path;
 import 'restaurant_order_test.dart' as restaurant_order;
 import 'draft_recovery_test.dart' as draft_recovery;
@@ -25,4 +26,6 @@ void main() {
 
   // Journey 5: Promotion Application
   promotion_application.main();
+  // Journey 6: Mixed tender -> void -> day-close reconciliation
+  day_close.main();
 }

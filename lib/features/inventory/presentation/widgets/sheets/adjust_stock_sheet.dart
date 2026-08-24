@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
@@ -248,6 +249,7 @@ class _AdjustStockSheetState extends State<_AdjustStockSheet> {
                   children: [
                     Expanded(
                       child: _ModeButton(
+                        buttonKey: const Key(TestKeys.adjustStockModeIn),
                         selected: _isAdd,
                         icon: Icons.add,
                         label: l10n.adjustModeAdd,
@@ -269,6 +271,7 @@ class _AdjustStockSheetState extends State<_AdjustStockSheet> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _ModeButton(
+                        buttonKey: const Key(TestKeys.adjustStockModeOut),
                         selected: !_isAdd,
                         icon: Icons.remove,
                         label: l10n.adjustModeRemove,
@@ -524,6 +527,7 @@ class _AdjustStockSheetState extends State<_AdjustStockSheet> {
 /// High-contrast mode toggle (Add / Remove).
 class _ModeButton extends StatelessWidget {
   const _ModeButton({
+    required this.buttonKey,
     required this.selected,
     required this.icon,
     required this.label,
@@ -533,6 +537,7 @@ class _ModeButton extends StatelessWidget {
     required this.onTap,
   });
 
+  final Key buttonKey;
   final bool selected;
   final IconData icon;
   final String label;
@@ -547,6 +552,7 @@ class _ModeButton extends StatelessWidget {
     final cs = theme.colorScheme;
 
     return Material(
+      key: buttonKey,
       color: selected ? selectedColor : cs.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),

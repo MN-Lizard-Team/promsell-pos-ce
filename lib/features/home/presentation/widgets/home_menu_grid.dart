@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 enum HomeMenuItem { sell, products, customers, promotions, history, closeDay }
@@ -49,6 +50,7 @@ class HomeMenuGrid extends StatelessWidget {
         label: l10n.homeCloseDay,
         iconColor: cs.primary,
         item: HomeMenuItem.closeDay,
+        tileKey: const Key(TestKeys.homeCloseDayTile),
       ),
     ];
 
@@ -77,7 +79,7 @@ class HomeMenuGrid extends StatelessWidget {
             ),
             itemBuilder: (context, i) {
               final item = items[i];
-              return _MenuButton(item: item);
+              return _MenuButton(item: item, tileKey: item.tileKey);
             },
           ),
         ],
@@ -92,17 +94,24 @@ class _MenuItem {
     required this.label,
     required this.iconColor,
     required this.item,
+    this.tileKey,
   });
 
   final IconData icon;
   final String label;
   final Color iconColor;
   final HomeMenuItem item;
+
+  /// Optional stable E2E anchor for the tile's InkWell (test-only, additive).
+  final Key? tileKey;
 }
 
 class _MenuButton extends StatelessWidget {
-  const _MenuButton({required this.item});
+  const _MenuButton({required this.item, this.tileKey});
   final _MenuItem item;
+
+  /// Stable E2E anchor surfaced from [_MenuItem.tileKey].
+  final Key? tileKey;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +123,7 @@ class _MenuButton extends StatelessWidget {
       shadowColor: cs.shadow.withValues(alpha: 0.2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
+        key: tileKey,
         onTap: () => _onTap(context),
         borderRadius: BorderRadius.circular(20),
         child: Padding(

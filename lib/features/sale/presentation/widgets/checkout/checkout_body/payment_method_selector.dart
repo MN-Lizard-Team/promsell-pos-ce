@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/payment/payment_widgets.dart';
 
 /// Payment method picker — 2×2 grid (PromptPay optional 4th cell).
@@ -50,6 +51,7 @@ class PaymentMethodSelector extends StatelessWidget {
               SizedBox(
                 width: cellW,
                 child: PaymentMethodCard(
+                  key: TestKeys.payMethod(m.id),
                   icon: m.icon,
                   label: m.label,
                   selected: method == m.id,

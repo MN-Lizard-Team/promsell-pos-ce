@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/widgets/rows/daily_close_read_only_row.dart';
@@ -56,6 +57,7 @@ class DailyCloseReconciliationCard extends StatelessWidget {
             ),
             const Divider(),
             TextField(
+              key: const Key(TestKeys.openingCashField),
               controller: openingController,
               readOnly: isReadOnly,
               keyboardType: const TextInputType.numberWithOptions(
@@ -70,9 +72,14 @@ class DailyCloseReconciliationCard extends StatelessWidget {
             const SizedBox(height: 8),
             DailyCloseReadOnlyRow(
               label: l10n.dailyCloseExpectedCash,
-              value: MoneyText(value: expectedCash, currency: currency),
+              value: MoneyText(
+                key: const Key(TestKeys.expectedCashValue),
+                value: expectedCash,
+                currency: currency,
+              ),
             ),
             TextField(
+              key: const Key(TestKeys.countedCashField),
               controller: countedController,
               readOnly: isReadOnly,
               keyboardType: const TextInputType.numberWithOptions(
@@ -88,6 +95,7 @@ class DailyCloseReconciliationCard extends StatelessWidget {
             DailyCloseReadOnlyRow(
               label: l10n.dailyCloseOverShort,
               value: Text(
+                key: const Key(TestKeys.overShortValue),
                 '${overShort >= 0 ? '+' : ''}${overShort.toStringAsFixed(2)}',
                 style: TextStyle(
                   color: overShortColor,

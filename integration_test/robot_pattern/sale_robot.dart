@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
-import '../helpers/test_app.dart';
 import '../helpers/test_utils.dart';
 import 'robot_base.dart';
 
@@ -111,7 +111,7 @@ class SaleRobot extends RobotBase {
   Future<void> proceedToCheckout() async {
     final checkoutBtn = find
         .byKey(const ValueKey('sale_cart_checkout_cta'))
-        .or(find.byKey(TestKeys.checkoutTotalLabel))
+        .or(find.byKey(const Key(TestKeys.checkoutTotalLabel)))
         .or(find.text('Checkout'))
         .or(find.text('Pay'))
         .or(find.text('ชำระเงิน'))

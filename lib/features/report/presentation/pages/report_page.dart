@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
@@ -82,6 +83,7 @@ class _ReportTabSelector extends StatelessWidget {
                       ? scheme.primary
                       : Colors.transparent,
                   onPressed: () => controller.animateTo(1),
+                  buttonKey: const Key(TestKeys.historySubTabButton),
                 ),
               ),
             ],
@@ -100,6 +102,7 @@ class _ReportTabButton extends StatelessWidget {
     required this.foregroundColor,
     required this.backgroundColor,
     required this.onPressed,
+    this.buttonKey,
   });
 
   final String label;
@@ -108,6 +111,9 @@ class _ReportTabButton extends StatelessWidget {
   final Color foregroundColor;
   final Color backgroundColor;
   final VoidCallback onPressed;
+
+  /// Stable E2E anchor (test-only, additive).
+  final Key? buttonKey;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +124,7 @@ class _ReportTabButton extends StatelessWidget {
       child: Material(
         color: backgroundColor,
         child: InkWell(
+          key: buttonKey,
           onTap: onPressed,
           child: Center(
             child: Row(
