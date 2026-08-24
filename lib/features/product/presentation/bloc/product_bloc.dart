@@ -1,15 +1,18 @@
 import 'dart:async';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
 import 'package:promsell_pos_ce/core/exceptions/optimistic_lock_exception.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/add_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_barcodes.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/restore_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/get_products_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
@@ -40,6 +43,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     required RestoreProduct restoreProduct,
     required BatchGenerateBarcodes batchGenerateBarcodes,
     required ImportProducts importProducts,
+    SearchProductsPage? searchProductsPage,
   }) : _getProducts = getProducts,
        _getProductCount = getProductCount,
        _addProduct = addProduct,
@@ -48,6 +52,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
        _restoreProduct = restoreProduct,
        _batchGenerateBarcodes = batchGenerateBarcodes,
        _importProducts = importProducts,
+       _searchProductsPage = searchProductsPage,
        super(const ProductState()) {
     on<ProductsSubscribed>(_onSubscribed);
     on<_ProductsUpdated>(_onProductsUpdated);
@@ -56,7 +61,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ProductUpdated>(_onUpdated);
     on<ProductDeleted>(_onDeleted);
     on<ProductRestored>(_onRestored);
-    on<ProductSearchChanged>(_onSearchChanged);
+    // restartable: rapid keystrokes cancel in-flight search page fetches.
+    on<ProductSearchChanged>(_onSearchChanged, transformer: restartable());
+    on<ProductLoadMore>(_onLoadMore, transformer: droppable());
     on<ProductCategoryFilterChanged>(_onCategoryFilterChanged);
     on<ProductStockFilterChanged>(_onStockFilterChanged);
     on<ProductSortChanged>(_onSortChanged);
@@ -78,15 +85,28 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final RestoreProduct _restoreProduct;
   final BatchGenerateBarcodes _batchGenerateBarcodes;
   final ImportProducts _importProducts;
+
+  /// DB-backed search over the full catalog. Nullable so existing call sites
+  /// (DI module, tests) keep compiling; when null the search handler degrades
+  /// to client-side filtering over the loaded set only.
+  final SearchProductsPage? _searchProductsPage;
   StreamSubscription<List<Product>>? _sub;
+
+  /// Page size for DB search fetches (search + load-more).
+  static const int _searchPageSize = 100;
 
   /// Per-surface filter snapshots so Sale ↔ Products don't leak filters.
   final Map<ProductSurface, _FilterSnapshot> _filterSnapshots = {};
   ProductSurface? _activeSurface;
 
-  /// Pagination threshold — if catalog exceeds this, stream uses LIMIT to
-  /// avoid loading all products into memory. Sale search still works within
-  /// the loaded set; user can load more via [ProductLoadMore] event.
+  /// Catalog watch cap — beyond this the stream LIMITs to
+  /// [_paginationThreshold] rows to bound memory. Search is NOT capped:
+  /// when the loaded set is smaller than [ProductState.totalProductCount],
+  /// [ProductSearchChanged] additionally queries the DB via
+  /// [SearchProductsPage] (ranked SQL LIKE) into
+  /// [ProductState.searchResults], and [ProductLoadMore] appends further
+  /// cursor pages while [ProductState.hasMoreSearchResults] is true.
+  /// Uncapped catalogs keep pure client-side filtering (no extra queries).
   static const int _paginationThreshold = 500;
 
   Future<void> _onSubscribed(
@@ -311,11 +331,101 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     return next;
   }
 
-  void _onSearchChanged(
+  Future<void> _onSearchChanged(
     ProductSearchChanged event,
     Emitter<ProductState> emit,
-  ) {
-    emit(state.copyWith(searchQuery: event.query.trim()));
+  ) async {
+    final query = event.query.trim();
+    // Capped catalog: loaded set < total → client-side filtering would
+    // silently miss everything beyond the cap, so search the DB instead.
+    final capped = state.products.length < state.totalProductCount;
+
+    if (query.isEmpty || !capped || _searchProductsPage == null) {
+      emit(
+        state.copyWith(
+          searchQuery: query,
+          searchResults: const [],
+          isSearching: false,
+          hasMoreSearchResults: false,
+        ),
+      );
+      return;
+    }
+
+    emit(state.copyWith(searchQuery: query, isSearching: true, error: null));
+    try {
+      final page = await _searchProductsPage(
+        query: query,
+        activeOnly: true,
+        pageSize: _searchPageSize,
+      );
+      if (state.searchQuery != query) return; // superseded mid-flight
+      emit(
+        state.copyWith(
+          isSearching: false,
+          searchResults: page.products,
+          hasMoreSearchResults: page.hasMore,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isSearching: false,
+          status: ProductStatus.failure,
+          error: DatabaseError(e.toString(), operation: 'search_products'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onLoadMore(
+    ProductLoadMore event,
+    Emitter<ProductState> emit,
+  ) async {
+    final query = state.searchQuery;
+    final results = state.searchResults;
+    final search = _searchProductsPage;
+    if (query.isEmpty ||
+        results.isEmpty ||
+        !state.hasMoreSearchResults ||
+        search == null) {
+      return;
+    }
+
+    // Cursor shape: (createdAt, id) of the last received row — the repo
+    // pages by createdAt DESC, id DESC.
+    final last = results.last;
+    final cursor = ProductCursor(createdAt: last.createdAt, id: last.id);
+    emit(state.copyWith(isSearching: true));
+    try {
+      final page = await search(
+        query: query,
+        cursor: cursor,
+        activeOnly: true,
+        pageSize: _searchPageSize,
+      );
+      if (state.searchQuery != query) return; // a newer search superseded us
+      final knownIds = results.map((p) => p.id).toSet();
+      final merged = [
+        ...results,
+        ...page.products.where((p) => !knownIds.contains(p.id)),
+      ];
+      emit(
+        state.copyWith(
+          isSearching: false,
+          searchResults: merged,
+          hasMoreSearchResults: page.hasMore,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isSearching: false,
+          status: ProductStatus.failure,
+          error: DatabaseError(e.toString(), operation: 'load_more_search'),
+        ),
+      );
+    }
   }
 
   void _onCategoryFilterChanged(
@@ -456,6 +566,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(
       state.copyWith(
         searchQuery: '',
+        searchResults: const [],
+        isSearching: false,
+        hasMoreSearchResults: false,
         categoryFilter: null,
         stockFilter: StockFilter.all,
         productSort: ProductSort.default_,

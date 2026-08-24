@@ -42,6 +42,49 @@ class SaleCatalog extends StatefulWidget {
 class _SaleCatalogState extends State<SaleCatalog> {
   bool _recommendedOnly = false;
 
+  /// Fire [ProductLoadMore] when the user scrolls this close to the end.
+  static const double _loadMoreTriggerExtent = 600;
+
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Near-end scroll trigger for DB search pagination (capped catalogs only —
+  /// the bloc ignores [ProductLoadMore] when no more search pages exist).
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.extentAfter > _loadMoreTriggerExtent) {
+      return;
+    }
+    final bloc = _resolveProductBloc(context);
+    final state = bloc.state;
+    if (state.searchQuery.isEmpty ||
+        state.searchResults.isEmpty ||
+        !state.hasMoreSearchResults ||
+        state.isSearching) {
+      return;
+    }
+    bloc.add(const ProductLoadMore());
+  }
+
+  ProductBloc _resolveProductBloc(BuildContext context) {
+    try {
+      return context.read<ProductBloc>();
+    } on ProviderNotFoundException {
+      return sl<ProductBloc>();
+    }
+  }
+
   List<Product> _prepareProducts(List<Product> active) {
     if (_recommendedOnly) {
       return active.where((p) => p.isRecommended).toList();
@@ -80,12 +123,7 @@ class _SaleCatalogState extends State<SaleCatalog> {
       (b) => b.state.openBillCount,
     );
 
-    ProductBloc productBloc;
-    try {
-      productBloc = context.read<ProductBloc>();
-    } on ProviderNotFoundException {
-      productBloc = sl<ProductBloc>();
-    }
+    final productBloc = _resolveProductBloc(context);
 
     return BlocListener<ProductBloc, ProductState>(
       bloc: productBloc,
@@ -125,11 +163,20 @@ class _SaleCatalogState extends State<SaleCatalog> {
               }
             });
           }
-          final products = _prepareProducts(activeProducts);
+          // DB-backed search (capped catalog): render SQL-ranked hits
+          // directly. _prepareProducts' recommended-boost assumes full-set
+          // semantics and would fight DB ranking; the recommended toggle is
+          // hidden while searching, so it is bypassed entirely here.
+          final dbSearchActive =
+              state.searchQuery.isNotEmpty && state.searchResults.isNotEmpty;
+          final products = dbSearchActive
+              ? state.searchResults
+              : _prepareProducts(activeProducts);
           final terminalInset = 12 + widget.bottomContentInset;
           final showMultiBillChrome = !isUltra && openBillCount > 1;
 
           return CustomScrollView(
+            controller: _scrollController,
             slivers: [
               // Bill bar includes open-bills ticket strip (single chrome band).
               if (showMultiBillChrome)
@@ -159,7 +206,10 @@ class _SaleCatalogState extends State<SaleCatalog> {
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: MediaQuery.sizeOf(context).height * 0.5,
-                    child: state.searchQuery.isNotEmpty
+                    child: state.isSearching
+                        // DB search in flight, first page not back yet.
+                        ? const Center(child: CircularProgressIndicator())
+                        : state.searchQuery.isNotEmpty
                         ? SearchEmptyState(
                             query: state.searchQuery,
                             onClear: () {
@@ -223,6 +273,15 @@ class _SaleCatalogState extends State<SaleCatalog> {
                       ),
                       childCount: products.length,
                     ),
+                  ),
+                ),
+              // Loading indicator while appending further DB search pages
+              // (scroll near-end triggers ProductLoadMore).
+              if (dbSearchActive && state.isSearching)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: CircularProgressIndicator()),
                   ),
                 ),
             ],

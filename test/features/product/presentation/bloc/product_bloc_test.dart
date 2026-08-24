@@ -1,8 +1,12 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/exceptions/duplicate_barcode_exception.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/product/domain/entities/product_page.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/get_products_page.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_event.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_state.dart';
@@ -11,6 +15,41 @@ import 'package:promsell_pos_ce/features/product/domain/utils/csv_product_parser
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
+
+/// Local mock — [MockGetProducts]-style classes live in helpers/mocks.dart,
+/// which does not yet carry a SearchProductsPage mock.
+class _MockSearchProductsPage extends Mock implements SearchProductsPage {}
+
+/// Products living beyond the 500-item pagination cap.
+final _deepProduct = Product(
+  id: 'prod-deep-0000-0000-0000-000000000001',
+  name: 'Deep Cola Beyond Cap',
+  price: Money.fromDouble(10.0),
+  stock: 3,
+  isActive: true,
+  createdAt: DateTime(2024, 1, 1),
+  updatedAt: DateTime(2024, 1, 1),
+);
+
+final _searchPage1Product = Product(
+  id: 'prod-search-0000-0000-0000-000000000001',
+  name: 'Cola One',
+  price: Money.fromDouble(11.0),
+  stock: 4,
+  isActive: true,
+  createdAt: DateTime(2024, 5, 2),
+  updatedAt: DateTime(2024, 5, 2),
+);
+
+final _searchPage2Product = Product(
+  id: 'prod-search-0000-0000-0000-000000000002',
+  name: 'Cola Two',
+  price: Money.fromDouble(12.0),
+  stock: 5,
+  isActive: true,
+  createdAt: DateTime(2024, 5, 1),
+  updatedAt: DateTime(2024, 5, 1),
+);
 
 void main() {
   late MockGetProducts mockGetProducts;
@@ -37,16 +76,18 @@ void main() {
     registerFallbackValue(tProduct);
   });
 
-  ProductBloc buildBloc() => ProductBloc(
-    getProducts: mockGetProducts,
-    getProductCount: mockGetProductCount,
-    addProduct: mockAddProduct,
-    updateProduct: mockUpdateProduct,
-    deleteProduct: mockDeleteProduct,
-    restoreProduct: mockRestoreProduct,
-    batchGenerateBarcodes: mockBatchGenerateBarcodes,
-    importProducts: mockImportProducts,
-  );
+  ProductBloc buildBloc({SearchProductsPage? searchProductsPage}) =>
+      ProductBloc(
+        getProducts: mockGetProducts,
+        getProductCount: mockGetProductCount,
+        addProduct: mockAddProduct,
+        updateProduct: mockUpdateProduct,
+        deleteProduct: mockDeleteProduct,
+        restoreProduct: mockRestoreProduct,
+        batchGenerateBarcodes: mockBatchGenerateBarcodes,
+        importProducts: mockImportProducts,
+        searchProductsPage: searchProductsPage,
+      );
 
   group('ProductBloc', () {
     test('initial state is ProductState()', () {
@@ -332,6 +373,240 @@ void main() {
           products: [tProduct, tProduct2],
           totalProductCount: 2,
           saveStatus: ProductSaveStatus.saved,
+        ),
+      ],
+    );
+  });
+
+  group('ProductBloc DB search (capped catalog)', () {
+    late _MockSearchProductsPage mockSearch;
+
+    setUp(() {
+      mockSearch = _MockSearchProductsPage();
+    });
+
+    setUpAll(() {
+      registerFallbackValue('');
+      registerFallbackValue(
+        ProductCursor(createdAt: DateTime(2024), id: 'cursor-fallback'),
+      );
+    });
+
+    // Capped seed: loaded set (1) < total (501) → search must hit the DB.
+    ProductState cappedSeed() => ProductState(
+      status: ProductStatus.success,
+      products: [tProduct],
+      totalProductCount: 501,
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'search beyond cap queries DB and emits ranked searchResults',
+      setUp: () {
+        when(
+          () => mockSearch(query: 'cola', activeOnly: true, pageSize: 100),
+        ).thenAnswer(
+          (_) async => ProductPage(
+            products: [_deepProduct],
+            nextCursor: ProductCursor(
+              createdAt: _deepProduct.createdAt,
+              id: _deepProduct.id,
+            ),
+            totalCount: 501,
+          ),
+        );
+      },
+      seed: cappedSeed,
+      build: () => buildBloc(searchProductsPage: mockSearch),
+      act: (b) => b.add(const ProductSearchChanged(' cola ')),
+      expect: () => [
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct],
+          totalProductCount: 501,
+          searchQuery: 'cola',
+          isSearching: true,
+        ),
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct],
+          totalProductCount: 501,
+          searchQuery: 'cola',
+          searchResults: [_deepProduct],
+          hasMoreSearchResults: true,
+        ),
+      ],
+      verify: (_) {
+        verify(
+          () => mockSearch(query: 'cola', activeOnly: true, pageSize: 100),
+        ).called(1);
+      },
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'empty query clears searchResults without fetching',
+      setUp: () {
+        when(
+          () => mockSearch(query: '', activeOnly: true, pageSize: 100),
+        ).thenAnswer(
+          (_) async => const ProductPage(
+            products: [],
+            nextCursor: null,
+            totalCount: 501,
+          ),
+        );
+      },
+      seed: () => ProductState(
+        status: ProductStatus.success,
+        products: [tProduct],
+        totalProductCount: 501,
+        searchQuery: 'cola',
+        searchResults: [_deepProduct],
+        hasMoreSearchResults: true,
+      ),
+      build: () => buildBloc(searchProductsPage: mockSearch),
+      act: (b) => b.add(const ProductSearchChanged('')),
+      expect: () => [
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct],
+          totalProductCount: 501,
+          searchQuery: '',
+        ),
+      ],
+      verify: (_) {
+        verifyNever(
+          () => mockSearch(query: '', activeOnly: true, pageSize: 100),
+        );
+      },
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'ProductLoadMore appends second page via cursor and flips hasMoreSearchResults off when exhausted',
+      setUp: () {
+        when(
+          () => mockSearch(
+            query: 'cola',
+            cursor: ProductCursor(
+              createdAt: _searchPage1Product.createdAt,
+              id: _searchPage1Product.id,
+            ),
+            activeOnly: true,
+            pageSize: 100,
+          ),
+        ).thenAnswer(
+          (_) async => ProductPage(
+            products: [_searchPage2Product],
+            nextCursor: null,
+            totalCount: 501,
+          ),
+        );
+      },
+      seed: () => ProductState(
+        status: ProductStatus.success,
+        products: [tProduct],
+        totalProductCount: 501,
+        searchQuery: 'cola',
+        searchResults: [_searchPage1Product],
+        hasMoreSearchResults: true,
+      ),
+      build: () => buildBloc(searchProductsPage: mockSearch),
+      act: (b) => b.add(const ProductLoadMore()),
+      expect: () => [
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct],
+          totalProductCount: 501,
+          searchQuery: 'cola',
+          searchResults: [_searchPage1Product],
+          isSearching: true,
+          hasMoreSearchResults: true,
+        ),
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct],
+          totalProductCount: 501,
+          searchQuery: 'cola',
+          searchResults: [_searchPage1Product, _searchPage2Product],
+          hasMoreSearchResults: false,
+        ),
+      ],
+      verify: (_) {
+        verify(
+          () => mockSearch(
+            query: 'cola',
+            cursor: ProductCursor(
+              createdAt: _searchPage1Product.createdAt,
+              id: _searchPage1Product.id,
+            ),
+            activeOnly: true,
+            pageSize: 100,
+          ),
+        ).called(1);
+      },
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'ProductLoadMore emits nothing when no search results are active',
+      build: () => buildBloc(searchProductsPage: mockSearch),
+      seed: cappedSeed,
+      act: (b) => b.add(const ProductLoadMore()),
+      expect: () => [],
+      verify: (_) {
+        verifyNever(() => mockSearch(query: any(named: 'query')));
+      },
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'uncapped catalog keeps client-side search and never fetches pages',
+      build: () => buildBloc(searchProductsPage: mockSearch),
+      seed: () => ProductState(
+        status: ProductStatus.success,
+        products: [tProduct, tProduct2],
+        totalProductCount: 2,
+      ),
+      act: (b) => b.add(const ProductSearchChanged('another')),
+      expect: () => [
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct, tProduct2],
+          totalProductCount: 2,
+          searchQuery: 'another',
+        ),
+      ],
+      verify: (_) {
+        verifyNever(
+          () => mockSearch(query: 'another', activeOnly: true, pageSize: 100),
+        );
+      },
+    );
+
+    blocTest<ProductBloc, ProductState>(
+      'search failure lands in failure state without losing prior products',
+      setUp: () {
+        when(
+          () => mockSearch(query: 'cola', activeOnly: true, pageSize: 100),
+        ).thenThrow(Exception('db down'));
+      },
+      seed: cappedSeed,
+      build: () => buildBloc(searchProductsPage: mockSearch),
+      act: (b) => b.add(const ProductSearchChanged('cola')),
+      expect: () => [
+        ProductState(
+          status: ProductStatus.success,
+          products: [tProduct],
+          totalProductCount: 501,
+          searchQuery: 'cola',
+          isSearching: true,
+        ),
+        ProductState(
+          status: ProductStatus.failure,
+          products: [tProduct],
+          totalProductCount: 501,
+          searchQuery: 'cola',
+          error: const DatabaseError(
+            'Exception: db down',
+            operation: 'search_products',
+          ),
         ),
       ],
     );

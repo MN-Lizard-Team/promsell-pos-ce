@@ -31,6 +31,9 @@ class ProductState extends Equatable {
     this.products = const [],
     this.totalProductCount = 0,
     this.searchQuery = '',
+    this.searchResults = const [],
+    this.isSearching = false,
+    this.hasMoreSearchResults = false,
     this.categoryFilter,
     this.stockFilter = StockFilter.all,
     this.productSort = ProductSort.default_,
@@ -53,6 +56,17 @@ class ProductState extends Equatable {
   /// Used for "Showing X of Y" indicator and pagination decisions.
   final int totalProductCount;
   final String searchQuery;
+
+  /// DB-backed search hits ([ProductSearchChanged] against the full catalog,
+  /// not just the capped loaded set). Empty unless the catalog is capped and a
+  /// search ran. Rendered by sale catalog instead of [filteredProducts].
+  final List<Product> searchResults;
+
+  /// True while a DB search page (search or load-more) is in flight.
+  final bool isSearching;
+
+  /// True when more DB search pages exist beyond [searchResults].
+  final bool hasMoreSearchResults;
   final String? categoryFilter;
   final StockFilter stockFilter;
   final ProductSort productSort;
@@ -147,6 +161,9 @@ class ProductState extends Equatable {
     List<Product>? products,
     int? totalProductCount,
     String? searchQuery,
+    List<Product>? searchResults,
+    bool? isSearching,
+    bool? hasMoreSearchResults,
     Object? categoryFilter = _unset,
     StockFilter? stockFilter,
     ProductSort? productSort,
@@ -166,6 +183,9 @@ class ProductState extends Equatable {
       products: products ?? this.products,
       totalProductCount: totalProductCount ?? this.totalProductCount,
       searchQuery: searchQuery ?? this.searchQuery,
+      searchResults: searchResults ?? this.searchResults,
+      isSearching: isSearching ?? this.isSearching,
+      hasMoreSearchResults: hasMoreSearchResults ?? this.hasMoreSearchResults,
       categoryFilter: identical(categoryFilter, _unset)
           ? this.categoryFilter
           : categoryFilter as String?,
@@ -200,6 +220,9 @@ class ProductState extends Equatable {
     products,
     totalProductCount,
     searchQuery,
+    searchResults,
+    isSearching,
+    hasMoreSearchResults,
     categoryFilter,
     stockFilter,
     productSort,

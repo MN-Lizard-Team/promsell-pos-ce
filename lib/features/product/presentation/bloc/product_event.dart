@@ -111,6 +111,15 @@ class ProductSearchChanged extends ProductEvent {
   List<Object?> get props => [query];
 }
 
+/// Appends the next DB search page to [ProductState.searchResults].
+///
+/// Only meaningful while DB search results are active (non-empty
+/// [ProductState.searchResults] with [ProductState.hasMoreSearchResults]);
+/// the bloc emits nothing otherwise.
+class ProductLoadMore extends ProductEvent {
+  const ProductLoadMore();
+}
+
 class ProductCategoryFilterChanged extends ProductEvent {
   const ProductCategoryFilterChanged(this.category);
   final String? category;

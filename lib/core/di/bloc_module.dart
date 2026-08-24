@@ -4,6 +4,7 @@ import 'package:promsell_pos_ce/features/product/domain/usecases/batch_generate_
 import 'package:promsell_pos_ce/features/product/domain/usecases/delete_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/restore_product.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/get_products.dart';
+import 'package:promsell_pos_ce/features/product/domain/usecases/get_products_page.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/import_products.dart';
 import 'package:promsell_pos_ce/features/product/domain/usecases/update_product.dart';
 import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
@@ -21,6 +22,7 @@ abstract class BlocModule {
     RestoreProduct restoreProduct,
     BatchGenerateBarcodes batchGenerateBarcodes,
     ImportProducts importProducts,
+    SearchProductsPage searchProductsPage,
   ) => ProductBloc(
     getProducts: getProducts,
     getProductCount: getProductCount,
@@ -30,5 +32,6 @@ abstract class BlocModule {
     restoreProduct: restoreProduct,
     batchGenerateBarcodes: batchGenerateBarcodes,
     importProducts: importProducts,
+    searchProductsPage: searchProductsPage,
   )..add(const ProductsSubscribed());
 }
