@@ -3128,12 +3128,6 @@ abstract class AppLocalizations {
   /// **'บีบอัดจะสร้างไฟล์ฐานข้อมูลใหม่เพื่อคืนพื้นที่ว่างและลดการแตกกระจาย'**
   String get dbHealthVacuumDescription;
 
-  /// No description provided for @onboardingWelcome.
-  ///
-  /// In th, this message translates to:
-  /// **'ยินดีต้อนรับ'**
-  String get onboardingWelcome;
-
   /// No description provided for @onboardingShopInfoTitle.
   ///
   /// In th, this message translates to:
@@ -3236,23 +3230,11 @@ abstract class AppLocalizations {
   /// **'อัตรา VAT %'**
   String get onboardingVatRateLabel;
 
-  /// No description provided for @onboardingSkip.
-  ///
-  /// In th, this message translates to:
-  /// **'ข้ามไปก่อน'**
-  String get onboardingSkip;
-
   /// No description provided for @onboardingSkipSetup.
   ///
   /// In th, this message translates to:
   /// **'ข้ามการตั้งค่า'**
   String get onboardingSkipSetup;
-
-  /// No description provided for @onboardingWelcomeTitle.
-  ///
-  /// In th, this message translates to:
-  /// **'ยินดีต้อนรับสู่ Promsell POS'**
-  String get onboardingWelcomeTitle;
 
   /// No description provided for @onboardingWelcomeSubtitle.
   ///
@@ -3296,12 +3278,6 @@ abstract class AppLocalizations {
   /// **'ตั้งค่าภาษี'**
   String get onboardingTaxSetup;
 
-  /// No description provided for @onboardingPromptPay.
-  ///
-  /// In th, this message translates to:
-  /// **'พร้อมเพย์'**
-  String get onboardingPromptPay;
-
   /// No description provided for @onboardingDone.
   ///
   /// In th, this message translates to:
@@ -3319,12 +3295,6 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ถัดไป'**
   String get onboardingNext;
-
-  /// No description provided for @onboardingGetStarted.
-  ///
-  /// In th, this message translates to:
-  /// **'เริ่มต้นใช้งาน'**
-  String get onboardingGetStarted;
 
   /// No description provided for @onboardingStartSelling.
   ///
@@ -3428,17 +3398,17 @@ abstract class AppLocalizations {
   /// **'ระบบจะบวก VAT เพิ่มจากราคาที่แสดง'**
   String get onboardingVatExclusiveHelp;
 
+  /// No description provided for @onboardingInvalidVatRate.
+  ///
+  /// In th, this message translates to:
+  /// **'กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 100'**
+  String get onboardingInvalidVatRate;
+
   /// No description provided for @onboardingPromptPaySecurity.
   ///
   /// In th, this message translates to:
   /// **'ไม่บังคับ ข้อมูลจะเก็บไว้บนอุปกรณ์นี้และใช้สร้าง QR รับเงิน'**
   String get onboardingPromptPaySecurity;
-
-  /// No description provided for @onboardingDateExample.
-  ///
-  /// In th, this message translates to:
-  /// **'ตัวอย่าง: {date}'**
-  String onboardingDateExample(String date);
 
   /// No description provided for @onboardingCurrencyBaht.
   ///
@@ -3464,18 +3434,6 @@ abstract class AppLocalizations {
   /// **'¥ เยน'**
   String get onboardingCurrencyJpy;
 
-  /// No description provided for @onboardingReadySummary.
-  ///
-  /// In th, this message translates to:
-  /// **'พื้นที่ร้านของคุณพร้อมสำหรับการขายแรกแล้ว'**
-  String get onboardingReadySummary;
-
-  /// No description provided for @onboardingLocalSecuritySummary.
-  ///
-  /// In th, this message translates to:
-  /// **'ข้อมูลถูกเก็บไว้ในเครื่องและได้รับการปกป้องบนอุปกรณ์นี้'**
-  String get onboardingLocalSecuritySummary;
-
   /// No description provided for @onboardingSetupComplete.
   ///
   /// In th, this message translates to:
@@ -3487,6 +3445,12 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ปกป้องด้วย PIN ร้าน'**
   String get onboardingSecurityProtected;
+
+  /// No description provided for @onboardingSecurityNotProtected.
+  ///
+  /// In th, this message translates to:
+  /// **'ยังไม่ได้ตั้ง PIN ร้าน'**
+  String get onboardingSecurityNotProtected;
 
   /// No description provided for @onboardingFirstSaleHint.
   ///
@@ -8329,12 +8293,6 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'จำเป็นสำหรับยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (อย่างน้อย {min} หลัก) เก็บไว้เอง — ไม่มีระบบกู้ PIN'**
   String onboardingStorePinBody(int min);
-
-  /// No description provided for @onboardingStorePinRequired.
-  ///
-  /// In th, this message translates to:
-  /// **'ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า'**
-  String get onboardingStorePinRequired;
 
   /// No description provided for @onboardingSkipPin.
   ///

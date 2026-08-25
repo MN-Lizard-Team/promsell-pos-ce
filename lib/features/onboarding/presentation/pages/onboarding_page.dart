@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
 import 'package:promsell_pos_ce/core/utils/validators.dart';
@@ -48,6 +49,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   String _dateFormat = 'dd/MM/yyyy';
   String _vatMode = 'NONE';
+  bool _storePinEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStorePinState();
+  }
+
+  Future<void> _loadStorePinState() async {
+    if (!sl.isRegistered<AppLockService>()) return;
+    final enabled = await sl<AppLockService>().isEnabled();
+    if (mounted) setState(() => _storePinEnabled = enabled);
+  }
+
+  void _setPinEnabled(bool enabled) {
+    if (mounted) setState(() => _storePinEnabled = enabled);
+  }
 
   @override
   void dispose() {
@@ -75,6 +93,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
     // Case 1: lock already on with a PIN — nothing to do.
     if (enabled && hasPin) {
+      _setPinEnabled(true);
       return true;
     }
 
@@ -83,6 +102,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     if (hasPin && !enabled) {
       try {
         await lock.enable();
+        _setPinEnabled(true);
         return true;
       } on Exception catch (e) {
         AppLogger.error('Onboarding enable failed', error: e);
@@ -101,6 +121,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     if (result.isCreated && result.pin != null) {
       try {
         await lock.setPin(result.pin!);
+        _setPinEnabled(true);
         return true;
       } on Exception catch (e) {
         AppLogger.error('Onboarding setPin failed', error: e);
@@ -114,6 +135,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     if (result.isSkipped) {
       // Confirm the user understands the risk of not using a PIN.
       final confirmed = await _confirmSkipPin();
+      if (confirmed) _setPinEnabled(false);
       if (confirmed && mounted) {
         AppSnackBar.warning(context, context.l10n.onboardingPinSkippedHint);
       }
@@ -154,6 +176,27 @@ class _OnboardingPageState extends State<OnboardingPage> {
       AppSnackBar.error(context, context.l10n.shopNameRequired);
       return;
     }
+    final rawTaxId = _taxIdController.text
+        .replaceAll(RegExp(r'[^0-9]'), '')
+        .trim();
+    if (rawTaxId.isNotEmpty) {
+      try {
+        Validators.thaiTaxId(rawTaxId);
+      } on ArgumentError {
+        AppSnackBar.error(context, context.l10n.taxIdChecksumInvalid);
+        return;
+      }
+    }
+
+    final parsedVatRate = double.tryParse(
+      _vatRateController.text.trim().replaceAll(',', '.'),
+    );
+    if (_vatMode != 'NONE' &&
+        (parsedVatRate == null || parsedVatRate < 0 || parsedVatRate > 100)) {
+      AppSnackBar.error(context, context.l10n.onboardingInvalidVatRate);
+      return;
+    }
+
     if (!await _ensureStorePinBeforeComplete()) return;
     if (!mounted) return;
 
@@ -176,12 +219,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
         shopName: _shopNameController.text.trim(),
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
-        taxId: _taxIdController.text.replaceAll(RegExp(r'[^0-9]'), '').trim(),
+        taxId: rawTaxId,
         localeCode: current.localeCode,
         currency: _currencyCtrl.text.trim(),
         dateFormat: _dateFormat,
         vatMode: _vatMode,
-        vatRate: double.tryParse(_vatRateController.text) ?? 7.0,
+        vatRate: parsedVatRate ?? 7.0,
         promptpayId: promptpayId ?? '',
         onboardingCompleted: true,
         deviceId: IdGenerator.newId(),
@@ -218,8 +261,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
         localeCode: current.localeCode,
         currency: _currencyCtrl.text.trim(),
         dateFormat: _dateFormat,
-        vatMode: 'NONE',
-        vatRate: 7.0,
+        vatMode: _vatMode,
+        vatRate:
+            double.tryParse(_vatRateController.text.replaceAll(',', '.')) ??
+            7.0,
         onboardingCompleted: true,
         deviceId: IdGenerator.newId(),
         devicePrefix: devicePrefix,
@@ -242,6 +287,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
       curve: Curves.easeInOut,
     );
   }
+
+  String _vatLabelFor(AppLocalizations l10n, String mode) => switch (mode) {
+    'INCLUSIVE' => l10n.onboardingInclusive,
+    'EXCLUSIVE' => l10n.onboardingExclusive,
+    _ => l10n.onboardingNone,
+  };
+
+  String _currencyLabelFor(AppLocalizations l10n, String symbol) =>
+      switch (symbol) {
+        '฿' => l10n.onboardingCurrencyBaht,
+        r'$' => l10n.onboardingCurrencyUsd,
+        '€' => l10n.onboardingCurrencyEur,
+        '¥' => l10n.onboardingCurrencyJpy,
+        _ => symbol,
+      };
 
   String _stepLabelFor(BuildContext context, int step) {
     final l10n = context.l10n;
@@ -288,144 +348,168 @@ class _OnboardingPageState extends State<OnboardingPage> {
           _currentStep + 1,
           _totalSteps,
         );
+        final l10n = ctx.l10n;
+        final vatBaseLabel = _vatLabelFor(l10n, _vatMode);
+        final parsedSummaryRate = double.tryParse(
+          _vatRateController.text.trim().replaceAll(',', '.'),
+        );
+        final vatLabel = _vatMode == 'NONE' || parsedSummaryRate == null
+            ? vatBaseLabel
+            : '$vatBaseLabel (${parsedSummaryRate.toStringAsFixed(0)}%)';
+        final currencyLabel = _currencyLabelFor(
+          l10n,
+          _currencyCtrl.text.trim(),
+        );
 
-        return Scaffold(
-          resizeToAvoidBottomInset: true,
-          backgroundColor: scaffoldBg,
-          body: SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    horizontalPadding,
-                    12,
-                    horizontalPadding,
-                    0,
+        return PopScope(
+          canPop: _currentStep == 0,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _onBack();
+          },
+          child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            backgroundColor: scaffoldBg,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      12,
+                      horizontalPadding,
+                      0,
+                    ),
+                    child: Row(
+                      children: [
+                        const Spacer(),
+                        TextButton.icon(
+                          onPressed: () => OnboardingSettingsSheet.show(
+                            ctx,
+                            settings,
+                            accentBrand,
+                          ),
+                          icon: const Icon(Icons.tune, size: 18),
+                          label: Text(ctx.l10n.settingsTitle),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Text(
-                        '${_currentStep + 1} / $_totalSteps',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: accentBrand,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: () => OnboardingSettingsSheet.show(
-                          ctx,
-                          settings,
-                          accentBrand,
-                        ),
-                        icon: const Icon(Icons.tune, size: 18),
-                        label: Text(ctx.l10n.settingsTitle),
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(0, 40),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                      ),
-                    ],
+                  OnboardingProgressBar(
+                    currentStep: _currentStep,
+                    totalSteps: _totalSteps,
+                    accentBrand: accentBrand,
+                    stepLabel: stepLabel,
+                    stepOfLabel: stepOfLabel,
+                    horizontalPadding: horizontalPadding,
+                    disableAnimations:
+                        MediaQuery.maybeDisableAnimationsOf(ctx) ?? false,
                   ),
-                ),
-                OnboardingProgressBar(
-                  currentStep: _currentStep,
-                  totalSteps: _totalSteps,
-                  accentBrand: accentBrand,
-                  stepLabel: stepLabel,
-                  stepOfLabel: stepOfLabel,
-                  horizontalPadding: horizontalPadding,
-                  disableAnimations:
-                      MediaQuery.maybeDisableAnimationsOf(ctx) ?? false,
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: OnboardingHeroSection(
-                    isDark: isDark,
-                    subtitle: ctx.l10n.onboardingWelcomeSubtitle,
+                  AnimatedSize(
+                    duration:
+                        (MediaQuery.maybeDisableAnimationsOf(ctx) ?? false)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: _currentStep == 0
+                        ? Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: horizontalPadding,
+                            ),
+                            child: OnboardingHeroSection(
+                              isDark: isDark,
+                              subtitle: ctx.l10n.onboardingWelcomeSubtitle,
+                            ),
+                          )
+                        : const SizedBox(width: double.infinity),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (i) => setState(() => _currentStep = i),
-                    children: [
-                      SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding,
+                  if (_currentStep == 0) const SizedBox(height: 12),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (i) => setState(() => _currentStep = i),
+                      children: [
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: horizontalPadding,
+                          ),
+                          child: OnboardingShopSection(
+                            cardBg: cardBg,
+                            accentBrand: accentBrand,
+                            shopNameController: _shopNameController,
+                            addressController: _addressController,
+                            phoneController: _phoneController,
+                            taxIdController: _taxIdController,
+                            shopNameFocus: _shopNameFocus,
+                            addressFocus: _addressFocus,
+                            phoneFocus: _phoneFocus,
+                            taxIdFocus: _taxIdFocus,
+                            onChanged: () => setState(() {}),
+                          ),
                         ),
-                        child: OnboardingShopSection(
-                          cardBg: cardBg,
-                          accentBrand: accentBrand,
-                          shopNameController: _shopNameController,
-                          addressController: _addressController,
-                          phoneController: _phoneController,
-                          taxIdController: _taxIdController,
-                          shopNameFocus: _shopNameFocus,
-                          addressFocus: _addressFocus,
-                          phoneFocus: _phoneFocus,
-                          taxIdFocus: _taxIdFocus,
-                          onChanged: () => setState(() {}),
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: horizontalPadding,
+                          ),
+                          child: OnboardingPreferencesSection(
+                            cardBg: cardBg,
+                            accentBrand: accentBrand,
+                            settings: settings,
+                            currencyController: _currencyCtrl,
+                            dateFormat: _dateFormat,
+                            onCurrencyChanged: (_) => setState(() {}),
+                            onDateFormatChanged: (v) =>
+                                setState(() => _dateFormat = v),
+                          ),
                         ),
-                      ),
-                      SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding,
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: horizontalPadding,
+                          ),
+                          child: OnboardingBusinessSection(
+                            cardBg: cardBg,
+                            accentBrand: accentBrand,
+                            vatMode: _vatMode,
+                            vatRateController: _vatRateController,
+                            promptPayController: _promptPayController,
+                            vatRateFocus: _vatRateFocus,
+                            promptPayFocus: _promptPayFocus,
+                            onVatModeChanged: (v) =>
+                                setState(() => _vatMode = v),
+                          ),
                         ),
-                        child: OnboardingPreferencesSection(
-                          cardBg: cardBg,
-                          accentBrand: accentBrand,
-                          settings: settings,
-                          currencyController: _currencyCtrl,
-                          dateFormat: _dateFormat,
-                          onCurrencyChanged: (_) => setState(() {}),
-                          onDateFormatChanged: (v) =>
-                              setState(() => _dateFormat = v),
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: horizontalPadding,
+                          ),
+                          child: OnboardingDoneSection(
+                            cardBg: cardBg,
+                            accentBrand: accentBrand,
+                            onFinish: _finish,
+                            onSkip: _skip,
+                            shopName: _shopNameController.text.trim(),
+                            currencyLabel: currencyLabel,
+                            vatLabel: vatLabel,
+                            pinProtected: _storePinEnabled,
+                          ),
                         ),
-                      ),
-                      SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding,
-                        ),
-                        child: OnboardingBusinessSection(
-                          cardBg: cardBg,
-                          accentBrand: accentBrand,
-                          vatMode: _vatMode,
-                          vatRateController: _vatRateController,
-                          promptPayController: _promptPayController,
-                          vatRateFocus: _vatRateFocus,
-                          promptPayFocus: _promptPayFocus,
-                          onVatModeChanged: (v) => setState(() => _vatMode = v),
-                        ),
-                      ),
-                      SingleChildScrollView(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: horizontalPadding,
-                        ),
-                        child: OnboardingDoneSection(
-                          cardBg: cardBg,
-                          accentBrand: accentBrand,
-                          onFinish: _finish,
-                          onSkip: _skip,
-                          shopName: _shopNameController.text.trim(),
-                          currency: _currencyCtrl.text.trim(),
-                          vatMode: _vatMode,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          bottomNavigationBar: OnboardingBottomBar(
-            currentStep: _currentStep,
-            totalSteps: _totalSteps,
-            onNext: _onNext,
-            onBack: _onBack,
-            onSkip: _skip,
-            isLastStep: _currentStep == _totalSteps - 1,
+            bottomNavigationBar: OnboardingBottomBar(
+              currentStep: _currentStep,
+              totalSteps: _totalSteps,
+              onNext: _onNext,
+              onBack: _onBack,
+              onSkip: _skip,
+              isLastStep: _currentStep == _totalSteps - 1,
+            ),
           ),
         );
       },

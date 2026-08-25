@@ -19,24 +19,20 @@ void main() {
   testWidgets('keeps onboarding content in a four-step flow', (tester) async {
     await tester.pumpApp(const OnboardingPage(), settingsCubit: settingsCubit);
 
-    expect(find.text('1 / 4'), findsOneWidget);
     expect(find.text('Shop Info'), findsAtLeastNWidgets(1));
     expect(find.byType(OnboardingPage), findsOneWidget);
 
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('2 / 4'), findsOneWidget);
     expect(find.text('Locale & Currency'), findsAtLeastNWidgets(1));
     expect(find.text('Skip Setup'), findsOneWidget);
 
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('3 / 4'), findsOneWidget);
     expect(find.text('Tax Setup'), findsAtLeastNWidgets(1));
 
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('4 / 4'), findsOneWidget);
     expect(find.text('All set!'), findsOneWidget);
     expect(find.text('Start Selling'), findsOneWidget);
   });
@@ -51,7 +47,6 @@ void main() {
     await tester.tap(find.text('Back'));
     await tester.pumpAndSettle();
 
-    expect(find.text('1 / 4'), findsOneWidget);
     expect(find.text('Shop Info'), findsAtLeastNWidgets(1));
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_section.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_radio_card.dart';
@@ -87,6 +88,10 @@ class OnboardingBusinessSection extends StatelessWidget {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                LengthLimitingTextInputFormatter(5),
+              ],
             ),
           ],
           const SizedBox(height: 24),
@@ -115,6 +120,7 @@ class OnboardingBusinessSection extends StatelessWidget {
               prefixIcon: const Icon(Icons.qr_code),
             ),
             keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
         ],
       ),

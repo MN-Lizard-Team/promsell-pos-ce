@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/utils/validators.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_section.dart';
 
 class OnboardingShopSection extends StatelessWidget {
@@ -86,7 +85,7 @@ class OnboardingShopSection extends StatelessWidget {
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 12),
-          TextFormField(
+          TextField(
             controller: taxIdController,
             focusNode: taxIdFocus,
             textInputAction: TextInputAction.done,
@@ -103,20 +102,6 @@ class OnboardingShopSection extends StatelessWidget {
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(13),
             ],
-            validator: (v) {
-              final raw = v?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-              if (raw.isEmpty) return null;
-              if (raw.length != 13) {
-                return context.l10n.taxIdInvalid;
-              }
-              try {
-                Validators.thaiTaxId(raw);
-              } on ArgumentError {
-                return context.l10n.taxIdChecksumInvalid;
-              }
-              return null;
-            },
-            autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           const SizedBox(height: 16),
           _ReceiptHeaderPreview(

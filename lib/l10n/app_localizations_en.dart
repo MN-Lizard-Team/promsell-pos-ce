@@ -1635,9 +1635,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Vacuum rebuilds the database file to reclaim unused space and reduce fragmentation.';
 
   @override
-  String get onboardingWelcome => 'Welcome';
-
-  @override
   String get onboardingShopInfoTitle => 'Shop Info';
 
   @override
@@ -1692,13 +1689,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingVatRateLabel => 'VAT rate %';
 
   @override
-  String get onboardingSkip => 'Skip for now';
-
-  @override
   String get onboardingSkipSetup => 'Skip Setup';
-
-  @override
-  String get onboardingWelcomeTitle => 'Welcome to Promsell POS';
 
   @override
   String get onboardingWelcomeSubtitle =>
@@ -1724,9 +1715,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTaxSetup => 'Tax Setup';
 
   @override
-  String get onboardingPromptPay => 'PromptPay';
-
-  @override
   String get onboardingDone => 'Done';
 
   @override
@@ -1734,9 +1722,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingNext => 'Next';
-
-  @override
-  String get onboardingGetStarted => 'Get Started';
 
   @override
   String get onboardingStartSelling => 'Start Selling';
@@ -1794,13 +1779,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'VAT is added to the displayed price.';
 
   @override
-  String get onboardingPromptPaySecurity =>
-      'Optional. Stored locally on this device and used to create payment QR codes.';
+  String get onboardingInvalidVatRate => 'Enter a VAT rate between 0 and 100';
 
   @override
-  String onboardingDateExample(String date) {
-    return 'Example: $date';
-  }
+  String get onboardingPromptPaySecurity =>
+      'Optional. Stored locally on this device and used to create payment QR codes.';
 
   @override
   String get onboardingCurrencyBaht => '฿ THB';
@@ -1815,18 +1798,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingCurrencyJpy => '¥ JPY';
 
   @override
-  String get onboardingReadySummary =>
-      'Your workspace is ready for the first sale.';
-
-  @override
-  String get onboardingLocalSecuritySummary =>
-      'Your data is stored locally and protected on this device.';
-
-  @override
   String get onboardingSetupComplete => 'Setup complete';
 
   @override
   String get onboardingSecurityProtected => 'Security PIN protected';
+
+  @override
+  String get onboardingSecurityNotProtected => 'No store PIN set';
 
   @override
   String get onboardingFirstSaleHint =>
@@ -4488,10 +4466,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String onboardingStorePinBody(int min) {
     return 'Required for void, backup, stock adjust, CSV import, and PromptPay changes. Keep it offline-safe (min $min digits).';
   }
-
-  @override
-  String get onboardingStorePinRequired =>
-      'Store PIN is required to finish setup';
 
   @override
   String get onboardingSkipPin => 'Skip';

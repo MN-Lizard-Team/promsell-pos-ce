@@ -9,8 +9,9 @@ class OnboardingDoneSection extends StatelessWidget {
     required this.onFinish,
     required this.onSkip,
     this.shopName,
-    this.currency,
-    this.vatMode,
+    this.currencyLabel,
+    this.vatLabel,
+    this.pinProtected = false,
   });
 
   final Color cardBg;
@@ -18,8 +19,12 @@ class OnboardingDoneSection extends StatelessWidget {
   final VoidCallback onFinish;
   final VoidCallback onSkip;
   final String? shopName;
-  final String? currency;
-  final String? vatMode;
+  final String? currencyLabel;
+  final String? vatLabel;
+
+  /// Whether a store PIN is actually enabled — drives the security summary
+  /// row so it never claims protection the user skipped.
+  final bool pinProtected;
 
   @override
   Widget build(BuildContext context) {
@@ -110,21 +115,23 @@ class OnboardingDoneSection extends StatelessWidget {
                   _SummaryRow(
                     icon: Icons.payments_outlined,
                     label: context.l10n.onboardingSummaryCurrency,
-                    value: currency,
+                    value: currencyLabel,
                     maxValueWidth: maxValueWidth,
                   ),
                   _SummaryRow(
                     icon: Icons.receipt_long_outlined,
                     label: context.l10n.onboardingSummaryTax,
-                    value: vatMode,
+                    value: vatLabel,
                     maxValueWidth: maxValueWidth,
                   ),
                   _SummaryRow(
                     icon: Icons.lock_outline,
                     label: context.l10n.onboardingSecurityProtected,
-                    value: null,
+                    value: pinProtected
+                        ? null
+                        : context.l10n.onboardingSecurityNotProtected,
                     maxValueWidth: maxValueWidth,
-                    isStatus: true,
+                    isStatus: pinProtected,
                   ),
                 ],
               ),

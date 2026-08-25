@@ -30,8 +30,8 @@ void main() {
           onFinish: () {},
           onSkip: () {},
           shopName: 'My Shop',
-          currency: '฿',
-          vatMode: 'VAT',
+          currencyLabel: '฿ THB',
+          vatLabel: 'Inclusive (7%)',
         ),
       );
 
@@ -39,6 +39,30 @@ void main() {
       expect(find.text('Store'), findsOneWidget);
       expect(find.text('Setup complete'), findsOneWidget);
       expect(find.byType(Card), findsOneWidget);
+    });
+
+    testWidgets('security row reflects the real store-PIN state', (
+      tester,
+    ) async {
+      Future<void> pumpWith({required bool pinProtected}) async {
+        await tester.pumpApp(
+          OnboardingDoneSection(
+            cardBg: Colors.white,
+            accentBrand: Colors.blue,
+            onFinish: () {},
+            onSkip: () {},
+            pinProtected: pinProtected,
+          ),
+        );
+        await tester.pump();
+      }
+
+      await pumpWith(pinProtected: true);
+      expect(find.text('✓'), findsOneWidget);
+
+      await pumpWith(pinProtected: false);
+      expect(find.text('✓'), findsNothing);
+      expect(find.text('No store PIN set'), findsOneWidget);
     });
 
     testWidgets('shows summary placeholders when no data provided', (

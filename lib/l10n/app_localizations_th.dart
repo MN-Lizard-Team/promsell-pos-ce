@@ -1625,9 +1625,6 @@ class AppLocalizationsTh extends AppLocalizations {
       'บีบอัดจะสร้างไฟล์ฐานข้อมูลใหม่เพื่อคืนพื้นที่ว่างและลดการแตกกระจาย';
 
   @override
-  String get onboardingWelcome => 'ยินดีต้อนรับ';
-
-  @override
   String get onboardingShopInfoTitle => 'ข้อมูลร้าน';
 
   @override
@@ -1681,13 +1678,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get onboardingVatRateLabel => 'อัตรา VAT %';
 
   @override
-  String get onboardingSkip => 'ข้ามไปก่อน';
-
-  @override
   String get onboardingSkipSetup => 'ข้ามการตั้งค่า';
-
-  @override
-  String get onboardingWelcomeTitle => 'ยินดีต้อนรับสู่ Promsell POS';
 
   @override
   String get onboardingWelcomeSubtitle =>
@@ -1712,9 +1703,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get onboardingTaxSetup => 'ตั้งค่าภาษี';
 
   @override
-  String get onboardingPromptPay => 'พร้อมเพย์';
-
-  @override
   String get onboardingDone => 'เสร็จสิ้น';
 
   @override
@@ -1722,9 +1710,6 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get onboardingNext => 'ถัดไป';
-
-  @override
-  String get onboardingGetStarted => 'เริ่มต้นใช้งาน';
 
   @override
   String get onboardingStartSelling => 'เริ่มขาย';
@@ -1780,13 +1765,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get onboardingVatExclusiveHelp => 'ระบบจะบวก VAT เพิ่มจากราคาที่แสดง';
 
   @override
-  String get onboardingPromptPaySecurity =>
-      'ไม่บังคับ ข้อมูลจะเก็บไว้บนอุปกรณ์นี้และใช้สร้าง QR รับเงิน';
+  String get onboardingInvalidVatRate =>
+      'กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 100';
 
   @override
-  String onboardingDateExample(String date) {
-    return 'ตัวอย่าง: $date';
-  }
+  String get onboardingPromptPaySecurity =>
+      'ไม่บังคับ ข้อมูลจะเก็บไว้บนอุปกรณ์นี้และใช้สร้าง QR รับเงิน';
 
   @override
   String get onboardingCurrencyBaht => '฿ บาท';
@@ -1801,18 +1785,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get onboardingCurrencyJpy => '¥ เยน';
 
   @override
-  String get onboardingReadySummary =>
-      'พื้นที่ร้านของคุณพร้อมสำหรับการขายแรกแล้ว';
-
-  @override
-  String get onboardingLocalSecuritySummary =>
-      'ข้อมูลถูกเก็บไว้ในเครื่องและได้รับการปกป้องบนอุปกรณ์นี้';
-
-  @override
   String get onboardingSetupComplete => 'ตั้งค่าเรียบร้อย';
 
   @override
   String get onboardingSecurityProtected => 'ปกป้องด้วย PIN ร้าน';
+
+  @override
+  String get onboardingSecurityNotProtected => 'ยังไม่ได้ตั้ง PIN ร้าน';
 
   @override
   String get onboardingFirstSaleHint => 'ขั้นตอนถัดไป: เริ่มขายรายการแรกของคุณ';
@@ -4455,9 +4434,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String onboardingStorePinBody(int min) {
     return 'จำเป็นสำหรับยกเลิกบิล สำรอง ปรับสต็อก นำเข้า CSV และแก้ PromptPay (อย่างน้อย $min หลัก) เก็บไว้เอง — ไม่มีระบบกู้ PIN';
   }
-
-  @override
-  String get onboardingStorePinRequired => 'ต้องตั้ง PIN ร้านก่อนจบการตั้งค่า';
 
   @override
   String get onboardingSkipPin => 'ข้าม';
