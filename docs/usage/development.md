@@ -245,9 +245,10 @@ flutter test test/integration/checkout_flow_test.dart
 
 Tests mirror `lib/` structure under `test/`:
 
-- `test/helpers/` — shared mocks (`mocks.dart`), entity fixtures (`fixtures.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`)
+- `test/helpers/` — shared mocks (`mocks.dart`), entity fixtures (`fixtures.dart`), widget test helper (`pump_app.dart`), in-memory DB (`fake_database.dart`), fakes (`fake_app_lock.dart`, `fake_settings_repository.dart`), scaling fixture (`scaling_fixture.dart`)
 - `test/features/` — per-feature tests: domain (`entities/`, `usecases/`), data (`repositories/`, `datasources/`), presentation (`bloc/`, `pages/`, `widgets/`)
-- `test/integration/` — end-to-end checkout flow + sale integrity (void, adjust stock) + onboarding → first sale with real in-memory SQLite
+- `test/integration/` — end-to-end host suite with real in-memory SQLite: checkout flow, sale integrity (void, adjust stock), onboarding → first sale, VAT+discount+void+day-close (V092-D.1), void after day-close (V092-D.4), multi-tender daily close, backup money continuity
+- `test/performance/` — CI-run benchmarks (non-stress): DB benchmark, P0 baseline timing, P0 regression, P1 migration benchmark/safety, P1 large restore, P1 WAL/health, scaling fixture
 - `test/tool/` — stress test seeder (`@Tags(['stress'])`, excluded from default run) — seeds 10k products + 50k sales and measures query performance
 - `test/core/` — utility tests (`MoneyUtils`, etc.)
 - `test/l10n/` — EN/TH translation parity test

@@ -1,5 +1,5 @@
 @startuml Sequence_RecoveryKit
-title Recovery Kit Export / Import — SQLCipher Key Wrapping ([Unreleased])
+title Recovery Kit Export / Import — SQLCipher Key Wrapping (v0.9.3)
 
 actor Merchant
 participant "SettingsPage" as UI

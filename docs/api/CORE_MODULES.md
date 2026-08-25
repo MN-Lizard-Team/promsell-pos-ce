@@ -428,7 +428,7 @@ class GenerateBarcode {
 
 ---
 
-## Database & Reliability Services ([Unreleased])
+## Database & Reliability Services (v0.9.3)
 
 Six services added in the unreleased scaling/lifecycle work for migration safety, WAL management, health
 reporting, backup export, key recovery, and restore. All use injectable
@@ -814,4 +814,4 @@ Future<int> cleanupPreRestoreBackups();
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Core Modules API</sub>
+<sub>Promsell POS CE · v0.9.4 · Core Modules API</sub>

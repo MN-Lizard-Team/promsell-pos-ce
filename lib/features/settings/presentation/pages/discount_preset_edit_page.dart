@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_preset_edit_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 
 class DiscountPresetEditPage extends StatelessWidget {
   const DiscountPresetEditPage({
@@ -58,37 +59,43 @@ class DiscountPresetEditPage extends StatelessWidget {
     final st = context.settingsTheme;
 
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (prev, curr) => prev.settings != curr.settings,
+      buildWhen: (prev, curr) =>
+          prev.settings != curr.settings || prev.status != curr.status,
       builder: (context, state) {
+        final cubit = context.read<SettingsCubit>();
         final s = state.settings;
         final currentPreset = index < s.discountPresets.length
             ? s.discountPresets[index]
             : preset;
         final currentlyActive = currentPreset.id == s.activeDiscountPresetId;
 
-        return SettingsLeafChrome(
-          title: l10n.editDiscountPreset,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: st.cardBackground,
-                  borderRadius: BorderRadius.circular(st.cardRadius),
-                  border: Border.all(color: st.cardBorderColor),
-                ),
-                child: DiscountPresetEditForm(
-                  preset: currentPreset,
-                  isActive: currentlyActive,
-                  canDelete: s.discountPresets.length > 1,
-                  onUpdate: (p) => _updatePreset(context, p),
-                  onDelete: () => _deletePreset(context),
-                  onSetActive: () => _setActive(context),
+        return SettingsStateView(
+          state: state,
+          onRetry: cubit.load,
+          builder: (_) => SettingsLeafChrome(
+            title: l10n.editDiscountPreset,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: st.cardBackground,
+                    borderRadius: BorderRadius.circular(st.cardRadius),
+                    border: Border.all(color: st.cardBorderColor),
+                  ),
+                  child: DiscountPresetEditForm(
+                    preset: currentPreset,
+                    isActive: currentlyActive,
+                    canDelete: s.discountPresets.length > 1,
+                    onUpdate: (p) => _updatePreset(context, p),
+                    onDelete: () => _deletePreset(context),
+                    onSetActive: () => _setActive(context),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

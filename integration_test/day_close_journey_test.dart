@@ -54,7 +54,7 @@ void main() {
       await TestApp.pumpApp(tester);
       await sale.navigateToSalePage();
 
-      // Cash sale: Coffee 45, drawer receives 100.
+      // Cash sale: Coffee 45, drawer receives exact cash.
       await sale.addProductToCart('Coffee');
       await sale.proceedToCheckout();
       await checkout.selectPaymentMethod('Cash');
@@ -67,10 +67,13 @@ void main() {
       await sale.addProductToCart('Burger');
       await sale.proceedToCheckout();
       await checkout.selectPaymentMethod('PromptPay');
-      await tester.pump(const Duration(milliseconds: 800));
+      // Confirming checkout opens the QR page; its footer carries the
+      // PromptPay confirm CTA that stamps the slip reference.
+      await checkout.completePayment();
       final promptPayConfirm = find.byKey(
         const Key(TestKeys.promptPayConfirmButton),
       );
+      await TestUtils.waitFor(tester, promptPayConfirm);
       expect(promptPayConfirm, findsOneWidget);
       await tester.tap(promptPayConfirm);
       await tester.pump(const Duration(seconds: 2));
@@ -90,22 +93,35 @@ void main() {
       await tester.pump(const Duration(milliseconds: 800));
       await tester.tap(find.byKey(ValueKey<String>(promptPaySale.id)));
       await tester.pump(const Duration(milliseconds: 500));
-      final voidButton = find.byKey(const Key(TestKeys.voidButton));
+      final voidButton = find.byKey(
+        Key(TestKeys.voidButtonForSale(promptPaySale.id)),
+      );
       expect(voidButton, findsOneWidget);
+      debugPrint('J6: void button visible');
       await tester.tap(voidButton);
       await tester.pump(const Duration(milliseconds: 400));
+      debugPrint('J6: void dialog open');
       await tester.enterText(
         find.byKey(const Key(TestKeys.voidReasonField)),
         'End of day correction',
       );
       await tester.tap(find.byKey(const Key(TestKeys.voidConfirmButton)));
+      await tester.pump(const Duration(milliseconds: 800));
+      debugPrint('J6: void confirmed');
+      final voidedPromptPay = await (TestApp.database.select(
+        TestApp.database.sales,
+      )..where((s) => s.id.equals(promptPaySale.id))).getSingle();
+      expect(voidedPromptPay.status, 'VOIDED');
+      debugPrint('J6: sale row VOIDED');
       await tester.pump(const Duration(seconds: 1));
 
       // Return home and open daily close through the stable menu tile.
       await tester.tap(find.byIcon(Icons.home).first);
       await tester.pump(const Duration(milliseconds: 800));
+      debugPrint('J6: home reached');
       await tester.tap(find.byKey(const Key(TestKeys.homeCloseDayTile)));
       await tester.pump(const Duration(seconds: 1));
+      debugPrint('J6: daily close page open');
 
       expect(find.byKey(const Key(TestKeys.openingCashField)), findsOneWidget);
       expect(find.byKey(const Key(TestKeys.countedCashField)), findsOneWidget);
@@ -141,6 +157,9 @@ void main() {
       expect(closeRows, hasLength(1));
       expect(closeRows.single.closedAt != null, isTrue);
       expect(closeRows.single.expectedCash, 95.0);
+      expect(closeRows.single.voidCount, 1);
+      expect(closeRows.single.totalVoid, 120.0);
+      expect(closeRows.single.totalRevenue, 45.0);
 
       // The lock must block a new payment, not merely render a closed-day
       // summary. Return to Sale, attempt checkout, and verify no new sale.

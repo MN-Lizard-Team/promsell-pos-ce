@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
@@ -68,6 +70,7 @@ class AppLockService {
   final PinHasher _hasher = const PinHasher();
   final LockoutPolicy _lockout = LockoutPolicy();
   bool _lockoutHydrated = false;
+  Future<void> _verificationQueue = Future<void>.value();
 
   Duration _sessionGrace = defaultSessionGrace;
   bool _policyHydrated = false;
@@ -314,11 +317,26 @@ class AppLockService {
     lockSession();
   }
 
+  /// Serializes verification attempts so lockout state cannot be raced by
+  /// concurrent callers.
+  Future<bool> verifyPin(String pin) {
+    final result = Completer<bool>();
+    final previous = _verificationQueue;
+    _verificationQueue = previous.then<void>((_) async {
+      try {
+        result.complete(await _verifyPin(pin));
+      } catch (error, stack) {
+        result.completeError(error, stack);
+      }
+    });
+    return result.future;
+  }
+
   /// Verifies [pin]. Returns false on mismatch or active lockout.
   ///
   /// Throws [StateError] with message `PIN_LOCKED` when lockout is active
   /// (callers may inspect [lockoutRemaining]).
-  Future<bool> verifyPin(String pin) async {
+  Future<bool> _verifyPin(String pin) async {
     await _hydrateLockout();
     await _hydratePolicy();
     if (_lockout.isLockedOut) {

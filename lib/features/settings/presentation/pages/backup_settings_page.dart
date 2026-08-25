@@ -11,6 +11,7 @@ import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
+import 'package:promsell_pos_ce/core/utils/secure_screen.dart';
 import 'package:promsell_pos_ce/features/settings/data/services/backup_export_service.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/l10n/app_localizations.dart';
@@ -23,11 +24,19 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/recovery_
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/recovery_kit/recovery_kit_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
-class BackupSettingsPage extends StatelessWidget {
+class BackupSettingsPage extends StatefulWidget {
   const BackupSettingsPage({super.key});
+
+  @override
+  State<BackupSettingsPage> createState() => _BackupSettingsPageState();
+}
+
+class _BackupSettingsPageState extends State<BackupSettingsPage> {
+  bool _busy = false;
 
   Future<String?> _askPin(BuildContext context, AppLocalizations l10n) {
     return showDialog<String>(
@@ -42,6 +51,8 @@ class BackupSettingsPage extends StatelessWidget {
     SettingsCubit cubit,
     AppLocalizations l10n,
   ) async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
       final unlocked = await ensureAppUnlocked(
         context,
@@ -76,6 +87,8 @@ class BackupSettingsPage extends StatelessWidget {
             }
           : l10n.backupFailed;
       AppSnackBar.error(context, msg);
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -84,6 +97,8 @@ class BackupSettingsPage extends StatelessWidget {
     Settings s,
     AppLocalizations l10n,
   ) async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
       final unlocked = await ensureAppUnlocked(
         context,
@@ -142,6 +157,8 @@ class BackupSettingsPage extends StatelessWidget {
             }
           : l10n.backupFailed;
       AppSnackBar.error(context, msg);
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -275,123 +292,129 @@ class BackupSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (prev, curr) => prev.settings != curr.settings,
+      buildWhen: (prev, curr) =>
+          prev.settings != curr.settings || prev.status != curr.status,
       builder: (context, state) {
-        final s = state.settings;
         final cubit = context.read<SettingsCubit>();
         final l10n = context.l10n;
         final st = context.settingsTheme;
 
-        return SettingsLeafChrome(
-          title: l10n.settingsBackup,
-          header: BackupStatusCard(
-            lastBackupAt: s.lastBackupAt,
-            reminderDays: s.backupReminderDays,
-            st: st,
-            l10n: l10n,
+        return SettingsStateView(
+          state: state,
+          onRetry: cubit.load,
+          builder: (s) => SettingsLeafChrome(
+            title: l10n.settingsBackup,
+            header: BackupStatusCard(
+              lastBackupAt: s.lastBackupAt,
+              reminderDays: s.backupReminderDays,
+              st: st,
+              l10n: l10n,
+            ),
+            children: [
+              _buildReminderTile(context, s, cubit, st, l10n),
+              SettingsSectionCard(
+                title: l10n.backupEncryptionTitle,
+                children: [
+                  SwitchListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    secondary: Container(
+                      width: st.iconSize,
+                      height: st.iconSize,
+                      decoration: BoxDecoration(
+                        color: st.iconContainerBackground,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        TablerIcons.lock,
+                        color: st.softAccent,
+                        size: 24,
+                      ),
+                    ),
+                    title: Text(
+                      l10n.backupEncryptionLabel,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.backupEncryptionDesc,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: st.mutedText,
+                        fontSize: 14,
+                      ),
+                    ),
+                    value: s.backupEncryptionEnabled,
+                    activeTrackColor: st.softAccent,
+                    onChanged: (v) async {
+                      if (!v && s.backupEncryptionEnabled) {
+                        final unlocked = await ensureAppUnlocked(
+                          context,
+                          title: l10n.backupEncryptionOffTitle,
+                        );
+                        if (!unlocked || !context.mounted) return;
+                        final ok = await showAppConfirm(
+                          context,
+                          title: l10n.backupEncryptionOffTitle,
+                          message: l10n.backupEncryptionOffConfirm,
+                          confirmLabel: l10n.confirm,
+                          destructive: true,
+                        );
+                        if (!ok || !context.mounted) return;
+                      }
+                      cubit.updateField(
+                        (settings) =>
+                            settings.copyWith(backupEncryptionEnabled: v),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                    backgroundColor: AppColors.accent,
+                  ),
+                  onPressed: _busy
+                      ? null
+                      : () => _runBackup(context, s, cubit, l10n),
+                  icon: const Icon(TablerIcons.databaseExport),
+                  label: Text(l10n.backupNow),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                  ),
+                  onPressed: _busy ? null : () => _runRestore(context, s, l10n),
+                  icon: const Icon(TablerIcons.history),
+                  label: Text(l10n.backupRestoreTitle),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Text(
+                  l10n.backupActionSubtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: st.mutedText,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              BackupInfoCard(st: st, l10n: l10n),
+              RecoveryKitSectionCard(
+                onExport: () => _runExportRecoveryKit(context, l10n),
+                onImport: () => _runImportRecoveryKit(context, l10n),
+              ),
+            ],
           ),
-          children: [
-            _buildReminderTile(context, s, cubit, st, l10n),
-            SettingsSectionCard(
-              title: l10n.backupEncryptionTitle,
-              children: [
-                SwitchListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  secondary: Container(
-                    width: st.iconSize,
-                    height: st.iconSize,
-                    decoration: BoxDecoration(
-                      color: st.iconContainerBackground,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      TablerIcons.lock,
-                      color: st.softAccent,
-                      size: 24,
-                    ),
-                  ),
-                  title: Text(
-                    l10n.backupEncryptionLabel,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Text(
-                    l10n.backupEncryptionDesc,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: st.mutedText,
-                      fontSize: 14,
-                    ),
-                  ),
-                  value: s.backupEncryptionEnabled,
-                  activeTrackColor: st.softAccent,
-                  onChanged: (v) async {
-                    if (!v && s.backupEncryptionEnabled) {
-                      final unlocked = await ensureAppUnlocked(
-                        context,
-                        title: l10n.backupEncryptionOffTitle,
-                      );
-                      if (!unlocked || !context.mounted) return;
-                      final ok = await showAppConfirm(
-                        context,
-                        title: l10n.backupEncryptionOffTitle,
-                        message: l10n.backupEncryptionOffConfirm,
-                        confirmLabel: l10n.confirm,
-                        destructive: true,
-                      );
-                      if (!ok || !context.mounted) return;
-                    }
-                    cubit.updateField(
-                      (settings) =>
-                          settings.copyWith(backupEncryptionEnabled: v),
-                    );
-                  },
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                  backgroundColor: AppColors.accent,
-                ),
-                onPressed: () => _runBackup(context, s, cubit, l10n),
-                icon: const Icon(TablerIcons.databaseExport),
-                label: Text(l10n.backupNow),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                ),
-                onPressed: () => _runRestore(context, s, l10n),
-                icon: const Icon(TablerIcons.history),
-                label: Text(l10n.backupRestoreTitle),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Text(
-                l10n.backupActionSubtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: st.mutedText,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            BackupInfoCard(st: st, l10n: l10n),
-            RecoveryKitSectionCard(
-              onExport: () => _runExportRecoveryKit(context, l10n),
-              onImport: () => _runImportRecoveryKit(context, l10n),
-            ),
-          ],
         );
       },
     );
@@ -496,12 +519,14 @@ class _BackupPinDialogState extends State<_BackupPinDialog> {
   @override
   void initState() {
     super.initState();
+    SecureScreen.setSecure(true);
     _pinCtrl = TextEditingController();
     _confirmCtrl = TextEditingController();
   }
 
   @override
   void dispose() {
+    SecureScreen.setSecure(false);
     disposeTextEditingControllerAfterFrame(_pinCtrl);
     disposeTextEditingControllerAfterFrame(_confirmCtrl);
     super.dispose();

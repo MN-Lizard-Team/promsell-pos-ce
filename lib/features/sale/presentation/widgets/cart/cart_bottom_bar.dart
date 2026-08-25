@@ -253,7 +253,7 @@ class _CartBottomBarState extends State<CartBottomBar>
                                     .withValues(alpha: 0.6),
                               ),
                               FilledButton.icon(
-                                key: const ValueKey('sale-pay-cta'),
+                                key: const ValueKey('sale_cart_checkout_cta'),
                                 onPressed: dayClosed
                                     ? () {
                                         HapticFeedback.heavyImpact();

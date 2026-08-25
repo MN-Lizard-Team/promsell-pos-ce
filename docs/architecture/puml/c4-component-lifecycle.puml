@@ -1,7 +1,7 @@
 @startuml C4_Component_Lifecycle
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Promsell POS CE — Component Diagram (DB Lifecycle Services) [Unreleased]
+title Promsell POS CE — Component Diagram (DB Lifecycle Services) v0.9.4
 
 Container_Boundary(core_db, "Core Database / Settings") {
     Component(app_db, "AppDatabase", "Drift + SQLCipher", "schema v32 · 16 tables · WAL mode · cursor indexes + inventory_logs composite index\nMigrations split: migrations.dart + helpers.dart + v32_satang.dart (part of)")
@@ -15,7 +15,7 @@ Container_Boundary(core_db, "Core Database / Settings") {
     Component(backup_enc, "BackupEncryptionService", "Service", "AES-256-GCM encrypt/decrypt\nPBKDF2 key derivation from PIN")
     Component(recovery_kit, "RecoveryKitService", "@LazySingleton", "Export SQLCipher key as .promkey\nAES-256-GCM + PBKDF2 (100K iterations)\nImport + install to secure storage")
 
-    Component(app_lock, "AppLockService", "Service", "requireSensitiveSession()\nPIN + day lock enforcement")
+    Component(app_lock, "AppLockService", "Service", "requireSensitiveSession()\nPIN + day lock enforcement\nverifyPin() serialized via _verificationQueue")
     Component(db_key_store, "DbKeyStore", "Static", "getOrCreateKey()\nSQLCipher key in secure storage")
 }
 

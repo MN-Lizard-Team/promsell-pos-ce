@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart'
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_switch_tile.dart';
 
@@ -24,37 +25,41 @@ class _StockSettingsPageState extends State<StockSettingsPage>
   Widget build(BuildContext context) {
     super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (prev, curr) => prev.settings != curr.settings,
+      buildWhen: (prev, curr) =>
+          prev.settings != curr.settings || prev.status != curr.status,
       builder: (context, state) {
-        final s = state.settings;
         final cubit = context.read<SettingsCubit>();
         final l10n = context.l10n;
         final accent = context.settingsTheme.softAccent;
 
-        return SettingsLeafChrome(
-          title: l10n.settingsStockPolicy,
-          header: _StockPreviewCard(
-            allowOversell: s.allowOversell,
-            lowStockThreshold: s.lowStockThreshold,
-          ),
-          children: [
-            SettingsSectionCard(
-              title: l10n.settingsPolicy,
-              children: [
-                SettingsSwitchTile(
-                  icon: Icons.shopping_cart_outlined,
-                  title: l10n.allowOversell,
-                  subtitle: l10n.allowOversellHint,
-                  accentColor: accent,
-                  value: s.allowOversell,
-                  onChanged: (v) {
-                    cubit.updateField((s) => s.copyWith(allowOversell: v));
-                  },
-                ),
-                _buildThresholdTile(context, s, cubit),
-              ],
+        return SettingsStateView(
+          state: state,
+          onRetry: cubit.load,
+          builder: (s) => SettingsLeafChrome(
+            title: l10n.settingsStockPolicy,
+            header: _StockPreviewCard(
+              allowOversell: s.allowOversell,
+              lowStockThreshold: s.lowStockThreshold,
             ),
-          ],
+            children: [
+              SettingsSectionCard(
+                title: l10n.settingsPolicy,
+                children: [
+                  SettingsSwitchTile(
+                    icon: Icons.shopping_cart_outlined,
+                    title: l10n.allowOversell,
+                    subtitle: l10n.allowOversellHint,
+                    accentColor: accent,
+                    value: s.allowOversell,
+                    onChanged: (v) {
+                      cubit.updateField((s) => s.copyWith(allowOversell: v));
+                    },
+                  ),
+                  _buildThresholdTile(context, s, cubit),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );

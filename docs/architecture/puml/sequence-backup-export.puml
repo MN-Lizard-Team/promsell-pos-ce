@@ -1,5 +1,5 @@
 @startuml Sequence_BackupExport
-title Backup Export with Metadata + Checksum ([Unreleased])
+title Backup Export with Metadata + Checksum (v0.9.3)
 
 actor Merchant
 participant "SettingsPage" as UI

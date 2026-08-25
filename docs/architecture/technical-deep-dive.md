@@ -1,4 +1,4 @@
-# Technical Deep-Dive — Promsell POS CE (v0.9.3)
+# Technical Deep-Dive — Promsell POS CE (v0.9.4)
 
 State management patterns, dependency injection graph, transaction boundaries, error handling strategy, and performance characteristics.
 
@@ -69,6 +69,9 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  CheckoutBloc ──→ CreateSale only                         │
 │  HistoryBloc ──→ VoidSale                                 │
 │  SettingsCubit ──→ SettingsRepository, Ean13Generator     │
+│                  (UI: SettingsStateView — shared          │
+│                   loading/error/retry wrapper for all     │
+│                   Settings pages)                         │
 │  ReportCubit (lazySingleton) ──→ WatchReport              │
 │  InventoryLogCubit ──→ WatchInventoryLogs                 │
 │                                                           │
@@ -193,6 +196,8 @@ Every stock-mutating operation runs inside a **single Drift transaction** to gua
 4. **Idempotency guard for void** — check `status != VOIDED` before proceeding
 5. **Backup restore uses atomic file swap** — candidate is validated (schema, integrity, FK) before the live DB is touched; a pre-restore backup is kept for rollback if the swap fails
 6. **WAL checkpoint before backup** — `forceTruncate()` acquires an exclusive lock so the backup copy is consistent
+7. **AppLock `verifyPin()` is serialized** — concurrent PIN verification calls are chained through a single `_verificationQueue` `Future` so lockout-counter reads and writes cannot race when multiple verifications are submitted simultaneously (e.g. user double-tapping unlock). The public `verifyPin()` returns a `Future<bool>` that resolves in submission order; the actual check runs in `_verifyPin()`.
+8. **Backup page is single-flight** — `BackupSettingsPage` is a `StatefulWidget` with a `_busy` flag; backup and restore callbacks return early when `_busy` is true and the action buttons are disabled, preventing duplicate concurrent backup/restore operations. The Backup PIN dialog wraps itself with `SecureScreen.setSecure(true)` while shown to keep the PIN out of screenshots and recent-app previews.
 
 ---
 
@@ -349,4 +354,4 @@ try {
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Technical Deep-Dive</sub>
+<sub>Promsell POS CE · v0.9.4 · Technical Deep-Dive</sub>

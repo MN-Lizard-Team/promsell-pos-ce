@@ -1,4 +1,4 @@
-# File Dependency Map — Promsell POS CE (v0.9.3)
+# File Dependency Map — Promsell POS CE (v0.9.4)
 
 If you change a file, these are the files that must also be updated.
 
@@ -20,6 +20,8 @@ If you change a file, these are the files that must also be updated.
 | Main Sale UI entry | `main.dart` import + Sale page widget tests/manual smoke test |
 | Feature `widgets/` folder | Corresponding page file import + widget tests |
 | `Settings` aggregate root (14 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all settings pages & widgets |
+| `SettingsStateView` (shared loading/error/retry wrapper) | All settings pages (root, general, sales, receipt, image, stock, barcode, promptpay, shop_info, discount_policy, discount_preset_edit, backup) + widget tests under `test/features/settings/presentation/` |
+| `BackupSettingsPage` (now `StatefulWidget` with `_busy` guard) | Backup/restore button states; concurrent backup/restore is rejected; Backup PIN dialog uses `SecureScreen.setSecure(true)` |
 | `SettingsMapper` | `SettingsRepositoryImpl` tests (mock `getAll()` return values); legacy migration handling |
 | Extracted widget (e.g. `CartItemCard`) | Parent page import update + widget test under `test/features/<name>/presentation/widgets/` |
 | Domain service (e.g. `ReportCalculatorService`) | Pure Dart test under `test/features/<name>/domain/services/` |
@@ -83,4 +85,4 @@ If you change a file, these are the files that must also be updated.
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · File Dependency Map</sub>
+<sub>Promsell POS CE · v0.9.4 · File Dependency Map</sub>

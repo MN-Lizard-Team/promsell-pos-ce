@@ -117,7 +117,7 @@ abstract class ProductRepository {
 }
 ```
 
-#### ProductPage Entity ([Unreleased])
+#### ProductPage Entity (v0.9.3)
 
 **Path:** `lib/features/product/domain/entities/product_page.dart`
 
@@ -150,7 +150,7 @@ class ProductCursor extends Equatable {
 }
 ```
 
-#### Cursor Pagination Use Cases ([Unreleased])
+#### Cursor Pagination Use Cases (v0.9.3)
 
 **Path:** `lib/features/product/domain/usecases/get_products_page.dart`
 
@@ -524,7 +524,7 @@ abstract class SaleRepository {
 }
 ```
 
-#### SalePage Entity ([Unreleased])
+#### SalePage Entity (v0.9.3)
 
 **Path:** `lib/features/sale/domain/entities/sale_page.dart`
 
@@ -557,7 +557,7 @@ class SaleCursor extends Equatable {
 }
 ```
 
-#### Paged Sale History Use Cases ([Unreleased])
+#### Paged Sale History Use Cases (v0.9.3)
 
 **Path:** `lib/features/sale/domain/usecases/get_sales_page.dart`
 
@@ -813,7 +813,7 @@ abstract class PromotionRepository {
 
 ---
 
-## Report Module ([Unreleased])
+## Report Module (v0.9.3)
 
 **Location:** `lib/features/report/`
 
@@ -888,7 +888,7 @@ Delegates to `SaleRepository.getReportSummary()`, which calls
 
 **Path:** `lib/features/report/data/services/report_export_service.dart`
 
-#### Bounded Streaming CSV Export ([Unreleased])
+#### Bounded Streaming CSV Export (v0.9.3)
 
 `exportCsvStream()` pages through sales via `SaleRepository.getSalesPage()` and
 writes rows to a `sink` in chunks. Memory is bounded by the page size, not by
@@ -1009,6 +1009,24 @@ class SettingsCubit extends Cubit<SettingsState> {
 }
 ```
 
+### SettingsStateView (shared loading/error/retry wrapper)
+
+**Path:** `lib/features/settings/presentation/widgets/shared/settings_state_view.dart`
+
+A shared `StatelessWidget` that renders every Settings page's body based on `SettingsState.status`:
+
+| `SettingsStatus` | Rendered |
+|------------------|----------|
+| `initial` / `loading` | `CircularProgressIndicator` |
+| `failure` | Error icon + `l10n.errorOccurred` + `l10n.retry` `FilledButton` (calls `onRetry`) |
+| `loaded` / `saving` / `saved` | `builder(state.settings)` |
+
+Used by: `SettingsRootPage`, `GeneralSettingsPage`, `SalesSettingsPage`, `ReceiptSettingsPage`, `ImageSettingsPage`, `StockSettingsPage`, `BarcodeSettingsPage`, `PromptpaySettingsPage`, `ShopInfoSettingsPage`, `DiscountPolicySettingsPage`, `DiscountPresetEditPage`, `BackupSettingsPage`. Provides consistent loading, failure, and retry UX across the entire Settings tree.
+
+### Discount preset empty-list fallback
+
+When `discountPresets` is empty, the active preset falls back to a built-in default and the UI surfaces `l10n.noDiscountPresets` so the discount-policy page never crashes on a fresh install or a misconfigured DB.
+
 ---
 
 ## Repository Pattern
@@ -1059,4 +1077,4 @@ class ProductRepositoryImpl implements ProductRepository {
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Feature Modules API</sub>
+<sub>Promsell POS CE · v0.9.4 · Feature Modules API</sub>

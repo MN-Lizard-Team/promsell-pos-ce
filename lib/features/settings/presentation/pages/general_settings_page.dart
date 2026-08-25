@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_summary_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 
 class GeneralSettingsPage extends StatefulWidget {
   const GeneralSettingsPage({super.key});
@@ -22,23 +23,27 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage>
   Widget build(BuildContext context) {
     super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (prev, curr) => prev.settings != curr.settings,
+      buildWhen: (prev, curr) =>
+          prev.settings != curr.settings || prev.status != curr.status,
       builder: (context, state) {
-        final s = state.settings;
         final cubit = context.read<SettingsCubit>();
 
-        return SettingsLeafChrome(
-          title: context.l10n.settingsGeneral,
-          header: GeneralSummaryCard(
-            localeCode: s.localeCode,
-            themeModeName: s.themeModeName,
-          ),
-          children: [
-            GeneralSettingsForm(
-              settings: s,
-              onUpdate: (next) => cubit.updateField((_) => next),
+        return SettingsStateView(
+          state: state,
+          onRetry: cubit.load,
+          builder: (s) => SettingsLeafChrome(
+            title: context.l10n.settingsGeneral,
+            header: GeneralSummaryCard(
+              localeCode: s.localeCode,
+              themeModeName: s.themeModeName,
             ),
-          ],
+            children: [
+              GeneralSettingsForm(
+                settings: s,
+                onUpdate: (next) => cubit.updateField((_) => next),
+              ),
+            ],
+          ),
         );
       },
     );

@@ -1,4 +1,4 @@
-# Query Patterns — Promsell POS CE (v0.9.3)
+# Query Patterns — Promsell POS CE (v0.9.4)
 
 Common Drift query patterns used in the datasource layer.
 
@@ -317,4 +317,4 @@ Future<CsvExportResult> exportCsvStream({
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Query Patterns</sub>
+<sub>Promsell POS CE · v0.9.4 · Query Patterns</sub>

@@ -1,4 +1,4 @@
-# C4 Diagrams & Data Flows — Promsell POS CE (v0.9.3)
+# C4 Diagrams & Data Flows — Promsell POS CE (v0.9.4)
 
 System context, container diagram, component diagram, and data flow sequences for all stock-mutating operations.
 
@@ -273,7 +273,7 @@ AdjustStockDialog ← success → close dialog + refresh product
 
 ---
 
-## Data Flow — Cursor Pagination ([Unreleased])
+## Data Flow — Cursor Pagination (v0.9.3)
 
 > PlantUML source: [`docs/architecture/puml/sequence-cursor-pagination.puml`](puml/sequence-cursor-pagination.puml)
 
@@ -306,7 +306,7 @@ Sale history uses the same pattern via `SaleQueryLocalDatasource.querySalesPage(
 
 ---
 
-## Data Flow — SQL Report Summary ([Unreleased])
+## Data Flow — SQL Report Summary (v0.9.3)
 
 > PlantUML source: [`docs/architecture/puml/sequence-report-summary.puml`](puml/sequence-report-summary.puml)
 
@@ -339,7 +339,7 @@ No `List<Sale>` hydration — all metrics computed in SQL. Item-derived metrics 
 
 ---
 
-## Data Flow — Streaming CSV Export ([Unreleased])
+## Data Flow — Streaming CSV Export (v0.9.3)
 
 > PlantUML source: [`docs/architecture/puml/sequence-streaming-csv-export.puml`](puml/sequence-streaming-csv-export.puml)
 
@@ -374,7 +374,7 @@ Memory is O(pageSize) — only 500 sales hydrated at any time. Hard cap `kExport
 
 ---
 
-## Data Flow — Backup Export ([Unreleased])
+## Data Flow — Backup Export (v0.9.3)
 
 > PlantUML source: [`docs/architecture/puml/sequence-backup-export.puml`](puml/sequence-backup-export.puml)
 
@@ -408,7 +408,7 @@ SettingsPage → BackupExportService.exportWithMetadata(encrypt, pin, ...)
 
 ---
 
-## Data Flow — Backup Restore ([Unreleased])
+## Data Flow — Backup Restore (v0.9.3)
 
 > PlantUML source: [`docs/architecture/puml/sequence-backup-restore.puml`](puml/sequence-backup-restore.puml)
 
@@ -446,7 +446,7 @@ SettingsPage → BackupRestoreService.restoreFromPath(sourcePath, pin)
 
 ---
 
-## Data Flow — Recovery Kit Export/Import ([Unreleased])
+## Data Flow — Recovery Kit Export/Import (v0.9.3)
 
 > PlantUML source: [`docs/architecture/puml/sequence-recovery-kit.puml`](puml/sequence-recovery-kit.puml)
 
@@ -479,7 +479,7 @@ File format: `[uint32 headerLength][JSON header][salt(16)][nonce(12)][ciphertext
 
 ---
 
-## Data Flow — Migration Safety + WAL Checkpoint ([Unreleased])
+## Data Flow — Migration Safety + WAL Checkpoint (v0.9.3)
 
 > PlantUML source: [`docs/architecture/puml/sequence-migration-safety.puml`](puml/sequence-migration-safety.puml)
 
@@ -559,4 +559,4 @@ Or use the [PlantUML VS Code extension](https://marketplace.visualstudio.com/ite
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · schema v32 · 16 tables · C4 Diagrams & Data Flows</sub>
+<sub>Promsell POS CE · v0.9.4 · schema v32 · 16 tables · C4 Diagrams & Data Flows</sub>

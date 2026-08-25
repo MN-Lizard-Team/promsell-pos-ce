@@ -13,12 +13,12 @@ We do not use analytics, advertising, or developer cloud services. **Core POS is
 ## 3. Data Storage
 Your data remains on your device. You can **export** a backup (and share it via the OS share sheet), **restore a backup on the same device** from Settings → Backup (encrypted `.enc` or SQLCipher `.db` only), or clear data by uninstalling / clearing app storage.
 
-**Restore limits (v0.9.2):** in-app restore is **same-device only** — it reuses the SQLCipher key already stored on this phone/tablet. **Cross-device restore and restore after uninstall / keystore wipe are not supported in v0.9.2.** Without a prior off-device export, losing the device encryption key means permanent data loss. Recovery-kit export/import (`RecoveryKitService`) is **code complete but device validation pending** — unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is not yet tested. Not released.
+**Restore limits (v0.9.4):** in-app restore is **same-device only** — it reuses the SQLCipher key already stored on this phone/tablet. **Cross-device restore and restore after uninstall / keystore wipe are not supported in v0.9.4.** Without a prior off-device export, losing the device encryption key means permanent data loss. Recovery-kit export/import (`RecoveryKitService`) is **code complete but device validation pending** — unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is not yet tested. Not released.
 
 Product images are stored locally in the app's private `/images/` directory and are subject to automatic LRU cache eviction (50MB limit).
 
 ## 4. Backup Encryption
-From v0.7.2 (default **on** for new installs / missing setting in v0.9.2), database **exports** can use AES-256-GCM with a PIN-derived key (PBKDF2; PIN at least 6 characters). The PIN is never stored on the device or transmitted. Forgetting the PIN makes that export unrecoverable. Separately, the live database is protected by SQLCipher; losing the device encryption key without an export means permanent data loss.
+From v0.7.2 (default **on** for new installs / missing setting in v0.9.4), database **exports** can use AES-256-GCM with a PIN-derived key (PBKDF2; PIN at least 6 characters). The PIN is never stored on the device or transmitted. Forgetting the PIN makes that export unrecoverable. Separately, the live database is protected by SQLCipher; losing the device encryption key without an export means permanent data loss.
 
 ## 5. Customer Data (v0.8.9+)
 If you use the customer management feature, customer information (name, phone, email) is stored locally on your device. This data is user-entered and never transmitted off-device. You can delete customer records at any time.

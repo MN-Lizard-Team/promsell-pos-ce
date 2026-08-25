@@ -12,6 +12,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_tile_builders.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/settings_root/settings_tile_data.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_category_tile.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -27,9 +28,14 @@ class SettingsPage extends StatelessWidget {
         }
       },
       child: BlocBuilder<SettingsCubit, SettingsState>(
-        buildWhen: (prev, curr) => prev.settings != curr.settings,
+        buildWhen: (prev, curr) =>
+            prev.settings != curr.settings || prev.status != curr.status,
         builder: (ctx, state) {
-          return _SettingsRootView(settings: state.settings);
+          return SettingsStateView(
+            state: state,
+            onRetry: ctx.read<SettingsCubit>().load,
+            builder: (settings) => _SettingsRootView(settings: settings),
+          );
         },
       ),
     );

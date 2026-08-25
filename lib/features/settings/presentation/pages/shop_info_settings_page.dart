@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/core/widgets/layout/sticky_action_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop/shop_info_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop/shop_preview_card.dart';
 
@@ -58,52 +59,56 @@ class _ShopInfoSettingsPageState extends State<ShopInfoSettingsPage>
   Widget build(BuildContext context) {
     super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (prev, curr) => prev.settings != curr.settings,
+      buildWhen: (prev, curr) =>
+          prev.settings != curr.settings || prev.status != curr.status,
       builder: (context, state) {
-        final s = state.settings;
         final cubit = context.read<SettingsCubit>();
         final l10n = context.l10n;
 
-        return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, _) async {
-            if (didPop) return;
-            if (await _confirmExit(context) && context.mounted) {
-              Navigator.of(context).pop();
-            }
-          },
-          child: SettingsLeafChrome(
-            title: l10n.settingsShopInfo,
-            header: ShopPreviewCard(
-              shopName: s.shopName,
-              address: s.address,
-              phone: s.phone,
-            ),
-            bottomNavigationBar: StickyActionBar(
-              primaryLabel: l10n.save,
-              onPrimary: () => _save(context),
-            ),
-            children: [
-              ShopInfoForm(
-                key: _formKey,
-                initialShopName: s.shopName,
-                initialAddress: s.address,
-                initialPhone: s.phone,
-                initialTaxId: s.taxId,
-                onSave: (values) {
-                  cubit.updateField(
-                    (settings) => settings.copyWith(
-                      shopName: values.shopName,
-                      address: values.address,
-                      phone: values.phone,
-                      taxId: values.taxId,
-                    ),
-                  );
-                  if (!context.mounted) return;
-                  AppSnackBar.success(context, l10n.settingsSaved);
-                },
+        return SettingsStateView(
+          state: state,
+          onRetry: cubit.load,
+          builder: (s) => PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) async {
+              if (didPop) return;
+              if (await _confirmExit(context) && context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: SettingsLeafChrome(
+              title: l10n.settingsShopInfo,
+              header: ShopPreviewCard(
+                shopName: s.shopName,
+                address: s.address,
+                phone: s.phone,
               ),
-            ],
+              bottomNavigationBar: StickyActionBar(
+                primaryLabel: l10n.save,
+                onPrimary: () => _save(context),
+              ),
+              children: [
+                ShopInfoForm(
+                  key: _formKey,
+                  initialShopName: s.shopName,
+                  initialAddress: s.address,
+                  initialPhone: s.phone,
+                  initialTaxId: s.taxId,
+                  onSave: (values) {
+                    cubit.updateField(
+                      (settings) => settings.copyWith(
+                        shopName: values.shopName,
+                        address: values.address,
+                        phone: values.phone,
+                        taxId: values.taxId,
+                      ),
+                    );
+                    if (!context.mounted) return;
+                    AppSnackBar.success(context, l10n.settingsSaved);
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

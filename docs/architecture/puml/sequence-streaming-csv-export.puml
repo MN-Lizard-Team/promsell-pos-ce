@@ -1,5 +1,5 @@
 @startuml Sequence_StreamingCsvExport
-title Bounded Streaming CSV Export ([Unreleased])
+title Bounded Streaming CSV Export (v0.9.3)
 
 actor Merchant
 participant "ReportPage" as UI

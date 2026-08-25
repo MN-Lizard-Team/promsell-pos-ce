@@ -1,5 +1,5 @@
 @startuml Sequence_ReportSummary
-title SQL Report Summary Aggregate — No Hydration ([Unreleased])
+title SQL Report Summary Aggregate — No Hydration (v0.9.3)
 
 actor Merchant
 participant "ReportPage" as UI

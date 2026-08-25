@@ -1,4 +1,4 @@
-# Migration & Operations — Promsell POS CE (v0.9.3)
+# Migration & Operations — Promsell POS CE (v0.9.4)
 
 Migration guide, backup **export**, performance notes, and database testing.
 
@@ -21,7 +21,7 @@ Migration guide, backup **export**, performance notes, and database testing.
 - **v31** repairs DBs that already ran v30 without dedupe (drop unique index, dedupe, recreate).
 - **v32** (Phase M) adds nullable INTEGER `*_satang` columns to all money tables and backfills from REAL baht via `ROUND(baht * 100)`. Writers dual-write; readers prefer satang with REAL fallback. See [WS-C-PHASE-M-MONEY](../plan/COMPLETE/POST-090-MANAGE/WS-C-PHASE-M-MONEY.md).
 
-### Latest steps (v0.9.2)
+### Latest steps (v0.9.2–v0.9.3)
 
 | Version | Changes (match `onUpgrade`) |
 |---------|------------------------------|
@@ -33,6 +33,15 @@ Migration guide, backup **export**, performance notes, and database testing.
 | **v30** | `sku_lower` + backfill + unique — **no SKU dedupe** |
 | **v31** | V092-C.2 repair: drop `idx_products_sku_lower_unique`, dedupe mixed-case SKUs, recreate unique index |
 | **v32** | Phase M: 32 INTEGER `*_satang` columns across 10 tables, backfilled from REAL baht (`ROUND(baht * 100)`). NaN/Inf rows skipped (satang stays NULL → REAL fallback). Conditional backfill for `discount_value` / `value` / `cart_discount_value` (AMOUNT type only). **Also within v32 (not a new schema version):** cursor-pagination indexes `idx_products_created_at_id_cursor` (`products: created_at DESC, id`) and `idx_sales_created_at_id_cursor` (`sales: created_at DESC, id`) added for cursor-based pagination |
+
+### `beforeOpen` repairs (every open)
+
+`beforeOpen` runs on every database open — not just version upgrades — and is used for idempotent repairs that must apply to legacy databases regardless of their schema version:
+
+- `PRAGMA journal_mode=WAL` and `PRAGMA foreign_keys=ON`.
+- **`ensureProductAuditsTable()`** — creates `product_audits` if missing (legacy v32 DBs created before the table existed), repairs the legacy `changed_at` default from `strftime('%s','now') * 1000` to `strftime('%s','now')`, and migrates existing rows whose `changed_at > 100000000000` by dividing by 1000. Also re-run from `onUpgrade` so upgraded DBs are repaired in the same pass.
+
+Source: `lib/core/database/app_database_migrations.dart` (`ensureProductAuditsTable`).
 
 ### Incremental migrations (v2 → v24, historical)
 
@@ -216,7 +225,7 @@ PRAGMA wal_checkpoint(TRUNCATE);
 
 > **Important:** Also copy `promsell_pos.db-wal` and `promsell_pos.db-shm` if WAL checkpoint was not performed.
 
-### BackupExportService (v0.9.2+)
+### BackupExportService (v0.9.3+)
 
 `BackupExportService` (`lib/features/settings/data/services/backup_export_service.dart`) provides metadata-enriched exports:
 
@@ -245,7 +254,7 @@ Full-database encryption at rest using SQLCipher:
 
 > **Important:** SQLCipher encryption is transparent after initial setup. Losing the encryption key means **permanent data loss**. Key recovery mechanisms are planned for Phase 2b.
 
-### Recovery kit (v0.9.2+)
+### Recovery kit (v0.9.3+)
 
 `RecoveryKitService` (`lib/core/database/recovery_kit_service.dart`) provides key recovery via a `.promkey` file:
 
@@ -263,7 +272,7 @@ Full-database encryption at rest using SQLCipher:
 4. Delete any stale `-wal` and `-shm` files
 5. Restart the app
 
-### BackupRestoreService (v0.9.2+)
+### BackupRestoreService (v0.9.3+)
 
 `BackupRestoreService` (`lib/features/settings/data/services/backup_restore_service.dart`) provides same-device restore with staged file swap and rollback:
 
@@ -345,7 +354,7 @@ Product lists and sale history use cursor-based pagination via composite `(creat
 
 Sale creation inserts 1 sale + N items + N stock updates + N inventory logs + 1 receipt sequence update in a **single transaction**. Void sale similarly updates 1 sale + restores N stocks + N inventory logs atomically. This ensures no partial state on crash or failure.
 
-> **Draft cart saves** are intentionally **outside** the sale transaction — they are debounced writes (500 ms) that run independently. Draft data is ephemeral; losing the last 500 ms of changes is acceptable.
+> **Draft cart saves** are intentionally **outside** the sale transaction — they are debounced writes (1500 ms via `DraftSaveCoordinator`) that run independently. Draft data is ephemeral; losing the last 1500 ms of changes is acceptable.
 
 ### UUID generation cost
 
@@ -422,4 +431,4 @@ All run against real in-memory SQLite.
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Migration & Operations · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.4 · Migration & Operations · SQLCipher AES-256</sub>

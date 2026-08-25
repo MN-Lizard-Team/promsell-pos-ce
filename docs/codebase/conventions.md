@@ -1,4 +1,4 @@
-# Conventions — Promsell POS CE (v0.9.3)
+# Conventions — Promsell POS CE (v0.9.4)
 
 State management, settings persistence, localization, dependency injection, and code generation conventions.
 
@@ -12,6 +12,7 @@ State management, settings persistence, localization, dependency injection, and 
 |---------|-----------|
 | **BLoC** (event → state) | Complex flows with multiple event types — sale, product, history |
 | **Cubit** (method → state) | Simpler state without event classes — settings, report, `ProductFormCubit` (typed draft state) |
+| **`SettingsStateView`** (shared wrapper) | All Settings pages wrap their body in this `StatelessWidget` to render consistent loading / failure / retry states from `SettingsState.status`. The page passes `state`, `onRetry`, and a `builder(Settings)` that renders the loaded content. |
 
 All state classes extend `Equatable` for efficient rebuilds.
 
@@ -138,4 +139,4 @@ Two generators must be run after changes:
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Conventions</sub>
+<sub>Promsell POS CE · v0.9.4 · Conventions</sub>

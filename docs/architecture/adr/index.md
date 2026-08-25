@@ -1,4 +1,4 @@
-# Architecture Decision Records (ADRs) — Promsell POS CE (v0.9.3)
+# Architecture Decision Records (ADRs) — Promsell POS CE (v0.9.4)
 
 All architecture decision records, ordered by ADR number.
 
@@ -40,14 +40,14 @@ All architecture decision records, ordered by ADR number.
 | [ADR-026](#adr-026-barcode-image-rendering-via-repaintboundary-v086) | Barcode image rendering via RenderRepaintBoundary | v0.8.6 |
 | [ADR-027](#adr-027-payable-pipeline-item--cart--promo--sc--vat) | Payable pipeline (item → cart → promo → SC → VAT) | v0.9.x |
 | [ADR-028](#adr-028-sync-metadata-is-not-a-sync-engine) | Sync metadata is not a sync engine (amends ADR-015) | v0.9.x |
-| [ADR-029](#adr-029-cursor-based-pagination-over-offset) | Cursor-based pagination over OFFSET | [Unreleased] |
-| [ADR-030](#adr-030-sql-report-summary-aggregate) | SQL report summary aggregate (no hydration) | [Unreleased] |
-| [ADR-031](#adr-031-bounded-streaming-csv-export) | Bounded streaming CSV export | [Unreleased] |
-| [ADR-032](#adr-032-database-lifecycle-services) | Database lifecycle services (migration safety, WAL, health) | [Unreleased] |
-| [ADR-033](#adr-033-recovery-kit-key-wrapping) | Recovery kit key wrapping (AES-256-GCM + PBKDF2) | [Unreleased] |
-| [ADR-034](#adr-034-backup-metadata-with-sha-256-checksum) | Backup metadata with SHA-256 checksum | [Unreleased] |
-| [ADR-035](#adr-035-shared-domain-entities-for-cross-feature-coupling) | Shared domain entities for cross-feature coupling | [Unreleased] |
-| [ADR-036](#adr-036-migration-file-split-by-version) | Migration file split by version | [Unreleased] |
+| [ADR-029](#adr-029-cursor-based-pagination-over-offset) | Cursor-based pagination over OFFSET | v0.9.3 |
+| [ADR-030](#adr-030-sql-report-summary-aggregate) | SQL report summary aggregate (no hydration) | v0.9.3 |
+| [ADR-031](#adr-031-bounded-streaming-csv-export) | Bounded streaming CSV export | v0.9.3 |
+| [ADR-032](#adr-032-database-lifecycle-services) | Database lifecycle services (migration safety, WAL, health) | v0.9.3 |
+| [ADR-033](#adr-033-recovery-kit-key-wrapping) | Recovery kit key wrapping (AES-256-GCM + PBKDF2) | v0.9.3 |
+| [ADR-034](#adr-034-backup-metadata-with-sha-256-checksum) | Backup metadata with SHA-256 checksum | v0.9.3 |
+| [ADR-035](#adr-035-shared-domain-entities-for-cross-feature-coupling) | Shared domain entities for cross-feature coupling | v0.9.4 |
+| [ADR-036](#adr-036-migration-file-split-by-version) | Migration file split by version | v0.9.4 |
 
 ---
 
@@ -568,7 +568,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-029: Cursor-based pagination over OFFSET ([Unreleased])
+## ADR-029: Cursor-based pagination over OFFSET (v0.9.3)
 
 **Context:** Product catalog and sale history queries used `watchAllProducts()` and `getSales()` which load all rows into memory. At the capacity-contract baseline (2k products / 50k sales / 250k items), this causes excessive memory use and UI jank on mid-range Android devices. `OFFSET`-based pagination degrades quadratically as the offset grows because SQLite must scan and discard all preceding rows.
 
@@ -588,7 +588,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-030: SQL report summary aggregate (no hydration) ([Unreleased])
+## ADR-030: SQL report summary aggregate (no hydration) (v0.9.3)
 
 **Context:** `SalesPeriodTotals.from(List<Sale>)` hydrates all sales in a date range into memory to compute net revenue, voids, VAT, discounts, service charge, payment breakdown, and order type/channel splits. For a 2-year report over 50k sales, this means 50k `Sale` objects with items and payments — hundreds of MB of memory and multi-second computation on mid-range devices.
 
@@ -603,7 +603,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-031: Bounded streaming CSV export ([Unreleased])
+## ADR-031: Bounded streaming CSV export (v0.9.3)
 
 **Context:** `ReportExportService.exportCsv()` builds the entire CSV string in memory from a `ReportData` object. For 50k sales, this produces a multi-MB string and causes OOM on low-RAM devices. There was also no hard cap on export size.
 
@@ -618,7 +618,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-032: Database lifecycle services ([Unreleased])
+## ADR-032: Database lifecycle services (v0.9.3)
 
 **Context:** Schema migrations (e.g., v31→v32 satang dual-write) can fail mid-way if the device runs out of free space or the app is killed. There was no preflight check, no status tracking, and no way to detect an interrupted migration on the next launch. WAL files could grow unbounded without a checkpoint policy, and there was no single API to assess database health (sizes, integrity, schema version).
 
@@ -637,7 +637,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-033: Recovery kit key wrapping (AES-256-GCM + PBKDF2) ([Unreleased])
+## ADR-033: Recovery kit key wrapping (AES-256-GCM + PBKDF2) (v0.9.3)
 
 **Context:** ADR-016 covers backup file encryption (AES-256-GCM with PIN-derived PBKDF2 key). But the SQLCipher database key itself is stored in platform secure storage (Keystore/Keychain). If the device is lost, the app is uninstalled, or the secure storage is wiped, the database becomes permanently unreadable — even with a valid `.enc` backup. Phase 2b D0/D1 requires a way to export and import the SQLCipher key across devices.
 
@@ -654,7 +654,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-034: Backup metadata with SHA-256 checksum ([Unreleased])
+## ADR-034: Backup metadata with SHA-256 checksum (v0.9.3)
 
 **Context:** `BackupExportService.exportAndShare()` produced a `.db` or `.enc` file with no metadata. The restore path had no way to verify that the backup file was not corrupted during transfer, was created by a compatible schema version, or was encrypted. Operators had no size preflight — a 1GB backup could be attempted on a device with 200MB free.
 
@@ -670,7 +670,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-035: Shared domain entities for cross-feature coupling ([Unreleased])
+## ADR-035: Shared domain entities for cross-feature coupling (v0.9.4)
 
 **Context:** `Sale`, `SaleItem`, `SalePayment`, `SelectedProductOption`, and `SalesPeriodTotals` lived under `lib/features/sale/domain/entities/`. Six other features (report, history, receipt, daily_close, home, settings) imported these entities directly from the sale feature, creating a fan-in dependency where the sale feature became the de-facto owner of cross-feature domain models. `core/utils/payment_method_helper.dart` also imported `SalePayment` from the sale feature — a reverse dependency (core → feature) that violated the dependency rule.
 
@@ -686,7 +686,7 @@ lib/core/widgets/
 
 ---
 
-## ADR-036: Migration file split by version ([Unreleased])
+## ADR-036: Migration file split by version (v0.9.4)
 
 **Context:** `app_database_migrations.dart` grew to ~960 lines, mixing the migration strategy (`onCreate`/`onUpgrade`/`beforeOpen`), helper methods (dedup, backfill, `addColumnIfNotExists`), and the Phase M v32 satang migration. The file was difficult to navigate and changes to one concern risked touching unrelated code.
 
@@ -706,4 +706,4 @@ All three are `part of` files registered via `part` directives in `app_database.
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Architecture Decision Records 001–036</sub>
+<sub>Promsell POS CE · v0.9.4 · Architecture Decision Records 001–036</sub>

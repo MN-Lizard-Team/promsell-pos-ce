@@ -1,5 +1,5 @@
 @startuml Sequence_CursorPagination
-title Cursor Pagination Flow — Product List & Sale History ([Unreleased])
+title Cursor Pagination Flow — Product List & Sale History (v0.9.3)
 
 actor Merchant
 participant "ProductPage / HistoryPage" as UI

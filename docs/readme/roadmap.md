@@ -53,8 +53,8 @@ Current SSOT documents:
 | **v0.9.2 integrity** | Tagged `v0.9.2` | Operator: release-trust/device smoke + Play Console submission |
 | **ARCH-HARDEN** | Core domain fence and purity work implemented | Complete AH-GATE-1 operator/CI evidence before Play |
 | **Phase M** | v32 migration, satang converter, dual-write/read fallback implemented | Keep legacy REAL columns until deprecation release |
-| **P0 scaling** | Unreleased — cursor pagination, DB-backed search, SQL report aggregate, bounded CSV export, new indexes, 10 regression tests | Tag in next release; monitor p95 on large datasets |
-| **P1 database lifecycle** | Unreleased — migration safety, WAL checkpoint, health service, backup metadata, recovery kit, 47 new tests | Tag in next release; D2 full device smoke still pending |
+| **P0 scaling** | v0.9.3 — cursor pagination, DB-backed search, SQL report aggregate, bounded CSV export, new indexes, 10 regression tests | Tag in next release; monitor p95 on large datasets |
+| **P1 database lifecycle** | v0.9.3 — migration safety, WAL checkpoint, health service, backup metadata, recovery kit, 47 new tests | Tag in next release; D2 full device smoke still pending |
 | **Phase 2b recovery** | D0/D1 implemented (RecoveryKitService: AES-256-GCM + PBKDF2, `.promkey` format, exportKit/importKit, 9 tests); D2 device smoke pending | Complete D2 device smoke for cross-device restore |
 | **Tablet UX** | Dual-pane and orientation policy implemented | Capture optional tablet store screenshots |
 | **Play production** | Operator-gated | Production keystore, Data safety, signed AAB, Console submit, post-smoke |
@@ -91,4 +91,4 @@ v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → v0.9.2 integrity/hardening
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.3 · Roadmap · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.4 · Roadmap · AGPL-3.0</sub>

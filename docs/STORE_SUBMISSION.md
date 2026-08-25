@@ -1,6 +1,6 @@
 # Store Submission Checklist
 
-Last updated: **2026-08-17** | Release: **v0.9.3** | `pubspec`: **0.9.3**<br>
+Last updated: **2026-08-17** | Release: **v0.9.4** (unreleased) | `pubspec`: **0.9.4+2**<br>
 Trust package: `docs/plan/COMPLETE/V090-TRUST/` · Smoke v0.9.3: `docs/testing/RELEASE_0.9.3_SMOKE.md` · Smoke 1.0 plan: `docs/testing/RELEASE_1.0_SMOKE.md`<br>
 Post-0.9 management: `docs/plan/COMPLETE/POST-090-MANAGE/` · Play WS: `docs/plan/COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md`
 
@@ -35,14 +35,14 @@ Post-0.9 management: `docs/plan/COMPLETE/POST-090-MANAGE/` · Play WS: `docs/pla
 ### Explicit non-blockers for internal testing
 
 - Device `integration_test/` not run on main CI (format/analyze only). Trust **blocks** emulator `--flavor dev` on tags / money-path PRs — see [`docs/testing/CI.md`](testing/CI.md)
-- Phase M v32 is shipped; recovery-kit export/import is **code complete, device validation pending** ([Unreleased]) — full cross-device device smoke (Phase 2b D2) is still pending
+- Phase M v32 is shipped; recovery-kit export/import is **code complete (v0.9.3), device validation pending** — full cross-device device smoke (Phase 2b D2) is still pending
 - iOS App Store full cut (separate track)  
 
 ---
 
 ## Pre-Flight (Code)
 
-- [x] `pubspec.yaml` version bumped to `0.9.3` for release v0.9.3
+- [x] `pubspec.yaml` version at `0.9.4+2` (build number adopted in v0.9.4; v0.9.3 was never tagged)
 - [x] Android / iOS display name **Promsell**
 - [x] Permissions: CAMERA (product photos + barcode), storage for exports; INTERNET optional (remote product images only)
 - [x] iOS privacy usage strings present (`Info.plist`)

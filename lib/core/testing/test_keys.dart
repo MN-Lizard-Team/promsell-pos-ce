@@ -58,6 +58,7 @@ abstract final class TestKeys {
   ///
   /// Wired on the void FilledButton in sale_expansion_tile.dart.
   static const voidButton = 'test_void_button';
+  static String voidButtonForSale(String saleId) => 'test_void_button_$saleId';
   static const voidReasonField = 'test_void_reason_field';
   static const voidConfirmButton = 'test_void_confirm_button';
 

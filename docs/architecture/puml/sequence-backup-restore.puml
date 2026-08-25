@@ -1,5 +1,5 @@
 @startuml Sequence_BackupRestore
-title Backup Restore with Pre-Restore Backup + Validation ([Unreleased])
+title Backup Restore with Pre-Restore Backup + Validation (v0.9.3)
 
 actor Merchant
 participant "SettingsPage" as UI

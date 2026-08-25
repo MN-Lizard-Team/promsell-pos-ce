@@ -92,7 +92,7 @@ abstract class ProductLocalDatasource {
 
 @LazySingleton(as: ProductLocalDatasource)
 class ProductLocalDatasourceImpl implements ProductLocalDatasource {
-  const ProductLocalDatasourceImpl(
+  ProductLocalDatasourceImpl(
     this._db,
     this._optionDatasource, [
     @ignoreParam this._inventoryLogService,
@@ -101,10 +101,16 @@ class ProductLocalDatasourceImpl implements ProductLocalDatasource {
   final ProductOptionDatasource _optionDatasource;
   final InventoryLogService? _inventoryLogService;
 
+  /// Product IDs already warned about for NULL cost this session. Avoids
+  /// log spam when the same product is hydrated many times (sale items,
+  /// list refreshes, lookups). Cleared only by app restart.
+  static final Set<String> _nullCostWarned = {};
+
   Product _fromData(ProductData d) {
-    if (d.cost == null) {
+    if (d.cost == null && _nullCostWarned.add(d.id)) {
       // Data integrity warning: cost should never be NULL after schema
-      // constraints. Log so we can detect legacy/migrated rows.
+      // constraints. Log once per product so we can detect legacy/migrated
+      // rows without spamming on every hydration.
       AppLogger.warning('Product ${d.id} has NULL cost — defaulting to 0.0');
     }
     return Product(

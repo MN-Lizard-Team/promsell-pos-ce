@@ -432,14 +432,14 @@ Created in `_createIndexes()`, which runs on **`onCreate` and `from < 2` only** 
 | `idx_products_created_at_id_cursor` | products | `created_at DESC, id` | Cursor-based pagination for product lists (added within schema **v32**, not a new schema version) |
 | `idx_sales_created_at_id_cursor` | sales | `created_at DESC, id` | Cursor-based pagination for sale history (added within schema **v32**, not a new schema version) |
 
-### Barcode uniqueness (current · v0.9.2)
+### Barcode uniqueness (current · v0.9.1)
 
 - **DB:** partial unique index `idx_products_barcode_unique` on `products(barcode)` where barcode is non-null and non-empty (schema **v24**). Indexes do **not** add `AND deleted_at IS NULL`.
 - **DB (case-insensitive):** partial unique index `idx_products_barcode_lower_unique` on `products(barcode_lower)` where `barcode_lower` is non-null and non-empty (schema **v29**).
 - **Runtime:** app-layer checks may skip soft-deleted rows. The unique **index** still covers deleted rows. Policy: [V092-C.4](../plan/UN-COMPLETE/V092-INTEGRITY/WS-V092-C-STOCK.md).
 - Empty/null barcodes are allowed on multiple products.
 
-### SKU uniqueness (current · v0.9.2)
+### SKU uniqueness (current · v0.9.1)
 
 - **DB (upgrade path v30 → v31):** unique index `idx_products_sku_lower_unique` on `sku_lower` WHERE non-null/non-empty. v30 had **no SKU dedupe** (V092-C.2); v31 repairs DBs that ran v30 without dedupe (drop, dedupe, recreate). `_createIndexes()` on a **fresh** install does **not** create this unique (non-unique `idx_products_sku` only).
 - **Runtime:** app-layer SKU checks. Index does **not** exclude `deleted_at`.
@@ -551,4 +551,4 @@ Keys managed by **SettingsRepositoryImpl** (read/written at runtime; some seeded
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · schema v32 · 16 tables · 32 satang columns · SQLCipher AES-256</sub>
+<sub>Promsell POS CE · v0.9.4 · schema v32 · 16 tables · 32 satang columns · SQLCipher AES-256</sub>

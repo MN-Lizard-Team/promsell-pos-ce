@@ -83,6 +83,18 @@ void main() {
     expect(lock.isSessionUnlocked, isTrue);
   });
 
+  test('serializes concurrent verification attempts for lockout', () async {
+    await lock.setPin('135790');
+    lock.lockSession();
+
+    final results = await Future.wait([
+      for (var i = 0; i < lock.maxFailedAttempts; i++) lock.verifyPin('081234'),
+    ]);
+
+    expect(results, everyElement(isFalse));
+    expect(lock.isLockedOut, isTrue);
+  });
+
   test('ensureUnlocked respects disabled and session', () async {
     expect(await lock.ensureUnlocked(), isTrue); // lock off
     await lock.setPin('135790');

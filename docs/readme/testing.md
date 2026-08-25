@@ -88,4 +88,4 @@ Coverage measured via `flutter test --coverage --exclude-tags stress` (lcov.info
 
 ---
 
-<sub>Promsell POS Community Edition · v0.9.3 · AGPL-3.0</sub>
+<sub>Promsell POS Community Edition · v0.9.4 · AGPL-3.0</sub>

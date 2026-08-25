@@ -9,6 +9,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_presets_section.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_policy_settings_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 
 class DiscountPolicySettingsPage extends StatefulWidget {
   const DiscountPolicySettingsPage({super.key});
@@ -27,55 +28,64 @@ class _DiscountPolicySettingsPageState extends State<DiscountPolicySettingsPage>
   Widget build(BuildContext context) {
     super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (prev, curr) => prev.settings != curr.settings,
+      buildWhen: (prev, curr) =>
+          prev.settings != curr.settings || prev.status != curr.status,
       builder: (context, state) {
         final s = state.settings;
         final cubit = context.read<SettingsCubit>();
         final l10n = context.l10n;
         final st = context.settingsTheme;
-        final activePreset = s.discountPresets.firstWhere(
-          (p) => p.id == s.activeDiscountPresetId,
-          orElse: () => s.discountPresets.first,
-        );
+        final activePresetName = s.discountPresets.isEmpty
+            ? l10n.noDiscountPresets
+            : s.discountPresets
+                  .firstWhere(
+                    (p) => p.id == s.activeDiscountPresetId,
+                    orElse: () => s.discountPresets.first,
+                  )
+                  .name;
 
-        return SettingsLeafChrome(
-          title: l10n.settingsDiscountPolicy,
-          header: DiscountPolicySummaryCard(
-            enableItemDiscount: s.enableItemDiscount,
-            enableCartDiscount: s.enableCartDiscount,
-            defaultDiscountType: s.defaultDiscountType,
-            maxDiscountPercent: s.maxDiscountPercent,
-            maxDiscountAmount: s.maxDiscountAmount.value,
-            currency: s.currency,
+        return SettingsStateView(
+          state: state,
+          onRetry: cubit.load,
+          builder: (s) => SettingsLeafChrome(
+            title: l10n.settingsDiscountPolicy,
+            header: DiscountPolicySummaryCard(
+              enableItemDiscount: s.enableItemDiscount,
+              enableCartDiscount: s.enableCartDiscount,
+              defaultDiscountType: s.defaultDiscountType,
+              maxDiscountPercent: s.maxDiscountPercent,
+              maxDiscountAmount: s.maxDiscountAmount.value,
+              currency: s.currency,
+            ),
+            children: [
+              DiscountPolicySettingsForm(
+                settings: s,
+                onUpdate: (next) => cubit.updateField((_) => next),
+              ),
+              DiscountPresetsSection(
+                presets: s.discountPresets,
+                activePresetId: s.activeDiscountPresetId,
+                activePresetName: activePresetName,
+                st: st,
+                l10n: l10n,
+                onAdd: () => DiscountPresetDialogs.showAddDialog(
+                  context,
+                  cubit: cubit,
+                  st: st,
+                  l10n: l10n,
+                ),
+                onDelete: (index) => DiscountPresetDialogs.showDeleteDialog(
+                  context,
+                  cubit: cubit,
+                  index: index,
+                  st: st,
+                  l10n: l10n,
+                ),
+                onEdit: (index, preset, isActive, canDelete) =>
+                    _pushEditPage(context, index, preset, isActive, canDelete),
+              ),
+            ],
           ),
-          children: [
-            DiscountPolicySettingsForm(
-              settings: s,
-              onUpdate: (next) => cubit.updateField((_) => next),
-            ),
-            DiscountPresetsSection(
-              presets: s.discountPresets,
-              activePresetId: s.activeDiscountPresetId,
-              activePresetName: activePreset.name,
-              st: st,
-              l10n: l10n,
-              onAdd: () => DiscountPresetDialogs.showAddDialog(
-                context,
-                cubit: cubit,
-                st: st,
-                l10n: l10n,
-              ),
-              onDelete: (index) => DiscountPresetDialogs.showDeleteDialog(
-                context,
-                cubit: cubit,
-                index: index,
-                st: st,
-                l10n: l10n,
-              ),
-              onEdit: (index, preset, isActive, canDelete) =>
-                  _pushEditPage(context, index, preset, isActive, canDelete),
-            ),
-          ],
         );
       },
     );

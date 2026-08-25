@@ -29,41 +29,48 @@ class PromptpayIdTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasId = settings.promptpayId.isNotEmpty;
 
-    return ListTile(
-      minTileHeight: st.tileMinHeight,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: st.iconSize,
-        height: st.iconSize,
-        decoration: BoxDecoration(
-          color: st.iconContainerBackground,
-          borderRadius: BorderRadius.circular(12),
+    return Semantics(
+      button: true,
+      label: l10n.settingsPromptpayId,
+      value: hasId
+          ? SettingsTileBuilders.maskSensitiveId(settings.promptpayId)
+          : l10n.settingsPromptpayIdHint,
+      child: ListTile(
+        minTileHeight: st.tileMinHeight,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: st.iconSize,
+          height: st.iconSize,
+          decoration: BoxDecoration(
+            color: st.iconContainerBackground,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(TablerIcons.wallet, color: st.softAccent, size: 24),
         ),
-        child: Icon(TablerIcons.wallet, color: st.softAccent, size: 24),
-      ),
-      title: Text(
-        l10n.settingsPromptpayId,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
+        title: Text(
+          l10n.settingsPromptpayId,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
-      ),
-      subtitle: Text(
-        hasId
-            ? SettingsTileBuilders.maskSensitiveId(settings.promptpayId)
-            : l10n.settingsPromptpayIdHint,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: hasId ? st.softAccent : st.mutedText,
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
+        subtitle: Text(
+          hasId
+              ? SettingsTileBuilders.maskSensitiveId(settings.promptpayId)
+              : l10n.settingsPromptpayIdHint,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: hasId ? st.softAccent : st.mutedText,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
         ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: st.softTextSecondary,
+          size: 24,
+        ),
+        onTap: () => _showIdDialog(context),
       ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: st.softTextSecondary,
-        size: 24,
-      ),
-      onTap: () => _showIdDialog(context),
     );
   }
 

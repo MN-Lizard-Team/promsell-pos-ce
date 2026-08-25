@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_preview_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/sales/sales_settings_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 
 class SalesSettingsPage extends StatefulWidget {
   const SalesSettingsPage({super.key});
@@ -22,25 +23,29 @@ class _SalesSettingsPageState extends State<SalesSettingsPage>
   Widget build(BuildContext context) {
     super.build(context);
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (prev, curr) => prev.settings != curr.settings,
+      buildWhen: (prev, curr) =>
+          prev.settings != curr.settings || prev.status != curr.status,
       builder: (context, state) {
-        final s = state.settings;
         final cubit = context.read<SettingsCubit>();
 
-        return SettingsLeafChrome(
-          title: context.l10n.settingsSales,
-          header: SalesPreviewCard(
-            currency: s.currency,
-            dateFormat: s.dateFormat,
-            maxDrafts: s.maxDrafts,
-            ultraCompactMode: s.ultraCompactMode,
-          ),
-          children: [
-            SalesSettingsForm(
-              settings: s,
-              onUpdate: (next) => cubit.updateField((_) => next),
+        return SettingsStateView(
+          state: state,
+          onRetry: cubit.load,
+          builder: (s) => SettingsLeafChrome(
+            title: context.l10n.settingsSales,
+            header: SalesPreviewCard(
+              currency: s.currency,
+              dateFormat: s.dateFormat,
+              maxDrafts: s.maxDrafts,
+              ultraCompactMode: s.ultraCompactMode,
             ),
-          ],
+            children: [
+              SalesSettingsForm(
+                settings: s,
+                onUpdate: (next) => cubit.updateField((_) => next),
+              ),
+            ],
+          ),
         );
       },
     );

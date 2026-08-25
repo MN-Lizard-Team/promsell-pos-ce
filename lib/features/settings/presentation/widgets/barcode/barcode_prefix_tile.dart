@@ -24,43 +24,52 @@ class BarcodePrefixTile extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = context.l10n;
 
-    return ListTile(
-      leading: Container(
-        width: st.iconSize,
-        height: st.iconSize,
-        decoration: BoxDecoration(
-          color: st.iconContainerBackground,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.text_fields_outlined, color: st.softAccent, size: 24),
-      ),
-      title: Text(
-        l10n.barcodePrefix,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-      ),
-      subtitle: Text(
-        l10n.barcodePrefixHint,
-        style: TextStyle(fontSize: 13, color: st.softTextSecondary),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            settings.barcodeAutoGeneratePrefix,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-              color: st.softTextPrimary,
-            ),
+    return Semantics(
+      button: true,
+      label: l10n.barcodePrefix,
+      value: settings.barcodeAutoGeneratePrefix,
+      child: ListTile(
+        leading: Container(
+          width: st.iconSize,
+          height: st.iconSize,
+          decoration: BoxDecoration(
+            color: st.iconContainerBackground,
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 24),
-        ],
+          child: Icon(
+            Icons.text_fields_outlined,
+            color: st.softAccent,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          l10n.barcodePrefix,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+        subtitle: Text(
+          l10n.barcodePrefixHint,
+          style: TextStyle(fontSize: 13, color: st.softTextSecondary),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              settings.barcodeAutoGeneratePrefix,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: st.softTextPrimary,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 24),
+          ],
+        ),
+        onTap: () => _showPrefixDialog(context),
       ),
-      onTap: () => _showPrefixDialog(context),
     );
   }
 

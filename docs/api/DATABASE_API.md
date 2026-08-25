@@ -1,6 +1,6 @@
 # Database API Reference
 
-> Current release: **v0.9.3** · schema: **v32** · package version: `0.9.3`
+> Current release: **v0.9.4** · schema: **v32** · package version: `0.9.4+2`
 
 Complete guide to Drift database access patterns, repository implementations, and query techniques.
 
@@ -792,6 +792,15 @@ Stream<CartState> _mapLoadedToState() async* {
 int get schemaVersion => 32;  // Increment on each schema change
 ```
 
+### `beforeOpen` repairs (every open)
+
+`beforeOpen` runs on every database open (not just upgrades) and performs idempotent repairs:
+
+- `PRAGMA journal_mode=WAL` and `PRAGMA foreign_keys=ON`.
+- **`ensureProductAuditsTable()`** — creates `product_audits` if missing (legacy v32 DBs created before the table existed), repairs the legacy `changed_at` default from `strftime('%s','now') * 1000` to `strftime('%s','now')`, and migrates existing rows whose `changed_at > 100000000000` by dividing by 1000. Also called from `onUpgrade` so upgraded DBs are repaired in the same pass.
+
+Source: `lib/core/database/app_database_migrations.dart` (`ensureProductAuditsTable`).
+
 ### Migration Pattern
 
 ```dart
@@ -1173,4 +1182,4 @@ Benefits:
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Database API Reference</sub>
+<sub>Promsell POS CE · v0.9.4 · Database API Reference</sub>

@@ -2,7 +2,7 @@
 
 > Complete guide for installing, building, and using Promsell POS Community Edition.
 >
-> Release notes: **v0.9.3** · package version: **0.9.3** · database schema: **v32**
+> Release notes: **v0.9.4** · package version: **0.9.4+2** · database schema: **v32**
 
 ---
 
@@ -163,7 +163,7 @@ Then open `ios/Runner.xcworkspace` in Xcode to archive and submit.
 | [`docs/testing/RELEASE_0.9.3_SMOKE.md`](testing/RELEASE_0.9.3_SMOKE.md) | v0.9.3 release smoke checklist |
 | [`SECURITY.md`](../SECURITY.md) | Encryption, PIN gates, backup honesty |
 | [`docs/PRIVACY_POLICY.md`](PRIVACY_POLICY.md) | Privacy (local data vs developer servers) |
-| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.3 notes + archive links |
+| [`CHANGELOG.md`](../CHANGELOG.md) | v0.9.4 notes + archive links |
 
 ---
 
@@ -175,7 +175,7 @@ Promsell stores all POS data in an encrypted SQLite file on the device (SQLCiphe
 1. **Settings → Backup** — keep **Encrypt backups** on (default). Choose a PIN of at least **6** characters and store it offline.
 2. **Backup Now** regularly (or enable the reminder). Share the file to cloud/USB you control — not only on the same phone.
 3. **Same-device restore** — use **Restore** on the same device to re-apply a previous `.enc` or SQLCipher `.db` export. Restart the app after restore.
-4. **Not supported in v0.9.2** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
+4. **Not supported in v0.9.4** — restoring onto a different phone, or after uninstall / factory reset / keystore wipe (the SQLCipher key is gone).
 5. **Key loss = data loss** without an off-device export. Recovery-kit export/import (`RecoveryKitService`) is **code complete but device validation pending** — unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is not yet tested. Not released.
 
 See also [SECURITY.md](../SECURITY.md) and [Privacy Policy](PRIVACY_POLICY.md).

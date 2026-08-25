@@ -1,4 +1,4 @@
-# Testing — Promsell POS CE v0.9.3
+# Testing — Promsell POS CE v0.9.4
 
 Automated tests across unit, widget, and integration layers. Run with `flutter test` (use `--exclude-tags stress` to skip stress tests). Coverage and counts drift with the suite — prefer CI.
 
@@ -73,6 +73,15 @@ test/
 │   ├── multi_tender_daily_close_test.dart # Multi-tender → CloseDay expected cash
 │   ├── backup_money_continuity_test.dart  # Backup restore reads money back
 │   └── onboarding_first_sale_test.dart # Onboarding → sale → settings persist
+├── performance/             # CI-run benchmarks (non-stress, no @Tags)
+│   ├── db_benchmark_test.dart          # Lightweight DB perf benchmarks
+│   ├── p0_baseline_timing_test.dart    # P0 scaling baseline timings
+│   ├── p0_regression_test.dart         # P0 scaling regression checks
+│   ├── p1_migration_benchmark_test.dart # P1 migration timing
+│   ├── p1_migration_safety_test.dart   # P1 migration safety checks
+│   ├── p1_restore_large_test.dart      # P1 large restore benchmark
+│   ├── p1_wal_health_test.dart         # P1 WAL/health checks
+│   └── scaling_fixture_test.dart       # Scaling fixture helpers
 ├── tool/
 │   └── seed_integration_test.dart  # Stress test (10k products, 50k sales) — @Tags(['stress'])
 └── l10n/
@@ -89,7 +98,7 @@ test/
 > tag filter rather than a target — this has been corrected by removing the
 > incorrect flag.
 
-### Performance & capacity tests (v0.9.2)
+### Performance & capacity tests (v0.9.3)
 
 - **Cursor pagination** — `ProductLocalDatasource.getProductsPage()` /
   `searchProductsPage()` and `SaleQueryLocalDatasource.querySalesPage()` are
@@ -103,6 +112,10 @@ test/
   flag, `startSignal` future resolution, and chunked sink writes.
 - **Stress test** — `test/tool/seed_integration_test.dart` (10k products, 50k
   sales) exercises large-list cursor pagination paths under `@Tags(['stress'])`.
+- **CI benchmarks** — `test/performance/` runs on `ci.yml` as a separate job
+  (`flutter test test/performance/ --no-pub --reporter compact`); not tagged
+  as stress. Covers P0 baseline timings, P0 regression, P1 migration
+  benchmark/safety, P1 large restore, P1 WAL/health, and DB benchmarks.
 
 
 ## Integration Tests (E2E)
@@ -203,4 +216,4 @@ dart run tool/check_path_coverage.dart --fail --min-global=60 --min-sale-logic=9
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Testing</sub>
+<sub>Promsell POS CE · v0.9.4 · Testing</sub>

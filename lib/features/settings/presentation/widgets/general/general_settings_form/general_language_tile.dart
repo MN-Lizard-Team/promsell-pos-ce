@@ -24,41 +24,46 @@ class GeneralLanguageTile extends StatelessWidget {
 
     final label = s.localeCode == 'th' ? l10n.langThai : l10n.langEnglish;
 
-    return ListTile(
-      minTileHeight: st.tileMinHeight,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: st.iconSize,
-        height: st.iconSize,
-        decoration: BoxDecoration(
-          color: st.iconContainerBackground,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.language_outlined, color: st.softAccent, size: 24),
-      ),
-      title: Text(
-        l10n.settingsLanguage,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: st.softAccent,
-            ),
+    return Semantics(
+      button: true,
+      label: l10n.settingsLanguage,
+      value: label,
+      child: ListTile(
+        minTileHeight: st.tileMinHeight,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: st.iconSize,
+          height: st.iconSize,
+          decoration: BoxDecoration(
+            color: st.iconContainerBackground,
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
-        ],
+          child: Icon(Icons.language_outlined, color: st.softAccent, size: 24),
+        ),
+        title: Text(
+          l10n.settingsLanguage,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+                color: st.softAccent,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: st.softTextSecondary, size: 20),
+          ],
+        ),
+        onTap: () => _showLanguageDialog(context, s, st, l10n),
       ),
-      onTap: () => _showLanguageDialog(context, s, st, l10n),
     );
   }
 

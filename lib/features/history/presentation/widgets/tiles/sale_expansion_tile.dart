@@ -540,7 +540,7 @@ class _SaleActionsBar extends StatelessWidget {
                   ),
                 )
               : FilledButton.tonalIcon(
-                  key: const Key(TestKeys.voidButton),
+                  key: Key('${TestKeys.voidButton}_${sale.id}'),
                   icon: const Icon(TablerIcons.ban, size: 18),
                   label: Text(context.l10n.voidSale),
                   style: FilledButton.styleFrom(

@@ -1,4 +1,4 @@
-# CODEBASE.md — Promsell POS CE v0.9.3
+# CODEBASE.md — Promsell POS CE v0.9.4
 
 ## System overview
 
@@ -28,7 +28,8 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   promotion/  — Percent/fixed promotions, date windows, active filtering              │
 │   home/       — Dashboard, statistics, menu grid, promotion banner                    │
 │   report/     — Revenue/profit/margin analytics, history tab, PDF/CSV export          │
-│   settings/   — Locale, theme, shop/business settings, Store PIN, backup              │
+│   settings/   — Locale, theme, shop/business settings, Store PIN, backup,             │
+│               SettingsStateView (shared loading/error/retry wrapper for all pages)    │
 │   history/    — Sale history search and void presentation                             │
 │   inventory/  — Stock adjustments and inventory audit log                             │
 │   daily_close/ — Expected/count cash, reconciliation, close-day lock                  │
@@ -208,8 +209,8 @@ features/<name>/
 | [`docs/codebase/file-dependency-map.md`](docs/codebase/file-dependency-map.md) | If-you-change-X-update-Y rules for all entities, BLoCs, datasources |
 | [`docs/codebase/testing.md`](docs/codebase/testing.md) | Test directory structure, test layers, and host/device E2E workflow |
 | [`docs/DATABASE.md`](docs/DATABASE.md) | Schema **v32** overview + ERD + satang dual-write boundary + migration/ops references |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-028), and DI graph |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture index → C4 diagrams, technical deep-dive, ADRs (001-036), and DI graph |
 
 ---
 
-<sub>Promsell POS CE · v0.9.3 · Codebase Reference</sub>
+<sub>Promsell POS CE · v0.9.4 · Codebase Reference</sub>

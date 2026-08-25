@@ -1,4 +1,4 @@
-# Database Handbook — Promsell POS CE (v0.9.3)
+# Database Handbook — Promsell POS CE (v0.9.4)
 
 Complete reference for the Promsell database: schema, relationships, indexes, migration, query patterns, backup export, and performance.
 
@@ -109,6 +109,16 @@ erDiagram
 ## Sync metadata columns (not a sync engine)
 
 These columns exist on **most** tables (schema v11+). They are **metadata only** — CE has **no** sync engine, outbox, or multi-device protocol (ADR-028). `deviceId` was backfilled on six tables in schema v13. `ProductAudits` has no `deletedAt`. As of V092-C.1 (schema v31), sale / void / `adjustStock` all bump `version` alongside the atomic stock update, so a stale product form cannot overwrite the count.
+
+### `product_audits` table repair (beforeOpen)
+
+`ensureProductAuditsTable()` runs in both `beforeOpen` (every open) and `onUpgrade` to repair legacy v32 databases that were created before `product_audits` existed:
+
+1. Creates the table if missing.
+2. Repairs the legacy `changed_at` default `strftime('%s','now') * 1000` → `strftime('%s','now')` (Drift's `DateTime` column already stores Unix seconds; the legacy default wrote milliseconds).
+3. Migrates existing rows whose `changed_at > 100000000000` by dividing by 1000.
+
+Source: `lib/core/database/app_database_migrations.dart` (`ensureProductAuditsTable`).
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -277,7 +287,7 @@ Rationale:
 
 > If reuse-after-delete is needed later: change the unique indexes to partial `WHERE deleted_at IS NULL AND barcode IS NOT NULL AND barcode != ''`. This requires a migration to drop + recreate the indexes.
 
-**Backup:** Export + AES-GCM (PIN ≥ 6; default **on** when setting missing). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup. Recovery-kit export/import is **code complete, device validation pending** ([Unreleased]) — unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is not yet tested. Full cross-device device smoke (Phase 2b D2) remains pending.
+**Backup:** Export + AES-GCM (PIN ≥ 6; default **on** when setting missing). **Same-device in-app restore** is shipped; cross-device is not. SQLCipher key lives in platform secure storage; **key loss = data loss** without a backup. Recovery-kit export/import is **code complete (v0.9.3), device validation pending** — unit tests cover wrap/unwrap logic only; on-device cross-device restore (D2) is not yet tested. Full cross-device device smoke (Phase 2b D2) remains pending.
 
 ---
 

@@ -34,6 +34,42 @@ void main() {
   });
 
   group('SettingsPage Clean Index', () {
+    testWidgets('shows loading state while settings are loading', (
+      tester,
+    ) async {
+      when(
+        () => mockSettingsCubit.state,
+      ).thenReturn(const SettingsState(status: SettingsStatus.loading));
+
+      await tester.pumpApp(
+        const SettingsPage(),
+        settingsCubit: mockSettingsCubit,
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(SettingsCategoryTile), findsNothing);
+    });
+
+    testWidgets('shows retry action when settings fail to load', (
+      tester,
+    ) async {
+      when(
+        () => mockSettingsCubit.state,
+      ).thenReturn(const SettingsState(status: SettingsStatus.failure));
+      when(() => mockSettingsCubit.load()).thenAnswer((_) async {});
+
+      await tester.pumpApp(
+        const SettingsPage(),
+        settingsCubit: mockSettingsCubit,
+      );
+
+      expect(find.text('Retry'), findsOneWidget);
+      expect(find.byType(SettingsCategoryTile), findsNothing);
+
+      await tester.tap(find.text('Retry'));
+      verify(() => mockSettingsCubit.load()).called(1);
+    });
+
     testWidgets('renders settings list without hero dashboard', (tester) async {
       await tester.pumpApp(
         const SettingsPage(),

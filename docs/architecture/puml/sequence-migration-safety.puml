@@ -1,5 +1,5 @@
 @startuml Sequence_MigrationSafety
-title Migration Safety + WAL Checkpoint Lifecycle ([Unreleased])
+title Migration Safety + WAL Checkpoint Lifecycle (v0.9.3)
 
 actor "App Startup" as Startup
 participant "MigrationSafetyService" as Migr
