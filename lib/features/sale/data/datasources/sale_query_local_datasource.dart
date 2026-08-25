@@ -355,17 +355,17 @@ class SaleQueryLocalDatasource {
   /// chart-ready and semantically identical to
   /// `ReportCalculatorService.dailyRevenueBetween`.
   ///
-  /// Day bucketing uses SQLite `date(created_at / 1000, 'unixepoch',
-  /// 'localtime')`: drift persists DateTimes as unix milliseconds and the
-  /// `'localtime'` modifier applies the OS timezone, matching Dart's local
-  /// `DateTime(y, m, d)` components exactly (the POS timezone, Asia/Bangkok,
-  /// has no DST).
+  /// Day bucketing shifts the unix-second `created_at` by the device's
+  /// current UTC offset and formats in pure UTC: SQLite's `'localtime'`
+  /// modifier returns NULL on some bundled builds (probe-verified), so the
+  /// offset is computed in Dart instead. Matches Dart's local DateTime
+  /// components for fixed-offset zones (the POS timezone, Asia/Bangkok).
   Future<List<DailyRevenue>> queryDailyRevenue({
     DateTime? from,
     DateTime? to,
   }) async {
     final dayKey = CustomExpression<String>(
-      "date(${_createdAtSeconds()}, 'unixepoch', 'localtime')",
+      "date(${_localEpochSql()}, 'unixepoch')",
     );
     final revenueSum = _sumIf(_notVoidedExpr(), _completedTotalSumExpr());
     final completedCount = countAll(filter: _notVoidedExpr());
@@ -397,7 +397,7 @@ class SaleQueryLocalDatasource {
     DateTime? to,
   }) async {
     final hourKey = CustomExpression<String>(
-      "strftime('%H', ${_createdAtSeconds()}, 'unixepoch', 'localtime')",
+      "strftime('%H', ${_localEpochSql()}, 'unixepoch')",
     );
     final revenueSum = _sumIf(_notVoidedExpr(), _completedTotalSumExpr());
     final query = _baseSalesAggregateQuery(from: from, to: to)
@@ -921,8 +921,14 @@ class SaleQueryLocalDatasource {
   String _payCol(String columnName) =>
       '${_db.salePayments.actualTableName}.$columnName';
 
-  /// `created_at` expressed in unix seconds (drift stores milliseconds).
-  String _createdAtSeconds() => '${_salesCol("created_at")} / 1000';
+  /// `created_at` shifted into device-local wall time as unix seconds.
+  ///
+  /// SQLite's `'localtime'` modifier returns NULL on some bundled builds
+  /// (probe-verified on the drift sqlite3), so the UTC offset is computed in
+  /// Dart and baked in as a constant. Fixed-offset zones (Asia/Bangkok) are
+  /// exact; DST zones may shift boundary-hour buckets by one.
+  String _localEpochSql() =>
+      '(${_salesCol("created_at")} + ${DateTime.now().timeZoneOffset.inSeconds})';
 
   /// Satang reader SQL: prefer the dual-written satang column; legacy rows
   /// fall back to ROUND(baht * 100) half-away-from-zero — identical to
