@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_dialog_shell.dart';
 
@@ -77,6 +78,7 @@ Future<bool> showAppConfirm(
       );
 
       final confirmButton = FilledButton(
+        key: const Key(TestKeys.appConfirmDialogConfirm),
         onPressed: () => Navigator.pop(ctx, true),
         style: confirmStyle,
         child: Text(confirmLabel),

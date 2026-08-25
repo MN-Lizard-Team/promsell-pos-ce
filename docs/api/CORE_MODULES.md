@@ -1,6 +1,6 @@
 # Core Modules API Reference
 
-> Current release: **v0.9.3** · database schema: **v32** · package version: `0.9.3`
+> Current release: **v0.9.4** · database schema: **v32** · package version: `0.9.4+2`
 
 Public APIs for core domain modules, error system, and value objects.
 

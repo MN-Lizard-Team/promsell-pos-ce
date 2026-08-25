@@ -116,7 +116,9 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Return home and open daily close through the stable menu tile.
-      await tester.tap(find.byIcon(Icons.home).first);
+      await tester.tap(
+        find.byIcon(Icons.home_outlined).or(find.byIcon(Icons.home)).first,
+      );
       await tester.pump(const Duration(milliseconds: 800));
       debugPrint('J6: home reached');
       await tester.tap(find.byKey(const Key(TestKeys.homeCloseDayTile)));
@@ -139,14 +141,14 @@ void main() {
         '95',
       );
       await tester.tap(find.byKey(const Key(TestKeys.closeDayButton)));
-      await tester.pump(const Duration(milliseconds: 500));
-      final confirm = find.text('Confirm').or(find.text('ยืนยัน'));
-      if (confirm.evaluate().isNotEmpty) {
-        await tester.tap(confirm.first);
-        await tester.pump(const Duration(milliseconds: 500));
-      }
+      final confirmDialogButton = find.byKey(
+        const Key(TestKeys.appConfirmDialogConfirm),
+      );
+      await TestUtils.waitFor(tester, confirmDialogButton);
+      await tester.tap(confirmDialogButton);
+      final reopen = find.byKey(const Key(TestKeys.reopenDayButton));
+      await TestUtils.waitFor(tester, reopen);
 
-      expect(find.byKey(const Key(TestKeys.reopenDayButton)), findsOneWidget);
       expect(
         find.byKey(const Key(TestKeys.dailyCloseSummaryCard)),
         findsOneWidget,
@@ -162,9 +164,12 @@ void main() {
       expect(closeRows.single.totalRevenue, 45.0);
 
       // The lock must block a new payment, not merely render a closed-day
-      // summary. Return to Sale, attempt checkout, and verify no new sale.
-      await tester.tap(find.byIcon(Icons.home).first);
+      // summary. DailyClosePage is a pushed full-screen route (no bottom
+      // nav), so pop it first — landing back on the Home tab.
+      await tester.tap(find.byIcon(Icons.arrow_back).first);
       await tester.pump(const Duration(milliseconds: 800));
+      // Go to Sale and verify the closed-day banner guards the screen.
+      await sale.navigateToSalePage();
       expect(
         find.byKey(const Key(TestKeys.saleDayClosedBanner)),
         findsOneWidget,

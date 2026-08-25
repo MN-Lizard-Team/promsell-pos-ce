@@ -12,6 +12,8 @@ import 'package:promsell_pos_ce/core/database/wal_checkpoint_service.dart';
 import '../helpers/scaling_fixture.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late Directory tempDir;
 
   setUpAll(() {
