@@ -36,6 +36,9 @@ const _intentionallyHeldBack = <String, String>{
   // shimmer 4.x changes the loading widget API; defer until the catalog
   // loading surfaces have a coordinated UI migration and device smoke.
   'shimmer': 'v0.9.x: 4.x loading API migration + device smoke needed',
+  // cached_network_image 4.x changes the image provider API and cache
+  // configuration; defer until product catalog image surfaces are audited.
+  'cached_network_image': 'v0.9.x: 4.x image provider API break; catalog audit needed',
 };
 
 void main() {
