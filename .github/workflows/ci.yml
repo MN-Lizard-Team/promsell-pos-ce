@@ -21,14 +21,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0  # gitleaks needs full history for leak detection
 
       # Security scans run first and fail closed. If gitleaks flags a known
       # test fixture, allowlist that exact path/commit in .gitleaksignore —
       # never disable the scanner.
+      # Uses gitleaks CLI directly (not gitleaks-action) to avoid the
+      # organization license requirement introduced in gitleaks-action v3.
+      # Pin the binary version for reproducibility.
       - name: Secret scanning (gitleaks)
-        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          GITLEAKS_VERSION="8.30.1"
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar xz -C /tmp gitleaks
+          /tmp/gitleaks detect --source . --verbose --redact --no-banner
 
       - name: Dependency CVE scan (osv-scanner)
         uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67
@@ -38,7 +46,7 @@ jobs:
             ./
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        uses: subosito/flutter-action@v2.23.0
         with:
           channel: stable
           flutter-version: 3.44.4
