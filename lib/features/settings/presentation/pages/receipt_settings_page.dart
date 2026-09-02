@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt/receipt_preview.dart';
 import 'package:promsell_pos_ce/features/receipt/domain/entities/receipt_labels.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -8,6 +9,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/receipt/r
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/receipt/receipt_summary_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ReceiptSettingsPage extends StatefulWidget {
   const ReceiptSettingsPage({super.key});
@@ -85,6 +87,8 @@ class _ReceiptSettingsPageState extends State<ReceiptSettingsPage>
 
             return SettingsLeafChrome(
               title: l.settingsReceipt,
+              heroIcon: TablerIcons.receipt2,
+              heroAccent: AppColors.primary,
               header: ReceiptSummaryCard(
                 receiptNote: s.receiptNote,
                 showShopInfo: s.showShopInfoOnReceipt,

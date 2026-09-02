@@ -58,6 +58,7 @@ class ReportCubit extends Cubit<ReportState> {
   StreamSubscription? _sub;
   StreamSubscription? _aggregateSub;
   StreamSubscription? _previousSub;
+  StreamSubscription? _tableSub;
 
   /// Longest range still served through full hydration. Beyond this the
   /// SQL-aggregate path keeps memory bounded regardless of sales volume.
@@ -166,10 +167,13 @@ class ReportCubit extends Cubit<ReportState> {
     await _sub?.cancel();
     await _aggregateSub?.cancel();
     await _previousSub?.cancel();
+    await _tableSub?.cancel();
     if (isClosed || gen != _rangeGen) return;
     _sub = null;
     _aggregateSub = null;
     _previousSub = null;
+    _tableSub = null;
+    _subscribeTableStats(from: from, to: to, gen: gen);
 
     final useSqlPath = (to.difference(from).inDays + 1) > maxHydratedSpanDays;
 
@@ -241,7 +245,31 @@ class ReportCubit extends Cubit<ReportState> {
     );
   }
 
-  /// Long-range path: one watched SQL aggregate for the period plus a
+  void _subscribeTableStats({
+    required DateTime from,
+    required DateTime to,
+    required int gen,
+  }) {
+    _tableSub = _reportRepository
+        .watchTableSalesStats(from: from, to: to)
+        .listen(
+          (rows) {
+            if (isClosed || gen != _rangeGen) return;
+            emit(state.copyWith(tableBreakdown: rows));
+          },
+          onError: (Object error, StackTrace stack) {
+            AppLogger.error(
+              'ReportCubit.tableBreakdown failed',
+              error: error,
+              stack: stack,
+            );
+            if (!isClosed && gen == _rangeGen) {
+              emit(state.copyWith(tableBreakdown: const []));
+            }
+          },
+        );
+  }
+
   /// one-shot SQL summary for the previous period (hero-card comparison).
   Future<void> _subscribeAggregate({
     required String key,
@@ -460,6 +488,7 @@ class ReportCubit extends Cubit<ReportState> {
     _sub?.cancel();
     _aggregateSub?.cancel();
     _previousSub?.cancel();
+    _tableSub?.cancel();
     _cache.clear();
     unawaited(_tabRequests.close());
     return super.close();

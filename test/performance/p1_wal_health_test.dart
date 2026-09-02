@@ -153,7 +153,7 @@ void main() {
 
     test('generateReport returns correct schema version', () async {
       final report = await healthService.generateReport();
-      expect(report.schemaVersion, 32);
+      expect(report.schemaVersion, 35);
     });
 
     test(

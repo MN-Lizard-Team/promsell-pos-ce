@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class OnboardingSheetOption extends StatelessWidget {
   const OnboardingSheetOption({
@@ -34,9 +35,9 @@ class OnboardingSheetOption extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: selected
                   ? accentColor.withValues(alpha: 0.12)
@@ -47,7 +48,7 @@ class OnboardingSheetOption extends StatelessWidget {
                     : theme.colorScheme.outlineVariant,
                 width: selected ? 1.5 : 1,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               children: [
@@ -89,7 +90,8 @@ class OnboardingSheetOption extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (selected) Icon(Icons.check, size: 20, color: accentColor),
+                if (selected)
+                  Icon(TablerIcons.check, size: 20, color: accentColor),
               ],
             ),
           ),

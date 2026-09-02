@@ -6,8 +6,19 @@
 /// - cart with lines → `B-HHmm · N` (N = item count)
 ///
 /// Custom names are only set by explicit UI (rename / long-press park).
+/// Display surfaces resolve stored table ids to names via
+/// `RestaurantTableNameResolver`; [shortTableRef] is the fallback while
+/// unresolved.
 abstract final class DraftNaming {
   DraftNaming._();
+
+  /// Compact fallback label for a table id whose name cannot be resolved
+  /// yet (still loading / deleted table) — trims UUIDs to their first
+  /// segment so tiles never show full raw ids.
+  static String shortTableRef(String tableId) {
+    final t = tableId.trim();
+    return t.length <= 8 ? t : t.substring(0, 8);
+  }
 
   /// Core generator — prefer table, else time (+ qty when non-empty).
   static String autoName({String? tableId, int itemCount = 0, DateTime? now}) {

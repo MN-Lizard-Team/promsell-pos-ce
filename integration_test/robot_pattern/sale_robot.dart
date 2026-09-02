@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
-import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/utils/currency_formatter.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/widgets/cart/cart_item_card.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import '../helpers/test_utils.dart';
 import 'robot_base.dart';
@@ -28,9 +30,25 @@ class SaleRobot extends RobotBase {
     return find.text(productName);
   }
 
-  /// Add product to cart by tapping product card
+  /// Add product to cart by tapping product card.
+  ///
+  /// The sale catalog is a lazily-built [CustomScrollView], so products below
+  /// the viewport do not exist in the widget tree until the catalog is scrolled.
   Future<void> addProductToCart(String productName) async {
     final productCard = findProductCard(productName);
+    if (productCard.evaluate().isEmpty) {
+      final catalog = find.byType(CustomScrollView);
+      // A previous product may have left the catalog near its end. Return to
+      // the top before searching downward through the lazily-built sliver.
+      await tester.drag(catalog, const Offset(0, 5000));
+      await tester.pump(const Duration(milliseconds: 300));
+      await TestUtils.scrollUntilVisible(
+        tester,
+        productCard,
+        catalog,
+        delta: 320,
+      );
+    }
     expectVisible(
       productCard,
       reason: 'Product "$productName" should be visible',
@@ -38,21 +56,36 @@ class SaleRobot extends RobotBase {
     await tap(productCard);
   }
 
-  /// Find cart item by product name
+  /// Find cart item by product name in the cart review page.
   Finder findCartItem(String productName) {
-    return find.textContaining(productName);
+    return find.ancestor(
+      of: find.text(productName),
+      matching: find.byType(CartItemCard),
+    );
   }
 
-  /// Verify cart item exists with quantity
+  /// Verify cart state without depending on responsive cart rendering.
   void verifyCartItem(String productName, {int? quantity}) {
-    expectVisible(findCartItem(productName));
+    final matches = _cartBloc.state.items.where(
+      (item) => item.product.name == productName,
+    );
+    expect(matches, isNotEmpty, reason: 'Cart should contain "$productName"');
     if (quantity != null) {
-      expectText('×$quantity');
+      expect(matches.fold<int>(0, (sum, item) => sum + item.qty), quantity);
     }
   }
 
-  /// Tap on cart item to open quantity selector
+  CartBloc get _cartBloc => sl<CartBloc>();
+
+  /// Tap on cart item to open quantity selector.
+  ///
+  /// Works in both layouts: dual-pane shows [CartItemCard] directly, while
+  /// the compact/bottom-bar layout needs one tap on the cart entry first.
   Future<void> tapCartItem(String productName) async {
+    if (findCartItem(productName).evaluate().isEmpty) {
+      final entry = find.byKey(const ValueKey('sale_cart_entry'));
+      if (entry.evaluate().isNotEmpty) await tap(entry);
+    }
     await tap(findCartItem(productName));
   }
 
@@ -91,48 +124,49 @@ class SaleRobot extends RobotBase {
     await tap(decrementBtn);
   }
 
-  /// Remove item from cart
+  /// Remove item from cart via swipe-to-dismiss (the real UX — cart lines
+  /// are [Dismissible]s that delete on an end-to-start swipe).
   Future<void> removeFromCart(String productName) async {
-    await tapCartItem(productName);
-    final removeBtn = find.byIcon(Icons.delete).or(find.text('Remove'));
-    await tap(removeBtn);
+    if (findCartItem(productName).evaluate().isEmpty) {
+      final entry = find.byKey(const ValueKey('sale_cart_entry'));
+      if (entry.evaluate().isNotEmpty) await tap(entry);
+    }
+    final item = findCartItem(productName);
+    expectVisible(item);
+    await tester.drag(item.first, const Offset(-600, 0));
+    await settle();
   }
 
-  /// Verify cart total amount
+  /// Verify cart total amount (value may appear in several places).
   void verifyCartTotal(Money expectedTotal) {
     final totalText = CurrencyFormatter.formatMoney(expectedTotal);
-    expectVisible(
-      find.textContaining(totalText),
+    expect(
+      find.textContaining(totalText).evaluate().isNotEmpty,
+      isTrue,
       reason: 'Cart total should be $totalText',
     );
   }
 
-  /// Proceed to checkout
+  /// Proceed to checkout.
+  ///
+  /// The compact bottom bar and cart review intentionally share the checkout
+  /// key, but the compact action performs express payment. Open the full cart
+  /// review first so the key resolves to the navigation CTA.
   Future<void> proceedToCheckout() async {
-    final checkoutBtn = find
-        .byKey(const ValueKey('sale_cart_checkout_cta'))
-        .or(find.byKey(const Key(TestKeys.checkoutTotalLabel)))
-        .or(find.text('Checkout'))
-        .or(find.text('Pay'))
-        .or(find.text('ชำระเงิน'))
-        .or(find.text('Next'))
-        .or(find.byIcon(Icons.arrow_forward));
+    final cartReview = find.byKey(const ValueKey('sale_cart_review_page'));
+    if (cartReview.evaluate().isEmpty) {
+      final cartEntry = find.byKey(const ValueKey('sale_cart_entry'));
+      await tap(cartEntry);
+    }
+
+    final checkoutBtn = find.byKey(const ValueKey('sale_cart_checkout_cta'));
+    await tester.ensureVisible(checkoutBtn);
     await tap(checkoutBtn);
   }
 
-  /// Verify cart is empty
+  /// Verify cart is empty (source of truth: [CartBloc] state).
   void verifyCartEmpty() {
-    // Cart empty state may show different text per locale; check for the
-    // common empty-cart widgets rather than exact EN text.
-    final emptyHint = find
-        .text('Cart is empty')
-        .or(find.text('No items'))
-        .or(find.byIcon(TablerIcons.shoppingCartOff));
-    expect(
-      emptyHint.evaluate().isNotEmpty,
-      true,
-      reason: 'Cart should be empty (no items visible)',
-    );
+    expect(_cartBloc.state.isEmpty, isTrue, reason: 'Cart should be empty');
   }
 
   /// Search for product

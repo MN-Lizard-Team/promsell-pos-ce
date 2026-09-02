@@ -11,6 +11,25 @@ class DraftInitialized extends DraftEvent {
   const DraftInitialized();
 }
 
+class DraftFireRequested extends DraftEvent {
+  const DraftFireRequested({this.cartId});
+  final String? cartId;
+
+  @override
+  List<Object?> get props => [cartId];
+}
+
+class DraftTransferRequested extends DraftEvent {
+  const DraftTransferRequested({
+    required this.sourceTableId,
+    required this.targetTableId,
+  });
+  final String sourceTableId;
+  final String targetTableId;
+  @override
+  List<Object?> get props => [sourceTableId, targetTableId];
+}
+
 class DraftSwitched extends DraftEvent {
   const DraftSwitched(
     this.draftId, {
@@ -76,8 +95,19 @@ class DraftAutoSaveRequested extends DraftEvent {
   List<Object?> get props => [cartState];
 }
 
+/// Post-checkout rotation: the SOLD draft cart was already deleted inside the
+/// sale transaction ([SaleInsertWriter]); this event only fixes active
+/// pointers / counters / UI state.
+///
+/// [soldDraftId] is the originating draft cart id captured at checkout
+/// freeze. When it equals the active draft, a fresh empty bill is created and
+/// activated; when it differs (draft switched mid-payment) pointers are left
+/// untouched. Null (never-parked ephemeral cart) only refreshes counters.
 class DraftRotated extends DraftEvent {
-  const DraftRotated();
+  const DraftRotated({this.soldDraftId});
+  final String? soldDraftId;
+  @override
+  List<Object?> get props => [soldDraftId];
 }
 
 /// Immediate persist of [cartState] to the active draft (no debounce).
@@ -114,4 +144,14 @@ class DraftStartNewBillRequested extends DraftEvent {
   final String? name;
   @override
   List<Object?> get props => [cartState, name];
+}
+
+/// A debounced/flushed autosave hit a business-rule rejection (e.g. the table
+/// is already bound by another active bill). [messageKey] is the stable UI
+/// key resolved by `DraftBloc._errorMessageOf`, not a raw exception string.
+class DraftAutosaveFailed extends DraftEvent {
+  const DraftAutosaveFailed(this.messageKey);
+  final String messageKey;
+  @override
+  List<Object?> get props => [messageKey];
 }

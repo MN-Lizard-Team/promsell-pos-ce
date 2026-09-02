@@ -21,6 +21,9 @@ If you change a file, these are the files that must also be updated.
 | Feature `widgets/` folder | Corresponding page file import + widget tests |
 | `Settings` aggregate root (14 typed groups) | `SettingsMapper`, `SettingsRepositoryImpl`, `SettingsCubit`, all settings pages & widgets |
 | `SettingsStateView` (shared loading/error/retry wrapper) | All settings pages (root, general, sales, receipt, image, stock, barcode, promptpay, shop_info, discount_policy, discount_preset_edit, backup) + widget tests under `test/features/settings/presentation/` |
+| `SettingsThemeExtension` tokens (v0.9.4: `cardRadius`, `actionCardRadius`, `actionCardMinHeight`, `statusBadgeRadius`, `heroProgressHeight` active in Settings; `heroGradientStart/End`, `accentStripeWidth`, `pillRadius` retained for onboarding) | All Settings pages + onboarding sections; update theme tests if tokens added/renamed |
+| `SettingsActionCard` / `SettingsSectionCard` / `SettingsSectionHeader` / `SettingsStatusChip` / `SettingsLeafChrome` | All Settings root + sub-pages + onboarding section widgets; update widget tests if widget API changes |
+| `AppSnackBar` (v0.9.4 overflow fix: `Flexible` + `ConstrainedBox(maxWidth: 320)`) | All error/success/warning/info toasts; `app_snack_bar_test.dart` verifies overflow prevention |
 | `BackupSettingsPage` (now `StatefulWidget` with `_busy` guard) | Backup/restore button states; concurrent backup/restore is rejected; Backup PIN dialog uses `SecureScreen.setSecure(true)` |
 | `SettingsMapper` | `SettingsRepositoryImpl` tests (mock `getAll()` return values); legacy migration handling |
 | Extracted widget (e.g. `CartItemCard`) | Parent page import update + widget test under `test/features/<name>/presentation/widgets/` |

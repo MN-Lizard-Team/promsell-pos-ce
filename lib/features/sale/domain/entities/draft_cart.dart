@@ -20,6 +20,8 @@ class DraftCart extends Equatable {
     this.customerId,
     this.promotionId,
     this.promotionDiscountAmount = Money.zero,
+    this.guestCount,
+    this.openedAt,
     required this.updatedAt,
     this.deletedAt,
     this.version = 1,
@@ -47,6 +49,8 @@ class DraftCart extends Equatable {
   final String? customerId;
   final String? promotionId;
   final Money promotionDiscountAmount;
+  final int? guestCount;
+  final DateTime? openedAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
   final int version;
@@ -140,6 +144,8 @@ class DraftCart extends Equatable {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    int? guestCount,
+    DateTime? openedAt,
     required DateTime updatedAt,
     DateTime? deletedAt,
     int version = 1,
@@ -160,6 +166,8 @@ class DraftCart extends Equatable {
       customerId: customerId,
       promotionId: promotionId,
       promotionDiscountAmount: promotionDiscountAmount,
+      guestCount: guestCount,
+      openedAt: openedAt,
       updatedAt: updatedAt,
       deletedAt: deletedAt,
       version: version,
@@ -181,6 +189,8 @@ class DraftCart extends Equatable {
       customerId: customerId,
       promotionId: promotionId,
       promotionDiscountAmount: promotionDiscountAmount,
+      guestCount: guestCount,
+      openedAt: openedAt,
       updatedAt: updatedAt,
       deletedAt: deletedAt,
       version: version,
@@ -208,6 +218,8 @@ class DraftCart extends Equatable {
     customerId,
     promotionId,
     promotionDiscountAmount,
+    guestCount,
+    openedAt,
     updatedAt,
     deletedAt,
     version,

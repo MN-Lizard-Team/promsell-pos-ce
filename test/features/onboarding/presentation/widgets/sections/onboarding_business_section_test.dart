@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_business_section.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -18,7 +19,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.receipt_long), findsOneWidget);
+      expect(find.byIcon(TablerIcons.receipt), findsOneWidget);
       expect(find.byType(RadioGroup<String>), findsOneWidget);
     });
 
@@ -88,7 +89,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.qr_code), findsOneWidget);
+      expect(find.byIcon(TablerIcons.qrcode), findsOneWidget);
       expect(find.text('0812345678'), findsOneWidget);
     });
   });

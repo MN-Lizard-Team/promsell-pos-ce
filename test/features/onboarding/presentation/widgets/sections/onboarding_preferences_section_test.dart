@@ -5,6 +5,7 @@ import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/section
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_selection_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/mocks.dart';
 import '../../../../../helpers/pump_app.dart';
@@ -33,7 +34,7 @@ void main() {
         settingsCubit: mockSettingsCubit,
       );
 
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(TablerIcons.adjustments), findsOneWidget);
       expect(
         find.byWidgetPredicate((widget) => widget is SegmentedButton),
         findsNWidgets(2),

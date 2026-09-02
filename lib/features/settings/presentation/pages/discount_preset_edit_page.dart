@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/discount_preset.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/discount/discount_preset_edit_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class DiscountPresetEditPage extends StatelessWidget {
   const DiscountPresetEditPage({
@@ -74,6 +76,8 @@ class DiscountPresetEditPage extends StatelessWidget {
           onRetry: cubit.load,
           builder: (_) => SettingsLeafChrome(
             title: l10n.editDiscountPreset,
+            heroIcon: TablerIcons.tag,
+            heroAccent: AppColors.accent,
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

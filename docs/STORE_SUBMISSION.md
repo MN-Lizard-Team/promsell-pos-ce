@@ -1,6 +1,6 @@
 # Store Submission Checklist
 
-Last updated: **2026-08-17** | Release: **v0.9.4** (unreleased) | `pubspec`: **0.9.4+2**<br>
+Last updated: **2026-09-02** | Release: **v0.9.4** | `pubspec`: **0.9.4+2**<br>
 Trust package: `docs/plan/COMPLETE/V090-TRUST/` · Smoke v0.9.3: `docs/testing/RELEASE_0.9.3_SMOKE.md` · Smoke 1.0 plan: `docs/testing/RELEASE_1.0_SMOKE.md`<br>
 Post-0.9 management: `docs/plan/COMPLETE/POST-090-MANAGE/` · Play WS: `docs/plan/COMPLETE/POST-090-MANAGE/WS-A-PLAY-PRODUCTION.md`
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -155,14 +156,20 @@ class _SavedBillsPageState extends State<SavedBillsPage> {
   String _query = '';
   bool _searching = false;
 
+  /// Coalesces rapid draft-op reloads (opNonce/count listener bursts) into a
+  /// single trailing listDrafts call.
+  static const _reloadDelay = Duration(milliseconds: 150);
+  Timer? _reloadDebounce;
+
   @override
   void initState() {
     super.initState();
-    _reload();
+    _reload(immediate: true);
   }
 
   @override
   void dispose() {
+    _reloadDebounce?.cancel();
     _searchFocus.dispose();
     _searchCtrl.dispose();
     super.dispose();
@@ -184,7 +191,22 @@ class _SavedBillsPageState extends State<SavedBillsPage> {
     });
   }
 
-  void _reload() => setState(() {
+  /// Debounced reload — trailing edge only, so a burst of draft ops triggers
+  /// exactly one [DraftCartRepository.listDrafts]. Pass [immediate] for the
+  /// initial load.
+  void _reload({bool immediate = false}) {
+    if (immediate) {
+      _reloadDebounce?.cancel();
+      _runReload();
+      return;
+    }
+    _reloadDebounce?.cancel();
+    _reloadDebounce = Timer(_reloadDelay, () {
+      if (mounted) _runReload();
+    });
+  }
+
+  void _runReload() => setState(() {
     _draftsFuture = sl<DraftCartRepository>().listDrafts();
   });
 

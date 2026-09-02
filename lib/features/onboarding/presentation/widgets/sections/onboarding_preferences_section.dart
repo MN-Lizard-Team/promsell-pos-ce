@@ -6,6 +6,7 @@ import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/section
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_selection_sheet.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class OnboardingPreferencesSection extends StatelessWidget {
   const OnboardingPreferencesSection({
@@ -31,7 +32,7 @@ class OnboardingPreferencesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return OnboardingSection(
       cardBg: cardBg,
-      icon: Icons.settings,
+      icon: TablerIcons.adjustments,
       iconColor: accentBrand,
       title: context.l10n.onboardingLocaleCurrencyTitle,
       child: Column(
@@ -68,7 +69,7 @@ class OnboardingPreferencesSection extends StatelessWidget {
                 '¥' => context.l10n.onboardingCurrencyJpy,
                 _ => currencyController!.text,
               },
-              icon: Icons.payments_outlined,
+              icon: TablerIcons.coin,
               onTap: () async {
                 final selected = await OnboardingSelectionSheet.show<String>(
                   context: context,
@@ -134,7 +135,7 @@ class OnboardingPreferencesSection extends StatelessWidget {
           OnboardingSelectionField<String>(
             label: context.l10n.onboardingDateFormat,
             valueLabel: dateFormat,
-            icon: Icons.calendar_today_outlined,
+            icon: TablerIcons.calendar,
             onTap: () async {
               final selected = await OnboardingSelectionSheet.show<String>(
                 context: context,
@@ -145,19 +146,19 @@ class OnboardingPreferencesSection extends StatelessWidget {
                     value: 'dd/MM/yyyy',
                     label: 'dd/MM/yyyy',
                     subtitle: '20/01/2026',
-                    icon: Icons.calendar_today_outlined,
+                    icon: TablerIcons.calendar,
                   ),
                   const OnboardingSelectionOption(
                     value: 'MM/dd/yyyy',
                     label: 'MM/dd/yyyy',
                     subtitle: '01/20/2026',
-                    icon: Icons.calendar_today_outlined,
+                    icon: TablerIcons.calendar,
                   ),
                   const OnboardingSelectionOption(
                     value: 'yyyy-MM-dd',
                     label: 'yyyy-MM-dd',
                     subtitle: '2026-01-20',
-                    icon: Icons.calendar_today_outlined,
+                    icon: TablerIcons.calendar,
                   ),
                 ],
               );

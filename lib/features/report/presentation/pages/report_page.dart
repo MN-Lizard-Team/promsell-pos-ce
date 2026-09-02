@@ -8,6 +8,7 @@ import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/testing/test_keys.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
+import 'package:promsell_pos_ce/features/history/domain/usecases/get_sale_history_page.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
@@ -176,6 +177,7 @@ class _ReportPageState extends State<ReportPage>
     super.initState();
     _cubit = sl<ReportCubit>();
     _historyBloc = HistoryBloc(
+      getSaleHistoryPage: sl<GetSaleHistoryPage>(),
       watchSaleHistory: sl<WatchSaleHistory>(),
       voidSale: sl<VoidSale>(),
     );

@@ -17,7 +17,7 @@ class DailyCloseState extends Equatable {
     this.status = DailyCloseStatus.initial,
     this.date,
     this.dailyClose,
-    this.salesSummary,
+    this.preview,
     this.countedCash = 0,
     this.openingCash = 0,
     this.note = '',
@@ -27,34 +27,41 @@ class DailyCloseState extends Equatable {
   final DailyCloseStatus status;
   final String? date;
   final DailyClose? dailyClose;
-  final SalesSummary? salesSummary;
+  final DailyClosePreview? preview;
   final double countedCash;
   final double openingCash;
   final String note;
   final String? errorMessage;
 
   bool get isClosed => dailyClose?.isClosed ?? false;
-  double get overShort => countedCash - (salesSummary?.expectedCash ?? 0);
+  double get expectedCash => isClosed
+      ? dailyClose!.expectedCash.value
+      : openingCash + (preview?.cashSales.value ?? 0);
+  double get overShort =>
+      isClosed ? dailyClose!.overShortAmount.value : countedCash - expectedCash;
 
   DailyCloseState copyWith({
     DailyCloseStatus? status,
     String? date,
     DailyClose? dailyClose,
-    SalesSummary? salesSummary,
+    bool clearDailyClose = false,
+    DailyClosePreview? preview,
+    bool clearPreview = false,
     double? countedCash,
     double? openingCash,
     String? note,
     String? errorMessage,
+    bool clearError = false,
   }) {
     return DailyCloseState(
       status: status ?? this.status,
       date: date ?? this.date,
-      dailyClose: dailyClose ?? this.dailyClose,
-      salesSummary: salesSummary ?? this.salesSummary,
+      dailyClose: clearDailyClose ? null : dailyClose ?? this.dailyClose,
+      preview: clearPreview ? null : preview ?? this.preview,
       countedCash: countedCash ?? this.countedCash,
       openingCash: openingCash ?? this.openingCash,
       note: note ?? this.note,
-      errorMessage: errorMessage,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
 
@@ -63,34 +70,10 @@ class DailyCloseState extends Equatable {
     status,
     date,
     dailyClose,
-    salesSummary,
+    preview,
     countedCash,
     openingCash,
     note,
     errorMessage,
   ];
-}
-
-class SalesSummary {
-  const SalesSummary({
-    required this.salesCount,
-    required this.voidCount,
-    required this.grossRevenue,
-    required this.voidedAmount,
-    required this.netRevenue,
-    required this.paymentBreakdown,
-    required this.vatAmount,
-    required this.discountAmount,
-    required this.expectedCash,
-  });
-
-  final int salesCount;
-  final int voidCount;
-  final double grossRevenue;
-  final double voidedAmount;
-  final double netRevenue;
-  final Map<String, double> paymentBreakdown;
-  final double vatAmount;
-  final double discountAmount;
-  final double expectedCash;
 }

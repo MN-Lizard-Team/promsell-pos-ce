@@ -1023,9 +1023,109 @@ A shared `StatelessWidget` that renders every Settings page's body based on `Set
 
 Used by: `SettingsRootPage`, `GeneralSettingsPage`, `SalesSettingsPage`, `ReceiptSettingsPage`, `ImageSettingsPage`, `StockSettingsPage`, `BarcodeSettingsPage`, `PromptpaySettingsPage`, `ShopInfoSettingsPage`, `DiscountPolicySettingsPage`, `DiscountPresetEditPage`, `BackupSettingsPage`. Provides consistent loading, failure, and retry UX across the entire Settings tree.
 
+### Settings UI (v0.9.4)
+
+The Settings root and sub-pages use a **POS-native flat paper-card** visual language shared with the Sale and Product pages. Onboarding retains a separate gradient-hero + accent-stripe language (see Onboarding Module below).
+
+**Theme tokens** — `lib/features/settings/presentation/theme/settings_theme_extension.dart`:
+
+| Token | Purpose |
+|-------|---------|
+| `cardRadius` | Card corner radius (12) — matches cart item / bill stub radius |
+| `actionCardRadius` | Root action card corner radius (12) |
+| `actionCardMinHeight` | Root action card min height (64) — matches bill row height |
+| `statusBadgeRadius` | Status badge corner radius (20) — pill-shaped like `StockBadge` |
+| `heroGradientStart` / `heroGradientEnd` | Deep-teal gradient (retained for onboarding hero; Settings hero is now a flat white card) |
+| `heroTextPrimary` / `heroTextSecondary` | Text colors on gradient hero (onboarding only) |
+| `accentStripeWidth` | Left accent stripe width (4px) — retained for onboarding section cards; Settings cards use thin borders instead |
+| `pillRadius` | Pill corner radius (20) — retained for onboarding step labels; Settings section headers are now plain text |
+| `heroProgressHeight` | Readiness progress bar height (8) on the Settings hero card |
+
+**Shared widgets** — `lib/features/settings/presentation/widgets/shared/`:
+
+| Widget | Role |
+|--------|------|
+| `SettingsSectionCard` | Section container with thin border (no accent stripe in Settings; stripe optional for onboarding-compatible usage) |
+| `SettingsSectionHeader` | Plain `titleMedium/w700` label on the slate canvas (no pill, no dot — matches the sale catalog's "Categories" label rhythm) |
+| `SettingsStatusChip` | Compact status badge with leading dot + w700 label |
+| `SettingsLeafChrome` | Sub-page chrome with optional hero strip (icon + accent) below app bar |
+| `SettingsActionCard` | Root grid card: 64dp min height, 12dp radius, 0.5dp border (1.5px teal border when `emphasized`), 32dp tinted icon well, title, optional status badge, trailing chevron |
+
+**Category accents** — `lib/features/settings/presentation/widgets/settings_root/settings_tile_data.dart`:
+
+| Category | Accent color | Token |
+|----------|-------------|-------|
+| General | Info blue | `AppColors.info` |
+| Store | Primary teal | `AppColors.primary` |
+| Payment | Accent orange | `AppColors.accent` |
+| Backup | Neutral slate | `AppColors.onSurfaceVariant` |
+| About | Success green | `AppColors.success` |
+
+**Root page layout** — `lib/features/settings/presentation/pages/settings_root_page.dart`:
+- Teal app-bar chrome with an integrated search strip (matches `SaleAppBar`)
+- White hero card with thin border + teal readiness progress bar (0/4 checks: shop info, PromptPay, backup, store PIN)
+- Plain `titleMedium/w700` section headers (no pills, no accent stripes)
+- 2-column action card grid on wide screens (≥480px), 1-column on phones
+- Scaffold background: `surfaceContainerLow` (`#F1F5F9`), matching the catalog background
+
+**Settings search** — `lib/features/settings/presentation/pages/settings_search_page.dart`:
+- Dedicated full-screen search page mirroring `SaleProductSearchPage`
+- Pushed from the app-bar search strip; live-filtered section/tile list
+- Reuses `SettingsActionCard` rendering for result tiles
+
+**Icons** — all Settings and onboarding presentation code uses `TablerIcons.*` from `tabler_icons_plus` (^3.44.0), not Material `Icons.*`.
+
 ### Discount preset empty-list fallback
 
 When `discountPresets` is empty, the active preset falls back to a built-in default and the UI surfaces `l10n.noDiscountPresets` so the discount-policy page never crashes on a fresh install or a misconfigured DB.
+
+---
+
+## Onboarding Module (v0.9.4)
+
+**Location:** `lib/features/onboarding/`
+
+### Purpose
+
+First-launch setup wizard (4 steps): shop info → locale/currency/theme → tax/PromptPay → done. Prompts for store PIN creation on finish or skip. Uses a gradient-hero + accent-stripe visual language (distinct from the POS-native flat-card language used by Settings).
+
+### OnboardingPage
+
+**Path:** `lib/features/onboarding/presentation/pages/onboarding_page.dart`
+
+```dart
+class OnboardingPage extends StatefulWidget {
+  // 4-step PageView with progress bar, hero (step 0), bottom bar
+  // Steps: shop info, preferences, business/tax, done
+  // Finish: validates shop name, tax ID, VAT rate → saves settings → creates PIN
+  // Skip: saves settings with defaults → creates PIN
+}
+```
+
+### Shared section widgets — `lib/features/onboarding/presentation/widgets/sections/`
+
+| Widget | Role |
+|--------|------|
+| `OnboardingSection` | Section shell with left accent stripe + tinted icon well + w800 title (mirrors `SettingsSectionCard`) |
+| `OnboardingHeroSection` | Deep-teal gradient hero (primary → primaryDark) with app title, subtitle, trust badges |
+| `OnboardingProgressBar` | Pill-style step indicator: active step = wide pill, completed = solid dot, upcoming = hollow |
+| `OnboardingBottomBar` | Skip link (top) + back chevron + full-width primary CTA (accent orange on last step) |
+| `OnboardingDoneSection` | Gradient hero header + accent-stripe summary card (shop, currency, tax, PIN status) |
+| `OnboardingSettingsSheet` | Modal sheet with pill section headers for language/theme selection |
+| `OnboardingShopSection` | Shop info form (name, address, phone, tax ID) + receipt header preview |
+| `OnboardingPreferencesSection` | Locale, currency, theme, date format selection |
+| `OnboardingBusinessSection` | VAT mode radio cards + rate field + PromptPay ID field |
+| `OnboardingRadioCard` | Radio selection card with accent border + Tabler check icon |
+| `OnboardingSheetOption` | Sheet list option with radio indicator + Tabler check icon |
+
+### Visual language (v0.9.4)
+
+Onboarding uses a gradient-hero + accent-stripe visual language (distinct from the POS-native flat-card language used by Settings as of the v0.9.4 restyle):
+- **Accent stripe** — 4px left stripe on section cards
+- **Tinted icon wells** — 40px rounded containers with 14% accent tint + 20% border
+- **Pill headers** — step labels in pill containers with tinted background
+- **Gradient hero** — deep-teal `LinearGradient` (primary → primaryDark) on step 0 and done section
+- **Tabler Icons Plus** — all icons use `TablerIcons.*` (buildingStore, mapPin, phone, idBadge2, coin, calendar, adjustments, receipt, qrcode, check, chevronLeft/Right, rocket, etc.)
 
 ---
 

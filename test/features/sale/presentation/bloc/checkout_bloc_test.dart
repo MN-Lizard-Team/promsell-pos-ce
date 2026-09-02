@@ -4,7 +4,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/domain/entities/restaurant_table.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_state.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_event.dart';
@@ -13,6 +16,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.da
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_event.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_state.dart';
 
 import '../../../../helpers/mocks.dart';
 
@@ -26,6 +30,7 @@ void main() {
   late MockCreateSale mockCreateSale;
   late MockCartBloc mockCartBloc;
   late MockDraftBloc mockDraftBloc;
+  late MockTableBloc mockTableBloc;
 
   final tNow = DateTime(2025, 1, 15, 10, 30);
 
@@ -55,6 +60,8 @@ void main() {
     mockCreateSale = MockCreateSale();
     mockCartBloc = MockCartBloc();
     mockDraftBloc = MockDraftBloc();
+    mockTableBloc = MockTableBloc();
+    when(() => mockTableBloc.state).thenReturn(const TableState());
     when(() => mockCartBloc.state).thenReturn(
       CartState(
         items: [
@@ -74,6 +81,7 @@ void main() {
         ],
       ),
     );
+    when(() => mockDraftBloc.state).thenReturn(const DraftState());
     when(() => mockCartBloc.add(any())).thenReturn(null);
     when(() => mockDraftBloc.add(any())).thenReturn(null);
   });
@@ -82,6 +90,7 @@ void main() {
     createSale: mockCreateSale,
     cartBloc: mockCartBloc,
     draftBloc: mockDraftBloc,
+    tableBloc: mockTableBloc,
   );
 
   test('initial state is CheckoutState()', () {
@@ -132,7 +141,331 @@ void main() {
         verify(
           () => mockCartBloc.add(const CartCleared(force: true)),
         ).called(1);
+        // Never-parked cart (no active draft): soldDraftId stays null.
         verify(() => mockDraftBloc.add(const DraftRotated())).called(1);
+      },
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'rejects confirming a dine-in table bound by another active bill',
+      build: buildBloc,
+      setUp: () {
+        when(() => mockTableBloc.state).thenReturn(
+          TableState(
+            tables: [
+              RestaurantTable(
+                id: 't-table-1',
+                name: 'T1',
+                status: TableStatus.occupied,
+                createdAt: tNow,
+                updatedAt: tNow,
+              ),
+            ],
+          ),
+        );
+      },
+      act: (b) => b.add(
+        CheckoutConfirmed(
+          paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
+          amountReceived: Money.fromDouble(500),
+          changeAmount: Money.fromDouble(300),
+          orderType: 'dinein',
+          tableId: 't-table-1',
+        ),
+      ),
+      expect: () => [
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.failure)
+            .having((s) => s.errorMessage, 'errorMessage', 'tableAlreadyBound'),
+      ],
+      verify: (_) {
+        verifyNever(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            amountReceived: any(named: 'amountReceived'),
+          ),
+        );
+        // Guard fires before the freeze — cart never locks.
+        verifyNever(() => mockCartBloc.add(const CartPaymentLockChanged(true)));
+      },
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'allows confirming the table this cart itself holds',
+      build: buildBloc,
+      setUp: () {
+        // Own open bill already binds T1 — editing it must keep working.
+        when(() => mockDraftBloc.state).thenReturn(
+          DraftState(
+            activeDraftId: 'draft-1',
+            loadedDraft: DraftCart(
+              id: 'draft-1',
+              name: 'A',
+              items: const [],
+              tableId: 't-table-1',
+              updatedAt: tNow,
+            ),
+          ),
+        );
+        when(() => mockTableBloc.state).thenReturn(
+          TableState(
+            tables: [
+              RestaurantTable(
+                id: 't-table-1',
+                name: 'T1',
+                status: TableStatus.occupied,
+                createdAt: tNow,
+                updatedAt: tNow,
+              ),
+            ],
+          ),
+        );
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+            sendingBankCode: any(named: 'sendingBankCode'),
+            payments: any(named: 'payments'),
+            orderType: any(named: 'orderType'),
+            orderChannel: any(named: 'orderChannel'),
+            externalOrderRef: any(named: 'externalOrderRef'),
+            tableId: any(named: 'tableId'),
+            serviceChargeRate: any(named: 'serviceChargeRate'),
+            serviceChargeAmount: any(named: 'serviceChargeAmount'),
+            customerId: any(named: 'customerId'),
+            promotionId: any(named: 'promotionId'),
+            promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
+            originatingDraftCartId: any(named: 'originatingDraftCartId'),
+          ),
+        ).thenAnswer((_) async => tSale);
+      },
+      act: (b) => b.add(
+        CheckoutConfirmed(
+          paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
+          amountReceived: Money.fromDouble(500),
+          changeAmount: Money.fromDouble(300),
+          orderType: 'dinein',
+          tableId: 't-table-1',
+        ),
+      ),
+      expect: () => [
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.processing,
+        ),
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.success)
+            .having((s) => s.lastSale, 'lastSale', tSale),
+      ],
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'carries frozen draftCartId into CreateSale + DraftRotated',
+      build: buildBloc,
+      setUp: () {
+        // Parked bill: active draft exists at freeze time.
+        when(
+          () => mockDraftBloc.state,
+        ).thenReturn(const DraftState(activeDraftId: 'draft-origin'));
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+            sendingBankCode: any(named: 'sendingBankCode'),
+            payments: any(named: 'payments'),
+            orderType: any(named: 'orderType'),
+            orderChannel: any(named: 'orderChannel'),
+            externalOrderRef: any(named: 'externalOrderRef'),
+            tableId: any(named: 'tableId'),
+            serviceChargeRate: any(named: 'serviceChargeRate'),
+            serviceChargeAmount: any(named: 'serviceChargeAmount'),
+            customerId: any(named: 'customerId'),
+            promotionId: any(named: 'promotionId'),
+            promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
+            originatingDraftCartId: any(named: 'originatingDraftCartId'),
+          ),
+        ).thenAnswer((_) async => tSale);
+      },
+      act: (b) => b.add(
+        CheckoutConfirmed(
+          paymentMethod: 'cash',
+          vatMode: 'NONE',
+          vatRate: 0,
+          amountReceived: Money.fromDouble(500),
+          changeAmount: Money.fromDouble(300),
+        ),
+      ),
+      expect: () => [
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.processing,
+        ),
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.success)
+            .having((s) => s.lastSale, 'lastSale', tSale),
+      ],
+      verify: (_) {
+        // The ORIGINATING draft id is captured at freeze and threaded down so
+        // the sale transaction deletes exactly THIS cart atomically.
+        verify(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+            sendingBankCode: any(named: 'sendingBankCode'),
+            payments: any(named: 'payments'),
+            orderType: any(named: 'orderType'),
+            orderChannel: any(named: 'orderChannel'),
+            externalOrderRef: any(named: 'externalOrderRef'),
+            tableId: any(named: 'tableId'),
+            serviceChargeRate: any(named: 'serviceChargeRate'),
+            serviceChargeAmount: any(named: 'serviceChargeAmount'),
+            customerId: any(named: 'customerId'),
+            promotionId: any(named: 'promotionId'),
+            promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
+            originatingDraftCartId: 'draft-origin',
+          ),
+        ).called(1);
+        verify(
+          () => mockDraftBloc.add(
+            const DraftRotated(soldDraftId: 'draft-origin'),
+          ),
+        ).called(1);
+      },
+    );
+
+    blocTest<CheckoutBloc, CheckoutState>(
+      'keeps freeze-time draftCartId even if active draft switches mid-payment',
+      build: buildBloc,
+      setUp: () {
+        when(
+          () => mockDraftBloc.state,
+        ).thenReturn(const DraftState(activeDraftId: 'draft-A'));
+        when(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+            sendingBankCode: any(named: 'sendingBankCode'),
+            payments: any(named: 'payments'),
+            orderType: any(named: 'orderType'),
+            orderChannel: any(named: 'orderChannel'),
+            externalOrderRef: any(named: 'externalOrderRef'),
+            tableId: any(named: 'tableId'),
+            serviceChargeRate: any(named: 'serviceChargeRate'),
+            serviceChargeAmount: any(named: 'serviceChargeAmount'),
+            customerId: any(named: 'customerId'),
+            promotionId: any(named: 'promotionId'),
+            promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
+            originatingDraftCartId: any(named: 'originatingDraftCartId'),
+          ),
+        ).thenAnswer((_) async => tSale);
+      },
+      act: (b) async {
+        b.add(
+          const CheckoutConfirmed(
+            paymentMethod: 'promptpay',
+            vatMode: 'NONE',
+            vatRate: 0,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+        // Active pointer moved to B mid-payment…
+        when(
+          () => mockDraftBloc.state,
+        ).thenReturn(const DraftState(activeDraftId: 'draft-B'));
+        // …but completion must still rotate the FROZEN draft A.
+        b.add(const CheckoutPaymentConfirmed(paymentReference: 'SWITCH-1'));
+      },
+      expect: () => [
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.waitingPayment,
+        ),
+        isA<CheckoutState>().having(
+          (s) => s.status,
+          'status',
+          CheckoutStatus.processing,
+        ),
+        isA<CheckoutState>()
+            .having((s) => s.status, 'status', CheckoutStatus.success)
+            .having((s) => s.lastSale, 'lastSale', tSale),
+      ],
+      verify: (_) {
+        verify(
+          () => mockCreateSale(
+            items: any(named: 'items'),
+            paymentMethod: any(named: 'paymentMethod'),
+            vatMode: any(named: 'vatMode'),
+            vatRate: any(named: 'vatRate'),
+            cartDiscountType: any(named: 'cartDiscountType'),
+            cartDiscountValue: any(named: 'cartDiscountValue'),
+            cartDiscountAmount: any(named: 'cartDiscountAmount'),
+            amountReceived: any(named: 'amountReceived'),
+            changeAmount: any(named: 'changeAmount'),
+            note: any(named: 'note'),
+            paymentReference: any(named: 'paymentReference'),
+            sendingBankCode: any(named: 'sendingBankCode'),
+            payments: any(named: 'payments'),
+            orderType: any(named: 'orderType'),
+            orderChannel: any(named: 'orderChannel'),
+            externalOrderRef: any(named: 'externalOrderRef'),
+            tableId: any(named: 'tableId'),
+            serviceChargeRate: any(named: 'serviceChargeRate'),
+            serviceChargeAmount: any(named: 'serviceChargeAmount'),
+            customerId: any(named: 'customerId'),
+            promotionId: any(named: 'promotionId'),
+            promotionDiscountAmount: any(named: 'promotionDiscountAmount'),
+            originatingDraftCartId: 'draft-A',
+          ),
+        ).called(1);
+        verify(
+          () => mockDraftBloc.add(const DraftRotated(soldDraftId: 'draft-A')),
+        ).called(1);
       },
     );
 

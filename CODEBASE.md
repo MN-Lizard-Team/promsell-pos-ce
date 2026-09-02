@@ -29,13 +29,17 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
 │   home/       — Dashboard, statistics, menu grid, promotion banner                    │
 │   report/     — Revenue/profit/margin analytics, history tab, PDF/CSV export          │
 │   settings/   — Locale, theme, shop/business settings, Store PIN, backup,             │
-│               SettingsStateView (shared loading/error/retry wrapper for all pages)    │
+│               POS-native root (teal app bar + search strip, flat hero card, compact   │
+│               action cards, dedicated search page), SettingsStateView (shared         │
+│               loading/error/retry wrapper for all pages)                              │
 │   history/    — Sale history search and void presentation                             │
 │   inventory/  — Stock adjustments and inventory audit log                             │
 │   daily_close/ — Expected/count cash, reconciliation, close-day lock                  │
 │   receipt/    — Sales receipt document, preview, PDF/share                            │
 │   restaurant_table/ — Table/floor status and dine-in support                          │
-│   onboarding/ — First-launch setup and Store PIN choice                               │
+│   onboarding/ — First-launch setup (4-step: shop info → preferences → tax → done),    │
+│               gradient hero + pill progress + accent-stripe sections + Tabler icons,  │
+│               Store PIN choice                                                        │
 └────────────────────────┬──────────────────────────────────────────────────────────────┘
                          │
 ┌────────────────────────▼──────────────────────────────────────────────────────┐
@@ -52,8 +56,8 @@ For deep technical architecture (C4, data flows, ADRs), see [`docs/ARCHITECTURE.
                         │
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │   lib/shared/ — Shared domain entities (cross-feature)                          │
-│   domain/entities/  — Sale, SaleItem, SalePayment, SelectedProductOption,      │
-│                       SalesPeriodTotals (used by sale, report, history,        │
+│   domain/entities/  — Sale, SaleItem, SalePayment, SelectedProductOption,       │
+│                       SalesPeriodTotals (used by sale, report, history,         │
 │                       receipt, daily_close, home; re-exported by sale feature   │
 │                       for backward compatibility)                               │
 └─────────────────────────────────────────────────────────────────────────────────┘
@@ -125,6 +129,7 @@ features/<name>/
 - Writers dual-write exact satang plus legacy REAL baht for rollback compatibility. Readers prefer satang and fall back to REAL for pre-v32 rows.
 - Percentage rates and percentage-valued discounts remain REAL; conditional `AMOUNT` values also receive satang storage.
 - Migration code lives in `lib/core/database/app_database_migrations.dart` and two `part of` extension files: `app_database_migration_helpers.dart` (dedup, backfill, `addColumnIfNotExists`) and `app_database_migration_v32_satang.dart` (Phase M satang migration). All three expose `extension on AppDatabase`. Update the schema version and add a migration test for every schema change.
+- **No sync engine.** The `version` / `deviceId` columns on operational tables and the append-only `transaction_events` table are **future multi-device sync groundwork only** — nothing syncs today. The app is offline-only; data portability is encrypted backup/restore plus recovery kits, not cloud sync. Do not treat these columns as an active replication contract.
 
 ### State management overview
 
@@ -170,6 +175,8 @@ features/<name>/
 │  │            ↕ Menu Grid (6 buttons)            │   │
 │  │                                               │   │
 │  │  Settings Root → 16 sub-pages (2-level)       │   │
+│  │  (POS-native: teal app bar + search strip,    │   │
+│  │   flat hero card, compact action cards)       │   │
 │  └───────────────────────────────────────────────┘   │
 │                                                      │
 │  Overlay: Onboarding (4-step, first-launch)          │
@@ -180,9 +187,21 @@ features/<name>/
 
 ## UI and design system notes
 
-- The current UI refresh follows a **Merchant Command Deck** direction: cashier-first, fast scanning, strong money hierarchy, and large touch targets.
-- **Theme system** lives in `lib/core/theme/` — `AppColors` (static palette), `AppTheme` (light/dark `ThemeData` with Material 3), and `SettingsThemeExtension` (settings-specific surface/accent tokens). All hardcoded `Color(0xFF...)` outside this folder is forbidden.
+- The current UI refresh follows a **POS-native flat paper-card** direction: cashier-first, fast scanning, strong money hierarchy, and large touch targets. The Settings root shares the Sale/Product visual language — teal app-bar chrome, white hero card with thin border, compact action cards with thin borders, and plain section headers. Onboarding retains its gradient hero + pill progress + accent-stripe sections.
+- **Theme system** lives in `lib/core/theme/` — `AppColors` (static palette), `AppTheme` (light/dark `ThemeData` with Material 3), and `SettingsThemeExtension` (settings-specific surface/accent tokens including `cardRadius`, `actionCardRadius`, `actionCardMinHeight`, `statusBadgeRadius`). All hardcoded `Color(0xFF...)` outside this folder is forbidden.
+- **Icon system** — `tabler_icons_plus` (^3.44.0) is the app-wide icon library (103+ files). Use `TablerIcons.*` for all feature icons; avoid Material `Icons.*` in presentation code unless a Tabler equivalent is unavailable.
+- **Design patterns** — Settings root uses flat paper cards with thin borders (no gradients, no accent stripes, no pill headers); onboarding retains gradient hero + pill progress + accent-stripe sections:
+  - **Settings action cards** — `SettingsActionCard` with 64dp min height, 12dp radius, 0.5dp border, 32dp icon wells; emphasized state = 1.5px teal border.
+  - **Settings section headers** — plain `titleMedium/w700` text (no pills, no accent stripes).
+  - **Settings hero** — white card with thin border + teal readiness progress bar (no gradient).
+  - **Settings search** — dedicated full-screen `SettingsSearchPage` mirroring `SaleProductSearchPage`, pushed from the app-bar search strip.
+  - **Onboarding accent stripe** — 4px left stripe on section cards, colored by category accent (info blue / primary teal / accent orange / neutral slate / success green).
+  - **Onboarding pill headers** — step labels use pill-style containers with tinted background + border + leading dot.
+  - **Onboarding tinted icon wells** — 40–44px rounded containers with 12–14% accent tint + 20% border for section/action icons.
+  - **Onboarding gradient hero** — deep-teal `LinearGradient` (primary → primaryDark) used on onboarding step 0 and done section header.
+  - **Status badges** — compact dot + label with `statusBadgeRadius` (20) corners, used on action cards and attention chips.
 - Shared visual behavior should live in `lib/core/theme/` and `lib/core/widgets/` before being duplicated in feature pages.
+- **Radius vocabulary** — card 16 · action card 12 · input 12 · status badge 20 · pill 20 · dialog 16. Hero cards use 16 (Home's hero uses 24 as a deliberate exception). Badge dots are 8 dp with a shared `badgeBorderAlpha` (0.30) across pills and status chips.
 - Sale layouts are adaptive:
   - **Phone / narrow**: catalog + sticky `CartBottomBar` (count badge + **payable** total + open review / pay). Tap opens full-page cart via `openCartReviewPage` → `CartReviewPage` (not a bottom sheet).
   - **Tablet / wide** (≥ `tabletSplitBreakpoint`): `SaleDualPane` — catalog + always-on `DockedCartPanel` (line parity with review + shared `CartReviewFooter`).
@@ -192,11 +211,11 @@ features/<name>/
   - `SaleFilterBar` provides 3 dropdown filters (Category/Sort/Stock) replacing the old category chips.
 - User-facing strings must remain localized through ARB files and accessed with `context.l10n`.
 - Empty/error states should prefer `AppEmptyState`; money values should prefer `MoneyText`.
-- Compact constrained areas should avoid fixed-height `Column` content that can trigger `RenderFlex` overflow.
+- Compact constrained areas should avoid fixed-height `Column` content that can trigger `RenderFlex` overflow. Toast messages must wrap `Text` in `Flexible` + `ConstrainedBox` to prevent overflow on long error messages.
 - **Product tiles** use `BlocSelector<CategoryBloc>` (not `BlocBuilder`) to rebuild only when the relevant category changes; `context.select` is used for `SettingsCubit` fields (`currency`, `lowStockThreshold`) — not `context.watch`.
 - **Product cards** (`ProductCardShell`) use flat `Container` + `BoxDecoration` (no `Card` elevation) for clean `Dismissible` integration in both list and grid modes.
 - **Navigation helpers** (`showProductEditPage`, `showProductPreviewPage`, `confirmDeleteProduct`, `DeleteBackground`) are centralized in `product_navigation.dart` — no duplicate `_showEdit`/`_showPreview` in tiles or pages.
-- **Snackbars** should use `AppSnackBar.info/success/error` — not raw `ScaffoldMessenger.showSnackBar`.
+- **Snackbars** should use `AppSnackBar.info/success/error` — not raw `ScaffoldMessenger.showSnackBar`. The `AppSnackBar` overlay toast constrains messages to `maxWidth: 320` with `maxLines: 2` + ellipsis to prevent RenderFlex overflow.
 
 ---
 

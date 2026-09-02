@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_settings_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/general/general_summary_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
@@ -33,6 +35,8 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage>
           onRetry: cubit.load,
           builder: (s) => SettingsLeafChrome(
             title: context.l10n.settingsGeneral,
+            heroIcon: TablerIcons.settings,
+            heroAccent: AppColors.info,
             header: GeneralSummaryCard(
               localeCode: s.localeCode,
               themeModeName: s.themeModeName,

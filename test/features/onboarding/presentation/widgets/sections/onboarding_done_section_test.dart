@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_done_section.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -18,7 +19,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      expect(find.byIcon(TablerIcons.check), findsOneWidget);
       expect(find.text('All set!'), findsOneWidget);
     });
 

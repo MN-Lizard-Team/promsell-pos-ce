@@ -25,6 +25,21 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     required this.tileMinHeight,
     required this.iconSize,
     required this.tilePadding,
+    required this.heroGradientStart,
+    required this.heroGradientEnd,
+    required this.heroTextPrimary,
+    required this.heroTextSecondary,
+    required this.statusWarningText,
+    required this.statusErrorText,
+    required this.statusSuccessText,
+    required this.accentStripeWidth,
+    required this.statusBadgeRadius,
+    required this.pillRadius,
+    required this.actionCardMinHeight,
+    required this.actionCardRadius,
+    required this.badgeDotSize,
+    required this.badgeBorderAlpha,
+    required this.heroProgressHeight,
   });
 
   final Color cardBackground;
@@ -48,52 +63,120 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
   final double iconSize;
   final EdgeInsets tilePadding;
 
+  /// Hero card gradient (deep teal) for root overview.
+  final Color heroGradientStart;
+  final Color heroGradientEnd;
+  final Color heroTextPrimary;
+  final Color heroTextSecondary;
+
+  /// Text-safe status colors for chips/badges on tinted backgrounds.
+  /// Raw [AppColors.error]/[warning] fail WCAG AA on light tints, so text
+  /// must use these darker/lighter variants instead.
+  final Color statusWarningText;
+  final Color statusErrorText;
+  final Color statusSuccessText;
+
+  /// Left accent stripe on action cards / section cards.
+  final double accentStripeWidth;
+
+  /// Status badge corner radius (root action cards).
+  final double statusBadgeRadius;
+
+  /// Colored pill header radius (category section headers).
+  final double pillRadius;
+
+  /// Root action card geometry.
+  final double actionCardMinHeight;
+  final double actionCardRadius;
+
+  /// Shared badge/chip micro-geometry (dots inside pills and status chips).
+  final double badgeDotSize;
+
+  /// Shared border alpha for pills and status chips so both read as one
+  /// family instead of two different tints.
+  final double badgeBorderAlpha;
+
+  /// Readiness progress bar height on the hero card.
+  final double heroProgressHeight;
+
   static const SettingsThemeExtension light = SettingsThemeExtension(
-    cardBackground: Color(0xFFFFFFFF),
-    cardBorderColor: Color(0xFFCBD5E1),
-    softAccent: Color(0xFF0D5D6B),
-    softAccentContainer: Color(0xFFD0ECEF),
-    activeAccent: Color(0xFFFF6B00),
-    activeAccentContainer: Color(0xFFFFE0CC),
-    neutralAccent: Color(0xFF64748B),
-    neutralAccentContainer: Color(0xFFC0CCDB),
-    softTextPrimary: Color(0xFF0F172A),
-    softTextSecondary: Color(0xFF475569),
-    danger: Color(0xFFDC2626),
-    success: Color(0xFF22C55E),
-    mutedText: Color(0xFF475569),
-    iconContainerBackground: Color(0xFFD0ECEF),
+    cardBackground: AppColors.cardBackground,
+    cardBorderColor: AppColors.divider,
+    softAccent: AppColors.primary,
+    softAccentContainer: AppColors.primaryContainer,
+    activeAccent: AppColors.accent,
+    activeAccentContainer: AppColors.accentContainer,
+    neutralAccent: AppColors.neutralAccent,
+    neutralAccentContainer: AppColors.neutralAccentContainer,
+    softTextPrimary: AppColors.textPrimary,
+    softTextSecondary: AppColors.textSecondary,
+    danger: AppColors.error,
+    success: AppColors.success,
+    mutedText: AppColors.textSecondary,
+    iconContainerBackground: AppColors.primaryContainer,
     // Divider starts after icon well (40) + gap (12) + left pad (16) ≈ 68
     dividerIndent: 68,
-    cardRadius: 16,
+    // POS-native density: cards match cartItemRadius/billStubRadius (12),
+    // rows match billRowMinHeight (64-68), badges are pills like StockBadge.
+    cardRadius: 12,
     sectionGap: 16,
     tileMinHeight: 64,
     iconSize: 40,
     tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    heroGradientStart: AppColors.primary,
+    heroGradientEnd: AppColors.primaryDark,
+    heroTextPrimary: AppColors.textOnPrimary,
+    heroTextSecondary: AppColors.primaryContainer,
+    statusWarningText: AppColors.statusWarningText,
+    statusErrorText: AppColors.statusErrorText,
+    statusSuccessText: AppColors.statusSuccessText,
+    accentStripeWidth: 4,
+    statusBadgeRadius: 20,
+    pillRadius: 20,
+    actionCardMinHeight: 64,
+    actionCardRadius: 12,
+    badgeDotSize: 8,
+    badgeBorderAlpha: 0.30,
+    heroProgressHeight: 8,
   );
 
   /// Surfaces align with [AppColors] dark stack (not GitHub palette).
   static const SettingsThemeExtension dark = SettingsThemeExtension(
     cardBackground: AppColors.darkCard,
     cardBorderColor: AppColors.darkOutline,
-    softAccent: Color(0xFF0E7C8A),
-    softAccentContainer: Color(0xFF0A4A52),
+    softAccent: AppColors.darkPrimaryContainer,
+    softAccentContainer: AppColors.darkCartBackground,
     activeAccent: AppColors.accent,
-    activeAccentContainer: Color(0xFF4A2A00),
+    activeAccentContainer: AppColors.darkAccentContainer,
     neutralAccent: AppColors.darkNeutralAccent,
     neutralAccentContainer: AppColors.darkNeutralAccentContainer,
     softTextPrimary: AppColors.darkTextPrimary,
     softTextSecondary: AppColors.darkTextSecondary,
-    danger: Color(0xFFEF4444),
+    danger: AppColors.darkErrorText,
     success: AppColors.darkSuccess,
     mutedText: AppColors.darkTextSecondary,
-    iconContainerBackground: Color(0xFF0A4A52),
+    iconContainerBackground: AppColors.darkCartBackground,
     dividerIndent: 68,
-    cardRadius: 16,
+    cardRadius: 12,
     sectionGap: 16,
     tileMinHeight: 64,
     iconSize: 40,
     tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    heroGradientStart: AppColors.primaryDark,
+    heroGradientEnd: AppColors.primaryDeepDark,
+    heroTextPrimary: AppColors.darkTextPrimary,
+    heroTextSecondary: AppColors.darkOnPrimaryContainer,
+    statusWarningText: AppColors.darkStatusWarningText,
+    statusErrorText: AppColors.darkStatusErrorText,
+    statusSuccessText: AppColors.darkStatusSuccessText,
+    accentStripeWidth: 4,
+    statusBadgeRadius: 20,
+    pillRadius: 20,
+    actionCardMinHeight: 64,
+    actionCardRadius: 12,
+    badgeDotSize: 8,
+    badgeBorderAlpha: 0.30,
+    heroProgressHeight: 8,
   );
 
   @override
@@ -118,6 +201,21 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
     double? tileMinHeight,
     double? iconSize,
     EdgeInsets? tilePadding,
+    Color? heroGradientStart,
+    Color? heroGradientEnd,
+    Color? heroTextPrimary,
+    Color? heroTextSecondary,
+    Color? statusWarningText,
+    Color? statusErrorText,
+    Color? statusSuccessText,
+    double? accentStripeWidth,
+    double? statusBadgeRadius,
+    double? pillRadius,
+    double? actionCardMinHeight,
+    double? actionCardRadius,
+    double? badgeDotSize,
+    double? badgeBorderAlpha,
+    double? heroProgressHeight,
   }) {
     return SettingsThemeExtension(
       cardBackground: cardBackground ?? this.cardBackground,
@@ -143,6 +241,21 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
       tileMinHeight: tileMinHeight ?? this.tileMinHeight,
       iconSize: iconSize ?? this.iconSize,
       tilePadding: tilePadding ?? this.tilePadding,
+      heroGradientStart: heroGradientStart ?? this.heroGradientStart,
+      heroGradientEnd: heroGradientEnd ?? this.heroGradientEnd,
+      heroTextPrimary: heroTextPrimary ?? this.heroTextPrimary,
+      heroTextSecondary: heroTextSecondary ?? this.heroTextSecondary,
+      statusWarningText: statusWarningText ?? this.statusWarningText,
+      statusErrorText: statusErrorText ?? this.statusErrorText,
+      statusSuccessText: statusSuccessText ?? this.statusSuccessText,
+      accentStripeWidth: accentStripeWidth ?? this.accentStripeWidth,
+      statusBadgeRadius: statusBadgeRadius ?? this.statusBadgeRadius,
+      pillRadius: pillRadius ?? this.pillRadius,
+      actionCardMinHeight: actionCardMinHeight ?? this.actionCardMinHeight,
+      actionCardRadius: actionCardRadius ?? this.actionCardRadius,
+      badgeDotSize: badgeDotSize ?? this.badgeDotSize,
+      badgeBorderAlpha: badgeBorderAlpha ?? this.badgeBorderAlpha,
+      heroProgressHeight: heroProgressHeight ?? this.heroProgressHeight,
     );
   }
 
@@ -190,6 +303,61 @@ class SettingsThemeExtension extends ThemeExtension<SettingsThemeExtension> {
       tileMinHeight: lerpDouble(tileMinHeight, other.tileMinHeight, t)!,
       iconSize: lerpDouble(iconSize, other.iconSize, t)!,
       tilePadding: EdgeInsets.lerp(tilePadding, other.tilePadding, t)!,
+      heroGradientStart: Color.lerp(
+        heroGradientStart,
+        other.heroGradientStart,
+        t,
+      )!,
+      heroGradientEnd: Color.lerp(heroGradientEnd, other.heroGradientEnd, t)!,
+      heroTextPrimary: Color.lerp(heroTextPrimary, other.heroTextPrimary, t)!,
+      heroTextSecondary: Color.lerp(
+        heroTextSecondary,
+        other.heroTextSecondary,
+        t,
+      )!,
+      statusWarningText: Color.lerp(
+        statusWarningText,
+        other.statusWarningText,
+        t,
+      )!,
+      statusErrorText: Color.lerp(statusErrorText, other.statusErrorText, t)!,
+      statusSuccessText: Color.lerp(
+        statusSuccessText,
+        other.statusSuccessText,
+        t,
+      )!,
+      accentStripeWidth: lerpDouble(
+        accentStripeWidth,
+        other.accentStripeWidth,
+        t,
+      )!,
+      statusBadgeRadius: lerpDouble(
+        statusBadgeRadius,
+        other.statusBadgeRadius,
+        t,
+      )!,
+      pillRadius: lerpDouble(pillRadius, other.pillRadius, t)!,
+      actionCardMinHeight: lerpDouble(
+        actionCardMinHeight,
+        other.actionCardMinHeight,
+        t,
+      )!,
+      actionCardRadius: lerpDouble(
+        actionCardRadius,
+        other.actionCardRadius,
+        t,
+      )!,
+      badgeDotSize: lerpDouble(badgeDotSize, other.badgeDotSize, t)!,
+      badgeBorderAlpha: lerpDouble(
+        badgeBorderAlpha,
+        other.badgeBorderAlpha,
+        t,
+      )!,
+      heroProgressHeight: lerpDouble(
+        heroProgressHeight,
+        other.heroProgressHeight,
+        t,
+      )!,
     );
   }
 }

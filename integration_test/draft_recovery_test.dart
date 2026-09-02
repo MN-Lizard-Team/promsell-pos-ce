@@ -104,16 +104,23 @@ void main() {
       // Close receipt
       await checkoutRobot.closeReceipt();
 
-      // THEN: Verify draft is cleared after completing sale
+      // THEN: Verify draft is cleared after completing sale.
+      // The multi-bill system rotates to a fresh active bill, so an active
+      // row may remain — it must simply hold no items.
       draftCarts = await TestApp.database
           .select(TestApp.database.draftCarts)
           .get();
 
-      expect(
-        draftCarts.where((d) => !d.isArchived).isEmpty,
-        true,
-        reason: 'Draft cart should be cleared after sale',
-      );
+      for (final draft in draftCarts.where((d) => !d.isArchived)) {
+        final items = await (TestApp.database.select(
+          TestApp.database.draftCartItems,
+        )..where((item) => item.cartId.equals(draft.id))).get();
+        expect(
+          items,
+          isEmpty,
+          reason: 'Active draft "${draft.name}" should be empty after sale',
+        );
+      }
     });
 
     testWidgets('Draft is NOT loaded if user explicitly cleared cart', (

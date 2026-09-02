@@ -181,6 +181,7 @@ class _CartBottomBarState extends State<CartBottomBar>
                             children: [
                               Expanded(
                                 child: _CartEntryStrip(
+                                  key: const ValueKey('sale_cart_entry'),
                                   semanticLabel:
                                       '${context.l10n.cartBottomLabel}, $count',
                                   onTap: () {

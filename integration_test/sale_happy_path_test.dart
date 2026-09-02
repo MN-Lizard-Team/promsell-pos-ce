@@ -156,15 +156,22 @@ void main() {
 
       saleRobot.verifyCartEmpty();
 
-      // Verify draft cart cleared
+      // Verify no active draft still holds sold items. The multi-bill system
+      // rotates to a fresh active bill after "Next sale", so an active row
+      // may exist — it just must be empty.
       final draftCarts = await TestApp.database
           .select(TestApp.database.draftCarts)
           .get();
-      expect(
-        draftCarts.where((d) => !d.isArchived).isEmpty,
-        true,
-        reason: 'No active draft carts should exist',
-      );
+      for (final draft in draftCarts.where((d) => !d.isArchived)) {
+        final items = await (TestApp.database.select(
+          TestApp.database.draftCartItems,
+        )..where((item) => item.cartId.equals(draft.id))).get();
+        expect(
+          items,
+          isEmpty,
+          reason: 'Active draft "${draft.name}" should be empty after sale',
+        );
+      }
     });
 
     testWidgets('Reject checkout with empty cart', (tester) async {

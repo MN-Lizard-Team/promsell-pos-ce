@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/services/restaurant_table_name_resolver.dart';
+import 'package:promsell_pos_ce/features/sale/domain/services/draft_naming.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_state.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
@@ -32,22 +35,14 @@ class CartReviewHeader extends StatelessWidget {
         children: [
           Expanded(
             child: BlocBuilder<CartBloc, CartState>(
-              buildWhen: (p, c) => p.itemCount != c.itemCount,
+              buildWhen: (p, c) =>
+                  p.itemCount != c.itemCount || p.tableId != c.tableId,
               builder: (context, cartState) {
                 return BlocBuilder<DraftBloc, DraftState>(
                   buildWhen: (p, c) =>
                       p.activeDraftName != c.activeDraftName ||
                       p.activeDraftId != c.activeDraftId,
                   builder: (context, draftState) {
-                    final draftName = draftState.activeDraftName?.trim();
-                    final tableId = cartState.tableId?.trim();
-                    final subtitle = [
-                      if (draftName != null && draftName.isNotEmpty)
-                        context.l10n.cartActiveBill(draftName),
-                      context.l10n.cartItemCount(cartState.itemCount),
-                      if (tableId != null && tableId.isNotEmpty) tableId,
-                    ].join(' · ');
-
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -58,16 +53,11 @@ class CartReviewHeader extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        if (subtitle.isNotEmpty)
-                          Text(
-                            subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                        _CartSubtitle(
+                          draftName: draftState.activeDraftName,
+                          tableId: cartState.tableId,
+                          itemCount: cartState.itemCount,
+                        ),
                       ],
                     );
                   },
@@ -124,6 +114,89 @@ class CartReviewHeader extends StatelessWidget {
               onPressed: onClose ?? () => Navigator.maybePop(context),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Subtitle under the cart title: active bill · item count · table.
+///
+/// Table ids resolve asynchronously via [RestaurantTableNameResolver] —
+/// until then (or when the table was deleted) a short id is shown.
+class _CartSubtitle extends StatefulWidget {
+  const _CartSubtitle({
+    required this.draftName,
+    required this.tableId,
+    required this.itemCount,
+  });
+
+  final String? draftName;
+  final String? tableId;
+  final int itemCount;
+
+  @override
+  State<_CartSubtitle> createState() => _CartSubtitleState();
+}
+
+class _CartSubtitleState extends State<_CartSubtitle> {
+  String? _resolvedFor;
+  String? _tableName;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CartSubtitle old) {
+    super.didUpdateWidget(old);
+    if (old.tableId != widget.tableId) _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final id = widget.tableId?.trim();
+    if (id == null || id.isEmpty || _resolvedFor == id) return;
+    _resolvedFor = id;
+    final name = await sl<RestaurantTableNameResolver>().resolve(id);
+    if (!mounted || _resolvedFor != id) return;
+    setState(() => _tableName = name);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final draftName = widget.draftName?.trim();
+    final tableId = widget.tableId?.trim();
+    final hasTableId = tableId != null && tableId.isNotEmpty;
+    // Bills parked against a table carry the raw tableId as their name —
+    // swap in the resolved table name once available and skip the redundant
+    // trailing table segment.
+    final billIsTable = hasTableId && draftName == tableId;
+    final billLabel = (draftName != null && draftName.isNotEmpty)
+        ? l10n.cartActiveBill(
+            billIsTable && _tableName != null ? _tableName! : draftName,
+          )
+        : null;
+    final tableLabel = hasTableId && !billIsTable
+        ? l10n.tableChipLabel(_tableName ?? DraftNaming.shortTableRef(tableId))
+        : null;
+
+    final subtitle = [
+      ?billLabel,
+      l10n.cartItemCount(widget.itemCount),
+      ?tableLabel,
+    ].join(' · ');
+    if (subtitle.isEmpty) return const SizedBox.shrink();
+
+    return Text(
+      subtitle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+        fontWeight: FontWeight.w500,
       ),
     );
   }

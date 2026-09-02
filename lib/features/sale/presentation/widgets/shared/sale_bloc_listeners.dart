@@ -155,6 +155,8 @@ class _SaleBlocListenersState extends State<SaleBlocListeners> {
               msg = l10n.draftNotFound;
             } else if (raw == 'paymentInProgress') {
               msg = l10n.cartPaymentInProgress;
+            } else if (raw == 'tableAlreadyBound') {
+              msg = l10n.tableAlreadyBound;
             } else if (raw.startsWith('maxDraftsReached:')) {
               final n = int.tryParse(raw.split(':').last) ?? 0;
               msg = l10n.maxDraftsReached(n);
@@ -184,6 +186,8 @@ class _SaleBlocListenersState extends State<SaleBlocListeners> {
                 customerId: draft.customerId,
                 promotionId: draft.promotionId,
                 promotionDiscountAmount: draft.promotionDiscountAmount.value,
+                guestCount: draft.guestCount,
+                openedAt: draft.openedAt,
               ),
             );
             if (draft.skippedItemCount > 0 && context.mounted) {

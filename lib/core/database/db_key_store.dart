@@ -51,7 +51,11 @@ class DbKeyStore {
   static const _dbName = 'promsell_pos.db';
 
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(),
+    // resetOnError: false — never let the plugin wipe the SQLCipher key on
+    // Keystore errors (V092-B.7). A read failure surfaces as
+    // [DbKeyUnavailable] so the user can restore via recovery kit instead of
+    // silently losing the database.
+    aOptions: AndroidOptions(resetOnError: false),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.unlocked_this_device,
     ),

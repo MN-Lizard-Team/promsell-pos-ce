@@ -91,6 +91,8 @@ class Sale extends Equatable {
     this.customerId,
     this.promotionId,
     this.promotionDiscountAmount = Money.zero,
+    this.guestCount,
+    this.openedAt,
     this.amountReceived,
     this.changeAmount,
     this.note,
@@ -122,6 +124,8 @@ class Sale extends Equatable {
   final String? customerId;
   final String? promotionId;
   final Money promotionDiscountAmount;
+  final int? guestCount;
+  final DateTime? openedAt;
   final Money totalAmount;
   final String paymentMethod;
   final Money? amountReceived;
@@ -231,6 +235,8 @@ class Sale extends Equatable {
     customerId,
     promotionId,
     promotionDiscountAmount,
+    guestCount,
+    openedAt,
     totalAmount,
     paymentMethod,
     amountReceived,

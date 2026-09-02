@@ -144,16 +144,21 @@ class _FakeSaleLocalDatasource implements SaleLocalDatasource {
     DateTime? to,
     SaleCursor? cursor,
     int pageSize = 50,
+    String? searchQuery,
   }) => _query.querySalesPage(
     from: from,
     to: to,
     cursor: cursor,
     pageSize: pageSize,
+    searchQuery: searchQuery,
   );
 
   @override
-  Future<int> querySalesCount({DateTime? from, DateTime? to}) =>
-      _query.querySalesCount(from: from, to: to);
+  Future<int> querySalesCount({
+    DateTime? from,
+    DateTime? to,
+    String? searchQuery,
+  }) => _query.querySalesCount(from: from, to: to, searchQuery: searchQuery);
 
   @override
   Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to}) =>
@@ -189,6 +194,8 @@ class _FakeSaleLocalDatasource implements SaleLocalDatasource {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    String? originatingDraftCartId,
+    List<String>? selectedItemIds,
   }) => throw UnimplementedError();
 
   @override

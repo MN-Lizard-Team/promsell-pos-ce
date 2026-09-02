@@ -30,6 +30,8 @@ abstract class SaleRepository {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    String? originatingDraftCartId,
+    List<String>? selectedItemIds,
   });
 
   Future<List<Sale>> getSales({DateTime? from, DateTime? to});
@@ -43,10 +45,15 @@ abstract class SaleRepository {
     DateTime? to,
     SaleCursor? cursor,
     int pageSize = 50,
+    String? searchQuery,
   });
 
   /// Total non-deleted sale count, optionally within a date range.
-  Future<int> getSalesCount({DateTime? from, DateTime? to});
+  Future<int> getSalesCount({
+    DateTime? from,
+    DateTime? to,
+    String? searchQuery,
+  });
 
   /// SQL-aggregated report summary (no item hydration).
   Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to});

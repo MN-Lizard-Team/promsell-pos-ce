@@ -444,6 +444,23 @@ void main() {
     );
   });
 
+  group('CartGuestCountChanged', () {
+    blocTest<CartBloc, CartState>(
+      'sets guestCount on cart',
+      build: buildBloc,
+      act: (b) => b.add(const CartGuestCountChanged(4)),
+      expect: () => [const CartState(guestCount: 4)],
+    );
+
+    blocTest<CartBloc, CartState>(
+      'clears guestCount when null',
+      build: buildBloc,
+      seed: () => const CartState(guestCount: 4),
+      act: (b) => b.add(const CartGuestCountChanged(null)),
+      expect: () => [const CartState()],
+    );
+  });
+
   group('CartCustomerSet', () {
     blocTest<CartBloc, CartState>(
       'sets customerId on cart',
@@ -853,6 +870,19 @@ void main() {
   });
 
   group('payment lock', () {
+    blocTest<CartBloc, CartState>(
+      'paymentLocked rejects CartGuestCountChanged',
+      build: buildBloc,
+      seed: () => const CartState(guestCount: 2, paymentLocked: true),
+      act: (b) => b.add(const CartGuestCountChanged(4)),
+      expect: () => [
+        isA<CartState>()
+            .having((s) => s.paymentLocked, 'locked', true)
+            .having((s) => s.guestCount, 'guestCount', 2)
+            .having((s) => s.errorMessage, 'err', 'paymentInProgress'),
+      ],
+    );
+
     blocTest<CartBloc, CartState>(
       'paymentLocked rejects CartProductAdded',
       build: buildBloc,

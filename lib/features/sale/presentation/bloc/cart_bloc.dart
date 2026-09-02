@@ -57,6 +57,7 @@ class CartBloc extends Bloc<CartEvent, CartState>
     on<CartItemsReordered>(onCartItemsReordered);
     on<CartItemNoteChanged>(onItemNoteChanged);
     on<CartTableAssigned>(onTableAssigned);
+    on<CartGuestCountChanged>(onGuestCountChanged);
     on<CartCustomerSet>(onCustomerSet);
     on<CartPromotionSet>(onPromotionSet, transformer: sequential());
     on<CartPromotionRecompute>(onPromotionRecompute, transformer: sequential());

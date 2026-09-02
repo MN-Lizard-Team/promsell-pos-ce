@@ -116,6 +116,42 @@ void main() {
       expect(result.overShortAmount, Money.zero);
     });
 
+    test(
+      'rejects malformed date and invalid cash before persistence',
+      () async {
+        when(() => mockRepo.getByDate(any())).thenAnswer((_) async => null);
+
+        expect(
+          () => usecase(
+            date: '05-06-2026',
+            openingCash: 0,
+            countedCash: 0,
+            deviceId: 'dev1',
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+        expect(
+          () => usecase(
+            date: '2026-06-05',
+            openingCash: -1,
+            countedCash: 0,
+            deviceId: 'dev1',
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+        expect(
+          () => usecase(
+            date: '2026-06-05',
+            openingCash: 0,
+            countedCash: double.nan,
+            deviceId: 'dev1',
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+        verifyNever(() => mockRepo.save(any()));
+      },
+    );
+
     test('throws when day is already closed', () async {
       final existing = DailyClose(
         id: '1',

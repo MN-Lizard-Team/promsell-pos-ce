@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/testing/test_keys.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/domain/entities/restaurant_table.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_state.dart';
 
@@ -33,6 +34,16 @@ class TableSelector extends StatelessWidget {
           );
         }
 
+        // Effectively-occupied tables (an active draft bill binds them) are
+        // not selectable — claiming them would silently fail at save time.
+        // The current selection stays listed so editing a dine-in bill that
+        // already holds that table keeps working.
+        final selectable = state.tables
+            .where(
+              (t) =>
+                  t.status != TableStatus.occupied || t.id == selectedTableId,
+            )
+            .toList(growable: false);
         return DropdownButtonFormField<String?>(
           key: const Key(TestKeys.tableSelectorField),
           initialValue: selectedTableId,
@@ -47,7 +58,7 @@ class TableSelector extends StatelessWidget {
           ),
           items: [
             DropdownMenuItem<String?>(value: null, child: Text(l10n.noTable)),
-            ...state.tables.map(
+            ...selectable.map(
               (t) => DropdownMenuItem<String?>(
                 value: t.id,
                 child: Text(

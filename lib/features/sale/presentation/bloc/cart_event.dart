@@ -78,6 +78,8 @@ class CartRestored extends CartEvent {
     this.customerId,
     this.promotionId,
     this.promotionDiscountAmount = 0.0,
+    this.guestCount,
+    this.openedAt,
   });
 
   factory CartRestored.fromCartState(CartState state) => CartRestored(
@@ -93,6 +95,8 @@ class CartRestored extends CartEvent {
     customerId: state.customerId,
     promotionId: state.promotionId,
     promotionDiscountAmount: state.promotionDiscountAmount,
+    guestCount: state.guestCount,
+    openedAt: state.openedAt,
   );
 
   final List<CartItem> items;
@@ -107,6 +111,8 @@ class CartRestored extends CartEvent {
   final String? customerId;
   final String? promotionId;
   final double promotionDiscountAmount;
+  final int? guestCount;
+  final DateTime? openedAt;
 
   @override
   List<Object?> get props => [
@@ -122,6 +128,8 @@ class CartRestored extends CartEvent {
     customerId,
     promotionId,
     promotionDiscountAmount,
+    guestCount,
+    openedAt,
   ];
 }
 
@@ -236,6 +244,14 @@ class CartTableAssigned extends CartEvent {
   final String? tableId;
   @override
   List<Object?> get props => [tableId];
+}
+
+/// Set or clear the number of guests on the cart (draft-autosaved).
+class CartGuestCountChanged extends CartEvent {
+  const CartGuestCountChanged(this.guestCount);
+  final int? guestCount;
+  @override
+  List<Object?> get props => [guestCount];
 }
 
 /// Attach or clear loyalty customer on the cart (draft-autosaved).

@@ -1,11 +1,33 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
 import 'package:promsell_pos_ce/features/sale/data/repositories/sale_repository_impl.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 
 import '../../../../helpers/fixtures.dart';
 import '../../../../helpers/mocks.dart';
+
+ReportSummary get tReportSummary => ReportSummary(
+  netRevenue: Money.fromDouble(100),
+  voidedTotal: Money.zero,
+  salesCount: 1,
+  voidCount: 0,
+  vatAmount: Money.zero,
+  discountAmount: Money.zero,
+  serviceChargeAmount: Money.zero,
+  promotionDiscountAmount: Money.zero,
+  paymentBreakdown: const {},
+  paymentCounts: const {},
+  orderTypeBreakdown: const {},
+  orderChannelBreakdown: const {},
+  voidReasonBreakdown: const {},
+  promotionCount: 0,
+);
+
+ReportAggregate get tReportAggregate =>
+    ReportAggregate(summary: tReportSummary);
 
 void main() {
   late SaleRepositoryImpl repo;
@@ -98,6 +120,59 @@ void main() {
       final stream = repo.watchSales();
 
       expect(stream, emits([tSale]));
+    });
+
+    test('getSalesCount delegates to datasource', () async {
+      when(
+        () => mockDs.querySalesCount(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+          searchQuery: any(named: 'searchQuery'),
+        ),
+      ).thenAnswer((_) async => 7);
+
+      final result = await repo.getSalesCount();
+
+      expect(result, 7);
+      verify(
+        () => mockDs.querySalesCount(from: null, to: null, searchQuery: null),
+      ).called(1);
+    });
+
+    test('getReportSummary delegates to datasource', () async {
+      when(
+        () => mockDs.queryReportSummary(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) async => tReportSummary);
+
+      final result = await repo.getReportSummary();
+
+      expect(result, tReportSummary);
+    });
+
+    test('watchReportAggregate delegates to datasource', () {
+      when(
+        () => mockDs.watchReportAggregate(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+        ),
+      ).thenAnswer((_) => Stream.value(tReportAggregate));
+
+      final stream = repo.watchReportAggregate();
+
+      expect(stream, emits(tReportAggregate));
+    });
+
+    test('voidSale delegates to datasource', () async {
+      when(
+        () => mockDs.voidSale(any(), reason: any(named: 'reason')),
+      ).thenAnswer((_) async {});
+
+      await repo.voidSale('sale-1', reason: 'test');
+
+      verify(() => mockDs.voidSale('sale-1', reason: 'test')).called(1);
     });
   });
 }

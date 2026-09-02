@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/draft_cart_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/data/repositories/draft_cart_repository_impl.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/kitchen_ticket.dart';
 
 class MockDraftCartLocalDatasource extends Mock
     implements DraftCartLocalDatasource {}
@@ -100,5 +101,55 @@ void main() {
 
     expect(result, 3);
     verify(() => mockDs.archiveOldDrafts(cutoff)).called(1);
+  });
+
+  test('getDraftCounts delegates to datasource', () async {
+    when(
+      () => mockDs.getDraftCounts(),
+    ).thenAnswer((_) async => (draftCount: 4, openBillCount: 2));
+
+    final result = await repo.getDraftCounts();
+
+    expect(result.draftCount, 4);
+    expect(result.openBillCount, 2);
+    verify(() => mockDs.getDraftCounts()).called(1);
+  });
+
+  test('fireUnfiredLines delegates to datasource', () async {
+    final ticket = KitchenTicket(
+      cartId: 'draft-001',
+      firedAt: DateTime(2026, 9, 1),
+      lines: const [],
+    );
+    when(() => mockDs.fireUnfiredLines(any())).thenAnswer((_) async => ticket);
+
+    final result = await repo.fireUnfiredLines('draft-001');
+
+    expect(result, ticket);
+    verify(() => mockDs.fireUnfiredLines('draft-001')).called(1);
+  });
+
+  test('transferDraftCart delegates to datasource', () async {
+    when(
+      () => mockDs.transferDraftCart(
+        cartId: any(named: 'cartId'),
+        sourceTableId: any(named: 'sourceTableId'),
+        targetTableId: any(named: 'targetTableId'),
+      ),
+    ).thenAnswer((_) async {});
+
+    await repo.transferDraftCart(
+      cartId: 'draft-001',
+      sourceTableId: 'table-1',
+      targetTableId: 'table-2',
+    );
+
+    verify(
+      () => mockDs.transferDraftCart(
+        cartId: 'draft-001',
+        sourceTableId: 'table-1',
+        targetTableId: 'table-2',
+      ),
+    ).called(1);
   });
 }

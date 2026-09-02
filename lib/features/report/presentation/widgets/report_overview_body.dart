@@ -111,6 +111,7 @@ class ReportOverviewBody extends StatelessWidget {
               calculator: calculator,
               lastUpdated: state.lastUpdated,
               aggregate: aggregate,
+              tableBreakdown: state.tableBreakdown,
             ),
           ),
         );

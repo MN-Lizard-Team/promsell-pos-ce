@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_section.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_radio_card.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class OnboardingBusinessSection extends StatelessWidget {
   const OnboardingBusinessSection({
@@ -30,7 +31,7 @@ class OnboardingBusinessSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return OnboardingSection(
       cardBg: cardBg,
-      icon: Icons.receipt_long,
+      icon: TablerIcons.receipt,
       iconColor: accentBrand,
       title: context.l10n.onboardingTaxSetup,
       child: Column(
@@ -117,7 +118,7 @@ class OnboardingBusinessSection extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.onboardingPromptPayIdLabel,
               hintText: context.l10n.onboardingPromptPayIdHint,
-              prefixIcon: const Icon(Icons.qr_code),
+              prefixIcon: const Icon(TablerIcons.qrcode),
             ),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],

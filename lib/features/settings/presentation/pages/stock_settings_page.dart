@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
@@ -8,6 +9,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/se
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/tiles/settings_switch_tile.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class StockSettingsPage extends StatefulWidget {
   const StockSettingsPage({super.key});
@@ -37,6 +39,8 @@ class _StockSettingsPageState extends State<StockSettingsPage>
           onRetry: cubit.load,
           builder: (s) => SettingsLeafChrome(
             title: l10n.settingsStockPolicy,
+            heroIcon: TablerIcons.box,
+            heroAccent: AppColors.primary,
             header: _StockPreviewCard(
               allowOversell: s.allowOversell,
               lowStockThreshold: s.lowStockThreshold,
@@ -44,6 +48,7 @@ class _StockSettingsPageState extends State<StockSettingsPage>
             children: [
               SettingsSectionCard(
                 title: l10n.settingsPolicy,
+                accent: AppColors.primary,
                 children: [
                   SettingsSwitchTile(
                     icon: Icons.shopping_cart_outlined,

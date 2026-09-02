@@ -41,8 +41,7 @@ class SearchAppBarField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    // Solid light fill on primary app bar (same idea as ProductSearchBar).
-    const fieldFill = Colors.white;
+    final fieldFill = scheme.surfaceContainerHighest;
     final muted = scheme.onSurfaceVariant;
     final textColor = scheme.onSurface;
 

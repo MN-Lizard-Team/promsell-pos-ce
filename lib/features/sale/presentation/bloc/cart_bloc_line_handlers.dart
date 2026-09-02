@@ -149,6 +149,8 @@ mixin CartBlocLineHandlers on Bloc<CartEvent, CartState> {
         customerId: event.customerId,
         promotionId: event.promotionId,
         promotionDiscountAmount: event.promotionDiscountAmount,
+        guestCount: event.guestCount,
+        openedAt: event.openedAt,
       ),
     );
     schedulePromoRecompute();

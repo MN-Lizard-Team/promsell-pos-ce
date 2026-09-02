@@ -302,6 +302,8 @@ Some changes (new providers, generated code, native plugins) require a **full re
 
 Run the app on a small emulator or device and check the Sale, Product form, and payment sheet flows. Compact panels should use scrollable sheets or compact empty states instead of fixed-height content.
 
+**Toast overflow (v0.9.4):** `AppSnackBar` wraps `Text` in `Flexible` + `ConstrainedBox(maxWidth: 320)` + `maxLines: 2` + `TextOverflow.ellipsis` to prevent `RenderFlex` overflow on long error messages. If adding new toast calls, use `AppSnackBar.info/success/error/warning` — never raw `ScaffoldMessenger.showSnackBar`.
+
 ```bash
 flutter analyze lib test
 flutter test

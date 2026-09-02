@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/image/image_preview_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/image/clear_image_cache_button.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/image/image_quality_tile.dart';
@@ -38,6 +40,8 @@ class _ImageSettingsPageState extends State<ImageSettingsPage>
           onRetry: cubit.load,
           builder: (s) => SettingsLeafChrome(
             title: context.l10n.settingsImages,
+            heroIcon: TablerIcons.photo,
+            heroAccent: AppColors.info,
             header: ImagePreviewCard(
               imageMaxWidth: s.imageMaxWidth,
               imageQuality: s.imageQuality,
@@ -50,6 +54,7 @@ class _ImageSettingsPageState extends State<ImageSettingsPage>
               ),
               SettingsSectionCard(
                 title: context.l10n.settingsImages,
+                accent: AppColors.info,
                 children: [
                   ImageWidthTile(settings: s, cubit: cubit),
                   ImageQualityTile(settings: s, cubit: cubit),

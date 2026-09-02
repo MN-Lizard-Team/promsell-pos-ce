@@ -101,6 +101,7 @@ abstract final class CheckoutTenderHelpers {
       'saleError' => l10n.saleError,
       'dayClosed' => l10n.dayClosedMessage,
       'paymentMismatch' => l10n.paymentMismatch,
+      'tableAlreadyBound' => l10n.tableAlreadyBound,
       null => l10n.saleError,
       _ => l10n.saleError,
     };

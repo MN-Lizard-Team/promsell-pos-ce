@@ -276,4 +276,60 @@ void main() {
       });
     });
   });
+
+  group('equality', () {
+    SalePayableTotals buildTotals({double vatRate = 7}) {
+      return SalePayableCalculator.compute(
+        SalePayableInput(
+          itemsSubtotal: Money.fromDouble(1000),
+          cartDiscountAmount: Money.fromDouble(100),
+          promotionDiscountAmount: Money.zero,
+          serviceChargeRate: 10,
+          vatMode: 'EXCLUSIVE',
+          vatRate: vatRate,
+        ),
+      );
+    }
+
+    test('SalePayableInput with identical fields is equal', () {
+      final a = SalePayableInput(itemsSubtotal: Money.fromDouble(100));
+      final b = SalePayableInput(itemsSubtotal: Money.fromDouble(100));
+
+      expect(a, equals(b));
+      expect(a.hashCode, b.hashCode);
+    });
+
+    test('SalePayableInput with different vatRate is not equal', () {
+      final a = SalePayableInput(
+        itemsSubtotal: Money.fromDouble(100),
+        vatRate: 7,
+      );
+      final b = SalePayableInput(
+        itemsSubtotal: Money.fromDouble(100),
+        vatRate: 10,
+      );
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('SalePayableInput null discount defaults equal zero discounts', () {
+      final fromNull = SalePayableInput(itemsSubtotal: Money.fromDouble(100));
+      final fromZero = SalePayableInput(
+        itemsSubtotal: Money.fromDouble(100),
+        cartDiscountAmount: Money.zero,
+        promotionDiscountAmount: Money.zero,
+      );
+
+      expect(fromNull, equals(fromZero));
+    });
+
+    test('SalePayableTotals with identical fields is equal', () {
+      expect(buildTotals(), equals(buildTotals()));
+      expect(buildTotals().hashCode, buildTotals().hashCode);
+    });
+
+    test('SalePayableTotals with different vatRate is not equal', () {
+      expect(buildTotals(vatRate: 7), isNot(equals(buildTotals(vatRate: 10))));
+    });
+  });
 }

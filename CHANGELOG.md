@@ -7,63 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.9.4] - Unreleased
+## [0.9.4] - 2026-09-02
 
-Not yet tagged. `pubspec` is `0.9.4+2`. Latest real GitHub tag remains **v0.9.2** (v0.9.3 was never tagged — see its section below).
+`pubspec` is `0.9.4+2`. Latest real GitHub tag remains **v0.9.2** (v0.9.3 was never tagged — see its section below).
 
 ### Highlights
 
-- **Technical debt, scalability & Settings UX pass** — database indexing, bounded report memory, use-case coverage, migration organization, cross-feature domain coupling, consistent Settings loading/error states, accessibility semantics, backup-operation guards, and AppLock verification serialization. All changes are additive or internal hardening; no existing bloc/cubit/repository contract is broken.
+- **Security hardening (V092-B.7)** — Keystore-corruption data-loss fix, fail-closed AppLock guards, cold-start DB recovery gate, constant-time PIN comparison, CI secret/CVE scanning.
+- **Restaurant operations** — schema v33–v35: table integrity, transaction audit trail, kitchen tickets, partial checkout, per-table reporting, floor UI.
+- **Settings POS-native restyle** — flat paper-card language matching Sale/Product pages; dedicated search page.
+- **Tech debt & scalability** — report cache memory eviction, use-case coverage (+43 tests), migration file split, cross-feature domain coupling, History pagination + search.
+- Sale-logic coverage raised from 86.35% to **98.63%** (+66 tests), which also caught a per-table revenue aggregation bug.
 
 ### Added
 
-- **P1 composite index `idx_inventory_logs_product_id_created_at`** — covers `watchLogsByProduct` queries (`WHERE product_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 200`) so the query planner avoids full scan + sort on high-volume SKUs. Migration test verifies index existence and `EXPLAIN QUERY PLAN` usage on a fresh DB.
-- **ReportCubit cache memory-based eviction** — new `_maxCacheMemoryBytes` (50 MB) ceiling alongside the existing count limit (10 entries). `_evictCache()` removes oldest entries by `storedAt` when either limit is exceeded. `_CacheEntry.estimatedBytes` approximates memory per entry (~1 KB per Sale). Prevents unbounded memory growth when browsing many long date ranges.
-- **Use-case test coverage** — 43 new tests across four critical use cases:
-  - `submit_product` (11 tests) — add/edit paths, stock preservation (V092-C.1), category clearing, field trimming, image path preservation, option group passthrough.
-  - `sale_payable_calculator` (16 tests) — VAT NONE/EXCLUSIVE/INCLUSIVE, service charge resolution (restaurant vs retail, cart override, negative rate), `forCartFields` integration, edge cases (zero subtotal, lowercase normalization, clamping).
-  - `adjust_stock` (5 tests) — app lock gate before repository call, delegation, error propagation, negative qty passthrough, ordering verification.
-  - `update_settings` (11 tests) — sensitive field detection (PromptPay ID, biller ID, discount policy, oversell, daily close lock, backup encryption), lock enforcement, `SettingsSaveFailure` on repository errors, no-op when values unchanged.
-- **ReportCubit cache eviction tests** — 2 tests verifying count-based (15 ranges > 10 limit) and memory-based (60k sales × 3 ranges ≈ 180 MB > 50 MB ceiling) eviction.
-- **Settings UI state consistency** — added shared `SettingsStateView` with loading, failure, and retry states across the Settings root and leaf pages; added root loading/failure/retry regression tests.
-- **Settings accessibility coverage** — added semantic roles and current-value announcements for language, barcode prefix, PromptPay ID, and Biller ID tiles.
-- **Backup single-flight guard** — `BackupSettingsPage` is now a `StatefulWidget` with a `_busy` flag that rejects duplicate backup/restore callbacks and disables the action buttons while an operation is in flight.
-- `MockInventoryRepository` and `MockAppLockService` test helpers in `test/helpers/mocks.dart`.
+- **Restaurant operations (schema v33–v35)** — atomic table transfer, idempotent kitchen firing with ticket snapshots, selected-line partial checkout, zone-grouped floor view, guest-count editing, derived table occupancy (auto-occupied when a bill binds it), per-table sales aggregates with localized report card. v33 partial UNIQUE index guarantees one active bill per table; v34 `transaction_events` audit trail with idempotent atomic writer; v35 persists `openedAt`/`guestCount`.
+- **History pagination & search** — cursor-paginated `getSalesPage` API with fail-closed cursor validation; SQL-backed search predicates (receipt, payment, customer, note, void reason, item name, amount); stale-data retention during refresh failures; load-more UX with total-count tracking.
+- **Report cache memory eviction** — 50 MB ceiling alongside the existing 10-entry count limit; oldest entries evicted by `storedAt` when either limit is exceeded.
+- **Cold-start DB recovery gate** — `DbRecoveryGate` screen (localized TH/EN) shown when the SQLCipher key is inaccessible, guiding the merchant to import their `.promkey` recovery kit instead of dropping into a broken shell.
+- **CI security scanning** — gitleaks (secret scanning) and osv-scanner (dependency CVE), both SHA-pinned and fail-closed.
+- **Settings UI** — shared `SettingsStateView` (loading/failure/retry) across all settings pages; semantic roles and current-value announcements for accessibility.
+- **Onboarding** — hero dismiss (X button collapses hero on step 0); hero overflow regression test at 320×600 with long Thai subtitle.
+- **Post-first-frame startup** — `runApp` runs immediately after DI; settings load and lock observer moved behind in-app splash, so a hung Keystore/DB read can no longer freeze the native splash.
+- **Backup single-flight guard** — `BackupSettingsPage` rejects duplicate backup/restore callbacks while an operation is in flight.
+- **Test coverage** — 43 use-case tests (`submit_product`, `sale_payable_calculator`, `adjust_stock`, `update_settings`); 66 sale-logic tests (kitchen, table transfer, partial checkout, per-table stats, void edge paths, Equatable contracts); 8 onboarding hardening tests; cache eviction tests; audit/pagination regression tests.
 
 ### Fixed
 
-- **DI configuration drift** — stale `injection_container.config.dart` (generated by `build_runner`) was wiring `ReportCubit` without the `getReportSummary` parameter, causing 22 test failures. Regenerated with `--delete-conflicting-outputs`; no hand-edited DI code changed.
-- **`prefer_const_constructors` lints** — 15 info lints resolved by adding `const` to `Key(TestKeys…)` constructor invocations across 9 widget files.
-- **NULL cost log spam** — `Product has NULL cost` warning was emitted on every read of a product with `cost == null`. Now deduplicated via a static `_nullCostWarned` set in `ProductLocalDatasource` so each product ID is warned at most once per session.
-- **Discount preset empty-list crash** — `DiscountPolicySettingsPage` crashed when `discountPresets` was empty. Now falls back to `l10n.noDiscountPresets` and guards the active-preset lookup.
-- **Product audit table repair (legacy v32 DBs)** — existing v32 databases missing `product_audits` are repaired on open via `ensureProductAuditsTable()` in `beforeOpen` and `onUpgrade`: creates the table if missing, normalizes legacy `changed_at` defaults from `strftime('%s','now') * 1000` to `strftime('%s','now')`, and migrates existing rows whose `changed_at > 100000000000` by dividing by 1000. Migration regression test included.
+- **Onboarding (8 fixes)** — re-onboard no longer overwrites live shop data (prefills from stored settings); VAT validation uses `TaxConfig` 0–30 clamp (was 0–100); trivial-PIN crash caught (returns stable `trivial` code); Skip preserves stored values when typed field is blank/invalid; deviceId generated only when empty (was churning every Finish/Skip); field validation runs before PIN gate; double-tap Finish/Skip race guarded; Thai hero overflow on ≤360px screens fixed (shortened labels + `Flexible` + `minHeight` constraint).
+- **Restaurant (4 fixes)** — Table Management crash from Settings (missing `TableBloc` → `BlocProvider.value`); parked bills show table name not raw ID; checkout deletes the correct draft (captured at checkout start, atomic in sale transaction); occupied-table selection fails with localized message instead of silent swallow.
+- **Per-table report revenue not summed** — `queryTableSalesStats` used bare `COALESCE` without `SUM()`, so multi-bill tables reported one arbitrary bill's total. Now wrapped in `SUM()`; caught by the new test suite.
+- **Startup hang on broken Keystore/DB** — settings load times out after 12s (fail-safe → onboarding) instead of blocking forever; lock observer 5s timeout.
+- **Product audit table repair (legacy v32 DBs)** — missing `product_audits` table created on open; legacy `changed_at` timestamps normalized.
+- **Other** — DI config drift (stale `injection_container.config.dart` regenerated); NULL cost log spam deduplicated; discount preset empty-list crash guarded; 15 `prefer_const_constructors` lints resolved.
 
 ### Changed
 
-- **Cross-feature domain coupling reduced** — `Sale`, `SaleItem`, `SalePayment`, `SelectedProductOption`, and `SalesPeriodTotals` moved from `lib/features/sale/domain/entities/` to `lib/shared/domain/entities/`. Original files are now re-export shims (backward compatible). 29 files outside the sale feature updated to import directly from `shared/domain/`. Fixes reverse dependency in `core/utils/payment_method_helper.dart` (core → feature → shared).
-- **Adopted `X.Y.Z+N` versioning** — `pubspec.yaml` now carries an explicit build number (`0.9.4+2`) so the Android `versionCode` increments per release instead of silently falling back to `1` on every AAB (Play rejects duplicate `versionCode`s after the first upload).
-- **Corrected false v0.9.3 tag claim** — this changelog previously stated that tag `v0.9.3` existed; no such tag was ever created and the signed-AAB release gate never ran for that version. The `[0.9.3]` section below now states this truthfully.
+- **Settings root restyled to POS design DNA** — replaced the gradient-hero / pill-header "Command Dashboard" iteration with flat paper-card language: teal app-bar chrome with integrated search strip (matching `SaleAppBar`), white hero card with thin border + teal readiness progress bar, compact 64dp action cards (12dp radius, 0.5dp border; emphasized = 1.5px teal border), plain section headers, `surfaceContainerLow` scaffold background. New tokens: `cardRadius`/`actionCardRadius` (12), `actionCardMinHeight` (64), `statusBadgeRadius` (20). New widget: `SettingsActionCard`.
+- **Settings search → dedicated page** — inline filter replaced with full-screen `SettingsSearchPage` mirroring `SaleProductSearchPage`.
+- **Onboarding visual language** — gradient hero (replacing image+scrim), pill-style step indicator, accent-stripe section cards with tinted icon wells, cleaner bottom bar, compact done section. All icons migrated from Material to Tabler Icons Plus. Toast overflow fixed (`Flexible` + `ConstrainedBox(maxWidth: 320)`).
+- **Cross-feature domain coupling reduced** — `Sale`/`SaleItem`/`SalePayment`/`SelectedProductOption`/`SalesPeriodTotals` moved to `lib/shared/domain/entities/` (original files are re-export shims; 29 files updated).
+- **Paying frees the table atomically** — draft cart deleted within the sale transaction, eliminating the crash window between payment and table release.
+- **Restaurant rush-hour performance** — SQL aggregate draft counters (was hydrating every open cart); diff-based cart item sync (was delete-all/reinsert); 150ms debounced saved-bills board.
+- **Adopted `X.Y.Z+N` versioning** — explicit build number so Android `versionCode` increments per release.
+- **Corrected false v0.9.3 tag claim** — no such tag was ever created; the `[0.9.3]` section now states this truthfully.
+- **Removed unused onboarding preview assets** — deleted `onboarding_dark_preview.png` / `onboarding_white_preview.png` and the now-empty folder.
+- **Docs aligned with final Settings restyle** — 15 docs corrected from "Command Dashboard" to POS-native flat-card language; ADR-037 marked as superseded for Settings (onboarding retains gradient-hero language).
 
 ### Security
 
-- **Backup PIN dialog secure-screen** — the Backup PIN dialog now wraps itself with `SecureScreen.setSecure(true)` while shown, keeping the PIN out of screenshots and recent-app previews.
-- **AppLock verification serialization** — concurrent `AppLockService.verifyPin()` calls are now chained through a single `_verificationQueue` `Future` so lockout-counter reads and writes cannot race when multiple PIN verifications are submitted simultaneously (e.g. user double-tapping unlock). The public `verifyPin()` resolves in submission order; the actual check runs in `_verifyPin()`.
+- **Keystore-corruption data loss fixed (V092-B.7)** — `resetOnError: false` on all three `FlutterSecureStorage` instances, so a corrupted Android Keystore can no longer silently wipe the SQLCipher key. Namespace separation deliberately skipped (would orphan existing installs' keys). See `SECURITY.md`.
+- **AppLock fail-closed read guards** — secure-storage read failures fail closed (gate stays locked, verification returns false) with logged warnings instead of throwing raw platform exceptions.
+- **Constant-time PIN hash comparison** — `PinHasher.verify` uses XOR-accumulating equality instead of string `==`, closing a timing side-channel.
+- **AppLock verification serialization** — concurrent `verifyPin()` calls chained through a single queue to prevent lockout-counter races.
+- **Receipt PII gates** — reprint/share (History) and preview/print/share (Checkout) require an unlocked store session; payment references masked on receipts.
+- **Backup PIN dialog secure-screen** — `SecureScreen.setSecure(true)` keeps PIN out of screenshots/recent-app previews.
+- **CI secret & dependency-CVE scanning** — gitleaks + osv-scanner, fail-closed.
+- **Onboarding accessibility** — back chevron tooltip, "Start Selling" CTA contrast fixed to WCAG AA (≈6.3:1), `OnboardingRadioCard` single-node semantics.
 
 ### Refactored
 
-- **`app_database_migrations.dart` split** (960→707 lines in main file) — extracted into three `part of` extension files:
-  - `app_database_migrations.dart` (~707 lines) — migration strategy (`onCreate`/`onUpgrade`/`beforeOpen`), `createIndexes()`, seed methods, `ensureProductAuditsTable()` repair.
-  - `app_database_migration_helpers.dart` (~187 lines) — dedup (`deduplicateBarcodes`, `deduplicateBarcodesLower`, `deduplicateSkuLower`), backfill (`backfillCategoryIds`, `backfillDeviceId`), `addColumnIfNotExists`, `createBarcodeUniqueIndex`.
-  - `app_database_migration_v32_satang.dart` (~128 lines) — Phase M satang dual-write column migration and `backfillSatangColumn`.
-  - All three registered via `part` directives in `app_database.dart`. No API changes.
+- **`app_database_migrations.dart` split** (960→707 lines) — extracted into `app_database_migration_helpers.dart` (dedup/backfill) and `app_database_migration_v32_satang.dart` (Phase M satang migration) as `part of` extensions. No API changes.
 
 ### Known limitations
 
-- All changes are additive or refactoring — no existing contract is broken.
-- `Sale.copyWith` was added to the shared `Sale` entity (needed by report cache eviction tests); the original sale feature entity did not have it. This is a new method, not a breaking change.
-- Performance thresholds depend on host contention; the dedicated baseline and seed integration tests pass when run independently. Full-suite performance tests should be monitored on CI and representative devices.
+- All changes are additive — no existing bloc/cubit/repository contract is broken.
+- `Sale.copyWith` added to the shared `Sale` entity (new method, not breaking).
+- Performance thresholds depend on host contention; baseline and seed integration tests pass independently.
 
-`flutter analyze` → **0 issues** · `flutter test` → **2288 tests passing** (full suite, including Settings UI, migration repair, AppLock concurrency, scaling, and performance coverage)
+`flutter analyze` → **0 issues** · `flutter test` → **2480 tests passing** · coverage **66.12%** global / **98.63%** sale-logic
 
 ## [0.9.3] - 2026-08-17
 

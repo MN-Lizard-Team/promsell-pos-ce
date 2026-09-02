@@ -20,7 +20,7 @@ import '../../helpers/scaling_fixture.dart';
 /// has 27 columns in a different order. The old `INSERT ... SELECT *` copy
 /// failed with "table daily_closes has 27 columns but N values were supplied"
 /// and crashed every launch until reinstall; the fixed copy names columns
-/// explicitly. This test replays the exact v9 -> v32 upgrade path and asserts
+/// explicitly. This test replays the exact v9 -> v35 upgrade path and asserts
 /// the rebuild preserves legacy rows.
 ///
 /// Simulation approach (mirrors phase_m_v32_satang_migration_test): open a
@@ -143,18 +143,18 @@ void main() {
     return dbFile;
   }
 
-  test('v9-shaped database upgrades through the v10 rebuild to v32 '
+  test('v9-shaped database upgrades through the v10 rebuild to v35 '
       'with daily_closes rows preserved', () async {
     final dbFile = await rewindToV9('pre_v10_upgrade.db');
 
-    // Reopen triggers the 9 -> 32 onUpgrade chain. Any exception here is
+    // Reopen triggers the 9 -> 35 onUpgrade chain. Any exception here is
     // the crash loop this test exists to prevent.
     final db = AppDatabase.forTesting(NativeDatabase(dbFile));
     try {
       await db.customSelect('SELECT 1').get();
 
       final version = await db.customSelect('PRAGMA user_version').getSingle();
-      expect(version.read<int>('user_version'), 32);
+      expect(version.read<int>('user_version'), 35);
 
       // The rebuild left no shadow table behind.
       final tables = await db
@@ -277,20 +277,20 @@ void main() {
           .get();
       expect(recreated.length, 4);
 
-      // Migration-safety wiring recorded a successful 9 -> 32 run.
+      // Migration-safety wiring recorded a successful 9 -> 35 run.
       final statusFile = File(p.join(tempDir.path, 'migration_status.json'));
       expect(statusFile.existsSync(), isTrue);
       final status = statusFile.readAsStringSync();
       print('  migration status: $status');
       expect(status, contains('"status":"succeeded"'));
       expect(status, contains('"from":9'));
-      expect(status, contains('"to":32'));
+      expect(status, contains('"to":35'));
     } finally {
       await db.close();
     }
   });
 
-  test('repairs product_audits on an existing v32 database', () async {
+  test('repairs product_audits on an existing v34 database', () async {
     final dbFile = File(p.join(tempDir.path, 'pre_audit_repair.db'));
     if (dbFile.existsSync()) dbFile.deleteSync();
 

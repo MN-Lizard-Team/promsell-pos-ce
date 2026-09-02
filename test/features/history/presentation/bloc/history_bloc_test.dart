@@ -117,6 +117,28 @@ void main() {
     );
 
     blocTest<HistoryBloc, HistoryState>(
+      'keeps existing sales and marks state stale when refresh fails',
+      setUp: () {
+        when(
+          () => mockWatchSaleHistory(
+            from: any(named: 'from'),
+            to: any(named: 'to'),
+          ),
+        ).thenAnswer((_) => Stream<List<Sale>>.error('db error'));
+      },
+      build: buildBloc,
+      seed: () => HistoryState(status: HistoryStatus.success, sales: [tSale]),
+      act: (b) => b.add(const HistorySubscribed()),
+      wait: const Duration(milliseconds: 100),
+      expect: () => [
+        isA<HistoryState>().having((s) => s.isStale, 'isStale', isTrue),
+        isA<HistoryState>()
+            .having((s) => s.isStale, 'isStale', isTrue)
+            .having((s) => s.errorMessage, 'errorMessage', isNotNull),
+      ],
+    );
+
+    blocTest<HistoryBloc, HistoryState>(
       'HistorySearchChanged updates searchQuery',
       build: buildBloc,
       act: (b) => b.add(const HistorySearchChanged('cash')),

@@ -24,6 +24,11 @@ class CloseDay {
     String? note,
     required String deviceId,
   }) async {
+    _validateInputs(
+      date: date,
+      openingCash: openingCash,
+      countedCash: countedCash,
+    );
     await _appLock.requireSensitiveSession();
     final existing = await _repository.getByDate(date);
     if (existing != null && existing.isClosed) {
@@ -53,12 +58,42 @@ class CloseDay {
       voidCount: totals.voidCount,
       paymentBreakdown: Map<String, double>.from(totals.paymentBreakdown),
       vatAmount: totals.vatAmount,
-      discountAmount: totals.discountAmount,
+      discountAmount: totals.discountAmount + totals.promotionDiscountAmount,
       note: note,
       closedAt: DateTime.now(),
       deviceId: deviceId,
     );
 
     return _repository.save(dailyClose);
+  }
+
+  void _validateInputs({
+    required String date,
+    required double openingCash,
+    required double countedCash,
+  }) {
+    final parsed = DateTime.tryParse(date);
+    if (parsed == null ||
+        !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date) ||
+        '${parsed.year.toString().padLeft(4, '0')}-'
+                '${parsed.month.toString().padLeft(2, '0')}-'
+                '${parsed.day.toString().padLeft(2, '0')}' !=
+            date) {
+      throw ArgumentError.value(date, 'date', 'Expected yyyy-MM-dd');
+    }
+    if (!openingCash.isFinite || openingCash < 0) {
+      throw ArgumentError.value(
+        openingCash,
+        'openingCash',
+        'Must be finite and non-negative',
+      );
+    }
+    if (!countedCash.isFinite || countedCash < 0) {
+      throw ArgumentError.value(
+        countedCash,
+        'countedCash',
+        'Must be finite and non-negative',
+      );
+    }
   }
 }

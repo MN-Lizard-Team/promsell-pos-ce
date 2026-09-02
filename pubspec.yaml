@@ -122,7 +122,6 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/images/onboarding/
     - assets/images/demo/
     - assets/images/home/
     - LICENSE

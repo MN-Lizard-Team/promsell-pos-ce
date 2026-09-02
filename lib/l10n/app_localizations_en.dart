@@ -1779,7 +1779,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'VAT is added to the displayed price.';
 
   @override
-  String get onboardingInvalidVatRate => 'Enter a VAT rate between 0 and 100';
+  String get onboardingInvalidVatRate => 'Enter a VAT rate between 0 and 30';
 
   @override
   String get onboardingPromptPaySecurity =>
@@ -2779,6 +2779,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderChannelOnline => 'Online';
 
   @override
+  String get guestCount => 'Guest count';
+
+  @override
+  String get guestCountHint => 'Number of guests';
+
+  @override
+  String get sendToKitchen => 'Send to kitchen';
+
+  @override
+  String get kitchenTicket => 'Kitchen ticket';
+
+  @override
+  String get kitchenTicketEmpty => 'No new items to send to the kitchen';
+
+  @override
+  String get selectItemsForCheckout => 'Select items for partial checkout';
+
+  @override
+  String selectedItemsCount(int count) {
+    return '$count items selected';
+  }
+
+  @override
   String get externalOrderRef => 'External Order Ref';
 
   @override
@@ -2848,6 +2871,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderBreakdown => 'Order breakdown';
 
   @override
+  String get tableSalesBreakdown => 'Sales by table';
+
+  @override
   String get tableNumber => 'Table';
 
   @override
@@ -2864,6 +2890,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tableManagementSubtitle => 'Manage restaurant tables and zones';
+
+  @override
+  String get floorTitle => 'Floor';
+
+  @override
+  String get floorUnzoned => 'Other';
+
+  @override
+  String get transferTable => 'Transfer table';
+
+  @override
+  String transferTableTo(Object source) {
+    return 'Transfer $source to';
+  }
+
+  @override
+  String get noTransferTables => 'No available tables to transfer to.';
+
+  @override
+  String tableTransferSuccess(Object name) {
+    return 'Table transferred to $name.';
+  }
 
   @override
   String get addTable => 'Add Table';
@@ -2913,6 +2961,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noTablesAvailable =>
       'No tables configured. Add tables in Table Management.';
+
+  @override
+  String get tableAlreadyBound => 'This table already has an open bill.';
+
+  @override
+  String tableChipLabel(String name) {
+    return 'Table $name';
+  }
 
   @override
   String get optionGroups => 'Option Groups';
@@ -4007,6 +4063,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyCloseStatusOpenBadge => 'OPEN';
 
   @override
+  String get dailyCloseStatusNeedsAttention => 'Needs attention';
+
+  @override
+  String dailyCloseOverAmount(Object amount) {
+    return 'Over by $amount';
+  }
+
+  @override
+  String dailyCloseShortAmount(Object amount) {
+    return 'Short by $amount';
+  }
+
+  @override
+  String get dailyCloseNoMismatch => 'Cash matches expected amount';
+
+  @override
+  String get dailyCloseCalculating => 'Calculating sales…';
+
+  @override
+  String get dailyCloseClosing => 'Closing day…';
+
+  @override
+  String get dailyCloseReopening => 'Reopening day…';
+
+  @override
   String get noCategoriesFound => 'No categories match your search';
 
   @override
@@ -4618,4 +4699,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recoveryKitErrorKeyUnavailable =>
       'The encryption key on this device could not be accessed. If you have a recovery kit, tap Import recovery kit above, then restart the app.';
+
+  @override
+  String get dbRecoveryTitle => 'Cannot open the database';
+
+  @override
+  String get dbRecoveryMessage =>
+      'The encryption key on this device could not be accessed, so your sales database stays locked. Your data is still on this device. Import your recovery kit (.promkey) to restore access, or try again.';
+
+  @override
+  String get dbRecoveryRetry => 'Try again';
 }

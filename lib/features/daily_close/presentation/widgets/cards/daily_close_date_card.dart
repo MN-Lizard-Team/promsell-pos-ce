@@ -15,30 +15,72 @@ class DailyCloseDateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final formatted = DateFormat('dd/MM/yyyy').format(DateTime.parse(date));
+    final formatted = DateFormat.yMMMd().format(DateTime.parse(date));
     final cs = Theme.of(context).colorScheme;
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.calendar_today),
-        title: Text(formatted),
-        subtitle: Text(
-          isReadOnly ? l10n.dailyCloseStatusClosed : l10n.dailyCloseStatusOpen,
-        ),
-        trailing: isReadOnly
-            ? Chip(
-                label: Text(
-                  l10n.dailyCloseStatusClosedBadge,
-                  style: TextStyle(color: cs.onPrimary),
-                ),
-                backgroundColor: cs.primary,
-              )
-            : Chip(
-                label: Text(
-                  l10n.dailyCloseStatusOpenBadge,
-                  style: TextStyle(color: cs.onErrorContainer),
-                ),
-                backgroundColor: cs.errorContainer,
+    final status = isReadOnly
+        ? l10n.dailyCloseStatusClosed
+        : l10n.dailyCloseStatusOpen;
+    final badge = isReadOnly
+        ? l10n.dailyCloseStatusClosedBadge
+        : l10n.dailyCloseStatusOpenBadge;
+    final color = isReadOnly ? cs.primary : cs.secondary;
+
+    return Semantics(
+      container: true,
+      label: '$formatted, $status',
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: color.withValues(alpha: 0.12),
+                foregroundColor: color,
+                child: const Icon(Icons.calendar_today_outlined, size: 20),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      formatted,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      status,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: color.withValues(alpha: 0.28)),
+                ),
+                child: Text(
+                  badge,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

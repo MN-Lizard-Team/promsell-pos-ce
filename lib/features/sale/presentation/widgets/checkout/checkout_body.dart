@@ -25,7 +25,10 @@ import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cu
 
 /// Checkout form body. Public API unchanged: `const CheckoutBody()`.
 class CheckoutBody extends StatefulWidget {
-  const CheckoutBody({super.key});
+  const CheckoutBody({super.key, this.selectedItemIds});
+
+  /// When non-null, only these cart line IDs are sold.
+  final List<String>? selectedItemIds;
 
   @override
   State<CheckoutBody> createState() => _CheckoutBodyState();
@@ -103,6 +106,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
       orderType: _orderType,
       orderChannel: _orderChannel,
       selectedTableId: _selectedTableId,
+      selectedItemIds: widget.selectedItemIds,
       effectiveTotal: _effectiveTotal,
       received: _received,
     );
@@ -476,6 +480,7 @@ class _CheckoutBodyState extends State<CheckoutBody> {
                             orderType: _orderType,
                             orderChannel: _orderChannel,
                             selectedTableId: _selectedTableId,
+                            guestCount: cartState.guestCount,
                             externalRefCtrl: _externalRefCtrl,
                             onOrderTypeChanged: (v) {
                               setState(() => _orderType = v);

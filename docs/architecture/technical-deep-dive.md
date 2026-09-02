@@ -71,7 +71,9 @@ Registered in `lib/core/di/injection_container.dart` via `injectable` + `get_it`
 │  SettingsCubit ──→ SettingsRepository, Ean13Generator     │
 │                  (UI: SettingsStateView — shared          │
 │                   loading/error/retry wrapper for all     │
-│                   Settings pages)                         │
+│                   Settings pages; POS-native root with    │
+│                   teal app bar + search strip, flat hero  │
+│                   card, compact action cards — ADR-037)   │
 │  ReportCubit (lazySingleton) ──→ WatchReport              │
 │  InventoryLogCubit ──→ WatchInventoryLogs                 │
 │                                                           │

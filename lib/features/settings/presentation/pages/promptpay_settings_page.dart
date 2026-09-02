@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/utils/secure_screen.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
@@ -12,6 +13,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/promptpay
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class PromptpaySettingsPage extends StatefulWidget {
   const PromptpaySettingsPage({super.key});
@@ -54,6 +56,8 @@ class _PromptpaySettingsPageState extends State<PromptpaySettingsPage>
           onRetry: cubit.load,
           builder: (s) => SettingsLeafChrome(
             title: l10n.promptpay,
+            heroIcon: TablerIcons.qrcode,
+            heroAccent: AppColors.accent,
             header: PromptpayPreviewCard(
               promptpayId: s.promptpayId,
               st: st,
@@ -63,6 +67,7 @@ class _PromptpaySettingsPageState extends State<PromptpaySettingsPage>
             children: [
               SettingsSectionCard(
                 title: l10n.promptpayAccount,
+                accent: AppColors.accent,
                 children: [
                   PromptpayIdTile(
                     settings: s,
@@ -80,6 +85,7 @@ class _PromptpaySettingsPageState extends State<PromptpaySettingsPage>
               ),
               SettingsSectionCard(
                 title: l10n.settingsTitle,
+                accent: AppColors.accent,
                 children: [
                   PromptpaySettingsTiles(settings: s, cubit: cubit, st: st),
                 ],

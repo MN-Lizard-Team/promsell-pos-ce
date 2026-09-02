@@ -1,9 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/repositories/daily_close_repository.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.dart';
+
+import '../../../../helpers/fake_app_lock.dart';
 
 class MockDailyCloseRepository extends Mock implements DailyCloseRepository {}
 
@@ -15,11 +18,13 @@ void main() {
   });
   group('ReopenDay', () {
     late MockDailyCloseRepository mockRepo;
+    late AppLockService appLock;
     late ReopenDay usecase;
 
     setUp(() {
       mockRepo = MockDailyCloseRepository();
-      usecase = ReopenDay(mockRepo);
+      appLock = fakeAppLock();
+      usecase = ReopenDay(mockRepo, appLock);
     });
 
     test('clears closedAt and resets cash fields', () async {

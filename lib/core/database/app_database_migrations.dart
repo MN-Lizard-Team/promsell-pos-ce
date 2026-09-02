@@ -488,6 +488,26 @@ DELETE FROM daily_closes WHERE id NOT IN (
     if (from < 32) {
       await migrateV32SatangColumns();
     }
+    // Restaurant data-integrity fixes: at most one ACTIVE draft cart per
+    // table. Existing duplicates must be unlinked BEFORE the unique index is
+    // created or the upgrade would stall on the constraint.
+    if (from < 33) {
+      await migrateV33RestaurantTableIntegrity();
+    }
+    if (from < 34) {
+      await m.createTable(transactionEvents);
+    }
+    // Kitchen-fire + per-table analytics: guestCount/openedAt on carts and
+    // sales, per-item fire timestamp on cart items. All columns start NULL —
+    // opened_at is stamped by app logic when a cart is opened, never here.
+    if (from < 35) {
+      await addColumnIfNotExists('draft_carts', 'guest_count', 'INTEGER');
+      await addColumnIfNotExists('draft_carts', 'opened_at', 'INTEGER');
+      await addColumnIfNotExists('draft_cart_items', 'fired_at', 'INTEGER');
+      await addColumnIfNotExists('sales', 'guest_count', 'INTEGER');
+      await addColumnIfNotExists('sales', 'opened_at', 'INTEGER');
+    }
+
     if (from < 27) {
       // Dedupe non-null receipt numbers (keep latest created_at), then unique.
       await customStatement('''
@@ -515,6 +535,46 @@ WHERE receipt_number IS NOT NULL
     // upgrade so DBs upgraded from v2+ have all indexes/triggers. All
     // statements use IF NOT EXISTS so this is safe to repeat.
     await createIndexes();
+  }
+
+  /// v32 → v33: enforce a single active draft cart per restaurant table.
+  ///
+  /// Active = not archived (`is_archived = 0`) and not soft-deleted
+  /// (`deleted_at IS NULL`). Among active carts sharing a non-null
+  /// `table_id`, the most recently updated cart keeps the binding
+  /// (tie-break: highest rowid); the others are unlinked with
+  /// `table_id = NULL` so no cart data is lost. Archived and soft-deleted
+  /// carts are ignored — they never occupy a table. Afterwards the partial
+  /// unique index makes double-binding impossible at the DB level, and
+  /// sales gets the same table lookup index.
+  Future<void> migrateV33RestaurantTableIntegrity() async {
+    await customStatement('''
+UPDATE draft_carts
+SET table_id = NULL
+WHERE table_id IS NOT NULL
+  AND is_archived = 0
+  AND deleted_at IS NULL
+  AND rowid != (
+    SELECT keeper.rowid FROM draft_carts keeper
+    WHERE keeper.table_id = draft_carts.table_id
+      AND keeper.is_archived = 0
+      AND keeper.deleted_at IS NULL
+    ORDER BY keeper.updated_at DESC, keeper.rowid DESC
+    LIMIT 1
+  )
+''');
+    // Partial unique index mirrors [DraftCartLocalDatasource]'s active-cart
+    // queries (isArchived == false AND deletedAt IS NULL) so only active
+    // carts claim a table; archiving or deleting frees it immediately.
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_draft_carts_table_id_unique '
+      'ON draft_carts (table_id) '
+      'WHERE table_id IS NOT NULL AND is_archived = 0 AND deleted_at IS NULL',
+    );
+    // Plain index for floor-plan/history lookups by sales.table_id (v20).
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_sales_table_id ON sales (table_id)',
+    );
   }
 
   Future<void> ensureProductAuditsTable() async {
@@ -681,11 +741,36 @@ CREATE TABLE IF NOT EXISTS product_audits (
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_draft_cart_items_cart_id ON draft_cart_items (cart_id)',
     );
+    // v33: one ACTIVE draft cart per restaurant table (partial unique —
+    // archived/soft-deleted carts do not occupy a table). Also created by
+    // the v33 upgrade step after duplicate resolution.
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_draft_carts_table_id_unique '
+      'ON draft_carts (table_id) '
+      'WHERE table_id IS NOT NULL AND is_archived = 0 AND deleted_at IS NULL',
+    );
+    // v33: sales.table_id lookups (column added in v20).
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_sales_table_id ON sales (table_id)',
+    );
     await customStatement(
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_closes_close_date_unique ON daily_closes (close_date)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions (is_active)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_transaction_events_aggregate '
+      'ON transaction_events (aggregate_type, aggregate_id, occurred_at DESC)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_transaction_events_type_time '
+      'ON transaction_events (event_type, occurred_at DESC)',
+    );
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_transaction_events_idempotency '
+      'ON transaction_events (idempotency_key) '
+      "WHERE idempotency_key IS NOT NULL AND idempotency_key != ''",
     );
   }
 

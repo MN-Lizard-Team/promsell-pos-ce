@@ -9,14 +9,14 @@
 | Module | Path | Responsibility |
 |--------|------|----------------|
 | `AppColors` / `AppTheme` | `lib/core/theme/` | Static color palette (`#0D5D6B` primary Teal, `#FF6B00` accent Orange, `#0D1B2A` dark bg) and Material 3 `ThemeData` (light/dark) with shared `CardTheme`, `ButtonTheme`, `InputDecorationTheme` (radius 16/12). All app colors must route through here |
-| `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`. Separate light/dark consts |
+| `SettingsThemeExtension` | `lib/features/settings/presentation/theme/` | `ThemeExtension` for settings surfaces: `cardBackground`, `softAccent`, `softTextPrimary/Secondary`, `iconContainerBackground`, `cardRadius`, `sectionGap`, `actionCardRadius`, `actionCardMinHeight`, `statusBadgeRadius`, `heroProgressHeight` (active in Settings); `heroGradientStart/End`, `heroTextPrimary/Secondary`, `accentStripeWidth`, `pillRadius` (retained for onboarding). Separate light/dark consts |
 | `AppDatabase` | `lib/core/database/app_database.dart` | Drift database class, **schema v32** (**16 tables**), UUID PKs, WAL + FK pragma, batch seed, SQLCipher open path. Sync metadata on core tables. Notable: v24 barcode unique; v25 product brand/unit/supplier/`is_recommended`; **v26 unique `daily_closes(close_date)`**; **v27 unique `sales.receipt_number`**; **v28 `sale_payments` multi-tender**; **v29 case-insensitive `barcode_lower` unique index**; **v30 case-insensitive `sku_lower` unique index**; **v31 SKU dedupe/index repair**; **v32 Phase M: 32 satang columns with active converter/dual-write boundary**. **v32 cursor-pagination indexes** `idx_products_created_at_id_cursor` (products: created_at DESC, id) and `idx_sales_created_at_id_cursor` (sales: created_at DESC, id) back `getProductsPage`/`searchProductsPage` and `getSalesPage`. Legacy REAL baht remains for rollback compatibility. |
 | `injection_container.dart` | `lib/core/di/` | injectable-generated DI config (`configureDependencies`); `database_module.dart` registers `AppDatabase` |
 | `l10n_extension.dart` | `lib/core/extensions/` | `context.l10n` shorthand for `AppLocalizations.of(context)!` |
 | `ReceiptPdfService` | `lib/features/receipt/data/services/` | Build 80 mm thermal receipt PDF; expose `printReceipt` and `shareReceipt`; Thai font embedding |
 | `ReceiptLabels` | `lib/features/receipt/domain/entities/` | Localized label entity for receipt rendering |
 | `ReceiptPreview` | `lib/core/widgets/` | On-screen receipt preview in `thermal` and `card` styles; VAT-aware; product images inline via `ProductAvatar` |
-| `OverlayToast` | `lib/core/widgets/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow |
+| `OverlayToast` / `AppSnackBar` | `lib/core/widgets/primitives/` | Fade-in pill toast at top center via `Overlay`; non-blocking, no dependency, replaces snackbar in active cashier flow. `AppSnackBar` provides `success`/`error`/`warning`/`info`/`withAction` variants; v0.9.4 wraps `Text` in `Flexible` + `ConstrainedBox(maxWidth: 320)` + `maxLines: 2` to prevent `RenderFlex` overflow on long error messages |
 | `IdGenerator` | `lib/core/utils/` | UUIDv4 generation via `uuid` package — all entity PKs |
 | `MoneyUtils` | `lib/core/utils/` | Centralized monetary rounding (`round(double)`) for VAT, discount, and total calculations |
 | `DateFormatter` | `lib/core/utils/` | Locale-aware date/time formatting utility; maps app language codes to intl locales (`th`→`th_TH`, `en`→`en_US`); extensible for future locales via `_localeFor()` |
@@ -70,14 +70,14 @@
 | history | `lib/features/history/` |
 | home | `lib/features/home/` |
 | inventory | `lib/features/inventory/` |
-| onboarding | `lib/features/onboarding/` |
+| onboarding | `lib/features/onboarding/` (4-step wizard: shop info → preferences → tax → done; gradient-hero + accent-stripe visual language — see ADR-037) |
 | product | `lib/features/product/` |
 | promotion | `lib/features/promotion/` |
 | receipt | `lib/features/receipt/` |
 | report | `lib/features/report/` |
 | restaurant_table | `lib/features/restaurant_table/` |
 | sale | `lib/features/sale/` (includes cart, checkout, drafts) |
-| settings | `lib/features/settings/` |
+| settings | `lib/features/settings/` (POS-native root: teal app bar + search strip, flat hero card, compact action cards, dedicated `SettingsSearchPage` — see ADR-037) |
 
 Draft cart is **not** a top-level feature package — it lives under `sale/`.
 

@@ -18,22 +18,47 @@ class RestaurantTableRepositoryImpl implements RestaurantTableRepository {
         (await settingsRepo.load()).deviceConfig.deviceId;
   }
 
+  /// Active draft cart bound to a table (same predicate as the partial
+  /// unique index `idx_draft_carts_table_id_unique`).
+  Expression<bool> _activeCartBoundToTable() =>
+      _db.draftCarts.tableId.equalsExp(_db.restaurantTables.id) &
+      _db.draftCarts.isArchived.equals(false) &
+      _db.draftCarts.deletedAt.isNull();
+
+  JoinedSelectStatement _tablesJoinedToActiveCarts() {
+    return _db.select(_db.restaurantTables).join([
+        // The unique index guarantees ≤1 active cart per table, so the join
+        // emits exactly one row per table (cart side null when free).
+        //
+        // Columns MUST be selected (useColumns defaults to true): drift only
+        // populates TypedResult.readTableOrNull for joined tables whose
+        // columns are part of the SELECT.
+        leftOuterJoin(_db.draftCarts, _activeCartBoundToTable()),
+      ])
+      ..where(_db.restaurantTables.deletedAt.isNull())
+      ..orderBy([OrderingTerm.asc(_db.restaurantTables.sortOrder)]);
+  }
+
+  @override
+  Stream<List<RestaurantTable>> watchTables() {
+    return _tablesJoinedToActiveCarts().watch().map(
+      (rows) => rows.map(_rowToEntity).toList(),
+    );
+  }
+
   @override
   Future<List<RestaurantTable>> getAllTables() async {
-    final rows =
-        await (_db.select(_db.restaurantTables)
-              ..where((t) => t.deletedAt.isNull())
-              ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
-            .get();
-    return rows.map(_toEntity).toList();
+    final rows = await _tablesJoinedToActiveCarts().get();
+    return rows.map(_rowToEntity).toList();
   }
 
   @override
   Future<RestaurantTable?> getTableById(String id) async {
-    final row = await (_db.select(
-      _db.restaurantTables,
-    )..where((t) => t.id.equals(id) & t.deletedAt.isNull())).getSingleOrNull();
-    return row == null ? null : _toEntity(row);
+    final query = _tablesJoinedToActiveCarts()
+      ..where(_db.restaurantTables.id.equals(id));
+    final rows = await query.get();
+    if (rows.isEmpty) return null;
+    return _rowToEntity(rows.single);
   }
 
   @override
@@ -69,7 +94,9 @@ class RestaurantTableRepositoryImpl implements RestaurantTableRepository {
         name: Value(table.name),
         zone: Value(table.zone),
         seats: Value(table.seats),
-        status: Value(table.status.name),
+        // Only the manual available/reserved choice is persisted; occupancy
+        // is derived from active draft carts, never stored.
+        status: Value(table.manualStatus.name),
         sortOrder: Value(table.sortOrder),
         updatedAt: Value(DateTime.now()),
       ),
@@ -100,14 +127,24 @@ class RestaurantTableRepositoryImpl implements RestaurantTableRepository {
     );
   }
 
-  RestaurantTable _toEntity(RestaurantTableData d) => RestaurantTable(
-    id: d.id,
-    name: d.name,
-    zone: d.zone,
-    seats: d.seats,
-    status: TableStatus.values.byName(d.status),
-    sortOrder: d.sortOrder,
-    createdAt: d.createdAt,
-    updatedAt: d.updatedAt,
-  );
+  RestaurantTable _rowToEntity(TypedResult row) {
+    final d = row.readTable(_db.restaurantTables);
+    final boundCart = row.readTableOrNull(_db.draftCarts);
+    var manual = TableStatus.values.byName(d.status);
+    if (manual == TableStatus.occupied) {
+      // Legacy stored value — occupancy is derived now, not stored.
+      manual = TableStatus.available;
+    }
+    return RestaurantTable(
+      id: d.id,
+      name: d.name,
+      zone: d.zone,
+      seats: d.seats,
+      status: boundCart != null ? TableStatus.occupied : manual,
+      manualStatus: manual,
+      sortOrder: d.sortOrder,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+    );
+  }
 }

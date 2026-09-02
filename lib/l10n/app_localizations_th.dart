@@ -1742,13 +1742,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get onboardingExclusive => 'แยกจากราคา';
 
   @override
-  String get onboardingTrustOffline => 'ใช้งานได้แม้ไม่มีอินเทอร์เน็ต';
+  String get onboardingTrustOffline => 'ใช้งานออฟไลน์ได้';
 
   @override
-  String get onboardingTrustLocal => 'ข้อมูลอยู่บนอุปกรณ์นี้';
+  String get onboardingTrustLocal => 'เก็บในเครื่องนี้';
 
   @override
-  String get onboardingTrustEncrypted => 'พื้นที่จัดเก็บเข้ารหัส';
+  String get onboardingTrustEncrypted => 'เข้ารหัสลับ';
 
   @override
   String onboardingStepOf(int step, int total) {
@@ -1766,7 +1766,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get onboardingInvalidVatRate =>
-      'กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 100';
+      'กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 30';
 
   @override
   String get onboardingPromptPaySecurity =>
@@ -2764,6 +2764,29 @@ class AppLocalizationsTh extends AppLocalizations {
   String get orderChannelOnline => 'ออนไลน์';
 
   @override
+  String get guestCount => 'จำนวนลูกค้า';
+
+  @override
+  String get guestCountHint => 'จำนวนคน';
+
+  @override
+  String get sendToKitchen => 'ส่งเข้าครัว';
+
+  @override
+  String get kitchenTicket => 'รายการส่งครัว';
+
+  @override
+  String get kitchenTicketEmpty => 'ไม่มีรายการใหม่ที่ต้องส่งเข้าครัว';
+
+  @override
+  String get selectItemsForCheckout => 'เลือกสินค้าเพื่อชำระบางส่วน';
+
+  @override
+  String selectedItemsCount(int count) {
+    return 'เลือกแล้ว $count รายการ';
+  }
+
+  @override
   String get externalOrderRef => 'เลขอ้างอิงการสั่งซื้อ';
 
   @override
@@ -2833,6 +2856,9 @@ class AppLocalizationsTh extends AppLocalizations {
   String get orderBreakdown => 'การกระจายคำสั่งซื้อ';
 
   @override
+  String get tableSalesBreakdown => 'ยอดขายแยกตามโต๊ะ';
+
+  @override
   String get tableNumber => 'โต๊ะ';
 
   @override
@@ -2849,6 +2875,28 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get tableManagementSubtitle => 'จัดการโต๊ะและโซนในร้าน';
+
+  @override
+  String get floorTitle => 'ผังโต๊ะ';
+
+  @override
+  String get floorUnzoned => 'อื่นๆ';
+
+  @override
+  String get transferTable => 'โอนโต๊ะ';
+
+  @override
+  String transferTableTo(Object source) {
+    return 'โอน $source ไปที่';
+  }
+
+  @override
+  String get noTransferTables => 'ไม่มีโต๊ะว่างสำหรับโอน';
+
+  @override
+  String tableTransferSuccess(Object name) {
+    return 'โอนไปยังโต๊ะ $name แล้ว';
+  }
 
   @override
   String get addTable => 'เพิ่มโต๊ะ';
@@ -2898,6 +2946,14 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get noTablesAvailable =>
       'ยังไม่ได้ตั้งค่าโต๊ะ เพิ่มโต๊ะในเมนูจัดการโต๊ะ';
+
+  @override
+  String get tableAlreadyBound => 'โต๊ะนี้มีบิลที่ยังไม่ได้ชำระอยู่';
+
+  @override
+  String tableChipLabel(String name) {
+    return 'โต๊ะ $name';
+  }
 
   @override
   String get optionGroups => 'กลุ่มตัวเลือก';
@@ -3981,6 +4037,31 @@ class AppLocalizationsTh extends AppLocalizations {
   String get dailyCloseStatusOpenBadge => 'เปิด';
 
   @override
+  String get dailyCloseStatusNeedsAttention => 'ต้องตรวจสอบ';
+
+  @override
+  String dailyCloseOverAmount(Object amount) {
+    return 'เงินเกิน $amount';
+  }
+
+  @override
+  String dailyCloseShortAmount(Object amount) {
+    return 'เงินขาด $amount';
+  }
+
+  @override
+  String get dailyCloseNoMismatch => 'เงินสดตรงกับยอดที่ควรมี';
+
+  @override
+  String get dailyCloseCalculating => 'กำลังคำนวณยอดขาย…';
+
+  @override
+  String get dailyCloseClosing => 'กำลังปิดยอด…';
+
+  @override
+  String get dailyCloseReopening => 'กำลังเปิดยอดใหม่…';
+
+  @override
   String get noCategoriesFound => 'ไม่พบหมวดหมู่ที่ตรงกับการค้นหา';
 
   @override
@@ -4585,4 +4666,14 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get recoveryKitErrorKeyUnavailable =>
       'เข้าถึงคีย์เข้ารหัสของเครื่องนี้ไม่ได้ หากมีชุดกู้คืน ให้กดนำเข้าชุดกู้คืนด้านบน แล้วปิดและเปิดแอปใหม่';
+
+  @override
+  String get dbRecoveryTitle => 'เปิดฐานข้อมูลไม่ได้';
+
+  @override
+  String get dbRecoveryMessage =>
+      'เข้าถึงคีย์เข้ารหัสบนเครื่องนี้ไม่ได้ ฐานข้อมูลการขายจึงยังล็อกอยู่ — ข้อมูลของคุณยังอยู่บนเครื่องนี้ นำเข้าชุดกู้คืน (.promkey) เพื่อกู้คืนการเข้าถึง หรือลองอีกครั้ง';
+
+  @override
+  String get dbRecoveryRetry => 'ลองอีกครั้ง';
 }

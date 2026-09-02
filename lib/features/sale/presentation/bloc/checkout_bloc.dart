@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/domain/entities/restaurant_table.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
@@ -20,12 +22,20 @@ class _CartSnapshot {
     this.customerId,
     this.promotionId,
     this.promotionDiscountAmount = 0,
+    this.draftCartId,
+    this.selectedItemIds,
   });
 
   final List<CartItem> items;
   final String? customerId;
   final String? promotionId;
   final double promotionDiscountAmount;
+
+  /// Originating draft cart id captured at freeze (NOT read later) so the
+  /// sale transaction deletes exactly THIS parked bill atomically — immune
+  /// to draft switches while payment is in flight.
+  final String? draftCartId;
+  final List<String>? selectedItemIds;
 }
 
 @lazySingleton
@@ -34,9 +44,11 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     required CreateSale createSale,
     required CartBloc cartBloc,
     required DraftBloc draftBloc,
+    required TableBloc tableBloc,
   }) : _createSale = createSale,
        _cartBloc = cartBloc,
        _draftBloc = draftBloc,
+       _tableBloc = tableBloc,
        super(const CheckoutState()) {
     on<CheckoutConfirmed>(_onConfirmed);
     on<CheckoutPaymentConfirmed>(_onPaymentConfirmed);
@@ -47,6 +59,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   final CreateSale _createSale;
   final CartBloc _cartBloc;
   final DraftBloc _draftBloc;
+  final TableBloc _tableBloc;
 
   CheckoutConfirmed? _pendingSaleEvent;
   _CartSnapshot? _frozenCart;
@@ -92,6 +105,22 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       return;
     }
 
+    // Defense in depth: a dine-in table already claimed by ANOTHER active
+    // draft bill cannot be sold again. The draft-side unique index keeps
+    // saves honest; this keeps the sale itself off a taken table. The table
+    // bound to this cart's own open draft stays confirmable (editing an
+    // existing dine-in bill must keep working).
+    final tableId = event.tableId;
+    if (tableId != null && _isTableClaimedByOtherBill(tableId)) {
+      emit(
+        state.copyWith(
+          status: CheckoutStatus.failure,
+          errorMessage: 'tableAlreadyBound',
+        ),
+      );
+      return;
+    }
+
     final frozenItems = cart.items
         .map(
           (i) => i.copyWith(
@@ -106,6 +135,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       customerId: cart.customerId,
       promotionId: cart.promotionId,
       promotionDiscountAmount: cart.promotionDiscountAmount,
+      draftCartId: _draftBloc.state.activeDraftId,
+      selectedItemIds: event.selectedItemIds,
     );
     _pendingSaleEvent = event;
     // Lock before waitingPayment / createSale so UI and draft guards engage.
@@ -147,6 +178,21 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       serviceChargeAmount: event.serviceChargeAmount,
       cartSnapshot: frozen,
     );
+  }
+
+  /// True when [tableId] is effectively occupied by a draft cart other than
+  /// this checkout's own open bill. Reads [TableBloc] effective-status state
+  /// (live watch, no DB hit); the own-binding exemption compares against the
+  /// active draft's persisted table. Unknown tables are not blocked here —
+  /// downstream sale validation owns that case.
+  bool _isTableClaimedByOtherBill(String tableId) {
+    if (tableId == _draftBloc.state.loadedDraft?.tableId) return false;
+    for (final table in _tableBloc.state.tables) {
+      if (table.id == tableId) {
+        return table.status == TableStatus.occupied;
+      }
+    }
+    return false;
   }
 
   static bool _needsPromptPayQr(CheckoutConfirmed event) {
@@ -318,10 +364,28 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         customerId: customerId,
         promotionId: promotionId,
         promotionDiscountAmount: Money.fromDouble(promotionDiscountAmount),
+        originatingDraftCartId: cartSnapshot.draftCartId,
+        selectedItemIds: cartSnapshot.selectedItemIds,
       );
 
-      _cartBloc.add(const CartCleared(force: true));
-      _draftBloc.add(const DraftRotated());
+      if (cartSnapshot.selectedItemIds == null) {
+        _cartBloc.add(const CartCleared(force: true));
+        _draftBloc.add(DraftRotated(soldDraftId: cartSnapshot.draftCartId));
+      } else {
+        final remainingItems = _cartBloc.state.items
+            .where(
+              (item) => !cartSnapshot.selectedItemIds!.contains(item.lineId),
+            )
+            .toList(growable: false);
+        // CartRestored is a guarded user-facing event; unlock before enqueueing
+        // it so the remaining lines survive partial checkout.
+        _cartBloc.add(const CartPaymentLockChanged(false));
+        _cartBloc.add(
+          CartRestored.fromCartState(
+            _cartBloc.state.copyWith(items: remainingItems),
+          ),
+        );
+      }
       _clearPending();
 
       emit(state.copyWith(status: CheckoutStatus.success, lastSale: sale));

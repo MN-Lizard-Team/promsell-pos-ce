@@ -139,6 +139,10 @@ Future<StorePinDialogResultData> showCreateStorePinDialog(
                 AppSnackBar.error(ctx, l10n.appLockPinsMismatch);
                 return;
               }
+              if (err == 'trivial') {
+                AppSnackBar.error(ctx, l10n.appLockPinTooTrivial);
+                return;
+              }
               Navigator.pop(
                 ctx,
                 StorePinDialogResultData(

@@ -3,6 +3,7 @@ import 'package:integration_test/integration_test.dart';
 import 'day_close_journey_test.dart' as day_close;
 import 'sale_happy_path_test.dart' as sale_happy_path;
 import 'restaurant_order_test.dart' as restaurant_order;
+import 'restaurant_park_journey_test.dart' as restaurant_park_journey;
 import 'draft_recovery_test.dart' as draft_recovery;
 import 'product_management_test.dart' as product_management;
 import 'promotion_application_test.dart' as promotion_application;
@@ -17,6 +18,9 @@ void main() {
 
   // Journey 2: Restaurant Order Flow
   restaurant_order.main();
+
+  // Journey 7: Restaurant park -> reopen -> pay frees table
+  restaurant_park_journey.main();
 
   // Journey 3: Draft Cart Recovery
   draft_recovery.main();

@@ -10,6 +10,8 @@ String historyErrorMessage(AppLocalizations l10n, String? keyOrMessage) {
     HistoryErrorKeys.saleNotFound => l10n.saleNotFound,
     HistoryErrorKeys.dayClosed => l10n.voidBlockedDayClosed,
     HistoryErrorKeys.generic => l10n.errorOccurred,
-    _ => keyOrMessage,
+    // Read failures are intentionally mapped to stable keys in the BLoC.
+    // Never expose exception text or internal rule names to operators.
+    _ => l10n.errorOccurred,
   };
 }

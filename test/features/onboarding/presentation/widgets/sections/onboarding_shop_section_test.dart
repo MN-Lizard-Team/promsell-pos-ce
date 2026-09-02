@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_shop_section.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 import '../../../../../helpers/pump_app.dart';
 
@@ -25,10 +26,11 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.storefront), findsOneWidget);
-      expect(find.byIcon(Icons.location_on_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.phone_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.badge_outlined), findsOneWidget);
+      expect(find.byIcon(TablerIcons.buildingStore), findsOneWidget);
+      expect(find.byIcon(TablerIcons.building), findsOneWidget);
+      expect(find.byIcon(TablerIcons.mapPin), findsOneWidget);
+      expect(find.byIcon(TablerIcons.phone), findsOneWidget);
+      expect(find.byIcon(TablerIcons.idBadge2), findsOneWidget);
       expect(find.text('Receipt header preview'), findsOneWidget);
       expect(find.text('Your shop name will appear here'), findsOneWidget);
     });

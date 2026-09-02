@@ -5,6 +5,10 @@ import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_th
 ///
 /// Does **not** change save semantics — body content still owns auto-save /
 /// explicit save. Matches root Clean Index width (720).
+///
+/// When [heroIcon] is provided, a slim hero strip (tinted with the page
+/// accent) is rendered below the app bar to give every sub-page a consistent
+/// visual anchor without per-page boilerplate.
 class SettingsLeafChrome extends StatelessWidget {
   const SettingsLeafChrome({
     super.key,
@@ -12,6 +16,8 @@ class SettingsLeafChrome extends StatelessWidget {
     required this.children,
     this.header,
     this.actions,
+    this.heroIcon,
+    this.heroAccent,
     this.bottomNavigationBar,
     this.maxWidth = 720,
   });
@@ -20,12 +26,16 @@ class SettingsLeafChrome extends StatelessWidget {
   final Widget? header;
   final List<Widget> children;
   final List<Widget>? actions;
+  final IconData? heroIcon;
+  final Color? heroAccent;
   final Widget? bottomNavigationBar;
   final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
     final st = context.settingsTheme;
+    final theme = Theme.of(context);
+    final accent = heroAccent ?? theme.colorScheme.primary;
     // Extra bottom room when a sticky bar (e.g. Save) covers the lower edge.
     final bottomPad = bottomNavigationBar != null ? 100.0 : 24 + st.sectionGap;
 
@@ -37,8 +47,9 @@ class SettingsLeafChrome extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxWidth),
           child: ListView(
-            padding: EdgeInsets.fromLTRB(0, 12, 0, bottomPad),
+            padding: EdgeInsets.fromLTRB(0, 0, 0, bottomPad),
             children: [
+              if (heroIcon != null) _HeroStrip(icon: heroIcon!, accent: accent),
               if (header != null) ...[header!, SizedBox(height: st.sectionGap)],
               ..._withGaps(children, st.sectionGap),
             ],
@@ -58,5 +69,39 @@ class SettingsLeafChrome extends StatelessWidget {
       }
     }
     return out;
+  }
+}
+
+class _HeroStrip extends StatelessWidget {
+  const _HeroStrip({required this.icon, required this.accent});
+
+  final IconData icon;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final st = context.settingsTheme;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(st.cardRadius),
+        border: Border.all(color: accent.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: accent, size: 20),
+          ),
+        ],
+      ),
+    );
   }
 }

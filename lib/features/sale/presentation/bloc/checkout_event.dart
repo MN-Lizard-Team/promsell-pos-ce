@@ -27,6 +27,7 @@ class CheckoutConfirmed extends CheckoutEvent {
     this.tableId,
     this.serviceChargeRate = 0.0,
     this.serviceChargeAmount = Money.zero,
+    this.selectedItemIds,
   });
   final String paymentMethod;
   final String vatMode;
@@ -45,6 +46,7 @@ class CheckoutConfirmed extends CheckoutEvent {
   final String? tableId;
   final double serviceChargeRate;
   final Money serviceChargeAmount;
+  final List<String>? selectedItemIds;
   @override
   List<Object?> get props => [
     paymentMethod,
@@ -64,6 +66,7 @@ class CheckoutConfirmed extends CheckoutEvent {
     tableId,
     serviceChargeRate,
     serviceChargeAmount,
+    selectedItemIds,
   ];
 }
 

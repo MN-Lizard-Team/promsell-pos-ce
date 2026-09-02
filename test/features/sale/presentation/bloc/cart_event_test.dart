@@ -95,6 +95,8 @@ void main() {
       ['p1', 'n', 'l'],
     );
     expect(const CartTableAssigned('t').props, ['t']);
+    expect(const CartGuestCountChanged(4).props, [4]);
+    expect(const CartGuestCountChanged(null).props, [null]);
     expect(const CartCustomerSet('c').props, ['c']);
     expect(const CartPromotionSet('p').props, ['p']);
     expect(const CartPromotionRecompute().props, isEmpty);

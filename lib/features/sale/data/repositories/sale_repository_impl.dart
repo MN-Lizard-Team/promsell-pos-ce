@@ -38,6 +38,8 @@ class SaleRepositoryImpl implements SaleRepository {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    String? originatingDraftCartId,
+    List<String>? selectedItemIds,
   }) => _datasource.insertSaleWithItems(
     items: items,
     paymentMethod: paymentMethod,
@@ -61,6 +63,8 @@ class SaleRepositoryImpl implements SaleRepository {
     customerId: customerId,
     promotionId: promotionId,
     promotionDiscountAmount: promotionDiscountAmount,
+    originatingDraftCartId: originatingDraftCartId,
+    selectedItemIds: selectedItemIds,
   );
 
   @override
@@ -84,16 +88,22 @@ class SaleRepositoryImpl implements SaleRepository {
     DateTime? to,
     SaleCursor? cursor,
     int pageSize = 50,
+    String? searchQuery,
   }) => _datasource.querySalesPage(
     from: from,
     to: to,
     cursor: cursor,
     pageSize: pageSize,
+    searchQuery: searchQuery,
   );
 
   @override
-  Future<int> getSalesCount({DateTime? from, DateTime? to}) =>
-      _datasource.querySalesCount(from: from, to: to);
+  Future<int> getSalesCount({
+    DateTime? from,
+    DateTime? to,
+    String? searchQuery,
+  }) =>
+      _datasource.querySalesCount(from: from, to: to, searchQuery: searchQuery);
 
   @override
   Future<ReportSummary> getReportSummary({DateTime? from, DateTime? to}) =>

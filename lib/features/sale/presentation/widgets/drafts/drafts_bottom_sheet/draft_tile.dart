@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/money_text.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/services/restaurant_table_name_resolver.dart';
+import 'package:promsell_pos_ce/features/sale/domain/services/draft_naming.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/theme/pos_theme_extension.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/drafts/pos_bill_name_dialog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_bottom_sheet.dart';
@@ -10,7 +13,7 @@ import 'package:promsell_pos_ce/l10n/app_localizations.dart';
 /// Open-bill **receipt ticket** row for the bills board.
 ///
 /// Color language: white paper + teal rail only. Orange = Pay. No mint wash.
-class DraftTile extends StatelessWidget {
+class DraftTile extends StatefulWidget {
   const DraftTile({
     super.key,
     required this.id,
@@ -51,45 +54,90 @@ class DraftTile extends StatelessWidget {
   final VoidCallback? onPay;
 
   @override
+  State<DraftTile> createState() => _DraftTileState();
+}
+
+class _DraftTileState extends State<DraftTile> {
+  /// Resolved name for [DraftTile.tableId] — null while pending or when the
+  /// table was deleted (title/chip then fall back to a short id).
+  String? _tableName;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveTable();
+  }
+
+  @override
+  void didUpdateWidget(covariant DraftTile old) {
+    super.didUpdateWidget(old);
+    if (old.tableId != widget.tableId) _resolveTable();
+  }
+
+  Future<void> _resolveTable() async {
+    final id = widget.tableId?.trim();
+    if (id == null || id.isEmpty) return;
+    final name = await sl<RestaurantTableNameResolver>().resolve(id);
+    if (!mounted) return;
+    setState(() => _tableName = name);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final pos = context.posTheme;
+    final theme = widget.theme;
+    final l10n = widget.l10n;
     final scheme = theme.colorScheme;
-    final displayName = name?.isNotEmpty == true ? name! : l10n.untitledDraft;
+    final rawName = widget.name?.isNotEmpty == true
+        ? widget.name!
+        : l10n.untitledDraft;
+    final tableId = widget.tableId?.trim();
+    // Bills parked against a table carry the raw tableId as their name —
+    // show the resolved table name (or short id) instead of the UUID.
+    final autoNamedFromTable =
+        tableId != null && tableId.isNotEmpty && rawName == tableId;
+    final displayName = autoNamedFromTable
+        ? (_tableName ?? DraftNaming.shortTableRef(tableId))
+        : rawName;
     final overdue =
-        updatedAt != null && DateTime.now().difference(updatedAt!).inHours >= 2;
-    final age = updatedAt != null ? _timeAgo(updatedAt!) : null;
+        widget.updatedAt != null &&
+        DateTime.now().difference(widget.updatedAt!).inHours >= 2;
+    final age = widget.updatedAt != null ? _timeAgo(widget.updatedAt!) : null;
 
     final chips = <Widget>[
-      if (tableId != null && tableId!.trim().isNotEmpty)
+      if (tableId != null && tableId.isNotEmpty)
         _MetaChip(
           icon: Icons.table_restaurant_outlined,
-          label: tableId!.trim(),
+          label: l10n.tableChipLabel(
+            _tableName ?? DraftNaming.shortTableRef(tableId),
+          ),
           pos: pos,
           theme: theme,
           emphasize: true,
         ),
-      if (previewItemName != null && previewItemName!.trim().isNotEmpty)
+      if (widget.previewItemName != null &&
+          widget.previewItemName!.trim().isNotEmpty)
         _MetaChip(
           icon: Icons.shopping_bag_outlined,
-          label: previewItemName!.trim(),
+          label: widget.previewItemName!.trim(),
           pos: pos,
           theme: theme,
           maxWidth: 128,
         ),
-      if (note != null && note!.trim().isNotEmpty)
+      if (widget.note != null && widget.note!.trim().isNotEmpty)
         _MetaChip(
           icon: Icons.sticky_note_2_outlined,
-          label: note!.trim(),
+          label: widget.note!.trim(),
           pos: pos,
           theme: theme,
           maxWidth: 110,
         ),
-      if (orderChannel != null &&
-          orderChannel!.trim().isNotEmpty &&
-          orderChannel != 'walkin')
+      if (widget.orderChannel != null &&
+          widget.orderChannel!.trim().isNotEmpty &&
+          widget.orderChannel != 'walkin')
         _MetaChip(
           icon: Icons.storefront_outlined,
-          label: orderChannel!.trim(),
+          label: widget.orderChannel!.trim(),
           pos: pos,
           theme: theme,
         ),
@@ -98,28 +146,32 @@ class DraftTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        key: ValueKey('sale_bill_tile_$id'),
+        key: ValueKey('sale_bill_tile_${widget.id}'),
         color: Colors.transparent,
         // Paper ladder — active uses elevPaperActive; rail/border still primary cue.
-        elevation: isActive ? pos.elevPaperActive : pos.elevPaper,
+        elevation: widget.isActive ? pos.elevPaperActive : pos.elevPaper,
         shadowColor: pos.shadowKey.withValues(
-          alpha: isActive ? pos.shadowDockFarAlpha : pos.shadowDockNearAlpha,
+          alpha: widget.isActive
+              ? pos.shadowDockFarAlpha
+              : pos.shadowDockNearAlpha,
         ),
         surfaceTintColor: Colors.transparent,
         borderRadius: BorderRadius.circular(pos.billStubRadius),
         child: InkWell(
-          onTap: onSwitch,
-          onLongPress: onRename != null
-              ? () => _showRenameSheet(context, name ?? '')
+          onTap: widget.onSwitch,
+          onLongPress: widget.onRename != null
+              ? () => _showRenameSheet(context, widget.name ?? '')
               : null,
           borderRadius: BorderRadius.circular(pos.billStubRadius),
           child: Ink(
             decoration: BoxDecoration(
-              color: isActive ? pos.activeBillFill : pos.billStubPaper,
+              color: widget.isActive ? pos.activeBillFill : pos.billStubPaper,
               borderRadius: BorderRadius.circular(pos.billStubRadius),
               border: Border.all(
-                color: isActive ? pos.activeBillRail : pos.billStubBorder,
-                width: isActive ? 1.5 : 1,
+                color: widget.isActive
+                    ? pos.activeBillRail
+                    : pos.billStubBorder,
+                width: widget.isActive ? 1.5 : 1,
               ),
             ),
             child: ConstrainedBox(
@@ -132,7 +184,7 @@ class DraftTile extends StatelessWidget {
                     Container(
                       width: 5,
                       decoration: BoxDecoration(
-                        color: isActive
+                        color: widget.isActive
                             ? pos.activeBillRail
                             : pos.billStubBorder,
                         borderRadius: BorderRadius.only(
@@ -169,7 +221,7 @@ class DraftTile extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                if (isActive) ...[
+                                if (widget.isActive) ...[
                                   const SizedBox(width: 8),
                                   _LiveBadge(
                                     l10n: l10n,
@@ -193,7 +245,7 @@ class DraftTile extends StatelessWidget {
                                 Flexible(
                                   child: Text(
                                     [
-                                      '$itemCount ${l10n.itemsLabel}',
+                                      '${widget.itemCount} ${l10n.itemsLabel}',
                                       ?age,
                                     ].join(' · '),
                                     maxLines: 1,
@@ -246,8 +298,8 @@ class DraftTile extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           MoneyText(
-                            value: total,
-                            currency: currency,
+                            value: widget.total,
+                            currency: widget.currency,
                             textAlign: TextAlign.end,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w900,
@@ -260,10 +312,12 @@ class DraftTile extends StatelessWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (onPay != null && itemCount > 0)
+                              if (widget.onPay != null && widget.itemCount > 0)
                                 FilledButton(
-                                  key: ValueKey('sale_bill_tile_pay_$id'),
-                                  onPressed: onPay,
+                                  key: ValueKey(
+                                    'sale_bill_tile_pay_${widget.id}',
+                                  ),
+                                  onPressed: widget.onPay,
                                   style: FilledButton.styleFrom(
                                     backgroundColor: pos.ctaFill,
                                     foregroundColor: pos.ctaOnFill,
@@ -298,9 +352,12 @@ class DraftTile extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                              if (onRename != null || onDelete != null)
+                              if (widget.onRename != null ||
+                                  widget.onDelete != null)
                                 IconButton(
-                                  key: ValueKey('sale_bill_tile_more_$id'),
+                                  key: ValueKey(
+                                    'sale_bill_tile_more_${widget.id}',
+                                  ),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(
                                     minWidth: 34,
@@ -336,10 +393,10 @@ class DraftTile extends StatelessWidget {
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
-    if (diff.inDays > 0) return l10n.timeAgoDays(diff.inDays);
-    if (diff.inHours > 0) return l10n.timeAgoHours(diff.inHours);
-    if (diff.inMinutes > 0) return l10n.timeAgoMinutes(diff.inMinutes);
-    return l10n.justNow;
+    if (diff.inDays > 0) return widget.l10n.timeAgoDays(diff.inDays);
+    if (diff.inHours > 0) return widget.l10n.timeAgoHours(diff.inHours);
+    if (diff.inMinutes > 0) return widget.l10n.timeAgoMinutes(diff.inMinutes);
+    return widget.l10n.justNow;
   }
 
   /// ⋮ → bottom sheet actions (rename / delete) — not PopupMenu.
@@ -383,10 +440,10 @@ class DraftTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (itemCount > 0)
+                      if (widget.itemCount > 0)
                         MoneyText(
-                          value: total,
-                          currency: currency,
+                          value: widget.total,
+                          currency: widget.currency,
                           style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w900,
                             fontFamily: 'NotoSansThai',
@@ -398,27 +455,27 @@ class DraftTile extends StatelessWidget {
                 ),
                 Divider(height: 1, color: pos.billStubBorder),
                 const SizedBox(height: 4),
-                if (onRename != null)
+                if (widget.onRename != null)
                   _BillMoreActionTile(
-                    key: ValueKey('sale_bill_more_rename_$id'),
+                    key: ValueKey('sale_bill_more_rename_${widget.id}'),
                     icon: Icons.edit_outlined,
-                    label: l10n.renameDraft,
+                    label: widget.l10n.renameDraft,
                     onTap: () {
                       Navigator.pop(ctx);
                       // Prefill raw name — not untitled l10n (avoids saving "Untitled bill").
-                      _showRenameSheet(context, name ?? '');
+                      _showRenameSheet(context, widget.name ?? '');
                     },
                   ),
-                if (onDelete != null) ...[
-                  if (onRename != null) ...[
+                if (widget.onDelete != null) ...[
+                  if (widget.onRename != null) ...[
                     const SizedBox(height: 4),
                     Divider(height: 1, color: pos.billStubBorder),
                     const SizedBox(height: 4),
                   ],
                   _BillMoreActionTile(
-                    key: ValueKey('sale_bill_more_delete_$id'),
+                    key: ValueKey('sale_bill_more_delete_${widget.id}'),
                     icon: Icons.delete_outline,
-                    label: l10n.deleteDraft,
+                    label: widget.l10n.deleteDraft,
                     destructive: true,
                     onTap: () {
                       Navigator.pop(ctx);
@@ -437,28 +494,28 @@ class DraftTile extends StatelessWidget {
   Future<void> _showRenameSheet(BuildContext context, String current) async {
     final name = await PosBillNameDialog.show(
       context,
-      title: l10n.renameDraft,
-      hint: l10n.draftNameHint,
+      title: widget.l10n.renameDraft,
+      hint: widget.l10n.draftNameHint,
       initialName: current,
-      confirmLabel: l10n.save,
-      contextLine: itemCount > 0
-          ? '$itemCount ${l10n.itemsLabel} · $currency${total.toStringAsFixed(total == total.roundToDouble() ? 0 : 2)}'
+      confirmLabel: widget.l10n.save,
+      contextLine: widget.itemCount > 0
+          ? '${widget.itemCount} ${widget.l10n.itemsLabel} · ${widget.currency}${widget.total.toStringAsFixed(widget.total == widget.total.roundToDouble() ? 0 : 2)}'
           : null,
     );
-    if (name != null) onRename?.call(name);
+    if (name != null) widget.onRename?.call(name);
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
     final ok = await showAppConfirm(
       context,
-      title: l10n.deleteDraft,
-      message: l10n.deleteDraftConfirm,
-      confirmLabel: l10n.delete,
-      cancelLabel: l10n.cancel,
+      title: widget.l10n.deleteDraft,
+      message: widget.l10n.deleteDraftConfirm,
+      confirmLabel: widget.l10n.delete,
+      cancelLabel: widget.l10n.cancel,
       destructive: true,
       icon: Icons.delete_outline,
     );
-    if (ok && context.mounted) onDelete?.call();
+    if (ok && context.mounted) widget.onDelete?.call();
   }
 }
 

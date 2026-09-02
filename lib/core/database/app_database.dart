@@ -21,6 +21,7 @@ import 'package:promsell_pos_ce/core/database/tables/product_option_groups_table
 import 'package:promsell_pos_ce/core/database/tables/product_options_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/customers_table.dart';
 import 'package:promsell_pos_ce/core/database/tables/promotions_table.dart';
+import 'package:promsell_pos_ce/core/database/tables/transaction_events_table.dart';
 
 part 'app_database.g.dart';
 part 'app_database_migrations.dart';
@@ -45,6 +46,7 @@ part 'app_database_migration_v32_satang.dart';
     ProductOptions,
     Customers,
     Promotions,
+    TransactionEvents,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -52,7 +54,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 32;
+  int get schemaVersion => 35;
 
   @override
   MigrationStrategy get migration => buildMigrationStrategy();

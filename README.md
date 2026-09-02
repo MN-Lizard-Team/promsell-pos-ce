@@ -28,13 +28,13 @@ A cash register that lives on the phone: sell, park bills, count stock, close th
 
 ## Status
 
-**`0.9.4+2`** (unreleased) · latest GitHub tag **v0.9.2** · schema **v32** · **not on Play production**.
+**`0.9.4+2`** · latest GitHub tag **v0.9.2** · schema **v35** · **not on Play production**.
 
 A green CI badge means host tests and analyze passed. It does not mean the app is store-ready, that device E2E is green, or that you should put a shop's month of sales on it without reading the limits below.
 
 > **Shipped in v0.9.3 (not tagged — `pubspec` was `0.9.3` with no build number; the signed-AAB release gate never ran for this version):** P0 scaling foundation (cursor-paginated queries, DB-backed product search, SQL report aggregate, bounded streaming CSV export, new cursor indexes, 10 performance regression tests) and P1 database lifecycle (migration safety preflight, WAL checkpoint service, database health service, backup export with SHA-256 checksums, AES-256-GCM recovery kit with PBKDF2 [code complete, device validation pending], 47 new tests). All P0/P1 benchmark numbers are **desktop fixture only** — on-device Android validation is a P2 prerequisite before claiming any SLO as met. See [ce-scaling-management-plan.md](docs/plan/COMPLETE/POST-090-MANAGE/ce-scaling-management-plan.md) and [p0-scaling-foundation.md](docs/plan/COMPLETE/POST-090-MANAGE/p0-scaling-foundation.md).
 >
-> **In development (v0.9.4, unreleased):** database indexing, bounded report cache memory, use-case coverage, migration organization, cross-feature domain coupling, consistent Settings loading/error states, accessibility semantics, backup-operation guards, and AppLock verification serialization. See [CHANGELOG.md](CHANGELOG.md) `[0.9.4] - Unreleased`.
+> **Shipped in v0.9.4 (2026-09-02):** database indexing, bounded report cache memory, use-case coverage, migration organization, cross-feature domain coupling, consistent Settings loading/error states, accessibility semantics, backup-operation guards, AppLock verification serialization, **Settings POS-native restyle** (teal app bar + search strip, flat white hero card, compact action cards with thin borders, plain section headers, dedicated `SettingsSearchPage`), **onboarding visual language alignment** (gradient hero, pill progress indicator, accent-stripe sections, Tabler Icons Plus migration), **toast overflow fix** (Flexible + ConstrainedBox), **Keystore-corruption data-loss fix (V092-B.7)** (`resetOnError: false`, fail-closed AppLock guards, cold-start `DbRecoveryGate`), **constant-time PIN comparison**, and **CI secret/dependency-CVE scanning** (gitleaks + osv-scanner). See [CHANGELOG.md](CHANGELOG.md) `[0.9.4] - 2026-09-02`.
 
 | | |
 |---|---|
@@ -121,6 +121,8 @@ Longer lists: [docs/readme/features.md](docs/readme/features.md) (index) · [doc
   <img src="screenshots/store/en/05_settings.png" alt="Settings" width="260">
 </p>
 
+> **Note:** Settings and onboarding screenshots above reflect the pre-v0.9.4 layout. The v0.9.4 Settings POS-native restyle (teal app bar, flat hero card, compact action cards) and onboarding visual language alignment (gradient hero, pill progress, accent-stripe sections) are not yet captured in screenshots.
+
 Thai-language screenshots: [screenshots/store/th/](screenshots/store/th/).
 
 ---
@@ -175,7 +177,7 @@ Vulnerabilities: [SECURITY.md](SECURITY.md) (private report, not a public issue)
 
 | Layer | Choice |
 |-------|--------|
-| UI | Flutter, Material 3, BLoC / Cubit |
+| UI | Flutter, Material 3, BLoC / Cubit, Tabler Icons Plus |
 | Data | Drift (SQLite) + SQLCipher, schema v32 |
 | Money | Satang `Money` in memory; INTEGER `*_satang` + REAL baht dual-write on disk (Phase M, schema v32) |
 | Scaling | Cursor-paginated queries, DB-backed search, SQL report aggregate, bounded CSV export (P0, shipped v0.9.3) |
@@ -201,7 +203,7 @@ Start here, then go deeper. Do not treat archived plans as a current queue.
 | [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | What stays on the device |
 | [docs/STORE_SUBMISSION.md](docs/STORE_SUBMISSION.md) | Play checklist — production still gated |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Signed APK / AAB, keystore |
-| [CHANGELOG.md](CHANGELOG.md) | 0.9.4 (unreleased) + 0.9.3 release notes + history (latest tag v0.9.2) |
+| [CHANGELOG.md](CHANGELOG.md) | 0.9.4 release notes + history (latest tag v0.9.2) |
 
 ### Engineering
 
@@ -260,4 +262,4 @@ Issues and PRs should go to this repository. For private security mail, see [SEC
 
 [GNU Affero General Public License v3.0](LICENSE). If you modify the software and let others use it over a network, you must offer the corresponding source.
 
-<sub>Promsell POS CE · MN Lizard Team · [teeprakorn1](https://github.com/teeprakorn1) · v0.9.4 (unreleased) · latest tag v0.9.2 · AGPL-3.0</sub>
+<sub>Promsell POS CE · MN Lizard Team · [teeprakorn1](https://github.com/teeprakorn1) · v0.9.4 · latest tag v0.9.2 · AGPL-3.0</sub>

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_item.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
@@ -28,6 +29,10 @@ void main() {
       () => mockDraftRepo.createDraft(name: any(named: 'name')),
     ).thenAnswer((_) async => 'draft-1');
     when(() => mockDraftRepo.createDraft()).thenAnswer((_) async => 'draft-1');
+    // Counts refresh path reads the SQL aggregate (no list hydration).
+    when(
+      () => mockDraftRepo.getDraftCounts(),
+    ).thenAnswer((_) async => (draftCount: 0, openBillCount: 0));
   });
 
   DraftBloc buildBloc() =>
@@ -247,7 +252,109 @@ void main() {
   });
 
   group('DraftRotated', () {
-    test('creates new draft and deletes old one', () async {
+    test('sold active bill: hands out fresh bill WITHOUT deleting', () async {
+      // Deletion happens atomically inside the sale transaction
+      // (SaleInsertWriter deletes originatingDraftCartId) — the bloc must NOT
+      // delete again; it only replaces the dangling active pointer.
+      when(
+        () => mockDraftRepo.archiveOldDrafts(any()),
+      ).thenAnswer((_) async => 0);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+      var createN = 0;
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-${++createN}');
+      when(
+        () => mockDraftRepo.createDraft(),
+      ).thenAnswer((_) async => 'draft-${++createN}');
+
+      final bloc = buildBloc();
+      bloc.add(const DraftInitialized());
+      await bloc.stream.first;
+      expect(bloc.state.activeDraftId, 'draft-1');
+      clearInteractions(mockDraftRepo);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-${++createN}');
+
+      bloc.add(const DraftRotated(soldDraftId: 'draft-1'));
+      final state = await bloc.stream.firstWhere(
+        (s) => s.activeDraftId != null && s.activeDraftId != 'draft-1',
+      );
+
+      expect(state.activeDraftId, 'draft-2');
+      // SSOT empty-bill format: B-HHmm (4 digits), not legacy ms%100000.
+      expect(state.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
+      verifyNever(() => mockDraftRepo.deleteDraft(any()));
+      await bloc.close();
+    });
+
+    test('sold non-active bill: pointers kept, counters refreshed', () async {
+      when(
+        () => mockDraftRepo.archiveOldDrafts(any()),
+      ).thenAnswer((_) async => 0);
+      final drafts = <DraftCart>[
+        DraftCart(
+          id: 'draft-1',
+          name: 'A',
+          items: const [],
+          updatedAt: DateTime(2026),
+        ),
+        DraftCart(
+          id: 'draft-2',
+          name: 'B',
+          items: const [],
+          updatedAt: DateTime(2026),
+        ),
+      ];
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => drafts);
+      var createN = 0;
+      when(
+        () => mockDraftRepo.createDraft(name: any(named: 'name')),
+      ).thenAnswer((_) async => 'draft-${++createN}');
+      when(
+        () => mockDraftRepo.createDraft(),
+      ).thenAnswer((_) async => 'draft-${++createN}');
+      when(
+        () => mockDraftRepo.loadDraft('draft-2'),
+      ).thenAnswer((_) async => drafts.singleWhere((d) => d.id == 'draft-2'));
+      // Counters must mirror the (mutable) list so rotation's refresh sees
+      // the sold bill gone.
+      when(() => mockDraftRepo.getDraftCounts()).thenAnswer(
+        (_) async => (
+          draftCount: drafts.length,
+          openBillCount: drafts.where((d) => d.itemCount > 0).length,
+        ),
+      );
+
+      final bloc = buildBloc();
+      bloc.add(const DraftInitialized());
+      await bloc.stream.first;
+      bloc.add(const DraftSwitched('draft-2'));
+      await bloc.stream.firstWhere(
+        (s) => s.lastOp == 'switch' && s.opStatus == DraftOpStatus.success,
+      );
+      expect(bloc.state.activeDraftId, 'draft-2');
+      final countBefore = bloc.state.draftCount;
+
+      // The sold bill left the DB (deleted atomically by the sale) — reflect
+      // that so rotation's counter refresh produces a NEW state.
+      drafts.removeWhere((d) => d.id == 'draft-1');
+
+      // Sold bill was switched away from mid-payment — B stays active.
+      bloc.add(const DraftRotated(soldDraftId: 'draft-1'));
+      final state = await bloc.stream.firstWhere(
+        (s) => s.draftCount != countBefore,
+      );
+      expect(state.activeDraftId, 'draft-2');
+      verifyNever(() => mockDraftRepo.deleteDraft(any()));
+      // Only counters refresh — no new bill is created either.
+      verifyNever(() => mockDraftRepo.createDraft(name: any(named: 'name')));
+      await bloc.close();
+    });
+
+    test('null soldDraftId (ephemeral cart): counters only', () async {
       when(
         () => mockDraftRepo.archiveOldDrafts(any()),
       ).thenAnswer((_) async => 0);
@@ -258,33 +365,18 @@ void main() {
       when(
         () => mockDraftRepo.createDraft(),
       ).thenAnswer((_) async => 'draft-1');
-      when(() => mockDraftRepo.deleteDraft(any())).thenAnswer((_) async {});
-      when(
-        () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
-      ).thenAnswer((_) async {});
 
       final bloc = buildBloc();
       bloc.add(const DraftInitialized());
       await bloc.stream.first;
-
-      // Override createDraft for the rotated call (named via DraftNaming).
-      when(
-        () => mockDraftRepo.createDraft(name: any(named: 'name')),
-      ).thenAnswer((_) async => 'draft-2');
-      when(
-        () => mockDraftRepo.createDraft(),
-      ).thenAnswer((_) async => 'draft-2');
+      clearInteractions(mockDraftRepo);
+      when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
 
       bloc.add(const DraftRotated());
       final state = await bloc.stream.first;
-
-      expect(state.activeDraftId, 'draft-2');
-      // SSOT empty-bill format: B-HHmm (4 digits), not legacy ms%100000.
-      expect(state.activeDraftName, matches(RegExp(r'^B-\d{4}$')));
-      verify(() => mockDraftRepo.deleteDraft('draft-1')).called(1);
-      verify(
-        () => mockDraftRepo.createDraft(name: any(named: 'name')),
-      ).called(greaterThan(0));
+      expect(state.activeDraftId, 'draft-1');
+      verifyNever(() => mockDraftRepo.deleteDraft(any()));
+      verifyNever(() => mockDraftRepo.createDraft(name: any(named: 'name')));
       await bloc.close();
     });
   });
@@ -1006,5 +1098,123 @@ void main() {
       verify(() => mockDraftRepo.loadDraft('draft-2')).called(1);
       await bloc.close();
     });
+  });
+
+  group('DraftBloc — debounced autosave error surfacing', () {
+    test(
+      'autosave hitting TableAlreadyBound reaches the failure state',
+      () async {
+        when(
+          () => mockDraftRepo.archiveOldDrafts(any()),
+        ).thenAnswer((_) async => 0);
+        when(() => mockDraftRepo.listDrafts()).thenAnswer(
+          (_) async => [
+            DraftCart(
+              id: 'draft-1',
+              name: 'A',
+              items: const [],
+              updatedAt: DateTime(2026),
+            ),
+          ],
+        );
+        when(
+          () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
+        ).thenThrow(const BusinessRuleError('TableAlreadyBound'));
+
+        final bloc = buildBloc();
+        bloc.add(const DraftInitialized());
+        await bloc.stream.firstWhere((s) => s.activeDraftId == 'draft-1');
+
+        final product = Product(
+          id: 'p1',
+          name: 'Water',
+          price: Money.fromDouble(10),
+          stock: 5,
+          isActive: true,
+          createdAt: DateTime(2024),
+          updatedAt: DateTime(2024),
+        );
+        // Non-empty so the post-restore empty-autosave guard does not skip it.
+        bloc.add(
+          DraftAutoSaveRequested(
+            CartState(items: [CartItem(product: product, qty: 1)]),
+          ),
+        );
+
+        final failed = await bloc.stream
+            .firstWhere((s) => s.lastOp == 'autosave')
+            .timeout(const Duration(seconds: 5));
+
+        expect(failed.opStatus, DraftOpStatus.failure);
+        expect(failed.errorMessage, 'tableAlreadyBound');
+        expect(failed.opNonce, greaterThan(0));
+        await bloc.close();
+      },
+    );
+
+    test(
+      'switch-path flushPending hitting TableAlreadyBound also surfaces it',
+      () async {
+        when(
+          () => mockDraftRepo.archiveOldDrafts(any()),
+        ).thenAnswer((_) async => 0);
+        when(() => mockDraftRepo.listDrafts()).thenAnswer((_) async => []);
+        when(() => mockDraftRepo.loadDraft('draft-2')).thenAnswer(
+          (_) async => DraftCart(
+            id: 'draft-2',
+            name: 'B',
+            items: const [],
+            tableId: 't1',
+            updatedAt: DateTime(2026),
+          ),
+        );
+        when(
+          () => mockDraftRepo.saveDraft(any(), any(), name: any(named: 'name')),
+        ).thenThrow(const BusinessRuleError('TableAlreadyBound'));
+
+        final bloc = buildBloc();
+        bloc.add(const DraftInitialized());
+        await bloc.stream.first;
+
+        // Non-empty so the post-init empty-autosave guard lets it pend.
+        final product = Product(
+          id: 'p1',
+          name: 'Water',
+          price: Money.fromDouble(10),
+          stock: 5,
+          isActive: true,
+          createdAt: DateTime(2024),
+          updatedAt: DateTime(2024),
+        );
+        bloc.add(
+          DraftAutoSaveRequested(
+            CartState(items: [CartItem(product: product, qty: 1)]),
+          ),
+        );
+        bloc.add(const DraftSwitched('draft-2'));
+
+        // Both outcomes must land regardless of relative order: the switch
+        // itself succeeds and the surfaced rejection reaches a failure state.
+        DraftState? switched;
+        DraftState? failed;
+        final sub = bloc.stream.listen((s) {
+          if (s.lastOp == 'switch' &&
+              s.opStatus == DraftOpStatus.success &&
+              switched == null) {
+            switched = s;
+          }
+          if (s.lastOp == 'autosave' && failed == null) {
+            failed = s;
+          }
+        });
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+
+        expect(switched?.activeDraftId, 'draft-2');
+        expect(failed?.errorMessage, 'tableAlreadyBound');
+        expect(failed?.opStatus, DraftOpStatus.failure);
+        await sub.cancel();
+        await bloc.close();
+      },
+    );
   });
 }

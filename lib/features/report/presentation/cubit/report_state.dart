@@ -3,6 +3,7 @@ import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/table_sales_stat.dart';
 import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 const Object _unset = Object();
@@ -20,6 +21,7 @@ class ReportState extends Equatable {
     this.profit,
     this.previousProfit,
     this.productLookup = const {},
+    this.tableBreakdown = const [],
     this.from,
     this.to,
     this.lastUpdated,
@@ -48,6 +50,10 @@ class ReportState extends Equatable {
 
   /// Cached productId → Product map for per-product cost/profit calculations.
   final Map<String, Product> productLookup;
+
+  /// Per-table sales breakdown for the active range (both data paths).
+  /// Empty before the first emission or when the range has no sales.
+  final List<TableSalesStat> tableBreakdown;
   final DateTime? from;
   final DateTime? to;
 
@@ -78,6 +84,7 @@ class ReportState extends Equatable {
     Object? profit = _unset,
     Object? previousProfit = _unset,
     Map<String, Product>? productLookup,
+    Object? tableBreakdown = _unset,
     Object? from = _unset,
     Object? to = _unset,
     Object? lastUpdated = _unset,
@@ -100,6 +107,9 @@ class ReportState extends Equatable {
           ? this.previousProfit
           : previousProfit as ProfitAnalytics?,
       productLookup: productLookup ?? this.productLookup,
+      tableBreakdown: identical(tableBreakdown, _unset)
+          ? this.tableBreakdown
+          : tableBreakdown as List<TableSalesStat>,
       from: identical(from, _unset) ? this.from : from as DateTime?,
       to: identical(to, _unset) ? this.to : to as DateTime?,
       lastUpdated: identical(lastUpdated, _unset)
@@ -119,6 +129,7 @@ class ReportState extends Equatable {
     profit,
     previousProfit,
     productLookup,
+    tableBreakdown,
     from,
     to,
     lastUpdated,

@@ -12,7 +12,7 @@
 | **BLoC / Cubit** | Cart freeze/payment lock, checkout, draft, settings, daily close, history | Checkout unlock-on-failure covered |
 | **Repository / Datasource** | Sale insert/void stock integrity, products, drafts, settings | In-memory Drift |
 | **Services** | App lock (PBKDF2 + persisted lockout), backup encrypt/restore, receipt PDF, crash log | |
-| **Widget** | Sale/cart/settings/product/pages + shared primitives | Largest layer by count |
+| **Widget** | Sale/cart/settings/product/pages + shared primitives | Largest layer by count. **v0.9.4**: onboarding widget tests updated for Tabler Icons Plus migration + gradient-hero/accent-stripe visual language (28 onboarding tests passing); Settings root restyle tests (teal app bar, flat hero card, compact action cards, dedicated search page); `AppSnackBar` overflow prevention test |
 | **Host integration** | Checkout flow, sale integrity, **V092-D.1 VAT+discount+void+close**, **V092-D.4 void after day-close**, multi-tender daily close, backup money continuity, onboarding first sale, Phase M migration/satang wiring | Under `test/integration/` — fail-closed in trust |
 | **Device E2E** | Happy path / draft / product / promo / restaurant | Main CI: format/analyze only. Trust: blocking `--flavor dev`. V092-D.5: `TestKeys` + no `pumpAndSettle` in `restartApp`. |
 | **Stress** | Large seed + timing (`@Tags(['stress'])`) | Weekly / label workflow |

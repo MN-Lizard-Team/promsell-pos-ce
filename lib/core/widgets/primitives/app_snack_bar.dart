@@ -208,18 +208,25 @@ class _SimpleToastState extends State<_SimpleToast>
                       ),
                     ],
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (state.icon != null) ...[
-                        Icon(state.icon, size: 18, color: fg),
-                        const SizedBox(width: 8),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (state.icon != null) ...[
+                          Icon(state.icon, size: 18, color: fg),
+                          const SizedBox(width: 8),
+                        ],
+                        Flexible(
+                          child: Text(
+                            state.message,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.labelLarge?.copyWith(color: fg),
+                          ),
+                        ),
                       ],
-                      Text(
-                        state.message,
-                        style: textTheme.labelLarge?.copyWith(color: fg),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),

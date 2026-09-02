@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/barcode/barcode_auto_open_tile.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/barcode/barcode_batch_generate_tile.dart';
@@ -44,6 +45,8 @@ class _BarcodeSettingsPageState extends State<BarcodeSettingsPage>
           onRetry: cubit.load,
           builder: (s) => SettingsLeafChrome(
             title: l10n.barcodeSettings,
+            heroIcon: TablerIcons.scan,
+            heroAccent: AppColors.info,
             header: BarcodePreviewCard(
               scanEnabled: s.barcodeScanEnabled,
               prefix: s.barcodeAutoGeneratePrefix,
@@ -52,6 +55,7 @@ class _BarcodeSettingsPageState extends State<BarcodeSettingsPage>
             children: [
               SettingsSectionCard(
                 title: l10n.settingsGeneral,
+                accent: AppColors.info,
                 children: [
                   SettingsSwitchTile(
                     icon: TablerIcons.camera,
@@ -94,18 +98,21 @@ class _BarcodeSettingsPageState extends State<BarcodeSettingsPage>
               ),
               SettingsSectionCard(
                 title: l10n.barcodeFormats,
+                accent: AppColors.info,
                 children: [
                   BarcodeFormatsTile(settings: s, cubit: cubit, st: st),
                 ],
               ),
               SettingsSectionCard(
                 title: l10n.barcodeAutoOpenManual,
+                accent: AppColors.info,
                 children: [
                   BarcodeAutoOpenTile(settings: s, cubit: cubit, st: st),
                 ],
               ),
               SettingsSectionCard(
                 title: l10n.batchGenerateBarcodes,
+                accent: AppColors.info,
                 children: [BarcodeBatchGenerateTile(settings: s, st: st)],
               ),
               Padding(

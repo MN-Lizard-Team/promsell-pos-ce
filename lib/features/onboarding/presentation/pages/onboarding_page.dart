@@ -19,7 +19,9 @@ import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/section
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_progress_bar.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_settings_sheet.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_shop_section.dart';
+import 'package:promsell_pos_ce/features/settings/domain/entities/tax_config.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -31,6 +33,8 @@ class OnboardingPage extends StatefulWidget {
 class _OnboardingPageState extends State<OnboardingPage> {
   final _pageController = PageController(initialPage: 0);
   int _currentStep = 0;
+  bool _heroDismissed = false;
+  bool _isCompleting = false;
   static const _totalSteps = 4;
 
   final _shopNameController = TextEditingController();
@@ -54,6 +58,28 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   void initState() {
     super.initState();
+    // Prefill from any previously stored settings so a forced re-onboard
+    // (upgrade seed or old-backup restore) never blanks out live shop data.
+    final settings = context.read<SettingsCubit>().state.settings;
+    if (_shopNameController.text.isEmpty && settings.shopName.isNotEmpty) {
+      _shopNameController.text = settings.shopName;
+    }
+    if (_addressController.text.isEmpty && settings.address.isNotEmpty) {
+      _addressController.text = settings.address;
+    }
+    if (_phoneController.text.isEmpty && settings.phone.isNotEmpty) {
+      _phoneController.text = settings.phone;
+    }
+    if (_taxIdController.text.isEmpty && settings.taxId.isNotEmpty) {
+      _taxIdController.text = settings.taxId;
+    }
+    if (settings.currency.isNotEmpty) _currencyCtrl.text = settings.currency;
+    _vatRateController.text = settings.vatRate.toStringAsFixed(0);
+    _vatMode = settings.vatMode;
+    if (settings.promptpayId.isNotEmpty) {
+      _promptPayController.text = settings.promptpayId;
+    }
+    _dateFormat = settings.dateFormat;
     _loadStorePinState();
   }
 
@@ -123,8 +149,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
         await lock.setPin(result.pin!);
         _setPinEnabled(true);
         return true;
-      } on Exception catch (e) {
-        AppLogger.error('Onboarding setPin failed', error: e);
+      }
+      // StateError (e.g. PIN_TOO_TRIVIAL / PIN_ALREADY_SET) is an Error, not
+      // an Exception — catch everything so a rejected PIN can never crash.
+      catch (e, stack) {
+        AppLogger.error('Onboarding setPin failed', error: e, stack: stack);
         if (mounted) {
           AppSnackBar.error(context, context.l10n.appLockEnableFailed);
         }
@@ -172,6 +201,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Future<void> _finish() async {
+    if (_isCompleting) return;
     if (_shopNameController.text.trim().isEmpty) {
       AppSnackBar.error(context, context.l10n.shopNameRequired);
       return;
@@ -188,21 +218,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
       }
     }
 
+    // Mirror TaxConfig's own range so validation can never pass a value the
+    // domain will silently clamp (NaN fails both comparisons).
     final parsedVatRate = double.tryParse(
       _vatRateController.text.trim().replaceAll(',', '.'),
     );
     if (_vatMode != 'NONE' &&
-        (parsedVatRate == null || parsedVatRate < 0 || parsedVatRate > 100)) {
+        (parsedVatRate == null ||
+            parsedVatRate.isNaN ||
+            parsedVatRate < TaxConfig.minVatRate ||
+            parsedVatRate > TaxConfig.maxVatRate)) {
       AppSnackBar.error(context, context.l10n.onboardingInvalidVatRate);
       return;
     }
-
-    if (!await _ensureStorePinBeforeComplete()) return;
-    if (!mounted) return;
-
-    final cubit = context.read<SettingsCubit>();
-    final current = cubit.state.settings;
-    final devicePrefix = _generateDevicePrefix();
 
     String? promptpayId;
     try {
@@ -214,64 +242,121 @@ class _OnboardingPageState extends State<OnboardingPage> {
       return;
     }
 
-    final saved = await cubit.saveAndApply(
-      current.copyWith(
-        shopName: _shopNameController.text.trim(),
-        address: _addressController.text.trim(),
-        phone: _phoneController.text.trim(),
-        taxId: rawTaxId,
-        localeCode: current.localeCode,
-        currency: _currencyCtrl.text.trim(),
-        dateFormat: _dateFormat,
-        vatMode: _vatMode,
-        vatRate: parsedVatRate ?? 7.0,
-        promptpayId: promptpayId ?? '',
-        onboardingCompleted: true,
-        deviceId: IdGenerator.newId(),
-        devicePrefix: devicePrefix,
-      ),
-    );
-    if (!saved && mounted) {
-      AppSnackBar.error(context, context.l10n.unexpectedError);
+    // PIN gate runs last: never create a PIN before every field validates.
+    if (!await _ensureStorePinBeforeComplete()) return;
+    if (!mounted) return;
+
+    _isCompleting = true;
+    try {
+      final cubit = context.read<SettingsCubit>();
+      final current = cubit.state.settings;
+
+      final saved = await cubit.saveAndApply(
+        current.copyWith(
+          shopName: _shopNameController.text.trim(),
+          address: _addressController.text.trim(),
+          phone: _phoneController.text.trim(),
+          taxId: rawTaxId,
+          localeCode: current.localeCode,
+          currency: _currencyCtrl.text.trim(),
+          dateFormat: _dateFormat,
+          vatMode: _vatMode,
+          vatRate: parsedVatRate ?? 7.0,
+          promptpayId: promptpayId ?? '',
+          onboardingCompleted: true,
+          deviceId: current.deviceId.isEmpty
+              ? IdGenerator.newId()
+              : current.deviceId,
+          devicePrefix: current.devicePrefix.isEmpty
+              ? _generateDevicePrefix()
+              : current.devicePrefix,
+        ),
+      );
+      if (!saved && mounted) {
+        AppSnackBar.error(context, context.l10n.unexpectedError);
+      }
+    } finally {
+      _isCompleting = false;
     }
   }
 
+  /// Two uppercase alphanumeric chars from a secure RNG — matches the format
+  /// documented for `{YYMMDD}-{prefix}-{seq}` receipt numbers and the
+  /// fallback generator in [ReceiptNumberService].
   String _generateDevicePrefix() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    final rand = Random();
+    final rand = Random.secure();
     return String.fromCharCodes(
-      List.generate(3, (_) => chars.codeUnitAt(rand.nextInt(chars.length))),
+      List.generate(2, (_) => chars.codeUnitAt(rand.nextInt(chars.length))),
     );
   }
 
   Future<void> _skip() async {
+    if (_isCompleting) return;
     if (!await _ensureStorePinBeforeComplete()) return;
     if (!mounted) return;
 
-    final cubit = context.read<SettingsCubit>();
-    final current = cubit.state.settings;
-    final devicePrefix = _generateDevicePrefix();
+    _isCompleting = true;
+    try {
+      final cubit = context.read<SettingsCubit>();
+      final current = cubit.state.settings;
 
-    final saved = await cubit.saveAndApply(
-      current.copyWith(
-        shopName: _shopNameController.text.trim(),
-        address: _addressController.text.trim(),
-        phone: _phoneController.text.trim(),
-        taxId: _taxIdController.text.replaceAll(RegExp(r'[^0-9]'), '').trim(),
-        localeCode: current.localeCode,
-        currency: _currencyCtrl.text.trim(),
-        dateFormat: _dateFormat,
-        vatMode: _vatMode,
-        vatRate:
-            double.tryParse(_vatRateController.text.replaceAll(',', '.')) ??
-            7.0,
-        onboardingCompleted: true,
-        deviceId: IdGenerator.newId(),
-        devicePrefix: devicePrefix,
-      ),
-    );
-    if (!saved && mounted) {
-      AppSnackBar.error(context, context.l10n.unexpectedError);
+      // Skip is lenient but not reckless: keep previously stored values when
+      // the typed value is blank/invalid instead of writing garbage.
+      final rawTaxId = _taxIdController.text
+          .replaceAll(RegExp(r'[^0-9]'), '')
+          .trim();
+      var taxIdValid = true;
+      if (rawTaxId.isNotEmpty) {
+        try {
+          Validators.thaiTaxId(rawTaxId);
+        } on ArgumentError {
+          taxIdValid = false;
+        }
+      }
+      final parsedVatRate = double.tryParse(
+        _vatRateController.text.replaceAll(',', '.'),
+      );
+      final vatRate =
+          (parsedVatRate == null ||
+              parsedVatRate.isNaN ||
+              parsedVatRate < TaxConfig.minVatRate ||
+              parsedVatRate > TaxConfig.maxVatRate)
+          ? current.vatRate
+          : parsedVatRate;
+      String? promptpayId;
+      try {
+        promptpayId = Validators.promptpayId(_promptPayController.text.trim());
+      } on ArgumentError {
+        promptpayId = null;
+      }
+
+      final saved = await cubit.saveAndApply(
+        current.copyWith(
+          shopName: _shopNameController.text.trim(),
+          address: _addressController.text.trim(),
+          phone: _phoneController.text.trim(),
+          taxId: taxIdValid ? rawTaxId : current.taxId,
+          localeCode: current.localeCode,
+          currency: _currencyCtrl.text.trim(),
+          dateFormat: _dateFormat,
+          vatMode: _vatMode,
+          vatRate: vatRate,
+          promptpayId: promptpayId ?? current.promptpayId,
+          onboardingCompleted: true,
+          deviceId: current.deviceId.isEmpty
+              ? IdGenerator.newId()
+              : current.deviceId,
+          devicePrefix: current.devicePrefix.isEmpty
+              ? _generateDevicePrefix()
+              : current.devicePrefix,
+        ),
+      );
+      if (!saved && mounted) {
+        AppSnackBar.error(context, context.l10n.unexpectedError);
+      }
+    } finally {
+      _isCompleting = false;
     }
   }
 
@@ -388,7 +473,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                             settings,
                             accentBrand,
                           ),
-                          icon: const Icon(Icons.tune, size: 18),
+                          icon: const Icon(TablerIcons.adjustments, size: 18),
                           label: Text(ctx.l10n.settingsTitle),
                           style: TextButton.styleFrom(
                             minimumSize: const Size(0, 40),
@@ -414,19 +499,24 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         ? Duration.zero
                         : const Duration(milliseconds: 200),
                     curve: Curves.easeInOut,
-                    child: _currentStep == 0
-                        ? Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: horizontalPadding,
-                            ),
-                            child: OnboardingHeroSection(
-                              isDark: isDark,
-                              subtitle: ctx.l10n.onboardingWelcomeSubtitle,
-                            ),
-                          )
-                        : const SizedBox(width: double.infinity),
+                    child: ClipRect(
+                      child: _currentStep == 0 && !_heroDismissed
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: horizontalPadding,
+                              ),
+                              child: OnboardingHeroSection(
+                                isDark: isDark,
+                                subtitle: ctx.l10n.onboardingWelcomeSubtitle,
+                                onDismiss: () =>
+                                    setState(() => _heroDismissed = true),
+                              ),
+                            )
+                          : const SizedBox(width: double.infinity),
+                    ),
                   ),
-                  if (_currentStep == 0) const SizedBox(height: 12),
+                  if (_currentStep == 0 && !_heroDismissed)
+                    const SizedBox(height: 12),
                   Expanded(
                     child: PageView(
                       controller: _pageController,

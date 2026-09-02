@@ -27,6 +27,11 @@ class DraftCartItems extends Table {
   IntColumn get version => integer().withDefault(const Constant(1))();
   TextColumn get deviceId => text().nullable()();
 
+  // v35: kitchen-fire timestamp (set when the item is fired to the kitchen).
+  // Declared LAST so fresh installs match the trailing position
+  // ALTER TABLE ADD COLUMN produces on upgraded databases.
+  DateTimeColumn get firedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

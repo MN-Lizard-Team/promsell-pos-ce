@@ -1,5 +1,6 @@
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/table_sales_stat.dart';
 import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 /// Abstraction for report data access.
@@ -15,6 +16,15 @@ abstract class ReportRepository {
   /// Reactive SQL-aggregated report bundle for long ranges — never hydrates
   /// `List<Sale>`, so memory stays bounded regardless of window size.
   Stream<ReportAggregate> watchReportAggregate({DateTime? from, DateTime? to});
+
+  /// Reactive per-table sales breakdown (top buckets by revenue, completed
+  /// orders only). NULL `sales.table_id` groups are folded into the explicit
+  /// no-table bucket ([TableSalesStat.noTableBucket]) so raw nulls never
+  /// reach the UI.
+  Stream<List<TableSalesStat>> watchTableSalesStats({
+    DateTime? from,
+    DateTime? to,
+  });
 
   /// Returns a productId → [Product] map for the supplied ids.
   ///

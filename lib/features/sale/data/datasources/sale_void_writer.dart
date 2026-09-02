@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/database/transaction_event_writer.dart';
 import 'package:promsell_pos_ce/core/database/money_converter.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/features/inventory/data/services/inventory_log_service.dart';
@@ -12,11 +13,13 @@ class SaleVoidWriter {
     this._db, {
     required this.inventoryLogService,
     required SaleWriteSideEffects sideEffects,
-  }) : _sideEffects = sideEffects;
+  }) : _sideEffects = sideEffects,
+       _eventWriter = TransactionEventWriter(_db);
 
   final AppDatabase _db;
   final InventoryLogService inventoryLogService;
   final SaleWriteSideEffects _sideEffects;
+  final TransactionEventWriter _eventWriter;
 
   Future<void> voidSale(String saleId, {String? reason}) async {
     await _db.transaction(() async {
@@ -126,6 +129,21 @@ class SaleVoidWriter {
           visitDelta: -1,
         );
       }
+
+      await _eventWriter.append(
+        aggregateType: 'SALE',
+        aggregateId: saleId,
+        eventType: 'SALE_VOIDED',
+        deviceId: sale.deviceId,
+        reason: reason,
+        beforeStatus: sale.status,
+        afterStatus: 'VOIDED',
+        amountSatang: moneyFromSatangOrBaht(
+          sale.totalAmountSatang,
+          sale.totalAmount,
+        ).satang,
+        occurredAt: now,
+      );
     });
   }
 }

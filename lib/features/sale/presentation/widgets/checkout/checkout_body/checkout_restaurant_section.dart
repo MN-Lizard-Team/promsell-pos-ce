@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/form_section_card.dart';
@@ -17,6 +18,7 @@ class CheckoutRestaurantSection extends StatelessWidget {
     required this.orderType,
     required this.orderChannel,
     required this.selectedTableId,
+    required this.guestCount,
     required this.externalRefCtrl,
     required this.onOrderTypeChanged,
     required this.onOrderChannelChanged,
@@ -26,6 +28,7 @@ class CheckoutRestaurantSection extends StatelessWidget {
   final String orderType;
   final String orderChannel;
   final String? selectedTableId;
+  final int? guestCount;
   final TextEditingController externalRefCtrl;
   final ValueChanged<String> onOrderTypeChanged;
   final ValueChanged<String> onOrderChannelChanged;
@@ -60,6 +63,26 @@ class CheckoutRestaurantSection extends StatelessWidget {
             TableSelector(
               selectedTableId: selectedTableId,
               onSelected: onTableSelected,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              initialValue: guestCount?.toString() ?? '',
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                labelText: context.l10n.guestCount,
+                hintText: context.l10n.guestCountHint,
+                prefixIcon: const Icon(Icons.people_outline),
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                final count = int.tryParse(value.trim());
+                context.read<CartBloc>().add(
+                  CartGuestCountChanged(
+                    count == null || count < 1 ? null : count,
+                  ),
+                );
+              },
             ),
           ],
           if (orderType == 'delivery') ...[

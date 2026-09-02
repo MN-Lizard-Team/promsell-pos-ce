@@ -19,6 +19,10 @@ class HistoryDateRangeChanged extends HistoryEvent {
   List<Object?> get props => [from, to];
 }
 
+class HistoryLoadMoreRequested extends HistoryEvent {
+  const HistoryLoadMoreRequested();
+}
+
 class SaleVoidRequested extends HistoryEvent {
   const SaleVoidRequested({required this.saleId, this.reason});
   final String saleId;

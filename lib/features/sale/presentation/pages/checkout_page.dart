@@ -13,7 +13,9 @@ import 'package:promsell_pos_ce/features/sale/presentation/widgets/shared/pos_pr
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
 class CheckoutPage extends StatelessWidget {
-  const CheckoutPage({super.key});
+  const CheckoutPage({super.key, this.selectedItemIds});
+
+  final List<String>? selectedItemIds;
 
   @override
   Widget build(BuildContext context) {
@@ -26,36 +28,39 @@ class CheckoutPage extends StatelessWidget {
     tableBloc?.add(const TablesLoaded());
     final pos = context.posTheme;
 
-    return Scaffold(
-      backgroundColor: pos.catalogBackground,
-      appBar: PosPrimaryAppBar(
-        title: Text(context.l10n.paymentTitle),
-        actions: [
-          BlocSelector<CartBloc, CartState, int>(
-            selector: (state) => state.itemCount,
-            builder: (_, itemCount) {
-              return IconButton(
-                icon: Badge(
-                  isLabelVisible: itemCount > 0,
-                  label: Text('$itemCount'),
-                  child: const Icon(Icons.shopping_cart_outlined),
-                ),
-                tooltip: context.l10n.cartTitle,
-                onPressed: () =>
-                    openCartReviewPage(context, replacePaymentShell: true),
-              );
-            },
-          ),
-        ],
-      ),
-      body: MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: context.read<CartBloc>()),
-          BlocProvider.value(value: context.read<CheckoutBloc>()),
-          BlocProvider.value(value: context.read<SettingsCubit>()),
-          if (tableBloc != null) BlocProvider.value(value: tableBloc),
-        ],
-        child: const CheckoutBody(),
+    return KeyedSubtree(
+      key: const ValueKey('sale_checkout_page'),
+      child: Scaffold(
+        backgroundColor: pos.catalogBackground,
+        appBar: PosPrimaryAppBar(
+          title: Text(context.l10n.paymentTitle),
+          actions: [
+            BlocSelector<CartBloc, CartState, int>(
+              selector: (state) => state.itemCount,
+              builder: (_, itemCount) {
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: itemCount > 0,
+                    label: Text('$itemCount'),
+                    child: const Icon(Icons.shopping_cart_outlined),
+                  ),
+                  tooltip: context.l10n.cartTitle,
+                  onPressed: () =>
+                      openCartReviewPage(context, replacePaymentShell: true),
+                );
+              },
+            ),
+          ],
+        ),
+        body: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<CartBloc>()),
+            BlocProvider.value(value: context.read<CheckoutBloc>()),
+            BlocProvider.value(value: context.read<SettingsCubit>()),
+            if (tableBloc != null) BlocProvider.value(value: tableBloc),
+          ],
+          child: CheckoutBody(selectedItemIds: selectedItemIds),
+        ),
       ),
     );
   }

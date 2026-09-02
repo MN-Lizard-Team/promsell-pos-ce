@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/database/transaction_event_writer.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/utils/id_generator.dart';
@@ -27,7 +28,8 @@ class SaleInsertWriter {
     required Future<String> Function() deviceId,
   }) : _query = query,
        _sideEffects = sideEffects,
-       _deviceId = deviceId;
+       _deviceId = deviceId,
+       _eventWriter = TransactionEventWriter(_db);
 
   final AppDatabase _db;
   final ReceiptNumberService receiptNumberService;
@@ -36,6 +38,7 @@ class SaleInsertWriter {
   final SaleQueryLocalDatasource _query;
   final SaleWriteSideEffects _sideEffects;
   final Future<String> Function() _deviceId;
+  final TransactionEventWriter _eventWriter;
 
   Future<Sale> insertSaleWithItems({
     required List<CartItem> items,
@@ -60,8 +63,32 @@ class SaleInsertWriter {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    String? originatingDraftCartId,
+    List<String>? selectedItemIds,
   }) async {
-    final itemsSubtotal = items.fold(Money.zero, (sum, i) => sum + i.subtotal);
+    final isPartial = selectedItemIds != null;
+    if (isPartial && selectedItemIds.isEmpty) {
+      throw const BusinessRuleError('PartialCheckoutEmptySelection');
+    }
+    if (isPartial &&
+        (cartDiscountAmount != null && cartDiscountAmount > Money.zero ||
+            promotionDiscountAmount > Money.zero ||
+            cartDiscountType != null ||
+            cartDiscountValue != null ||
+            serviceChargeAmount > Money.zero ||
+            serviceChargeRate > 0)) {
+      throw const BusinessRuleError('PartialCheckoutDiscountUnsupported');
+    }
+    final saleItems = isPartial
+        ? items.where((item) => selectedItemIds.contains(item.lineId)).toList()
+        : items;
+    if (saleItems.isEmpty) {
+      throw const BusinessRuleError('PartialCheckoutEmptySelection');
+    }
+    final itemsSubtotal = saleItems.fold(
+      Money.zero,
+      (sum, i) => sum + i.subtotal,
+    );
     final effectiveCartDiscount = cartDiscountAmount ?? Money.zero;
     final effectivePromoDiscount = promotionDiscountAmount.clampToZero();
     final totals = SalePayableCalculator.computeWithServiceChargeAmount(
@@ -139,6 +166,34 @@ class SaleInsertWriter {
     final deviceId = await _deviceId();
     late SaleData saleData;
     await _db.transaction(() async {
+      final originatingCart = originatingDraftCartId == null
+          ? null
+          : await (_db.select(_db.draftCarts)
+                  ..where((c) => c.id.equals(originatingDraftCartId)))
+                .getSingleOrNull();
+      final originOpenedAt = originatingCart?.openedAt;
+      final originGuestCount = originatingCart?.guestCount;
+      if (isPartial && originatingCart == null) {
+        throw const BusinessRuleError('PartialCheckoutDraftRequired');
+      }
+      if (isPartial) {
+        final draftCartId = originatingDraftCartId;
+        if (draftCartId == null) {
+          throw const BusinessRuleError('PartialCheckoutDraftRequired');
+        }
+        final selectedRows =
+            await (_db.select(_db.draftCartItems)..where(
+                  (i) =>
+                      i.cartId.equals(draftCartId) &
+                      i.id.isIn(selectedItemIds) &
+                      i.deletedAt.isNull(),
+                ))
+                .get();
+        if (selectedRows.length != selectedItemIds.toSet().length ||
+            selectedRows.any((row) => row.firedAt != null || row.qty <= 0)) {
+          throw const BusinessRuleError('PartialCheckoutLineUnavailable');
+        }
+      }
       await SaleDayGuard.assertCreateAllowed(_db);
 
       // Receipt # with unique index: retry on rare race / reseed lag.
@@ -193,7 +248,8 @@ class SaleInsertWriter {
                             : null),
                   ),
                   deviceId: Value(deviceId),
-                  // Phase M (C2): dual-write INTEGER satang alongside REAL
+                  guestCount: Value(originGuestCount),
+                  openedAt: Value(originOpenedAt),
                   // baht. Rates (vatRate, serviceChargeRate) and percent
                   // discountValue stay REAL — they are not money.
                   subtotalAmountSatang: Value(subtotal),
@@ -249,7 +305,7 @@ class SaleInsertWriter {
 
       // Aggregate qty per product (option lines share product id).
       final quantitiesByProduct = <String, int>{};
-      for (final item in items) {
+      for (final item in saleItems) {
         quantitiesByProduct.update(
           item.product.id,
           (quantity) => quantity + item.qty,
@@ -265,7 +321,7 @@ class SaleInsertWriter {
       };
 
       // Fail closed if catalog row missing/inactive; pre-check stock when needed.
-      for (final item in items) {
+      for (final item in saleItems) {
         final product = productMap[item.product.id];
         if (product == null) {
           throw NotFoundError('Product', id: item.product.id);
@@ -293,13 +349,13 @@ class SaleInsertWriter {
 
       // Snapshot sale lines (price/name/options) with allocated line VAT.
       final lineVats = SaleWriteHelpers.allocateLineVat(
-        items: items,
+        items: saleItems,
         headerVat: vatAmount,
         vatMode: vatMode,
         vatRate: vatRate,
       );
-      for (var i = 0; i < items.length; i++) {
-        final item = items[i];
+      for (var i = 0; i < saleItems.length; i++) {
+        final item = saleItems[i];
         final itemVatAmount = lineVats[i];
         await _db
             .into(_db.saleItems)
@@ -402,9 +458,68 @@ class SaleInsertWriter {
           requireActive: true,
         );
       }
+
+      await _eventWriter.append(
+        aggregateType: 'SALE',
+        aggregateId: saleId,
+        eventType: 'SALE_CREATED',
+        deviceId: deviceId,
+        afterStatus: 'COMPLETED',
+        amountSatang: finalTotal.satang,
+      );
+
+      // Atomic checkout-frees-table: hard-delete the originating parked bill
+      // in the SAME transaction as the sale. The partial unique index
+      // (idx_draft_carts_table_id_unique) and the table occupancy watch see
+      // the table freed the instant this commits — no post-commit step, no
+      // crash window, and no wrong-cart deletion when drafts were switched
+      // mid-payment. Null for never-parked ephemeral carts (nothing to do).
+      if (originatingDraftCartId != null) {
+        if (isPartial) {
+          final remaining =
+              await (_db.select(_db.draftCartItems)..where(
+                    (i) =>
+                        i.cartId.equals(originatingDraftCartId) &
+                        i.deletedAt.isNull() &
+                        i.id.isNotIn(selectedItemIds),
+                  ))
+                  .get();
+          await (_db.delete(_db.draftCartItems)..where(
+                (i) =>
+                    i.cartId.equals(originatingDraftCartId) &
+                    i.id.isIn(selectedItemIds),
+              ))
+              .go();
+          if (remaining.isNotEmpty) {
+            await (_db.update(
+              _db.draftCarts,
+            )..where((c) => c.id.equals(originatingDraftCartId))).write(
+              DraftCartsCompanion(
+                updatedAt: Value(DateTime.now()),
+                version: Value((originatingCart?.version ?? 1) + 1),
+              ),
+            );
+          } else {
+            await (_db.delete(
+              _db.draftCarts,
+            )..where((c) => c.id.equals(originatingDraftCartId))).go();
+          }
+        } else {
+          await (_db.delete(
+            _db.draftCartItems,
+          )..where((i) => i.cartId.equals(originatingDraftCartId))).go();
+          await (_db.delete(
+            _db.draftCarts,
+          )..where((c) => c.id.equals(originatingDraftCartId))).go();
+        }
+      }
     });
-    final saleItems = await _query.itemsForSale(saleData.id);
+    final restoredSaleItems = await _query.itemsForSale(saleData.id);
     final paymentRows = await _query.paymentsForSale(saleId);
-    return _query.buildSale(saleData, saleItems, paymentRows: paymentRows);
+    return _query.buildSale(
+      saleData,
+      restoredSaleItems,
+      paymentRows: paymentRows,
+    );
   }
 }

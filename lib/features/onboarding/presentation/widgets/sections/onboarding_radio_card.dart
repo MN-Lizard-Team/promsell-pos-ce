@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class OnboardingRadioCard<T> extends StatelessWidget {
   const OnboardingRadioCard({
@@ -25,14 +26,19 @@ class OnboardingRadioCard<T> extends StatelessWidget {
     final selected = value == groupValue;
 
     return Semantics(
+      // Single actionable node with checked state — the inner Radio widget
+      // creates its own semantics node, so exclude children to stop screen
+      // readers from announcing this card twice (button + radio).
+      container: true,
       button: true,
-      selected: selected,
+      checked: selected,
       label: subtitle == null ? title : '$title, $subtitle',
+      excludeSemantics: true,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => onChanged(value),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 56),
             child: Ink(
@@ -43,7 +49,7 @@ class OnboardingRadioCard<T> extends StatelessWidget {
                   color: selected ? scheme.primary : scheme.outlineVariant,
                   width: selected ? 1.5 : 1,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
                 children: [
@@ -87,7 +93,7 @@ class OnboardingRadioCard<T> extends StatelessWidget {
                     ),
                   ),
                   if (selected)
-                    Icon(Icons.check, color: scheme.primary, size: 20),
+                    Icon(TablerIcons.check, color: scheme.primary, size: 20),
                 ],
               ),
             ),

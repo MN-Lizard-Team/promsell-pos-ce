@@ -20,6 +20,8 @@ class CartState extends Equatable {
     this.customerId,
     this.promotionId,
     this.promotionDiscountAmount = 0.0,
+    this.guestCount,
+    this.openedAt,
     this.stockWarning,
     this.errorMessage,
     this.lastFailedBarcode,
@@ -46,6 +48,8 @@ class CartState extends Equatable {
   final String? customerId;
   final String? promotionId;
   final double promotionDiscountAmount;
+  final int? guestCount;
+  final DateTime? openedAt;
   final String? stockWarning;
   final String? errorMessage;
 
@@ -141,6 +145,8 @@ class CartState extends Equatable {
     Object? customerId = _unset,
     Object? promotionId = _unset,
     double? promotionDiscountAmount,
+    Object? guestCount = _unset,
+    Object? openedAt = _unset,
     Object? stockWarning = _unset,
     Object? errorMessage = _unset,
     Object? lastFailedBarcode = _unset,
@@ -173,6 +179,12 @@ class CartState extends Equatable {
           : promotionId as String?,
       promotionDiscountAmount:
           promotionDiscountAmount ?? this.promotionDiscountAmount,
+      guestCount: identical(guestCount, _unset)
+          ? this.guestCount
+          : guestCount as int?,
+      openedAt: identical(openedAt, _unset)
+          ? this.openedAt
+          : openedAt as DateTime?,
       stockWarning: identical(stockWarning, _unset)
           ? this.stockWarning
           : stockWarning as String?,
@@ -199,6 +211,8 @@ class CartState extends Equatable {
       customerId: newState.customerId,
       promotionId: newState.promotionId,
       promotionDiscountAmount: newState.promotionDiscountAmount,
+      guestCount: newState.guestCount,
+      openedAt: newState.openedAt,
       stockWarning: newState.stockWarning,
       errorMessage: newState.errorMessage,
       lastFailedBarcode: newState.lastFailedBarcode,
@@ -225,6 +239,8 @@ class CartState extends Equatable {
     customerId,
     promotionId,
     promotionDiscountAmount,
+    guestCount,
+    openedAt,
     stockWarning,
     errorMessage,
     lastFailedBarcode,

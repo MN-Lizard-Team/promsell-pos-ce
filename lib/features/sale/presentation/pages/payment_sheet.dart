@@ -21,6 +21,7 @@ Future<void> openPaymentPage(
   required CheckoutBloc checkoutBloc,
   required DraftBloc draftBloc,
   required SettingsCubit settingsCubit,
+  List<String>? selectedItemIds,
 }) {
   return Navigator.of(context).push<void>(
     MaterialPageRoute(
@@ -32,7 +33,7 @@ Future<void> openPaymentPage(
           BlocProvider.value(value: draftBloc),
           BlocProvider.value(value: settingsCubit),
         ],
-        child: const PaymentPage(),
+        child: PaymentPage(selectedItemIds: selectedItemIds),
       ),
     ),
   );
@@ -40,7 +41,9 @@ Future<void> openPaymentPage(
 
 /// Full-page retail payment shell. Restaurant uses [CheckoutPage].
 class PaymentPage extends StatelessWidget {
-  const PaymentPage({super.key});
+  const PaymentPage({super.key, this.selectedItemIds});
+
+  final List<String>? selectedItemIds;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +73,7 @@ class PaymentPage extends StatelessWidget {
             ),
           ],
         ),
-        body: const CheckoutBody(),
+        body: CheckoutBody(selectedItemIds: selectedItemIds),
       ),
     );
   }

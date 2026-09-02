@@ -62,7 +62,7 @@ void main() {
 
     test('getSchemaVersion returns current schema version', () async {
       final version = await service.getSchemaVersion();
-      expect(version, 32); // current schema version
+      expect(version, 35); // current schema version
     });
 
     test('markMigrationStart writes running status', () async {
@@ -201,9 +201,9 @@ void main() {
       db = AppDatabase.forTesting(NativeDatabase(file));
       await db.customSelect('SELECT COUNT(*) AS c FROM sales').getSingle();
 
-      // Verify schema version is back to 32.
+      // Verify schema version is back to the latest (35).
       final version = await db.customSelect('PRAGMA user_version').getSingle();
-      expect(version.read<int>('user_version'), 32);
+      expect(version.read<int>('user_version'), 35);
 
       await db.close();
     });

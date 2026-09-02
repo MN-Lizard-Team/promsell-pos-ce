@@ -13,6 +13,7 @@ class StickyActionBar extends StatelessWidget {
     this.sideBySide = false,
     this.primaryColor,
     this.primaryKey,
+    this.dangerKey,
   });
 
   final String primaryLabel;
@@ -30,6 +31,7 @@ class StickyActionBar extends StatelessWidget {
   final Color? primaryColor;
 
   final Key? primaryKey;
+  final Key? dangerKey;
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +97,7 @@ class StickyActionBar extends StatelessWidget {
                       children: [
                         if (dangerLabel != null)
                           TextButton.icon(
+                            key: dangerKey,
                             onPressed: onDanger,
                             icon: const Icon(Icons.delete_outline),
                             label: Text(dangerLabel!),

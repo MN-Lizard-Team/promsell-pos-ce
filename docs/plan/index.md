@@ -22,6 +22,8 @@ This file is the **map**. Packages own detail. Do not treat COMPLETE folders as 
 
 **Current NOW:** V092-GATE **UNLOCKED** (2026-08-14) — `v0.9.2` may be cut. Next: resume AH-0.3+ (architecture fence).
 
+> **v0.9.4 note:** Settings restyle + onboarding visual language alignment (ADR-037 — Settings part later superseded by POS-native flat-card restyle) and toast overflow fix were completed outside a plan package — ad-hoc UI work tracked in [CHANGELOG.md](../../CHANGELOG.md) `[0.9.4] - 2026-09-02`. No plan package was created or modified.
+
 ---
 
 ## Complete (historical)

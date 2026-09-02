@@ -29,6 +29,7 @@ void navigateToCheckout(
   CheckoutBloc? checkoutBloc,
   DraftBloc? draftBloc,
   SettingsCubit? settingsCubit,
+  List<String>? selectedItemIds,
 }) {
   final l10n = context.l10n;
   final resolvedSettings = settingsCubit ?? context.read<SettingsCubit>();
@@ -75,7 +76,7 @@ void navigateToCheckout(
                 BlocProvider.value(value: resolvedSettings),
                 BlocProvider.value(value: tableBloc),
               ],
-              child: const CheckoutPage(),
+              child: CheckoutPage(selectedItemIds: selectedItemIds),
             ),
           ),
         )
@@ -99,6 +100,7 @@ void navigateToCheckout(
       checkoutBloc: resolvedCheckout,
       draftBloc: resolvedDraft,
       settingsCubit: resolvedSettings,
+      selectedItemIds: selectedItemIds,
     ).whenComplete(done);
   }
 

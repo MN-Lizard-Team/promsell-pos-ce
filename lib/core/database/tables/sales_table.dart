@@ -59,6 +59,13 @@ class Sales extends Table {
   IntColumn get version => integer().withDefault(const Constant(1))();
   TextColumn get deviceId => text().nullable()();
 
+  // v35: per-table analytics carried over from the originating cart
+  // (stamped by app logic, never backfilled). Declared LAST so fresh
+  // installs match the trailing position ALTER TABLE ADD COLUMN produces
+  // on upgraded databases.
+  IntColumn get guestCount => integer().nullable()();
+  DateTimeColumn get openedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

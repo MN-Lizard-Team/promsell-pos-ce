@@ -39,6 +39,8 @@ class CreateSale {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    String? originatingDraftCartId,
+    List<String>? selectedItemIds,
   }) async {
     Validators.nonEmptyCart(items);
     for (final item in items) {
@@ -117,6 +119,8 @@ class CreateSale {
       customerId: customerId,
       promotionId: promotionId,
       promotionDiscountAmount: recomputedPromo,
+      originatingDraftCartId: originatingDraftCartId,
+      selectedItemIds: selectedItemIds,
     );
   }
 }

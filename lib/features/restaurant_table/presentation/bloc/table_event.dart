@@ -11,6 +11,15 @@ class TablesLoaded extends TableEvent {
   const TablesLoaded();
 }
 
+/// Internal bridge: emitted for every emission of the repository watch
+/// stream so live effective statuses reach [TableState.tables].
+class TablesWatchRefreshed extends TableEvent {
+  const TablesWatchRefreshed(this.tables);
+  final List<RestaurantTable> tables;
+  @override
+  List<Object?> get props => [tables];
+}
+
 class TableAdded extends TableEvent {
   const TableAdded({
     required this.name,

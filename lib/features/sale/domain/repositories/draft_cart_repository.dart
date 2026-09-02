@@ -1,5 +1,6 @@
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/kitchen_ticket.dart';
 
 abstract class DraftCartRepository {
   Future<String> createDraft({String? name});
@@ -9,5 +10,14 @@ abstract class DraftCartRepository {
   Future<void> deleteDraft(String cartId);
   Future<void> renameDraft(String cartId, String name);
   Future<int> countDrafts();
+
+  /// Bills-board counters in one aggregate query (no item hydration).
+  Future<({int draftCount, int openBillCount})> getDraftCounts();
   Future<int> archiveOldDrafts(DateTime cutoff);
+  Future<KitchenTicket> fireUnfiredLines(String cartId);
+  Future<void> transferDraftCart({
+    required String cartId,
+    required String sourceTableId,
+    required String targetTableId,
+  });
 }

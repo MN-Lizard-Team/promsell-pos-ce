@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/widgets/splash/app_splash_screen.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/pages/db_recovery_gate.dart';
 
 class AppSplashWrapper extends StatelessWidget {
   const AppSplashWrapper({super.key, required this.child});
@@ -13,6 +14,11 @@ class AppSplashWrapper extends StatelessWidget {
     return BlocBuilder<SettingsCubit, SettingsState>(
       buildWhen: (prev, curr) => prev.status != curr.status,
       builder: (context, state) {
+        // Cold-start DB key failure — show the recovery gate instead of a
+        // shell whose every query would fail.
+        if (state.status == SettingsStatus.failure && state.dbUnavailable) {
+          return const DbRecoveryGate();
+        }
         final isLoading =
             state.status == SettingsStatus.loading ||
             state.status == SettingsStatus.initial;

@@ -804,7 +804,7 @@
   "onboardingVatNoneHelp": "No VAT is added to sales.",
   "onboardingVatInclusiveHelp": "Displayed prices already include VAT.",
   "onboardingVatExclusiveHelp": "VAT is added to the displayed price.",
-  "onboardingInvalidVatRate": "Enter a VAT rate between 0 and 100",
+  "onboardingInvalidVatRate": "Enter a VAT rate between 0 and 30",
   "onboardingPromptPaySecurity": "Optional. Stored locally on this device and used to create payment QR codes.",
   "onboardingCurrencyBaht": "฿ THB",
   "onboardingCurrencyUsd": "$ USD",
@@ -1247,6 +1247,20 @@
   "orderChannelWalkIn": "Walk-in",
   "orderChannelPhone": "Phone",
   "orderChannelOnline": "Online",
+  "guestCount": "Guest count",
+  "guestCountHint": "Number of guests",
+  "sendToKitchen": "Send to kitchen",
+  "kitchenTicket": "Kitchen ticket",
+  "kitchenTicketEmpty": "No new items to send to the kitchen",
+  "selectItemsForCheckout": "Select items for partial checkout",
+  "selectedItemsCount": "{count} items selected",
+  "@selectedItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "externalOrderRef": "External Order Ref",
   "externalOrderRefHint": "Delivery platform order number (optional)",
   "serviceCharge": "Service Charge",
@@ -1270,12 +1284,19 @@
   "costCoverageUnavailable": "No cost data available",
   "insights": "Insights",
   "orderBreakdown": "Order breakdown",
+  "tableSalesBreakdown": "Sales by table",
   "tableNumber": "Table",
   "selectTable": "Select Table",
   "noTable": "No table assigned",
   "restaurantSettings": "Restaurant Settings",
   "tableManagement": "Table Management",
   "tableManagementSubtitle": "Manage restaurant tables and zones",
+  "floorTitle": "Floor",
+  "floorUnzoned": "Other",
+  "transferTable": "Transfer table",
+  "transferTableTo": "Transfer {source} to",
+  "noTransferTables": "No available tables to transfer to.",
+  "tableTransferSuccess": "Table transferred to {name}.",
   "addTable": "Add Table",
   "editTable": "Edit Table",
   "deleteTable": "Delete Table",
@@ -1292,6 +1313,15 @@
   "confirmDeleteTable": "Delete this table?",
   "selectTableForDineIn": "Select a table for this order",
   "noTablesAvailable": "No tables configured. Add tables in Table Management.",
+  "tableAlreadyBound": "This table already has an open bill.",
+  "tableChipLabel": "Table {name}",
+  "@tableChipLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "optionGroups": "Option Groups",
   "optionGroupsSubtitle": "Add modifiers like size, add-ons, or spice level",
   "addOptionGroup": "Add Option Group",
@@ -1913,6 +1943,13 @@
   "dailyCloseStatusClosed": "Closed",
   "dailyCloseStatusClosedBadge": "CLOSED",
   "dailyCloseStatusOpenBadge": "OPEN",
+  "dailyCloseStatusNeedsAttention": "Needs attention",
+  "dailyCloseOverAmount": "Over by {amount}",
+  "dailyCloseShortAmount": "Short by {amount}",
+  "dailyCloseNoMismatch": "Cash matches expected amount",
+  "dailyCloseCalculating": "Calculating sales…",
+  "dailyCloseClosing": "Closing day…",
+  "dailyCloseReopening": "Reopening day…",
   "noCategoriesFound": "No categories match your search",
   "categorySaved": "Category saved",
   "categoryDeleted": "Category deleted",
@@ -2235,5 +2272,8 @@
   "recoveryKitErrorVersionUnsupported": "This recovery kit version is not supported. Update the app and try again.",
   "recoveryKitErrorFileNotFound": "Recovery kit file not found",
   "recoveryKitErrorNoKey": "No encryption key found to export",
-  "recoveryKitErrorKeyUnavailable": "The encryption key on this device could not be accessed. If you have a recovery kit, tap Import recovery kit above, then restart the app."
+  "recoveryKitErrorKeyUnavailable": "The encryption key on this device could not be accessed. If you have a recovery kit, tap Import recovery kit above, then restart the app.",
+  "dbRecoveryTitle": "Cannot open the database",
+  "dbRecoveryMessage": "The encryption key on this device could not be accessed, so your sales database stays locked. Your data is still on this device. Import your recovery kit (.promkey) to restore access, or try again.",
+  "dbRecoveryRetry": "Try again"
 }

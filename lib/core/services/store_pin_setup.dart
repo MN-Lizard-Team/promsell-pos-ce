@@ -5,13 +5,16 @@ abstract final class StorePinSetup {
   static const minLength = AppLockService.minPinLength;
 
   /// Returns null when [pin] / [confirm] are acceptable; otherwise a stable code:
-  /// `too_short` | `mismatch` | `empty`.
+  /// `too_short` | `mismatch` | `empty` | `trivial`.
   static String? validateNewPin(String pin, String confirm) {
     final a = pin.trim();
     final b = confirm.trim();
     if (a.isEmpty) return 'empty';
     if (a.length < minLength) return 'too_short';
     if (a != b) return 'mismatch';
+    // Mirror AppLockService.setPin's trivial guard here so the create-PIN
+    // dialog rejects obvious PINs before setPin throws an uncaught StateError.
+    if (AppLockService.isTrivialPin(a)) return 'trivial';
     return null;
   }
 }

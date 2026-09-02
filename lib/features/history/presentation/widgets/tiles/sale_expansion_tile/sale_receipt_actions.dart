@@ -4,8 +4,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/customer/domain/repositories/customer_repository.dart';
 import 'package:promsell_pos_ce/features/product/domain/repositories/product_repository.dart';
@@ -104,9 +106,17 @@ class SaleReceiptActions {
     Sale sale,
     Settings settings,
   ) async {
+    if (!await ensureAppUnlocked(
+      context,
+      title: context.l10n.appLockConfirmPin,
+    )) {
+      return;
+    }
     if (_busySaleIds.contains(sale.id)) return;
     _busySaleIds.add(sale.id);
     try {
+      await sl<AppLockService>().requireSensitiveSession();
+      if (!context.mounted) return;
       final paymentMethodLabel = formatSalePaymentSummary(
         context,
         sale,
@@ -169,9 +179,17 @@ class SaleReceiptActions {
       }
       return;
     }
+    if (!await ensureAppUnlocked(
+      context,
+      title: context.l10n.appLockConfirmPin,
+    )) {
+      return;
+    }
     if (_busySaleIds.contains(sale.id)) return;
     _busySaleIds.add(sale.id);
     try {
+      await sl<AppLockService>().requireSensitiveSession();
+      if (!context.mounted) return;
       final paymentMethodLabel = formatSalePaymentSummary(
         context,
         sale,

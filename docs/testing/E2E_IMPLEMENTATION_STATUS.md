@@ -46,7 +46,7 @@ If analyze fails again, fix before spending time on emulator flakes.
 |------|--------|
 | DI / DB bootstrap | `TestApp` registers test DB then may re-enter app `configureDependencies()` / `runPromsellApp` — risk of double init |
 | Money UI asserts | Prefer `CurrencyFormatter` / displayed baht text — not `Money.toString()` (`Money(x.xx)`) |
-| Selectors | EN text / icon chains; few stable `Key`s on cart/checkout/pay |
+| Selectors | EN text / icon chains; few stable `Key`s on cart/checkout/pay. **v0.9.4 note:** Settings + onboarding icons migrated from Material `Icons.*` to `TablerIcons.*` — E2E robots using `find.byIcon(Icons.x)` on Settings/onboarding pages must update to `TablerIcons.x` |
 | CI device | No emulator on `ci.yml`. Trust emulator can flake and **block** tags |
 | Locale | App is TH/EN; robots often EN-oriented |
 

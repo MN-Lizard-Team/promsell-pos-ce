@@ -2,6 +2,12 @@ import 'package:promsell_pos_ce/features/restaurant_table/domain/entities/restau
 
 abstract class RestaurantTableRepository {
   Future<List<RestaurantTable>> getAllTables();
+
+  /// Live floor plan: re-emits whenever restaurant tables OR draft carts
+  /// change, so effective occupancy (active cart bound to table_id) updates
+  /// automatically — including the atomic free-at-checkout inside the sale
+  /// transaction.
+  Stream<List<RestaurantTable>> watchTables();
   Future<RestaurantTable?> getTableById(String id);
   Future<String> addTable({
     required String name,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/onboarding/presentation/widgets/sections/onboarding_section.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class OnboardingShopSection extends StatelessWidget {
   const OnboardingShopSection({
@@ -35,7 +36,7 @@ class OnboardingShopSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return OnboardingSection(
       cardBg: cardBg,
-      icon: Icons.store,
+      icon: TablerIcons.buildingStore,
       iconColor: accentBrand,
       title: context.l10n.onboardingShopInfoTitle,
       subtitle: context.l10n.onboardingShopInfoSubtitle,
@@ -50,7 +51,7 @@ class OnboardingShopSection extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.onboardingShopNameLabel,
               hintText: context.l10n.onboardingShopNameHint,
-              prefixIcon: const Icon(Icons.storefront),
+              prefixIcon: const Icon(TablerIcons.building),
               helperText: context.l10n.onboardingRequiredLabel,
             ),
           ),
@@ -65,7 +66,7 @@ class OnboardingShopSection extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.onboardingAddressLabel,
               hintText: context.l10n.onboardingAddressHint,
-              prefixIcon: const Icon(Icons.location_on_outlined),
+              prefixIcon: const Icon(TablerIcons.mapPin),
               helperText: context.l10n.onboardingOptionalLabel,
             ),
           ),
@@ -79,7 +80,7 @@ class OnboardingShopSection extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.onboardingPhoneLabel,
               hintText: context.l10n.onboardingPhoneHint,
-              prefixIcon: const Icon(Icons.phone_outlined),
+              prefixIcon: const Icon(TablerIcons.phone),
               helperText: context.l10n.onboardingOptionalLabel,
             ),
             keyboardType: TextInputType.phone,
@@ -93,7 +94,7 @@ class OnboardingShopSection extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.settingsTaxId,
               hintText: context.l10n.taxIdHint,
-              prefixIcon: const Icon(Icons.badge_outlined),
+              prefixIcon: const Icon(TablerIcons.idBadge2),
               helperText: context.l10n.onboardingOptionalLabel,
               counterText: '',
             ),

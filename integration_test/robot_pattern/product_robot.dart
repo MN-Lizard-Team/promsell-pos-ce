@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import '../helpers/test_utils.dart';
 import 'robot_base.dart';
 
@@ -7,9 +8,16 @@ import 'robot_base.dart';
 class ProductRobot extends RobotBase {
   ProductRobot(super.tester);
 
-  /// Navigate to products page
+  /// Navigate to products page.
+  ///
+  /// Uses `find.byIcon` with `.first` because both active and inactive nav
+  /// icons may be present (MainShell: cube / cubeUnfolded).
   Future<void> navigateToProductsPage() async {
-    await tap(find.byIcon(Icons.inventory_2_outlined));
+    final productsIcon = find.byIcon(TablerIcons.cube);
+    if (productsIcon.evaluate().isNotEmpty) {
+      await tester.tap(productsIcon.first);
+      await settle();
+    }
   }
 
   /// Open add product form

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/features/product/domain/entities/product.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/table_sales_stat.dart';
+import 'package:promsell_pos_ce/features/report/presentation/widgets/cards/report_table_breakdown_card.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/services/report_calculator_service.dart';
@@ -45,6 +47,7 @@ class ReportOverviewContent extends StatelessWidget {
     this.productLookup = const {},
     this.lastUpdated,
     this.aggregate,
+    this.tableBreakdown = const [],
   });
 
   final Widget dateHeader;
@@ -70,6 +73,7 @@ class ReportOverviewContent extends StatelessWidget {
   final ReportAggregate? aggregate;
   final ReportCalculatorService calculator;
   final DateTime? lastUpdated;
+  final List<TableSalesStat> tableBreakdown;
 
   @override
   Widget build(BuildContext context) {
@@ -242,6 +246,15 @@ class ReportOverviewContent extends StatelessWidget {
             );
           },
         ),
+        const SizedBox(height: 16),
+        if (tableBreakdown.isNotEmpty)
+          ReportStagger(
+            index: stagger++,
+            child: ReportTableBreakdownCard(
+              stats: tableBreakdown,
+              currency: currency,
+            ),
+          ),
         const SizedBox(height: 16),
         ReportStagger(
           index: stagger++,

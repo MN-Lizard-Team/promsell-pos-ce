@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:promsell_pos_ce/core/database/db_key_store.dart';
 import 'package:promsell_pos_ce/core/database/recovery_kit_service.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
@@ -20,6 +19,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/pages/backup_sett
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/backup/backup_info_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/backup/backup_status_card.dart';
+import 'package:promsell_pos_ce/features/settings/presentation/widgets/recovery_kit/recovery_kit_errors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/recovery_kit/recovery_kit_secret_dialog.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/recovery_kit/recovery_kit_section_card.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
@@ -203,7 +203,7 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
       AppSnackBar.success(context, l10n.recoveryKitExportSuccess);
     } catch (e) {
       if (!context.mounted) return;
-      AppSnackBar.error(context, _kitErrorMessage(l10n, e));
+      AppSnackBar.error(context, recoveryKitErrorMessage(l10n, e));
     }
   }
 
@@ -267,26 +267,8 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
       AppSnackBar.warning(context, l10n.recoveryKitImportSuccess);
     } catch (e) {
       if (!context.mounted) return;
-      AppSnackBar.error(context, _kitErrorMessage(l10n, e));
+      AppSnackBar.error(context, recoveryKitErrorMessage(l10n, e));
     }
-  }
-
-  String _kitErrorMessage(AppLocalizations l10n, Object e) {
-    if (e is StateError) {
-      return switch (e.message) {
-        'SECRET_TOO_SHORT' => l10n.recoveryKitSecretTooShort,
-        'KIT_FILE_NOT_FOUND' => l10n.recoveryKitErrorFileNotFound,
-        'KIT_CORRUPT' => l10n.recoveryKitErrorCorrupt,
-        'KIT_VERSION_UNSUPPORTED' => l10n.recoveryKitErrorVersionUnsupported,
-        'WRONG_SECRET' => l10n.recoveryKitErrorWrongSecret,
-        'NO_DB_KEY' => l10n.recoveryKitErrorNoKey,
-        _ => l10n.backupFailed,
-      };
-    }
-    // Secure-storage failure or lost key over an existing DB — direct the
-    // merchant to import their recovery kit instead of a generic failure.
-    if (e is DbKeyUnavailable) return l10n.recoveryKitErrorKeyUnavailable;
-    return l10n.backupFailed;
   }
 
   @override
@@ -304,6 +286,8 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
           onRetry: cubit.load,
           builder: (s) => SettingsLeafChrome(
             title: l10n.settingsBackup,
+            heroIcon: TablerIcons.databaseExport,
+            heroAccent: AppColors.neutralAccent,
             header: BackupStatusCard(
               lastBackupAt: s.lastBackupAt,
               reminderDays: s.backupReminderDays,
@@ -314,6 +298,7 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
               _buildReminderTile(context, s, cubit, st, l10n),
               SettingsSectionCard(
                 title: l10n.backupEncryptionTitle,
+                accent: AppColors.neutralAccent,
                 children: [
                   SwitchListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -431,6 +416,7 @@ class _BackupSettingsPageState extends State<BackupSettingsPage> {
 
     return SettingsSectionCard(
       title: l10n.backupReminderLabel,
+      accent: AppColors.neutralAccent,
       children: [
         SwitchListTile(
           contentPadding: const EdgeInsets.symmetric(

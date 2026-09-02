@@ -88,6 +88,8 @@ Before submitting, verify:
 - [ ] New strings added to both `app_th.arb` and `app_en.arb`
 - [ ] UI changes checked on compact and expanded layouts
 - [ ] Shared UI widgets or theme tokens reused before adding new one-off styling
+- [ ] Icons use `TablerIcons.*` (not Material `Icons.*`) — check with `grep -r "Icons\." lib/features/`
+- [ ] Settings UI follows POS-native flat-card patterns (thin borders, plain section headers, `SettingsActionCard`, `SettingsThemeExtension` tokens); onboarding follows gradient hero + pill progress + accent-stripe patterns
 - [ ] One concern per PR — no unrelated changes
 
 ---
@@ -132,7 +134,8 @@ When working on presentation code:
 - Prefer theme tokens from `lib/core/theme/` over ad-hoc colors, radius, or padding
 - Use `colorScheme.*` (e.g., `colorScheme.primary`, `colorScheme.error`) instead of `Colors.*` — never hardcode Material colors in feature code
 - Use `AppColors` tokens from `lib/core/theme/app_colors.dart` for status/warning/success/error colors instead of `Colors.green`, `Colors.red`, etc.
-- Use `AppSnackBar.info/success/error` for all snackbars — never raw `ScaffoldMessenger.showSnackBar`
+- **Use `TablerIcons.*` from `tabler_icons_plus` for all feature icons** — not Material `Icons.*`. The app uses Tabler Icons Plus consistently across 100+ files. Only use `Icons.*` if a Tabler equivalent is unavailable (rare).
+- Use `AppSnackBar.info/success/error` for all snackbars — never raw `ScaffoldMessenger.showSnackBar`. The overlay toast auto-constrains to `maxWidth: 320` with `maxLines: 2` to prevent overflow.
 - Use `BlocSelector` (not `BlocBuilder`) when a widget only needs a slice of BLoC state (e.g., single category in product tiles)
 - Use shared navigation helpers from `product_navigation.dart` (`showProductEditPage`, `showProductPreviewPage`, `confirmDeleteProduct`) — never duplicate `_showEdit`/`_showPreview` in tiles or pages
 - Use `ProductCardShell` for product card containers — flat `Container` + `BoxDecoration` (no `Card` elevation) for clean `Dismissible` integration
@@ -140,6 +143,28 @@ When working on presentation code:
 - Test constrained layouts such as bottom sheets, cart panels, and forms with the keyboard open
 - Verify light, dark, and system theme modes if colors or surfaces changed
 - Add widget tests for reusable UI behavior, especially compact/overflow cases
+
+### Design system patterns (Settings & Onboarding)
+
+Settings and onboarding use **separate** visual languages. Settings follows the POS-native flat paper-card language shared with Sale/Product pages; onboarding retains the gradient hero + accent-stripe language.
+
+**Settings (POS-native flat cards):**
+
+- **Action cards** — use `SettingsActionCard` (64dp min height, 12dp radius, 0.5dp border, 32dp icon well); emphasized state = 1.5px teal border. 2-column on wide screens (≥480px), 1-column on phones.
+- **Section headers** — plain `titleMedium/w700` text via `SettingsSectionHeader` (no pills, no accent stripes).
+- **Hero card** — white card with thin border + teal readiness progress bar (no gradient).
+- **App bar** — teal chrome with integrated search strip (matches `SaleAppBar`); tapping the strip pushes `SettingsSearchPage`.
+- **Scaffold background** — `surfaceContainerLow` (`#F1F5F9`), matching the catalog background.
+- **Theme tokens** — use `SettingsThemeExtension` tokens (`cardRadius`, `actionCardRadius`, `actionCardMinHeight`, `statusBadgeRadius`) instead of hardcoded values.
+- **Sub-pages** — use `SettingsLeafChrome` with optional hero strip (icon + accent) below the app bar.
+
+**Onboarding (gradient hero + accent stripes):**
+
+- **Accent stripe** — 4px left stripe on section cards (`OnboardingSection`, `OnboardingDoneSection`), colored by category accent (info blue / primary teal / accent orange / neutral slate / success green)
+- **Pill headers** — pill containers with tinted background + border + leading dot for step labels in the progress bar
+- **Tinted icon wells** — 40–44px rounded containers with 12–14% accent tint + 20% border for section/action icons
+- **Gradient hero** — deep-teal `LinearGradient` (primary → primaryDark) for onboarding step 0 and done section header
+- **Status badges** — compact dot + label with `statusBadgeRadius` (20) corners, using `SettingsStatusChip`
 
 ---
 

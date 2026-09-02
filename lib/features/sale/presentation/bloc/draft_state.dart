@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/kitchen_ticket.dart';
 
 const Object _unset = Object();
 
@@ -16,6 +17,7 @@ class DraftState extends Equatable {
     this.opStatus = DraftOpStatus.idle,
     this.opNonce = 0,
     this.lastOp,
+    this.lastKitchenTicket,
   });
 
   final String? activeDraftId;
@@ -33,6 +35,7 @@ class DraftState extends Equatable {
 
   /// park | newBill | forceSave | null
   final String? lastOp;
+  final KitchenTicket? lastKitchenTicket;
 
   bool get isBusy => opStatus == DraftOpStatus.saving;
 
@@ -46,6 +49,7 @@ class DraftState extends Equatable {
     DraftOpStatus? opStatus,
     int? opNonce,
     Object? lastOp = _unset,
+    Object? lastKitchenTicket = _unset,
   }) => DraftState(
     activeDraftId: identical(activeDraftId, _unset)
         ? this.activeDraftId
@@ -64,6 +68,9 @@ class DraftState extends Equatable {
     opStatus: opStatus ?? this.opStatus,
     opNonce: opNonce ?? this.opNonce,
     lastOp: identical(lastOp, _unset) ? this.lastOp : lastOp as String?,
+    lastKitchenTicket: identical(lastKitchenTicket, _unset)
+        ? this.lastKitchenTicket
+        : lastKitchenTicket as KitchenTicket?,
   );
 
   @override
@@ -77,5 +84,6 @@ class DraftState extends Equatable {
     opStatus,
     opNonce,
     lastOp,
+    lastKitchenTicket,
   ];
 }

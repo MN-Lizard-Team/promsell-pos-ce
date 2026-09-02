@@ -22,6 +22,14 @@ mixin CartBlocMetaHandlers on Bloc<CartEvent, CartState> {
     emit(state.copyWith(tableId: event.tableId));
   }
 
+  void onGuestCountChanged(
+    CartGuestCountChanged event,
+    Emitter<CartState> emit,
+  ) {
+    if (rejectIfPaymentLocked(emit)) return;
+    emit(state.copyWith(guestCount: event.guestCount));
+  }
+
   void onCustomerSet(CartCustomerSet event, Emitter<CartState> emit) {
     if (rejectIfPaymentLocked(emit)) return;
     emit(state.copyWith(customerId: event.customerId));

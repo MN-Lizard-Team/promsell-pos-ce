@@ -19,4 +19,6 @@ CartSnapshot cartStateToSnapshot(CartState s) => CartSnapshot(
   customerId: s.customerId,
   promotionId: s.promotionId,
   promotionDiscountAmount: s.promotionDiscountAmount,
+  guestCount: s.guestCount,
+  openedAt: s.openedAt,
 );

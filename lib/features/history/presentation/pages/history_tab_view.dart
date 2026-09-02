@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_empty_state.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
+import 'package:promsell_pos_ce/features/history/domain/usecases/get_sale_history_page.dart';
 import 'package:promsell_pos_ce/features/history/domain/usecases/watch_sale_history.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
@@ -57,6 +60,7 @@ class HistoryTabView extends StatelessWidget {
         final from = initialFrom ?? today.$1;
         final to = initialTo ?? today.$2;
         return HistoryBloc(
+          getSaleHistoryPage: sl<GetSaleHistoryPage>(),
           watchSaleHistory: sl<WatchSaleHistory>(),
           voidSale: sl<VoidSale>(),
         )..add(HistoryDateRangeChanged(from: from, to: to));
@@ -76,7 +80,56 @@ class _HistoryTabContent extends StatefulWidget {
 }
 
 class _HistoryTabContentState extends State<_HistoryTabContent>
-    with AutomaticKeepAliveClientMixin<_HistoryTabContent> {
+    with
+        AutomaticKeepAliveClientMixin<_HistoryTabContent>,
+        WidgetsBindingObserver {
+  final _scrollController = ScrollController();
+  bool _isSensitiveLocked = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scrollController.addListener(_onScroll);
+    _refreshLockState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshLockState();
+  }
+
+  Future<void> _refreshLockState() async {
+    try {
+      final lock = sl<AppLockService>();
+      final locked = await lock.isEnabled() && !lock.isSessionUnlocked;
+      if (mounted) setState(() => _isSensitiveLocked = locked);
+    } catch (_) {
+      if (mounted) setState(() => _isSensitiveLocked = false);
+    }
+  }
+
+  Future<void> _unlock() async {
+    final ok = await ensureAppUnlocked(context);
+    if (ok && mounted) setState(() => _isSensitiveLocked = false);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || _isSensitiveLocked) return;
+    if (_scrollController.position.extentAfter <= 600) {
+      context.read<HistoryBloc>().add(const HistoryLoadMoreRequested());
+    }
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -201,7 +254,7 @@ class _HistoryTabContentState extends State<_HistoryTabContent>
                     dateHeader: _buildDateHeader(ctx, state, dateFmt),
                     child: AppEmptyState(
                       icon: TablerIcons.alertCircle,
-                      title: state.errorMessage ?? ctx.l10n.errorOccurred,
+                      title: historyErrorMessage(ctx.l10n, state.errorMessage),
                       actionLabel: ctx.l10n.retry,
                       onAction: () => ctx.read<HistoryBloc>().add(
                         const HistorySubscribed(),
@@ -235,6 +288,28 @@ class _HistoryTabContentState extends State<_HistoryTabContent>
                 }
                 return Column(
                   children: [
+                    if (state.isStale)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                        child: Semantics(
+                          liveRegion: true,
+                          container: true,
+                          child: MaterialBanner(
+                            content: Text(
+                              historyErrorMessage(ctx.l10n, state.errorMessage),
+                            ),
+                            leading: const Icon(TablerIcons.alertTriangle),
+                            actions: [
+                              TextButton(
+                                onPressed: () => ctx.read<HistoryBloc>().add(
+                                  const HistorySubscribed(),
+                                ),
+                                child: Text(ctx.l10n.retry),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     Expanded(
                       child: RefreshIndicator(
                         color: Theme.of(ctx).colorScheme.primary,
@@ -250,10 +325,26 @@ class _HistoryTabContentState extends State<_HistoryTabContent>
                               .timeout(const Duration(seconds: 10));
                         },
                         child: ListView.separated(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-                          itemCount: filtered.length,
+                          itemCount:
+                              filtered.length +
+                              (state.isLoadingMore || state.hasMore ? 1 : 0),
                           separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (_, i) {
+                            if (i >= filtered.length) {
+                              return Semantics(
+                                liveRegion: true,
+                                label: ctx.l10n.loading,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                              );
+                            }
                             final sale = filtered[i];
                             return SaleExpansionTile(
                               key: ValueKey(sale.id),
@@ -299,8 +390,11 @@ class _HistoryTabContentState extends State<_HistoryTabContent>
         child: body,
       ),
     );
+    final gatedBody = _isSensitiveLocked
+        ? _buildLockedBody(context)
+        : responsiveBody;
 
-    if (!widget.syncWithReport) return responsiveBody;
+    if (!widget.syncWithReport) return gatedBody;
 
     // ReportCubit SSOT → History when Report chips/picker change.
     return BlocListener<ReportCubit, ReportState>(
@@ -315,7 +409,39 @@ class _HistoryTabContentState extends State<_HistoryTabContent>
           HistoryDateRangeChanged(from: from, to: to),
         );
       },
-      child: responsiveBody,
+      child: gatedBody,
+    );
+  }
+
+  Widget _buildLockedBody(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: context.l10n.appLockEnterPin,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(TablerIcons.lock, size: 48, color: scheme.primary),
+              const SizedBox(height: 12),
+              Text(
+                context.l10n.appLockEnterPin,
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: _unlock,
+                icon: const Icon(TablerIcons.lockOpen),
+                label: Text(context.l10n.appLockUnlock),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

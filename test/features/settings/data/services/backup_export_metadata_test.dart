@@ -43,7 +43,7 @@ void main() {
   group('P1-5: BackupExportService metadata + checksum', () {
     test('BackupMetadata encodes and decodes correctly', () {
       final metadata = const BackupMetadata(
-        schemaVersion: 32,
+        schemaVersion: 35,
         appVersion: '0.9.2',
         createdAt: '2026-01-01T00:00:00.000',
         dbSizeBytes: 1024,
@@ -53,7 +53,7 @@ void main() {
       final encoded = metadata.encode();
       final decoded = BackupMetadata.tryDecode(encoded);
       expect(decoded, isNotNull);
-      expect(decoded!.schemaVersion, 32);
+      expect(decoded!.schemaVersion, 35);
       expect(decoded.appVersion, '0.9.2');
       expect(decoded.dbSizeBytes, 1024);
       expect(decoded.checksumSha256, 'abc123');
@@ -77,7 +77,7 @@ void main() {
       );
 
       // Verify metadata.
-      expect(result.metadata.schemaVersion, 32);
+      expect(result.metadata.schemaVersion, 35);
       expect(result.metadata.appVersion, '0.9.2-test');
       expect(result.metadata.encrypted, isFalse);
       expect(result.metadata.dbSizeBytes, greaterThan(0));

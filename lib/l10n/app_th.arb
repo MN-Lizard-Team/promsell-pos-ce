@@ -783,9 +783,9 @@
   "onboardingNone": "ไม่มี",
   "onboardingInclusive": "รวมในราคา",
   "onboardingExclusive": "แยกจากราคา",
-  "onboardingTrustOffline": "ใช้งานได้แม้ไม่มีอินเทอร์เน็ต",
-  "onboardingTrustLocal": "ข้อมูลอยู่บนอุปกรณ์นี้",
-  "onboardingTrustEncrypted": "พื้นที่จัดเก็บเข้ารหัส",
+  "onboardingTrustOffline": "ใช้งานออฟไลน์ได้",
+  "onboardingTrustLocal": "เก็บในเครื่องนี้",
+  "onboardingTrustEncrypted": "เข้ารหัสลับ",
   "onboardingStepOf": "ขั้นตอนที่ {step} จาก {total}",
   "@onboardingStepOf": {
     "placeholders": {
@@ -796,7 +796,7 @@
   "onboardingVatNoneHelp": "ไม่มีการเพิ่ม VAT ในการขาย",
   "onboardingVatInclusiveHelp": "ราคาที่แสดงรวม VAT แล้ว",
   "onboardingVatExclusiveHelp": "ระบบจะบวก VAT เพิ่มจากราคาที่แสดง",
-  "onboardingInvalidVatRate": "กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 100",
+  "onboardingInvalidVatRate": "กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 30",
   "onboardingPromptPaySecurity": "ไม่บังคับ ข้อมูลจะเก็บไว้บนอุปกรณ์นี้และใช้สร้าง QR รับเงิน",
   "onboardingCurrencyBaht": "฿ บาท",
   "onboardingCurrencyUsd": "$ ดอลลาร์",
@@ -1239,6 +1239,20 @@
   "orderChannelWalkIn": "เดินเข้าร้าน",
   "orderChannelPhone": "โทรศัพท์",
   "orderChannelOnline": "ออนไลน์",
+  "guestCount": "จำนวนลูกค้า",
+  "guestCountHint": "จำนวนคน",
+  "sendToKitchen": "ส่งเข้าครัว",
+  "kitchenTicket": "รายการส่งครัว",
+  "kitchenTicketEmpty": "ไม่มีรายการใหม่ที่ต้องส่งเข้าครัว",
+  "selectItemsForCheckout": "เลือกสินค้าเพื่อชำระบางส่วน",
+  "selectedItemsCount": "เลือกแล้ว {count} รายการ",
+  "@selectedItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "externalOrderRef": "เลขอ้างอิงการสั่งซื้อ",
   "externalOrderRefHint": "หมายเลขคำสั่งซื้อจากแพลตฟอร์มจัดส่ง (ไม่บังคับ)",
   "serviceCharge": "ค่าบริการ",
@@ -1262,12 +1276,19 @@
   "costCoverageUnavailable": "ยังไม่มีข้อมูลต้นทุน",
   "insights": "ภาพรวม",
   "orderBreakdown": "การกระจายคำสั่งซื้อ",
+  "tableSalesBreakdown": "ยอดขายแยกตามโต๊ะ",
   "tableNumber": "โต๊ะ",
   "selectTable": "เลือกโต๊ะ",
   "noTable": "ยังไม่ได้กำหนดโต๊ะ",
   "restaurantSettings": "ตั้งค่าร้านอาหาร",
   "tableManagement": "จัดการโต๊ะ",
   "tableManagementSubtitle": "จัดการโต๊ะและโซนในร้าน",
+  "floorTitle": "ผังโต๊ะ",
+  "floorUnzoned": "อื่นๆ",
+  "transferTable": "โอนโต๊ะ",
+  "transferTableTo": "โอน {source} ไปที่",
+  "noTransferTables": "ไม่มีโต๊ะว่างสำหรับโอน",
+  "tableTransferSuccess": "โอนไปยังโต๊ะ {name} แล้ว",
   "addTable": "เพิ่มโต๊ะ",
   "editTable": "แก้ไขโต๊ะ",
   "deleteTable": "ลบโต๊ะ",
@@ -1284,6 +1305,15 @@
   "confirmDeleteTable": "ลบโต๊ะนี้?",
   "selectTableForDineIn": "เลือกโต๊ะสำหรับคำสั่งนี้",
   "noTablesAvailable": "ยังไม่ได้ตั้งค่าโต๊ะ เพิ่มโต๊ะในเมนูจัดการโต๊ะ",
+  "tableAlreadyBound": "โต๊ะนี้มีบิลที่ยังไม่ได้ชำระอยู่",
+  "tableChipLabel": "โต๊ะ {name}",
+  "@tableChipLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "optionGroups": "กลุ่มตัวเลือก",
   "optionGroupsSubtitle": "เพิ่มตัวเลือกเช่น ขนาด, ท็อปปิ้ง, ระดับความเผ็ด",
   "addOptionGroup": "เพิ่มกลุ่มตัวเลือก",
@@ -1905,6 +1935,13 @@
   "dailyCloseStatusClosed": "ปิดแล้ว",
   "dailyCloseStatusClosedBadge": "ปิดแล้ว",
   "dailyCloseStatusOpenBadge": "เปิด",
+  "dailyCloseStatusNeedsAttention": "ต้องตรวจสอบ",
+  "dailyCloseOverAmount": "เงินเกิน {amount}",
+  "dailyCloseShortAmount": "เงินขาด {amount}",
+  "dailyCloseNoMismatch": "เงินสดตรงกับยอดที่ควรมี",
+  "dailyCloseCalculating": "กำลังคำนวณยอดขาย…",
+  "dailyCloseClosing": "กำลังปิดยอด…",
+  "dailyCloseReopening": "กำลังเปิดยอดใหม่…",
   "noCategoriesFound": "ไม่พบหมวดหมู่ที่ตรงกับการค้นหา",
   "categorySaved": "บันทึกหมวดหมู่แล้ว",
   "categoryDeleted": "ลบหมวดหมู่แล้ว",
@@ -2227,5 +2264,8 @@
   "recoveryKitErrorVersionUnsupported": "แอปไม่รองรับชุดกู้คืนเวอร์ชันนี้ กรุณาอัปเดตแอปแล้วลองอีกครั้ง",
   "recoveryKitErrorFileNotFound": "ไม่พบไฟล์ชุดกู้คืน",
   "recoveryKitErrorNoKey": "ไม่พบคีย์เข้ารหัสสำหรับส่งออก",
-  "recoveryKitErrorKeyUnavailable": "เข้าถึงคีย์เข้ารหัสของเครื่องนี้ไม่ได้ หากมีชุดกู้คืน ให้กดนำเข้าชุดกู้คืนด้านบน แล้วปิดและเปิดแอปใหม่"
+  "recoveryKitErrorKeyUnavailable": "เข้าถึงคีย์เข้ารหัสของเครื่องนี้ไม่ได้ หากมีชุดกู้คืน ให้กดนำเข้าชุดกู้คืนด้านบน แล้วปิดและเปิดแอปใหม่",
+  "dbRecoveryTitle": "เปิดฐานข้อมูลไม่ได้",
+  "dbRecoveryMessage": "เข้าถึงคีย์เข้ารหัสบนเครื่องนี้ไม่ได้ ฐานข้อมูลการขายจึงยังล็อกอยู่ — ข้อมูลของคุณยังอยู่บนเครื่องนี้ นำเข้าชุดกู้คืน (.promkey) เพื่อกู้คืนการเข้าถึง หรือลองอีกครั้ง",
+  "dbRecoveryRetry": "ลองอีกครั้ง"
 }

@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/services/lockout_policy.dart';
 import 'package:promsell_pos_ce/core/services/pin_hasher.dart';
+import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 
 /// Store PIN lock for sensitive POS actions
 /// (void, backup, PromptPay, stock adjust, CSV import).
@@ -27,7 +28,10 @@ class AppLockService {
     : _storage =
           storage ??
           const FlutterSecureStorage(
-            aOptions: AndroidOptions(),
+            // resetOnError: false — lockout state and PIN material must never
+            // be silently wiped on Keystore errors (V092-B.7); failures are
+            // handled by the read guards below instead.
+            aOptions: AndroidOptions(resetOnError: false),
             iOptions: IOSOptions(
               accessibility: KeychainAccessibility.unlocked_this_device,
             ),
@@ -342,8 +346,19 @@ class AppLockService {
     if (_lockout.isLockedOut) {
       throw StateError('PIN_LOCKED');
     }
-    final salt = await _storage.read(key: _pinSaltKey);
-    final expected = await _storage.read(key: _pinHashKey);
+    final String? salt;
+    final String? expected;
+    try {
+      salt = await _storage.read(key: _pinSaltKey);
+      expected = await _storage.read(key: _pinHashKey);
+    } catch (e) {
+      // PIN material unreadable — verification can never succeed; fail closed.
+      AppLogger.warning(
+        'AppLockService: PIN material read failed in _verifyPin',
+        error: e,
+      );
+      return false;
+    }
     if (salt == null || expected == null) return false;
 
     final scheme = await _storage.read(key: _schemeKey) ?? PinHasher.schemeV1;
@@ -373,7 +388,16 @@ class AppLockService {
 
   /// Returns true if action may proceed (lock off, or session valid, or PIN ok).
   Future<bool> ensureUnlocked({String? pin}) async {
-    if (!await isEnabled()) return true;
+    try {
+      if (!await isEnabled()) return true;
+    } catch (e) {
+      // Secure storage unreadable (e.g. Keystore error) — fail closed.
+      AppLogger.warning(
+        'AppLockService: isEnabled read failed in ensureUnlocked',
+        error: e,
+      );
+      return false;
+    }
     if (isSessionUnlocked) return true;
     if (pin == null) return false;
     try {
@@ -389,7 +413,17 @@ class AppLockService {
   /// Call after UI unlock (or when lock is disabled). Does not accept a PIN —
   /// callers must [verifyPin] / [unlockSession] first.
   Future<void> requireSensitiveSession() async {
-    if (!await isEnabled()) return;
+    try {
+      if (!await isEnabled()) return;
+    } catch (e) {
+      // Secure storage unreadable (e.g. Keystore error) — fail closed and
+      // surface the standard lock gate instead of a raw platform exception.
+      AppLogger.warning(
+        'AppLockService: isEnabled read failed in requireSensitiveSession',
+        error: e,
+      );
+      throw const BusinessRuleError(ruleAppLockRequired);
+    }
     if (isSessionUnlocked) return;
     throw const BusinessRuleError(ruleAppLockRequired);
   }
@@ -397,8 +431,20 @@ class AppLockService {
   Future<void> _hydrateLockout() async {
     if (_lockoutHydrated) return;
     _lockoutHydrated = true;
-    final attemptsRaw = await _storage.read(key: _failedAttemptsKey);
-    final untilRaw = await _storage.read(key: _lockedUntilKey);
+    final String? attemptsRaw;
+    final String? untilRaw;
+    try {
+      attemptsRaw = await _storage.read(key: _failedAttemptsKey);
+      untilRaw = await _storage.read(key: _lockedUntilKey);
+    } catch (e) {
+      // Unreadable counters — proceed with defaults; PIN verification has its
+      // own fail-closed guard, so this cannot open the gate.
+      AppLogger.warning(
+        'AppLockService: lockout state read failed; using defaults',
+        error: e,
+      );
+      return;
+    }
     final failedAttempts = int.tryParse(attemptsRaw ?? '') ?? 0;
     final lockedUntilMs = int.tryParse(untilRaw ?? '');
     _lockout.fromSnapshot(
@@ -437,21 +483,33 @@ class AppLockService {
   Future<void> _hydratePolicy() async {
     if (_policyHydrated) return;
     _policyHydrated = true;
-    final graceRaw = await _storage.read(key: _sessionGraceSecondsKey);
+    final String? graceRaw;
+    final String? maxRaw;
+    final String? lockRaw;
+    try {
+      graceRaw = await _storage.read(key: _sessionGraceSecondsKey);
+      maxRaw = await _storage.read(key: _maxFailedAttemptsKey);
+      lockRaw = await _storage.read(key: _baseLockoutSecondsKey);
+    } catch (e) {
+      // Unreadable policy — keep in-memory defaults; gates stay fail-closed.
+      AppLogger.warning(
+        'AppLockService: policy read failed; using defaults',
+        error: e,
+      );
+      return;
+    }
     if (graceRaw != null && graceRaw.isNotEmpty) {
       final s = int.tryParse(graceRaw);
       if (s != null && s >= 0 && s <= 600) {
         _sessionGrace = Duration(seconds: s);
       }
     }
-    final maxRaw = await _storage.read(key: _maxFailedAttemptsKey);
     if (maxRaw != null && maxRaw.isNotEmpty) {
       final n = int.tryParse(maxRaw);
       if (n != null && n >= 3 && n <= 10) {
         _lockout.updatePolicy(maxFailedAttempts: n);
       }
     }
-    final lockRaw = await _storage.read(key: _baseLockoutSecondsKey);
     if (lockRaw != null && lockRaw.isNotEmpty) {
       final s = int.tryParse(lockRaw);
       if (s != null && s >= 10 && s <= 300) {

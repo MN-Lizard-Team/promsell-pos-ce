@@ -48,6 +48,12 @@ void main() {
       () => mockReportRepository.getProductCostLookup(any()),
     ).thenAnswer((_) async => {});
     when(
+      () => mockReportRepository.watchTableSalesStats(
+        from: any(named: 'from'),
+        to: any(named: 'to'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+    when(
       () => mockGetReportSummary(
         from: any(named: 'from'),
         to: any(named: 'to'),

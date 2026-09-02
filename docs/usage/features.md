@@ -82,7 +82,7 @@ Sale catalog always uses the full width; cart is never docked beside the grid.
 
 ### Settings tab
 
-The Settings root page uses a **2-level hierarchy**: section headers (General, Store & Sales, Discounts, Payments, System & Data, About) → individual pages. A **search bar** at the top filters settings across all sections in real time. A **dashboard card** shows at-a-glance badges (shop name, language, theme, backup status, PromptPay status, barcode scan status). Each tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
+The Settings root page uses a **2-level hierarchy** with a **POS-native flat paper-card** layout (v0.9.4): a teal app-bar chrome with an integrated search strip (matching `SaleAppBar`), a white hero card with thin border and teal readiness progress bar (0/4 checks), plain `titleMedium/w700` section headers, and a 2-column action card grid on wide screens (1-column on phones) with thin borders, 32dp tinted icon wells, and compact status badges. Tapping the search strip pushes a dedicated full-screen `SettingsSearchPage` (mirroring `SaleProductSearchPage`) that filters settings across all sections in real time. Each tile displays a colored **status chip** showing its current state. See [Settings](#settings) below.
 
 ---
 
@@ -90,12 +90,16 @@ The Settings root page uses a **2-level hierarchy**: section headers (General, S
 
 All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value store). Locale, theme, currency, and date format apply immediately; shop info and other text fields are saved automatically.
 
-### Root page
+### Root page (POS-native flat cards — v0.9.4)
 
-- **Dashboard card** — Gradient card at the top showing current shop name, language, theme, backup status (Safe/Warning/Overdue), and PromptPay status (Active/Not set)
-- **Section headers** — General, Store & Sales, Discounts, Payments, System & Data, About — each lists individual setting pages directly (1 tap to reach any page)
-- **Status chips** — Each tile shows a colored badge: Complete/Incomplete, Active/Not set, Safe/Warning/Overdue, or the current value (language, currency, receipt size)
-- **Search** — Cross-section real-time filtering by title or subtitle across all settings pages
+- **Teal app bar + search strip** — Deep-teal app-bar chrome matching `SaleAppBar`, with an integrated search strip that pushes a dedicated full-screen `SettingsSearchPage` (mirrors `SaleProductSearchPage`)
+- **White hero card** — Flat white card with thin border + teal readiness progress bar (0/4 checks: shop profile, PromptPay, backup, store PIN)
+- **Action card grid** — 2-column on wide screens (≥480px), 1-column on phones; each card has a 0.5dp thin border (1.5px teal border when `emphasized`), 32dp tinted icon well, title, and status badge
+- **Plain section headers** — `titleMedium/w700` text labels (no pills, no accent stripes)
+- **Status chips** — Each card shows a compact dot + label badge: Complete/Incomplete, Active/Not set, Safe/Warning/Overdue, or the current value (language, currency, receipt size)
+- **Scaffold background** — `surfaceContainerLow` (`#F1F5F9`), matching the catalog background
+- **Sub-page hero strips** — All sub-pages carry a slim hero strip (icon + accent) below the app bar
+- **Icons** — Tabler Icons Plus (`TablerIcons.*`) throughout Settings (see ADR-037)
 
 ### General Settings
 
@@ -197,6 +201,49 @@ All settings persist via `SettingsLocalDatasource` (Drift-backed typed key-value
 - **Privacy Policy** — Opens in-app `PrivacyPolicyPage` with 8 sections: Data Collection, Third-Party Services, Data Storage, Backup Encryption, Customer Data, Crash Logging, Permissions, Contact
 - **Open Source License** — Opens in-app `AppLicensePage` showing full AGPL-3.0 license text (loaded from `LICENSE` file, selectable for copy)
 - **Footer** — Copyright notice "© 2026 Promsell POS CE · AGPL-3.0"
+
+---
+
+## Onboarding (v0.9.4)
+
+First-launch setup wizard — 4 steps with gradient-hero + accent-stripe visual language (gradient hero, pill progress, accent-stripe sections, Tabler Icons Plus). See ADR-037.
+
+### Step 1: Shop Info
+
+- **Gradient hero** — Deep-teal gradient welcome card with app title, subtitle, and trust badges
+- **Shop info form** — Shop name (required), address, phone (auto-format), tax ID
+- **Receipt header preview** — Live preview of how shop info will appear on receipts
+- **Settings sheet** — Top-right button to open language/theme/currency picker mid-onboarding
+
+### Step 2: Locale & Currency
+
+- **Locale** — Thai or English (live reload)
+- **Currency** — THB (default) or other currencies
+- **Theme** — Light, Dark, or System
+- **Date format** — Date display format selection
+
+### Step 3: Tax Setup
+
+- **VAT mode** — Radio cards: NONE / INCLUSIVE / EXCLUSIVE
+- **VAT rate** — Percentage field (default 7%)
+- **PromptPay ID** — Optional phone (10 digits) or citizen ID (13 digits)
+
+### Step 4: Done
+
+- **Gradient hero header** — Confirmation card
+- **Summary card** — Accent-stripe card showing shop name, currency, VAT mode + rate, PIN status
+- **Start Selling** — Primary CTA (accent orange) to finish onboarding and create store PIN
+
+### Store PIN
+
+- On **finish** or **skip**, onboarding prompts to create a store PIN (min 6 digits, PBKDF2)
+- Skip shows a risk confirmation dialog explaining which actions won't be gated
+- PIN can be enabled later in Settings → Store PIN lock
+
+### Skip Setup
+
+- **Skip Setup** link at the top of the bottom bar — saves settings with defaults and jumps to PIN creation
+- All onboarding fields can be changed later in Settings
 
 ---
 

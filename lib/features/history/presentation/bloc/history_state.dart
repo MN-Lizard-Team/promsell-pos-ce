@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/sale_page.dart';
 import 'package:promsell_pos_ce/shared/domain/entities/sale.dart';
 
 const Object _unset = Object();
@@ -14,6 +15,10 @@ class HistoryState extends Equatable {
     this.errorMessage,
     this.searchQuery = '',
     this.voidingSaleId,
+    this.isStale = false,
+    this.totalCount = 0,
+    this.nextCursor,
+    this.isLoadingMore = false,
   });
 
   final HistoryStatus status;
@@ -22,18 +27,27 @@ class HistoryState extends Equatable {
   final DateTime? to;
   final String? errorMessage;
   final String searchQuery;
-
-  /// When non-null, a void is in flight for this sale (list stays visible).
   final String? voidingSaleId;
+  final bool isStale;
+  final int totalCount;
+  final SaleCursor? nextCursor;
+  final bool isLoadingMore;
+
+  bool get hasMore => nextCursor != null;
 
   List<Sale> get filteredSales {
-    if (searchQuery.isEmpty) return sales;
-    final q = searchQuery.toLowerCase();
+    if (searchQuery.trim().isEmpty) return sales;
+    final q = searchQuery.trim().toLowerCase();
     return sales.where((s) {
       final receipt = s.receiptNumber?.toLowerCase() ?? '';
       final payment = s.paymentMethod.toLowerCase();
+      final paymentMethods = s.payments
+          .map((p) => p.method.toLowerCase())
+          .join(' ');
+      final paymentReferences = s.payments
+          .map((p) => p.reference?.toLowerCase() ?? '')
+          .join(' ');
       final amount = s.totalAmount.value.toStringAsFixed(2);
-      // H16: Also search in customer ID, product names, notes, and void reason.
       final customerId = s.customerId?.toLowerCase() ?? '';
       final note = s.note?.toLowerCase() ?? '';
       final voidReason = s.voidReason?.toLowerCase() ?? '';
@@ -42,6 +56,8 @@ class HistoryState extends Equatable {
           .join(' ');
       return receipt.contains(q) ||
           payment.contains(q) ||
+          paymentMethods.contains(q) ||
+          paymentReferences.contains(q) ||
           amount.contains(q) ||
           customerId.contains(q) ||
           note.contains(q) ||
@@ -58,6 +74,10 @@ class HistoryState extends Equatable {
     Object? errorMessage = _unset,
     String? searchQuery,
     Object? voidingSaleId = _unset,
+    bool? isStale,
+    int? totalCount,
+    Object? nextCursor = _unset,
+    bool? isLoadingMore,
   }) => HistoryState(
     status: status ?? this.status,
     sales: sales ?? this.sales,
@@ -70,6 +90,12 @@ class HistoryState extends Equatable {
     voidingSaleId: identical(voidingSaleId, _unset)
         ? this.voidingSaleId
         : voidingSaleId as String?,
+    isStale: isStale ?? this.isStale,
+    totalCount: totalCount ?? this.totalCount,
+    nextCursor: identical(nextCursor, _unset)
+        ? this.nextCursor
+        : nextCursor as SaleCursor?,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
   );
 
   @override
@@ -81,5 +107,9 @@ class HistoryState extends Equatable {
     errorMessage,
     searchQuery,
     voidingSaleId,
+    isStale,
+    totalCount,
+    nextCursor,
+    isLoadingMore,
   ];
 }

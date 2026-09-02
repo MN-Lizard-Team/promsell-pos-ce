@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/utils/secure_screen.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 /// Enable/disable store PIN, change PIN, and configure session grace +
 /// lockout policy.
@@ -343,6 +345,8 @@ class _AppLockSettingsPageState extends State<AppLockSettingsPage> {
     final l10n = context.l10n;
     return SettingsLeafChrome(
       title: l10n.appLockTitle,
+      heroIcon: TablerIcons.pin,
+      heroAccent: AppColors.primary,
       children: [
         if (_loading)
           const Padding(
@@ -353,6 +357,7 @@ class _AppLockSettingsPageState extends State<AppLockSettingsPage> {
           // --- PIN status + enable/disable ---
           SettingsSectionCard(
             title: l10n.appLockSectionTitle,
+            accent: AppColors.primary,
             children: [
               SwitchListTile(
                 contentPadding: const EdgeInsets.symmetric(
@@ -459,6 +464,7 @@ class _AppLockSettingsPageState extends State<AppLockSettingsPage> {
             SizedBox(height: st.sectionGap),
             SettingsSectionCard(
               title: l10n.appLockSessionGraceTitle,
+              accent: AppColors.primary,
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -492,6 +498,7 @@ class _AppLockSettingsPageState extends State<AppLockSettingsPage> {
             SizedBox(height: st.sectionGap),
             SettingsSectionCard(
               title: l10n.appLockLockoutPolicyTitle,
+              accent: AppColors.primary,
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),

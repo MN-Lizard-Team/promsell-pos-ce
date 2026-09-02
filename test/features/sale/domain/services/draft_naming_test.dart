@@ -34,6 +34,23 @@ void main() {
     });
   });
 
+  group('DraftNaming.shortTableRef', () {
+    test('short ids pass through unchanged', () {
+      expect(DraftNaming.shortTableRef('T-5'), 'T-5');
+    });
+
+    test('uuids are trimmed to their first segment', () {
+      expect(
+        DraftNaming.shortTableRef('3f9c2a1e-88aa-4d0f-b6f3-a1b2c3d4e5f6'),
+        '3f9c2a1e',
+      );
+    });
+
+    test('trims surrounding whitespace first', () {
+      expect(DraftNaming.shortTableRef(' ab12cd34-rest '), 'ab12cd34');
+    });
+  });
+
   group('DraftNaming.resolveParkName', () {
     test('keeps existing name when no explicit', () {
       expect(

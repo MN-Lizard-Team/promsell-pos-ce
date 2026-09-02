@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// Pill-style step indicator for onboarding. The active step renders as a
+/// wide pill with the step label inside; completed steps are solid dots;
+/// upcoming steps are hollow. Matches the Command Dashboard pill aesthetic.
 class OnboardingProgressBar extends StatelessWidget {
   const OnboardingProgressBar({
     super.key,
@@ -22,6 +25,8 @@ class OnboardingProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Semantics(
       liveRegion: true,
       label: stepOfLabel,
@@ -41,7 +46,7 @@ class OnboardingProgressBar extends StatelessWidget {
                       height: 2,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       color: accentBrand.withValues(
-                        alpha: i < currentStep * 2 ? 0.6 : 0.2,
+                        alpha: i < currentStep * 2 ? 0.5 : 0.18,
                       ),
                     ),
                   );
@@ -53,27 +58,53 @@ class OnboardingProgressBar extends StatelessWidget {
                   duration: disableAnimations
                       ? Duration.zero
                       : const Duration(milliseconds: 300),
-                  width: isActive ? 28 : 10,
+                  width: isActive ? 32 : 10,
                   height: 10,
                   decoration: BoxDecoration(
                     color: isActive || isCompleted
                         ? accentBrand
-                        : accentBrand.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(5),
+                        : accentBrand.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 );
               }),
             ),
             if (stepLabel.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                stepLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: accentBrand,
-                  fontWeight: FontWeight.w700,
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentBrand.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: accentBrand.withValues(alpha: 0.28),
+                      ),
+                    ),
+                    child: Text(
+                      stepLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: accentBrand,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    stepOfLabel,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ],

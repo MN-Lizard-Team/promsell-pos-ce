@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/safe_text_controller.dart';
@@ -7,6 +8,7 @@ import 'package:promsell_pos_ce/features/restaurant_table/domain/entities/restau
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_bloc.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_event.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/bloc/table_state.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/services/restaurant_table_name_resolver.dart';
 
 class TableManagementPage extends StatefulWidget {
   const TableManagementPage({super.key});
@@ -75,6 +77,7 @@ class _TableManagementPageState extends State<TableManagementPage> {
                             table: t,
                             onEdit: () => _showAddEditDialog(context, table: t),
                             onDelete: () => _confirmDelete(context, t),
+                            onToggleReserved: () => _toggleReserved(context, t),
                           ),
                         )
                         .toList(),
@@ -158,6 +161,8 @@ class _TableManagementPageState extends State<TableManagementPage> {
                   TableAdded(name: name, zone: zone, seats: seats),
                 );
               }
+              // Names changed — draft tiles must not show stale memoized names.
+              sl<RestaurantTableNameResolver>().invalidate();
               Navigator.pop(ctx);
             },
             child: Text(MaterialLocalizations.of(ctx).saveButtonLabel),
@@ -169,6 +174,19 @@ class _TableManagementPageState extends State<TableManagementPage> {
       disposeTextEditingControllerAfterFrame(zoneCtrl);
       disposeTextEditingControllerAfterFrame(seatsCtrl);
     });
+  }
+
+  /// Long-press toggles the manual available/reserved flag. Occupancy is
+  /// derived from open bills, so tables with an active cart are not toggleable
+  /// here — paying frees them back to their stored manual status.
+  void _toggleReserved(BuildContext context, RestaurantTable table) {
+    if (table.status == TableStatus.occupied) return;
+    final next = table.manualStatus == TableStatus.reserved
+        ? TableStatus.available
+        : TableStatus.reserved;
+    context.read<TableBloc>().add(
+      TableStatusChanged(id: table.id, status: next),
+    );
   }
 
   Future<void> _confirmDelete(
@@ -188,6 +206,8 @@ class _TableManagementPageState extends State<TableManagementPage> {
     );
     if (!confirmed || !context.mounted) return;
     context.read<TableBloc>().add(TableDeleted(table.id));
+    // Deleted — draft tiles must fall back to a short id, not a stale name.
+    sl<RestaurantTableNameResolver>().invalidate();
   }
 }
 
@@ -196,11 +216,13 @@ class _TableCard extends StatelessWidget {
     required this.table,
     required this.onEdit,
     required this.onDelete,
+    required this.onToggleReserved,
   });
 
   final RestaurantTable table;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onToggleReserved;
 
   @override
   Widget build(BuildContext context) {
@@ -215,58 +237,83 @@ class _TableCard extends StatelessWidget {
       TableStatus.occupied => l10n.tableStatusOccupied,
       TableStatus.reserved => l10n.tableStatusReserved,
     };
+    final canToggleReserved = table.status != TableStatus.occupied;
 
-    return Container(
-      width: 120,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.table_restaurant_outlined, size: 32, color: statusColor),
-          const SizedBox(height: 8),
-          Text(
-            table.name,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          if (table.seats != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${table.seats} ${l10n.tableSeats}',
-              style: Theme.of(context).textTheme.bodySmall,
+    return GestureDetector(
+      onLongPress: canToggleReserved ? onToggleReserved : null,
+      child: Container(
+        width: 120,
+        // Horizontal insets stay ≤8 so the two 48dp action buttons fit
+        // (120 − 2 border − 16 padding = 102 ≥ 96) without Flex overflow.
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.table_restaurant_outlined,
+                  size: 32,
+                  color: statusColor,
+                ),
+                if (table.manualStatus == TableStatus.reserved)
+                  Positioned(
+                    right: -14,
+                    top: -4,
+                    child: Icon(
+                      Icons.bookmark,
+                      size: 16,
+                      color: Colors.orange.shade700,
+                    ),
+                  ),
+              ],
             ),
-          ],
-          const SizedBox(height: 4),
-          Text(
-            statusLabel,
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: statusColor),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 20),
-                onPressed: onEdit,
-                tooltip: l10n.editTable,
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, size: 20),
-                onPressed: onDelete,
-                tooltip: l10n.deleteTable,
-                color: Theme.of(context).colorScheme.error,
+            const SizedBox(height: 8),
+            Text(
+              table.name,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            if (table.seats != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '${table.seats} ${l10n.tableSeats}',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              statusLabel,
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: statusColor),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  onPressed: onEdit,
+                  tooltip: l10n.editTable,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  onPressed: onDelete,
+                  tooltip: l10n.deleteTable,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

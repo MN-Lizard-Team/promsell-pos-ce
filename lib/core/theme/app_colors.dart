@@ -93,6 +93,22 @@ class AppColors {
   static const Color darkSkeletonBase = Color(0xFF2A2A2A);
   static const Color darkSkeletonHighlight = Color(0xFF3A3A3A);
 
+  /// WCAG-safe status *text* variants for chips/badges on tinted surfaces —
+  /// raw [error]/[warning] fail contrast on light tints.
+  static const Color statusWarningText = Color(0xFFB45309);
+  static const Color statusErrorText = Color(0xFFB91C1C);
+  static const Color statusSuccessText = Color(0xFF15803D);
+  static const Color darkStatusWarningText = Color(0xFFFDBA74);
+  static const Color darkStatusErrorText = Color(0xFFFCA5A5);
+  static const Color darkStatusSuccessText = Color(0xFF86EFAC);
+
+  /// Dark-mode accent container (amber tint) and error text variant.
+  static const Color darkAccentContainer = Color(0xFF4A2A00);
+  static const Color darkErrorText = Color(0xFFF87171);
+
+  /// Deepest teal — dark-mode end of hero gradients (settings + onboarding).
+  static const Color primaryDeepDark = Color(0xFF06323A);
+
   static const Color overlayBackground = Color(0xF2000000);
   static const Color overlaySurface = Color(0x80000000);
   static const Color overlayIcon = Color(0xFFFFFFFF);

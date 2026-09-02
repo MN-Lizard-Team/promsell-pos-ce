@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/draft_cart_local_datasource.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/cart_snapshot.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
+import 'package:promsell_pos_ce/features/sale/domain/entities/kitchen_ticket.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
 
 @LazySingleton(as: DraftCartRepository)
@@ -36,6 +37,25 @@ class DraftCartRepositoryImpl implements DraftCartRepository {
 
   @override
   Future<int> countDrafts() => _datasource.countDrafts();
+
+  @override
+  Future<({int draftCount, int openBillCount})> getDraftCounts() =>
+      _datasource.getDraftCounts();
+
+  @override
+  Future<KitchenTicket> fireUnfiredLines(String cartId) =>
+      _datasource.fireUnfiredLines(cartId);
+
+  @override
+  Future<void> transferDraftCart({
+    required String cartId,
+    required String sourceTableId,
+    required String targetTableId,
+  }) => _datasource.transferDraftCart(
+    cartId: cartId,
+    sourceTableId: sourceTableId,
+    targetTableId: targetTableId,
+  );
 
   @override
   Future<int> archiveOldDrafts(DateTime cutoff) =>

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/theme/settings_theme_extension.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 
@@ -19,6 +20,7 @@ class PrivacyPolicyPage extends StatelessWidget {
         children: [
           SettingsSectionCard(
             title: l10n.dataCollection,
+            accent: AppColors.success,
             children: [
               _PolicyBody(text: l10n.dataCollectionBody, st: st, theme: theme),
             ],
@@ -26,6 +28,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.thirdPartyServices,
+            accent: AppColors.success,
             children: [
               _PolicyBody(
                 text: l10n.thirdPartyServicesBody,
@@ -37,6 +40,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.dataStorage,
+            accent: AppColors.success,
             children: [
               _PolicyBody(text: l10n.dataStorageBody, st: st, theme: theme),
             ],
@@ -44,6 +48,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.customerDataTitle,
+            accent: AppColors.success,
             children: [
               _PolicyBody(text: l10n.customerDataBody, st: st, theme: theme),
             ],
@@ -51,6 +56,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.backupEncryptionTitle,
+            accent: AppColors.success,
             children: [
               _PolicyBody(
                 text: l10n.backupEncryptionBody,
@@ -62,6 +68,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.permissionsTitle,
+            accent: AppColors.success,
             children: [
               _PolicyBody(text: l10n.permissionsCamera, st: st, theme: theme),
               Divider(
@@ -83,6 +90,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.crashLoggingTitle,
+            accent: AppColors.success,
             children: [
               _PolicyBody(text: l10n.crashLoggingBody, st: st, theme: theme),
             ],
@@ -90,6 +98,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 24),
           SettingsSectionCard(
             title: l10n.contactTitle,
+            accent: AppColors.success,
             children: [
               _PolicyBody(text: l10n.contactBody, st: st, theme: theme),
             ],

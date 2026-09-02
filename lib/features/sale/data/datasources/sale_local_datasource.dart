@@ -39,6 +39,8 @@ abstract class SaleLocalDatasource {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    String? originatingDraftCartId,
+    List<String>? selectedItemIds,
   });
 
   Future<List<Sale>> querySales({DateTime? from, DateTime? to});
@@ -53,10 +55,15 @@ abstract class SaleLocalDatasource {
     DateTime? to,
     SaleCursor? cursor,
     int pageSize = 50,
+    String? searchQuery,
   });
 
   /// Total non-deleted sale count, optionally within a date range.
-  Future<int> querySalesCount({DateTime? from, DateTime? to});
+  Future<int> querySalesCount({
+    DateTime? from,
+    DateTime? to,
+    String? searchQuery,
+  });
 
   /// SQL-aggregated report summary (no item hydration).
   Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to});
@@ -131,6 +138,8 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     String? customerId,
     String? promotionId,
     Money promotionDiscountAmount = Money.zero,
+    String? originatingDraftCartId,
+    List<String>? selectedItemIds,
   }) => _insert.insertSaleWithItems(
     items: items,
     paymentMethod: paymentMethod,
@@ -154,6 +163,8 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     customerId: customerId,
     promotionId: promotionId,
     promotionDiscountAmount: promotionDiscountAmount,
+    originatingDraftCartId: originatingDraftCartId,
+    selectedItemIds: selectedItemIds,
   );
 
   @override
@@ -177,16 +188,21 @@ class SaleLocalDatasourceImpl implements SaleLocalDatasource {
     DateTime? to,
     SaleCursor? cursor,
     int pageSize = 50,
+    String? searchQuery,
   }) => _query.querySalesPage(
     from: from,
     to: to,
     cursor: cursor,
     pageSize: pageSize,
+    searchQuery: searchQuery,
   );
 
   @override
-  Future<int> querySalesCount({DateTime? from, DateTime? to}) =>
-      _query.querySalesCount(from: from, to: to);
+  Future<int> querySalesCount({
+    DateTime? from,
+    DateTime? to,
+    String? searchQuery,
+  }) => _query.querySalesCount(from: from, to: to, searchQuery: searchQuery);
 
   @override
   Future<ReportSummary> queryReportSummary({DateTime? from, DateTime? to}) =>

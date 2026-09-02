@@ -45,6 +45,10 @@ abstract final class DraftParkActions {
       AppSnackBar.warning(context, l10n.cartPaymentInProgress);
       return;
     }
+    if (raw == 'tableAlreadyBound') {
+      AppSnackBar.error(context, l10n.tableAlreadyBound);
+      return;
+    }
     if (raw != null && raw.startsWith('maxDraftsReached:')) {
       final n = int.tryParse(raw.split(':').last) ?? 0;
       AppSnackBar.error(context, l10n.maxDraftsReached(n));

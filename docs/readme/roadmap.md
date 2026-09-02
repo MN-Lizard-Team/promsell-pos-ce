@@ -67,14 +67,16 @@ Current SSOT documents:
 - [x] P0 scaling — cursor-paginated queries (`getProductsPage`, `searchProductsPage`, `querySalesPage`), DB-backed product search, SQL report summary aggregate (`queryReportSummary`), bounded streaming CSV export (`exportCsvStream`), new indexes (`idx_products_created_at_id_cursor`, `idx_sales_created_at_id_cursor`), 10 performance regression tests — **unreleased**
 - [x] P1 database lifecycle — MigrationSafetyService, WalCheckpointService, DatabaseHealthService, BackupExportService (SHA-256 checksum + size preflight), RecoveryKitService (AES-256-GCM + PBKDF2 100K, `.promkey`), BackupRestoreService fixes — 47 new tests — **unreleased**
 - [x] Phase 2b recovery-kit D0/D1 — RecoveryKitService implemented (exportKit/importKit, AES-256-GCM + PBKDF2, `.promkey` format, 9 tests passing) — **unreleased**
+- [x] v0.9.4 technical debt & scalability — composite index, bounded report cache memory, use-case coverage (43 tests), migration file split, cross-feature domain coupling, Settings loading/error states, accessibility semantics, backup-operation guards, AppLock verification serialization — **2026-09-02**
+- [x] v0.9.4 Settings restyle + onboarding visual alignment — Settings root restyled to POS-native flat paper-card language (teal app bar + search strip, white hero card, compact action cards, plain section headers, dedicated `SettingsSearchPage`); onboarding visual language aligned (gradient hero, pill progress, accent-stripe sections, Tabler Icons Plus migration); toast overflow fix (ADR-037) — **2026-09-02**
 - [ ] Phase 2b recovery-kit D2 — full device smoke (export on device A → restore on device B, sale visible)
 - [ ] Play Console production cut — keystore, Data safety, signed AAB, Console submit, and post-smoke
 
 ### Release timeline
 
 ```
-v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → v0.9.2 integrity/hardening → [unreleased: P0 scaling + P1 lifecycle] → POST-090 Play → 1.0
-  schema …   SQLCipher+PIN     v32 satang + fence       cursor pagination / migration safety / recovery kit    A1–A5+B2 smoke
+v0.4.x → … → v0.9.0 trust cut → v0.9.1 UX → v0.9.2 integrity/hardening → [v0.9.3: P0 scaling + P1 lifecycle] → [v0.9.4: TD/UX + security hardening] → POST-090 Play → 1.0
+  schema …   SQLCipher+PIN     v32 satang + fence       cursor pagination / migration safety / recovery kit / Settings restyle    A1–A5+B2 smoke
 ```
 
 ---

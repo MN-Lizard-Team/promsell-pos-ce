@@ -10,8 +10,12 @@ import 'robot_base.dart';
 class CheckoutRobot extends RobotBase {
   CheckoutRobot(super.tester);
 
-  /// Verify on checkout page
+  /// Verify on checkout/payment page.
   void verifyOnCheckoutPage() {
+    final shell = find
+        .byKey(const ValueKey('sale_payment_page'))
+        .or(find.byKey(const ValueKey('sale_checkout_page')));
+    if (shell.evaluate().isNotEmpty) return;
     expectVisible(
       find.text('Checkout').or(find.text('Payment')),
       reason: 'Should be on checkout page',
@@ -35,6 +39,8 @@ class CheckoutRobot extends RobotBase {
     };
     final keyedMethod = find.byKey(TestKeys.payMethod(methodId));
     if (keyedMethod.evaluate().isNotEmpty) {
+      await tester.ensureVisible(keyedMethod);
+      await settle();
       await tap(keyedMethod);
       return;
     }
@@ -133,6 +139,10 @@ class CheckoutRobot extends RobotBase {
 
   /// Verify payment complete (receipt shown)
   void verifyPaymentComplete() {
+    final success = find
+        .byKey(const ValueKey('sale_success_hero'))
+        .or(find.byKey(const ValueKey('sale_success_next_cta')));
+    if (success.evaluate().isNotEmpty) return;
     expectVisible(
       find
           .text('Receipt')
@@ -145,8 +155,9 @@ class CheckoutRobot extends RobotBase {
   /// Verify change amount
   void verifyChange(Money expectedChange) {
     final changeText = CurrencyFormatter.formatMoney(expectedChange);
-    expectVisible(
-      find.textContaining(changeText),
+    expect(
+      find.textContaining(changeText).evaluate().isNotEmpty,
+      isTrue,
       reason: 'Change should be $changeText',
     );
   }
@@ -154,8 +165,9 @@ class CheckoutRobot extends RobotBase {
   /// Verify grand total
   void verifyGrandTotal(Money expectedTotal) {
     final totalText = CurrencyFormatter.formatMoney(expectedTotal);
-    expectVisible(
-      find.textContaining(totalText),
+    expect(
+      find.textContaining(totalText).evaluate().isNotEmpty,
+      isTrue,
       reason: 'Grand total should be $totalText',
     );
   }

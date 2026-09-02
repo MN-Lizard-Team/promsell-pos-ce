@@ -2,8 +2,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close.dart';
+import 'package:promsell_pos_ce/features/daily_close/domain/entities/daily_close_preview.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/close_day.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_by_date.dart';
+import 'package:promsell_pos_ce/features/daily_close/domain/usecases/get_daily_close_preview.dart';
 import 'package:promsell_pos_ce/features/daily_close/domain/usecases/reopen_day.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/cubit/daily_close_cubit.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
@@ -16,6 +18,8 @@ class MockReopenDay extends Mock implements ReopenDay {}
 
 class MockGetDailyCloseByDate extends Mock implements GetDailyCloseByDate {}
 
+class MockGetDailyClosePreview extends Mock implements GetDailyClosePreview {}
+
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
 class MockSettingsCubit extends Mock implements SettingsCubit {}
@@ -23,13 +27,13 @@ class MockSettingsCubit extends Mock implements SettingsCubit {}
 class FakeSettings extends Fake implements Settings {}
 
 void main() {
-  setUpAll(() {
-    registerFallbackValue(FakeSettings());
-  });
+  setUpAll(() => registerFallbackValue(FakeSettings()));
+
   group('DailyCloseCubit', () {
     late MockCloseDay mockCloseDay;
     late MockReopenDay mockReopenDay;
     late MockGetDailyCloseByDate mockGetByDate;
+    late MockGetDailyClosePreview mockGetPreview;
     late MockSettingsRepository mockSettingsRepo;
     late MockSettingsCubit mockSettingsCubit;
     late DailyCloseCubit cubit;
@@ -38,9 +42,13 @@ void main() {
       mockCloseDay = MockCloseDay();
       mockReopenDay = MockReopenDay();
       mockGetByDate = MockGetDailyCloseByDate();
+      mockGetPreview = MockGetDailyClosePreview();
       mockSettingsRepo = MockSettingsRepository();
       mockSettingsCubit = MockSettingsCubit();
       when(() => mockGetByDate(any())).thenAnswer((_) async => null);
+      when(
+        () => mockGetPreview(any()),
+      ).thenAnswer((_) async => DailyClosePreview.empty);
       when(
         () => mockSettingsRepo.load(),
       ).thenAnswer((_) async => const Settings());
@@ -50,6 +58,7 @@ void main() {
         mockCloseDay,
         mockReopenDay,
         mockGetByDate,
+        mockGetPreview,
         mockSettingsRepo,
         mockSettingsCubit,
       );
@@ -62,7 +71,7 @@ void main() {
     });
 
     blocTest<DailyCloseCubit, DailyCloseState>(
-      'loadDate emits ready when no existing close',
+      'loadDate calculates a preview before ready',
       build: () => cubit,
       act: (c) => c.loadDate('2026-06-05'),
       expect: () => [
@@ -70,6 +79,11 @@ void main() {
           (s) => s.status,
           'status',
           DailyCloseStatus.loading,
+        ),
+        isA<DailyCloseState>().having(
+          (s) => s.status,
+          'status',
+          DailyCloseStatus.calculating,
         ),
         isA<DailyCloseState>().having(
           (s) => s.status,
@@ -83,10 +97,10 @@ void main() {
       'loadDate emits closed when day is already closed',
       build: () {
         when(() => mockGetByDate('2026-06-05')).thenAnswer(
-          (_) async => const DailyClose(
+          (_) async => DailyClose(
             id: '1',
             closeDate: '2026-06-05',
-            closedAt: null,
+            closedAt: DateTime(2026, 6, 5, 22),
           ),
         );
         return cubit;
@@ -101,7 +115,7 @@ void main() {
         isA<DailyCloseState>().having(
           (s) => s.status,
           'status',
-          DailyCloseStatus.ready,
+          DailyCloseStatus.closed,
         ),
       ],
     );
@@ -118,7 +132,11 @@ void main() {
             deviceId: any(named: 'deviceId'),
           ),
         ).thenAnswer(
-          (_) async => const DailyClose(id: '1', closeDate: '2026-06-05'),
+          (_) async => DailyClose(
+            id: '1',
+            closeDate: '2026-06-05',
+            closedAt: DateTime(2026, 6, 5, 22),
+          ),
         );
         return cubit;
       },

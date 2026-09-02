@@ -2,9 +2,16 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
+import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/category_bloc.dart';
+import 'package:promsell_pos_ce/features/product/presentation/bloc/product_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/cart_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.dart';
+import 'package:promsell_pos_ce/features/sale/presentation/bloc/draft_bloc.dart';
 import 'package:sqlite3/open.dart' as sqlite3_open;
 import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
 import 'package:promsell_pos_ce/main.dart' as app;
@@ -76,6 +83,25 @@ class TestApp {
 
   /// Clean up resources
   static Future<void> dispose() async {
+    // Close singleton blocs BEFORE closing the database: their pending
+    // timers (draft autosave debounce, search debounce) would otherwise fire
+    // after the DB is closed, throw an unhandled async error, and poison
+    // every subsequent journey in the aggregate suite.
+    Future<void> closeBloc<T extends BlocBase<Object?>>() async {
+      try {
+        if (sl.isRegistered<T>()) await sl<T>().close();
+      } catch (_) {
+        // Bloc may already be closed — safe to ignore during teardown.
+      }
+    }
+
+    await closeBloc<DraftBloc>();
+    await closeBloc<CartBloc>();
+    await closeBloc<CheckoutBloc>();
+    await closeBloc<ProductBloc>();
+    await closeBloc<CategoryBloc>();
+    await closeBloc<HistoryBloc>();
+
     await _database?.close();
     _database = null;
     _isConfigured = false;
@@ -105,7 +131,7 @@ class TestApp {
   /// `pumpApp()` which will NOT wipe the seeded rows.
   static Future<void> pumpApp(WidgetTester tester) async {
     if (!_isConfigured) await initialize();
-    app.runPromsellApp(configure: false);
+    await app.runPromsellApp(configure: false);
     await tester.pump(const Duration(seconds: 3));
   }
 
@@ -120,7 +146,7 @@ class TestApp {
     await tester.pump();
 
     // Restart app
-    app.runPromsellApp(configure: false);
+    await app.runPromsellApp(configure: false);
     await tester.pump(const Duration(seconds: 3));
   }
 }

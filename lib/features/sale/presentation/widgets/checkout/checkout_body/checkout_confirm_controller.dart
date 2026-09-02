@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/domain/money.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/services/app_lock_service.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
+import 'package:promsell_pos_ce/core/widgets/dialogs/app_lock_pin_dialog.dart';
 import 'package:promsell_pos_ce/core/widgets/receipt/receipt_preview.dart';
 import 'package:promsell_pos_ce/features/customer/domain/repositories/customer_repository.dart';
 import 'package:promsell_pos_ce/features/promotion/domain/repositories/promotion_repository.dart';
@@ -16,6 +18,7 @@ import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_bloc.da
 import 'package:promsell_pos_ce/features/sale/presentation/bloc/checkout_event.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_receipt_dialog.dart';
 import 'package:promsell_pos_ce/features/sale/presentation/widgets/checkout/checkout_body/checkout_tender_helpers.dart';
+import 'package:promsell_pos_ce/features/sale/domain/services/sale_payable_calculator.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
 
@@ -36,6 +39,7 @@ abstract final class CheckoutConfirmController {
     required String orderType,
     required String orderChannel,
     required String? selectedTableId,
+    List<String>? selectedItemIds,
     required double effectiveTotal,
     required double received,
   }) {
@@ -44,7 +48,18 @@ abstract final class CheckoutConfirmController {
     final settings = context.read<SettingsCubit>().state.settings;
     final cartState = context.read<CartBloc>().state;
     final isRestaurant = settings.isRestaurantMode;
-    final payable = cartState.payableTotals(settings);
+    final isPartial = selectedItemIds != null;
+    final payable = isPartial
+        ? SalePayableCalculator.compute(
+            SalePayableInput(
+              itemsSubtotal: cartState.items
+                  .where((item) => selectedItemIds.contains(item.lineId))
+                  .fold(Money.zero, (sum, item) => sum + item.subtotal),
+              vatMode: settings.vatMode,
+              vatRate: settings.vatRate,
+            ),
+          )
+        : cartState.payableTotals(settings);
     final tenders = CheckoutTenderHelpers.buildTenders(
       splitTender: splitTender,
       method: method,
@@ -75,11 +90,11 @@ abstract final class CheckoutConfirmController {
         payments: tenders,
         vatMode: settings.vatMode,
         vatRate: settings.vatRate,
-        cartDiscountType: cartState.cartDiscountType,
-        cartDiscountValue: cartState.cartDiscountValue,
-        cartDiscountAmount: cartState.hasCartDiscount
-            ? cartState.cartDiscountAmount
-            : null,
+        cartDiscountType: isPartial ? null : cartState.cartDiscountType,
+        cartDiscountValue: isPartial ? null : cartState.cartDiscountValue,
+        cartDiscountAmount: isPartial || !cartState.hasCartDiscount
+            ? null
+            : cartState.cartDiscountAmount,
         amountReceived: effectiveReceived,
         changeAmount: effectiveChange,
         note: note.isEmpty ? null : note,
@@ -94,6 +109,7 @@ abstract final class CheckoutConfirmController {
         tableId: isRestaurant && orderType == 'dinein' ? selectedTableId : null,
         serviceChargeRate: payable.serviceChargeRate,
         serviceChargeAmount: payable.serviceChargeAmount,
+        selectedItemIds: selectedItemIds,
       ),
     );
   }
@@ -111,6 +127,8 @@ abstract final class CheckoutConfirmController {
     required dynamic vatInfo,
     double cashTenderAmount = 0,
   }) async {
+    final l = context.l10n;
+    final paymentMethodLabel = localizePaymentMethod(context, method);
     String? customerName;
     final customerId = cartState.customerId;
     if (customerId != null) {
@@ -144,12 +162,21 @@ abstract final class CheckoutConfirmController {
       }
     }
     if (!context.mounted) return;
+    final unlocked = await ensureAppUnlocked(
+      context,
+      title: l.appLockConfirmPin,
+    );
+    if (!unlocked || !context.mounted) return;
+    try {
+      await sl<AppLockService>().requireSensitiveSession();
+    } catch (_) {
+      return;
+    }
     final payable = cartState.payableTotals(settings);
-    final l = context.l10n;
     final labels = ReceiptLabels(
       receipt: l.receiptLabelReceipt,
       payment: l.receiptLabelPayment,
-      paymentMethodLabel: localizePaymentMethod(context, method),
+      paymentMethodLabel: paymentMethodLabel,
       total: l.receiptLabelTotal,
       received: l.receiptLabelReceived,
       change: l.receiptLabelChange,
@@ -193,6 +220,7 @@ abstract final class CheckoutConfirmController {
         )
         .toList();
     final showCash = cashTenderAmount > 0 || method == 'cash';
+    if (!context.mounted) return;
     CheckoutReceiptDialog.show(
       context,
       settings: settings,

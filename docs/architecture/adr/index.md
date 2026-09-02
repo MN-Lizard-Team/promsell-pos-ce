@@ -48,6 +48,7 @@ All architecture decision records, ordered by ADR number.
 | [ADR-034](#adr-034-backup-metadata-with-sha-256-checksum) | Backup metadata with SHA-256 checksum | v0.9.3 |
 | [ADR-035](#adr-035-shared-domain-entities-for-cross-feature-coupling) | Shared domain entities for cross-feature coupling | v0.9.4 |
 | [ADR-036](#adr-036-migration-file-split-by-version) | Migration file split by version | v0.9.4 |
+| [ADR-037](#adr-037-command-dashboard-visual-language) | Command Dashboard visual language (Settings + onboarding) — ⚠️ Settings part superseded (POS-native restyle, same release) | v0.9.4 |
 
 ---
 
@@ -706,4 +707,47 @@ All three are `part of` files registered via `part` directives in `app_database.
 
 ---
 
-<sub>Promsell POS CE · v0.9.4 · Architecture Decision Records 001–036</sub>
+## ADR-037: Command Dashboard visual language (v0.9.4)
+
+> **⚠️ Superseded (v0.9.4, same release cycle):** The Settings root was later restyled to a POS-native flat paper-card language (teal app bar + search strip, white hero card with thin border, compact action cards with thin borders, plain section headers, dedicated `SettingsSearchPage`). Onboarding retains the gradient-hero + accent-stripe language described in this ADR. See the "Settings root restyled to POS design DNA" and "Settings search moved to a dedicated page" entries in CHANGELOG.md `[0.9.4]`. The `SettingsThemeExtension` tokens and shared widgets from this ADR are still in use — `heroGradientStart/End`, `accentStripeWidth`, and `pillRadius` are retained for onboarding; `cardRadius`, `actionCardRadius`, `actionCardMinHeight`, and `statusBadgeRadius` are active in Settings. This ADR is kept as a historical record of the original decision and its supersession.
+
+**Context:** The Settings root and onboarding flow had divergent visual languages — Settings used a flat tile list with Material `Icons.*`, while onboarding used an image+scrim hero with Material icons and inconsistent section cards. Both surfaces lacked a cohesive merchant-facing identity. The v0.9.4 redesign introduced a "Command Dashboard" aesthetic (deep-teal gradient hero, colored pill headers, left accent stripes, tinted icon wells) to unify the two highest-touch merchant surfaces.
+
+**Decision:** Establish a shared visual language across Settings and onboarding, backed by `SettingsThemeExtension` tokens and shared widgets:
+
+1. **Theme tokens** (`lib/features/settings/presentation/theme/settings_theme_extension.dart`):
+   - `heroGradientStart` / `heroGradientEnd` — deep-teal gradient (primary → primaryDark) for hero cards
+   - `heroTextPrimary` / `heroTextSecondary` — white text on gradient
+   - `accentStripeWidth` (4px) — left stripe on section cards
+   - `pillRadius` / `statusBadgeRadius` / `actionCardMinHeight` / `actionCardRadius` — geometry tokens
+
+2. **Shared widgets** (`lib/features/settings/presentation/widgets/shared/`):
+   - `SettingsSectionCard` — section container with optional accent stripe
+   - `SettingsSectionHeader` — pill-style header with leading dot + tinted background
+   - `SettingsStatusChip` — bold dot + label status badge
+   - `SettingsLeafChrome` — sub-page chrome with hero strip
+   - `SettingsActionCard` — root grid card with accent stripe + tinted icon well
+
+3. **Category accents** (5 colors): info blue (General), primary teal (Store), accent orange (Payment), neutral slate (Backup), success green (About)
+
+4. **Icon system** — `tabler_icons_plus` (^3.44.0) replaces Material `Icons.*` across all Settings and onboarding presentation code (103+ files)
+
+5. **Onboarding alignment** — all onboarding sections (`OnboardingSection`, `OnboardingHeroSection`, `OnboardingProgressBar`, `OnboardingBottomBar`, `OnboardingDoneSection`, `OnboardingSettingsSheet`) adopt the same accent stripe, pill header, tinted icon well, and gradient hero patterns
+
+6. **Toast overflow fix** — `AppSnackBar` wraps `Text` in `Flexible` + `ConstrainedBox(maxWidth: 320)` + `maxLines: 2` to prevent `RenderFlex` overflow on long error messages
+
+**Scope:** Presentation layer only. No domain, data, BLoC, or repository contracts changed. No security-sensitive flows (PIN entry, backup encryption, void/stock gates) were modified.
+
+**Consequences:**
+- ✅ Unified merchant-facing identity across Settings and onboarding — the two highest-touch surfaces share the same visual grammar
+- ✅ Theme tokens make future UI adjustments centralized (change `pillRadius` once, all pill headers update)
+- ✅ Shared widgets prevent visual drift between features — new Settings pages inherit the accent stripe + pill header pattern for free
+- ✅ Tabler Icons Plus provides a consistent, modern icon set with 4,500+ icons (vs Material's limited set)
+- ✅ Toast overflow fix prevents `RenderFlex` errors on long validation messages during onboarding
+- ⚠️ All Settings and onboarding widget tests needed icon expectation updates (`Icons.storefront` → `TablerIcons.buildingStore`, `Icons.check` → `TablerIcons.check`, etc.)
+- ⚠️ `SettingsThemeExtension` is Settings-feature-scoped — if other features adopt the Command Dashboard patterns, the tokens may need to move to `lib/core/theme/` to avoid cross-feature imports
+- ⚠️ Screenshots in `README.md` and `docs/STORE_SUBMISSION.md` reflect the pre-v0.9.4 layout and need recapture before the next store submission
+
+---
+
+<sub>Promsell POS CE · v0.9.4 · Architecture Decision Records 001–037</sub>

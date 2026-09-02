@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:promsell_pos_ce/core/database/db_key_store.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:injectable/injectable.dart';
@@ -14,14 +17,21 @@ class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit(
     this._repository,
     this._persistenceService,
-    this._barcodeGenerator,
-  ) : super(const SettingsState()) {
+    this._barcodeGenerator, {
+    @Named('settingsLoadTimeout')
+    this.loadTimeout = const Duration(seconds: 12),
+  }) : super(const SettingsState()) {
     _persistenceService.onDebouncedSaveError = _onDebouncedSaveError;
   }
 
   final SettingsRepository _repository;
   final SettingsPersistenceService _persistenceService;
   final Ean13Generator _barcodeGenerator;
+
+  /// Upper bound for the startup settings read. Secure storage / first-run
+  /// DB creation can hang on a broken Keystore — timing out emits failure
+  /// (fail-safe → onboarding) instead of freezing the app on the splash.
+  final Duration loadTimeout;
 
   void _onDebouncedSaveError(Object error) {
     if (isClosed) return;
@@ -37,19 +47,32 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> load() async {
     emit(state.copyWith(status: SettingsStatus.loading, errorMessage: null));
     try {
-      final settings = await _repository.load();
+      final settings = await _repository.load().timeout(loadTimeout);
       _barcodeGenerator.initCounter(settings.barcodeLastCounter);
-      emit(state.copyWith(status: SettingsStatus.loaded, settings: settings));
+      emit(
+        state.copyWith(
+          status: SettingsStatus.loaded,
+          settings: settings,
+          dbUnavailable: false,
+        ),
+      );
     } catch (e, stack) {
       AppLogger.error('SettingsCubit.load failed', error: e, stack: stack);
       emit(
         state.copyWith(
           status: SettingsStatus.failure,
           errorMessage: e.toString(),
+          dbUnavailable: _isDbKeyUnavailable(e),
         ),
       );
     }
   }
+
+  /// Detects SQLCipher key unavailability across exception wrapping — Drift
+  /// may surface the original [DbKeyUnavailable] directly or rethrow it from
+  /// the background isolate with the type name embedded in the message.
+  bool _isDbKeyUnavailable(Object e) =>
+      e is DbKeyUnavailable || e.toString().contains('DbKeyUnavailable');
 
   void updateField(Settings Function(Settings) mapper) {
     final updated = mapper(state.settings);

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
+import 'package:promsell_pos_ce/core/database/transaction_event_writer.dart';
 
 abstract class DailyCloseLocalDatasource {
   Future<DailyCloseData?> getByDate(String date);
@@ -11,8 +12,10 @@ abstract class DailyCloseLocalDatasource {
 
 @LazySingleton(as: DailyCloseLocalDatasource)
 class DailyCloseLocalDatasourceImpl implements DailyCloseLocalDatasource {
-  DailyCloseLocalDatasourceImpl(this._db);
+  DailyCloseLocalDatasourceImpl(this._db)
+    : _eventWriter = TransactionEventWriter(_db);
   final AppDatabase _db;
+  final TransactionEventWriter _eventWriter;
 
   @override
   Future<DailyCloseData?> getByDate(String date) async {
@@ -30,13 +33,23 @@ class DailyCloseLocalDatasourceImpl implements DailyCloseLocalDatasource {
 
   @override
   Future<DailyCloseData> save(DailyCloseData data) async {
-    await _db
-        .into(_db.dailyCloses)
-        .insertOnConflictUpdate(data.toCompanion(false));
-    final result = await (_db.select(
-      _db.dailyCloses,
-    )..where((c) => c.id.equals(data.id))).getSingle();
-    return result;
+    return _db.transaction(() async {
+      await _db
+          .into(_db.dailyCloses)
+          .insertOnConflictUpdate(data.toCompanion(false));
+      await _eventWriter.append(
+        aggregateType: 'DAILY_CLOSE',
+        aggregateId: data.id,
+        eventType: data.closedAt == null ? 'DAY_REOPENED' : 'DAY_CLOSED',
+        deviceId: data.deviceId,
+        afterStatus: data.closedAt == null ? 'OPEN' : 'CLOSED',
+        reason: data.note,
+        occurredAt: data.updatedAt,
+      );
+      return (_db.select(
+        _db.dailyCloses,
+      )..where((c) => c.id.equals(data.id))).getSingle();
+    });
   }
 
   @override

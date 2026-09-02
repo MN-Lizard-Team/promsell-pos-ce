@@ -116,7 +116,9 @@ class RecoveryKitService {
   RecoveryKitService();
 
   final _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(),
+    // resetOnError: false — the stored DB key copy must survive Keystore
+    // errors so recovery-kit export/import stays possible (V092-B.7).
+    aOptions: AndroidOptions(resetOnError: false),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.unlocked_this_device,
     ),

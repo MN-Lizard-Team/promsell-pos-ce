@@ -193,7 +193,7 @@ void main() {
         ),
       );
       expect(lines, hasLength(1));
-      expect(lines.single, contains('REF1'));
+      expect(lines.single, contains('••••'));
     });
 
     testWidgets('empty payments falls back to header method', (tester) async {

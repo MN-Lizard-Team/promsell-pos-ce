@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:promsell_pos_ce/core/errors/app_error.dart';
 import 'package:promsell_pos_ce/core/utils/app_logger.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/draft_cart.dart';
 import 'package:promsell_pos_ce/features/sale/domain/repositories/draft_cart_repository.dart';
@@ -24,6 +25,8 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
        _saveCoordinator = DraftSaveCoordinator(draftRepo),
        super(const DraftState()) {
     on<DraftInitialized>(_onInitialized);
+    on<DraftFireRequested>(_onFireRequested);
+    on<DraftTransferRequested>(_onTransferRequested);
     on<DraftSwitched>(_onSwitched);
     on<DraftCreated>(_onCreated);
     on<DraftDeleted>(_onDeleted);
@@ -34,6 +37,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
     on<DraftStartNewBillRequested>(_onStartNewBillRequested);
     on<DraftRotated>(_onRotated);
     on<DraftCountsRefreshRequested>(_onCountsRefreshRequested);
+    on<DraftAutosaveFailed>(_onAutosaveFailed);
   }
 
   final DraftCartRepository _draftRepo;
@@ -41,14 +45,94 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
   final DraftSaveCoordinator _saveCoordinator;
   String? _lastRestoredDraftId;
   DateTime? _lastRestoreTime;
+  DateTime? _lastRotationTime;
+
+  bool _isFiring = false;
+
+  Future<void> _onTransferRequested(
+    DraftTransferRequested event,
+    Emitter<DraftState> emit,
+  ) async {
+    final cartId = state.activeDraftId;
+    if (cartId == null) return;
+    emit(state.copyWith(opStatus: DraftOpStatus.saving, lastOp: 'transfer'));
+    try {
+      await _draftRepo.transferDraftCart(
+        cartId: cartId,
+        sourceTableId: event.sourceTableId,
+        targetTableId: event.targetTableId,
+      );
+      final draft = await _draftRepo.loadDraft(cartId);
+      emit(
+        state.copyWith(
+          loadedDraft: draft,
+          opStatus: DraftOpStatus.success,
+          lastOp: 'transfer',
+          opNonce: state.opNonce + 1,
+          errorMessage: null,
+        ),
+      );
+    } catch (e, stack) {
+      AppLogger.error(
+        'DraftBloc._onTransferRequested failed',
+        error: e,
+        stack: stack,
+      );
+      emit(
+        state.copyWith(
+          opStatus: DraftOpStatus.failure,
+          lastOp: 'transfer',
+          opNonce: state.opNonce + 1,
+          errorMessage: _errorMessageOf(e),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onFireRequested(
+    DraftFireRequested event,
+    Emitter<DraftState> emit,
+  ) async {
+    if (_isFiring) return;
+    final cartId = event.cartId ?? state.activeDraftId;
+    if (cartId == null) return;
+    _isFiring = true;
+    emit(state.copyWith(opStatus: DraftOpStatus.saving, lastOp: 'fire'));
+    try {
+      final ticket = await _draftRepo.fireUnfiredLines(cartId);
+      emit(
+        state.copyWith(
+          opStatus: DraftOpStatus.success,
+          lastOp: 'fire',
+          lastKitchenTicket: ticket,
+          opNonce: state.opNonce + 1,
+          errorMessage: null,
+        ),
+      );
+    } catch (e, stack) {
+      AppLogger.error(
+        'DraftBloc._onFireRequested failed',
+        error: e,
+        stack: stack,
+      );
+      emit(
+        state.copyWith(
+          opStatus: DraftOpStatus.failure,
+          lastOp: 'fire',
+          opNonce: state.opNonce + 1,
+          errorMessage: _errorMessageOf(e),
+        ),
+      );
+    } finally {
+      _isFiring = false;
+    }
+  }
 
   Future<({int draftCount, int openBillCount})> _readCounts() async {
     try {
-      final drafts = await _draftRepo.listDrafts();
-      return (
-        draftCount: drafts.length,
-        openBillCount: drafts.where((d) => d.itemCount > 0).length,
-      );
+      // SQL aggregate — avoids re-hydrating every open cart's items and
+      // Product objects on each autosave-debounced counts refresh.
+      return await _draftRepo.getDraftCounts();
     } catch (e, stack) {
       AppLogger.warning('DraftBloc._readCounts failed', error: e, stack: stack);
       return (draftCount: state.draftCount, openBillCount: state.openBillCount);
@@ -57,6 +141,16 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
 
   static int _openCountOf(List<DraftCart> drafts) =>
       drafts.where((d) => d.itemCount > 0).length;
+
+  /// Stable UI key for known business rules (e.g. a table already claimed by
+  /// another active bill via idx_draft_carts_table_id_unique); raw strings
+  /// would leak exception text instead of a localizable message.
+  static String _errorMessageOf(Object e) {
+    if (e is BusinessRuleError && e.rule == 'TableAlreadyBound') {
+      return 'tableAlreadyBound';
+    }
+    return e.toString();
+  }
 
   Future<void> _onInitialized(
     DraftInitialized event,
@@ -147,7 +241,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         );
         emit(
           state.copyWith(
-            errorMessage: e.toString(),
+            errorMessage: _errorMessageOf(e),
             opStatus: DraftOpStatus.failure,
             opNonce: state.opNonce + 1,
             lastOp: 'switch',
@@ -156,7 +250,10 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         return;
       }
     } else {
-      await _saveCoordinator.flushPending();
+      await _saveCoordinator.flushPending(
+        onSaveFailure: (error) =>
+            add(DraftAutosaveFailed(_errorMessageOf(error))),
+      );
     }
     try {
       final draft = await _draftRepo.loadDraft(event.draftId);
@@ -220,7 +317,10 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         return;
       }
       _saveCoordinator.cancelTimer();
-      await _saveCoordinator.flushPending();
+      await _saveCoordinator.flushPending(
+        onSaveFailure: (error) =>
+            add(DraftAutosaveFailed(_errorMessageOf(error))),
+      );
       final trimmed = event.name?.trim();
       final name = (trimmed != null && trimmed.isNotEmpty)
           ? trimmed
@@ -408,6 +508,15 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
         event.cartState.isEmpty) {
       return;
     }
+    // Same guard after checkout rotation: CartCleared fires an empty-cart
+    // autosave that must never wipe whichever bill became active (the sold
+    // one is already deleted; a switched-to bill must stay intact).
+    if (event.cartState.isEmpty &&
+        _lastRotationTime != null &&
+        DateTime.now().difference(_lastRotationTime!) <
+            const Duration(seconds: 2)) {
+      return;
+    }
     _saveCoordinator.scheduleAutoSave(
       draftId: draftId,
       snapshot: cartStateToSnapshot(event.cartState),
@@ -415,6 +524,24 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
       onTimerFire: () async {
         if (!isClosed) add(const DraftCountsRefreshRequested());
       },
+      onSaveFailure: (error) {
+        if (isClosed) return;
+        add(DraftAutosaveFailed(_errorMessageOf(error)));
+      },
+    );
+  }
+
+  /// Surfaces debounced/flushed autosave rejections through the same failure
+  /// state the park/switch/newBill ops use, so the snackbar listener picks it
+  /// up instead of the save silently not persisting.
+  void _onAutosaveFailed(DraftAutosaveFailed event, Emitter<DraftState> emit) {
+    emit(
+      state.copyWith(
+        errorMessage: event.messageKey,
+        opStatus: DraftOpStatus.failure,
+        opNonce: state.opNonce + 1,
+        lastOp: 'autosave',
+      ),
     );
   }
 
@@ -587,7 +714,7 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
       AppLogger.error('DraftBloc persist failed ($op)', error: e, stack: stack);
       emit(
         state.copyWith(
-          errorMessage: e.toString(),
+          errorMessage: _errorMessageOf(e),
           opStatus: DraftOpStatus.failure,
           opNonce: state.opNonce + 1,
           lastOp: op,
@@ -656,15 +783,31 @@ class DraftBloc extends Bloc<DraftEvent, DraftState> {
 
   Future<void> _onRotated(DraftRotated event, Emitter<DraftState> emit) async {
     _saveCoordinator.cancelTimer();
+    final soldId = event.soldDraftId;
+    if (soldId != null) {
+      // The sold cart row is already gone (deleted atomically inside the sale
+      // transaction); drop any queued save targeting it so a late flush
+      // cannot resurrect orphaned item rows.
+      _saveCoordinator.clearPending(soldId);
+    }
+    _lastRotationTime = DateTime.now();
     try {
-      // Create the new draft BEFORE deleting the old one so a createDraft
-      // failure cannot leave activeDraftId pointing at a deleted row.
-      final prevDraftId = state.activeDraftId;
+      final soldWasActive = soldId != null && soldId == state.activeDraftId;
+      if (!soldWasActive) {
+        // Sold bill was NOT the active draft (switched mid-payment) or the
+        // cart was never parked — keep current pointers, refresh counters.
+        final counts = await _readCounts();
+        emit(
+          state.copyWith(
+            draftCount: counts.draftCount,
+            openBillCount: counts.openBillCount,
+          ),
+        );
+        return;
+      }
+      // Active pointer references the deleted row — hand out a fresh bill.
       final newDraftName = DraftNaming.forNewEmptyBill();
       final newDraftId = await _draftRepo.createDraft(name: newDraftName);
-      if (prevDraftId != null) {
-        await _draftRepo.deleteDraft(prevDraftId);
-      }
       _lastRestoredDraftId = newDraftId;
       _lastRestoreTime = DateTime.now();
       final counts = await _readCounts();

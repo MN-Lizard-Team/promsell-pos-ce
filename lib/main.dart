@@ -54,12 +54,39 @@ Future<void> runPromsellApp({bool configure = true}) async {
   };
 
   final settingsCubit = sl<SettingsCubit>();
-  await settingsCubit.load();
+
+  // Startup services that touch secure storage / disk (settings load, cold
+  // start lock, pre-restore cleanup) run AFTER runApp: the in-app
+  // AppSplashWrapper covers the loading gap, so a hung Keystore or first-run
+  // DB migration can never freeze the app at the native splash. SettingsCubit
+  // additionally bounds its own read with a timeout and fails safe.
+  runApp(const PromsellApp());
+
+  await _bootstrapStartupServices(settingsCubit);
+}
+
+/// Post-first-frame startup work. Every step is individually guarded — none
+/// of them may crash or hang the running app.
+Future<void> _bootstrapStartupServices(SettingsCubit settingsCubit) async {
+  try {
+    await settingsCubit.load();
+  } catch (e, stack) {
+    AppLogger.error('Startup settings load crashed', error: e, stack: stack);
+  }
 
   // V092-B.2: cold-start lock — ensure a fresh process starts with a cold
   // sensitive session, and lock again whenever the app goes to background.
-  final lockObserver = AppLockLifecycleObserver(sl<AppLockService>());
-  await lockObserver.start();
+  try {
+    await AppLockLifecycleObserver(
+      sl<AppLockService>(),
+    ).start().timeout(const Duration(seconds: 5));
+  } catch (e, stack) {
+    AppLogger.warning(
+      'startup lock observer failed or timed out',
+      error: e,
+      stack: stack,
+    );
+  }
 
   // V092-B.4: clean up leftover pre-restore DB backups now that the live
   // DB has opened successfully. Best-effort — never block app startup.
@@ -72,8 +99,6 @@ Future<void> runPromsellApp({bool configure = true}) async {
       stack: stack,
     );
   }
-
-  runApp(const PromsellApp());
 }
 
 class PromsellApp extends StatelessWidget {

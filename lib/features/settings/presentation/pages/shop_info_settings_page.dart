@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/layout/sticky_action_bar.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -8,6 +9,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/se
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_state_view.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop/shop_info_form.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shop/shop_preview_card.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class ShopInfoSettingsPage extends StatefulWidget {
   const ShopInfoSettingsPage({super.key});
@@ -78,6 +80,8 @@ class _ShopInfoSettingsPageState extends State<ShopInfoSettingsPage>
             },
             child: SettingsLeafChrome(
               title: l10n.settingsShopInfo,
+              heroIcon: TablerIcons.buildingStore,
+              heroAccent: AppColors.primary,
               header: ShopPreviewCard(
                 shopName: s.shopName,
                 address: s.address,

@@ -67,7 +67,13 @@ String formatSalePaymentSummary(
   return localizePaymentMethod(context, sale.paymentMethod);
 }
 
-/// Multi-line payment labels for thermal/PDF receipt body.
+String maskPaymentReference(String reference, {int visibleSuffix = 4}) {
+  final value = reference.trim();
+  if (value.isEmpty) return value;
+  if (value.length <= visibleSuffix) return '••••';
+  return '${List.filled(value.length - visibleSuffix, '•').join()}${value.substring(value.length - visibleSuffix)}';
+}
+
 List<String> formatSalePaymentLines(
   BuildContext context,
   Sale sale, {
@@ -81,7 +87,7 @@ List<String> formatSalePaymentLines(
     for (final p in sale.payments)
       '${localizePaymentMethod(context, p.method)}  '
           '${CurrencyFormatter.formatGroupedWithSymbol(p.amount.value, cur)}'
-          '${p.reference != null && p.reference!.isNotEmpty ? ' (${p.reference})' : ''}',
+          '${p.reference != null && p.reference!.isNotEmpty ? ' (${maskPaymentReference(p.reference!)})' : ''}',
   ];
 }
 

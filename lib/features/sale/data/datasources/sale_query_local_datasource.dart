@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:injectable/injectable.dart';
 import 'package:meta/meta.dart';
 import 'package:promsell_pos_ce/core/database/app_database.dart';
 import 'package:promsell_pos_ce/core/database/money_converter.dart';
@@ -7,6 +8,7 @@ import 'package:promsell_pos_ce/core/utils/payment_method_helper.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_aggregate.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_data.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/report_summary.dart';
+import 'package:promsell_pos_ce/features/report/domain/entities/table_sales_stat.dart';
 import 'package:promsell_pos_ce/features/report/domain/entities/top_product_stat.dart';
 import 'package:promsell_pos_ce/features/sale/data/datasources/sale_write_helpers.dart';
 import 'package:promsell_pos_ce/features/sale/domain/entities/sale.dart';
@@ -18,6 +20,7 @@ import 'package:promsell_pos_ce/features/sale/domain/entities/sale_payment.dart'
 /// Owned by [SaleLocalDatasourceImpl]; also registered as a lazy singleton so
 /// the report data layer can run bounded aggregate queries. Read-only — all
 /// writes go through [SaleLocalDatasourceImpl]'s writer collaborators.
+@lazySingleton
 class SaleQueryLocalDatasource {
   SaleQueryLocalDatasource(this._db);
 
@@ -25,6 +28,9 @@ class SaleQueryLocalDatasource {
 
   /// Newest PromptPay bills hydrated per aggregate emission (display list).
   static const kRecentPromptPayBillLimit = 5;
+
+  /// Top-table buckets returned per table-breakdown emission.
+  static const kTableBreakdownLimit = 5;
 
   Sale buildSale(
     SaleData s,
@@ -62,6 +68,8 @@ class SaleQueryLocalDatasource {
       s.promotionDiscountAmountSatang,
       s.promotionDiscountAmount,
     ),
+    guestCount: s.guestCount,
+    openedAt: s.openedAt,
     totalAmount: moneyFromSatangOrBaht(s.totalAmountSatang, s.totalAmount),
     paymentMethod: s.paymentMethod,
     amountReceived: nullableMoneyFromSatangOrBaht(
@@ -142,13 +150,18 @@ class SaleQueryLocalDatasource {
   }
 
   /// Total non-deleted sale count, optionally within a date range.
-  Future<int> querySalesCount({DateTime? from, DateTime? to}) async {
+  Future<int> querySalesCount({
+    DateTime? from,
+    DateTime? to,
+    String? searchQuery,
+  }) async {
     final countExpr = _db.sales.id.count();
-    final result =
-        await (_db.selectOnly(_db.sales)
-              ..addColumns([countExpr])
-              ..where(_salesRange(from: from, to: to)))
-            .getSingle();
+    final query = _db.selectOnly(_db.sales)
+      ..addColumns([countExpr])
+      ..where(_salesRange(from: from, to: to));
+    final searchPredicate = _salesSearchPredicate(searchQuery);
+    if (searchPredicate != null) query.where(searchPredicate);
+    final result = await query.getSingle();
     return result.read(countExpr) ?? 0;
   }
 
@@ -162,6 +175,7 @@ class SaleQueryLocalDatasource {
     DateTime? to,
     SaleCursor? cursor,
     int pageSize = 50,
+    String? searchQuery,
   }) async {
     final query = _db.select(_db.sales)..where((s) => s.deletedAt.isNull());
     if (from != null) {
@@ -170,6 +184,8 @@ class SaleQueryLocalDatasource {
     if (to != null) {
       query.where((s) => s.createdAt.isSmallerOrEqualValue(to));
     }
+    final searchPredicate = _salesSearchPredicate(searchQuery);
+    if (searchPredicate != null) query.where((_) => searchPredicate);
     if (cursor != null) {
       query.where(
         (s) =>
@@ -191,7 +207,11 @@ class SaleQueryLocalDatasource {
     final nextCursor = hasMore && pageRows.isNotEmpty
         ? SaleCursor(createdAt: pageRows.last.createdAt, id: pageRows.last.id)
         : null;
-    final totalCount = await querySalesCount(from: from, to: to);
+    final totalCount = await querySalesCount(
+      from: from,
+      to: to,
+      searchQuery: searchQuery,
+    );
     return SalePage(
       sales: sales,
       nextCursor: nextCursor,
@@ -533,6 +553,59 @@ class SaleQueryLocalDatasource {
     DateTime? to,
   }) => _watchRecompute([_db.sales], () {
     return queryCustomerOrderCounts(from: from, to: to);
+  });
+
+  /// Per-table sales aggregates (completed orders only) grouped by
+  /// `table_id`, ranked by revenue then count. NULL ids come back as one
+  /// bucket with a null [TableSalesStat.tableId] — the repository folds that
+  /// into the explicit no-table sentinel before anything reaches the UI.
+  Future<List<TableSalesStat>> queryTableSalesStats({
+    DateTime? from,
+    DateTime? to,
+    int limit = kTableBreakdownLimit,
+  }) async {
+    final tableKey = CustomExpression<String>(_salesCol('table_id'));
+    // SUM() is required here: a bare COALESCE column returns one arbitrary
+    // row's total per group, not the group's revenue (caught by
+    // sale_query_table_stats_test with two sales on one table).
+    final revenueSum = CustomExpression<int>(
+      'SUM(${_moneySatangSql(_salesCol('total_amount_satang'), _salesCol('total_amount'))})',
+    );
+    final completedCount = countAll(filter: _notVoidedExpr());
+    final lastSaleAt = CustomExpression<int>('MAX(${_salesCol('created_at')})');
+    final query = _baseSalesAggregateQuery(from: from, to: to)
+      ..addColumns([tableKey, revenueSum, completedCount, lastSaleAt])
+      ..where(_notVoidedExpr())
+      ..groupBy([tableKey])
+      ..orderBy([
+        OrderingTerm.desc(revenueSum),
+        OrderingTerm.desc(completedCount),
+        OrderingTerm.asc(tableKey),
+      ])
+      ..limit(limit);
+    final stats = <TableSalesStat>[];
+    for (final row in await query.get()) {
+      stats.add(
+        TableSalesStat(
+          tableId: row.read(tableKey) ?? TableSalesStat.noTableBucket,
+          orderCount: row.read(completedCount) ?? 0,
+          revenueSatang: row.read(revenueSum) ?? 0,
+          lastSaleAt: DateTime.fromMillisecondsSinceEpoch(
+            (row.read(lastSaleAt) ?? 0) * 1000,
+          ),
+        ),
+      );
+    }
+    return stats;
+  }
+
+  /// Reactive variant of [queryTableSalesStats].
+  Stream<List<TableSalesStat>> watchTableSalesStats({
+    DateTime? from,
+    DateTime? to,
+    int limit = kTableBreakdownLimit,
+  }) => _watchRecompute([_db.sales], () {
+    return queryTableSalesStats(from: from, to: to, limit: limit);
   });
 
   /// Line-level profit analytics via `sale_items LEFT JOIN products`.
@@ -990,7 +1063,42 @@ class SaleQueryLocalDatasource {
     );
   }
 
-  /// Deleted-aware createdAt window over `sales`. Built from real column
+  Expression<bool>? _salesSearchPredicate(String? searchQuery) {
+    final raw = searchQuery?.trim().toLowerCase() ?? '';
+    if (raw.isEmpty) return null;
+    final q = '%$raw%';
+    final items = _db.saleItems;
+    final payments = _db.salePayments;
+    final itemMatch = existsQuery(
+      _db.select(items)
+        ..addColumns([items.id])
+        ..where(
+          (i) =>
+              i.saleId.equalsExp(_db.sales.id) &
+              i.deletedAt.isNull() &
+              i.productName.lower().like(q),
+        ),
+    );
+    final paymentMatch = existsQuery(
+      _db.select(payments)
+        ..addColumns([payments.id])
+        ..where(
+          (p) =>
+              p.saleId.equalsExp(_db.sales.id) &
+              p.deletedAt.isNull() &
+              (p.method.lower().like(q) | p.reference.lower().like(q)),
+        ),
+    );
+    return _db.sales.receiptNumber.lower().like(q) |
+        _db.sales.paymentMethod.lower().like(q) |
+        _db.sales.customerId.lower().like(q) |
+        _db.sales.note.lower().like(q) |
+        _db.sales.voidReason.lower().like(q) |
+        itemMatch |
+        paymentMatch |
+        _db.sales.totalAmount.cast<String>().like(q);
+  }
+
   /// expressions so drift qualifies table names automatically once a query
   /// joins more than one table.
   Expression<bool> _salesRange({DateTime? from, DateTime? to}) {

@@ -426,6 +426,46 @@ class GenerateBarcode {
 
 ---
 
+## AppSnackBar (v0.9.4)
+
+**Location:** `lib/core/widgets/primitives/app_snack_bar.dart`
+
+### Purpose
+
+Overlay-based toast notifications replacing `ScaffoldMessenger.showSnackBar`. Renders above all content (including modals) via `OverlayEntry`, auto-dismisses after a configurable duration, and constrains message width to prevent `RenderFlex` overflow.
+
+### API
+
+```dart
+abstract final class AppSnackBar {
+  static void success(BuildContext context, String message, {Duration duration});
+  static void error(BuildContext context, String message, {Duration duration});
+  static void warning(BuildContext context, String message, {Duration duration});
+  static void info(BuildContext context, String message, {Duration duration});
+  static void withAction(BuildContext context, String message, {
+    required String actionLabel,
+    required VoidCallback onAction,
+    Duration duration,
+  });
+}
+```
+
+### Behavior
+
+| Variant | Position | Duration | Icon | Background |
+|---------|----------|----------|------|------------|
+| `success` | Top | 2000ms | `Icons.check_circle` | `AppColors.success` |
+| `error` | Top | 4000ms | `Icons.error` | `AppColors.error` |
+| `warning` | Top | 2500ms | `Icons.warning` | `AppColors.warning` |
+| `info` | Top | 2000ms | `Icons.info` | `AppColors.info` |
+| `withAction` | Bottom | 5000ms | — | `surfaceContainerHighest` |
+
+### Overflow prevention (v0.9.4)
+
+Simple toasts wrap `Text` in `Flexible` + `ConstrainedBox(maxWidth: 320)` with `maxLines: 2` + `TextOverflow.ellipsis` so long error messages (e.g. validation failures during onboarding) cannot overflow the screen width.
+
+---
+
 ---
 
 ## Database & Reliability Services (v0.9.3)

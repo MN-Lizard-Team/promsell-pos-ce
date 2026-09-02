@@ -9,16 +9,15 @@ class HistoryRepositoryImpl implements HistoryRepository {
   const HistoryRepositoryImpl(this._datasource);
   final SaleLocalDatasource _datasource;
 
-  /// Upper bound for one-shot history loads. Callers expect a full list, so
-  /// the cursor loop stays bounded instead of trusting the range. PDF export
-  /// streams its own pagination and is not affected.
-  static const _maxSales = 2000;
-
   @override
+  /// Loads every matching sale through the cursor API. The caller receives a
+  /// complete range; pagination is internal for legacy callers that still
+  /// expect a list.
   Future<List<Sale>> getSales({DateTime? from, DateTime? to}) async {
     final sales = <Sale>[];
     SaleCursor? cursor;
-    while (sales.length < _maxSales) {
+    final seenCursors = <String>{};
+    while (true) {
       final page = await _datasource.querySalesPage(
         from: from,
         to: to,
@@ -27,10 +26,33 @@ class HistoryRepositoryImpl implements HistoryRepository {
       );
       sales.addAll(page.sales);
       if (!page.hasMore) break;
-      cursor = page.nextCursor;
+      final next = page.nextCursor;
+      if (next == null) {
+        throw StateError('Sale history pagination returned no next cursor');
+      }
+      final cursorKey = '${next.createdAt.microsecondsSinceEpoch}:${next.id}';
+      if (!seenCursors.add(cursorKey)) {
+        throw StateError('Sale history pagination repeated a cursor');
+      }
+      cursor = next;
     }
     return sales;
   }
+
+  @override
+  Future<SalePage> getSalesPage({
+    DateTime? from,
+    DateTime? to,
+    SaleCursor? cursor,
+    int pageSize = 50,
+    String? searchQuery,
+  }) => _datasource.querySalesPage(
+    from: from,
+    to: to,
+    cursor: cursor,
+    pageSize: pageSize,
+    searchQuery: searchQuery,
+  );
 
   @override
   Stream<List<Sale>> watchSales({DateTime? from, DateTime? to}) =>

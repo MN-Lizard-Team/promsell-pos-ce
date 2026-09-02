@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:promsell_pos_ce/core/di/injection_container.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
 import 'package:promsell_pos_ce/core/services/crash_log_service.dart';
+import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:promsell_pos_ce/core/widgets/primitives/app_snack_bar.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/license_page.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/privacy_policy_page.dart';
@@ -13,6 +14,7 @@ import 'package:promsell_pos_ce/features/settings/presentation/widgets/about/abo
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_section_card.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/widgets/shared/settings_leaf_chrome.dart';
+import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -109,6 +111,8 @@ class _AboutPageState extends State<AboutPage> {
 
     return SettingsLeafChrome(
       title: l10n.aboutApp,
+      heroIcon: TablerIcons.infoCircle,
+      heroAccent: AppColors.success,
       header: AboutHeaderCard(
         version: version,
         buildNumber: buildNumber,
@@ -117,6 +121,7 @@ class _AboutPageState extends State<AboutPage> {
       children: [
         SettingsSectionCard(
           title: l10n.builtWith,
+          accent: AppColors.success,
           children: [
             AboutTechRow(
               icon: Icons.flutter_dash,
@@ -138,6 +143,7 @@ class _AboutPageState extends State<AboutPage> {
         ),
         SettingsSectionCard(
           title: l10n.contactUs,
+          accent: AppColors.success,
           children: [
             ListTile(
               leading: Container(
@@ -187,6 +193,7 @@ class _AboutPageState extends State<AboutPage> {
         ),
         SettingsSectionCard(
           title: l10n.crashLogs,
+          accent: AppColors.success,
           children: [
             AboutLinkTile(
               icon: Icons.file_download_outlined,

@@ -54,7 +54,25 @@ class PinHasher {
   }) {
     final trimmed = pin.trim();
     return scheme == schemeV2
-        ? hashV2(trimmed, salt) == expectedHash
-        : hashV1(trimmed, salt) == expectedHash;
+        ? _constantTimeEquals(hashV2(trimmed, salt), expectedHash)
+        : _constantTimeEquals(hashV1(trimmed, salt), expectedHash);
+  }
+
+  /// Constant-time string comparison — XOR-accumulates byte differences so
+  /// execution time does not leak the position of the first mismatch.
+  /// Length differences fold into the accumulator (shorter side zero-padded).
+  static bool _constantTimeEquals(String a, String b) {
+    final aBytes = utf8.encode(a);
+    final bBytes = utf8.encode(b);
+    final maxLen = aBytes.length > bBytes.length
+        ? aBytes.length
+        : bBytes.length;
+    var acc = 0;
+    for (var i = 0; i < maxLen; i++) {
+      final x = i < aBytes.length ? aBytes[i] : 0;
+      final y = i < bBytes.length ? bBytes[i] : 0;
+      acc |= x ^ y;
+    }
+    return acc == 0;
   }
 }

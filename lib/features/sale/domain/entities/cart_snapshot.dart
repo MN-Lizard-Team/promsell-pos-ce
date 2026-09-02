@@ -14,6 +14,8 @@ class CartSnapshot {
     this.customerId,
     this.promotionId,
     this.promotionDiscountAmount = 0.0,
+    this.guestCount,
+    this.openedAt,
   });
 
   final List<CartItem> items;
@@ -28,4 +30,6 @@ class CartSnapshot {
   final String? customerId;
   final String? promotionId;
   final double promotionDiscountAmount;
+  final int? guestCount;
+  final DateTime? openedAt;
 }

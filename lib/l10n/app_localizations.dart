@@ -3359,19 +3359,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTrustOffline.
   ///
   /// In th, this message translates to:
-  /// **'ใช้งานได้แม้ไม่มีอินเทอร์เน็ต'**
+  /// **'ใช้งานออฟไลน์ได้'**
   String get onboardingTrustOffline;
 
   /// No description provided for @onboardingTrustLocal.
   ///
   /// In th, this message translates to:
-  /// **'ข้อมูลอยู่บนอุปกรณ์นี้'**
+  /// **'เก็บในเครื่องนี้'**
   String get onboardingTrustLocal;
 
   /// No description provided for @onboardingTrustEncrypted.
   ///
   /// In th, this message translates to:
-  /// **'พื้นที่จัดเก็บเข้ารหัส'**
+  /// **'เข้ารหัสลับ'**
   String get onboardingTrustEncrypted;
 
   /// No description provided for @onboardingStepOf.
@@ -3401,7 +3401,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingInvalidVatRate.
   ///
   /// In th, this message translates to:
-  /// **'กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 100'**
+  /// **'กรอกอัตรา VAT เป็นตัวเลขระหว่าง 0 ถึง 30'**
   String get onboardingInvalidVatRate;
 
   /// No description provided for @onboardingPromptPaySecurity.
@@ -5252,6 +5252,48 @@ abstract class AppLocalizations {
   /// **'ออนไลน์'**
   String get orderChannelOnline;
 
+  /// No description provided for @guestCount.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนลูกค้า'**
+  String get guestCount;
+
+  /// No description provided for @guestCountHint.
+  ///
+  /// In th, this message translates to:
+  /// **'จำนวนคน'**
+  String get guestCountHint;
+
+  /// No description provided for @sendToKitchen.
+  ///
+  /// In th, this message translates to:
+  /// **'ส่งเข้าครัว'**
+  String get sendToKitchen;
+
+  /// No description provided for @kitchenTicket.
+  ///
+  /// In th, this message translates to:
+  /// **'รายการส่งครัว'**
+  String get kitchenTicket;
+
+  /// No description provided for @kitchenTicketEmpty.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีรายการใหม่ที่ต้องส่งเข้าครัว'**
+  String get kitchenTicketEmpty;
+
+  /// No description provided for @selectItemsForCheckout.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกสินค้าเพื่อชำระบางส่วน'**
+  String get selectItemsForCheckout;
+
+  /// No description provided for @selectedItemsCount.
+  ///
+  /// In th, this message translates to:
+  /// **'เลือกแล้ว {count} รายการ'**
+  String selectedItemsCount(int count);
+
   /// No description provided for @externalOrderRef.
   ///
   /// In th, this message translates to:
@@ -5384,6 +5426,12 @@ abstract class AppLocalizations {
   /// **'การกระจายคำสั่งซื้อ'**
   String get orderBreakdown;
 
+  /// No description provided for @tableSalesBreakdown.
+  ///
+  /// In th, this message translates to:
+  /// **'ยอดขายแยกตามโต๊ะ'**
+  String get tableSalesBreakdown;
+
   /// No description provided for @tableNumber.
   ///
   /// In th, this message translates to:
@@ -5419,6 +5467,42 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'จัดการโต๊ะและโซนในร้าน'**
   String get tableManagementSubtitle;
+
+  /// No description provided for @floorTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'ผังโต๊ะ'**
+  String get floorTitle;
+
+  /// No description provided for @floorUnzoned.
+  ///
+  /// In th, this message translates to:
+  /// **'อื่นๆ'**
+  String get floorUnzoned;
+
+  /// No description provided for @transferTable.
+  ///
+  /// In th, this message translates to:
+  /// **'โอนโต๊ะ'**
+  String get transferTable;
+
+  /// No description provided for @transferTableTo.
+  ///
+  /// In th, this message translates to:
+  /// **'โอน {source} ไปที่'**
+  String transferTableTo(Object source);
+
+  /// No description provided for @noTransferTables.
+  ///
+  /// In th, this message translates to:
+  /// **'ไม่มีโต๊ะว่างสำหรับโอน'**
+  String get noTransferTables;
+
+  /// No description provided for @tableTransferSuccess.
+  ///
+  /// In th, this message translates to:
+  /// **'โอนไปยังโต๊ะ {name} แล้ว'**
+  String tableTransferSuccess(Object name);
 
   /// No description provided for @addTable.
   ///
@@ -5515,6 +5599,18 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'ยังไม่ได้ตั้งค่าโต๊ะ เพิ่มโต๊ะในเมนูจัดการโต๊ะ'**
   String get noTablesAvailable;
+
+  /// No description provided for @tableAlreadyBound.
+  ///
+  /// In th, this message translates to:
+  /// **'โต๊ะนี้มีบิลที่ยังไม่ได้ชำระอยู่'**
+  String get tableAlreadyBound;
+
+  /// No description provided for @tableChipLabel.
+  ///
+  /// In th, this message translates to:
+  /// **'โต๊ะ {name}'**
+  String tableChipLabel(String name);
 
   /// No description provided for @optionGroups.
   ///
@@ -7502,6 +7598,48 @@ abstract class AppLocalizations {
   /// **'เปิด'**
   String get dailyCloseStatusOpenBadge;
 
+  /// No description provided for @dailyCloseStatusNeedsAttention.
+  ///
+  /// In th, this message translates to:
+  /// **'ต้องตรวจสอบ'**
+  String get dailyCloseStatusNeedsAttention;
+
+  /// No description provided for @dailyCloseOverAmount.
+  ///
+  /// In th, this message translates to:
+  /// **'เงินเกิน {amount}'**
+  String dailyCloseOverAmount(Object amount);
+
+  /// No description provided for @dailyCloseShortAmount.
+  ///
+  /// In th, this message translates to:
+  /// **'เงินขาด {amount}'**
+  String dailyCloseShortAmount(Object amount);
+
+  /// No description provided for @dailyCloseNoMismatch.
+  ///
+  /// In th, this message translates to:
+  /// **'เงินสดตรงกับยอดที่ควรมี'**
+  String get dailyCloseNoMismatch;
+
+  /// No description provided for @dailyCloseCalculating.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังคำนวณยอดขาย…'**
+  String get dailyCloseCalculating;
+
+  /// No description provided for @dailyCloseClosing.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังปิดยอด…'**
+  String get dailyCloseClosing;
+
+  /// No description provided for @dailyCloseReopening.
+  ///
+  /// In th, this message translates to:
+  /// **'กำลังเปิดยอดใหม่…'**
+  String get dailyCloseReopening;
+
   /// No description provided for @noCategoriesFound.
   ///
   /// In th, this message translates to:
@@ -8563,6 +8701,24 @@ abstract class AppLocalizations {
   /// In th, this message translates to:
   /// **'เข้าถึงคีย์เข้ารหัสของเครื่องนี้ไม่ได้ หากมีชุดกู้คืน ให้กดนำเข้าชุดกู้คืนด้านบน แล้วปิดและเปิดแอปใหม่'**
   String get recoveryKitErrorKeyUnavailable;
+
+  /// No description provided for @dbRecoveryTitle.
+  ///
+  /// In th, this message translates to:
+  /// **'เปิดฐานข้อมูลไม่ได้'**
+  String get dbRecoveryTitle;
+
+  /// No description provided for @dbRecoveryMessage.
+  ///
+  /// In th, this message translates to:
+  /// **'เข้าถึงคีย์เข้ารหัสบนเครื่องนี้ไม่ได้ ฐานข้อมูลการขายจึงยังล็อกอยู่ — ข้อมูลของคุณยังอยู่บนเครื่องนี้ นำเข้าชุดกู้คืน (.promkey) เพื่อกู้คืนการเข้าถึง หรือลองอีกครั้ง'**
+  String get dbRecoveryMessage;
+
+  /// No description provided for @dbRecoveryRetry.
+  ///
+  /// In th, this message translates to:
+  /// **'ลองอีกครั้ง'**
+  String get dbRecoveryRetry;
 }
 
 class _AppLocalizationsDelegate

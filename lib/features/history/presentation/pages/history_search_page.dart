@@ -10,6 +10,7 @@ import 'package:promsell_pos_ce/core/widgets/search/search_app_bar_field.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_bloc.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_event.dart';
 import 'package:promsell_pos_ce/features/history/presentation/bloc/history_state.dart';
+import 'package:promsell_pos_ce/features/history/presentation/utils/history_error_display.dart';
 import 'package:promsell_pos_ce/features/history/presentation/widgets/tiles/sale_expansion_tile.dart';
 import 'package:promsell_pos_ce/features/report/domain/utils/date_range_presets.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -175,7 +176,11 @@ class _HistorySearchPageState extends State<HistorySearchPage> {
                   children: [
                     if (rangeLabel != null) _buildRangeChip(ctx, rangeLabel),
                     const Expanded(
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          semanticsLabel: 'Loading history',
+                        ),
+                      ),
                     ),
                   ],
                 );
@@ -187,7 +192,10 @@ class _HistorySearchPageState extends State<HistorySearchPage> {
                     Expanded(
                       child: AppEmptyState(
                         icon: TablerIcons.alertCircle,
-                        title: state.errorMessage ?? ctx.l10n.errorOccurred,
+                        title: historyErrorMessage(
+                          ctx.l10n,
+                          state.errorMessage,
+                        ),
                         actionLabel: ctx.l10n.retry,
                         onAction: () => ctx.read<HistoryBloc>().add(
                           const HistorySubscribed(),

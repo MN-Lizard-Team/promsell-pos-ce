@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:promsell_pos_ce/core/database/db_key_store.dart';
 import 'package:promsell_pos_ce/core/utils/ean13_generator.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/cubit/settings_cubit.dart';
@@ -63,6 +66,59 @@ void main() {
         const SettingsState(
           status: SettingsStatus.failure,
           errorMessage: 'Exception: fail',
+        ),
+      ],
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
+      'load marks dbUnavailable when repository throws DbKeyUnavailable',
+      setUp: () {
+        when(
+          () => mockRepo.load(),
+        ).thenThrow(const DbKeyUnavailable('STORAGE_READ_FAILED'));
+      },
+      build: buildCubit,
+      act: (c) => c.load(),
+      expect: () => [
+        const SettingsState(status: SettingsStatus.loading, errorMessage: null),
+        const SettingsState(
+          status: SettingsStatus.failure,
+          errorMessage: 'DbKeyUnavailable: STORAGE_READ_FAILED',
+          dbUnavailable: true,
+        ),
+      ],
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
+      'load clears dbUnavailable after a successful retry',
+      setUp: () {
+        var calls = 0;
+        when(() => mockRepo.load()).thenAnswer((_) async {
+          calls++;
+          if (calls == 1) throw const DbKeyUnavailable('STORAGE_READ_FAILED');
+          return const Settings();
+        });
+      },
+      build: buildCubit,
+      act: (c) async {
+        await c.load();
+        await c.load();
+      },
+      expect: () => [
+        const SettingsState(status: SettingsStatus.loading, errorMessage: null),
+        const SettingsState(
+          status: SettingsStatus.failure,
+          errorMessage: 'DbKeyUnavailable: STORAGE_READ_FAILED',
+          dbUnavailable: true,
+        ),
+        const SettingsState(
+          status: SettingsStatus.loading,
+          dbUnavailable: true,
+        ),
+        const SettingsState(
+          status: SettingsStatus.loaded,
+          settings: Settings(),
+          dbUnavailable: false,
         ),
       ],
     );
@@ -138,5 +194,23 @@ void main() {
         ),
       ],
     );
+
+    test('load fails safe when the repository exceeds loadTimeout', () async {
+      when(
+        () => mockRepo.load(),
+      ).thenAnswer((_) => Completer<Settings>().future);
+
+      final cubit = SettingsCubit(
+        mockRepo,
+        mockPersistence,
+        generator,
+        loadTimeout: const Duration(milliseconds: 20),
+      );
+      addTearDown(cubit.close);
+
+      await cubit.load();
+
+      expect(cubit.state.status, SettingsStatus.failure);
+    });
   });
 }

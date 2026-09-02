@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:promsell_pos_ce/core/extensions/l10n_extension.dart';
-import 'package:promsell_pos_ce/core/theme/app_colors.dart';
 import 'package:tabler_icons_plus/tabler_icons_plus.dart';
 import 'package:promsell_pos_ce/features/daily_close/presentation/pages/daily_close_list_page.dart';
+import 'package:promsell_pos_ce/features/restaurant_table/presentation/pages/floor_page.dart';
 import 'package:promsell_pos_ce/features/restaurant_table/presentation/pages/table_management_page.dart';
 import 'package:promsell_pos_ce/features/settings/domain/entities/settings.dart';
 import 'package:promsell_pos_ce/features/settings/presentation/pages/about_page.dart';
@@ -65,37 +65,32 @@ class SettingsTileBuilders {
     };
   }
 
-  static Color themeColor(Settings s) {
-    return switch (s.themeModeName) {
-      'light' => AppColors.warning,
-      'dark' => AppColors.info,
-      _ => AppColors.primary,
-    };
-  }
-
+  /// Backup readiness for chips/readiness list. Colors are theme-aware
+  /// status *text* tokens so labels stay WCAG-readable on tinted surfaces.
   static ({String label, Color color}) backupStatus(
     BuildContext context,
     Settings s,
+    SettingsThemeExtension st,
   ) {
     final l10n = context.l10n;
     if (s.backupReminderDays == 0) {
-      return (label: l10n.backupOff, color: context.settingsTheme.mutedText);
+      return (label: l10n.backupOff, color: st.mutedText);
     }
     if (s.lastBackupAt == null) {
-      return (label: l10n.backupStatusOverdue, color: AppColors.error);
+      return (label: l10n.backupStatusOverdue, color: st.statusErrorText);
     }
     final last = DateTime.tryParse(s.lastBackupAt!);
     if (last == null) {
-      return (label: l10n.backupStatusOverdue, color: AppColors.error);
+      return (label: l10n.backupStatusOverdue, color: st.statusErrorText);
     }
     final days = DateTime.now().difference(last).inDays;
     if (days <= s.backupReminderDays) {
-      return (label: l10n.backupStatusSafe, color: AppColors.success);
+      return (label: l10n.backupStatusSafe, color: st.statusSuccessText);
     }
     if (days <= s.backupReminderDays * 2) {
-      return (label: l10n.backupStatusWarning, color: AppColors.warning);
+      return (label: l10n.backupStatusWarning, color: st.statusWarningText);
     }
-    return (label: l10n.backupStatusOverdue, color: AppColors.error);
+    return (label: l10n.backupStatusOverdue, color: st.statusErrorText);
   }
 
   /// Risk chips only: overdue / warning. Safe and Off → null (subtitle carries info).
@@ -105,7 +100,7 @@ class SettingsTileBuilders {
     SettingsThemeExtension st,
   ) {
     if (s.backupReminderDays == 0) return null;
-    final backup = backupStatus(context, s);
+    final backup = backupStatus(context, s, st);
     final l10n = context.l10n;
     final isRisk =
         backup.label == l10n.backupStatusOverdue ||
@@ -162,13 +157,14 @@ class SettingsTileBuilders {
       SettingsTileData(
         icon: TablerIcons.buildingStore,
         title: l10n.settingsShopInfo,
-        accent: st.softAccent,
+        accent: st.activeAccent,
+        emphasized: true,
         subtitle: s.shopName.isNotEmpty ? s.shopName : null,
         statusChip: shopComplete
             ? null
             : SettingsStatusChip(
                 label: l10n.settingsStatusIncomplete,
-                color: AppColors.warning,
+                color: st.statusWarningText,
                 st: st,
               ),
         page: const ShopInfoSettingsPage(),
@@ -212,7 +208,10 @@ class SettingsTileBuilders {
         statusChip: s.allowOversell
             ? SettingsStatusChip(
                 label: l10n.settingsOn,
-                color: AppColors.error,
+                // Amber, not red: oversell ON is an intentional setting with
+                // risk, not an error state. Red stays reserved for backup
+                // overdue.
+                color: st.statusWarningText,
                 st: st,
               )
             : null,
@@ -249,7 +248,8 @@ class SettingsTileBuilders {
       SettingsTileData(
         icon: TablerIcons.qrcode,
         title: l10n.promptpay,
-        accent: st.softAccent,
+        accent: st.activeAccent,
+        emphasized: true,
         subtitle: s.promptpayId.isNotEmpty
             ? maskSensitiveId(s.promptpayId)
             : null,
@@ -276,7 +276,7 @@ class SettingsTileBuilders {
       SettingsTileData(
         icon: TablerIcons.lock,
         title: l10n.settingsDailyCloseTitle,
-        accent: st.softAccent,
+        accent: st.neutralAccent,
         subtitle: l10n.settingsDailyCloseSubtitle,
         page: const DailyCloseListPage(),
       ),
@@ -293,7 +293,8 @@ class SettingsTileBuilders {
       SettingsTileData(
         icon: TablerIcons.databaseExport,
         title: l10n.settingsBackup,
-        accent: st.softAccent,
+        accent: st.neutralAccent,
+        emphasized: true,
         subtitle: s.backupReminderDays == 0
             ? l10n.backupOff
             : l10n.backupEveryNDays(s.backupReminderDays),
@@ -327,7 +328,7 @@ class SettingsTileBuilders {
       SettingsTileData(
         icon: TablerIcons.infoCircle,
         title: l10n.aboutApp,
-        accent: st.softAccent,
+        accent: st.neutralAccent,
         subtitle: l10n.agplShort,
         page: const AboutPage(),
       ),
@@ -342,6 +343,13 @@ class SettingsTileBuilders {
   ) {
     return [
       SettingsTileData(
+        icon: TablerIcons.layoutGrid,
+        title: l10n.floorTitle,
+        accent: st.softAccent,
+        subtitle: l10n.tableManagementSubtitle,
+        page: const FloorPage(),
+      ),
+      SettingsTileData(
         icon: TablerIcons.toolsKitchen2,
         title: l10n.tableManagement,
         accent: st.softAccent,
@@ -351,9 +359,40 @@ class SettingsTileBuilders {
     ];
   }
 
+  /// Filters sections for the settings search page: matches tile title,
+  /// subtitle, section title, and extra search keywords. Empty query returns
+  /// everything unchanged.
+  static List<SettingsSectionData> filterSections(
+    List<SettingsSectionData> sections,
+    String query,
+  ) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return sections;
+    return sections
+        .map(
+          (sec) => SettingsSectionData(
+            title: sec.title,
+            accent: sec.accent,
+            tiles: sec.tiles.where((t) {
+              final keywords = t.searchKeywords.join(' ');
+              final text =
+                  '${t.title} ${t.subtitle ?? ''} ${sec.title} $keywords'
+                      .toLowerCase();
+              return text.contains(q);
+            }).toList(),
+          ),
+        )
+        .where((sec) => sec.tiles.isNotEmpty)
+        .toList();
+  }
+
   /// Clean Index IA:
   /// General → Store & Sales → Restaurant? → Discounts → Payments
   /// → Day close → Backup & data → About
+  ///
+  /// Accents are deliberately restrained: teal (`softAccent`) for commerce
+  /// settings, slate (`neutralAccent`) for operational/info sections. Semantic
+  /// colors (error/warning/success) stay reserved for status chips only.
   static List<SettingsSectionData> allSections(
     BuildContext context,
     Settings s,
@@ -363,10 +402,12 @@ class SettingsTileBuilders {
     final sections = <SettingsSectionData>[
       SettingsSectionData(
         title: l10n.settingsGeneral,
+        accent: st.softAccent,
         tiles: generalTiles(context, s, st, l10n),
       ),
       SettingsSectionData(
         title: l10n.settingsStoreSales,
+        accent: st.softAccent,
         tiles: storeTiles(context, s, st, l10n),
       ),
     ];
@@ -374,6 +415,7 @@ class SettingsTileBuilders {
       sections.add(
         SettingsSectionData(
           title: l10n.restaurantSettings,
+          accent: st.softAccent,
           tiles: restaurantTiles(context, s, st, l10n),
         ),
       );
@@ -381,22 +423,27 @@ class SettingsTileBuilders {
     sections.addAll([
       SettingsSectionData(
         title: l10n.settingsDiscounts,
+        accent: st.softAccent,
         tiles: discountTiles(context, s, st, l10n),
       ),
       SettingsSectionData(
         title: l10n.settingsPayments,
+        accent: st.softAccent,
         tiles: paymentTiles(context, s, st, l10n),
       ),
       SettingsSectionData(
         title: l10n.settingsDayClose,
+        accent: st.neutralAccent,
         tiles: dayCloseTiles(context, s, st, l10n),
       ),
       SettingsSectionData(
         title: l10n.settingsBackupData,
+        accent: st.neutralAccent,
         tiles: backupDataTiles(context, s, st, l10n),
       ),
       SettingsSectionData(
         title: l10n.settingsAbout,
+        accent: st.neutralAccent,
         tiles: aboutTiles(context, s, st, l10n),
       ),
     ]);

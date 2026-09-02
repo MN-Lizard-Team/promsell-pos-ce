@@ -192,6 +192,7 @@ class _CompactCartFabState extends State<CompactCartFab>
                               ? ctx.l10n.cartBottomLabel
                               : '${ctx.l10n.cartBottomLabel}, $count',
                           child: Material(
+                            key: const ValueKey('sale_cart_entry'),
                             color: count == 0
                                 ? theme.colorScheme.primaryContainer
                                 : theme.colorScheme.primary,

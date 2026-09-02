@@ -64,7 +64,8 @@ test/
 │   ├── daily_close/            # Cubit, repo, widget tests
 │   │   └── presentation/widgets/  # DailyCloseDateCard, DailyCloseSummaryCard, DailyCloseReconciliationCard, DailyCloseSummaryRow, DailyCloseReadOnlyRow
 │   └── onboarding/             # Widget tests
-│       └── presentation/widgets/  # OnboardingHeroSection, OnboardingSection, BrandChoiceChip, OnboardingSheetOption
+│       ├── presentation/pages/    # OnboardingPage (4-step flow, back navigation)
+│       └── presentation/widgets/  # OnboardingHeroSection, OnboardingSection, OnboardingProgressBar, OnboardingBottomBar, OnboardingDoneSection, OnboardingSettingsSheet, OnboardingShopSection, OnboardingPreferencesSection, OnboardingBusinessSection, OnboardingRadioCard, OnboardingSheetOption
 ├── integration/
 │   ├── checkout_flow_test.dart  # End-to-end data layer checkout
 │   ├── sale_integrity_test.dart # Void sale, adjust stock, full audit trail

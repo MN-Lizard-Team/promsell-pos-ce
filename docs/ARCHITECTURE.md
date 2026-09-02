@@ -16,7 +16,7 @@ System context, container diagram, component diagram, and data flow sequences fo
 State management patterns (BLoC vs Cubit, singleton vs factory, stream lifecycle), dependency injection graph, transaction boundaries, error handling strategy, and performance & scaling characteristics.
 
 ### [Architecture Decision Records (ADRs)](architecture/adr/index.md)
-ADRs 001–036 covering ORM, state, DI, transactions, audit trail, settings, widgets, generated code, barcodes, payable pipeline (027), CE sync-metadata non-goals (028), cursor pagination (029), SQL report summary (030), streaming CSV export (031), DB lifecycle services (032), recovery kit key wrapping (033), backup metadata with SHA-256 checksum (034), shared domain entities for cross-feature coupling (035), and migration file split by version (036).
+ADRs 001–037 covering ORM, state, DI, transactions, audit trail, settings, widgets, generated code, barcodes, payable pipeline (027), CE sync-metadata non-goals (028), cursor pagination (029), SQL report summary (030), streaming CSV export (031), DB lifecycle services (032), recovery kit key wrapping (033), backup metadata with SHA-256 checksum (034), shared domain entities for cross-feature coupling (035), migration file split by version (036), and Settings + onboarding visual language (037 — Settings part superseded by POS-native restyle, see ADR body).
 
 ---
 

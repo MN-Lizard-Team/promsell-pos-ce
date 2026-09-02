@@ -84,6 +84,23 @@ void main() {
       ).called(1);
     });
 
+    test('fails closed when the datasource repeats a cursor', () async {
+      final repeated = SaleCursor(createdAt: tSale.createdAt, id: tSale.id);
+      when(
+        () => mockDs.querySalesPage(
+          from: any(named: 'from'),
+          to: any(named: 'to'),
+          cursor: any(named: 'cursor'),
+          pageSize: any(named: 'pageSize'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            SalePage(sales: [tSale], nextCursor: repeated, totalCount: 2),
+      );
+
+      await expectLater(repo.getSales(), throwsA(isA<StateError>()));
+    });
+
     test('watchSales delegates to datasource.watchSales', () {
       when(
         () => mockDs.watchSales(
