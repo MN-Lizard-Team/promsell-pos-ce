@@ -1,0 +1,19 @@
+# gitleaks configuration — extends the default ruleset with allowlist entries
+# for false positives in the recovery kit secure-storage key names.
+#
+# The strings flagged by the generic-api-key rule (e.g. 'promsell_db_key_v1')
+# are flutter_secure_storage key NAMES, not secrets. They are constant
+# identifiers used to read/write the actual encrypted DB key in the Keystore
+# / Keychain — the secret value is generated at runtime via PBKDF2 and never
+# hardcoded.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Recovery kit secure-storage key names are constants, not secrets"
+paths = [
+  '''lib/core/database/recovery_kit_service\.dart''',
+  '''test/core/database/recovery_kit_service_test\.dart''',
+  '''lib/core/database/db_key_store\.dart''',
+]

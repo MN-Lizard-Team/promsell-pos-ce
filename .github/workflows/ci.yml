@@ -25,8 +25,8 @@ jobs:
           fetch-depth: 0  # gitleaks needs full history for leak detection
 
       # Security scans run first and fail closed. If gitleaks flags a known
-      # test fixture, allowlist that exact path/commit in .gitleaksignore —
-      # never disable the scanner.
+      # false positive, add an allowlist entry in gitleaks.toml — never
+      # disable the scanner.
       # Uses gitleaks CLI directly (not gitleaks-action) to avoid the
       # organization license requirement introduced in gitleaks-action v3.
       # Pin the binary version for reproducibility.
@@ -36,7 +36,7 @@ jobs:
           GITLEAKS_VERSION="8.30.1"
           curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
             | tar xz -C /tmp gitleaks
-          /tmp/gitleaks detect --source . --verbose --redact --no-banner
+          /tmp/gitleaks detect --source . --config gitleaks.toml --verbose --redact --no-banner
 
       - name: Dependency CVE scan (osv-scanner)
         uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67
