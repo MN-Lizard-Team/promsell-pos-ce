@@ -43,6 +43,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
           api-level: 34
+          target: google_apis
           script: flutter test integration_test/screenshot_test.dart --flavor dev
 
       - name: Upload screenshots
